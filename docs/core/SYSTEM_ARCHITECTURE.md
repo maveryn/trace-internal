@@ -158,6 +158,7 @@ Implementation map for the contracts in `docs/core/BLUEPRINT.md`.
    - `trace/tasks/diagrams/cycle/offset_stage_label.py`
    - `trace/tasks/diagrams/flow/next_step_label.py`
    - `trace/tasks/diagrams/hierarchy/ancestor_label.py`
+   - `trace/tasks/diagrams/set_diagram/region_sum_value.py`
 ## 5) Architecture invariants
 1. Determinism from config + seeds + versions.
 2. `TrainInstance` stays lightweight; heavy replay metadata stays in sidecar trace.

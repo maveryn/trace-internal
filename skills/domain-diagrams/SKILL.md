@@ -31,7 +31,7 @@ Use this whenever the task lives under `domain=diagrams`.
 - `swimlane` is a visual scene variant within `flow`, not a separate task group.
 - `hierarchy`: labeled parent/child containment over tree connectors; good early tasks are parent lookup and lowest-common-ancestor lookup with one-box target evidence.
 - Active `cycle`: ordered `k`-step before/after reasoning over circular process layouts with short visible labels and one-box target-stage evidence.
-- Later `set_diagram`: region membership and overlap reasoning.
+- Active `set_diagram`: numeric `3`-set overlap reasoning over one digit per region, with sum queries grounded on the contributing digit boxes.
 
 ## Evidence rules
 - Flow next-step tasks should ground prompt-facing evidence on the single target step box.

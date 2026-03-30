@@ -7,7 +7,8 @@ This document captures the concrete reusable setup for the active early `diagram
 2. The first active families focus on:
    - `flow` reasoning over labeled process nodes connected by visible arrows,
    - `hierarchy` reasoning over labeled org charts connected by visible parent-child lines,
-   - `cycle` reasoning over labeled directed stage rings.
+   - `cycle` reasoning over labeled directed stage rings,
+   - `set_diagram` reasoning over explicit set-overlap regions.
 3. Diagram tasks should stay diagram-native:
    - explicit node/connector semantics,
    - short visible labels,
@@ -28,6 +29,7 @@ This document captures the concrete reusable setup for the active early `diagram
 5. The swimlane scene adds horizontal lane bands and lane labels, but it should not change the meaning of the process arrows.
 6. The org-chart scene adds top-down rooted-tree structure, but it should not change the meaning of the parent-child connectors.
 7. The cycle-ring scene adds a single clockwise stage loop, but it should not change the meaning of the directed cycle order across the `before` and `after` query variants.
+8. The set-diagram scene adds one numeric `3`-set overlap layout, but it should not change the meaning of the explicit set-sum semantics named in the prompt.
 
 ## 3) Active family
 1. `task_group=flow`
@@ -55,6 +57,17 @@ This document captures the concrete reusable setup for the active early `diagram
    - `before_k_steps`
 12. Active cycle visual variants:
    - `cycle_ring`
+13. `task_group=set_diagram`
+14. Active set-diagram task:
+   - `task_diagrams_set_diagram_region_sum_value`
+15. Active set-diagram semantic variants:
+   - `sum_only_in_named_set`
+   - `sum_in_named_set`
+   - `sum_in_named_union`
+   - `sum_in_named_intersection`
+   - `sum_in_exactly_two_sets`
+16. Active set-diagram visual variants:
+   - `set_diagram`
 
 ## 4) Evidence policy
 1. Flow next-step tasks should keep prompt-facing evidence local:
@@ -63,7 +76,9 @@ This document captures the concrete reusable setup for the active early `diagram
    - `bbox_set` with exactly one bbox for the target parent or common-ancestor node.
 3. Cycle offset-stage tasks should keep prompt-facing evidence local:
    - `bbox_set` with exactly one bbox for the target stage.
-4. Keep query-node, lane, edge-label, and connector geometry in trace for review/debugging, but do not widen prompt-facing evidence to whole paths, full subtrees, or whole loops when the answer is one visible target node.
+4. Set-diagram region-sum tasks should keep prompt-facing evidence local:
+   - `bbox_set` with one bbox per contributing digit, ordered from top to bottom and then left to right.
+5. Keep query-node, lane, edge-label, connector, and region geometry in trace for review/debugging, but do not widen prompt-facing evidence to whole paths, full subtrees, whole loops, or whole regions when the answer depends on a local set of visible digits.
 
 ## 5) Reuse guidance
 1. Keep diagram-axis resolution, prompt-facing bbox projection, and reusable panel/title helpers under `trace/tasks/diagrams/shared/common.py`.
@@ -75,4 +90,6 @@ This document captures the concrete reusable setup for the active early `diagram
 7. Keep org-chart rendering, connector routing, and traced node/edge bbox maps under `trace/tasks/diagrams/shared/hierarchy_scene.py`.
 8. Keep cycle-specific dataset construction, axis resolution, and render-param resolution under `trace/tasks/diagrams/shared/cycle_common.py`.
 9. Keep cycle-ring rendering, directed-edge routing, and traced stage/edge bbox maps under `trace/tasks/diagrams/shared/cycle_scene.py`.
-10. Future flow-family tasks should reuse the same diagram grammar before adding a second renderer, future hierarchy tasks should reuse the same org-chart grammar before adding a second hierarchy renderer, and future cycle tasks should reuse the same ring grammar before adding a second cycle renderer.
+10. Keep set-diagram-specific dataset construction, axis resolution, and render-param resolution under `trace/tasks/diagrams/shared/set_common.py`.
+11. Keep set-overlap rendering, digit placement, sampled set-palette handling, and traced region/number bbox maps under `trace/tasks/diagrams/shared/set_scene.py` and `trace/tasks/diagrams/shared/set_common.py`.
+12. Future flow-family tasks should reuse the same diagram grammar before adding a second renderer, future hierarchy tasks should reuse the same org-chart grammar before adding a second hierarchy renderer, future cycle tasks should reuse the same ring grammar before adding a second cycle renderer, and future set-diagram tasks should reuse the same overlap grammar before adding a second set renderer.

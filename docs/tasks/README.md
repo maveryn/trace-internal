@@ -98,3 +98,4 @@ Current task docs:
 88. [task_diagrams_flow_next_step_label.md](task_diagrams_flow_next_step_label.md)
 89. [task_diagrams_hierarchy_ancestor_label.md](task_diagrams_hierarchy_ancestor_label.md)
 90. [task_diagrams_cycle_offset_stage_label.md](task_diagrams_cycle_offset_stage_label.md)
+91. [task_diagrams_set_diagram_region_sum_value.md](task_diagrams_set_diagram_region_sum_value.md)

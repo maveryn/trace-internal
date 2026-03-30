@@ -49,6 +49,7 @@ from .charts.trend import structure_value as _task_charts_trend_structure_value
 from .diagrams.cycle import offset_stage_label as _task_diagrams_cycle_offset_stage_label
 from .diagrams.flow import next_step_label as _task_diagrams_flow_next_step_label
 from .diagrams.hierarchy import ancestor_label as _task_diagrams_hierarchy_ancestor_label
+from .diagrams.set_diagram import region_sum_value as _task_diagrams_set_region_sum_value
 from .documents.arithmetic import section_expression_value as _task_documents_arithmetic_section_expression_value
 from .documents.layout import section_membership_label as _task_documents_layout_section_membership_label
 from .documents.relation import section_extremum_value as _task_documents_relation_section_extremum_value

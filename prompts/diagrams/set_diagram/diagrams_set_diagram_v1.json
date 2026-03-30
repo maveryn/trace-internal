@@ -1,0 +1,94 @@
+{
+  "bundle_id": "diagrams_set_diagram_v1",
+  "schema_version": "v1",
+  "task_family_templates": {
+    "numeric_set_overlap_diagram": [
+      "The image shows {object_description}.",
+      "Look at the set diagram in the image: {object_description}.",
+      "You are given {object_description}.",
+      "Use the numeric set-overlap diagram in the image: {object_description}.",
+      "Work from the labeled overlap regions in the image: {object_description}."
+    ]
+  },
+  "task_templates": {
+    "region_sum_query": [
+      "{question_text}",
+      "Use the set diagram to answer: {question_text}",
+      "Read the overlap regions and answer: {question_text}",
+      "Use the numbers in the set diagram and answer: {question_text}",
+      "Determine the requested sum from the overlap regions: {question_text}"
+    ]
+  },
+  "task_variant_templates": {
+    "sum_only_in_named_set": [
+      "Return the integer sum.",
+      "Answer with the integer total.",
+      "Respond with the integer sum only.",
+      "Give the final integer sum.",
+      "Answer using the integer sum."
+    ],
+    "sum_in_named_set": [
+      "Return the integer sum.",
+      "Answer with the integer total.",
+      "Respond with the integer sum only.",
+      "Give the final integer sum.",
+      "Answer using the integer sum."
+    ],
+    "sum_in_named_union": [
+      "Return the integer sum.",
+      "Answer with the integer total.",
+      "Respond with the integer sum only.",
+      "Give the final integer sum.",
+      "Answer using the integer sum."
+    ],
+    "sum_in_named_intersection": [
+      "Return the integer sum.",
+      "Answer with the integer total.",
+      "Respond with the integer sum only.",
+      "Give the final integer sum.",
+      "Answer using the integer sum."
+    ],
+    "sum_in_exactly_two_sets": [
+      "Return the integer sum.",
+      "Answer with the integer total.",
+      "Respond with the integer sum only.",
+      "Give the final integer sum.",
+      "Answer using the integer sum."
+    ]
+  },
+  "required_slots_by_key": {
+    "task_family:numeric_set_overlap_diagram": [
+      "object_description"
+    ],
+    "task:region_sum_query": [
+      "question_text"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence: {evidence_hint}.\nAnswer: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence requirement: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence field: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence rule: {evidence_hint}.\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  }
+}

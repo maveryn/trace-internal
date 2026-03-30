@@ -194,6 +194,7 @@ Active task-to-bundle mapping:
    - `task_diagrams_flow_next_step_label` -> `diagrams_flow_v1`
    - `task_diagrams_hierarchy_ancestor_label` -> `diagrams_hierarchy_v1`
    - `task_diagrams_cycle_offset_stage_label` -> `diagrams_cycle_v1`
+   - `task_diagrams_set_diagram_region_sum_value` -> `diagrams_set_diagram_v1`
 17. Maps:
    - `task_maps_region_association_label|task_maps_region_count` -> `maps_region_v1`
 18. Documents:

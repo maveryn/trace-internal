@@ -1,0 +1,19 @@
+{
+  "inspection_count": 125,
+  "task_id": "task_diagrams_set_diagram_region_sum_value",
+  "variants": {
+    "sum_in_exactly_two_sets": 25,
+    "sum_in_named_intersection": 25,
+    "sum_in_named_set": 25,
+    "sum_in_named_union": 25,
+    "sum_only_in_named_set": 25
+  },
+  "workbook": "diagrams/task_diagrams_set_diagram_region_sum_value/task_diagrams_set_diagram_region_sum_value.xlsx",
+  "workbook_sheets": {
+    "sum_in_exactly_two_sets": "sum_in_exactly_two_sets",
+    "sum_in_named_intersection": "sum_in_named_intersection",
+    "sum_in_named_set": "sum_in_named_set",
+    "sum_in_named_union": "sum_in_named_union",
+    "sum_only_in_named_set": "sum_only_in_named_set"
+  }
+}

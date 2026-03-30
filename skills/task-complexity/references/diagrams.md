@@ -26,6 +26,14 @@ Use these criteria when assigning or reviewing diagrams-domain complexity.
 3. `scene_variant_load`
    - early cycle currently uses one `cycle_ring` scene variant, so this stays a light constant baseline until additional cycle chrome is introduced.
 
+## Active family: `set_diagram`
+1. `visual_scan`
+   - driven by the fixed `3`-set overlap layout, visible digit count, and how many overlap regions the solver must inspect to gather operands.
+2. `reasoning_load`
+   - driven by whether the query asks for a single-set-only sum, a full-set total, a union, an intersection, or an “exactly two sets” total.
+3. `scene_variant_load`
+   - early set diagrams currently use one `set_diagram` scene variant, so this stays a light constant baseline until additional set chrome is introduced.
+
 ## General rule
 1. Normalize each criterion inside the task before combining them.
 2. Keep the weighted aggregate inside `[0, 1]`.

@@ -1,0 +1,1010 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 4
+  },
+  "evidence_gt": {
+    "type": "bbox_set",
+    "value": [
+      [
+        737,
+        183,
+        789,
+        234
+      ],
+      [
+        470,
+        311,
+        521,
+        361
+      ],
+      [
+        446,
+        380,
+        524,
+        457
+      ],
+      [
+        536,
+        405,
+        599,
+        467
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "icons/task_icons_counting_reference_match_count/images/match_type/0022.png"
+  },
+  "instance_seed": 3299996246992878,
+  "prompt": "The image shows a Reference icon on the left and a Scene panel of icons on the right. Question: How many icons in the Scene panel have the same icon type as the Reference icon?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right.\nAnswer field: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[[322,152,377,207],[756,318,820,382]],\"answer\":2}",
+  "prompt_variants": {
+    "answer_and_evidence": "The image shows a Reference icon on the left and a Scene panel of icons on the right. Question: How many icons in the Scene panel have the same icon type as the Reference icon?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right.\nAnswer field: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[[322,152,377,207],[756,318,820,382]],\"answer\":2}",
+    "answer_only": "The image shows a Reference icon on the left and a Scene panel of icons on the right. Question: How many icons in the Scene panel have the same icon type as the Reference icon?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the count as an integer.\nExample JSON:\n{\"answer\":2}"
+  },
+  "task": "task_icons_counting_reference_match_count",
+  "task_variant": "match_type",
+  "trace_payload": {
+    "execution_trace": {
+      "distractor_count": 9,
+      "distractor_count_probabilities": {
+        "1": 0.1,
+        "10": 0.1,
+        "2": 0.1,
+        "3": 0.1,
+        "4": 0.1,
+        "5": 0.1,
+        "6": 0.1,
+        "7": 0.1,
+        "8": 0.1,
+        "9": 0.1
+      },
+      "legacy_scene_variant": "reference_scene",
+      "legacy_task_id": "task_icons_counting_type",
+      "legacy_task_variant": "same_icon_type",
+      "matching_scene_indices": [
+        0,
+        5,
+        8,
+        9
+      ],
+      "object_count": 13,
+      "object_count_probabilities": {
+        "10": 0.1,
+        "11": 0.1,
+        "12": 0.1,
+        "13": 0.1,
+        "14": 0.1,
+        "5": 0.1,
+        "6": 0.1,
+        "7": 0.1,
+        "8": 0.1,
+        "9": 0.1
+      },
+      "question_format": "count_matching_scene_icons_by_reference",
+      "reference_icon_id": "gi-lorc-earwig",
+      "scene_icon_ids": [
+        "gi-lorc-earwig",
+        "gi-delapouite-belt-armor",
+        "gi-darkzaitzev-ram",
+        "gi-lorc-ice-shield",
+        "tabler-military-rank",
+        "gi-lorc-earwig",
+        "gi-lorc-cracked-disc",
+        "gi-delapouite-ninja-velociraptor",
+        "gi-lorc-earwig",
+        "gi-lorc-earwig",
+        "gi-delapouite-propeller-beanie",
+        "gi-lorc-frozen-block",
+        "gi-delapouite-full-motorcycle-helmet"
+      ],
+      "scene_variant": "reference_scene",
+      "scene_variant_probabilities": {
+        "reference_scene": 1.0
+      },
+      "target_count": 4,
+      "target_count_probabilities": {
+        "0": 0.09090909090909091,
+        "1": 0.09090909090909091,
+        "10": 0.09090909090909091,
+        "2": 0.09090909090909091,
+        "3": 0.09090909090909091,
+        "4": 0.09090909090909091,
+        "5": 0.09090909090909091,
+        "6": 0.09090909090909091,
+        "7": 0.09090909090909091,
+        "8": 0.09090909090909091,
+        "9": 0.09090909090909091
+      },
+      "task_variant": "match_type",
+      "task_variant_probabilities": {
+        "match_attribute_binding": 0.0,
+        "match_color": 0.0,
+        "match_orientation": 0.0,
+        "match_type": 1.0
+      }
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          737,
+          183,
+          789,
+          234
+        ],
+        [
+          470,
+          311,
+          521,
+          361
+        ],
+        [
+          446,
+          380,
+          524,
+          457
+        ],
+        [
+          536,
+          405,
+          599,
+          467
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "distractor_count": 9,
+        "distractor_count_probabilities": {
+          "1": 0.1,
+          "10": 0.1,
+          "2": 0.1,
+          "3": 0.1,
+          "4": 0.1,
+          "5": 0.1,
+          "6": 0.1,
+          "7": 0.1,
+          "8": 0.1,
+          "9": 0.1
+        },
+        "legacy_scene_variant": "reference_scene",
+        "legacy_task_id": "task_icons_counting_type",
+        "legacy_task_variant": "same_icon_type",
+        "object_count": 13,
+        "object_count_probabilities": {
+          "10": 0.1,
+          "11": 0.1,
+          "12": 0.1,
+          "13": 0.1,
+          "14": 0.1,
+          "5": 0.1,
+          "6": 0.1,
+          "7": 0.1,
+          "8": 0.1,
+          "9": 0.1
+        },
+        "pool_manifest": "all_icons.txt",
+        "scene_variant": "reference_scene",
+        "scene_variant_probabilities": {
+          "reference_scene": 1.0
+        },
+        "target_count": 4,
+        "target_count_probabilities": {
+          "0": 0.09090909090909091,
+          "1": 0.09090909090909091,
+          "10": 0.09090909090909091,
+          "2": 0.09090909090909091,
+          "3": 0.09090909090909091,
+          "4": 0.09090909090909091,
+          "5": 0.09090909090909091,
+          "6": 0.09090909090909091,
+          "7": 0.09090909090909091,
+          "8": 0.09090909090909091,
+          "9": 0.09090909090909091
+        },
+        "task_variant": "match_type",
+        "task_variant_probabilities": {
+          "match_attribute_binding": 0.0,
+          "match_color": 0.0,
+          "match_orientation": 0.0,
+          "match_type": 1.0
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 3,
+        "prompt_bundle_id": "icons_counting_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the count as an integer",
+          "evidence_hint": "set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right",
+          "json_example": "{\"evidence\":[[322,152,377,207],[756,318,820,382]],\"answer\":2}",
+          "json_example_answer_only": "{\"answer\":2}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a Reference icon on the left and a Scene panel of icons on the right",
+          "question_text": "How many icons in the Scene panel have the same icon type as the Reference icon?"
+        },
+        "task_family_key": "reference_scene_counting",
+        "task_family_variant_index": 1,
+        "task_key": "counting_query",
+        "task_variant_index": 1,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "icons/counting/icons_counting_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:counting_query": 5,
+          "task_family:reference_scene_counting": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 3,
+            "prompt_bundle_id": "icons_counting_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the count as an integer",
+              "evidence_hint": "set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right",
+              "json_example": "{\"evidence\":[[322,152,377,207],[756,318,820,382]],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a Reference icon on the left and a Scene panel of icons on the right",
+              "question_text": "How many icons in the Scene panel have the same icon type as the Reference icon?"
+            },
+            "task_family_key": "reference_scene_counting",
+            "task_family_variant_index": 1,
+            "task_key": "counting_query",
+            "task_variant_index": 1,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "icons/counting/icons_counting_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:counting_query": 5,
+              "task_family:reference_scene_counting": 5
+            }
+          },
+          "prompt": "The image shows a Reference icon on the left and a Scene panel of icons on the right. Question: How many icons in the Scene panel have the same icon type as the Reference icon?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right.\nAnswer field: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[[322,152,377,207],[756,318,820,382]],\"answer\":2}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 1,
+            "prompt_bundle_id": "icons_counting_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the count as an integer",
+              "evidence_hint": "set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right",
+              "json_example": "{\"evidence\":[[322,152,377,207],[756,318,820,382]],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a Reference icon on the left and a Scene panel of icons on the right",
+              "question_text": "How many icons in the Scene panel have the same icon type as the Reference icon?"
+            },
+            "task_family_key": "reference_scene_counting",
+            "task_family_variant_index": 1,
+            "task_key": "counting_query",
+            "task_variant_index": 1,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "icons/counting/icons_counting_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:counting_query": 5,
+              "task_family:reference_scene_counting": 5
+            }
+          },
+          "prompt": "The image shows a Reference icon on the left and a Scene panel of icons on the right. Question: How many icons in the Scene panel have the same icon type as the Reference icon?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the count as an integer.\nExample JSON:\n{\"answer\":2}"
+        }
+      },
+      "task_variant": "match_type",
+      "template_id": "icons_counting_v1"
+    },
+    "render_map": {
+      "anchors": {
+        "matching_scene_boxes": [
+          [
+            737,
+            183,
+            789,
+            234
+          ],
+          [
+            470,
+            311,
+            521,
+            361
+          ],
+          [
+            446,
+            380,
+            524,
+            457
+          ],
+          [
+            536,
+            405,
+            599,
+            467
+          ]
+        ],
+        "reference_icon": {
+          "bbox_xyxy": [
+            85,
+            227,
+            210,
+            350
+          ],
+          "icon_id": "gi-lorc-earwig",
+          "instance_id": "reference_icon",
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "radius": 0.205334
+              },
+              "type": "blur"
+            },
+            {
+              "params": {
+                "alpha": 0.044408
+              },
+              "type": "noise"
+            }
+          ],
+          "noise_seed": 6432618754518170,
+          "panel": "reference",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            136,
+            208,
+            35
+          ]
+        }
+      },
+      "image_id": "img0"
+    },
+    "render_spec": {
+      "canvas_size": [
+        960,
+        544
+      ],
+      "coord_space": "pixel",
+      "legacy_scene_variant": "reference_scene",
+      "panel_geometry": {
+        "canvas_size": [
+          960,
+          544
+        ],
+        "reference_content_xyxy": [
+          44,
+          77,
+          252,
+          500
+        ],
+        "reference_panel_xyxy": [
+          24,
+          24,
+          272,
+          520
+        ],
+        "scene_content_xyxy": [
+          316,
+          77,
+          916,
+          500
+        ],
+        "scene_panel_xyxy": [
+          296,
+          24,
+          936,
+          520
+        ]
+      },
+      "scene_variant": "reference_scene",
+      "style": {
+        "background_color_rgb": [
+          247,
+          248,
+          251
+        ],
+        "color_channel_max": 220,
+        "color_channel_min": 24,
+        "color_distance_space": "lab",
+        "header_text_rgb": [
+          70,
+          78,
+          96
+        ],
+        "icon_noise_edit_count_range": [
+          0,
+          2
+        ],
+        "icon_noise_edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "icon_noise_value_ranges": {
+          "blur": {
+            "radius": [
+              0.2,
+              0.6
+            ]
+          },
+          "downsample": {
+            "scale": [
+              0.85,
+              0.95
+            ]
+          },
+          "jpeg": {
+            "quality": [
+              70.0,
+              90.0
+            ]
+          },
+          "noise": {
+            "alpha": [
+              0.03,
+              0.08
+            ]
+          }
+        },
+        "min_color_distance": 40.0,
+        "palette_size_max": 12,
+        "palette_size_min": 8,
+        "panel_border_rgb": [
+          205,
+          212,
+          224
+        ],
+        "panel_fill_rgb": [
+          255,
+          255,
+          255
+        ],
+        "reference_icon_size_max_px": 136,
+        "reference_icon_size_min_px": 136,
+        "reference_icon_size_px": 136,
+        "sampled_palette_rgb": [
+          [
+            136,
+            208,
+            35
+          ],
+          [
+            209,
+            98,
+            151
+          ],
+          [
+            73,
+            130,
+            64
+          ],
+          [
+            66,
+            220,
+            179
+          ],
+          [
+            203,
+            42,
+            39
+          ],
+          [
+            120,
+            61,
+            167
+          ],
+          [
+            213,
+            140,
+            41
+          ],
+          [
+            43,
+            131,
+            217
+          ]
+        ],
+        "scene_icon_size_max_px": 96,
+        "scene_icon_size_min_px": 40,
+        "scene_max_overlap_fraction": 0.1,
+        "scene_placement_max_attempts": 120,
+        "scene_size_shrink_factor": 0.9,
+        "scene_size_shrink_rounds": 6
+      },
+      "task_variant": "match_type"
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "bbox_xyxy": [
+            85,
+            227,
+            210,
+            350
+          ],
+          "icon_id": "gi-lorc-earwig",
+          "instance_id": "reference_icon",
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "radius": 0.205334
+              },
+              "type": "blur"
+            },
+            {
+              "params": {
+                "alpha": 0.044408
+              },
+              "type": "noise"
+            }
+          ],
+          "noise_seed": 6432618754518170,
+          "panel": "reference",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            136,
+            208,
+            35
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            737,
+            183,
+            789,
+            234
+          ],
+          "icon_id": "gi-lorc-earwig",
+          "index": 0,
+          "instance_id": "scene_icon_0",
+          "is_match": true,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "scale": 0.914347
+              },
+              "type": "downsample"
+            }
+          ],
+          "noise_seed": 3543587946810220,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            73,
+            130,
+            64
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            601,
+            460,
+            655,
+            486
+          ],
+          "icon_id": "gi-delapouite-belt-armor",
+          "index": 1,
+          "instance_id": "scene_icon_1",
+          "is_match": false,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "radius": 0.543181
+              },
+              "type": "blur"
+            },
+            {
+              "params": {
+                "scale": 0.942469
+              },
+              "type": "downsample"
+            }
+          ],
+          "noise_seed": 284803599686644,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            209,
+            98,
+            151
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            356,
+            414,
+            437,
+            499
+          ],
+          "icon_id": "gi-darkzaitzev-ram",
+          "index": 2,
+          "instance_id": "scene_icon_2",
+          "is_match": false,
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 5333009527098357,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            43,
+            131,
+            217
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            603,
+            140,
+            670,
+            214
+          ],
+          "icon_id": "gi-lorc-ice-shield",
+          "index": 3,
+          "instance_id": "scene_icon_3",
+          "is_match": false,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "alpha": 0.063232
+              },
+              "type": "noise"
+            },
+            {
+              "params": {
+                "scale": 0.931428
+              },
+              "type": "downsample"
+            }
+          ],
+          "noise_seed": 1522528763052774,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            66,
+            220,
+            179
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            696,
+            346,
+            724,
+            386
+          ],
+          "icon_id": "tabler-military-rank",
+          "index": 4,
+          "instance_id": "scene_icon_4",
+          "is_match": false,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "alpha": 0.058434
+              },
+              "type": "noise"
+            }
+          ],
+          "noise_seed": 4962936910577219,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            136,
+            208,
+            35
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            470,
+            311,
+            521,
+            361
+          ],
+          "icon_id": "gi-lorc-earwig",
+          "index": 5,
+          "instance_id": "scene_icon_5",
+          "is_match": true,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "quality": 82.0
+              },
+              "type": "jpeg"
+            },
+            {
+              "params": {
+                "scale": 0.876327
+              },
+              "type": "downsample"
+            }
+          ],
+          "noise_seed": 7581486331014435,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            73,
+            130,
+            64
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            382,
+            211,
+            460,
+            289
+          ],
+          "icon_id": "gi-lorc-cracked-disc",
+          "index": 6,
+          "instance_id": "scene_icon_6",
+          "is_match": false,
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 8015668672777464,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            136,
+            208,
+            35
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            687,
+            288,
+            736,
+            336
+          ],
+          "icon_id": "gi-delapouite-ninja-velociraptor",
+          "index": 7,
+          "instance_id": "scene_icon_7",
+          "is_match": false,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "quality": 78.0
+              },
+              "type": "jpeg"
+            }
+          ],
+          "noise_seed": 6065555871746399,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            43,
+            131,
+            217
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            536,
+            405,
+            599,
+            467
+          ],
+          "icon_id": "gi-lorc-earwig",
+          "index": 8,
+          "instance_id": "scene_icon_8",
+          "is_match": true,
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 8095308285402952,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            120,
+            61,
+            167
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            446,
+            380,
+            524,
+            457
+          ],
+          "icon_id": "gi-lorc-earwig",
+          "index": 9,
+          "instance_id": "scene_icon_9",
+          "is_match": true,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "radius": 0.351928
+              },
+              "type": "blur"
+            },
+            {
+              "params": {
+                "quality": 80.0
+              },
+              "type": "jpeg"
+            }
+          ],
+          "noise_seed": 4669062529478770,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            120,
+            61,
+            167
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            401,
+            112,
+            461,
+            173
+          ],
+          "icon_id": "gi-delapouite-propeller-beanie",
+          "index": 10,
+          "instance_id": "scene_icon_10",
+          "is_match": false,
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 4887712313759778,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            213,
+            140,
+            41
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            564,
+            330,
+            613,
+            378
+          ],
+          "icon_id": "gi-lorc-frozen-block",
+          "index": 11,
+          "instance_id": "scene_icon_11",
+          "is_match": false,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "alpha": 0.031604
+              },
+              "type": "noise"
+            }
+          ],
+          "noise_seed": 3353440543309393,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            43,
+            131,
+            217
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            335,
+            92,
+            389,
+            141
+          ],
+          "icon_id": "gi-delapouite-full-motorcycle-helmet",
+          "index": 12,
+          "instance_id": "scene_icon_12",
+          "is_match": false,
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 3683862323794240,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            209,
+            98,
+            151
+          ]
+        }
+      ],
+      "frames": {
+        "panels": {
+          "canvas_size": [
+            960,
+            544
+          ],
+          "reference_content_xyxy": [
+            44,
+            77,
+            252,
+            500
+          ],
+          "reference_panel_xyxy": [
+            24,
+            24,
+            272,
+            520
+          ],
+          "scene_content_xyxy": [
+            316,
+            77,
+            916,
+            500
+          ],
+          "scene_panel_xyxy": [
+            296,
+            24,
+            936,
+            520
+          ]
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {
+        "counting_target": "same_icon_type_as_reference",
+        "legacy_scene_variant": "reference_scene",
+        "legacy_task_id": "task_icons_counting_type",
+        "legacy_task_variant": "same_icon_type",
+        "matching_scene_indices": [
+          0,
+          5,
+          8,
+          9
+        ],
+        "reference_icon_id": "gi-lorc-earwig",
+        "scene_variant": "reference_scene",
+        "task_variant": "match_type"
+      },
+      "scene_kind": "icons_reference_match_count"
+    },
+    "witness_symbolic": {
+      "matching_scene_indices": [
+        0,
+        5,
+        8,
+        9
+      ],
+      "reference_icon_id": "gi-lorc-earwig"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

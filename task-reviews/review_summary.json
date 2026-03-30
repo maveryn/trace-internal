@@ -8,7 +8,7 @@
     "random_count": 100,
     "seed": 0,
     "tasks": [
-      "task_games_dominoes_chain_count"
+      "task_icons_pattern_structured_violation"
     ],
     "workers": 16
   },
@@ -20,22 +20,21 @@
   "tasks": [
     {
       "distribution_pass": true,
-      "domain": "games",
-      "inspection_count": 100,
-      "inspection_workbook": "games/task_games_dominoes_chain_count/task_games_dominoes_chain_count.xlsx",
+      "domain": "icons",
+      "inspection_count": 75,
+      "inspection_workbook": "icons/task_icons_pattern_structured_violation/task_icons_pattern_structured_violation.xlsx",
       "inspection_workbook_sheets": {
-        "double_count": "double_count",
-        "higher_sum_than_reference_count": "higher_sum_than_reference_count",
-        "matching_end_count": "matching_end_count",
-        "sum_to_target_count": "sum_to_target_count"
+        "grid_rotation_violation": "grid_rotation_violation",
+        "grid_size_violation": "grid_size_violation",
+        "row_rotation_violation": "row_rotation_violation"
       },
       "reports": {
-        "distribution_review": "games/task_games_dominoes_chain_count/distribution_review.json",
-        "inspection_manifest": "games/task_games_dominoes_chain_count/manifest.json",
-        "random_review": "games/task_games_dominoes_chain_count/random_review_100.json"
+        "distribution_review": "icons/task_icons_pattern_structured_violation/distribution_review.json",
+        "inspection_manifest": "icons/task_icons_pattern_structured_violation/manifest.json",
+        "random_review": "icons/task_icons_pattern_structured_violation/random_review_100.json"
       },
-      "task_group": "dominoes",
-      "task_id": "task_games_dominoes_chain_count"
+      "task_group": "pattern",
+      "task_id": "task_icons_pattern_structured_violation"
     }
   ]
 }

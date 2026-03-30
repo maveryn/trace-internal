@@ -32,11 +32,8 @@ clutter: 0.15
 ```
 
 Use for:
-- `task_icons_counting_type`
-- `task_icons_counting_color`
-- `task_icons_counting_orientation`
+- `task_icons_counting_reference_match_count`
 - `task_icons_counting_size_relation`
-- `task_icons_counting_attribute_binding`
 - `task_icons_counting_singleton_type`
 
 What to measure:
@@ -46,8 +43,9 @@ What to measure:
 - number of queried attributes.
 
 Specific notes:
-- `type` / `color` / `orientation` should keep `semantic_match` low-to-medium.
-- `attribute_binding` should push `semantic_match` and `ambiguity` high based on `2-of-3` / `1-of-3` distractor mix.
+- `task_icons_counting_reference_match_count`
+  - `match_type|match_color|match_orientation` should keep `semantic_match` low-to-medium.
+  - `match_attribute_binding` should push `semantic_match` and `ambiguity` high based on `2-of-3` / `1-of-3` distractor mix.
 - `size_relation` should raise `ambiguity` when the minimum size gap is small and clutter rises.
 - `singleton_type` should raise `ambiguity` with more distinct scene types and more repeated groups while keeping `semantic_match` low because the predicate still groups on icon identity alone.
 
@@ -107,7 +105,6 @@ clutter: 0.10
 
 Use for:
 - `task_icons_sequence_missing_count`
-- `task_icons_sequence_rotation_violation`
 
 What to measure:
 - row length,
@@ -125,8 +122,7 @@ clutter: 0.10
 ```
 
 Use for:
-- `task_icons_pattern_grid_rotation_violation`
-- `task_icons_pattern_grid_size_violation`
+- `task_icons_pattern_structured_violation`
 
 What to measure:
 - grid size / visible cell inventory,

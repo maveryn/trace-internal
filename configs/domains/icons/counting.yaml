@@ -8,11 +8,23 @@ generation:
     distractor_count_max: 10
     balanced_sampling: true
   task_overrides:
-    task_icons_counting_color:
-      pool_manifest: all_icons.txt
-    task_icons_counting_attribute_binding:
-      pool_manifest: non_symmetry.txt
-      rotation_candidates_degrees: [0, 90, 180, 270]
+    task_icons_counting_reference_match_count:
+      task_variant_weights:
+        match_type: 1.0
+        match_color: 1.0
+        match_orientation: 1.0
+        match_attribute_binding: 1.0
+      variant_generation_params:
+        match_type:
+          pool_manifest: all_icons.txt
+        match_color:
+          pool_manifest: all_icons.txt
+        match_orientation:
+          pool_manifest: non_symmetry.txt
+          rotation_candidates_degrees: [0, 90, 180, 270]
+        match_attribute_binding:
+          pool_manifest: non_symmetry.txt
+          rotation_candidates_degrees: [0, 90, 180, 270]
     task_icons_counting_singleton_type:
       pool_manifest: all_icons.txt
       object_count_min: 6
@@ -31,11 +43,6 @@ generation:
       rotation_candidates_degrees: [0, 90, 180, 270]
       size_relation_candidates: [smaller, larger]
       size_relation_min_delta_px: 12
-    task_icons_counting_type:
-      pool_manifest: all_icons.txt
-    task_icons_counting_orientation:
-      pool_manifest: non_symmetry.txt
-      rotation_candidates_degrees: [0, 90, 180, 270]
 
 rendering:
   shared:
@@ -76,14 +83,16 @@ rendering:
       noise:
         alpha: [0.03, 0.08]
   task_overrides:
-    task_icons_counting_color:
-      min_color_distance: 60.0
-      palette_size_min: 3
-      palette_size_max: 4
-    task_icons_counting_attribute_binding:
-      min_color_distance: 40.0
-      palette_size_min: 3
-      palette_size_max: 4
+    task_icons_counting_reference_match_count:
+      variant_render_params:
+        match_color:
+          min_color_distance: 60.0
+          palette_size_min: 3
+          palette_size_max: 4
+        match_attribute_binding:
+          min_color_distance: 40.0
+          palette_size_min: 3
+          palette_size_max: 4
     task_icons_counting_size_relation:
       scene_icon_size_max_px: 120
       reference_icon_size_px: 80
@@ -96,6 +105,24 @@ prompt:
     task_family_key: reference_scene_counting
     task_key: counting_query
   task_overrides:
+    task_icons_counting_reference_match_count:
+      object_description: a Reference icon on the left and a Scene panel of icons on the right
+      question_text_by_variant:
+        match_type: How many icons in the Scene panel have the same icon type as the Reference icon?
+        match_color: How many icons in the Scene panel have the same color as the Reference icon?
+        match_orientation: How many icons in the Scene panel have the same orientation as the Reference icon? Orientation refers to the icon's rotation.
+        match_attribute_binding: How many icons in the Scene panel match the Reference icon in icon type, color, and orientation all at once? Orientation refers to the icon's rotation.
+      evidence_hint: set "evidence" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right
+      answer_hint: set "answer" to the count as an integer
+      json_example: '{"evidence":[[322,152,377,207],[756,318,820,382]],"answer":2}'
+      json_example_answer_only: '{"answer":2}'
+    task_icons_counting_type:
+      object_description: a Reference icon on the left and a Scene panel of icons on the right
+      question_text: How many icons in the Scene panel have the same icon type as the Reference icon?
+      evidence_hint: set "evidence" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right
+      answer_hint: set "answer" to the count as an integer
+      json_example: '{"evidence":[[318,146,394,222],[575,320,651,396]],"answer":2}'
+      json_example_answer_only: '{"answer":2}'
     task_icons_counting_color:
       object_description: a Reference icon on the left and a Scene panel of icons on the right
       question_text: How many icons in the Scene panel have the same color as the Reference icon?
@@ -103,6 +130,13 @@ prompt:
       answer_hint: set "answer" to the count as an integer
       json_example: '{"evidence":[[322,152,377,207],[756,318,820,382]],"answer":2}'
       json_example_answer_only: '{"answer":2}'
+    task_icons_counting_orientation:
+      object_description: a Reference icon on the left and a Scene panel of icons on the right
+      question_text: How many icons in the Scene panel have the same orientation as the Reference icon? Orientation refers to the icon's rotation.
+      evidence_hint: set "evidence" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right
+      answer_hint: set "answer" to the count as an integer
+      json_example: '{"evidence":[[334,150,410,226],[588,318,664,394],[756,318,832,394]],"answer":3}'
+      json_example_answer_only: '{"answer":3}'
     task_icons_counting_attribute_binding:
       object_description: a Reference icon on the left and a Scene panel of icons on the right
       question_text: How many icons in the Scene panel match the Reference icon in icon type, color, and orientation all at once? Orientation refers to the icon's rotation.
@@ -126,20 +160,6 @@ prompt:
       answer_hint: set "answer" to the count as an integer
       json_example: '{"evidence":[[318,148,370,200],[572,322,632,382]],"answer":2}'
       json_example_answer_only: '{"answer":2}'
-    task_icons_counting_type:
-      object_description: a Reference icon on the left and a Scene panel of icons on the right
-      question_text: How many icons in the Scene panel have the same icon type as the Reference icon?
-      evidence_hint: set "evidence" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right
-      answer_hint: set "answer" to the count as an integer
-      json_example: '{"evidence":[[318,146,394,222],[575,320,651,396]],"answer":2}'
-      json_example_answer_only: '{"answer":2}'
-    task_icons_counting_orientation:
-      object_description: a Reference icon on the left and a Scene panel of icons on the right
-      question_text: How many icons in the Scene panel have the same orientation as the Reference icon? Orientation refers to the icon's rotation.
-      evidence_hint: set "evidence" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right
-      answer_hint: set "answer" to the count as an integer
-      json_example: '{"evidence":[[334,150,410,226],[588,318,664,394],[756,318,832,394]],"answer":3}'
-      json_example_answer_only: '{"answer":3}'
 
 complexity:
   shared:

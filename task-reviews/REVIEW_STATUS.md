@@ -14,20 +14,15 @@ Update this table after each review run.
 | task_geometry_solid_view_count | task_geometry_solid_view_count | alright_for_now | distribution pass (top/front/right orthographic cube-view count variants) |
 | task_geometry_similarity_count | task_geometry_similarity_count | alright_for_now | distribution pass (triangle/quadrilateral x congruent/similar with `target_count` support `0..5`) |
 | task_geometry_transformation_match | task_geometry_transformation_match | alright_for_now | distribution pass (triangle/quadrilateral x translation/reflection/rotation) |
-| task_icons_counting_type | task_icons_counting_type | alright_for_now | distribution pass |
-| task_icons_counting_orientation | task_icons_counting_orientation | alright_for_now | distribution pass |
-| task_icons_counting_color | task_icons_counting_color | alright_for_now | distribution pass |
-| task_icons_counting_attribute_binding | task_icons_counting_attribute_binding | alright_for_now | distribution pass |
+| task_icons_counting_reference_match_count | task_icons_counting_reference_match_count | alright_for_now | distribution pass (consolidated wrapper over type/color/orientation/attribute-binding legacy generators) |
 | task_icons_counting_size_relation | task_icons_counting_size_relation | alright_for_now | distribution pass |
 | task_icons_counting_singleton_type | task_icons_counting_singleton_type | alright_for_now | distribution pass |
 | task_icons_relation_relative_position_type | task_icons_relation_relative_position_type | alright_for_now | distribution pass |
 | task_icons_relation_occlusion_order | task_icons_relation_occlusion_order | alright_for_now | distribution pass |
 | task_icons_relation_between_two_anchors_count | task_icons_relation_between_two_anchors_count | alright_for_now | distribution pass |
 | task_icons_relation_mirror_symmetry | task_icons_relation_mirror_symmetry | needs_refresh | focused validation pass; 5-variant distribution refresh pending |
-| task_icons_pattern_grid_rotation_violation | task_icons_pattern_grid_rotation_violation | alright_for_now | distribution pass |
-| task_icons_pattern_grid_size_violation | task_icons_pattern_grid_size_violation | alright_for_now | distribution pass |
+| task_icons_pattern_structured_violation | task_icons_pattern_structured_violation | alright_for_now | distribution pass (consolidated wrapper over row/grid legacy violation generators) |
 | task_icons_sequence_missing_count | task_icons_sequence_missing_count | alright_for_now | distribution pass |
-| task_icons_sequence_rotation_violation | task_icons_sequence_rotation_violation | alright_for_now | distribution pass |
 | task_icons_transformation_pair_count | task_icons_transformation_pair_count | alright_for_now | distribution pass |
 | task_tile_path_shortest_path |  |  |  |
 | task_graph_counting_degree_count | task_graph_counting_degree_count | alright_for_now | distribution pass (degree/in-degree/out-degree variants) |

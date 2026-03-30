@@ -153,10 +153,10 @@ Active task-to-bundle mapping:
 7. Geometry similarity task (`task_geometry_similarity_count`) delegates to `geometry_similarity_v1`
 8. Geometry coordinate task (`task_geometry_coordinate_relation`) delegates to `geometry_coordinate_v1`
 9. Icons:
-   - `task_icons_counting_type|orientation|color|attribute_binding|size_relation|singleton_type` -> `icons_counting_v1`
-   - `task_icons_pattern_grid_rotation_violation|task_icons_pattern_grid_size_violation` -> `icons_pattern_v1`
+   - `task_icons_counting_reference_match_count|size_relation|singleton_type` -> `icons_counting_v1`
+   - `task_icons_pattern_structured_violation` -> `icons_pattern_v1`
    - `task_icons_relation_relative_position_type|between_two_anchors_count|mirror_symmetry|occlusion_order` -> `icons_relation_v1`
-   - `task_icons_sequence_missing_count|rotation_violation` -> `icons_sequence_v1`
+   - `task_icons_sequence_missing_count` -> `icons_sequence_v1`
    - `task_icons_transformation_pair_count` -> `icons_transformation_v1`
 10. Graph:
    - `task_graph_counting_degree_count|articulation_point_count|bridge_count` -> `graph_counting_v1`

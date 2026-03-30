@@ -1,0 +1,1257 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 8
+  },
+  "evidence_gt": {
+    "type": "bbox_set",
+    "value": [
+      [
+        537,
+        107,
+        579,
+        151
+      ],
+      [
+        428,
+        128,
+        501,
+        207
+      ],
+      [
+        807,
+        146,
+        844,
+        187
+      ],
+      [
+        366,
+        261,
+        418,
+        317
+      ],
+      [
+        631,
+        262,
+        704,
+        341
+      ],
+      [
+        559,
+        292,
+        631,
+        370
+      ],
+      [
+        772,
+        357,
+        829,
+        420
+      ],
+      [
+        634,
+        439,
+        677,
+        486
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "icons/task_icons_counting_reference_match_count/images/match_orientation/0019.png"
+  },
+  "instance_seed": 2046677658968937,
+  "prompt": "Look at the image with a Reference icon on the left and a Scene panel of icons on the right. Question: How many icons in the Scene panel have the same orientation as the Reference icon? Orientation refers to the icon's rotation.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right.\nAnswer: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[[322,152,377,207],[756,318,820,382]],\"answer\":2}",
+  "prompt_variants": {
+    "answer_and_evidence": "Look at the image with a Reference icon on the left and a Scene panel of icons on the right. Question: How many icons in the Scene panel have the same orientation as the Reference icon? Orientation refers to the icon's rotation.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right.\nAnswer: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[[322,152,377,207],[756,318,820,382]],\"answer\":2}",
+    "answer_only": "Look at the image with a Reference icon on the left and a Scene panel of icons on the right. Question: How many icons in the Scene panel have the same orientation as the Reference icon? Orientation refers to the icon's rotation.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the count as an integer.\nExample JSON:\n{\"answer\":2}"
+  },
+  "task": "task_icons_counting_reference_match_count",
+  "task_variant": "match_orientation",
+  "trace_payload": {
+    "execution_trace": {
+      "base_icon_id": "gi-delapouite-kick-scooter",
+      "distractor_count": 10,
+      "distractor_count_probabilities": {
+        "1": 0.1,
+        "10": 0.1,
+        "2": 0.1,
+        "3": 0.1,
+        "4": 0.1,
+        "5": 0.1,
+        "6": 0.1,
+        "7": 0.1,
+        "8": 0.1,
+        "9": 0.1
+      },
+      "legacy_scene_variant": "reference_scene",
+      "legacy_task_id": "task_icons_counting_orientation",
+      "legacy_task_variant": "same_orientation",
+      "matching_scene_indices": [
+        1,
+        3,
+        6,
+        7,
+        9,
+        10,
+        12,
+        14
+      ],
+      "object_count": 18,
+      "object_count_probabilities": {
+        "10": 0.1,
+        "11": 0.1,
+        "12": 0.1,
+        "13": 0.1,
+        "14": 0.1,
+        "15": 0.1,
+        "16": 0.1,
+        "17": 0.1,
+        "18": 0.1,
+        "9": 0.1
+      },
+      "question_format": "count_matching_scene_icons_by_reference",
+      "reference_rotation_degrees": 90,
+      "scene_rotations_degrees": [
+        270,
+        90,
+        270,
+        90,
+        270,
+        270,
+        90,
+        90,
+        180,
+        90,
+        90,
+        270,
+        90,
+        180,
+        90,
+        270,
+        270,
+        270
+      ],
+      "scene_variant": "reference_scene",
+      "scene_variant_probabilities": {
+        "reference_scene": 1.0
+      },
+      "target_count": 8,
+      "target_count_probabilities": {
+        "0": 0.09090909090909091,
+        "1": 0.09090909090909091,
+        "10": 0.09090909090909091,
+        "2": 0.09090909090909091,
+        "3": 0.09090909090909091,
+        "4": 0.09090909090909091,
+        "5": 0.09090909090909091,
+        "6": 0.09090909090909091,
+        "7": 0.09090909090909091,
+        "8": 0.09090909090909091,
+        "9": 0.09090909090909091
+      },
+      "task_variant": "match_orientation",
+      "task_variant_probabilities": {
+        "match_attribute_binding": 0.0,
+        "match_color": 0.0,
+        "match_orientation": 1.0,
+        "match_type": 0.0
+      }
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          537,
+          107,
+          579,
+          151
+        ],
+        [
+          428,
+          128,
+          501,
+          207
+        ],
+        [
+          807,
+          146,
+          844,
+          187
+        ],
+        [
+          366,
+          261,
+          418,
+          317
+        ],
+        [
+          631,
+          262,
+          704,
+          341
+        ],
+        [
+          559,
+          292,
+          631,
+          370
+        ],
+        [
+          772,
+          357,
+          829,
+          420
+        ],
+        [
+          634,
+          439,
+          677,
+          486
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "distractor_count": 10,
+        "distractor_count_probabilities": {
+          "1": 0.1,
+          "10": 0.1,
+          "2": 0.1,
+          "3": 0.1,
+          "4": 0.1,
+          "5": 0.1,
+          "6": 0.1,
+          "7": 0.1,
+          "8": 0.1,
+          "9": 0.1
+        },
+        "legacy_scene_variant": "reference_scene",
+        "legacy_task_id": "task_icons_counting_orientation",
+        "legacy_task_variant": "same_orientation",
+        "object_count": 18,
+        "object_count_probabilities": {
+          "10": 0.1,
+          "11": 0.1,
+          "12": 0.1,
+          "13": 0.1,
+          "14": 0.1,
+          "15": 0.1,
+          "16": 0.1,
+          "17": 0.1,
+          "18": 0.1,
+          "9": 0.1
+        },
+        "pool_manifest": "non_symmetry.txt",
+        "rotation_candidates_degrees": [
+          0,
+          90,
+          180,
+          270
+        ],
+        "scene_variant": "reference_scene",
+        "scene_variant_probabilities": {
+          "reference_scene": 1.0
+        },
+        "target_count": 8,
+        "target_count_probabilities": {
+          "0": 0.09090909090909091,
+          "1": 0.09090909090909091,
+          "10": 0.09090909090909091,
+          "2": 0.09090909090909091,
+          "3": 0.09090909090909091,
+          "4": 0.09090909090909091,
+          "5": 0.09090909090909091,
+          "6": 0.09090909090909091,
+          "7": 0.09090909090909091,
+          "8": 0.09090909090909091,
+          "9": 0.09090909090909091
+        },
+        "task_variant": "match_orientation",
+        "task_variant_probabilities": {
+          "match_attribute_binding": 0.0,
+          "match_color": 0.0,
+          "match_orientation": 1.0,
+          "match_type": 0.0
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 0,
+        "prompt_bundle_id": "icons_counting_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the count as an integer",
+          "evidence_hint": "set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right",
+          "json_example": "{\"evidence\":[[322,152,377,207],[756,318,820,382]],\"answer\":2}",
+          "json_example_answer_only": "{\"answer\":2}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a Reference icon on the left and a Scene panel of icons on the right",
+          "question_text": "How many icons in the Scene panel have the same orientation as the Reference icon? Orientation refers to the icon's rotation."
+        },
+        "task_family_key": "reference_scene_counting",
+        "task_family_variant_index": 2,
+        "task_key": "counting_query",
+        "task_variant_index": 1,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "icons/counting/icons_counting_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:counting_query": 5,
+          "task_family:reference_scene_counting": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "icons_counting_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the count as an integer",
+              "evidence_hint": "set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right",
+              "json_example": "{\"evidence\":[[322,152,377,207],[756,318,820,382]],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a Reference icon on the left and a Scene panel of icons on the right",
+              "question_text": "How many icons in the Scene panel have the same orientation as the Reference icon? Orientation refers to the icon's rotation."
+            },
+            "task_family_key": "reference_scene_counting",
+            "task_family_variant_index": 2,
+            "task_key": "counting_query",
+            "task_variant_index": 1,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "icons/counting/icons_counting_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:counting_query": 5,
+              "task_family:reference_scene_counting": 5
+            }
+          },
+          "prompt": "Look at the image with a Reference icon on the left and a Scene panel of icons on the right. Question: How many icons in the Scene panel have the same orientation as the Reference icon? Orientation refers to the icon's rotation.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right.\nAnswer: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[[322,152,377,207],[756,318,820,382]],\"answer\":2}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 3,
+            "prompt_bundle_id": "icons_counting_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the count as an integer",
+              "evidence_hint": "set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right",
+              "json_example": "{\"evidence\":[[322,152,377,207],[756,318,820,382]],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a Reference icon on the left and a Scene panel of icons on the right",
+              "question_text": "How many icons in the Scene panel have the same orientation as the Reference icon? Orientation refers to the icon's rotation."
+            },
+            "task_family_key": "reference_scene_counting",
+            "task_family_variant_index": 2,
+            "task_key": "counting_query",
+            "task_variant_index": 1,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "icons/counting/icons_counting_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:counting_query": 5,
+              "task_family:reference_scene_counting": 5
+            }
+          },
+          "prompt": "Look at the image with a Reference icon on the left and a Scene panel of icons on the right. Question: How many icons in the Scene panel have the same orientation as the Reference icon? Orientation refers to the icon's rotation.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the count as an integer.\nExample JSON:\n{\"answer\":2}"
+        }
+      },
+      "task_variant": "match_orientation",
+      "template_id": "icons_counting_v1"
+    },
+    "render_map": {
+      "anchors": {
+        "matching_scene_boxes": [
+          [
+            537,
+            107,
+            579,
+            151
+          ],
+          [
+            428,
+            128,
+            501,
+            207
+          ],
+          [
+            807,
+            146,
+            844,
+            187
+          ],
+          [
+            366,
+            261,
+            418,
+            317
+          ],
+          [
+            631,
+            262,
+            704,
+            341
+          ],
+          [
+            559,
+            292,
+            631,
+            370
+          ],
+          [
+            772,
+            357,
+            829,
+            420
+          ],
+          [
+            634,
+            439,
+            677,
+            486
+          ]
+        ],
+        "reference_icon": {
+          "bbox_xyxy": [
+            90,
+            225,
+            206,
+            351
+          ],
+          "icon_id": "gi-delapouite-kick-scooter",
+          "instance_id": "reference_icon",
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "radius": 0.526529
+              },
+              "type": "blur"
+            }
+          ],
+          "noise_seed": 3204265270907102,
+          "panel": "reference",
+          "rotation_degrees": 90,
+          "tint_rgb": [
+            41,
+            144,
+            216
+          ]
+        }
+      },
+      "image_id": "img0"
+    },
+    "render_spec": {
+      "canvas_size": [
+        960,
+        544
+      ],
+      "coord_space": "pixel",
+      "legacy_scene_variant": "reference_scene",
+      "panel_geometry": {
+        "canvas_size": [
+          960,
+          544
+        ],
+        "reference_content_xyxy": [
+          44,
+          77,
+          252,
+          500
+        ],
+        "reference_panel_xyxy": [
+          24,
+          24,
+          272,
+          520
+        ],
+        "scene_content_xyxy": [
+          316,
+          77,
+          916,
+          500
+        ],
+        "scene_panel_xyxy": [
+          296,
+          24,
+          936,
+          520
+        ]
+      },
+      "scene_variant": "reference_scene",
+      "style": {
+        "background_color_rgb": [
+          247,
+          248,
+          251
+        ],
+        "color_channel_max": 220,
+        "color_channel_min": 24,
+        "color_distance_space": "lab",
+        "header_text_rgb": [
+          70,
+          78,
+          96
+        ],
+        "icon_noise_edit_count_range": [
+          0,
+          2
+        ],
+        "icon_noise_edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "icon_noise_value_ranges": {
+          "blur": {
+            "radius": [
+              0.2,
+              0.6
+            ]
+          },
+          "downsample": {
+            "scale": [
+              0.85,
+              0.95
+            ]
+          },
+          "jpeg": {
+            "quality": [
+              70.0,
+              90.0
+            ]
+          },
+          "noise": {
+            "alpha": [
+              0.03,
+              0.08
+            ]
+          }
+        },
+        "min_color_distance": 40.0,
+        "palette_size_max": 12,
+        "palette_size_min": 8,
+        "panel_border_rgb": [
+          205,
+          212,
+          224
+        ],
+        "panel_fill_rgb": [
+          255,
+          255,
+          255
+        ],
+        "reference_icon_size_max_px": 136,
+        "reference_icon_size_min_px": 136,
+        "reference_icon_size_px": 136,
+        "sampled_palette_rgb": [
+          [
+            163,
+            155,
+            36
+          ],
+          [
+            179,
+            105,
+            193
+          ],
+          [
+            185,
+            80,
+            102
+          ],
+          [
+            51,
+            219,
+            195
+          ],
+          [
+            110,
+            202,
+            27
+          ],
+          [
+            92,
+            34,
+            174
+          ],
+          [
+            48,
+            139,
+            58
+          ],
+          [
+            182,
+            103,
+            45
+          ],
+          [
+            41,
+            144,
+            216
+          ]
+        ],
+        "scene_icon_size_max_px": 96,
+        "scene_icon_size_min_px": 40,
+        "scene_max_overlap_fraction": 0.1,
+        "scene_placement_max_attempts": 120,
+        "scene_size_shrink_factor": 0.9,
+        "scene_size_shrink_rounds": 6
+      },
+      "task_variant": "match_orientation"
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "bbox_xyxy": [
+            90,
+            225,
+            206,
+            351
+          ],
+          "icon_id": "gi-delapouite-kick-scooter",
+          "instance_id": "reference_icon",
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "radius": 0.526529
+              },
+              "type": "blur"
+            }
+          ],
+          "noise_seed": 3204265270907102,
+          "panel": "reference",
+          "rotation_degrees": 90,
+          "tint_rgb": [
+            41,
+            144,
+            216
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            737,
+            282,
+            774,
+            323
+          ],
+          "icon_id": "gi-delapouite-kick-scooter",
+          "index": 0,
+          "instance_id": "scene_icon_0",
+          "is_match": false,
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 5844426283601661,
+          "panel": "scene",
+          "rotation_degrees": 270,
+          "tint_rgb": [
+            110,
+            202,
+            27
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            428,
+            128,
+            501,
+            207
+          ],
+          "icon_id": "gi-delapouite-kick-scooter",
+          "index": 1,
+          "instance_id": "scene_icon_1",
+          "is_match": true,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "alpha": 0.052449
+              },
+              "type": "noise"
+            }
+          ],
+          "noise_seed": 3466466798778420,
+          "panel": "scene",
+          "rotation_degrees": 90,
+          "tint_rgb": [
+            179,
+            105,
+            193
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            648,
+            136,
+            725,
+            219
+          ],
+          "icon_id": "gi-delapouite-kick-scooter",
+          "index": 2,
+          "instance_id": "scene_icon_2",
+          "is_match": false,
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 590617772408377,
+          "panel": "scene",
+          "rotation_degrees": 270,
+          "tint_rgb": [
+            182,
+            103,
+            45
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            559,
+            292,
+            631,
+            370
+          ],
+          "icon_id": "gi-delapouite-kick-scooter",
+          "index": 3,
+          "instance_id": "scene_icon_3",
+          "is_match": true,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "scale": 0.916979
+              },
+              "type": "downsample"
+            },
+            {
+              "params": {
+                "quality": 82.0
+              },
+              "type": "jpeg"
+            }
+          ],
+          "noise_seed": 628247210100130,
+          "panel": "scene",
+          "rotation_degrees": 90,
+          "tint_rgb": [
+            48,
+            139,
+            58
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            564,
+            368,
+            607,
+            415
+          ],
+          "icon_id": "gi-delapouite-kick-scooter",
+          "index": 4,
+          "instance_id": "scene_icon_4",
+          "is_match": false,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "scale": 0.911823
+              },
+              "type": "downsample"
+            },
+            {
+              "params": {
+                "quality": 76.0
+              },
+              "type": "jpeg"
+            }
+          ],
+          "noise_seed": 2796076991524102,
+          "panel": "scene",
+          "rotation_degrees": 270,
+          "tint_rgb": [
+            92,
+            34,
+            174
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            621,
+            83,
+            678,
+            146
+          ],
+          "icon_id": "gi-delapouite-kick-scooter",
+          "index": 5,
+          "instance_id": "scene_icon_5",
+          "is_match": false,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "quality": 83.0
+              },
+              "type": "jpeg"
+            },
+            {
+              "params": {
+                "radius": 0.383536
+              },
+              "type": "blur"
+            }
+          ],
+          "noise_seed": 7867105892044339,
+          "panel": "scene",
+          "rotation_degrees": 270,
+          "tint_rgb": [
+            48,
+            139,
+            58
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            366,
+            261,
+            418,
+            317
+          ],
+          "icon_id": "gi-delapouite-kick-scooter",
+          "index": 6,
+          "instance_id": "scene_icon_6",
+          "is_match": true,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "scale": 0.854987
+              },
+              "type": "downsample"
+            },
+            {
+              "params": {
+                "radius": 0.390848
+              },
+              "type": "blur"
+            }
+          ],
+          "noise_seed": 5932743559559420,
+          "panel": "scene",
+          "rotation_degrees": 90,
+          "tint_rgb": [
+            179,
+            105,
+            193
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            807,
+            146,
+            844,
+            187
+          ],
+          "icon_id": "gi-delapouite-kick-scooter",
+          "index": 7,
+          "instance_id": "scene_icon_7",
+          "is_match": true,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "radius": 0.432695
+              },
+              "type": "blur"
+            }
+          ],
+          "noise_seed": 3737818123874109,
+          "panel": "scene",
+          "rotation_degrees": 90,
+          "tint_rgb": [
+            92,
+            34,
+            174
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            497,
+            455,
+            536,
+            490
+          ],
+          "icon_id": "gi-delapouite-kick-scooter",
+          "index": 8,
+          "instance_id": "scene_icon_8",
+          "is_match": false,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "radius": 0.304441
+              },
+              "type": "blur"
+            },
+            {
+              "params": {
+                "alpha": 0.036429
+              },
+              "type": "noise"
+            }
+          ],
+          "noise_seed": 1666045361538706,
+          "panel": "scene",
+          "rotation_degrees": 180,
+          "tint_rgb": [
+            41,
+            144,
+            216
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            631,
+            262,
+            704,
+            341
+          ],
+          "icon_id": "gi-delapouite-kick-scooter",
+          "index": 9,
+          "instance_id": "scene_icon_9",
+          "is_match": true,
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 7397884017135971,
+          "panel": "scene",
+          "rotation_degrees": 90,
+          "tint_rgb": [
+            185,
+            80,
+            102
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            634,
+            439,
+            677,
+            486
+          ],
+          "icon_id": "gi-delapouite-kick-scooter",
+          "index": 10,
+          "instance_id": "scene_icon_10",
+          "is_match": true,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "quality": 87.0
+              },
+              "type": "jpeg"
+            }
+          ],
+          "noise_seed": 2909043728640288,
+          "panel": "scene",
+          "rotation_degrees": 90,
+          "tint_rgb": [
+            51,
+            219,
+            195
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            468,
+            330,
+            536,
+            404
+          ],
+          "icon_id": "gi-delapouite-kick-scooter",
+          "index": 11,
+          "instance_id": "scene_icon_11",
+          "is_match": false,
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 6304979584285770,
+          "panel": "scene",
+          "rotation_degrees": 270,
+          "tint_rgb": [
+            182,
+            103,
+            45
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            537,
+            107,
+            579,
+            151
+          ],
+          "icon_id": "gi-delapouite-kick-scooter",
+          "index": 12,
+          "instance_id": "scene_icon_12",
+          "is_match": true,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "scale": 0.880286
+              },
+              "type": "downsample"
+            }
+          ],
+          "noise_seed": 7370080538164642,
+          "panel": "scene",
+          "rotation_degrees": 90,
+          "tint_rgb": [
+            110,
+            202,
+            27
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            549,
+            229,
+            592,
+            268
+          ],
+          "icon_id": "gi-delapouite-kick-scooter",
+          "index": 13,
+          "instance_id": "scene_icon_13",
+          "is_match": false,
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 1631239365999719,
+          "panel": "scene",
+          "rotation_degrees": 180,
+          "tint_rgb": [
+            51,
+            219,
+            195
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            772,
+            357,
+            829,
+            420
+          ],
+          "icon_id": "gi-delapouite-kick-scooter",
+          "index": 14,
+          "instance_id": "scene_icon_14",
+          "is_match": true,
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 6417420301328676,
+          "panel": "scene",
+          "rotation_degrees": 90,
+          "tint_rgb": [
+            179,
+            105,
+            193
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            330,
+            154,
+            380,
+            208
+          ],
+          "icon_id": "gi-delapouite-kick-scooter",
+          "index": 15,
+          "instance_id": "scene_icon_15",
+          "is_match": false,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "scale": 0.873511
+              },
+              "type": "downsample"
+            },
+            {
+              "params": {
+                "alpha": 0.058828
+              },
+              "type": "noise"
+            }
+          ],
+          "noise_seed": 3159057725139177,
+          "panel": "scene",
+          "rotation_degrees": 270,
+          "tint_rgb": [
+            41,
+            144,
+            216
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            379,
+            397,
+            423,
+            443
+          ],
+          "icon_id": "gi-delapouite-kick-scooter",
+          "index": 16,
+          "instance_id": "scene_icon_16",
+          "is_match": false,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "quality": 87.0
+              },
+              "type": "jpeg"
+            }
+          ],
+          "noise_seed": 1597725153765420,
+          "panel": "scene",
+          "rotation_degrees": 270,
+          "tint_rgb": [
+            51,
+            219,
+            195
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            555,
+            168,
+            615,
+            232
+          ],
+          "icon_id": "gi-delapouite-kick-scooter",
+          "index": 17,
+          "instance_id": "scene_icon_17",
+          "is_match": false,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "quality": 76.0
+              },
+              "type": "jpeg"
+            },
+            {
+              "params": {
+                "radius": 0.466317
+              },
+              "type": "blur"
+            }
+          ],
+          "noise_seed": 374600344779853,
+          "panel": "scene",
+          "rotation_degrees": 270,
+          "tint_rgb": [
+            51,
+            219,
+            195
+          ]
+        }
+      ],
+      "frames": {
+        "panels": {
+          "canvas_size": [
+            960,
+            544
+          ],
+          "reference_content_xyxy": [
+            44,
+            77,
+            252,
+            500
+          ],
+          "reference_panel_xyxy": [
+            24,
+            24,
+            272,
+            520
+          ],
+          "scene_content_xyxy": [
+            316,
+            77,
+            916,
+            500
+          ],
+          "scene_panel_xyxy": [
+            296,
+            24,
+            936,
+            520
+          ]
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {
+        "counting_target": "same_orientation_as_reference",
+        "legacy_scene_variant": "reference_scene",
+        "legacy_task_id": "task_icons_counting_orientation",
+        "legacy_task_variant": "same_orientation",
+        "matching_scene_indices": [
+          1,
+          3,
+          6,
+          7,
+          9,
+          10,
+          12,
+          14
+        ],
+        "reference_icon_id": "gi-delapouite-kick-scooter",
+        "reference_rotation_degrees": 90,
+        "scene_variant": "reference_scene",
+        "task_variant": "match_orientation"
+      },
+      "scene_kind": "icons_reference_match_count"
+    },
+    "witness_symbolic": {
+      "base_icon_id": "gi-delapouite-kick-scooter",
+      "matching_scene_indices": [
+        1,
+        3,
+        6,
+        7,
+        9,
+        10,
+        12,
+        14
+      ],
+      "reference_rotation_degrees": 90
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

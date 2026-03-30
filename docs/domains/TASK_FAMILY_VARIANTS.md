@@ -287,34 +287,15 @@ Define how we split tasks into reusable families so each dataset slice stays com
    - uses a two-panel cube-stack + blank query-grid scaffold rather than graph paper
    - keeps integer answers with prompt-facing `bbox_set` evidence on the query-grid cells that should be filled in the requested orthographic view
 14. For the five consolidated value tasks, `execution_trace`, `query_spec.params`, and `scene_ir.relations` should expose the consolidated `scene_variant` / `query_variant` pair, while preserving `legacy_task_id` and other `legacy_*` trace slots for auditability.
-16. **Icons counting type (`task_icons_counting_type`)**
+16. **Icons counting reference match (`task_icons_counting_reference_match_count`)**
    - One two-panel image with a `Reference` icon and a `Scene` panel of icons.
-   - Query: how many scene icons have the same icon type as the reference.
+   - Query variants: `match_type|match_color|match_orientation|match_attribute_binding`.
    - Count support: `target_count` in `0..10`, `distractor_count` in `1..10`, total scene icons in `1..20`.
+   - Asset policy: `match_type|match_color` use the full Prism pool, while `match_orientation|match_attribute_binding` use the asymmetric subset.
+   - Predicate policy: `match_type` compares only `icon_id`, `match_color` only `tint_rgb`, `match_orientation` only `rotation_degrees`, and `match_attribute_binding` requires all three at once with structured partial-match distractors.
    - Answer type: integer count.
    - Evidence: scene-only `bbox_set` in final image coordinates.
-17. **Icons counting orientation (`task_icons_counting_orientation`)**
-   - One two-panel image with a `Reference` icon and a `Scene` panel of icons.
-   - Query: how many scene icons have the same orientation as the reference icon.
-   - Scene uses one shared icon type from the asymmetric curated pool; orientation is conveyed by rotation.
-   - Count support: `target_count` in `0..10`, `distractor_count` in `1..10`, total scene icons in `1..20`.
-   - Answer type: integer count.
-   - Evidence: scene-only `bbox_set` in final image coordinates.
-18. **Icons counting color (`task_icons_counting_color`)**
-   - One two-panel image with a `Reference` icon and a `Scene` panel of icons.
-   - Query: how many scene icons have the same color as the reference icon.
-   - Scene keeps the same icon type as the reference throughout; color is the only matching predicate.
-   - Count support: `target_count` in `0..10`, `distractor_count` in `1..10`, total scene icons in `1..20`.
-   - Answer type: integer count.
-   - Evidence: scene-only `bbox_set` in final image coordinates.
-19. **Icons counting attribute binding (`task_icons_counting_attribute_binding`)**
-   - One two-panel image with a `Reference` icon and a `Scene` panel of icons.
-   - Query: how many scene icons match the reference exactly in icon type, color, and orientation.
-   - Scene uses the asymmetric curated icon pool so orientation stays meaningful, and distractors are built mostly from structured `2-of-3` and `1-of-3` partial matches instead of easy all-wrong negatives.
-   - Count support: `target_count` in `0..10`, `distractor_count` in `1..10`, total scene icons in `1..20`.
-   - Answer type: integer count.
-   - Evidence: scene-only `bbox_set` in final image coordinates.
-20. **Icons counting size relation (`task_icons_counting_size_relation`)**
+17. **Icons counting size relation (`task_icons_counting_size_relation`)**
    - One two-panel image with a `Reference` icon and a `Scene` panel of icons.
    - Query variants: count scene icons that are `smaller` or `larger` than the reference icon.
    - Scene keeps the same icon type as the reference while randomizing tint and rotation; size is the only matching predicate.
@@ -322,7 +303,7 @@ Define how we split tasks into reusable families so each dataset slice stays com
    - Size distinction rule: reference nominal size is sampled from `64..96` px, scene nominal sizes from `40..120` px, and every scene icon must satisfy `|scene_size-reference_size| >= 12` px so there are no same-size near misses.
    - Answer type: integer count.
    - Evidence: scene-only `bbox_set` in final image coordinates.
-21. **Icons transformation pair count (`task_icons_transformation_pair_count`)**
+18. **Icons transformation pair count (`task_icons_transformation_pair_count`)**
    - One two-panel image with a `Reference` pair and a labeled `Scene` grid of icon pairs.
    - Query: how many Scene cells apply the same transformation as the Reference pair.
    - Transform vocabulary: `rot90`, `rot180`, `rot270`, `flip_h`, `flip_v`, `flip_diag_main`, `flip_diag_anti`.
@@ -330,28 +311,28 @@ Define how we split tasks into reusable families so each dataset slice stays com
    - Answer type: integer count.
    - Evidence: sorted `label_set` of the matching Scene cell labels.
    - Visual distinction rule: candidate icons are accepted only when the sampled transform and at least one distractor transform remain visually distinct from identity and from the reference transform.
-22. **Icons relation relative-position type (`task_icons_relation_relative_position_type`)**
+19. **Icons relation relative-position type (`task_icons_relation_relative_position_type`)**
    - One two-panel image with a `Reference` icon on the left and a `Scene` panel of icons on the right; exactly one Scene icon is visibly marked as the `Anchor`.
    - Query variants: `left_of_anchor`, `right_of_anchor`, `above_anchor`, `below_anchor`.
    - Count support: `target_count` in `0..5`, `distractor_count` in `max(1, target_count + 1)..10`, with the Anchor excluded from the counted candidate set.
    - Answer type: integer count.
    - Evidence: scene-only `bbox_set` in final image coordinates.
    - Spatial distinction rule: evaluate left/right/above/below strictly from rendered bboxes, mix distractors across same-type wrong-side and different-type queried-side cases so the scene cannot be solved from one-sided occupancy alone, and require same-type wrong-side distractors to sit mostly outside the queried region (Prism-style relaxed margin rule).
-23. **Icons relation between two anchors count (`task_icons_relation_between_two_anchors_count`)**
+20. **Icons relation between two anchors count (`task_icons_relation_between_two_anchors_count`)**
    - One single-panel image with free-placed Scene icons and two visibly marked anchors `A` and `B`.
    - Query variants: `inside_vertical_strip`, `inside_horizontal_strip`.
    - Count support: `target_count` in `0..5`, `distractor_count` in `1..10`, with the anchors excluded from the counted candidate set.
    - Answer type: integer count.
    - Evidence: scene-only `bbox_set` in final image coordinates.
    - Spatial distinction rule: anchors share the same icon type/tint/rotation and are exactly aligned on the non-varying axis, all candidates use a different icon type from the anchors, and strip membership is evaluated from icon centers with a fixed `14` px boundary margin so no candidate center sits near the strip edge.
-24. **Icons relation mirror symmetry (`task_icons_relation_mirror_symmetry`)**
+21. **Icons relation mirror symmetry (`task_icons_relation_mirror_symmetry`)**
    - One two-panel image with a `Reference` cell on the left and a labeled `Scene` grid of icon-arrangement cells on the right.
    - Query variants: `mirror_vertical`, `mirror_horizontal`, `mirror_diagonal_main`, `mirror_diagonal_anti`, `mirror_both_axes`.
    - Count support: fixed `6` Scene cells, `target_count` in `0..4`, `distractor_count = 6 - target_count`.
    - Answer type: integer count.
    - Evidence: sorted `label_set` of the matching Scene cell labels.
    - Exactness rule: matching cells must satisfy exactly the same supported symmetry signature as the Reference cell (vertical, horizontal, main-diagonal, anti-diagonal, or vertical+horizontal only); distractors are a mix of exact-other-signature cells and cells with none of the supported symmetries, and the task uses the curated asymmetric icon subset so icon-level symmetry does not blur those signatures.
-25. **Icons relation occlusion order (`task_icons_relation_occlusion_order`)**
+22. **Icons relation occlusion order (`task_icons_relation_occlusion_order`)**
    - One two-panel image with a `Reference` cell on the left and a labeled `Scene` grid of overlapping icon pairs on the right.
    - Query: how many labeled Scene cells show the same front-to-back order as the Reference cell.
    - Count support: `target_count` in `0..6`, `distractor_count` in `1..6`, total Scene cells in `2..12`.
@@ -434,31 +415,18 @@ Define how we split tasks into reusable families so each dataset slice stays com
    - Visual rule: all visible Scene icons keep one shared icon type and tint, may vary by rotation, use the smaller `24..40` px size band, stay within `20%` pairwise overlap inside each box, and each instance samples one row box width/height with the final canvas fit to that row geometry.
    - Answer type: integer count.
    - Evidence: one-box `bbox_set` for the missing Scene box in final image coordinates.
-32. **Icons sequence rotation violation (`task_icons_sequence_rotation_violation`)**
-   - One single-panel image with a horizontal row of `5..7` numbered Scene boxes, each containing exactly one icon.
-   - Query: which numbered box breaks the rotation sequence.
-   - Sequence rule: the clean row follows one constant step over rotations `{0, 90, 180, 270}` using step support `{90, 270}`, and exactly one box is corrupted away from that rule.
-   - Visual rule: all Scene icons keep one shared icon type and tint from the curated asymmetric icon subset, use the larger `48..72` px size band, and each instance samples its own row box width/height with the final canvas fit to that row geometry.
+32. **Icons pattern structured violation (`task_icons_pattern_structured_violation`)**
+   - One single-panel numbered row or grid, with exactly one icon per visible box.
+   - Query variants: `row_rotation_violation|grid_rotation_violation|grid_size_violation`.
+   - Scene variants: `sequence_row` for the row rule and `numbered_grid` for the two grid rules.
+   - Rule policy:
+     - `row_rotation_violation` uses a constant-step row over rotations `{0,90,180,270}` with step support `{90,270}`.
+     - `grid_rotation_violation` uses one row/column rotation-offset rule over `{0,90,180,270}` with row/column step support `{90,180,270}`.
+     - `grid_size_violation` uses one row/column symbolic size-level rule over `{1,2,3,4,5}` with step support `{-1,0,1}` and the all-zero pair disallowed.
    - Answer type: integer box index.
-   - Evidence: one-box `bbox_set` for the violating Scene box in final image coordinates.
-   - Ambiguity rule: reject any row where more than one box index could plausibly be the unique violation under the supported constant-step hypotheses.
-33. **Icons pattern grid rotation violation (`task_icons_pattern_grid_rotation_violation`)**
-   - One single-panel image with a numbered `3 x 3` grid of Scene boxes, each containing exactly one icon.
-   - Query: which numbered box breaks the 2D rotation pattern.
-   - Pattern rule: the clean grid follows one row/column offset rule `rotation[row, col] = base + row * row_step + col * col_step (mod 360)` using rotations `{0, 90, 180, 270}` and row/column step supports `{90, 180, 270}`.
-   - Visual rule: all Scene icons keep one shared icon type and tint from the curated asymmetric icon subset, use the larger `48..72` px size band, and the final canvas is fit to sampled square-friendly grid cell geometry.
-   - Answer type: integer box index.
-   - Evidence: one-box `bbox_set` for the violating grid box in final image coordinates.
-   - Ambiguity rule: reject any grid where more than one box index could plausibly be the unique violation under the supported row/column rule hypotheses.
-34. **Icons pattern grid size violation (`task_icons_pattern_grid_size_violation`)**
-   - One single-panel image with a numbered `3 x 3` grid of Scene boxes, each containing exactly one icon.
-   - Query: which numbered box breaks the 2D size pattern.
-   - Pattern rule: the clean grid follows one row/column size-level rule `level[row, col] = base + row * row_step + col * col_step` using symbolic levels `{1,2,3,4,5}` and step supports `{-1,0,1}` with the all-zero step pair disallowed.
-   - Visual rule: all Scene icons keep one shared icon type, one shared tint, and one shared rotation from the curated Prism icon pool; only nominal size changes across the grid, and per-instance pixel sizes are derived from the symbolic size ladder after sampled cell geometry is fixed.
-   - Answer type: integer box index.
-   - Evidence: one-box `bbox_set` for the violating grid box in final image coordinates.
-   - Ambiguity rule: reject any grid where more than one box index could plausibly be the unique violation under the supported row/column size-rule hypotheses.
-32. **Icons counting singleton type (`task_icons_counting_singleton_type`)**
+   - Evidence: one-box `bbox_set` for the violating numbered box in final image coordinates.
+   - Ambiguity rule: reject any row/grid where another supported rule hypothesis would make a different violating index plausible.
+33. **Icons counting singleton type (`task_icons_counting_singleton_type`)**
    - One single-panel image with `6..15` randomly placed Scene icons.
    - Query: how many icons have a type that appears exactly once in the image.
    - Frequency rule: counting is over icon type only; colors and rotations may vary per icon, but repeated `icon_id` values define the repeated groups and singleton `icon_id` values define the counted witnesses.

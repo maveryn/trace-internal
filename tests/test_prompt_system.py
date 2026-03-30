@@ -256,18 +256,13 @@ def test_icons_sequence_bundle_supports_missing_count_query() -> None:
     bundle = load_prompt_bundle("icons", "sequence", "icons_sequence_v1")
     assert len(bundle.task_templates["missing_count_query"]) == REQUIRED_PROMPT_VARIANTS
     assert list(bundle.required_slots_by_key["task:missing_count_query"]) == ["question_text"]
-    assert len(bundle.task_templates["rotation_violation_query"]) == REQUIRED_PROMPT_VARIANTS
-    assert list(bundle.required_slots_by_key["task:rotation_violation_query"]) == ["question_text"]
-    assert "sequence_rotation_violation" in bundle.task_family_templates
 
 
-def test_icons_pattern_bundle_supports_grid_rotation_violation_query() -> None:
+def test_icons_pattern_bundle_supports_structured_violation_query() -> None:
     bundle = load_prompt_bundle("icons", "pattern", "icons_pattern_v1")
-    assert len(bundle.task_templates["grid_rotation_violation_query"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.task_templates["grid_size_violation_query"]) == REQUIRED_PROMPT_VARIANTS
-    assert list(bundle.required_slots_by_key["task:grid_rotation_violation_query"]) == ["question_text"]
-    assert list(bundle.required_slots_by_key["task:grid_size_violation_query"]) == ["question_text"]
-    assert "numbered_grid_rotation_pattern" in bundle.task_family_templates
+    assert len(bundle.task_templates["structured_violation_query"]) == REQUIRED_PROMPT_VARIANTS
+    assert list(bundle.required_slots_by_key["task:structured_violation_query"]) == ["question_text"]
+    assert "structured_violation_scene" in bundle.task_family_templates
 
 
 def test_icons_counting_bundle_supports_single_scene_counting_family() -> None:

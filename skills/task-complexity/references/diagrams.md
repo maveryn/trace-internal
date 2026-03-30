@@ -18,6 +18,14 @@ Use these criteria when assigning or reviewing diagrams-domain complexity.
 3. `scene_variant_load`
    - early hierarchy currently uses one `org_chart` scene variant, so this stays a light constant baseline until additional hierarchy chrome is introduced.
 
+## Active family: `cycle`
+1. `visual_scan`
+   - driven by visible stage count and how crowded the directed ring becomes.
+2. `reasoning_load`
+   - driven by whether the query asks for a stage before or after the anchor stage, plus the requested `k`-step offset around the cycle.
+3. `scene_variant_load`
+   - early cycle currently uses one `cycle_ring` scene variant, so this stays a light constant baseline until additional cycle chrome is introduced.
+
 ## General rule
 1. Normalize each criterion inside the task before combining them.
 2. Keep the weighted aggregate inside `[0, 1]`.

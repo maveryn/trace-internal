@@ -95,15 +95,18 @@ Define how we split tasks into reusable families so each dataset slice stays com
 
 ## Diagrams direction (current)
 1. Diagrams should stay schematic and diagram-native; do not use `diagrams` for generic graph problems or document layouts with a few connectors.
-2. The active early diagrams families are `flow` and `hierarchy`.
+2. The active early diagrams families are `flow`, `hierarchy`, and `cycle`.
 3. `task_diagrams_flow_next_step_label` uses semantic `task_variant` values `direct_next_step` and `branch_next_step`.
 4. `task_diagrams_flow_next_step_label` uses visual `scene_variant` values `flowchart` and `swimlane`.
 5. `task_diagrams_hierarchy_ancestor_label` uses semantic `task_variant` values `parent_of_node` and `lowest_common_ancestor_of_two_nodes`.
 6. `task_diagrams_hierarchy_ancestor_label` uses visual `scene_variant` value `org_chart`.
-7. Prompt-facing flow evidence should stay as one-box `bbox_set` grounding on the target next-step node; keep lane and branch-label geometry in trace unless a later task explicitly queries those elements.
-8. Prompt-facing hierarchy evidence should stay as one-box `bbox_set` grounding on the target ancestor node; keep connector geometry in trace unless a later task explicitly queries the connectors themselves.
-9. Swimlane remains a visual scene variant inside `flow`, not a separate task group, as long as the reasoning contract is still “follow the visible process structure.”
-10. Org-chart hierarchy should stay tree-native; if a later diagram starts depending on arbitrary node-link structure instead of rooted parent-child containment, it likely belongs back in `graph`.
+7. `task_diagrams_cycle_offset_stage_label` uses semantic `task_variant` values `after_k_steps` and `before_k_steps`.
+8. `task_diagrams_cycle_offset_stage_label` uses visual `scene_variant` value `cycle_ring`.
+9. Prompt-facing flow evidence should stay as one-box `bbox_set` grounding on the target next-step node; keep lane and branch-label geometry in trace unless a later task explicitly queries those elements.
+10. Prompt-facing hierarchy evidence should stay as one-box `bbox_set` grounding on the target ancestor node; keep connector geometry in trace unless a later task explicitly queries the connectors themselves.
+11. Prompt-facing cycle evidence should stay as one-box `bbox_set` grounding on the target stage; keep arrow and direction-badge geometry in trace unless a later task explicitly queries those elements.
+12. Swimlane remains a visual scene variant inside `flow`, not a separate task group, as long as the reasoning contract is still “follow the visible process structure.”
+13. Org-chart hierarchy should stay tree-native; if a later diagram starts depending on arbitrary node-link structure instead of rooted parent-child containment, it likely belongs back in `graph`.
 
 ## Documents direction (current)
 1. Documents should start with structured page reasoning families such as `readout`, `arithmetic`, `layout`, `relation`, `selection`, and later `line_items`; avoid counting a task as `documents` if it is really a free-form OCR paragraph benchmark.

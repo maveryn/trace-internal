@@ -46,6 +46,7 @@ from .charts.readout import subset_value as _task_charts_readout_subset_value
 from .charts.statistics import summary_label as _task_charts_statistics_summary_label
 from .charts.statistics import summary_value as _task_charts_statistics_summary_value
 from .charts.trend import structure_value as _task_charts_trend_structure_value
+from .diagrams.cycle import offset_stage_label as _task_diagrams_cycle_offset_stage_label
 from .diagrams.flow import next_step_label as _task_diagrams_flow_next_step_label
 from .diagrams.hierarchy import ancestor_label as _task_diagrams_hierarchy_ancestor_label
 from .documents.arithmetic import section_expression_value as _task_documents_arithmetic_section_expression_value

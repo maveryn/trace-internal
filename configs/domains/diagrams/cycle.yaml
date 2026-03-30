@@ -1,0 +1,67 @@
+generation:
+  task_overrides:
+    task_diagrams_cycle_offset_stage_label:
+      stage_count_min: 5
+      stage_count_max: 10
+      balanced_task_variant_sampling: true
+      balanced_scene_variant_sampling: true
+      task_variant_weights:
+        after_k_steps: 1.0
+        before_k_steps: 1.0
+      scene_variant_weights:
+        cycle_ring: 1.0
+
+rendering:
+  task_overrides:
+    task_diagrams_cycle_offset_stage_label:
+      canvas_width: 1200
+      canvas_height: 900
+      outer_margin_px: 52
+      panel_padding_px: 28
+      panel_corner_radius_px: 30
+      title_font_size_px: 32
+      title_band_height_px: 78
+      node_width_px: 122
+      node_height_px: 58
+      node_corner_radius_px: 24
+      node_border_width_px: 3
+      ring_radius_x_px: 360
+      ring_radius_y_px: 250
+      edge_width_px: 5
+      arrow_head_length_px: 17
+      arrow_head_width_px: 14
+      label_font_size_px: 22
+      badge_width_px: 136
+      badge_height_px: 42
+      badge_font_size_px: 18
+      panel_fill_rgb: [252, 252, 255]
+      panel_border_rgb: [88, 98, 112]
+      title_color_rgb: [34, 40, 48]
+      node_fill_rgb: [243, 247, 255]
+      node_border_rgb: [77, 90, 109]
+      label_color_rgb: [29, 34, 41]
+      label_stroke_rgb: [255, 255, 255]
+      edge_color_rgb: [88, 99, 114]
+      badge_fill_rgb: [246, 248, 252]
+      badge_border_rgb: [180, 188, 200]
+      badge_text_rgb: [61, 69, 79]
+
+prompt:
+  shared:
+    bundle_id: diagrams_cycle_v1
+    answer_hint: set "answer" to the exact visible stage label
+  task_overrides:
+    task_diagrams_cycle_offset_stage_label:
+      task_family_key: cycle_diagram
+      task_key: offset_stage_query
+      object_description_cycle_ring: a clockwise cycle diagram with labeled stages connected by arrows
+      evidence_hint_after_k_steps: set "evidence" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct stage box
+      evidence_hint_before_k_steps: set "evidence" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct stage box
+
+complexity:
+  task_overrides:
+    task_diagrams_cycle_offset_stage_label:
+      criteria_weights:
+        visual_scan: 0.34
+        reasoning_load: 0.49
+        scene_variant_load: 0.17

@@ -6,7 +6,8 @@ This document captures the concrete reusable setup for the active early `diagram
 1. `domain=diagrams` is for schematic visual reasoning over process diagrams, swimlanes, hierarchies, cycles, and set-overlap diagrams.
 2. The first active families focus on:
    - `flow` reasoning over labeled process nodes connected by visible arrows,
-   - `hierarchy` reasoning over labeled org charts connected by visible parent-child lines.
+   - `hierarchy` reasoning over labeled org charts connected by visible parent-child lines,
+   - `cycle` reasoning over labeled directed stage rings.
 3. Diagram tasks should stay diagram-native:
    - explicit node/connector semantics,
    - short visible labels,
@@ -26,6 +27,7 @@ This document captures the concrete reusable setup for the active early `diagram
    - one queried next-step relationship grounded on the rendered connectors.
 5. The swimlane scene adds horizontal lane bands and lane labels, but it should not change the meaning of the process arrows.
 6. The org-chart scene adds top-down rooted-tree structure, but it should not change the meaning of the parent-child connectors.
+7. The cycle-ring scene adds a single clockwise stage loop, but it should not change the meaning of the directed cycle order across the `before` and `after` query variants.
 
 ## 3) Active family
 1. `task_group=flow`
@@ -45,13 +47,23 @@ This document captures the concrete reusable setup for the active early `diagram
    - `lowest_common_ancestor_of_two_nodes`
 8. Active hierarchy visual variants:
    - `org_chart`
+9. `task_group=cycle`
+10. Active cycle task:
+   - `task_diagrams_cycle_offset_stage_label`
+11. Active cycle semantic variants:
+   - `after_k_steps`
+   - `before_k_steps`
+12. Active cycle visual variants:
+   - `cycle_ring`
 
 ## 4) Evidence policy
 1. Flow next-step tasks should keep prompt-facing evidence local:
    - `bbox_set` with exactly one bbox for the target next-step node.
 2. Hierarchy ancestor tasks should keep prompt-facing evidence local:
    - `bbox_set` with exactly one bbox for the target parent or common-ancestor node.
-3. Keep query-node, lane, edge-label, and connector geometry in trace for review/debugging, but do not widen prompt-facing evidence to whole paths or full subtrees when the answer is one visible target node.
+3. Cycle offset-stage tasks should keep prompt-facing evidence local:
+   - `bbox_set` with exactly one bbox for the target stage.
+4. Keep query-node, lane, edge-label, and connector geometry in trace for review/debugging, but do not widen prompt-facing evidence to whole paths, full subtrees, or whole loops when the answer is one visible target node.
 
 ## 5) Reuse guidance
 1. Keep diagram-axis resolution, prompt-facing bbox projection, and reusable panel/title helpers under `trace/tasks/diagrams/shared/common.py`.
@@ -61,4 +73,6 @@ This document captures the concrete reusable setup for the active early `diagram
 5. Keep flowchart/swimlane rendering, node/edge/lane tracing, and panel chrome under `trace/tasks/diagrams/shared/flow_scene.py`.
 6. Keep hierarchy-specific dataset construction, axis resolution, and render-param resolution under `trace/tasks/diagrams/shared/hierarchy_common.py`.
 7. Keep org-chart rendering, connector routing, and traced node/edge bbox maps under `trace/tasks/diagrams/shared/hierarchy_scene.py`.
-8. Future flow-family tasks should reuse the same diagram grammar before adding a second renderer, and future hierarchy tasks should reuse the same org-chart grammar before adding a second hierarchy renderer.
+8. Keep cycle-specific dataset construction, axis resolution, and render-param resolution under `trace/tasks/diagrams/shared/cycle_common.py`.
+9. Keep cycle-ring rendering, directed-edge routing, and traced stage/edge bbox maps under `trace/tasks/diagrams/shared/cycle_scene.py`.
+10. Future flow-family tasks should reuse the same diagram grammar before adding a second renderer, future hierarchy tasks should reuse the same org-chart grammar before adding a second hierarchy renderer, and future cycle tasks should reuse the same ring grammar before adding a second cycle renderer.

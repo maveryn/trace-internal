@@ -8,6 +8,7 @@
     "random_count": 100,
     "seed": 0,
     "tasks": [
+      "task_diagrams_cycle_offset_stage_label",
       "task_diagrams_flow_next_step_label",
       "task_diagrams_hierarchy_ancestor_label"
     ],
@@ -16,9 +17,26 @@
   "summary": {
     "distribution_tasks_failed": 0,
     "failed_distribution_task_ids": [],
-    "total_tasks": 2
+    "total_tasks": 3
   },
   "tasks": [
+    {
+      "distribution_pass": true,
+      "domain": "diagrams",
+      "inspection_count": 50,
+      "inspection_workbook": "diagrams/task_diagrams_cycle_offset_stage_label/task_diagrams_cycle_offset_stage_label.xlsx",
+      "inspection_workbook_sheets": {
+        "after_k_steps": "after_k_steps",
+        "before_k_steps": "before_k_steps"
+      },
+      "reports": {
+        "distribution_review": "diagrams/task_diagrams_cycle_offset_stage_label/distribution_review.json",
+        "inspection_manifest": "diagrams/task_diagrams_cycle_offset_stage_label/manifest.json",
+        "random_review": "diagrams/task_diagrams_cycle_offset_stage_label/random_review_100.json"
+      },
+      "task_group": "cycle",
+      "task_id": "task_diagrams_cycle_offset_stage_label"
+    },
     {
       "distribution_pass": true,
       "domain": "diagrams",

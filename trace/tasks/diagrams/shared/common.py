@@ -9,6 +9,7 @@ from PIL import ImageDraw
 from ....core.seed import spawn_rng
 from ...shared.config_defaults import group_default
 from ...shared.drawing import draw_centered_text
+from ...shared.name_assets import load_short_name_manifest
 from ...shared.text_rendering import fit_font_to_box
 from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
 
@@ -64,6 +65,15 @@ def projected_diagram_bbox_evidence(
             if str(item_id) in bbox_map
         ]
     }
+
+
+def sample_diagram_short_names(*, count: int, rng) -> list[str]:
+    """Sample unique short visible names for diagram labels."""
+
+    names = load_short_name_manifest()
+    if int(count) > len(names):
+        raise ValueError("requested more diagram names than the shared short-name manifest contains")
+    return [str(label) for label in rng.sample(list(names), int(count))]
 
 
 def resolve_diagrams_int_param(
@@ -172,4 +182,5 @@ __all__ = [
     "resolve_diagrams_rgb_triple",
     "resolve_diagrams_axis_variant",
     "round_diagram_bbox",
+    "sample_diagram_short_names",
 ]

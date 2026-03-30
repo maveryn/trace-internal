@@ -6,12 +6,12 @@ from dataclasses import dataclass
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from ....core.seed import spawn_rng
-from ...shared.name_assets import load_short_name_manifest
 from ...shared.deterministic_sampling import resolve_selection_index
 from ..shared.common import (
     resolve_diagrams_axis_variant,
     resolve_diagrams_int_param,
     resolve_diagrams_rgb_triple,
+    sample_diagram_short_names,
 )
 
 
@@ -192,14 +192,6 @@ def resolve_hierarchy_render_params(
     )
 
 
-def _sample_unique_labels(candidates: Sequence[str], *, count: int, rng) -> List[str]:
-    """Sample a deterministic unique label subset from a candidate pool."""
-
-    if int(count) > len(candidates):
-        raise ValueError("requested more hierarchy labels than available candidates")
-    return [str(label) for label in rng.sample(list(candidates), int(count))]
-
-
 def _title(*, rng) -> str:
     """Sample one short hierarchy scene title."""
 
@@ -296,7 +288,7 @@ def _label_map(
 ) -> Dict[str, str]:
     """Assign unique short human-name labels across one org chart."""
 
-    sampled_names = _sample_unique_labels(load_short_name_manifest(), count=len(node_ids), rng=rng)
+    sampled_names = sample_diagram_short_names(count=len(node_ids), rng=rng)
     return {
         str(node_id): str(label)
         for node_id, label in zip([str(node_id) for node_id in node_ids], sampled_names)

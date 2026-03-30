@@ -30,7 +30,7 @@ Use this whenever the task lives under `domain=diagrams`.
 - `flow`: labeled process nodes plus arrows; good early tasks are next-step and terminal-outcome questions.
 - `swimlane` is a visual scene variant within `flow`, not a separate task group.
 - `hierarchy`: labeled parent/child containment over tree connectors; good early tasks are parent lookup and lowest-common-ancestor lookup with one-box target evidence.
-- Later `cycle`: ordered adjacent-stage reasoning over circular process layouts.
+- Active `cycle`: ordered `k`-step before/after reasoning over circular process layouts with short visible labels and one-box target-stage evidence.
 - Later `set_diagram`: region membership and overlap reasoning.
 
 ## Evidence rules

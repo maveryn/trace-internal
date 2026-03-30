@@ -62,6 +62,7 @@ from .puzzles.spatial import cube_removal_count as _task_puzzles_spatial_cube_re
 from .puzzles.spatial import fold_result_label as _task_puzzles_spatial_fold_result_label
 from .puzzles.spatial import overlay_result_label as _task_puzzles_spatial_overlay_result_label
 from .puzzles.topology import bead_equivalence_count as _task_puzzles_topology_bead_equivalence_count
+from .maps.region import association_label as _task_maps_region_association_label
 from .tile import count_color_components as _task_tile_count_color_components
 from .tile import count_color_count as _task_tile_count_color_count
 from .tile import count_largest_component_size as _task_tile_count_largest_component_size

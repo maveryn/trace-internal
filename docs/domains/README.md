@@ -4,6 +4,7 @@ Use this folder for domain-specific setup, taxonomy, and external task inventori
 
 Paired repo-local skills:
 - `skills/domain-charts/`
+- `skills/domain-maps/`
 - `skills/domain-puzzles/`
 - `skills/domain-tables/`
 - `skills/domain-tile/`
@@ -12,6 +13,7 @@ Paired repo-local skills:
 - `TASK_FAMILY_VARIANTS.md` — domain/task-family variant map.
 - `CHART_DOMAIN_PLAN.md` — chart-type universe under consideration and the initial planned rollout.
 - `CHART_TASK_SETUP.md` — concrete v1 setup for the first chart-domain task family.
+- `MAP_TASK_SETUP.md` — concrete v1 contract for the first maps-domain task family.
 - `PUZZLE_TASK_SETUP.md` — concrete active setup for the first puzzles-domain family.
 - `TABLE_TASK_SETUP.md` — concrete active setup for the current tables-domain families.
 - `TILE_TASK_SETUP.md` — tile-domain board, coordinate, and visual policy.

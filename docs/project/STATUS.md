@@ -1,6 +1,6 @@
 # TRACE Status
 
-Date: 2026-03-28
+Date: 2026-03-29
 
 ## Implemented
 1. Deterministic build pipeline with sidecar trace shards and atomic finalize.
@@ -81,6 +81,7 @@ Date: 2026-03-28
 70. Puzzles now also includes the first `topology` family task under `domain=puzzles`: `task_puzzles_topology_bead_equivalence_count`. It uses semantic `task_variant` values `color_cycle_count|shape_cycle_count|mixed_cycle_count`, visual `scene_variant` values `loop_strip|loop_card|loop_outline`, integer answers, and `bbox_set` evidence over the ordered set of valid option-loop image regions. The scene shows one reference bead loop above `6..7` labeled option loops with `4..6` beads per loop, treats smooth deformation and cyclic rotation as allowed while explicitly forbidding flipping, uses Lab-separated colors (`ΔE*ab >= 50`) whenever color is part of the reasoning signal, and asks for the count of option loops that preserve the same cyclic bead order as the reference.
 71. Puzzles now also includes `task_puzzles_spatial_overlay_result_label`, a fourth `spatial` family task under `domain=puzzles`. It uses semantic `task_variant` value `overlay_union_same_grid`, visual `scene_variant` values `overlay_strip|overlay_card|overlay_outline`, `option_letter` answers, and `bbox_set` evidence over the single winning option image. The scene shows two aligned transparent sheets above `5..6` labeled result options, keeps the paper frames and hidden grid alignment identical across both sources and all options, explicitly states that the sheets are placed exactly on top of each other with no rotation or flipping, and asks for the unique option that matches the union of the two source mark sets.
 72. Puzzles now also includes `task_puzzles_logic_adjacency_completion_label`, a second `logic` family task under `domain=puzzles`. It uses semantic `task_variant` value `king_non_touch`, visual `scene_variant` values `logic_strip|logic_card|logic_outline`, `option_letter` answers, and `bbox_set` evidence over the single winning option panel. The scene keeps the same square board plus six labeled image options as the first logic task, but the prompt now states the rule explicitly: identical symbols may not touch edge-to-edge or corner-to-corner. The generator forces the five non-answer shapes into the query neighborhood so exactly one option remains valid under the adjacency rule.
+73. TRACE now also includes the first `maps` family task under `domain=maps`: `task_maps_region_association_label`. It uses semantic `task_variant` values `max_category_region|min_category_region|matches_legend_bin`, visual `scene_variant` values `map_strip|map_card|map_outline`, `option_letter` answers, and one-box `bbox_set` evidence over the winning region. The scene shows a stylized choropleth-like map with labeled regions on the left and an ordered category legend on the right, reusing one synthetic contiguous region-partition grammar that future region/legend tasks can build on.
 
 ## Active tasks
 1. `task_tile_count_color_count` (`domain=tile`, `task_group=count`)
@@ -154,15 +155,17 @@ Date: 2026-03-28
 69. `task_puzzles_topology_bead_equivalence_count` (`domain=puzzles`, `task_group=topology`)
 70. `task_puzzles_spatial_overlay_result_label` (`domain=puzzles`, `task_group=spatial`)
 71. `task_puzzles_logic_adjacency_completion_label` (`domain=puzzles`, `task_group=logic`)
+72. `task_maps_region_association_label` (`domain=maps`, `task_group=region`)
 
 ## Current quality baseline
 1. Tests are required to pass before finalize.
 2. Distribution QA uses `scripts/check_task_answer_distribution.py` with per-variant answer-only checks (`unique_answers >= 5`, `max_answer_frequency < 25%`) and multithreaded sample generation (`--workers`); numeric 5-bin summaries remain reported for review but are not hard pass/fail gates.
 3. Task-review tooling writes per-task artifacts under `task-reviews/<domain>/<task_id>/`, including one inspection workbook named `<task_id>.xlsx` with one sheet per task variant.
-4. The current active reviewed task set (10 tile tasks + 20 geometry tasks + 11 reviewed icons tasks + 10 charts tasks + 10 table tasks + 10 puzzle tasks) passes distribution review under the active gates.
+4. The current active reviewed task set (10 tile tasks + 20 geometry tasks + 11 reviewed icons tasks + 10 charts tasks + 10 table tasks + 10 puzzle tasks + 1 maps task) passes distribution review under the active gates.
 
 ## Next priorities
 1. Extend the new puzzles domain beyond the current arithmetic + logic + spatial + first topology set (`task_puzzles_arithmetic_equation_value|balance_value|grid_value`, `task_puzzles_logic_grid_completion_label|adjacency_completion_label`, `task_puzzles_spatial_fold_result_label|cube_removal_count|assembly_label|overlay_result_label`, and `task_puzzles_topology_bead_equivalence_count`) with additional spatial and topology families while keeping local evidence contracts clean.
 2. Extend icons beyond the current counting/transformation/relation/sequence set using the curated Prism asset pipeline (`comparison` and richer relation/transformation variants are the next natural families).
-3. Introduce cross-domain `scene_variant` and role-binding schema in architecture docs/contracts.
-4. Add future polygon variants as deferred tasks (diameter, min-side, max-side) after current scope stabilizes.
+3. Expand the new maps domain beyond `task_maps_region_association_label` using the same reusable region+legend scene contract first (`region_count`, `region_compare`, `region_lookup`) before adding transit-map families.
+4. Introduce cross-domain `scene_variant` and role-binding schema in architecture docs/contracts.
+5. Add future polygon variants as deferred tasks (diameter, min-side, max-side) after current scope stabilizes.

@@ -73,6 +73,16 @@ Define how we split tasks into reusable families so each dataset slice stays com
 15. Table tasks use one fixed prompt-facing evidence type in v1: `bbox_set`.
 16. Evidence boxes should mark the minimal supporting table region(s): one decisive numeric cell bbox or one winning-row region bbox for `task_tables_statistics_summary_label`, one queried-column region bbox, queried-row region bbox, or full numeric-table region bbox for `task_tables_statistics_summary_value`, one ordered set of filter/target value-cell pairs for `task_tables_statistics_filtered_subset_value`, one ordered set of filter/target value-cell pairs for `task_tables_statistics_filtered_subset_label`, one ordered set of matching value-cell bboxes or compared two-column value-cell pairs for `task_tables_counting_value_count`, one queried value-cell bbox or ordered queried-cell pair for `task_tables_readout_subset_value`, one ordered pair of compared queried-column value-cell bboxes for `task_tables_relation_row_compare_label`, one ordered pair `[source extremum cell, target value cell]` for `task_tables_relation_extremum_transfer_value`, one queried-column region bbox for `task_tables_ranking_label`, and one ordered set of queried year-cell bboxes for `task_tables_temporal_value`.
 
+## Maps direction (current)
+1. Maps should start with map-native visual reasoning families such as `region`, `legend`, and later `transit`; avoid counting a task as `maps` if it is really generic pathfinding with a map skin.
+2. The first active maps family is `region`, where a stylized choropleth-style map and legend form one reusable scene contract.
+3. `task_maps_region_association_label` uses semantic `task_variant` values `max_category_region`, `min_category_region`, and `matches_legend_bin`.
+4. `task_maps_region_association_label` uses visual `scene_variant` values `map_strip`, `map_card`, and `map_outline`.
+5. The active region-map grammar uses one synthetic contiguous region partition with `5..7` labeled regions on the left and one ordered category legend on the right.
+6. Region tasks should keep legend order explicit in the prompt and should not make correctness depend on an unstated darker-is-higher convention.
+7. Prompt-facing region-label evidence should stay as one-box `bbox_set` grounding on the winning region, while future region-count tasks may use one ordered bbox per counted region.
+8. When a map task's reasoning depends on legend colors, enforce or validate the active category palette in Lab space and record the threshold in trace metadata.
+
 ## Puzzles direction (current)
 1. Puzzles use `task_group` for hidden-rule reasoning families such as `arithmetic`, `logic`, `spatial`, and `topology`; avoid splitting families by one-off visual templates when the reasoning contract is still the same.
 2. Early arithmetic puzzle tasks should favor explicit unknown slots so evidence can stay local and visually obvious.

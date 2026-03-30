@@ -1,0 +1,82 @@
+generation:
+  task_overrides:
+    task_maps_region_association_label:
+      region_count_min: 5
+      region_count_max: 7
+      grid_cols_min: 6
+      grid_cols_max: 7
+      grid_rows_min: 4
+      grid_rows_max: 5
+      color_channel_min: 68
+      color_channel_max: 224
+      color_min_distance: 60.0
+      min_cells_per_region: 2
+      balanced_task_variant_sampling: true
+      balanced_scene_variant_sampling: true
+      task_variant_weights:
+        max_category_region: 1.0
+        min_category_region: 1.0
+        matches_legend_bin: 1.0
+      scene_variant_weights:
+        map_strip: 1.0
+        map_card: 1.0
+        map_outline: 1.0
+
+rendering:
+  task_overrides:
+    task_maps_region_association_label:
+      canvas_width: 1200
+      canvas_height: 820
+      scene_margin_left_px: 56
+      scene_margin_right_px: 56
+      scene_margin_top_px: 56
+      scene_margin_bottom_px: 56
+      map_panel_width_px: 702
+      map_panel_height_px: 560
+      map_padding_px: 20
+      legend_panel_width_px: 270
+      legend_panel_height_px: 280
+      panel_gap_px: 40
+      legend_item_gap_px: 18
+      legend_swatch_size_px: 28
+      region_border_width_px: 3
+      outer_border_width_px: 3
+      panel_corner_radius_px: 28
+      label_font_size_px: 30
+      legend_font_size_px: 26
+      title_font_size_px: 30
+      panel_fill_rgb: [248, 249, 252]
+      legend_fill_rgb: [251, 252, 255]
+      border_color_rgb: [84, 93, 108]
+      label_color_rgb: [33, 38, 46]
+      label_stroke_rgb: [255, 255, 255]
+      divider_rgb: [210, 214, 222]
+
+prompt:
+  shared:
+    bundle_id: maps_region_v1
+    answer_hint: set "answer" to the exact labeled region letter
+  task_overrides:
+    task_maps_region_association_label:
+      task_family_key: choropleth_region_map
+      task_key: region_association_query
+      object_description_map_strip: a labeled thematic map with colored regions on the left and a category legend on the right
+      object_description_map_card: a card-style labeled thematic map with colored regions on the left and a category legend on the right
+      object_description_map_outline: an outline-style labeled thematic map with colored regions on the left and a category legend on the right
+      evidence_hint_max_category_region: set "evidence" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct labeled region
+      evidence_hint_min_category_region: set "evidence" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct labeled region
+      evidence_hint_matches_legend_bin: set "evidence" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct labeled region
+      json_example_max_category_region: '{"evidence":[[174,129,412,333]],"answer":"C"}'
+      json_example_min_category_region: '{"evidence":[[146,360,370,562]],"answer":"A"}'
+      json_example_matches_legend_bin: '{"evidence":[[438,180,674,420]],"answer":"F"}'
+      json_example_answer_only_max_category_region: '{"answer":"C"}'
+      json_example_answer_only_min_category_region: '{"answer":"A"}'
+      json_example_answer_only_matches_legend_bin: '{"answer":"F"}'
+
+complexity:
+  task_overrides:
+    task_maps_region_association_label:
+      criteria_weights:
+        visual_scan: 0.38
+        reasoning_load: 0.40
+        scene_variant_load: 0.22

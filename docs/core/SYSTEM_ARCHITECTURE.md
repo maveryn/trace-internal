@@ -139,6 +139,8 @@ Implementation map for the contracts in `docs/core/BLUEPRINT.md`.
    - `trace/tasks/puzzles/spatial/assembly_label.py`
    - `trace/tasks/puzzles/spatial/overlay_result_label.py`
    - `trace/tasks/puzzles/topology/bead_equivalence_count.py`
+10. Maps:
+   - `trace/tasks/maps/region/association_label.py`
 
 ## 5) Architecture invariants
 1. Determinism from config + seeds + versions.

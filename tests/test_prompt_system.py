@@ -168,6 +168,7 @@ def test_active_task_bundles_use_json_output_contracts_for_both_modes() -> None:
         ("puzzles", "logic", "puzzles_logic_v1"),
         ("puzzles", "spatial", "puzzles_spatial_v1"),
         ("puzzles", "topology", "puzzles_topology_v1"),
+        ("maps", "region", "maps_region_v1"),
         ("tile", "count", "tile_count_v1"),
         ("tile", "pattern", "tile_pattern_v1"),
         ("tile", "relation", "tile_relation_v1"),
@@ -208,6 +209,13 @@ def test_tile_count_bundle_supports_both_count_and_component_queries() -> None:
     assert len(bundle.task_templates["color_component_count_query"]) == REQUIRED_PROMPT_VARIANTS
     assert list(bundle.required_slots_by_key["task:color_count_query"]) == ["query_color"]
     assert list(bundle.required_slots_by_key["task:color_component_count_query"]) == ["query_color"]
+
+
+def test_maps_region_bundle_supports_region_association_query() -> None:
+    bundle = load_prompt_bundle("maps", "region", "maps_region_v1")
+    assert len(bundle.task_family_templates["choropleth_region_map"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_templates["region_association_query"]) == REQUIRED_PROMPT_VARIANTS
+    assert list(bundle.required_slots_by_key["task:region_association_query"]) == ["question_text"]
 
 
 def test_icons_relation_bundle_supports_anchor_relation_query() -> None:

@@ -100,6 +100,8 @@ Active bundles:
    - `prompts/puzzles/logic/puzzles_logic_v1.json`
    - `prompts/puzzles/spatial/puzzles_spatial_v1.json`
    - `prompts/puzzles/topology/puzzles_topology_v1.json`
+7. Maps:
+   - `prompts/maps/region/maps_region_v1.json`
 
 Active task-to-bundle mapping:
 1. Geometry comparison tasks (`task_geometry_comparison_angle|area|length|perimeter`) -> `geometry_comparison_v1`
@@ -148,3 +150,5 @@ Active task-to-bundle mapping:
    - `task_puzzles_logic_grid_completion_label|task_puzzles_logic_adjacency_completion_label` -> `puzzles_logic_v1`
    - `task_puzzles_spatial_fold_result_label|task_puzzles_spatial_cube_removal_count|task_puzzles_spatial_assembly_label|task_puzzles_spatial_overlay_result_label` -> `puzzles_spatial_v1`
    - `task_puzzles_topology_bead_equivalence_count` -> `puzzles_topology_v1`
+11. Maps:
+   - `task_maps_region_association_label` -> `maps_region_v1`

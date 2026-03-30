@@ -252,6 +252,55 @@ def test_charts_statistics_defaults_loaded() -> None:
     assert str(label_prompt["evidence_hint_argmax"]).strip()
     assert str(label_prompt["json_example_median_label"]).strip()
 
+
+def test_maps_region_defaults_loaded() -> None:
+    cfg = get_task_group_defaults("maps", "region")
+    for section in ("generation", "rendering", "prompt", "complexity"):
+        assert isinstance(cfg.get(section), dict)
+
+    generation_defaults, rendering_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_maps_region_association_label",
+    )
+    assert int(generation_defaults["region_count_min"]) >= 5
+    assert int(generation_defaults["region_count_max"]) >= int(generation_defaults["region_count_min"])
+    assert int(generation_defaults["grid_cols_min"]) >= 6
+    assert int(generation_defaults["grid_rows_min"]) >= 4
+    assert float(generation_defaults["color_min_distance"]) >= 50.0
+    assert sorted(generation_defaults["task_variant_weights"].keys()) == [
+        "matches_legend_bin",
+        "max_category_region",
+        "min_category_region",
+    ]
+    assert sorted(generation_defaults["scene_variant_weights"].keys()) == [
+        "map_card",
+        "map_outline",
+        "map_strip",
+    ]
+
+    assert int(rendering_defaults["canvas_width"]) > 0
+    assert int(rendering_defaults["canvas_height"]) > 0
+    assert int(rendering_defaults["map_panel_width_px"]) > 0
+    assert int(rendering_defaults["legend_panel_width_px"]) > 0
+
+    assert str(prompt_defaults["bundle_id"]).strip() == "maps_region_v1"
+    assert str(prompt_defaults["task_family_key"]).strip() == "choropleth_region_map"
+    assert str(prompt_defaults["task_key"]).strip() == "region_association_query"
+    assert str(prompt_defaults["object_description_map_strip"]).strip()
+    assert str(prompt_defaults["evidence_hint_max_category_region"]).strip()
+    assert str(prompt_defaults["json_example_matches_legend_bin"]).strip()
+
+    complexity_defaults = resolve_task_group_section_defaults(
+        cfg,
+        "complexity",
+        task_id="task_maps_region_association_label",
+    )
+    assert set(complexity_defaults["criteria_weights"].keys()) == {
+        "visual_scan",
+        "reasoning_load",
+        "scene_variant_load",
+    }
+
     value_complexity = resolve_task_group_section_defaults(
         cfg,
         "complexity",

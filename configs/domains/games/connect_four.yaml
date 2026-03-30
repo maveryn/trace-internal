@@ -1,0 +1,66 @@
+generation:
+  shared: {}
+  task_overrides:
+    task_games_connect_four_move_count:
+      scene_variant_weights:
+        midgame_board: 1.0
+        crowded_board: 1.0
+      query_variant_weights:
+        winning_move_count: 1.0
+        safe_move_count: 1.0
+      style_variant_weights:
+        classic: 1.0
+        soft: 1.0
+        outlined: 1.0
+      balanced_scene_variant_sampling: true
+      balanced_query_variant_sampling: true
+      balanced_style_variant_sampling: true
+      balanced_target_answer_sampling: true
+      winning_move_count_support: [0, 1, 2, 3, 4]
+      safe_move_count_support: [0, 1, 2, 3, 4, 5]
+      midgame_min_occupied_count: 10
+      midgame_max_occupied_count: 22
+      crowded_min_occupied_count: 22
+      crowded_max_occupied_count: 34
+
+rendering:
+  shared:
+    canvas_width: 980
+    canvas_height: 900
+    panel_margin_px: 48
+    player_badge_height_px: 52
+    player_badge_width_px: 220
+    header_gap_px: 18
+    max_board_width_px: 780
+    board_corner_radius_px: 30
+    board_frame_width_px: 16
+    disc_inset_fraction: 0.14
+    player_badge_font_size_px: 22
+    marked_square_outline_width_px: 6
+
+complexity:
+  shared: {}
+  task_overrides:
+    task_games_connect_four_move_count:
+      criteria_weights:
+        visual_scan: 0.30
+        card_reasoning: 0.42
+        ambiguity: 0.16
+        output_burden: 0.12
+
+prompt:
+  shared:
+    bundle_id: games_connect_four_v1
+  task_overrides:
+    task_games_connect_four_move_count:
+      task_family_key: visible_connect_four_board
+      task_key: connect_four_move_query
+      object_description_midgame_board: one visible Connect Four board in a midgame position with red and yellow discs
+      object_description_crowded_board: one visible Connect Four board in a crowded late-game position with red and yellow discs
+      legal_drop_rule_text: A move drops one disc into a non-full column, and the disc falls to the lowest empty square in that column.
+      winning_rule_text: A player wins by completing four of their discs in a row horizontally, vertically, or diagonally.
+      safety_rule_text: A safe move is a legal drop after which the opponent has no immediate winning drop on the next turn.
+      evidence_hint_winning_move_count: set "evidence" to an array of bounding boxes [x1, y1, x2, y2] for every landing square where the current player can win immediately
+      evidence_hint_safe_move_count: set "evidence" to an array of bounding boxes [x1, y1, x2, y2] for every legal landing square that is safe
+      answer_hint_winning_move_count: set "answer" to the number of legal landing squares where the current player wins immediately
+      answer_hint_safe_move_count: set "answer" to the number of legal landing squares that are safe

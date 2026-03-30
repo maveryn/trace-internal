@@ -49,6 +49,20 @@ Use this document for the active `games` domain contract.
    - explain the legal-move bracketing rule directly in the prompt,
    - keep the marked move visually obvious for flip-count queries without making it prompt-facing evidence.
 
+### `connect_four`
+1. Active tasks:
+   - `task_games_connect_four_move_count`
+2. `task_games_connect_four_move_count` scene/query surface:
+   - `scene_variant`: `midgame_board|crowded_board`
+   - `query_variant`: `winning_move_count|safe_move_count`
+3. `task_games_connect_four_move_count` evidence contract:
+   - unordered board-square `bbox_set` evidence over either immediate winning landing squares or safe landing squares
+4. `task_games_connect_four_move_count` prompt policy:
+   - explicitly name the current player,
+   - explain the gravity/drop rule directly in the prompt,
+   - explain the four-in-a-row win condition directly in the prompt,
+   - define “safe move” directly in the prompt instead of assuming next-turn threat semantics are obvious.
+
 ## 3) V1 games-domain policy
 1. Prefer one stable visible game scaffold per task id; widen question diversity through `task_variant` before splitting into more task ids.
 2. Keep early tasks fully face-up and fully observable; do not require hidden cards or unstated game conventions.
@@ -62,6 +76,8 @@ Use this document for the active `games` domain contract.
    - `task_games_dominoes_chain_count`
 3. `reversi`
    - `task_games_reversi_move_count`
+4. `connect_four`
+   - `task_games_connect_four_move_count`
 
 ## 5) Shared helper placement
 1. Cross-domain integer-support balancing now lives in `trace/tasks/shared/support_sampling.py`.
@@ -72,4 +88,6 @@ Use this document for the active `games` domain contract.
 6. Games-domain domino-chain rendering helpers belong in `trace/tasks/games/shared/domino_scene.py`.
 7. Games-domain Reversi rules helpers belong in `trace/tasks/games/shared/reversi_common.py`.
 8. Games-domain Reversi board rendering helpers belong in `trace/tasks/games/shared/reversi_scene.py`.
-9. Games-domain normalized complexity helpers belong in `trace/tasks/games/shared/complexity.py`.
+9. Games-domain Connect Four rules helpers belong in `trace/tasks/games/shared/connect_four_common.py`.
+10. Games-domain Connect Four board rendering helpers belong in `trace/tasks/games/shared/connect_four_scene.py`.
+11. Games-domain normalized complexity helpers belong in `trace/tasks/games/shared/complexity.py`.

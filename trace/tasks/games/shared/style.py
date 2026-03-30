@@ -70,6 +70,29 @@ class ReversiTheme:
     marked_square_fill_rgba: Tuple[int, int, int, int]
 
 
+@dataclass(frozen=True)
+class ConnectFourTheme:
+    """Resolved Connect Four board palette for one style variant."""
+
+    board_frame_rgb: Tuple[int, int, int]
+    board_fill_rgb: Tuple[int, int, int]
+    cell_well_rgb: Tuple[int, int, int]
+    cell_well_outline_rgb: Tuple[int, int, int]
+    cell_well_outline_width_px: int
+    badge_fill_rgb: Tuple[int, int, int]
+    badge_outline_rgb: Tuple[int, int, int]
+    badge_text_rgb: Tuple[int, int, int]
+    red_disc_fill_rgb: Tuple[int, int, int]
+    red_disc_outline_rgb: Tuple[int, int, int]
+    red_disc_shine_rgb: Tuple[int, int, int]
+    yellow_disc_fill_rgb: Tuple[int, int, int]
+    yellow_disc_outline_rgb: Tuple[int, int, int]
+    yellow_disc_shine_rgb: Tuple[int, int, int]
+    disc_outline_width_px: int
+    marked_square_outline_rgb: Tuple[int, int, int]
+    marked_square_fill_rgba: Tuple[int, int, int, int]
+
+
 def build_games_card_theme(*, style_variant: str) -> CardTheme:
     """Return one resolved card-scene theme for the active style variant."""
 
@@ -229,6 +252,71 @@ def build_games_reversi_theme(*, style_variant: str) -> ReversiTheme:
     )
 
 
+def build_games_connect_four_theme(*, style_variant: str) -> ConnectFourTheme:
+    """Return one resolved Connect Four theme for the active style variant."""
+
+    variant = str(style_variant)
+    if variant == "soft":
+        return ConnectFourTheme(
+            board_frame_rgb=(39, 61, 138),
+            board_fill_rgb=(66, 99, 208),
+            cell_well_rgb=(235, 241, 255),
+            cell_well_outline_rgb=(184, 198, 236),
+            cell_well_outline_width_px=2,
+            badge_fill_rgb=(241, 244, 247),
+            badge_outline_rgb=(102, 112, 122),
+            badge_text_rgb=(32, 38, 44),
+            red_disc_fill_rgb=(212, 72, 68),
+            red_disc_outline_rgb=(150, 45, 42),
+            red_disc_shine_rgb=(241, 160, 154),
+            yellow_disc_fill_rgb=(245, 201, 72),
+            yellow_disc_outline_rgb=(186, 142, 34),
+            yellow_disc_shine_rgb=(255, 232, 150),
+            disc_outline_width_px=3,
+            marked_square_outline_rgb=(199, 63, 59),
+            marked_square_fill_rgba=(199, 63, 59, 30),
+        )
+    if variant == "outlined":
+        return ConnectFourTheme(
+            board_frame_rgb=(32, 48, 118),
+            board_fill_rgb=(54, 86, 196),
+            cell_well_rgb=(255, 255, 255),
+            cell_well_outline_rgb=(193, 206, 242),
+            cell_well_outline_width_px=3,
+            badge_fill_rgb=(255, 255, 255),
+            badge_outline_rgb=(72, 82, 92),
+            badge_text_rgb=(26, 30, 36),
+            red_disc_fill_rgb=(220, 60, 58),
+            red_disc_outline_rgb=(150, 34, 32),
+            red_disc_shine_rgb=(247, 160, 156),
+            yellow_disc_fill_rgb=(250, 206, 54),
+            yellow_disc_outline_rgb=(182, 136, 18),
+            yellow_disc_shine_rgb=(255, 237, 150),
+            disc_outline_width_px=4,
+            marked_square_outline_rgb=(208, 60, 58),
+            marked_square_fill_rgba=(208, 60, 58, 24),
+        )
+    return ConnectFourTheme(
+        board_frame_rgb=(35, 55, 126),
+        board_fill_rgb=(58, 91, 204),
+        cell_well_rgb=(238, 244, 255),
+        cell_well_outline_rgb=(187, 201, 238),
+        cell_well_outline_width_px=2,
+        badge_fill_rgb=(248, 249, 251),
+        badge_outline_rgb=(94, 102, 110),
+        badge_text_rgb=(27, 32, 38),
+        red_disc_fill_rgb=(216, 66, 62),
+        red_disc_outline_rgb=(146, 40, 36),
+        red_disc_shine_rgb=(244, 158, 152),
+        yellow_disc_fill_rgb=(246, 203, 60),
+        yellow_disc_outline_rgb=(185, 139, 24),
+        yellow_disc_shine_rgb=(255, 233, 148),
+        disc_outline_width_px=3,
+        marked_square_outline_rgb=(203, 58, 57),
+        marked_square_fill_rgba=(203, 58, 57, 28),
+    )
+
+
 def suit_color(theme: CardTheme, *, suit_name: str) -> Tuple[int, int, int]:
     """Return the rendered suit/rank color for one suit under the active theme."""
 
@@ -248,10 +336,12 @@ def style_probability_map() -> Dict[str, float]:
 
 __all__ = [
     "CardTheme",
+    "ConnectFourTheme",
     "DominoTheme",
     "ReversiTheme",
     "SUPPORTED_GAMES_STYLE_VARIANTS",
     "build_games_card_theme",
+    "build_games_connect_four_theme",
     "build_games_domino_theme",
     "build_games_reversi_theme",
     "style_probability_map",

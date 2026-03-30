@@ -92,3 +92,4 @@ Current task docs:
 82. [task_tile_transition_gravity_max_drop.md](task_tile_transition_gravity_max_drop.md)
 83. [task_physics_mechanics_force_diagram.md](task_physics_mechanics_force_diagram.md)
 84. [task_physics_mechanics_lever_balance.md](task_physics_mechanics_lever_balance.md)
+85. [task_physics_circuits_equivalent_resistance.md](task_physics_circuits_equivalent_resistance.md)

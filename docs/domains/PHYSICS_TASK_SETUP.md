@@ -34,6 +34,19 @@ Use this document for the active `physics` domain contract.
    - keep all needed distances visible on the beam,
    - keep prompt-facing evidence on the weight blocks rather than the beam or fulcrum,
    - allow non-semantic accent-color variation on the beam / fulcrum / shown weights, but keep the marked `?` weight visibly red.
+### `circuits`
+1. Active tasks:
+   - `task_physics_circuits_equivalent_resistance`
+2. `task_physics_circuits_equivalent_resistance` scene/query surface:
+   - `scene_variant`: `parallel|simple_series_parallel`
+   - `query_variant`: `total_resistance`
+3. `task_physics_circuits_equivalent_resistance` evidence contract:
+   - unordered `bbox_set` over the resistor boxes that belong to the asked network between terminals `A` and `B`
+4. `task_physics_circuits_equivalent_resistance` prompt policy:
+   - ask explicitly for equivalent resistance between labeled terminals `A` and `B`,
+   - keep resistor labels as plain integers in the boxes and leave units to the prompt text,
+   - keep prompt-facing evidence on the resistor boxes rather than on the wires,
+   - require every active scene to contain a real parallel section rather than a pure series chain.
 
 ## 3) V1 physics-domain policy
 1. Prefer one stable diagram scaffold per task id; widen scene/query variety inside that task before adding more ids.
@@ -52,3 +65,4 @@ Use this document for the active `physics` domain contract.
 2. Physics-domain visual defaults belong in `trace/tasks/physics/shared/visual_defaults.py`.
 3. Physics-domain normalized complexity helpers belong in `trace/tasks/physics/shared/complexity.py`.
 4. Physics-domain named accent themes belong in `trace/tasks/physics/shared/style.py`.
+5. Physics-domain resistor-network rendering helpers belong in `trace/tasks/physics/shared/circuit_scene.py`.

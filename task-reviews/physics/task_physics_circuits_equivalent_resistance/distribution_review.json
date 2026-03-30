@@ -1,0 +1,409 @@
+{
+  "domain": "physics",
+  "failed_variants": [],
+  "has_task_variants": false,
+  "incomplete_variants": [],
+  "mode": "single_sample",
+  "overall": {
+    "answer_type_counts": {
+      "integer": 100
+    },
+    "checks": {
+      "max_answer_frequency": {
+        "observed": 0.15,
+        "pass": true,
+        "threshold": 0.25
+      },
+      "max_five_bin_frequency": {
+        "observed": 0.54,
+        "pass": null,
+        "status": "reported_not_gated_numeric_answers"
+      },
+      "min_unique_answers": {
+        "observed": 18,
+        "pass": true,
+        "threshold": 5
+      }
+    },
+    "five_bin_numeric": {
+      "bin_count": 5,
+      "bins": [
+        {
+          "bin_id": 0,
+          "count": 54,
+          "label": "[1, 4.4)"
+        },
+        {
+          "bin_id": 1,
+          "count": 5,
+          "label": "[4.4, 7.8)"
+        },
+        {
+          "bin_id": 2,
+          "count": 16,
+          "label": "[7.8, 11.2)"
+        },
+        {
+          "bin_id": 3,
+          "count": 11,
+          "label": "[11.2, 14.6)"
+        },
+        {
+          "bin_id": 4,
+          "count": 14,
+          "label": "[14.6, 18]"
+        }
+      ],
+      "max_bin_count": 54,
+      "max_bin_frequency": 0.54,
+      "range_max": 18.0,
+      "range_min": 1.0
+    },
+    "max_answer_count": 15,
+    "max_answer_frequency": 0.15,
+    "pass": true,
+    "sample_count": 100,
+    "top_answers": [
+      {
+        "answer_label": "3",
+        "count": 15
+      },
+      {
+        "answer_label": "4",
+        "count": 14
+      },
+      {
+        "answer_label": "1",
+        "count": 13
+      },
+      {
+        "answer_label": "2",
+        "count": 12
+      },
+      {
+        "answer_label": "17",
+        "count": 9
+      },
+      {
+        "answer_label": "14",
+        "count": 7
+      },
+      {
+        "answer_label": "8",
+        "count": 5
+      },
+      {
+        "answer_label": "10",
+        "count": 4
+      },
+      {
+        "answer_label": "9",
+        "count": 4
+      },
+      {
+        "answer_label": "11",
+        "count": 3
+      },
+      {
+        "answer_label": "18",
+        "count": 3
+      },
+      {
+        "answer_label": "12",
+        "count": 2
+      },
+      {
+        "answer_label": "13",
+        "count": 2
+      },
+      {
+        "answer_label": "6",
+        "count": 2
+      },
+      {
+        "answer_label": "7",
+        "count": 2
+      },
+      {
+        "answer_label": "15",
+        "count": 1
+      },
+      {
+        "answer_label": "16",
+        "count": 1
+      },
+      {
+        "answer_label": "5",
+        "count": 1
+      }
+    ],
+    "unique_answers": 18
+  },
+  "pass": true,
+  "per_task_variant": {
+    "": {
+      "answer_type_counts": {
+        "integer": 100
+      },
+      "checks": {
+        "max_answer_frequency": {
+          "observed": 0.15,
+          "pass": true,
+          "threshold": 0.25
+        },
+        "max_five_bin_frequency": {
+          "observed": 0.54,
+          "pass": null,
+          "status": "reported_not_gated_numeric_answers"
+        },
+        "min_unique_answers": {
+          "observed": 18,
+          "pass": true,
+          "threshold": 5
+        }
+      },
+      "five_bin_numeric": {
+        "bin_count": 5,
+        "bins": [
+          {
+            "bin_id": 0,
+            "count": 54,
+            "label": "[1, 4.4)"
+          },
+          {
+            "bin_id": 1,
+            "count": 5,
+            "label": "[4.4, 7.8)"
+          },
+          {
+            "bin_id": 2,
+            "count": 16,
+            "label": "[7.8, 11.2)"
+          },
+          {
+            "bin_id": 3,
+            "count": 11,
+            "label": "[11.2, 14.6)"
+          },
+          {
+            "bin_id": 4,
+            "count": 14,
+            "label": "[14.6, 18]"
+          }
+        ],
+        "max_bin_count": 54,
+        "max_bin_frequency": 0.54,
+        "range_max": 18.0,
+        "range_min": 1.0
+      },
+      "max_answer_count": 15,
+      "max_answer_frequency": 0.15,
+      "pass": true,
+      "sample_count": 100,
+      "top_answers": [
+        {
+          "answer_label": "3",
+          "count": 15
+        },
+        {
+          "answer_label": "4",
+          "count": 14
+        },
+        {
+          "answer_label": "1",
+          "count": 13
+        },
+        {
+          "answer_label": "2",
+          "count": 12
+        },
+        {
+          "answer_label": "17",
+          "count": 9
+        },
+        {
+          "answer_label": "14",
+          "count": 7
+        },
+        {
+          "answer_label": "8",
+          "count": 5
+        },
+        {
+          "answer_label": "10",
+          "count": 4
+        },
+        {
+          "answer_label": "9",
+          "count": 4
+        },
+        {
+          "answer_label": "11",
+          "count": 3
+        },
+        {
+          "answer_label": "18",
+          "count": 3
+        },
+        {
+          "answer_label": "12",
+          "count": 2
+        },
+        {
+          "answer_label": "13",
+          "count": 2
+        },
+        {
+          "answer_label": "6",
+          "count": 2
+        },
+        {
+          "answer_label": "7",
+          "count": 2
+        },
+        {
+          "answer_label": "15",
+          "count": 1
+        },
+        {
+          "answer_label": "16",
+          "count": 1
+        },
+        {
+          "answer_label": "5",
+          "count": 1
+        }
+      ],
+      "unique_answers": 18
+    }
+  },
+  "sampling_axes": {
+    "accent_color_name": {
+      "expected_conflict": false,
+      "expected_probabilities": {
+        "blue": 0.1,
+        "brown": 0.1,
+        "cyan": 0.1,
+        "green": 0.1,
+        "magenta": 0.1,
+        "maroon": 0.1,
+        "orange": 0.1,
+        "purple": 0.1,
+        "red": 0.1,
+        "yellow": 0.1
+      },
+      "expected_source": "query_params",
+      "max_observed_frequency": 0.18,
+      "observed_counts": {
+        "blue": 8,
+        "brown": 8,
+        "cyan": 13,
+        "green": 10,
+        "magenta": 13,
+        "maroon": 18,
+        "orange": 9,
+        "purple": 7,
+        "red": 8,
+        "yellow": 6
+      },
+      "sample_count": 100
+    },
+    "query_variant": {
+      "expected_conflict": false,
+      "expected_probabilities": {
+        "total_resistance": 1.0
+      },
+      "expected_source": "query_params",
+      "max_observed_frequency": 1.0,
+      "observed_counts": {
+        "total_resistance": 100
+      },
+      "sample_count": 100
+    },
+    "scene_variant": {
+      "expected_conflict": false,
+      "expected_probabilities": {
+        "parallel": 0.5,
+        "simple_series_parallel": 0.5
+      },
+      "expected_source": "query_params",
+      "max_observed_frequency": 0.59,
+      "observed_counts": {
+        "parallel": 41,
+        "simple_series_parallel": 59
+      },
+      "sample_count": 100
+    },
+    "target_answer": {
+      "expected_conflict": true,
+      "expected_probabilities": {
+        "10": 0.058823529411764705,
+        "11": 0.058823529411764705,
+        "12": 0.058823529411764705,
+        "13": 0.058823529411764705,
+        "14": 0.058823529411764705,
+        "15": 0.058823529411764705,
+        "16": 0.058823529411764705,
+        "17": 0.058823529411764705,
+        "18": 0.058823529411764705,
+        "2": 0.058823529411764705,
+        "3": 0.058823529411764705,
+        "4": 0.058823529411764705,
+        "5": 0.058823529411764705,
+        "6": 0.058823529411764705,
+        "7": 0.058823529411764705,
+        "8": 0.058823529411764705,
+        "9": 0.058823529411764705
+      },
+      "expected_source": "query_params",
+      "max_observed_frequency": 0.15,
+      "observed_counts": {
+        "1": 13,
+        "10": 4,
+        "11": 3,
+        "12": 2,
+        "13": 2,
+        "14": 7,
+        "15": 1,
+        "16": 1,
+        "17": 9,
+        "18": 3,
+        "2": 12,
+        "3": 15,
+        "4": 14,
+        "5": 1,
+        "6": 2,
+        "7": 2,
+        "8": 5,
+        "9": 4
+      },
+      "sample_count": 100
+    },
+    "task_variant": {
+      "expected_conflict": false,
+      "expected_probabilities": {
+        "total_resistance": 1.0
+      },
+      "expected_source": "query_params",
+      "max_observed_frequency": 1.0,
+      "observed_counts": {
+        "total_resistance": 100
+      },
+      "sample_count": 100
+    }
+  },
+  "task_group": "circuits",
+  "task_id": "task_physics_circuits_equivalent_resistance",
+  "task_variant_distribution": {
+    "expected_conflict": false,
+    "expected_probabilities": {
+      "total_resistance": 1.0
+    },
+    "expected_source": "query_params",
+    "has_variants": false,
+    "observed_counts": {
+      "total_resistance": 100
+    },
+    "status": "skipped_no_variants"
+  }
+}

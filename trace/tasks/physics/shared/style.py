@@ -29,6 +29,20 @@ class PhysicsLeverTheme:
     texture_rgb: Color
 
 
+@dataclass(frozen=True)
+class PhysicsCircuitTheme:
+    """Resolved per-instance resistor-network theme derived from one named accent color."""
+
+    accent_color_name: str
+    wire_rgb: Color
+    resistor_fill_rgb: Color
+    resistor_outline_rgb: Color
+    resistor_text_rgb: Color
+    terminal_fill_rgb: Color
+    terminal_outline_rgb: Color
+    terminal_text_rgb: Color
+
+
 def _blend_with_white(color: Sequence[int], *, color_weight: float) -> Color:
     """Blend one RGB color toward white by the requested color weight."""
 
@@ -67,8 +81,30 @@ def build_physics_lever_theme(accent_color_name: str) -> PhysicsLeverTheme:
     )
 
 
+def build_physics_circuit_theme(accent_color_name: str) -> PhysicsCircuitTheme:
+    """Resolve one readable resistor-network theme from a named accent color."""
+
+    accent_rgb = tuple(int(channel) for channel in named_color(str(accent_color_name)))
+    accent_dark_rgb = darken_color(accent_rgb, factor=0.58)
+    accent_deep_rgb = darken_color(accent_rgb, factor=0.40)
+    resistor_fill_rgb = _blend_with_white(accent_rgb, color_weight=0.18)
+    terminal_fill_rgb = _blend_with_white(accent_rgb, color_weight=0.72)
+    return PhysicsCircuitTheme(
+        accent_color_name=str(accent_color_name),
+        wire_rgb=tuple(int(channel) for channel in accent_deep_rgb),
+        resistor_fill_rgb=tuple(int(channel) for channel in resistor_fill_rgb),
+        resistor_outline_rgb=tuple(int(channel) for channel in accent_dark_rgb),
+        resistor_text_rgb=(39, 43, 49),
+        terminal_fill_rgb=tuple(int(channel) for channel in terminal_fill_rgb),
+        terminal_outline_rgb=tuple(int(channel) for channel in accent_deep_rgb),
+        terminal_text_rgb=(39, 43, 49),
+    )
+
+
 __all__ = [
+    "PhysicsCircuitTheme",
     "PhysicsLeverTheme",
     "SUPPORTED_PHYSICS_COLOR_NAMES",
+    "build_physics_circuit_theme",
     "build_physics_lever_theme",
 ]

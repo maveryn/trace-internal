@@ -8,7 +8,7 @@
     "random_count": 100,
     "seed": 0,
     "tasks": [
-      "task_physics_mechanics_lever_balance"
+      "task_physics_circuits_equivalent_resistance"
     ],
     "workers": 16
   },
@@ -21,20 +21,18 @@
     {
       "distribution_pass": true,
       "domain": "physics",
-      "inspection_count": 75,
-      "inspection_workbook": "physics/task_physics_mechanics_lever_balance/task_physics_mechanics_lever_balance.xlsx",
+      "inspection_count": 25,
+      "inspection_workbook": "physics/task_physics_circuits_equivalent_resistance/task_physics_circuits_equivalent_resistance.xlsx",
       "inspection_workbook_sheets": {
-        "left_torque": "left_torque",
-        "missing_weight_to_balance": "missing_weight_to_balance",
-        "right_torque": "right_torque"
+        "total_resistance": "total_resistance"
       },
       "reports": {
-        "distribution_review": "physics/task_physics_mechanics_lever_balance/distribution_review.json",
-        "inspection_manifest": "physics/task_physics_mechanics_lever_balance/manifest.json",
-        "random_review": "physics/task_physics_mechanics_lever_balance/random_review_100.json"
+        "distribution_review": "physics/task_physics_circuits_equivalent_resistance/distribution_review.json",
+        "inspection_manifest": "physics/task_physics_circuits_equivalent_resistance/manifest.json",
+        "random_review": "physics/task_physics_circuits_equivalent_resistance/random_review_100.json"
       },
-      "task_group": "mechanics",
-      "task_id": "task_physics_mechanics_lever_balance"
+      "task_group": "circuits",
+      "task_id": "task_physics_circuits_equivalent_resistance"
     }
   ]
 }

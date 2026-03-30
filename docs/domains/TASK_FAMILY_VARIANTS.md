@@ -150,7 +150,7 @@ Define how we split tasks into reusable families so each dataset slice stays com
 ## Physics direction (current)
 1. Physics should stay diagram-first: the image should contain the operative values, directions, or placements needed to solve the task.
 2. `task_group` should encode the reasoning family (for example `mechanics`, later `circuits` or `optics`), while `scene_variant` names the scaffold and `query_variant` names the requested quantity.
-3. The first active physics family is `mechanics`.
+3. The active physics families are `mechanics` and `circuits`.
 4. `task_physics_mechanics_force_diagram`
    - uses scene variants `free_body_box|textured_block`
    - uses query variants `net_horizontal_force|net_vertical_force|balancing_force_horizontal|balancing_force_vertical`
@@ -160,7 +160,13 @@ Define how we split tasks into reusable families so each dataset slice stays com
    - uses query variants `left_torque|right_torque|missing_weight_to_balance`
    - keeps integer answers with unordered `bbox_set` evidence over either the relevant side’s weight blocks (`*_torque`) or the marked `?` weight block (`missing_weight_to_balance`)
    - samples one non-semantic `accent_color_name` palette for the beam / fulcrum / shown weights while leaving the red `?` weight semantics unchanged
-6. Early physics tasks should prefer light arithmetic over heavy formula derivations, and prompt-facing evidence should stay on the visible witness objects rather than decorative scene chrome.
+6. `task_physics_circuits_equivalent_resistance`
+   - uses scene variants `parallel|simple_series_parallel`
+   - uses query variants `total_resistance`
+   - keeps integer answers with unordered `bbox_set` evidence over the resistor boxes that belong to the asked network between terminals `A` and `B`
+   - requires every scene to contain at least one parallel bank, with `parallel` scenes using `3..4` resistor branches and `simple_series_parallel` scenes using `4..5` total resistors
+   - samples one non-semantic `accent_color_name` palette for the wires, terminals, and resistor boxes
+7. Early physics tasks should prefer light arithmetic over heavy formula derivations, and prompt-facing evidence should stay on the visible witness objects rather than decorative scene chrome.
 
 ## Geometry direction (current)
 1. Geometry now exposes ten active task ids:

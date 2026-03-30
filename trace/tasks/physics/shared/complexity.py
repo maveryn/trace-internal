@@ -160,7 +160,44 @@ def build_physics_lever_balance_complexity(
     )
 
 
+def build_physics_circuit_resistance_complexity(
+    *,
+    task_group_defaults: Mapping[str, Any],
+    task_id: str,
+    scene_variant: str,
+    resistor_count: int,
+    target_answer: int,
+) -> TaskComplexity:
+    """Build normalized complexity for resistor-network equivalent-resistance scenes."""
+
+    weights = resolve_physics_complexity_weights(task_group_defaults, task_id=task_id)
+    visual_scan = clamp_unit_interval(
+        (0.48 * normalize_linear(float(resistor_count), min_value=2.0, max_value=3.0))
+        + (0.12 if str(scene_variant) == "parallel" else 0.0)
+        + (0.18 if str(scene_variant) == "simple_series_parallel" else 0.0)
+    )
+    circuit_reasoning = clamp_unit_interval(
+        (0.34 if str(scene_variant) == "series" else 0.56 if str(scene_variant) == "parallel" else 0.70)
+        + (0.10 * normalize_linear(float(target_answer), min_value=1.0, max_value=18.0))
+    )
+    ambiguity = clamp_unit_interval(
+        (0.28 if str(scene_variant) == "parallel" else 0.10)
+        + (0.10 if int(target_answer) <= 2 else 0.0)
+    )
+    output_burden = normalize_linear(float(resistor_count), min_value=2.0, max_value=3.0)
+    return build_physics_complexity(
+        weights=weights,
+        components={
+            "visual_scan": float(visual_scan),
+            "circuit_reasoning": float(circuit_reasoning),
+            "ambiguity": float(ambiguity),
+            "output_burden": float(output_burden),
+        },
+    )
+
+
 __all__ = [
+    "build_physics_circuit_resistance_complexity",
     "build_physics_complexity",
     "build_physics_force_diagram_complexity",
     "build_physics_lever_balance_complexity",

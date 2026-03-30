@@ -1,0 +1,60 @@
+{
+  "bundle_id": "physics_circuits_v1",
+  "schema_version": "v1",
+  "task_family_templates": {
+    "resistor_network_diagram": [
+      "The image shows {object_description}.",
+      "Look at the resistor-network diagram in the image. It shows {object_description}.",
+      "You are given an image with {object_description}.",
+      "Work from the resistor-network diagram shown in the image: {object_description}.",
+      "Use the circuit diagram in the image. It shows {object_description}."
+    ]
+  },
+  "task_templates": {
+    "equivalent_resistance_query": [
+      "Use the resistor values shown in the boxes to answer the question.",
+      "Read the resistor values and determine the requested equivalent resistance.",
+      "Work from the labeled resistor boxes between terminals A and B.",
+      "Answer using only the resistor values shown in the network.",
+      "Determine the requested equivalent resistance from the diagram."
+    ]
+  },
+  "task_variant_templates": {
+    "total_resistance": [
+      "What is the total equivalent resistance between terminals A and B? Answer with an integer number of ohms.",
+      "Using the resistor values shown, what equivalent resistance is seen between terminals A and B? Answer with an integer number of ohms.",
+      "Determine the network's total resistance between A and B. Answer with an integer number of ohms.",
+      "What integer equivalent resistance does this resistor network have between A and B?",
+      "Read the circuit between terminals A and B. What is its total equivalent resistance? Answer with an integer number of ohms."
+    ]
+  },
+  "required_slots_by_key": {
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence: {evidence_hint}.\nAnswer: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence requirement: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence field: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence rule: {evidence_hint}.\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  }
+}

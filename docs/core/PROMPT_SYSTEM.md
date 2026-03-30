@@ -120,6 +120,9 @@ Active bundles:
    - `prompts/maps/region/maps_region_v1.json`
 10. Physics:
    - `prompts/physics/mechanics/physics_mechanics_v1.json`
+   - `prompts/physics/circuits/physics_circuits_v1.json`
+10. Physics:
+   - `prompts/physics/mechanics/physics_mechanics_v1.json`
 
 Active task-to-bundle mapping:
 1. Geometry comparison task (`task_geometry_comparison_value`) delegates to `geometry_comparison_v1`
@@ -188,3 +191,4 @@ Active task-to-bundle mapping:
    - `task_maps_region_association_label|task_maps_region_count` -> `maps_region_v1`
 17. Physics:
    - `task_physics_mechanics_force_diagram|task_physics_mechanics_lever_balance` -> `physics_mechanics_v1`
+   - `task_physics_circuits_equivalent_resistance` -> `physics_circuits_v1`

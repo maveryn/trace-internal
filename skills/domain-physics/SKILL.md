@@ -25,9 +25,12 @@ Use this whenever the task lives under `domain=physics`.
 - `mechanics`
   - `task_physics_mechanics_force_diagram`
   - `task_physics_mechanics_lever_balance`
+- `circuits`
+  - `task_physics_circuits_equivalent_resistance`
 
 ## Shared helpers to prefer
 - `trace/tasks/shared/variant_sampling.py`
+- `trace/tasks/physics/shared/circuit_scene.py`
 - `trace/tasks/physics/shared/visual_defaults.py`
 - `trace/tasks/physics/shared/complexity.py`
 - `trace/tasks/physics/shared/style.py`

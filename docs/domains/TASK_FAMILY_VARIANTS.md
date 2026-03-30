@@ -94,10 +94,11 @@ Define how we split tasks into reusable families so each dataset slice stays com
 8. When a map task's reasoning depends on legend colors, enforce or validate the active category palette in Lab space and record the threshold in trace metadata.
 
 ## Documents direction (current)
-1. Documents should start with structured page reasoning families such as `readout`, `forms`, and later `line_items` or `selection`; avoid counting a task as `documents` if it is really a free-form OCR paragraph benchmark.
-2. The active early documents families are `readout` and `relation`.
+1. Documents should start with structured page reasoning families such as `readout`, `relation`, `selection`, and later `line_items`; avoid counting a task as `documents` if it is really a free-form OCR paragraph benchmark.
+2. The active early documents families are `readout`, `relation`, and `selection`.
 3. `task_documents_readout_field_value` uses semantic `task_variant` values `lookup_identifier`, `lookup_name`, `lookup_date`, `lookup_contact`, and `lookup_amount`.
 4. `task_documents_relation_section_extremum_value` uses semantic `task_variant` values `earliest_date_in_section`, `latest_date_in_section`, `largest_amount_in_section`, and `smallest_amount_in_section`.
+5. `task_documents_selection_checkbox_count` uses semantic `task_variant` values `checked_box_count` and `unchecked_box_count`.
 5. Both active document tasks use visual `scene_variant` values drawn from `form_sheet`, `invoice_sheet`, and `receipt_sheet`, though section-local amount variants intentionally use only the scenes that expose a named amount-summary block.
 6. Document relation tasks should target a named visible section like `Schedule`, `Dates`, or `Billing Summary` so the model must localize the relevant block before reasoning over the values inside it.
 5. The active structured-document grammar keeps the same label/value semantics across the three page styles:

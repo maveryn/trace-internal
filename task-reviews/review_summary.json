@@ -8,16 +8,38 @@
     "random_count": 100,
     "seed": 0,
     "tasks": [
-      "task_documents_relation_section_extremum_value"
+      "task_documents_readout_field_value",
+      "task_documents_relation_section_extremum_value",
+      "task_documents_selection_checkbox_count"
     ],
     "workers": 16
   },
   "summary": {
     "distribution_tasks_failed": 0,
     "failed_distribution_task_ids": [],
-    "total_tasks": 1
+    "total_tasks": 3
   },
   "tasks": [
+    {
+      "distribution_pass": true,
+      "domain": "documents",
+      "inspection_count": 125,
+      "inspection_workbook": "documents/task_documents_readout_field_value/task_documents_readout_field_value.xlsx",
+      "inspection_workbook_sheets": {
+        "lookup_amount": "lookup_amount",
+        "lookup_contact": "lookup_contact",
+        "lookup_date": "lookup_date",
+        "lookup_identifier": "lookup_identifier",
+        "lookup_name": "lookup_name"
+      },
+      "reports": {
+        "distribution_review": "documents/task_documents_readout_field_value/distribution_review.json",
+        "inspection_manifest": "documents/task_documents_readout_field_value/manifest.json",
+        "random_review": "documents/task_documents_readout_field_value/random_review_100.json"
+      },
+      "task_group": "readout",
+      "task_id": "task_documents_readout_field_value"
+    },
     {
       "distribution_pass": true,
       "domain": "documents",
@@ -36,6 +58,23 @@
       },
       "task_group": "relation",
       "task_id": "task_documents_relation_section_extremum_value"
+    },
+    {
+      "distribution_pass": true,
+      "domain": "documents",
+      "inspection_count": 50,
+      "inspection_workbook": "documents/task_documents_selection_checkbox_count/task_documents_selection_checkbox_count.xlsx",
+      "inspection_workbook_sheets": {
+        "checked_box_count": "checked_box_count",
+        "unchecked_box_count": "unchecked_box_count"
+      },
+      "reports": {
+        "distribution_review": "documents/task_documents_selection_checkbox_count/distribution_review.json",
+        "inspection_manifest": "documents/task_documents_selection_checkbox_count/manifest.json",
+        "random_review": "documents/task_documents_selection_checkbox_count/random_review_100.json"
+      },
+      "task_group": "selection",
+      "task_id": "task_documents_selection_checkbox_count"
     }
   ]
 }

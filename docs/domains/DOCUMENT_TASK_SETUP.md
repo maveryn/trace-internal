@@ -1,6 +1,6 @@
 # Documents Task Setup
 
-This document captures the concrete reusable setup for the first `documents` task family.
+This document captures the concrete reusable setup for the active `documents` task families.
 
 ## 1) Domain scope
 1. `domain=documents` is for visually structured page-like artifacts such as forms, invoices, receipts, tickets, and other field-heavy layouts.
@@ -56,24 +56,30 @@ This document captures the concrete reusable setup for the first `documents` tas
      - `latest_date_in_section`
      - `largest_amount_in_section`
      - `smallest_amount_in_section`
-3. Active visual variants:
+3. `task_group=selection`
+   - active task: `task_documents_selection_checkbox_count`
+   - active semantic variants:
+     - `checked_box_count`
+     - `unchecked_box_count`
+4. Active visual variants:
    - `form_sheet`
    - `invoice_sheet`
    - `receipt_sheet`
-4. Relation tasks should make the relevant document block visually explicit with section headers and grouped field regions so the question can target only one part of the page.
+5. Relation and selection tasks should make the relevant document block visually explicit with section headers and grouped section chrome so the question can target only one part of the page.
 
 ## 5) Evidence policy
 1. Field-readout tasks should keep prompt-facing evidence local and ordered:
    - first the queried field label bbox,
    - then the queried field value bbox.
 2. Section-local extremum tasks should keep prompt-facing evidence to the single winning value bbox rather than widening the witness to every compared field.
-3. Do not use the full page bbox as prompt-facing evidence for simple field lookup or section-local value reasoning.
-4. If a later document task uses keyed region counts or checkbox counts, prefer the smallest visible witness units rather than page-level evidence.
+3. Checkbox-count tasks should keep prompt-facing evidence to the counted checkbox squares themselves, in reading order; zero-count answers may use an empty `bbox_set`.
+4. Do not use the full page bbox as prompt-facing evidence for simple field lookup, section-local value reasoning, or checkbox counts.
 
 ## 6) Reuse guidance
 1. Keep document-axis resolution and bbox evidence helpers under `trace/tasks/documents/shared/common.py`.
 2. Keep typed field-value generation under `trace/tasks/documents/shared/text_generation.py`.
 3. Keep reusable document layout sampling and render-param resolution under `trace/tasks/documents/shared/document_common.py`.
 4. Keep section-local relation dataset builders under `trace/tasks/documents/shared/relation_common.py`.
-5. Keep reusable document page rendering, including section chrome, under `trace/tasks/documents/shared/document_scene.py`.
-6. Future document tasks should reuse the same page grammar before adding genuinely new task groups.
+5. Keep section-local checkbox/count dataset builders under `trace/tasks/documents/shared/selection_common.py`.
+6. Keep reusable document page rendering, including section chrome and checkbox-section rendering, under `trace/tasks/documents/shared/document_scene.py`.
+7. Future document tasks should reuse the same page grammar before adding genuinely new task groups.

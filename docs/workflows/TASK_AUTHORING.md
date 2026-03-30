@@ -111,6 +111,7 @@ Use this as the implementation checklist for new or modified tasks.
 39. For scene-internal icon frequency tasks, define frequency over `icon_id` only and let color/rotation vary independently; otherwise the task silently turns into appearance matching instead of type-frequency reasoning.
 26. For map-region tasks whose query depends on category rank, make the legend order explicit in the prompt or ask directly about a named legend category; do not require solvers to infer an unstated darker-is-higher convention from the palette alone.
 27. For map-region count tasks, keep prompt-facing evidence as the ordered set of counted region bboxes in map reading order; do not switch evidence ordering to legend order just because the query references a legend category.
+28. For section-local document checkbox-count tasks, keep prompt-facing evidence on the counted checkbox squares in reading order and allow an empty `bbox_set` when the visible count is zero; do not widen zero-count evidence to the full section or page.
 
 ## 4) Config/defaults rules
 1. Precedence: `domain -> task_group -> task/params`.

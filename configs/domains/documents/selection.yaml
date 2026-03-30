@@ -1,0 +1,61 @@
+generation:
+  task_overrides:
+    task_documents_selection_checkbox_count:
+      balanced_task_variant_sampling: true
+      balanced_scene_variant_sampling: true
+      task_variant_weights:
+        checked_box_count: 1.0
+        unchecked_box_count: 1.0
+      scene_variant_weights:
+        form_sheet: 1.0
+        invoice_sheet: 1.0
+        receipt_sheet: 1.0
+
+rendering:
+  task_overrides:
+    task_documents_selection_checkbox_count:
+      canvas_width: 1280
+      canvas_height: 920
+      sheet_page_width_px: 960
+      sheet_page_height_px: 760
+      receipt_page_width_px: 520
+      receipt_page_height_px: 760
+      page_shadow_offset_px: 14
+      page_corner_radius_px: 20
+      field_corner_radius_px: 14
+      page_outline_width_px: 2
+      field_outline_width_px: 2
+      title_font_size_px: 42
+      section_font_size_px: 24
+      label_font_size_px: 22
+      value_font_size_px: 28
+      page_fill_rgb: [251, 250, 246]
+      page_outline_rgb: [120, 126, 138]
+      page_shadow_rgb: [221, 224, 230]
+      field_fill_rgb: [255, 255, 255]
+      field_outline_rgb: [202, 207, 214]
+      label_fill_rgb: [60, 66, 76]
+      label_stroke_rgb: [255, 255, 255]
+      value_fill_rgb: [24, 29, 35]
+      divider_rgb: [214, 217, 224]
+
+prompt:
+  shared:
+    bundle_id: documents_selection_v1
+    answer_hint: set "answer" to the number of counted checkboxes
+  task_overrides:
+    task_documents_selection_checkbox_count:
+      task_family_key: structured_document_sections
+      task_key: checkbox_count_query
+      object_description_form_sheet: a structured application form with visible section headers, context fields, and checkbox groups
+      object_description_invoice_sheet: an invoice with visible named sections, header fields, and checkbox groups
+      object_description_receipt_sheet: a receipt-style document with visible section headers and checkbox groups
+      evidence_hint: 'set "evidence" to an array containing one bounding box for each counted checkbox, in reading order'
+
+complexity:
+  task_overrides:
+    task_documents_selection_checkbox_count:
+      criteria_weights:
+        visual_scan: 0.40
+        reasoning_load: 0.36
+        scene_variant_load: 0.24

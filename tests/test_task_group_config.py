@@ -3940,3 +3940,34 @@ def test_documents_relation_defaults_loaded() -> None:
     assert str(prompt_defaults["task_family_key"]).strip() == "structured_document_sections"
     assert str(prompt_defaults["task_key"]).strip() == "section_extremum_query"
     assert str(prompt_defaults["evidence_hint"]).strip()
+
+
+def test_documents_selection_defaults_loaded() -> None:
+    cfg = get_task_group_defaults("documents", "selection")
+    generation_defaults, rendering_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_documents_selection_checkbox_count",
+    )
+
+    assert sorted(generation_defaults["task_variant_weights"].keys()) == [
+        "checked_box_count",
+        "unchecked_box_count",
+    ]
+    assert bool(generation_defaults["balanced_task_variant_sampling"]) is True
+    assert sorted(generation_defaults["scene_variant_weights"].keys()) == [
+        "form_sheet",
+        "invoice_sheet",
+        "receipt_sheet",
+    ]
+    assert bool(generation_defaults["balanced_scene_variant_sampling"]) is True
+
+    assert int(rendering_defaults["canvas_width"]) == 1280
+    assert int(rendering_defaults["canvas_height"]) == 920
+    assert int(rendering_defaults["sheet_page_width_px"]) == 960
+    assert int(rendering_defaults["receipt_page_width_px"]) == 520
+    assert int(rendering_defaults["section_font_size_px"]) == 24
+
+    assert str(prompt_defaults["bundle_id"]).strip() == "documents_selection_v1"
+    assert str(prompt_defaults["task_family_key"]).strip() == "structured_document_sections"
+    assert str(prompt_defaults["task_key"]).strip() == "checkbox_count_query"
+    assert str(prompt_defaults["evidence_hint"]).strip()

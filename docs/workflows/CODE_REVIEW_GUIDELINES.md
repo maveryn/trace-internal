@@ -212,6 +212,7 @@ Use this checklist during implementation and refactor reviews.
 190. For early map-region tasks, reuse one synthetic contiguous region-partition plus legend scene contract instead of tying the domain to real country outlines or visible tile grids; keep prompt-facing evidence on region bboxes and make legend order explicit when category rank matters.
 191. For map-region count tasks, order prompt-facing `bbox_set` evidence by counted region reading order rather than legend order; the evidence should enumerate the matching regions on the map, not the legend bins that justify the threshold.
 192. For paper-fold spatial puzzles, keep fold-direction arrows outside the sheet whenever interior arrows would crowd the marks or make the fold cue harder to parse.
+193. For section-local document checkbox-count tasks, keep prompt-facing evidence on the counted checkbox squares only, and treat zero-count answers as a valid empty `bbox_set` rather than widening evidence to the full section or page.
 
 ## 3) Process rule
 When a new reusable issue is discovered:

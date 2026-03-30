@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Dict, Iterable, List, Mapping, Sequence, Tuple
+from typing import Dict, List, Mapping, Sequence, Tuple
 
 from PIL import Image, ImageDraw
 
@@ -41,6 +41,8 @@ class RenderedDocumentScene:
     entities: List[Dict[str, object]]
     page_bbox_px: List[float]
     title_bbox_px: List[float]
+    section_label_bbox_map: Dict[str, List[float]]
+    section_box_bbox_map: Dict[str, List[float]]
     field_label_bbox_map: Dict[str, List[float]]
     field_value_bbox_map: Dict[str, List[float]]
     field_box_bbox_map: Dict[str, List[float]]
@@ -52,6 +54,29 @@ def _round_bbox(bbox: Sequence[float]) -> List[float]:
 
 def _bbox_center(bbox: BBox) -> Tuple[float, float]:
     return (0.5 * float(bbox[0] + bbox[2]), 0.5 * float(bbox[1] + bbox[3]))
+
+
+def _mix_rgb(left: Sequence[int], right: Sequence[int], ratio: float) -> Tuple[int, int, int]:
+    """Return one linear RGB interpolation between two triples."""
+
+    alpha = max(0.0, min(1.0, float(ratio)))
+    return tuple(
+        int(round((1.0 - alpha) * float(l_value) + alpha * float(r_value)))
+        for l_value, r_value in zip(left, right)
+    )
+
+
+def _union_bboxes(boxes: Sequence[BBox]) -> BBox:
+    """Return the tight union box over a non-empty sequence of boxes."""
+
+    if not boxes:
+        raise ValueError("expected at least one bbox when computing a union")
+    return (
+        min(float(box[0]) for box in boxes),
+        min(float(box[1]) for box in boxes),
+        max(float(box[2]) for box in boxes),
+        max(float(box[3]) for box in boxes),
+    )
 
 
 def _draw_text_in_box(
@@ -211,6 +236,7 @@ def render_document_scene(
     scene_title: str,
     field_specs: Sequence[Mapping[str, str]],
     render_params: DocumentRenderParams,
+    section_specs: Sequence[Mapping[str, object]] | None = None,
 ) -> RenderedDocumentScene:
     """Render one structured document scene and trace field/text bboxes."""
 
@@ -323,9 +349,65 @@ def render_document_scene(
             "text": str(scene_title),
         },
     ]
+    section_label_bbox_map: Dict[str, List[float]] = {}
+    section_box_bbox_map: Dict[str, List[float]] = {}
     field_label_bbox_map: Dict[str, List[float]] = {}
     field_value_bbox_map: Dict[str, List[float]] = {}
     field_box_bbox_map: Dict[str, List[float]] = {}
+    pending_section_headers: List[Dict[str, object]] = []
+    field_box_lookup = {
+        str(field_spec["field_id"]): field_box
+        for field_spec, field_box in zip(field_specs, field_boxes)
+    }
+
+    if section_specs:
+        section_font = load_font(max(15, int(render_params.section_font_size_px) - 2), bold=True)
+        section_outline_rgb = _mix_rgb(render_params.divider_rgb, style["accent_fill_rgb"], 0.30)
+        section_fill_rgb = _mix_rgb(render_params.page_fill_rgb, style["accent_fill_rgb"], 0.08)
+        title_band_bottom = float(page_bbox[1] + 84.0)
+        for section_spec in section_specs:
+            section_id = str(section_spec["section_id"])
+            member_ids = [str(field_id) for field_id in section_spec["field_ids"]]
+            member_boxes = [field_box_lookup[field_id] for field_id in member_ids if field_id in field_box_lookup]
+            if not member_boxes:
+                continue
+            union_box = _union_bboxes(member_boxes)
+            header_band_top = max(float(title_band_bottom + 8.0), float(union_box[1] - 36.0))
+            container_box = (
+                float(union_box[0] - 12.0),
+                float(header_band_top),
+                float(union_box[2] + 12.0),
+                float(union_box[3] + 12.0),
+            )
+            draw_rounded_rect(
+                draw,
+                container_box,
+                radius=max(12, int(render_params.field_corner_radius_px)),
+                fill=section_fill_rgb,
+                outline=section_outline_rgb,
+                width=1,
+            )
+            section_box_bbox_map[section_id] = _round_bbox(container_box)
+            pending_section_headers.append(
+                {
+                    "section_id": section_id,
+                    "section_label": str(section_spec["section_label"]),
+                    "member_ids": list(member_ids),
+                    "container_box": container_box,
+                    "union_box": union_box,
+                    "font": section_font,
+                }
+            )
+            entities.append(
+                {
+                    "entity_id": f"{section_id}:section",
+                    "entity_type": "document_section",
+                    "bbox_id": section_id,
+                    "bbox_px": list(section_box_bbox_map[section_id]),
+                    "section_id": section_id,
+                    "field_ids": list(member_ids),
+                }
+            )
 
     for field_spec, field_box in zip(field_specs, field_boxes):
         field_id = str(field_spec["field_id"])
@@ -398,11 +480,66 @@ def render_document_scene(
             ]
         )
 
+    for section_header in pending_section_headers:
+        section_id = str(section_header["section_id"])
+        section_label = str(section_header["section_label"])
+        container_box = tuple(float(value) for value in section_header["container_box"])
+        union_box = tuple(float(value) for value in section_header["union_box"])
+        text_bbox = draw.textbbox((0, 0), section_label, font=section_header["font"], stroke_width=1)
+        pill_padding_x = 12.0
+        available_top = float(container_box[1] + 6.0)
+        available_bottom = float(union_box[1] - 6.0)
+        pill_height = max(18.0, min(30.0, float(available_bottom - available_top)))
+        pill_width = min(
+            float(container_box[2] - container_box[0] - 32.0),
+            float((text_bbox[2] - text_bbox[0]) + 2.0 * pill_padding_x),
+        )
+        pill_left = float(container_box[0] + 16.0)
+        pill_top = float(max(available_top, available_bottom - pill_height))
+        pill_box = (
+            pill_left,
+            pill_top,
+            float(pill_left + pill_width),
+            float(pill_top + pill_height),
+        )
+        draw_rounded_rect(
+            draw,
+            pill_box,
+            radius=max(10, int(render_params.field_corner_radius_px) - 2),
+            fill=tuple(int(value) for value in style["accent_fill_rgb"]),
+            outline=tuple(int(value) for value in style["accent_fill_rgb"]),
+            width=1,
+        )
+        label_bbox_px = _draw_text_in_box(
+            draw,
+            bbox=pill_box,
+            text=section_label,
+            font_size_px=max(15, int(render_params.section_font_size_px) - 5),
+            bold=True,
+            fill=tuple(int(value) for value in style["accent_text_rgb"]),
+            stroke_fill=tuple(int(value) for value in style["accent_fill_rgb"]),
+            align="center",
+            padding_px=4,
+        )
+        section_label_bbox_map[section_id] = list(label_bbox_px)
+        entities.append(
+            {
+                "entity_id": f"{section_id}:label",
+                "entity_type": "document_section_label",
+                "bbox_id": f"{section_id}:label",
+                "bbox_px": list(label_bbox_px),
+                "section_id": section_id,
+                "text": section_label,
+            }
+        )
+
     return RenderedDocumentScene(
         image=image,
         entities=entities,
         page_bbox_px=_round_bbox(page_bbox),
         title_bbox_px=list(title_bbox_px),
+        section_label_bbox_map=section_label_bbox_map,
+        section_box_bbox_map=section_box_bbox_map,
         field_label_bbox_map=field_label_bbox_map,
         field_value_bbox_map=field_value_bbox_map,
         field_box_bbox_map=field_box_bbox_map,

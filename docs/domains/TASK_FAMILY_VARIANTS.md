@@ -95,9 +95,11 @@ Define how we split tasks into reusable families so each dataset slice stays com
 
 ## Documents direction (current)
 1. Documents should start with structured page reasoning families such as `readout`, `forms`, and later `line_items` or `selection`; avoid counting a task as `documents` if it is really a free-form OCR paragraph benchmark.
-2. The first active documents family is `readout`, where one structured page contains visible labeled fields and one queried field must be read exactly.
+2. The active early documents families are `readout` and `relation`.
 3. `task_documents_readout_field_value` uses semantic `task_variant` values `lookup_identifier`, `lookup_name`, `lookup_date`, `lookup_contact`, and `lookup_amount`.
-4. `task_documents_readout_field_value` uses visual `scene_variant` values `form_sheet`, `invoice_sheet`, and `receipt_sheet`.
+4. `task_documents_relation_section_extremum_value` uses semantic `task_variant` values `earliest_date_in_section`, `latest_date_in_section`, `largest_amount_in_section`, and `smallest_amount_in_section`.
+5. Both active document tasks use visual `scene_variant` values drawn from `form_sheet`, `invoice_sheet`, and `receipt_sheet`, though section-local amount variants intentionally use only the scenes that expose a named amount-summary block.
+6. Document relation tasks should target a named visible section like `Schedule`, `Dates`, or `Billing Summary` so the model must localize the relevant block before reasoning over the values inside it.
 5. The active structured-document grammar keeps the same label/value semantics across the three page styles:
    - boxed field grids for forms,
    - header blocks and summary boxes for invoices,

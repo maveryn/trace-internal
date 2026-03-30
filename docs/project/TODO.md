@@ -13,7 +13,7 @@
 7. Add cross-domain `scene_variant` + role-binding spec in architecture/ABI docs.
 8. Continue rolling out domain-owned task complexity policy: migrate remaining legacy ad hoc `complexity_score` formulas toward within-task normalized criterion values with domain/task-group weighting. The active icons, geometry, tile, charts, and graph suites are now migrated; tables and puzzles still need the same rollout.
 9. Expand the new puzzles domain beyond the current arithmetic + logic + spatial + topology set (`task_puzzles_arithmetic_equation_value`, `task_puzzles_arithmetic_balance_value`, `task_puzzles_arithmetic_grid_value`, `task_puzzles_logic_grid_completion_label`, `task_puzzles_logic_adjacency_completion_label`, `task_puzzles_spatial_fold_result_label`, `task_puzzles_spatial_cube_removal_count`, `task_puzzles_spatial_assembly_label`, `task_puzzles_spatial_overlay_result_label`, and `task_puzzles_topology_bead_equivalence_count`) with additional spatial and topology families while keeping early evidence contracts local and visually obvious.
-10. Expand the new documents domain beyond `task_documents_readout_field_value` with additional OCR-light structured-document families (`key_value`, `checkbox`, and later `line_items`) while keeping evidence grounded on the queried visible field units rather than full-page boxes.
+10. Expand the new documents domain beyond `task_documents_readout_field_value|task_documents_relation_section_extremum_value` with additional OCR-light structured-document families (`key_value`, `checkbox`, and later `line_items`) while keeping evidence grounded on the queried visible field units or winning visible values rather than full-page boxes.
 11. Expand the new maps domain beyond `task_maps_region_association_label|task_maps_region_count` while reusing the same stylized region+legend scene contract first (`region_compare`, `region_lookup`) before moving into transit-map families.
 12. Improve dataset QA diagnostics/report summaries.
 13. Extend geometry beyond the current value + transformation + similarity + coordinate + solid + graphing surface with additional visually distinct families (symmetry, solid/net reasoning, partition/region reasoning) rather than re-splitting value tasks back into one task id per predicate.
@@ -60,3 +60,4 @@
 13. First puzzles-domain topology task: `task_puzzles_topology_bead_equivalence_count`.
 14. First maps-domain region tasks: `task_maps_region_association_label` and `task_maps_region_count`.
 15. First documents-domain readout task: `task_documents_readout_field_value`.
+16. First documents-domain section-local relation task: `task_documents_relation_section_extremum_value`.

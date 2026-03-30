@@ -13,5 +13,6 @@ Guidance:
    - direct field lookup is low,
    - longer visible values are slightly harder than short IDs,
    - contact and amount fields can be harder than compact identifiers when punctuation density increases.
+   - section-local extremum queries should rise above readout because the model must first locate the named block and then compare the visible values inside it.
 4. Use `scene_variant_load` only when the same task genuinely supports multiple page grammars with different visual search burdens.
 5. If a later document family uses only one stable page presentation, give `scene_variant_load` zero weight instead of inventing fake variation.

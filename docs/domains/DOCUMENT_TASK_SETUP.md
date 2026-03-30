@@ -40,31 +40,40 @@ This document captures the concrete reusable setup for the first `documents` tas
    - unique among visible field values in the same document.
 4. Record the final visible field text in trace metadata; that visible string is the source of truth for both answer and verifier payload.
 
-## 4) Active family
+## 4) Active families
 1. `task_group=readout`
-2. Active task:
-   - `task_documents_readout_field_value`
-3. Active semantic variants:
-   - `lookup_identifier`
-   - `lookup_name`
-   - `lookup_date`
-   - `lookup_contact`
-   - `lookup_amount`
-4. Active visual variants:
+   - active task: `task_documents_readout_field_value`
+   - active semantic variants:
+     - `lookup_identifier`
+     - `lookup_name`
+     - `lookup_date`
+     - `lookup_contact`
+     - `lookup_amount`
+2. `task_group=relation`
+   - active task: `task_documents_relation_section_extremum_value`
+   - active semantic variants:
+     - `earliest_date_in_section`
+     - `latest_date_in_section`
+     - `largest_amount_in_section`
+     - `smallest_amount_in_section`
+3. Active visual variants:
    - `form_sheet`
    - `invoice_sheet`
    - `receipt_sheet`
+4. Relation tasks should make the relevant document block visually explicit with section headers and grouped field regions so the question can target only one part of the page.
 
 ## 5) Evidence policy
 1. Field-readout tasks should keep prompt-facing evidence local and ordered:
    - first the queried field label bbox,
    - then the queried field value bbox.
-2. Do not use the full page bbox as prompt-facing evidence for simple field lookup.
-3. If a later document task uses keyed region counts or checkbox counts, prefer the smallest visible witness units rather than page-level evidence.
+2. Section-local extremum tasks should keep prompt-facing evidence to the single winning value bbox rather than widening the witness to every compared field.
+3. Do not use the full page bbox as prompt-facing evidence for simple field lookup or section-local value reasoning.
+4. If a later document task uses keyed region counts or checkbox counts, prefer the smallest visible witness units rather than page-level evidence.
 
 ## 6) Reuse guidance
 1. Keep document-axis resolution and bbox evidence helpers under `trace/tasks/documents/shared/common.py`.
 2. Keep typed field-value generation under `trace/tasks/documents/shared/text_generation.py`.
 3. Keep reusable document layout sampling and render-param resolution under `trace/tasks/documents/shared/document_common.py`.
-4. Keep reusable document page rendering under `trace/tasks/documents/shared/document_scene.py`.
-5. Future document tasks should reuse the same page grammar before adding genuinely new task groups.
+4. Keep section-local relation dataset builders under `trace/tasks/documents/shared/relation_common.py`.
+5. Keep reusable document page rendering, including section chrome, under `trace/tasks/documents/shared/document_scene.py`.
+6. Future document tasks should reuse the same page grammar before adding genuinely new task groups.

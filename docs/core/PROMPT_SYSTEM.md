@@ -120,6 +120,7 @@ Active bundles:
    - `prompts/maps/region/maps_region_v1.json`
 10. Documents:
    - `prompts/documents/readout/documents_readout_v1.json`
+   - `prompts/documents/relation/documents_relation_v1.json`
 
 Active task-to-bundle mapping:
 1. Geometry comparison task (`task_geometry_comparison_value`) delegates to `geometry_comparison_v1`
@@ -188,3 +189,4 @@ Active task-to-bundle mapping:
    - `task_maps_region_association_label|task_maps_region_count` -> `maps_region_v1`
 17. Documents:
    - `task_documents_readout_field_value` -> `documents_readout_v1`
+   - `task_documents_relation_section_extremum_value` -> `documents_relation_v1`

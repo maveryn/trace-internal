@@ -150,6 +150,7 @@ Implementation map for the contracts in `docs/core/BLUEPRINT.md`.
    - `trace/tasks/maps/region/count.py`
 10. Documents:
    - `trace/tasks/documents/readout/field_value.py`
+   - `trace/tasks/documents/relation/section_extremum_value.py`
 ## 5) Architecture invariants
 1. Determinism from config + seeds + versions.
 2. `TrainInstance` stays lightweight; heavy replay metadata stays in sidecar trace.

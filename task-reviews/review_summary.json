@@ -8,7 +8,7 @@
     "random_count": 100,
     "seed": 0,
     "tasks": [
-      "task_documents_readout_field_value"
+      "task_documents_relation_section_extremum_value"
     ],
     "workers": 16
   },
@@ -21,22 +21,21 @@
     {
       "distribution_pass": true,
       "domain": "documents",
-      "inspection_count": 125,
-      "inspection_workbook": "documents/task_documents_readout_field_value/task_documents_readout_field_value.xlsx",
+      "inspection_count": 100,
+      "inspection_workbook": "documents/task_documents_relation_section_extremum_value/task_documents_relation_section_extremum_value.xlsx",
       "inspection_workbook_sheets": {
-        "lookup_amount": "lookup_amount",
-        "lookup_contact": "lookup_contact",
-        "lookup_date": "lookup_date",
-        "lookup_identifier": "lookup_identifier",
-        "lookup_name": "lookup_name"
+        "earliest_date_in_section": "earliest_date_in_section",
+        "largest_amount_in_section": "largest_amount_in_section",
+        "latest_date_in_section": "latest_date_in_section",
+        "smallest_amount_in_section": "smallest_amount_in_section"
       },
       "reports": {
-        "distribution_review": "documents/task_documents_readout_field_value/distribution_review.json",
-        "inspection_manifest": "documents/task_documents_readout_field_value/manifest.json",
-        "random_review": "documents/task_documents_readout_field_value/random_review_100.json"
+        "distribution_review": "documents/task_documents_relation_section_extremum_value/distribution_review.json",
+        "inspection_manifest": "documents/task_documents_relation_section_extremum_value/manifest.json",
+        "random_review": "documents/task_documents_relation_section_extremum_value/random_review_100.json"
       },
-      "task_group": "readout",
-      "task_id": "task_documents_readout_field_value"
+      "task_group": "relation",
+      "task_id": "task_documents_relation_section_extremum_value"
     }
   ]
 }

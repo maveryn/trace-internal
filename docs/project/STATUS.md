@@ -77,6 +77,7 @@ Date: 2026-03-29
 69. Puzzles topology now includes `task_puzzles_topology_bead_equivalence_count`, a count task with ordered option-image `bbox_set` evidence over the valid bead-loop matches.
 70. Maps now includes `task_maps_region_association_label` and `task_maps_region_count`, reusing one stylized region+legend scene contract with one-box or ordered-region `bbox_set` evidence on the map itself.
 71. Temporal now includes `task_temporal_clock_readout`, `task_temporal_clock_compare`, `task_temporal_calendar_month_view`, `task_temporal_schedule_day_planner`, and `task_temporal_timeline_milestones`, covering analog clock readout/compare, month-view calendars, day-planner schedules, and milestone timelines with local `bbox_set` evidence on hands, clock faces, date cells, event blocks, and event cards.
+72. Physics now includes `task_physics_mechanics_force_diagram`, the first `mechanics` family task under `domain=physics`, with `scene_variant` values `free_body_box|surface_block|textured_block`, `query_variant` values `net_horizontal_force|net_vertical_force|balancing_force_horizontal|balancing_force_vertical`, integer answers, and `bbox_set` evidence over the shown force arrows that contribute along the queried axis.
 
 ## Active tasks
 1. `task_charts_composition_subset_value` (`domain=charts`, `task_group=composition`)
@@ -161,19 +162,21 @@ Date: 2026-03-29
 80. `task_tile_relation_min_distance` (`domain=tile`, `task_group=relation`)
 81. `task_tile_symmetry_violation_count` (`domain=tile`, `task_group=symmetry`)
 82. `task_tile_transition_gravity_max_drop` (`domain=tile`, `task_group=transition`)
+83. `task_physics_mechanics_force_diagram` (`domain=physics`, `task_group=mechanics`)
 ## Current quality baseline
 1. Tests are required to pass before finalize.
 2. Distribution QA uses `scripts/check_task_answer_distribution.py` with per-variant answer-only checks (`unique_answers >= 5`, `max_answer_frequency < 25%`) and multithreaded sample generation (`--workers`); numeric 5-bin summaries remain reported for review but are not hard pass/fail gates.
 3. Task-review tooling writes per-task artifacts under `task-reviews/<domain>/<task_id>/`, including one inspection workbook named `<task_id>.xlsx` with one sheet per task variant.
-4. There are currently `82` active tasks total: `10` charts, `10` geometry, `10` graph, `15` icons, `2` maps, `10` puzzles, `10` tables, `5` temporal, and `10` tile. The active reviewed task set passes distribution review under the current gates, including the consolidated geometry surface, the graph and temporal domains, and the new maps/puzzles additions.
+4. There are currently `83` active tasks total: `10` charts, `10` geometry, `10` graph, `15` icons, `2` maps, `1` physics, `10` puzzles, `10` tables, `5` temporal, and `10` tile. The active reviewed task set passes distribution review under the current gates, including the consolidated geometry surface, the graph and temporal domains, the new maps/puzzles additions, and the first physics task.
 
 ## Next priorities
 1. Extend the new temporal domain beyond the current clock + calendar + schedule + timeline tasks with additional time-structured visual artifacts while keeping each task tied to one stable visual scaffold and a local evidence contract.
 2. Extend the new puzzles domain beyond the current arithmetic + logic + spatial + topology set with additional spatial/topology families while keeping local evidence contracts clean.
 3. Extend the new graph domain beyond the current degree/component/reachability/path/cycle/cut-vertex baseline with richer topology reasoning while keeping the simple labeled node-link contract stable across both undirected and explicitly directed task variants where appropriate.
 4. Expand the new maps domain beyond `task_maps_region_association_label|task_maps_region_count` using the same reusable region+legend scene contract first (`region_compare`, `region_lookup`) before adding transit-map families.
-5. Extend icons beyond the current counting/transformation/relation/sequence/pattern set using the curated Prism asset pipeline (`comparison` and richer pattern/transformation variants remain the next natural families).
-6. Expand the charts domain beyond the current `statistics` + `counting` + `readout` + `multiseries` + `distribution` + `trend` + `composition` set and formalize the next chart reasoning families.
-7. Expand the tables domain with richer row/column relation tasks while keeping `bbox_set` as the fixed table evidence contract.
-8. Introduce cross-domain `scene_variant` and role-binding schema in architecture docs/contracts.
-9. Add future polygon variants as deferred tasks (diameter, min-side, max-side) after current scope stabilizes.
+5. Expand the new physics domain beyond `task_physics_mechanics_force_diagram` with additional mechanics / circuits / optics families while keeping the tasks diagram-first and evidence local to the operative scene objects.
+6. Extend icons beyond the current counting/transformation/relation/sequence/pattern set using the curated Prism asset pipeline (`comparison` and richer pattern/transformation variants remain the next natural families).
+7. Expand the charts domain beyond the current `statistics` + `counting` + `readout` + `multiseries` + `distribution` + `trend` + `composition` set and formalize the next chart reasoning families.
+8. Expand the tables domain with richer row/column relation tasks while keeping `bbox_set` as the fixed table evidence contract.
+9. Introduce cross-domain `scene_variant` and role-binding schema in architecture docs/contracts.
+10. Add future polygon variants as deferred tasks (diameter, min-side, max-side) after current scope stabilizes.

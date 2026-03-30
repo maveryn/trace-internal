@@ -1,0 +1,90 @@
+{
+  "bundle_id": "physics_mechanics_v1",
+  "schema_version": "v1",
+  "task_family_templates": {
+    "axis_aligned_force_diagram": [
+      "The image shows {object_description}.",
+      "Look at the mechanics diagram in the image. It shows {object_description}.",
+      "You are given an image with {object_description}.",
+      "Work from the force diagram shown in the image: {object_description}.",
+      "Use the mechanics force diagram in the image. It shows {object_description}."
+    ]
+  },
+  "task_templates": {
+    "force_diagram_query": [
+      "Use the shown force arrows to answer the question.",
+      "Read the force arrows and determine the requested value.",
+      "Work from the labeled force arrows to answer the question.",
+      "Answer using only the forces shown in the diagram.",
+      "Determine the requested force value from the diagram."
+    ]
+  },
+  "task_variant_templates": {
+    "net_horizontal_force": [
+      "What is the magnitude of the net horizontal force on the object? Answer with an integer number of newtons.",
+      "Using only the leftward and rightward forces shown, what is the net horizontal force magnitude on the object? Answer with an integer number of newtons.",
+      "Determine the object's net horizontal force magnitude from the diagram. Answer with an integer number of newtons.",
+      "What net horizontal force magnitude is implied by the shown forces? Answer with an integer number of newtons.",
+      "Read the horizontal force arrows. What is the resulting net horizontal force magnitude? Answer with an integer number of newtons."
+    ],
+    "net_vertical_force": [
+      "What is the magnitude of the net vertical force on the object? Answer with an integer number of newtons.",
+      "Using only the upward and downward forces shown, what is the net vertical force magnitude on the object? Answer with an integer number of newtons.",
+      "Determine the object's net vertical force magnitude from the diagram. Answer with an integer number of newtons.",
+      "What net vertical force magnitude is implied by the shown forces? Answer with an integer number of newtons.",
+      "Read the vertical force arrows. What is the resulting net vertical force magnitude? Answer with an integer number of newtons."
+    ],
+    "balancing_force_horizontal": [
+      "What force magnitude in the marked {marked_direction_label} direction is needed to make the net horizontal force zero? Answer with an integer number of newtons.",
+      "A missing horizontal force is marked in the {marked_direction_label} direction. What magnitude would balance the horizontal forces? Answer with an integer number of newtons.",
+      "How large must the marked {marked_direction_label} horizontal force be so the horizontal net force becomes zero? Answer with an integer number of newtons.",
+      "Use the shown horizontal forces and the marked {marked_direction_label} direction. What force magnitude would balance them? Answer with an integer number of newtons.",
+      "What magnitude is required for the marked {marked_direction_label} horizontal force so the object has zero net horizontal force? Answer with an integer number of newtons."
+    ],
+    "balancing_force_vertical": [
+      "What force magnitude in the marked {marked_direction_label} direction is needed to make the net vertical force zero? Answer with an integer number of newtons.",
+      "A missing vertical force is marked in the {marked_direction_label} direction. What magnitude would balance the vertical forces? Answer with an integer number of newtons.",
+      "How large must the marked {marked_direction_label} vertical force be so the vertical net force becomes zero? Answer with an integer number of newtons.",
+      "Use the shown vertical forces and the marked {marked_direction_label} direction. What force magnitude would balance them? Answer with an integer number of newtons.",
+      "What magnitude is required for the marked {marked_direction_label} vertical force so the object has zero net vertical force? Answer with an integer number of newtons."
+    ]
+  },
+  "required_slots_by_key": {
+    "task_family:axis_aligned_force_diagram": [
+      "object_description"
+    ],
+    "task_variant:balancing_force_horizontal": [
+      "marked_direction_label"
+    ],
+    "task_variant:balancing_force_vertical": [
+      "marked_direction_label"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence: {evidence_hint}.\nAnswer: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence requirement: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence field: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence rule: {evidence_hint}.\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  }
+}

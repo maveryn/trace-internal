@@ -73,6 +73,7 @@ from .puzzles.spatial import overlay_result_label as _task_puzzles_spatial_overl
 from .puzzles.topology import bead_equivalence_count as _task_puzzles_topology_bead_equivalence_count
 from .maps.region import association_label as _task_maps_region_association_label
 from .maps.region import count as _task_maps_region_count
+from .physics.mechanics import force_diagram as _task_physics_mechanics_force_diagram
 from .tile import count_color_components as _task_tile_count_color_components
 from .tile import count_color_count as _task_tile_count_color_count
 from .tile import count_largest_component_size as _task_tile_count_largest_component_size

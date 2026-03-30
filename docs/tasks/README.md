@@ -90,3 +90,4 @@ Current task docs:
 80. [task_tile_relation_min_distance.md](task_tile_relation_min_distance.md)
 81. [task_tile_symmetry_violation_count.md](task_tile_symmetry_violation_count.md)
 82. [task_tile_transition_gravity_max_drop.md](task_tile_transition_gravity_max_drop.md)
+83. [task_physics_mechanics_force_diagram.md](task_physics_mechanics_force_diagram.md)

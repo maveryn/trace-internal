@@ -8,7 +8,7 @@
     "random_count": 100,
     "seed": 0,
     "tasks": [
-      "task_geometry_graphing_count"
+      "task_physics_mechanics_force_diagram"
     ],
     "workers": 16
   },
@@ -20,23 +20,22 @@
   "tasks": [
     {
       "distribution_pass": true,
-      "domain": "geometry",
-      "inspection_count": 125,
-      "inspection_workbook": "geometry/task_geometry_graphing_count/task_geometry_graphing_count.xlsx",
+      "domain": "physics",
+      "inspection_count": 100,
+      "inspection_workbook": "physics/task_physics_mechanics_force_diagram/task_physics_mechanics_force_diagram.xlsx",
       "inspection_workbook_sheets": {
-        "horizontal_line_intersection_count": "horizontal_line_intersection_co",
-        "local_maxima_count": "local_maxima_count",
-        "local_minima_count": "local_minima_count",
-        "turning_point_count": "turning_point_count",
-        "x_intercept_count": "x_intercept_count"
+        "balancing_force_horizontal": "balancing_force_horizontal",
+        "balancing_force_vertical": "balancing_force_vertical",
+        "net_horizontal_force": "net_horizontal_force",
+        "net_vertical_force": "net_vertical_force"
       },
       "reports": {
-        "distribution_review": "geometry/task_geometry_graphing_count/distribution_review.json",
-        "inspection_manifest": "geometry/task_geometry_graphing_count/manifest.json",
-        "random_review": "geometry/task_geometry_graphing_count/random_review_100.json"
+        "distribution_review": "physics/task_physics_mechanics_force_diagram/distribution_review.json",
+        "inspection_manifest": "physics/task_physics_mechanics_force_diagram/manifest.json",
+        "random_review": "physics/task_physics_mechanics_force_diagram/random_review_100.json"
       },
-      "task_group": "graphing",
-      "task_id": "task_geometry_graphing_count"
+      "task_group": "mechanics",
+      "task_id": "task_physics_mechanics_force_diagram"
     }
   ]
 }

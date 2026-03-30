@@ -70,6 +70,7 @@ Promote helpers when a second consumer appears.
    - Canonical deterministic task-variant override/weight/balancing helpers across domains.
    - Use `resolve_variant(...)` plus `apply_balanced_variant_sampling(...)` instead of keeping parallel per-domain variant samplers.
    - Use `sampling_namespace=...` when one task needs more than one independently balanced variant axis (for example semantic variant plus scene variant).
+   - Use `resolve_compatible_scene_query_variants(...)` when a task exposes chart-style compatible `scene_variant` + `query_variant` axes; do not keep that compatibility resolver trapped inside one domain once a second domain needs it.
 18. `trace/tasks/shared/named_colors.py`
    - Canonical repo-wide named-color palette plus deterministic sampling helpers shared across domains.
    - Use this when a second domain needs the same stable prompt/render color inventory instead of reaching into another domain's helper layer.
@@ -223,6 +224,9 @@ Promote helpers when a second consumer appears.
    - `visual_defaults.py` is the canonical maps-domain background/noise loader layer shared across future maps task groups.
    - `region_common.py` is the shared region-map helper layer; it owns stylized contiguous region-partition generation, ordered legend/category construction, Lab-separated category palette sampling, shared scene-base construction, association/count dataset builders, task/scene variant resolution, and render-param resolution for active region-map tasks.
    - `region_scene.py` is the canonical region+legend renderer for active maps region tasks; it owns the map/legend layout, merged-region rendering over the hidden partition grid, region label placement, legend chrome, and region/legend bbox tracing for the `map_strip|map_card|map_outline|region_map` scene variants, including the atlas-style `region_map` chrome.
+11. Physics: `trace/tasks/physics/shared/complexity.py`, `visual_defaults.py`
+   - `complexity.py` is the shared physics-domain complexity layer; it owns normalized `[0,1]` score construction, complexity-weight resolution, and family builders for active physics tasks (currently mechanics force-diagram reasoning).
+   - `visual_defaults.py` is the canonical physics-domain background/noise loader layer shared across future mechanics / circuits / optics task groups.
 
 ## 3) Reuse rules
 1. Do not duplicate deterministic utilities.

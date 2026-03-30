@@ -212,6 +212,9 @@ Use this checklist during implementation and refactor reviews.
 190. For early map-region tasks, reuse one synthetic contiguous region-partition plus legend scene contract instead of tying the domain to real country outlines or visible tile grids; keep prompt-facing evidence on region bboxes and make legend order explicit when category rank matters.
 191. For map-region count tasks, order prompt-facing `bbox_set` evidence by counted region reading order rather than legend order; the evidence should enumerate the matching regions on the map, not the legend bins that justify the threshold.
 192. For paper-fold spatial puzzles, keep fold-direction arrows outside the sheet whenever interior arrows would crowd the marks or make the fold cue harder to parse.
+193. When a second domain needs the same compatible `scene_variant` / `query_variant` sampling policy, promote that resolver into `trace/tasks/shared/variant_sampling.py` instead of importing a geometry-local compatibility helper across domains.
+194. For physics force-diagram tasks, keep prompt-facing `bbox_set` evidence on the shown arrows that contribute along the queried axis; do not widen evidence to the object, support surface, rope, or missing-force marker when those items are only scene context.
+195. For physics balancing-force diagrams, place the dashed missing-force marker in a dedicated outer lane rather than reusing one of the shown-arrow slots; the placeholder should stay visually separate from the measured arrows so the prompt’s “marked direction” cue is obvious.
 
 ## 3) Process rule
 When a new reusable issue is discovered:

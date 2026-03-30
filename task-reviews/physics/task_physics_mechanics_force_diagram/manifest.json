@@ -1,0 +1,17 @@
+{
+  "inspection_count": 100,
+  "task_id": "task_physics_mechanics_force_diagram",
+  "variants": {
+    "balancing_force_horizontal": 25,
+    "balancing_force_vertical": 25,
+    "net_horizontal_force": 25,
+    "net_vertical_force": 25
+  },
+  "workbook": "physics/task_physics_mechanics_force_diagram/task_physics_mechanics_force_diagram.xlsx",
+  "workbook_sheets": {
+    "balancing_force_horizontal": "balancing_force_horizontal",
+    "balancing_force_vertical": "balancing_force_vertical",
+    "net_horizontal_force": "net_horizontal_force",
+    "net_vertical_force": "net_vertical_force"
+  }
+}

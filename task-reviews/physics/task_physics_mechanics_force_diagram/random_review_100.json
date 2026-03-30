@@ -1,0 +1,227 @@
+{
+  "answer_distribution": {
+    "answer_type_counts": {
+      "integer": 100
+    },
+    "checks": {
+      "max_answer_frequency": {
+        "observed": 0.17,
+        "pass": true,
+        "threshold": 0.25
+      },
+      "max_five_bin_frequency": {
+        "observed": 0.29,
+        "pass": null,
+        "status": "reported_not_gated_numeric_answers"
+      },
+      "min_unique_answers": {
+        "observed": 13,
+        "pass": true,
+        "threshold": 5
+      }
+    },
+    "five_bin_numeric": {
+      "bin_count": 5,
+      "bins": [
+        {
+          "bin_id": 0,
+          "count": 26,
+          "label": "[0, 2.4)"
+        },
+        {
+          "bin_id": 1,
+          "count": 15,
+          "label": "[2.4, 4.8)"
+        },
+        {
+          "bin_id": 2,
+          "count": 15,
+          "label": "[4.8, 7.2)"
+        },
+        {
+          "bin_id": 3,
+          "count": 15,
+          "label": "[7.2, 9.6)"
+        },
+        {
+          "bin_id": 4,
+          "count": 29,
+          "label": "[9.6, 12]"
+        }
+      ],
+      "max_bin_count": 29,
+      "max_bin_frequency": 0.29,
+      "range_max": 12.0,
+      "range_min": 0.0
+    },
+    "max_answer_count": 17,
+    "max_answer_frequency": 0.17,
+    "pass": true,
+    "sample_count": 100,
+    "top_answers": [
+      {
+        "answer_label": "1",
+        "count": 17
+      },
+      {
+        "answer_label": "11",
+        "count": 12
+      },
+      {
+        "answer_label": "12",
+        "count": 12
+      },
+      {
+        "answer_label": "8",
+        "count": 11
+      },
+      {
+        "answer_label": "3",
+        "count": 9
+      },
+      {
+        "answer_label": "2",
+        "count": 6
+      },
+      {
+        "answer_label": "4",
+        "count": 6
+      },
+      {
+        "answer_label": "5",
+        "count": 6
+      },
+      {
+        "answer_label": "10",
+        "count": 5
+      },
+      {
+        "answer_label": "7",
+        "count": 5
+      },
+      {
+        "answer_label": "6",
+        "count": 4
+      },
+      {
+        "answer_label": "9",
+        "count": 4
+      },
+      {
+        "answer_label": "0",
+        "count": 3
+      }
+    ],
+    "unique_answers": 13
+  },
+  "sample_count": 100,
+  "sampling_axes": {
+    "query_variant": {
+      "expected_conflict": false,
+      "expected_probabilities": {
+        "balancing_force_horizontal": 0.25,
+        "balancing_force_vertical": 0.25,
+        "net_horizontal_force": 0.25,
+        "net_vertical_force": 0.25
+      },
+      "expected_source": "query_params",
+      "max_observed_frequency": 0.29,
+      "observed_counts": {
+        "balancing_force_horizontal": 23,
+        "balancing_force_vertical": 29,
+        "net_horizontal_force": 23,
+        "net_vertical_force": 25
+      },
+      "sample_count": 100
+    },
+    "scene_variant": {
+      "expected_conflict": false,
+      "expected_probabilities": {
+        "free_body_box": 0.3333333333333333,
+        "surface_block": 0.3333333333333333,
+        "textured_block": 0.3333333333333333
+      },
+      "expected_source": "query_params",
+      "max_observed_frequency": 0.4,
+      "observed_counts": {
+        "free_body_box": 30,
+        "surface_block": 30,
+        "textured_block": 40
+      },
+      "sample_count": 100
+    },
+    "target_force": {
+      "expected_conflict": true,
+      "expected_probabilities": {
+        "0": 0.07692307692307693,
+        "1": 0.07692307692307693,
+        "10": 0.07692307692307693,
+        "11": 0.07692307692307693,
+        "12": 0.07692307692307693,
+        "2": 0.07692307692307693,
+        "3": 0.07692307692307693,
+        "4": 0.07692307692307693,
+        "5": 0.07692307692307693,
+        "6": 0.07692307692307693,
+        "7": 0.07692307692307693,
+        "8": 0.07692307692307693,
+        "9": 0.07692307692307693
+      },
+      "expected_source": "query_params",
+      "max_observed_frequency": 0.17,
+      "observed_counts": {
+        "0": 3,
+        "1": 17,
+        "10": 5,
+        "11": 12,
+        "12": 12,
+        "2": 6,
+        "3": 9,
+        "4": 6,
+        "5": 6,
+        "6": 4,
+        "7": 5,
+        "8": 11,
+        "9": 4
+      },
+      "sample_count": 100
+    },
+    "task_variant": {
+      "expected_conflict": false,
+      "expected_probabilities": {
+        "balancing_force_horizontal": 0.25,
+        "balancing_force_vertical": 0.25,
+        "net_horizontal_force": 0.25,
+        "net_vertical_force": 0.25
+      },
+      "expected_source": "query_params",
+      "max_observed_frequency": 0.29,
+      "observed_counts": {
+        "balancing_force_horizontal": 23,
+        "balancing_force_vertical": 29,
+        "net_horizontal_force": 23,
+        "net_vertical_force": 25
+      },
+      "sample_count": 100
+    }
+  },
+  "task_id": "task_physics_mechanics_force_diagram",
+  "task_variant_distribution": {
+    "expected_conflict": false,
+    "expected_probabilities": {
+      "balancing_force_horizontal": 0.25,
+      "balancing_force_vertical": 0.25,
+      "net_horizontal_force": 0.25,
+      "net_vertical_force": 0.25
+    },
+    "expected_source": "query_params",
+    "has_variants": true,
+    "observed_counts": {
+      "balancing_force_horizontal": 23,
+      "balancing_force_vertical": 29,
+      "net_horizontal_force": 23,
+      "net_vertical_force": 25
+    },
+    "status": "reported"
+  }
+}

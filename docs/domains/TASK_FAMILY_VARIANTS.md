@@ -147,6 +147,16 @@ Define how we split tasks into reusable families so each dataset slice stays com
 14. For single-day schedule tasks, keep one stable planner scaffold and widen question diversity through `task_variant`; if a schedule variant answers with a selected event subset, enforce that witness subset’s uniqueness by construction before exposing it as prompt-facing evidence.
 15. For milestone-timeline tasks, keep evidence on visible event cards rather than the full axis or connector lines, even when the answer depends on temporal order across multiple events.
 
+## Physics direction (current)
+1. Physics should stay diagram-first: the image should contain the operative values, directions, or placements needed to solve the task.
+2. `task_group` should encode the reasoning family (for example `mechanics`, later `circuits` or `optics`), while `scene_variant` names the scaffold and `query_variant` names the requested quantity.
+3. The first active physics family is `mechanics`.
+4. `task_physics_mechanics_force_diagram`
+   - uses scene variants `free_body_box|surface_block|textured_block`
+   - uses query variants `net_horizontal_force|net_vertical_force|balancing_force_horizontal|balancing_force_vertical`
+   - keeps integer answers with unordered `bbox_set` evidence over the shown force arrows that contribute along the queried axis
+5. Early physics tasks should prefer light arithmetic over heavy formula derivations, and prompt-facing evidence should stay on the visible witness objects rather than decorative scene chrome.
+
 ## Geometry direction (current)
 1. Geometry now exposes ten active task ids:
    - `task_geometry_measurement_value`

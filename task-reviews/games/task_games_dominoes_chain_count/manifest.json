@@ -1,0 +1,17 @@
+{
+  "inspection_count": 100,
+  "task_id": "task_games_dominoes_chain_count",
+  "variants": {
+    "double_count": 25,
+    "higher_sum_than_reference_count": 25,
+    "matching_end_count": 25,
+    "sum_to_target_count": 25
+  },
+  "workbook": "games/task_games_dominoes_chain_count/task_games_dominoes_chain_count.xlsx",
+  "workbook_sheets": {
+    "double_count": "double_count",
+    "higher_sum_than_reference_count": "higher_sum_than_reference_count",
+    "matching_end_count": "matching_end_count",
+    "sum_to_target_count": "sum_to_target_count"
+  }
+}

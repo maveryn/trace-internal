@@ -1,0 +1,805 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 2
+  },
+  "evidence_gt": {
+    "type": "bbox_set",
+    "value": [
+      [
+        205.0,
+        56.0,
+        303.0,
+        198.0
+      ],
+      [
+        541.0,
+        56.0,
+        639.0,
+        198.0
+      ],
+      [
+        485.0,
+        290.0,
+        583.0,
+        432.0
+      ],
+      [
+        821.0,
+        290.0,
+        919.0,
+        432.0
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "games/task_games_cards_hand_count/images/pair_count/0024.png"
+  },
+  "instance_seed": 6461024438583518,
+  "prompt": "The image shows one visible hand of face-up playing cards arranged across two rows on a green table. Determine the requested hand-analysis value from the visible cards. Count the exact pairs in the hand, where a pair means two cards of the same rank. Answer with an integer.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every card that belongs to one of the counted exact pairs.\nAnswer field: set \"answer\" to the number of ranks that appear exactly twice in the hand.\nExample JSON:\n{\"evidence\":[[164,188,262,330],[276,188,374,330],[612,188,710,330],[724,188,822,330]],\"answer\":2}",
+  "prompt_variants": {
+    "answer_and_evidence": "The image shows one visible hand of face-up playing cards arranged across two rows on a green table. Determine the requested hand-analysis value from the visible cards. Count the exact pairs in the hand, where a pair means two cards of the same rank. Answer with an integer.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every card that belongs to one of the counted exact pairs.\nAnswer field: set \"answer\" to the number of ranks that appear exactly twice in the hand.\nExample JSON:\n{\"evidence\":[[164,188,262,330],[276,188,374,330],[612,188,710,330],[724,188,822,330]],\"answer\":2}",
+    "answer_only": "The image shows one visible hand of face-up playing cards arranged across two rows on a green table. Determine the requested hand-analysis value from the visible cards. Count the exact pairs in the hand, where a pair means two cards of the same rank. Answer with an integer.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the number of ranks that appear exactly twice in the hand.\nExample JSON:\n{\"answer\":2}"
+  },
+  "task": "task_games_cards_hand_count",
+  "task_variant": "pair_count",
+  "trace_payload": {
+    "background": {
+      "available_styles": [
+        "felt_green"
+      ],
+      "enabled": true,
+      "selected_style": "felt_green",
+      "style_spec": {
+        "color": [
+          42,
+          92,
+          74
+        ],
+        "kind": "solid"
+      }
+    },
+    "execution_trace": {
+      "card_count": 13,
+      "card_count_support": [
+        11,
+        12,
+        13,
+        14
+      ],
+      "card_specs": [
+        {
+          "card_id": "card_01",
+          "is_reference": false,
+          "order_index": 0,
+          "rank_label": "8",
+          "rank_value": 8,
+          "suit_name": "diamonds"
+        },
+        {
+          "card_id": "card_02",
+          "is_reference": false,
+          "order_index": 1,
+          "rank_label": "6",
+          "rank_value": 6,
+          "suit_name": "spades"
+        },
+        {
+          "card_id": "card_03",
+          "is_reference": false,
+          "order_index": 2,
+          "rank_label": "10",
+          "rank_value": 10,
+          "suit_name": "spades"
+        },
+        {
+          "card_id": "card_04",
+          "is_reference": false,
+          "order_index": 3,
+          "rank_label": "K",
+          "rank_value": 13,
+          "suit_name": "diamonds"
+        },
+        {
+          "card_id": "card_05",
+          "is_reference": false,
+          "order_index": 4,
+          "rank_label": "A",
+          "rank_value": 14,
+          "suit_name": "hearts"
+        },
+        {
+          "card_id": "card_06",
+          "is_reference": false,
+          "order_index": 5,
+          "rank_label": "Q",
+          "rank_value": 12,
+          "suit_name": "clubs"
+        },
+        {
+          "card_id": "card_07",
+          "is_reference": false,
+          "order_index": 6,
+          "rank_label": "9",
+          "rank_value": 9,
+          "suit_name": "clubs"
+        },
+        {
+          "card_id": "card_08",
+          "is_reference": false,
+          "order_index": 7,
+          "rank_label": "J",
+          "rank_value": 11,
+          "suit_name": "clubs"
+        },
+        {
+          "card_id": "card_09",
+          "is_reference": false,
+          "order_index": 8,
+          "rank_label": "2",
+          "rank_value": 2,
+          "suit_name": "clubs"
+        },
+        {
+          "card_id": "card_10",
+          "is_reference": false,
+          "order_index": 9,
+          "rank_label": "8",
+          "rank_value": 8,
+          "suit_name": "spades"
+        },
+        {
+          "card_id": "card_11",
+          "is_reference": false,
+          "order_index": 10,
+          "rank_label": "7",
+          "rank_value": 7,
+          "suit_name": "diamonds"
+        },
+        {
+          "card_id": "card_12",
+          "is_reference": false,
+          "order_index": 11,
+          "rank_label": "4",
+          "rank_value": 4,
+          "suit_name": "spades"
+        },
+        {
+          "card_id": "card_13",
+          "is_reference": false,
+          "order_index": 12,
+          "rank_label": "K",
+          "rank_value": 13,
+          "suit_name": "spades"
+        }
+      ],
+      "evidence_entity_ids": [
+        "card_01",
+        "card_04",
+        "card_10",
+        "card_13"
+      ],
+      "query_variant": "pair_count",
+      "rank_sequence": [
+        8,
+        6,
+        10,
+        13,
+        14,
+        12,
+        9,
+        11,
+        2,
+        8,
+        7,
+        4,
+        13
+      ],
+      "reference_card_id": null,
+      "reference_rank_label": null,
+      "reference_rank_value": null,
+      "reference_suit_name": null,
+      "scene_variant": "two_row",
+      "style_variant": "outlined",
+      "target_answer": 2,
+      "target_answer_support": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "task_variant": "pair_count"
+    },
+    "post_image_noise": {
+      "applied": false,
+      "apply_prob": 0.0,
+      "edit_count_range": [
+        1,
+        2
+      ],
+      "edit_types": [
+        "blur",
+        "downsample",
+        "jpeg",
+        "noise"
+      ],
+      "edits": [],
+      "enabled": false
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          205.0,
+          56.0,
+          303.0,
+          198.0
+        ],
+        [
+          541.0,
+          56.0,
+          639.0,
+          198.0
+        ],
+        [
+          485.0,
+          290.0,
+          583.0,
+          432.0
+        ],
+        [
+          821.0,
+          290.0,
+          919.0,
+          432.0
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "card_count": 13,
+        "card_count_probabilities": {
+          "11": 0.25,
+          "12": 0.25,
+          "13": 0.25,
+          "14": 0.25
+        },
+        "card_count_support": [
+          11,
+          12,
+          13,
+          14
+        ],
+        "query_variant": "pair_count",
+        "query_variant_probabilities": {
+          "higher_than_reference_count": 0.0,
+          "longest_run_length": 0.0,
+          "pair_count": 1.0,
+          "same_suit_as_reference_count": 0.0
+        },
+        "scene_variant": "two_row",
+        "scene_variant_probabilities": {
+          "single_row": 0.5,
+          "two_row": 0.5
+        },
+        "style_variant": "outlined",
+        "style_variant_probabilities": {
+          "classic": 0.3333333333333333,
+          "outlined": 0.3333333333333333,
+          "soft": 0.3333333333333333
+        },
+        "target_answer": 2,
+        "target_answer_probabilities": {
+          "0": 0.2,
+          "1": 0.2,
+          "2": 0.2,
+          "3": 0.2,
+          "4": 0.2
+        },
+        "target_answer_support": [
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
+        "task_variant": "pair_count",
+        "task_variant_probabilities": {
+          "higher_than_reference_count": 0.0,
+          "longest_run_length": 0.0,
+          "pair_count": 1.0,
+          "same_suit_as_reference_count": 0.0
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 3,
+        "prompt_bundle_id": "games_cards_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the number of ranks that appear exactly twice in the hand",
+          "continuation_rule_text": "If the cards continue onto a second row, read the top row from left to right and then continue on the next row following the continuation cue.",
+          "evidence_hint": "set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every card that belongs to one of the counted exact pairs",
+          "json_example": "{\"evidence\":[[164,188,262,330],[276,188,374,330],[612,188,710,330],[724,188,822,330]],\"answer\":2}",
+          "json_example_answer_only": "{\"answer\":2}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "one visible hand of face-up playing cards arranged across two rows on a green table",
+          "rank_order_text": "Use rank order 2 < 3 < 4 < 5 < 6 < 7 < 8 < 9 < 10 < J < Q < K < A, with Ace high only."
+        },
+        "task_family_key": "visible_card_hand",
+        "task_family_variant_index": 0,
+        "task_key": "cards_hand_query",
+        "task_variant_index": 4,
+        "task_variant_key": "pair_count",
+        "task_variant_template_index": 1,
+        "template_paths": [
+          "games/cards/games_cards_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:cards_hand_query": 5,
+          "task_family:visible_card_hand": 5,
+          "task_variant:pair_count": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 3,
+            "prompt_bundle_id": "games_cards_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the number of ranks that appear exactly twice in the hand",
+              "continuation_rule_text": "If the cards continue onto a second row, read the top row from left to right and then continue on the next row following the continuation cue.",
+              "evidence_hint": "set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every card that belongs to one of the counted exact pairs",
+              "json_example": "{\"evidence\":[[164,188,262,330],[276,188,374,330],[612,188,710,330],[724,188,822,330]],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "one visible hand of face-up playing cards arranged across two rows on a green table",
+              "rank_order_text": "Use rank order 2 < 3 < 4 < 5 < 6 < 7 < 8 < 9 < 10 < J < Q < K < A, with Ace high only."
+            },
+            "task_family_key": "visible_card_hand",
+            "task_family_variant_index": 0,
+            "task_key": "cards_hand_query",
+            "task_variant_index": 4,
+            "task_variant_key": "pair_count",
+            "task_variant_template_index": 1,
+            "template_paths": [
+              "games/cards/games_cards_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:cards_hand_query": 5,
+              "task_family:visible_card_hand": 5,
+              "task_variant:pair_count": 5
+            }
+          },
+          "prompt": "The image shows one visible hand of face-up playing cards arranged across two rows on a green table. Determine the requested hand-analysis value from the visible cards. Count the exact pairs in the hand, where a pair means two cards of the same rank. Answer with an integer.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every card that belongs to one of the counted exact pairs.\nAnswer field: set \"answer\" to the number of ranks that appear exactly twice in the hand.\nExample JSON:\n{\"evidence\":[[164,188,262,330],[276,188,374,330],[612,188,710,330],[724,188,822,330]],\"answer\":2}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "games_cards_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the number of ranks that appear exactly twice in the hand",
+              "continuation_rule_text": "If the cards continue onto a second row, read the top row from left to right and then continue on the next row following the continuation cue.",
+              "evidence_hint": "set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every card that belongs to one of the counted exact pairs",
+              "json_example": "{\"evidence\":[[164,188,262,330],[276,188,374,330],[612,188,710,330],[724,188,822,330]],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "one visible hand of face-up playing cards arranged across two rows on a green table",
+              "rank_order_text": "Use rank order 2 < 3 < 4 < 5 < 6 < 7 < 8 < 9 < 10 < J < Q < K < A, with Ace high only."
+            },
+            "task_family_key": "visible_card_hand",
+            "task_family_variant_index": 0,
+            "task_key": "cards_hand_query",
+            "task_variant_index": 4,
+            "task_variant_key": "pair_count",
+            "task_variant_template_index": 1,
+            "template_paths": [
+              "games/cards/games_cards_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:cards_hand_query": 5,
+              "task_family:visible_card_hand": 5,
+              "task_variant:pair_count": 5
+            }
+          },
+          "prompt": "The image shows one visible hand of face-up playing cards arranged across two rows on a green table. Determine the requested hand-analysis value from the visible cards. Count the exact pairs in the hand, where a pair means two cards of the same rank. Answer with an integer.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the number of ranks that appear exactly twice in the hand.\nExample JSON:\n{\"answer\":2}"
+        }
+      },
+      "task_variant": "pair_count",
+      "template_id": "games_cards_v1"
+    },
+    "render_map": {
+      "card_bboxes_px": {
+        "card_01": [
+          205.0,
+          56.0,
+          303.0,
+          198.0
+        ],
+        "card_02": [
+          317.0,
+          56.0,
+          415.0,
+          198.0
+        ],
+        "card_03": [
+          429.0,
+          56.0,
+          527.0,
+          198.0
+        ],
+        "card_04": [
+          541.0,
+          56.0,
+          639.0,
+          198.0
+        ],
+        "card_05": [
+          653.0,
+          56.0,
+          751.0,
+          198.0
+        ],
+        "card_06": [
+          765.0,
+          56.0,
+          863.0,
+          198.0
+        ],
+        "card_07": [
+          877.0,
+          56.0,
+          975.0,
+          198.0
+        ],
+        "card_08": [
+          261.0,
+          290.0,
+          359.0,
+          432.0
+        ],
+        "card_09": [
+          373.0,
+          290.0,
+          471.0,
+          432.0
+        ],
+        "card_10": [
+          485.0,
+          290.0,
+          583.0,
+          432.0
+        ],
+        "card_11": [
+          597.0,
+          290.0,
+          695.0,
+          432.0
+        ],
+        "card_12": [
+          709.0,
+          290.0,
+          807.0,
+          432.0
+        ],
+        "card_13": [
+          821.0,
+          290.0,
+          919.0,
+          432.0
+        ]
+      },
+      "continuation_cue_bbox_px": null,
+      "reference_card_ids": [],
+      "row_card_ids": [
+        [
+          "card_01",
+          "card_02",
+          "card_03",
+          "card_04",
+          "card_05",
+          "card_06",
+          "card_07"
+        ],
+        [
+          "card_08",
+          "card_09",
+          "card_10",
+          "card_11",
+          "card_12",
+          "card_13"
+        ]
+      ],
+      "scene_variant": "two_row",
+      "style_variant": "outlined"
+    },
+    "render_spec": {
+      "canvas_height": 760,
+      "canvas_width": 1180,
+      "scene_variant": "two_row",
+      "style_variant": "outlined"
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "bbox_px": [
+            205.0,
+            56.0,
+            303.0,
+            198.0
+          ],
+          "entity_id": "card_01",
+          "entity_type": "playing_card",
+          "meta": {
+            "is_reference": false,
+            "order_index": 0,
+            "rank_label": "8",
+            "rank_value": 8,
+            "row_index": 0,
+            "suit_name": "diamonds"
+          }
+        },
+        {
+          "bbox_px": [
+            317.0,
+            56.0,
+            415.0,
+            198.0
+          ],
+          "entity_id": "card_02",
+          "entity_type": "playing_card",
+          "meta": {
+            "is_reference": false,
+            "order_index": 1,
+            "rank_label": "6",
+            "rank_value": 6,
+            "row_index": 0,
+            "suit_name": "spades"
+          }
+        },
+        {
+          "bbox_px": [
+            429.0,
+            56.0,
+            527.0,
+            198.0
+          ],
+          "entity_id": "card_03",
+          "entity_type": "playing_card",
+          "meta": {
+            "is_reference": false,
+            "order_index": 2,
+            "rank_label": "10",
+            "rank_value": 10,
+            "row_index": 0,
+            "suit_name": "spades"
+          }
+        },
+        {
+          "bbox_px": [
+            541.0,
+            56.0,
+            639.0,
+            198.0
+          ],
+          "entity_id": "card_04",
+          "entity_type": "playing_card",
+          "meta": {
+            "is_reference": false,
+            "order_index": 3,
+            "rank_label": "K",
+            "rank_value": 13,
+            "row_index": 0,
+            "suit_name": "diamonds"
+          }
+        },
+        {
+          "bbox_px": [
+            653.0,
+            56.0,
+            751.0,
+            198.0
+          ],
+          "entity_id": "card_05",
+          "entity_type": "playing_card",
+          "meta": {
+            "is_reference": false,
+            "order_index": 4,
+            "rank_label": "A",
+            "rank_value": 14,
+            "row_index": 0,
+            "suit_name": "hearts"
+          }
+        },
+        {
+          "bbox_px": [
+            765.0,
+            56.0,
+            863.0,
+            198.0
+          ],
+          "entity_id": "card_06",
+          "entity_type": "playing_card",
+          "meta": {
+            "is_reference": false,
+            "order_index": 5,
+            "rank_label": "Q",
+            "rank_value": 12,
+            "row_index": 0,
+            "suit_name": "clubs"
+          }
+        },
+        {
+          "bbox_px": [
+            877.0,
+            56.0,
+            975.0,
+            198.0
+          ],
+          "entity_id": "card_07",
+          "entity_type": "playing_card",
+          "meta": {
+            "is_reference": false,
+            "order_index": 6,
+            "rank_label": "9",
+            "rank_value": 9,
+            "row_index": 0,
+            "suit_name": "clubs"
+          }
+        },
+        {
+          "bbox_px": [
+            261.0,
+            290.0,
+            359.0,
+            432.0
+          ],
+          "entity_id": "card_08",
+          "entity_type": "playing_card",
+          "meta": {
+            "is_reference": false,
+            "order_index": 7,
+            "rank_label": "J",
+            "rank_value": 11,
+            "row_index": 1,
+            "suit_name": "clubs"
+          }
+        },
+        {
+          "bbox_px": [
+            373.0,
+            290.0,
+            471.0,
+            432.0
+          ],
+          "entity_id": "card_09",
+          "entity_type": "playing_card",
+          "meta": {
+            "is_reference": false,
+            "order_index": 8,
+            "rank_label": "2",
+            "rank_value": 2,
+            "row_index": 1,
+            "suit_name": "clubs"
+          }
+        },
+        {
+          "bbox_px": [
+            485.0,
+            290.0,
+            583.0,
+            432.0
+          ],
+          "entity_id": "card_10",
+          "entity_type": "playing_card",
+          "meta": {
+            "is_reference": false,
+            "order_index": 9,
+            "rank_label": "8",
+            "rank_value": 8,
+            "row_index": 1,
+            "suit_name": "spades"
+          }
+        },
+        {
+          "bbox_px": [
+            597.0,
+            290.0,
+            695.0,
+            432.0
+          ],
+          "entity_id": "card_11",
+          "entity_type": "playing_card",
+          "meta": {
+            "is_reference": false,
+            "order_index": 10,
+            "rank_label": "7",
+            "rank_value": 7,
+            "row_index": 1,
+            "suit_name": "diamonds"
+          }
+        },
+        {
+          "bbox_px": [
+            709.0,
+            290.0,
+            807.0,
+            432.0
+          ],
+          "entity_id": "card_12",
+          "entity_type": "playing_card",
+          "meta": {
+            "is_reference": false,
+            "order_index": 11,
+            "rank_label": "4",
+            "rank_value": 4,
+            "row_index": 1,
+            "suit_name": "spades"
+          }
+        },
+        {
+          "bbox_px": [
+            821.0,
+            290.0,
+            919.0,
+            432.0
+          ],
+          "entity_id": "card_13",
+          "entity_type": "playing_card",
+          "meta": {
+            "is_reference": false,
+            "order_index": 12,
+            "rank_label": "K",
+            "rank_value": 13,
+            "row_index": 1,
+            "suit_name": "spades"
+          }
+        }
+      ],
+      "relations": {
+        "card_count": 13,
+        "evidence_entity_ids": [
+          "card_01",
+          "card_04",
+          "card_10",
+          "card_13"
+        ],
+        "query_variant": "pair_count",
+        "reference_card_id": null,
+        "scene_variant": "two_row",
+        "style_variant": "outlined",
+        "target_answer": 2,
+        "task_variant": "pair_count"
+      },
+      "scene_kind": "games_cards_hand_two_row"
+    },
+    "witness_symbolic": {
+      "ids": [
+        "card_01",
+        "card_04",
+        "card_10",
+        "card_13"
+      ],
+      "type": "id_set"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

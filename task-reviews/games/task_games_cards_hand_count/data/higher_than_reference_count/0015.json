@@ -1,0 +1,742 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 4
+  },
+  "evidence_gt": {
+    "type": "bbox_set",
+    "value": [
+      [
+        709.0,
+        56.0,
+        807.0,
+        198.0
+      ],
+      [
+        317.0,
+        290.0,
+        415.0,
+        432.0
+      ],
+      [
+        653.0,
+        290.0,
+        751.0,
+        432.0
+      ],
+      [
+        765.0,
+        290.0,
+        863.0,
+        432.0
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "games/task_games_cards_hand_count/images/higher_than_reference_count/0015.png"
+  },
+  "instance_seed": 4624147906303100,
+  "prompt": "Use the card-hand scene in the image. It shows one visible hand of face-up playing cards arranged across two rows on a green table. Read the face-up cards and determine the requested value. Use rank order 2 < 3 < 4 < 5 < 6 < 7 < 8 < 9 < 10 < J < Q < K < A, with Ace high only. Using the card marked `REF`, how many other cards are ranked above it? Answer with an integer.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every non-reference card ranked higher than the reference card.\nAnswer format: set \"answer\" to the number of non-reference cards ranked higher than the reference card.\nExample JSON:\n{\"evidence\":[[276,188,374,330],[388,188,486,330]],\"answer\":2}",
+  "prompt_variants": {
+    "answer_and_evidence": "Use the card-hand scene in the image. It shows one visible hand of face-up playing cards arranged across two rows on a green table. Read the face-up cards and determine the requested value. Use rank order 2 < 3 < 4 < 5 < 6 < 7 < 8 < 9 < 10 < J < Q < K < A, with Ace high only. Using the card marked `REF`, how many other cards are ranked above it? Answer with an integer.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every non-reference card ranked higher than the reference card.\nAnswer format: set \"answer\" to the number of non-reference cards ranked higher than the reference card.\nExample JSON:\n{\"evidence\":[[276,188,374,330],[388,188,486,330]],\"answer\":2}",
+    "answer_only": "Use the card-hand scene in the image. It shows one visible hand of face-up playing cards arranged across two rows on a green table. Read the face-up cards and determine the requested value. Use rank order 2 < 3 < 4 < 5 < 6 < 7 < 8 < 9 < 10 < J < Q < K < A, with Ace high only. Using the card marked `REF`, how many other cards are ranked above it? Answer with an integer.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the number of non-reference cards ranked higher than the reference card.\nExample JSON:\n{\"answer\":2}"
+  },
+  "task": "task_games_cards_hand_count",
+  "task_variant": "higher_than_reference_count",
+  "trace_payload": {
+    "background": {
+      "available_styles": [
+        "felt_green"
+      ],
+      "enabled": true,
+      "selected_style": "felt_green",
+      "style_spec": {
+        "color": [
+          42,
+          92,
+          74
+        ],
+        "kind": "solid"
+      }
+    },
+    "execution_trace": {
+      "card_count": 11,
+      "card_count_support": [
+        11,
+        12,
+        13,
+        14
+      ],
+      "card_specs": [
+        {
+          "card_id": "card_01",
+          "is_reference": false,
+          "order_index": 0,
+          "rank_label": "4",
+          "rank_value": 4,
+          "suit_name": "diamonds"
+        },
+        {
+          "card_id": "card_02",
+          "is_reference": false,
+          "order_index": 1,
+          "rank_label": "2",
+          "rank_value": 2,
+          "suit_name": "spades"
+        },
+        {
+          "card_id": "card_03",
+          "is_reference": false,
+          "order_index": 2,
+          "rank_label": "4",
+          "rank_value": 4,
+          "suit_name": "spades"
+        },
+        {
+          "card_id": "card_04",
+          "is_reference": false,
+          "order_index": 3,
+          "rank_label": "3",
+          "rank_value": 3,
+          "suit_name": "spades"
+        },
+        {
+          "card_id": "card_05",
+          "is_reference": false,
+          "order_index": 4,
+          "rank_label": "A",
+          "rank_value": 14,
+          "suit_name": "hearts"
+        },
+        {
+          "card_id": "card_06",
+          "is_reference": true,
+          "order_index": 5,
+          "rank_label": "4",
+          "rank_value": 4,
+          "suit_name": "hearts"
+        },
+        {
+          "card_id": "card_07",
+          "is_reference": false,
+          "order_index": 6,
+          "rank_label": "Q",
+          "rank_value": 12,
+          "suit_name": "diamonds"
+        },
+        {
+          "card_id": "card_08",
+          "is_reference": false,
+          "order_index": 7,
+          "rank_label": "3",
+          "rank_value": 3,
+          "suit_name": "clubs"
+        },
+        {
+          "card_id": "card_09",
+          "is_reference": false,
+          "order_index": 8,
+          "rank_label": "3",
+          "rank_value": 3,
+          "suit_name": "hearts"
+        },
+        {
+          "card_id": "card_10",
+          "is_reference": false,
+          "order_index": 9,
+          "rank_label": "5",
+          "rank_value": 5,
+          "suit_name": "diamonds"
+        },
+        {
+          "card_id": "card_11",
+          "is_reference": false,
+          "order_index": 10,
+          "rank_label": "7",
+          "rank_value": 7,
+          "suit_name": "clubs"
+        }
+      ],
+      "evidence_entity_ids": [
+        "card_05",
+        "card_07",
+        "card_10",
+        "card_11"
+      ],
+      "query_variant": "higher_than_reference_count",
+      "rank_sequence": [
+        4,
+        2,
+        4,
+        3,
+        14,
+        4,
+        12,
+        3,
+        3,
+        5,
+        7
+      ],
+      "reference_card_id": "card_06",
+      "reference_rank_label": "4",
+      "reference_rank_value": 4,
+      "reference_suit_name": "hearts",
+      "scene_variant": "two_row",
+      "style_variant": "outlined",
+      "target_answer": 4,
+      "target_answer_support": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "task_variant": "higher_than_reference_count"
+    },
+    "post_image_noise": {
+      "applied": false,
+      "apply_prob": 0.0,
+      "edit_count_range": [
+        1,
+        2
+      ],
+      "edit_types": [
+        "blur",
+        "downsample",
+        "jpeg",
+        "noise"
+      ],
+      "edits": [],
+      "enabled": false
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          709.0,
+          56.0,
+          807.0,
+          198.0
+        ],
+        [
+          317.0,
+          290.0,
+          415.0,
+          432.0
+        ],
+        [
+          653.0,
+          290.0,
+          751.0,
+          432.0
+        ],
+        [
+          765.0,
+          290.0,
+          863.0,
+          432.0
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "card_count": 11,
+        "card_count_probabilities": {
+          "11": 0.25,
+          "12": 0.25,
+          "13": 0.25,
+          "14": 0.25
+        },
+        "card_count_support": [
+          11,
+          12,
+          13,
+          14
+        ],
+        "query_variant": "higher_than_reference_count",
+        "query_variant_probabilities": {
+          "higher_than_reference_count": 1.0,
+          "longest_run_length": 0.0,
+          "pair_count": 0.0,
+          "same_suit_as_reference_count": 0.0
+        },
+        "scene_variant": "two_row",
+        "scene_variant_probabilities": {
+          "single_row": 0.5,
+          "two_row": 0.5
+        },
+        "style_variant": "outlined",
+        "style_variant_probabilities": {
+          "classic": 0.3333333333333333,
+          "outlined": 0.3333333333333333,
+          "soft": 0.3333333333333333
+        },
+        "target_answer": 4,
+        "target_answer_probabilities": {
+          "0": 0.16666666666666666,
+          "1": 0.16666666666666666,
+          "2": 0.16666666666666666,
+          "3": 0.16666666666666666,
+          "4": 0.16666666666666666,
+          "5": 0.16666666666666666
+        },
+        "target_answer_support": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "task_variant": "higher_than_reference_count",
+        "task_variant_probabilities": {
+          "higher_than_reference_count": 1.0,
+          "longest_run_length": 0.0,
+          "pair_count": 0.0,
+          "same_suit_as_reference_count": 0.0
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 1,
+        "prompt_bundle_id": "games_cards_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the number of non-reference cards ranked higher than the reference card",
+          "continuation_rule_text": "If the cards continue onto a second row, read the top row from left to right and then continue on the next row following the continuation cue.",
+          "evidence_hint": "set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every non-reference card ranked higher than the reference card",
+          "json_example": "{\"evidence\":[[276,188,374,330],[388,188,486,330]],\"answer\":2}",
+          "json_example_answer_only": "{\"answer\":2}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "one visible hand of face-up playing cards arranged across two rows on a green table",
+          "rank_order_text": "Use rank order 2 < 3 < 4 < 5 < 6 < 7 < 8 < 9 < 10 < J < Q < K < A, with Ace high only."
+        },
+        "task_family_key": "visible_card_hand",
+        "task_family_variant_index": 4,
+        "task_key": "cards_hand_query",
+        "task_variant_index": 1,
+        "task_variant_key": "higher_than_reference_count",
+        "task_variant_template_index": 3,
+        "template_paths": [
+          "games/cards/games_cards_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:cards_hand_query": 5,
+          "task_family:visible_card_hand": 5,
+          "task_variant:higher_than_reference_count": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 1,
+            "prompt_bundle_id": "games_cards_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the number of non-reference cards ranked higher than the reference card",
+              "continuation_rule_text": "If the cards continue onto a second row, read the top row from left to right and then continue on the next row following the continuation cue.",
+              "evidence_hint": "set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every non-reference card ranked higher than the reference card",
+              "json_example": "{\"evidence\":[[276,188,374,330],[388,188,486,330]],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "one visible hand of face-up playing cards arranged across two rows on a green table",
+              "rank_order_text": "Use rank order 2 < 3 < 4 < 5 < 6 < 7 < 8 < 9 < 10 < J < Q < K < A, with Ace high only."
+            },
+            "task_family_key": "visible_card_hand",
+            "task_family_variant_index": 4,
+            "task_key": "cards_hand_query",
+            "task_variant_index": 1,
+            "task_variant_key": "higher_than_reference_count",
+            "task_variant_template_index": 3,
+            "template_paths": [
+              "games/cards/games_cards_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:cards_hand_query": 5,
+              "task_family:visible_card_hand": 5,
+              "task_variant:higher_than_reference_count": 5
+            }
+          },
+          "prompt": "Use the card-hand scene in the image. It shows one visible hand of face-up playing cards arranged across two rows on a green table. Read the face-up cards and determine the requested value. Use rank order 2 < 3 < 4 < 5 < 6 < 7 < 8 < 9 < 10 < J < Q < K < A, with Ace high only. Using the card marked `REF`, how many other cards are ranked above it? Answer with an integer.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every non-reference card ranked higher than the reference card.\nAnswer format: set \"answer\" to the number of non-reference cards ranked higher than the reference card.\nExample JSON:\n{\"evidence\":[[276,188,374,330],[388,188,486,330]],\"answer\":2}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "games_cards_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the number of non-reference cards ranked higher than the reference card",
+              "continuation_rule_text": "If the cards continue onto a second row, read the top row from left to right and then continue on the next row following the continuation cue.",
+              "evidence_hint": "set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every non-reference card ranked higher than the reference card",
+              "json_example": "{\"evidence\":[[276,188,374,330],[388,188,486,330]],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "one visible hand of face-up playing cards arranged across two rows on a green table",
+              "rank_order_text": "Use rank order 2 < 3 < 4 < 5 < 6 < 7 < 8 < 9 < 10 < J < Q < K < A, with Ace high only."
+            },
+            "task_family_key": "visible_card_hand",
+            "task_family_variant_index": 4,
+            "task_key": "cards_hand_query",
+            "task_variant_index": 1,
+            "task_variant_key": "higher_than_reference_count",
+            "task_variant_template_index": 3,
+            "template_paths": [
+              "games/cards/games_cards_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:cards_hand_query": 5,
+              "task_family:visible_card_hand": 5,
+              "task_variant:higher_than_reference_count": 5
+            }
+          },
+          "prompt": "Use the card-hand scene in the image. It shows one visible hand of face-up playing cards arranged across two rows on a green table. Read the face-up cards and determine the requested value. Use rank order 2 < 3 < 4 < 5 < 6 < 7 < 8 < 9 < 10 < J < Q < K < A, with Ace high only. Using the card marked `REF`, how many other cards are ranked above it? Answer with an integer.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the number of non-reference cards ranked higher than the reference card.\nExample JSON:\n{\"answer\":2}"
+        }
+      },
+      "task_variant": "higher_than_reference_count",
+      "template_id": "games_cards_v1"
+    },
+    "render_map": {
+      "card_bboxes_px": {
+        "card_01": [
+          261.0,
+          56.0,
+          359.0,
+          198.0
+        ],
+        "card_02": [
+          373.0,
+          56.0,
+          471.0,
+          198.0
+        ],
+        "card_03": [
+          485.0,
+          56.0,
+          583.0,
+          198.0
+        ],
+        "card_04": [
+          597.0,
+          56.0,
+          695.0,
+          198.0
+        ],
+        "card_05": [
+          709.0,
+          56.0,
+          807.0,
+          198.0
+        ],
+        "card_06": [
+          821.0,
+          56.0,
+          919.0,
+          198.0
+        ],
+        "card_07": [
+          317.0,
+          290.0,
+          415.0,
+          432.0
+        ],
+        "card_08": [
+          429.0,
+          290.0,
+          527.0,
+          432.0
+        ],
+        "card_09": [
+          541.0,
+          290.0,
+          639.0,
+          432.0
+        ],
+        "card_10": [
+          653.0,
+          290.0,
+          751.0,
+          432.0
+        ],
+        "card_11": [
+          765.0,
+          290.0,
+          863.0,
+          432.0
+        ]
+      },
+      "continuation_cue_bbox_px": null,
+      "reference_card_ids": [
+        "card_06"
+      ],
+      "row_card_ids": [
+        [
+          "card_01",
+          "card_02",
+          "card_03",
+          "card_04",
+          "card_05",
+          "card_06"
+        ],
+        [
+          "card_07",
+          "card_08",
+          "card_09",
+          "card_10",
+          "card_11"
+        ]
+      ],
+      "scene_variant": "two_row",
+      "style_variant": "outlined"
+    },
+    "render_spec": {
+      "canvas_height": 760,
+      "canvas_width": 1180,
+      "scene_variant": "two_row",
+      "style_variant": "outlined"
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "bbox_px": [
+            261.0,
+            56.0,
+            359.0,
+            198.0
+          ],
+          "entity_id": "card_01",
+          "entity_type": "playing_card",
+          "meta": {
+            "is_reference": false,
+            "order_index": 0,
+            "rank_label": "4",
+            "rank_value": 4,
+            "row_index": 0,
+            "suit_name": "diamonds"
+          }
+        },
+        {
+          "bbox_px": [
+            373.0,
+            56.0,
+            471.0,
+            198.0
+          ],
+          "entity_id": "card_02",
+          "entity_type": "playing_card",
+          "meta": {
+            "is_reference": false,
+            "order_index": 1,
+            "rank_label": "2",
+            "rank_value": 2,
+            "row_index": 0,
+            "suit_name": "spades"
+          }
+        },
+        {
+          "bbox_px": [
+            485.0,
+            56.0,
+            583.0,
+            198.0
+          ],
+          "entity_id": "card_03",
+          "entity_type": "playing_card",
+          "meta": {
+            "is_reference": false,
+            "order_index": 2,
+            "rank_label": "4",
+            "rank_value": 4,
+            "row_index": 0,
+            "suit_name": "spades"
+          }
+        },
+        {
+          "bbox_px": [
+            597.0,
+            56.0,
+            695.0,
+            198.0
+          ],
+          "entity_id": "card_04",
+          "entity_type": "playing_card",
+          "meta": {
+            "is_reference": false,
+            "order_index": 3,
+            "rank_label": "3",
+            "rank_value": 3,
+            "row_index": 0,
+            "suit_name": "spades"
+          }
+        },
+        {
+          "bbox_px": [
+            709.0,
+            56.0,
+            807.0,
+            198.0
+          ],
+          "entity_id": "card_05",
+          "entity_type": "playing_card",
+          "meta": {
+            "is_reference": false,
+            "order_index": 4,
+            "rank_label": "A",
+            "rank_value": 14,
+            "row_index": 0,
+            "suit_name": "hearts"
+          }
+        },
+        {
+          "bbox_px": [
+            821.0,
+            56.0,
+            919.0,
+            198.0
+          ],
+          "entity_id": "card_06",
+          "entity_type": "playing_card",
+          "meta": {
+            "is_reference": true,
+            "order_index": 5,
+            "rank_label": "4",
+            "rank_value": 4,
+            "row_index": 0,
+            "suit_name": "hearts"
+          }
+        },
+        {
+          "bbox_px": [
+            317.0,
+            290.0,
+            415.0,
+            432.0
+          ],
+          "entity_id": "card_07",
+          "entity_type": "playing_card",
+          "meta": {
+            "is_reference": false,
+            "order_index": 6,
+            "rank_label": "Q",
+            "rank_value": 12,
+            "row_index": 1,
+            "suit_name": "diamonds"
+          }
+        },
+        {
+          "bbox_px": [
+            429.0,
+            290.0,
+            527.0,
+            432.0
+          ],
+          "entity_id": "card_08",
+          "entity_type": "playing_card",
+          "meta": {
+            "is_reference": false,
+            "order_index": 7,
+            "rank_label": "3",
+            "rank_value": 3,
+            "row_index": 1,
+            "suit_name": "clubs"
+          }
+        },
+        {
+          "bbox_px": [
+            541.0,
+            290.0,
+            639.0,
+            432.0
+          ],
+          "entity_id": "card_09",
+          "entity_type": "playing_card",
+          "meta": {
+            "is_reference": false,
+            "order_index": 8,
+            "rank_label": "3",
+            "rank_value": 3,
+            "row_index": 1,
+            "suit_name": "hearts"
+          }
+        },
+        {
+          "bbox_px": [
+            653.0,
+            290.0,
+            751.0,
+            432.0
+          ],
+          "entity_id": "card_10",
+          "entity_type": "playing_card",
+          "meta": {
+            "is_reference": false,
+            "order_index": 9,
+            "rank_label": "5",
+            "rank_value": 5,
+            "row_index": 1,
+            "suit_name": "diamonds"
+          }
+        },
+        {
+          "bbox_px": [
+            765.0,
+            290.0,
+            863.0,
+            432.0
+          ],
+          "entity_id": "card_11",
+          "entity_type": "playing_card",
+          "meta": {
+            "is_reference": false,
+            "order_index": 10,
+            "rank_label": "7",
+            "rank_value": 7,
+            "row_index": 1,
+            "suit_name": "clubs"
+          }
+        }
+      ],
+      "relations": {
+        "card_count": 11,
+        "evidence_entity_ids": [
+          "card_05",
+          "card_07",
+          "card_10",
+          "card_11"
+        ],
+        "query_variant": "higher_than_reference_count",
+        "reference_card_id": "card_06",
+        "scene_variant": "two_row",
+        "style_variant": "outlined",
+        "target_answer": 4,
+        "task_variant": "higher_than_reference_count"
+      },
+      "scene_kind": "games_cards_hand_two_row"
+    },
+    "witness_symbolic": {
+      "ids": [
+        "card_05",
+        "card_07",
+        "card_10",
+        "card_11"
+      ],
+      "type": "id_set"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

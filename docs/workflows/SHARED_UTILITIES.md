@@ -70,18 +70,26 @@ Promote helpers when a second consumer appears.
    - Canonical deterministic task-variant override/weight/balancing helpers across domains.
    - Use `resolve_variant(...)` plus `apply_balanced_variant_sampling(...)` instead of keeping parallel per-domain variant samplers.
    - Use `sampling_namespace=...` when one task needs more than one independently balanced variant axis (for example semantic variant plus scene variant).
-18. `trace/tasks/shared/named_colors.py`
+   - Use `resolve_compatible_scene_query_variants(...)` when a task exposes chart-style compatible `scene_variant` + `query_variant` axes; do not keep that compatibility resolver trapped inside one domain once a second domain needs it.
+18. `trace/tasks/shared/support_sampling.py`
+   - Canonical deterministic integer-support parsing and balanced support cycling across domains.
+   - Use this when a second domain needs the same support-list resolution / balanced answer-choice behavior instead of copying a domain-local helper.
+   - When a task balances multiple axes under the same review `_sampling_index`, use `namespace_explicit_sampling_index=True` so downstream support cycling uses a namespace-specific support-order permutation instead of aliasing the same raw review index while still preserving flat review-time support coverage.
+19. `trace/tasks/shared/named_colors.py`
    - Canonical repo-wide named-color palette plus deterministic sampling helpers shared across domains.
    - Use this when a second domain needs the same stable prompt/render color inventory instead of reaching into another domain's helper layer.
-19. `trace/tasks/shared/name_assets.py`
+20. `trace/tasks/shared/name_assets.py`
    - Canonical shared loader for vendored short-name manifests reused across domains (currently charts and tables).
    - Use this when a second domain needs the same visible short-name pool instead of keeping another domain-local asset loader.
-20. `trace/tasks/shared/drawing.py`
+21. `trace/tasks/shared/drawing.py`
    - Canonical small drawing primitives (`draw_arrow`, `draw_dashed_line`, `draw_centered_text`, `draw_rounded_rect`) once a second domain needs the same deterministic vector/text chrome.
    - If a domain-local wrapper remains for compatibility (for example puzzles), keep it as a thin re-export rather than a second implementation.
-21. `trace/tasks/shared/isometric_projection.py`
+22. `trace/tasks/shared/isometric_projection.py`
    - Canonical cross-domain 3D-to-2D isometric projection helper reused by geometry analytical 3D rendering and puzzle spatial block-stack rendering.
    - Promote new isometric-view consumers here instead of duplicating projection math inside a domain-shared module.
+23. `trace/tasks/shared/graph_point_evidence.py`
+   - Canonical cross-domain graph-point evidence builders for labeled graph maps, single graph points, unordered `graph_point_set` payloads, and empty graph-point-set witnesses.
+   - Use this when a second domain needs graph-paper point evidence instead of importing geometry-local evidence helpers across domains.
 
 ### Domain-shared (current)
 1. Geometry: `trace/tasks/geometry/shared/graph_paper.py`, `graph_rendering.py`, `single_object_scene.py`, `angle_geometry.py`, `multi_angle_scene.py`, `polygon_geometry.py`, `slope_geometry.py`, `shape_style.py`, `background_defaults.py`, `noise_defaults.py`, `render_variation.py`, `annotation_values.py`, `labeled_point_evidence.py`, `point_labels.py`, `prompt_text.py`, `analytical_2d_scene.py`, `analytical_3d_solids.py`, `solid_scene.py`, `function_graph_scene.py`, `analytical_task.py`, `complexity.py`, `consolidated_sampling.py`, `consolidated_legacy.py`
@@ -230,7 +238,13 @@ Promote helpers when a second consumer appears.
    - `style.py` is the shared physics-domain named-theme layer; it owns reusable accent-color palettes for non-semantic physics styling (currently mechanics, spring cards, resistor-network scenes, and optics boards) so new physics tasks do not hardcode separate per-task color mixes.
    - `support_sampling.py` is the shared physics-domain integer-support resolver layer; use it when multiple physics tasks need the same deterministic support-list parsing and balanced answer cycling behavior instead of keeping parallel local helpers. When a physics task has a tiny fixed answer support and review collection samples consecutive seeds, prefer the helper's direct `instance_seed` cycling option over a hashed namespace-only cycle so per-variant distributions stay flat under task review; when a task balances multiple axes under the same review `_sampling_index`, use the helper's namespace-specific explicit-index decorrelation so scene/query cycling does not alias the answer support.
    - `visual_defaults.py` is the canonical physics-domain background/noise loader layer shared across future mechanics / circuits / optics task groups.
-14. Diagrams: `trace/tasks/diagrams/shared/common.py`, `complexity.py`, `visual_defaults.py`, `flow_common.py`, `flow_scene.py`, `hierarchy_common.py`, `hierarchy_scene.py`, `cycle_common.py`, `cycle_scene.py`, `set_common.py`, `set_scene.py`, `schematic_common.py`, `schematic_scene.py`
+14. Games: `trace/tasks/games/shared/card_scene.py`, `domino_scene.py`, `complexity.py`, `style.py`, `visual_defaults.py`
+   - `card_scene.py` is the shared games-domain face-up card-hand renderer; it owns centered one-row / two-row card layout, `REF` banner rendering, continuation-cue chrome, and card bbox tracing for card-hand tasks.
+   - `domino_scene.py` is the shared games-domain domino renderer; it owns top-chain plus loose-tableau layout, pip drawing, `REF` tag / open-end highlight chrome, and domino bbox tracing for domino-chain tasks.
+   - `complexity.py` is the shared games-domain complexity layer; it owns normalized `[0,1]` scoring helpers, complexity-weight resolution, and weighted-mean `TaskComplexity` construction for games tasks.
+   - `style.py` is the shared games-domain theme layer; it owns reusable card and domino chrome/shadow/reference styling so new games tasks do not hardcode separate palettes.
+   - `visual_defaults.py` is the canonical games-domain background/noise loader layer shared across future games task groups.
+15. Diagrams: `trace/tasks/diagrams/shared/common.py`, `complexity.py`, `visual_defaults.py`, `flow_common.py`, `flow_scene.py`, `hierarchy_common.py`, `hierarchy_scene.py`, `cycle_common.py`, `cycle_scene.py`, `set_common.py`, `set_scene.py`, `schematic_common.py`, `schematic_scene.py`
    - `common.py` provides canonical diagrams-axis resolution, prompt-facing bbox projection, and shared panel/title helpers for diagram tasks that sample semantic and visual variants deterministically.
    - `complexity.py` is the shared diagrams-domain complexity layer; it owns the normalized `[0,1]` scoring helpers, complexity-weight resolution, and weighted-mean `TaskComplexity` construction.
    - `visual_defaults.py` is the canonical diagrams-domain background/noise loader layer shared across future diagrams task groups.
@@ -244,7 +258,7 @@ Promote helpers when a second consumer appears.
    - `set_scene.py` is the canonical set-overlap renderer for active diagrams set tasks; it owns panel/title chrome, blended overlap-region drawing, set-label placement, digit placement, and traced region/digit bbox maps.
    - `schematic_common.py` is the shared schematic-diagram helper layer; it owns task/scene variant resolution, part-slot templates, annotated part/callout dataset construction, and render-param resolution for active schematic tasks.
    - `schematic_scene.py` is the canonical annotated schematic renderer for active diagrams schematic tasks; it owns chassis chrome, part drawing, callout-circle placement, leader routing, and traced part/callout/leader bbox maps.
-15. Documents: `trace/tasks/documents/shared/common.py`, `complexity.py`, `visual_defaults.py`, `text_generation.py`, `document_common.py`, `sectioned_document_common.py`, `arithmetic_common.py`, `layout_common.py`, `relation_common.py`, `selection_common.py`, `document_scene.py`
+16. Documents: `trace/tasks/documents/shared/common.py`, `complexity.py`, `visual_defaults.py`, `text_generation.py`, `document_common.py`, `sectioned_document_common.py`, `arithmetic_common.py`, `layout_common.py`, `relation_common.py`, `selection_common.py`, `document_scene.py`
    - `common.py` provides canonical documents-axis resolution and prompt-facing bbox evidence projection helpers for document tasks that sample semantic and visual variants deterministically.
    - `common.py` also owns the canonical field-spec and section-spec builders for structured document tasks that derive prompt/trace fields from typed visible values.
    - `complexity.py` is the shared documents-domain complexity layer; it owns the normalized `[0,1]` scoring helpers, complexity-weight resolution, and weighted-mean `TaskComplexity` construction.

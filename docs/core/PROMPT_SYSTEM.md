@@ -130,7 +130,10 @@ Active bundles:
    - `prompts/diagrams/hierarchy/diagrams_hierarchy_v1.json`
    - `prompts/diagrams/schematic/diagrams_schematic_v1.json`
    - `prompts/diagrams/set_diagram/diagrams_set_diagram_v1.json`
-12. Physics:
+12. Games:
+   - `prompts/games/cards/games_cards_v1.json`
+   - `prompts/games/dominoes/games_dominoes_v1.json`
+13. Physics:
    - `prompts/physics/mechanics/physics_mechanics_v1.json`
    - `prompts/physics/circuits/physics_circuits_v1.json`
    - `prompts/physics/optics/physics_optics_v1.json`
@@ -211,7 +214,10 @@ Active task-to-bundle mapping:
    - `task_documents_readout_field_value` -> `documents_readout_v1`
    - `task_documents_relation_section_extremum_value` -> `documents_relation_v1`
    - `task_documents_selection_checkbox_count` -> `documents_selection_v1`
-19. Physics:
+19. Games:
+   - `task_games_cards_hand_count` -> `games_cards_v1`
+   - `task_games_dominoes_chain_count` -> `games_dominoes_v1`
+20. Physics:
    - `task_physics_mechanics_force_diagram|task_physics_mechanics_lever_balance|task_physics_mechanics_spring_extension` -> `physics_mechanics_v1`
    - `task_physics_circuits_equivalent_resistance` -> `physics_circuits_v1`
    - `task_physics_optics_ray_trace` -> `physics_optics_v1`

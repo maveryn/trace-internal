@@ -1,0 +1,791 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 5
+  },
+  "evidence_gt": {
+    "type": "bbox_set",
+    "value": [
+      [
+        373.0,
+        290.0,
+        471.0,
+        432.0
+      ],
+      [
+        485.0,
+        290.0,
+        583.0,
+        432.0
+      ],
+      [
+        597.0,
+        290.0,
+        695.0,
+        432.0
+      ],
+      [
+        709.0,
+        290.0,
+        807.0,
+        432.0
+      ],
+      [
+        821.0,
+        290.0,
+        919.0,
+        432.0
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "games/task_games_cards_hand_count/images/longest_run_length/0000.png"
+  },
+  "instance_seed": 8122507461412956,
+  "prompt": "Look at the card-hand image. It shows one visible hand of face-up playing cards arranged across two rows on a green table. Answer the question using the visible cards in the hand. Use rank order 2 < 3 < 4 < 5 < 6 < 7 < 8 < 9 < 10 < J < Q < K < A, with Ace high only. Ignore suits. If the cards continue onto a second row, read the top row from left to right and then continue on the next row following the continuation cue. Determine the size of the longest consecutive run when the cards are read in display order. Answer with an integer.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for the cards in the unique longest run.\nAnswer rule: set \"answer\" to the length of the unique longest consecutive run.\nExample JSON:\n{\"evidence\":[[276,188,374,330],[388,188,486,330],[500,188,598,330],[612,188,710,330]],\"answer\":4}",
+  "prompt_variants": {
+    "answer_and_evidence": "Look at the card-hand image. It shows one visible hand of face-up playing cards arranged across two rows on a green table. Answer the question using the visible cards in the hand. Use rank order 2 < 3 < 4 < 5 < 6 < 7 < 8 < 9 < 10 < J < Q < K < A, with Ace high only. Ignore suits. If the cards continue onto a second row, read the top row from left to right and then continue on the next row following the continuation cue. Determine the size of the longest consecutive run when the cards are read in display order. Answer with an integer.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for the cards in the unique longest run.\nAnswer rule: set \"answer\" to the length of the unique longest consecutive run.\nExample JSON:\n{\"evidence\":[[276,188,374,330],[388,188,486,330],[500,188,598,330],[612,188,710,330]],\"answer\":4}",
+    "answer_only": "Look at the card-hand image. It shows one visible hand of face-up playing cards arranged across two rows on a green table. Answer the question using the visible cards in the hand. Use rank order 2 < 3 < 4 < 5 < 6 < 7 < 8 < 9 < 10 < J < Q < K < A, with Ace high only. Ignore suits. If the cards continue onto a second row, read the top row from left to right and then continue on the next row following the continuation cue. Determine the size of the longest consecutive run when the cards are read in display order. Answer with an integer.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the length of the unique longest consecutive run.\nExample JSON:\n{\"answer\":4}"
+  },
+  "task": "task_games_cards_hand_count",
+  "task_variant": "longest_run_length",
+  "trace_payload": {
+    "background": {
+      "available_styles": [
+        "felt_green"
+      ],
+      "enabled": true,
+      "selected_style": "felt_green",
+      "style_spec": {
+        "color": [
+          42,
+          92,
+          74
+        ],
+        "kind": "solid"
+      }
+    },
+    "execution_trace": {
+      "card_count": 12,
+      "card_count_support": [
+        11,
+        12,
+        13,
+        14
+      ],
+      "card_specs": [
+        {
+          "card_id": "card_01",
+          "is_reference": false,
+          "order_index": 0,
+          "rank_label": "K",
+          "rank_value": 13,
+          "suit_name": "diamonds"
+        },
+        {
+          "card_id": "card_02",
+          "is_reference": false,
+          "order_index": 1,
+          "rank_label": "10",
+          "rank_value": 10,
+          "suit_name": "clubs"
+        },
+        {
+          "card_id": "card_03",
+          "is_reference": false,
+          "order_index": 2,
+          "rank_label": "10",
+          "rank_value": 10,
+          "suit_name": "diamonds"
+        },
+        {
+          "card_id": "card_04",
+          "is_reference": false,
+          "order_index": 3,
+          "rank_label": "Q",
+          "rank_value": 12,
+          "suit_name": "diamonds"
+        },
+        {
+          "card_id": "card_05",
+          "is_reference": false,
+          "order_index": 4,
+          "rank_label": "2",
+          "rank_value": 2,
+          "suit_name": "spades"
+        },
+        {
+          "card_id": "card_06",
+          "is_reference": false,
+          "order_index": 5,
+          "rank_label": "J",
+          "rank_value": 11,
+          "suit_name": "diamonds"
+        },
+        {
+          "card_id": "card_07",
+          "is_reference": false,
+          "order_index": 6,
+          "rank_label": "A",
+          "rank_value": 14,
+          "suit_name": "diamonds"
+        },
+        {
+          "card_id": "card_08",
+          "is_reference": false,
+          "order_index": 7,
+          "rank_label": "4",
+          "rank_value": 4,
+          "suit_name": "diamonds"
+        },
+        {
+          "card_id": "card_09",
+          "is_reference": false,
+          "order_index": 8,
+          "rank_label": "5",
+          "rank_value": 5,
+          "suit_name": "diamonds"
+        },
+        {
+          "card_id": "card_10",
+          "is_reference": false,
+          "order_index": 9,
+          "rank_label": "6",
+          "rank_value": 6,
+          "suit_name": "clubs"
+        },
+        {
+          "card_id": "card_11",
+          "is_reference": false,
+          "order_index": 10,
+          "rank_label": "7",
+          "rank_value": 7,
+          "suit_name": "hearts"
+        },
+        {
+          "card_id": "card_12",
+          "is_reference": false,
+          "order_index": 11,
+          "rank_label": "8",
+          "rank_value": 8,
+          "suit_name": "hearts"
+        }
+      ],
+      "evidence_entity_ids": [
+        "card_08",
+        "card_09",
+        "card_10",
+        "card_11",
+        "card_12"
+      ],
+      "query_variant": "longest_run_length",
+      "rank_sequence": [
+        13,
+        10,
+        10,
+        12,
+        2,
+        11,
+        14,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "reference_card_id": null,
+      "reference_rank_label": null,
+      "reference_rank_value": null,
+      "reference_suit_name": null,
+      "scene_variant": "two_row",
+      "style_variant": "soft",
+      "target_answer": 5,
+      "target_answer_support": [
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "task_variant": "longest_run_length"
+    },
+    "post_image_noise": {
+      "applied": false,
+      "apply_prob": 0.0,
+      "edit_count_range": [
+        1,
+        2
+      ],
+      "edit_types": [
+        "blur",
+        "downsample",
+        "jpeg",
+        "noise"
+      ],
+      "edits": [],
+      "enabled": false
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          373.0,
+          290.0,
+          471.0,
+          432.0
+        ],
+        [
+          485.0,
+          290.0,
+          583.0,
+          432.0
+        ],
+        [
+          597.0,
+          290.0,
+          695.0,
+          432.0
+        ],
+        [
+          709.0,
+          290.0,
+          807.0,
+          432.0
+        ],
+        [
+          821.0,
+          290.0,
+          919.0,
+          432.0
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "card_count": 12,
+        "card_count_probabilities": {
+          "11": 0.25,
+          "12": 0.25,
+          "13": 0.25,
+          "14": 0.25
+        },
+        "card_count_support": [
+          11,
+          12,
+          13,
+          14
+        ],
+        "query_variant": "longest_run_length",
+        "query_variant_probabilities": {
+          "higher_than_reference_count": 0.0,
+          "longest_run_length": 1.0,
+          "pair_count": 0.0,
+          "same_suit_as_reference_count": 0.0
+        },
+        "scene_variant": "two_row",
+        "scene_variant_probabilities": {
+          "single_row": 0.5,
+          "two_row": 0.5
+        },
+        "style_variant": "soft",
+        "style_variant_probabilities": {
+          "classic": 0.3333333333333333,
+          "outlined": 0.3333333333333333,
+          "soft": 0.3333333333333333
+        },
+        "target_answer": 5,
+        "target_answer_probabilities": {
+          "2": 0.2,
+          "3": 0.2,
+          "4": 0.2,
+          "5": 0.2,
+          "6": 0.2
+        },
+        "target_answer_support": [
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "task_variant": "longest_run_length",
+        "task_variant_probabilities": {
+          "higher_than_reference_count": 0.0,
+          "longest_run_length": 1.0,
+          "pair_count": 0.0,
+          "same_suit_as_reference_count": 0.0
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 4,
+        "prompt_bundle_id": "games_cards_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the length of the unique longest consecutive run",
+          "continuation_rule_text": "If the cards continue onto a second row, read the top row from left to right and then continue on the next row following the continuation cue.",
+          "evidence_hint": "set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for the cards in the unique longest run",
+          "json_example": "{\"evidence\":[[276,188,374,330],[388,188,486,330],[500,188,598,330],[612,188,710,330]],\"answer\":4}",
+          "json_example_answer_only": "{\"answer\":4}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "one visible hand of face-up playing cards arranged across two rows on a green table",
+          "rank_order_text": "Use rank order 2 < 3 < 4 < 5 < 6 < 7 < 8 < 9 < 10 < J < Q < K < A, with Ace high only."
+        },
+        "task_family_key": "visible_card_hand",
+        "task_family_variant_index": 1,
+        "task_key": "cards_hand_query",
+        "task_variant_index": 0,
+        "task_variant_key": "longest_run_length",
+        "task_variant_template_index": 3,
+        "template_paths": [
+          "games/cards/games_cards_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:cards_hand_query": 5,
+          "task_family:visible_card_hand": 5,
+          "task_variant:longest_run_length": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 4,
+            "prompt_bundle_id": "games_cards_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the length of the unique longest consecutive run",
+              "continuation_rule_text": "If the cards continue onto a second row, read the top row from left to right and then continue on the next row following the continuation cue.",
+              "evidence_hint": "set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for the cards in the unique longest run",
+              "json_example": "{\"evidence\":[[276,188,374,330],[388,188,486,330],[500,188,598,330],[612,188,710,330]],\"answer\":4}",
+              "json_example_answer_only": "{\"answer\":4}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "one visible hand of face-up playing cards arranged across two rows on a green table",
+              "rank_order_text": "Use rank order 2 < 3 < 4 < 5 < 6 < 7 < 8 < 9 < 10 < J < Q < K < A, with Ace high only."
+            },
+            "task_family_key": "visible_card_hand",
+            "task_family_variant_index": 1,
+            "task_key": "cards_hand_query",
+            "task_variant_index": 0,
+            "task_variant_key": "longest_run_length",
+            "task_variant_template_index": 3,
+            "template_paths": [
+              "games/cards/games_cards_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:cards_hand_query": 5,
+              "task_family:visible_card_hand": 5,
+              "task_variant:longest_run_length": 5
+            }
+          },
+          "prompt": "Look at the card-hand image. It shows one visible hand of face-up playing cards arranged across two rows on a green table. Answer the question using the visible cards in the hand. Use rank order 2 < 3 < 4 < 5 < 6 < 7 < 8 < 9 < 10 < J < Q < K < A, with Ace high only. Ignore suits. If the cards continue onto a second row, read the top row from left to right and then continue on the next row following the continuation cue. Determine the size of the longest consecutive run when the cards are read in display order. Answer with an integer.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for the cards in the unique longest run.\nAnswer rule: set \"answer\" to the length of the unique longest consecutive run.\nExample JSON:\n{\"evidence\":[[276,188,374,330],[388,188,486,330],[500,188,598,330],[612,188,710,330]],\"answer\":4}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 4,
+            "prompt_bundle_id": "games_cards_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the length of the unique longest consecutive run",
+              "continuation_rule_text": "If the cards continue onto a second row, read the top row from left to right and then continue on the next row following the continuation cue.",
+              "evidence_hint": "set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for the cards in the unique longest run",
+              "json_example": "{\"evidence\":[[276,188,374,330],[388,188,486,330],[500,188,598,330],[612,188,710,330]],\"answer\":4}",
+              "json_example_answer_only": "{\"answer\":4}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "one visible hand of face-up playing cards arranged across two rows on a green table",
+              "rank_order_text": "Use rank order 2 < 3 < 4 < 5 < 6 < 7 < 8 < 9 < 10 < J < Q < K < A, with Ace high only."
+            },
+            "task_family_key": "visible_card_hand",
+            "task_family_variant_index": 1,
+            "task_key": "cards_hand_query",
+            "task_variant_index": 0,
+            "task_variant_key": "longest_run_length",
+            "task_variant_template_index": 3,
+            "template_paths": [
+              "games/cards/games_cards_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:cards_hand_query": 5,
+              "task_family:visible_card_hand": 5,
+              "task_variant:longest_run_length": 5
+            }
+          },
+          "prompt": "Look at the card-hand image. It shows one visible hand of face-up playing cards arranged across two rows on a green table. Answer the question using the visible cards in the hand. Use rank order 2 < 3 < 4 < 5 < 6 < 7 < 8 < 9 < 10 < J < Q < K < A, with Ace high only. Ignore suits. If the cards continue onto a second row, read the top row from left to right and then continue on the next row following the continuation cue. Determine the size of the longest consecutive run when the cards are read in display order. Answer with an integer.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the length of the unique longest consecutive run.\nExample JSON:\n{\"answer\":4}"
+        }
+      },
+      "task_variant": "longest_run_length",
+      "template_id": "games_cards_v1"
+    },
+    "render_map": {
+      "card_bboxes_px": {
+        "card_01": [
+          261.0,
+          56.0,
+          359.0,
+          198.0
+        ],
+        "card_02": [
+          373.0,
+          56.0,
+          471.0,
+          198.0
+        ],
+        "card_03": [
+          485.0,
+          56.0,
+          583.0,
+          198.0
+        ],
+        "card_04": [
+          597.0,
+          56.0,
+          695.0,
+          198.0
+        ],
+        "card_05": [
+          709.0,
+          56.0,
+          807.0,
+          198.0
+        ],
+        "card_06": [
+          821.0,
+          56.0,
+          919.0,
+          198.0
+        ],
+        "card_07": [
+          261.0,
+          290.0,
+          359.0,
+          432.0
+        ],
+        "card_08": [
+          373.0,
+          290.0,
+          471.0,
+          432.0
+        ],
+        "card_09": [
+          485.0,
+          290.0,
+          583.0,
+          432.0
+        ],
+        "card_10": [
+          597.0,
+          290.0,
+          695.0,
+          432.0
+        ],
+        "card_11": [
+          709.0,
+          290.0,
+          807.0,
+          432.0
+        ],
+        "card_12": [
+          821.0,
+          290.0,
+          919.0,
+          432.0
+        ]
+      },
+      "continuation_cue_bbox_px": [
+        943.0,
+        202.5,
+        1081.0,
+        221.5
+      ],
+      "reference_card_ids": [],
+      "row_card_ids": [
+        [
+          "card_01",
+          "card_02",
+          "card_03",
+          "card_04",
+          "card_05",
+          "card_06"
+        ],
+        [
+          "card_07",
+          "card_08",
+          "card_09",
+          "card_10",
+          "card_11",
+          "card_12"
+        ]
+      ],
+      "scene_variant": "two_row",
+      "style_variant": "soft"
+    },
+    "render_spec": {
+      "canvas_height": 760,
+      "canvas_width": 1180,
+      "scene_variant": "two_row",
+      "style_variant": "soft"
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "bbox_px": [
+            261.0,
+            56.0,
+            359.0,
+            198.0
+          ],
+          "entity_id": "card_01",
+          "entity_type": "playing_card",
+          "meta": {
+            "is_reference": false,
+            "order_index": 0,
+            "rank_label": "K",
+            "rank_value": 13,
+            "row_index": 0,
+            "suit_name": "diamonds"
+          }
+        },
+        {
+          "bbox_px": [
+            373.0,
+            56.0,
+            471.0,
+            198.0
+          ],
+          "entity_id": "card_02",
+          "entity_type": "playing_card",
+          "meta": {
+            "is_reference": false,
+            "order_index": 1,
+            "rank_label": "10",
+            "rank_value": 10,
+            "row_index": 0,
+            "suit_name": "clubs"
+          }
+        },
+        {
+          "bbox_px": [
+            485.0,
+            56.0,
+            583.0,
+            198.0
+          ],
+          "entity_id": "card_03",
+          "entity_type": "playing_card",
+          "meta": {
+            "is_reference": false,
+            "order_index": 2,
+            "rank_label": "10",
+            "rank_value": 10,
+            "row_index": 0,
+            "suit_name": "diamonds"
+          }
+        },
+        {
+          "bbox_px": [
+            597.0,
+            56.0,
+            695.0,
+            198.0
+          ],
+          "entity_id": "card_04",
+          "entity_type": "playing_card",
+          "meta": {
+            "is_reference": false,
+            "order_index": 3,
+            "rank_label": "Q",
+            "rank_value": 12,
+            "row_index": 0,
+            "suit_name": "diamonds"
+          }
+        },
+        {
+          "bbox_px": [
+            709.0,
+            56.0,
+            807.0,
+            198.0
+          ],
+          "entity_id": "card_05",
+          "entity_type": "playing_card",
+          "meta": {
+            "is_reference": false,
+            "order_index": 4,
+            "rank_label": "2",
+            "rank_value": 2,
+            "row_index": 0,
+            "suit_name": "spades"
+          }
+        },
+        {
+          "bbox_px": [
+            821.0,
+            56.0,
+            919.0,
+            198.0
+          ],
+          "entity_id": "card_06",
+          "entity_type": "playing_card",
+          "meta": {
+            "is_reference": false,
+            "order_index": 5,
+            "rank_label": "J",
+            "rank_value": 11,
+            "row_index": 0,
+            "suit_name": "diamonds"
+          }
+        },
+        {
+          "bbox_px": [
+            261.0,
+            290.0,
+            359.0,
+            432.0
+          ],
+          "entity_id": "card_07",
+          "entity_type": "playing_card",
+          "meta": {
+            "is_reference": false,
+            "order_index": 6,
+            "rank_label": "A",
+            "rank_value": 14,
+            "row_index": 1,
+            "suit_name": "diamonds"
+          }
+        },
+        {
+          "bbox_px": [
+            373.0,
+            290.0,
+            471.0,
+            432.0
+          ],
+          "entity_id": "card_08",
+          "entity_type": "playing_card",
+          "meta": {
+            "is_reference": false,
+            "order_index": 7,
+            "rank_label": "4",
+            "rank_value": 4,
+            "row_index": 1,
+            "suit_name": "diamonds"
+          }
+        },
+        {
+          "bbox_px": [
+            485.0,
+            290.0,
+            583.0,
+            432.0
+          ],
+          "entity_id": "card_09",
+          "entity_type": "playing_card",
+          "meta": {
+            "is_reference": false,
+            "order_index": 8,
+            "rank_label": "5",
+            "rank_value": 5,
+            "row_index": 1,
+            "suit_name": "diamonds"
+          }
+        },
+        {
+          "bbox_px": [
+            597.0,
+            290.0,
+            695.0,
+            432.0
+          ],
+          "entity_id": "card_10",
+          "entity_type": "playing_card",
+          "meta": {
+            "is_reference": false,
+            "order_index": 9,
+            "rank_label": "6",
+            "rank_value": 6,
+            "row_index": 1,
+            "suit_name": "clubs"
+          }
+        },
+        {
+          "bbox_px": [
+            709.0,
+            290.0,
+            807.0,
+            432.0
+          ],
+          "entity_id": "card_11",
+          "entity_type": "playing_card",
+          "meta": {
+            "is_reference": false,
+            "order_index": 10,
+            "rank_label": "7",
+            "rank_value": 7,
+            "row_index": 1,
+            "suit_name": "hearts"
+          }
+        },
+        {
+          "bbox_px": [
+            821.0,
+            290.0,
+            919.0,
+            432.0
+          ],
+          "entity_id": "card_12",
+          "entity_type": "playing_card",
+          "meta": {
+            "is_reference": false,
+            "order_index": 11,
+            "rank_label": "8",
+            "rank_value": 8,
+            "row_index": 1,
+            "suit_name": "hearts"
+          }
+        }
+      ],
+      "relations": {
+        "card_count": 12,
+        "evidence_entity_ids": [
+          "card_08",
+          "card_09",
+          "card_10",
+          "card_11",
+          "card_12"
+        ],
+        "query_variant": "longest_run_length",
+        "reference_card_id": null,
+        "scene_variant": "two_row",
+        "style_variant": "soft",
+        "target_answer": 5,
+        "task_variant": "longest_run_length"
+      },
+      "scene_kind": "games_cards_hand_two_row"
+    },
+    "witness_symbolic": {
+      "ids": [
+        "card_08",
+        "card_09",
+        "card_10",
+        "card_11",
+        "card_12"
+      ],
+      "type": "id_set"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

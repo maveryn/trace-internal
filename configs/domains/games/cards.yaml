@@ -1,0 +1,74 @@
+generation:
+  shared: {}
+  task_overrides:
+    task_games_cards_hand_count:
+      scene_variant_weights:
+        single_row: 1.0
+        two_row: 1.0
+      query_variant_weights:
+        same_suit_as_reference_count: 1.0
+        higher_than_reference_count: 1.0
+        pair_count: 1.0
+        longest_run_length: 1.0
+      style_variant_weights:
+        classic: 1.0
+        soft: 1.0
+        outlined: 1.0
+      balanced_scene_variant_sampling: true
+      balanced_query_variant_sampling: true
+      balanced_style_variant_sampling: true
+      balanced_target_answer_sampling: true
+      balanced_card_count_sampling: true
+      same_suit_target_answer_support: [0, 1, 2, 3, 4, 5]
+      higher_rank_target_answer_support: [0, 1, 2, 3, 4, 5]
+      pair_count_support: [0, 1, 2, 3, 4]
+      longest_run_length_support: [2, 3, 4, 5, 6]
+      single_row_card_count_support: [7, 8, 9, 10]
+      two_row_card_count_support: [11, 12, 13, 14]
+
+rendering:
+  shared:
+    canvas_width: 1180
+    canvas_height: 760
+    card_width_px: 98
+    card_height_px: 142
+    panel_margin_px: 56
+    card_gap_px: 14
+    row_gap_px: 92
+    card_corner_radius_px: 14
+    rank_font_size_px: 22
+    center_symbol_font_size_px: 54
+    reference_banner_height_px: 24
+    reference_font_size_px: 16
+    continuation_font_size_px: 22
+    continuation_gap_px: 28
+
+complexity:
+  shared: {}
+  task_overrides:
+    task_games_cards_hand_count:
+      criteria_weights:
+        visual_scan: 0.28
+        card_reasoning: 0.44
+        ambiguity: 0.16
+        output_burden: 0.12
+
+prompt:
+  shared:
+    bundle_id: games_cards_v1
+  task_overrides:
+    task_games_cards_hand_count:
+      task_family_key: visible_card_hand
+      task_key: cards_hand_query
+      object_description_single_row: one visible hand of face-up playing cards arranged in a single row on a green table
+      object_description_two_row: one visible hand of face-up playing cards arranged across two rows on a green table
+      rank_order_text: Use rank order 2 < 3 < 4 < 5 < 6 < 7 < 8 < 9 < 10 < J < Q < K < A, with Ace high only.
+      continuation_rule_text: If the cards continue onto a second row, read the top row from left to right and then continue on the next row following the continuation cue.
+      evidence_hint_same_suit_as_reference_count: set "evidence" to an array of bounding boxes [x1, y1, x2, y2] for every non-reference card with the same suit as the reference card
+      evidence_hint_higher_than_reference_count: set "evidence" to an array of bounding boxes [x1, y1, x2, y2] for every non-reference card ranked higher than the reference card
+      evidence_hint_pair_count: set "evidence" to an array of bounding boxes [x1, y1, x2, y2] for every card that belongs to one of the counted exact pairs
+      evidence_hint_longest_run_length: set "evidence" to an array of bounding boxes [x1, y1, x2, y2] for the cards in the unique longest run
+      answer_hint_same_suit_as_reference_count: set "answer" to the number of non-reference cards that share the reference card's suit
+      answer_hint_higher_than_reference_count: set "answer" to the number of non-reference cards ranked higher than the reference card
+      answer_hint_pair_count: set "answer" to the number of ranks that appear exactly twice in the hand
+      answer_hint_longest_run_length: set "answer" to the length of the unique longest consecutive run

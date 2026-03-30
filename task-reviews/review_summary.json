@@ -8,107 +8,34 @@
     "random_count": 100,
     "seed": 0,
     "tasks": [
-      "task_diagrams_cycle_offset_stage_label",
-      "task_diagrams_flow_next_step_label",
-      "task_diagrams_hierarchy_ancestor_label",
-      "task_diagrams_schematic_callout_target_label",
-      "task_diagrams_set_diagram_region_sum_value"
+      "task_games_dominoes_chain_count"
     ],
     "workers": 16
   },
   "summary": {
     "distribution_tasks_failed": 0,
     "failed_distribution_task_ids": [],
-    "total_tasks": 5
+    "total_tasks": 1
   },
   "tasks": [
     {
       "distribution_pass": true,
-      "domain": "diagrams",
-      "inspection_count": 50,
-      "inspection_workbook": "diagrams/task_diagrams_cycle_offset_stage_label/task_diagrams_cycle_offset_stage_label.xlsx",
+      "domain": "games",
+      "inspection_count": 100,
+      "inspection_workbook": "games/task_games_dominoes_chain_count/task_games_dominoes_chain_count.xlsx",
       "inspection_workbook_sheets": {
-        "after_k_steps": "after_k_steps",
-        "before_k_steps": "before_k_steps"
+        "double_count": "double_count",
+        "higher_sum_than_reference_count": "higher_sum_than_reference_count",
+        "matching_end_count": "matching_end_count",
+        "sum_to_target_count": "sum_to_target_count"
       },
       "reports": {
-        "distribution_review": "diagrams/task_diagrams_cycle_offset_stage_label/distribution_review.json",
-        "inspection_manifest": "diagrams/task_diagrams_cycle_offset_stage_label/manifest.json",
-        "random_review": "diagrams/task_diagrams_cycle_offset_stage_label/random_review_100.json"
+        "distribution_review": "games/task_games_dominoes_chain_count/distribution_review.json",
+        "inspection_manifest": "games/task_games_dominoes_chain_count/manifest.json",
+        "random_review": "games/task_games_dominoes_chain_count/random_review_100.json"
       },
-      "task_group": "cycle",
-      "task_id": "task_diagrams_cycle_offset_stage_label"
-    },
-    {
-      "distribution_pass": true,
-      "domain": "diagrams",
-      "inspection_count": 50,
-      "inspection_workbook": "diagrams/task_diagrams_flow_next_step_label/task_diagrams_flow_next_step_label.xlsx",
-      "inspection_workbook_sheets": {
-        "branch_next_step": "branch_next_step",
-        "direct_next_step": "direct_next_step"
-      },
-      "reports": {
-        "distribution_review": "diagrams/task_diagrams_flow_next_step_label/distribution_review.json",
-        "inspection_manifest": "diagrams/task_diagrams_flow_next_step_label/manifest.json",
-        "random_review": "diagrams/task_diagrams_flow_next_step_label/random_review_100.json"
-      },
-      "task_group": "flow",
-      "task_id": "task_diagrams_flow_next_step_label"
-    },
-    {
-      "distribution_pass": true,
-      "domain": "diagrams",
-      "inspection_count": 50,
-      "inspection_workbook": "diagrams/task_diagrams_hierarchy_ancestor_label/task_diagrams_hierarchy_ancestor_label.xlsx",
-      "inspection_workbook_sheets": {
-        "lowest_common_ancestor_of_two_nodes": "lowest_common_ancestor_of_two_n",
-        "parent_of_node": "parent_of_node"
-      },
-      "reports": {
-        "distribution_review": "diagrams/task_diagrams_hierarchy_ancestor_label/distribution_review.json",
-        "inspection_manifest": "diagrams/task_diagrams_hierarchy_ancestor_label/manifest.json",
-        "random_review": "diagrams/task_diagrams_hierarchy_ancestor_label/random_review_100.json"
-      },
-      "task_group": "hierarchy",
-      "task_id": "task_diagrams_hierarchy_ancestor_label"
-    },
-    {
-      "distribution_pass": true,
-      "domain": "diagrams",
-      "inspection_count": 50,
-      "inspection_workbook": "diagrams/task_diagrams_schematic_callout_target_label/task_diagrams_schematic_callout_target_label.xlsx",
-      "inspection_workbook_sheets": {
-        "callout_for_highlighted_part": "callout_for_highlighted_part",
-        "callout_for_named_part": "callout_for_named_part"
-      },
-      "reports": {
-        "distribution_review": "diagrams/task_diagrams_schematic_callout_target_label/distribution_review.json",
-        "inspection_manifest": "diagrams/task_diagrams_schematic_callout_target_label/manifest.json",
-        "random_review": "diagrams/task_diagrams_schematic_callout_target_label/random_review_100.json"
-      },
-      "task_group": "schematic",
-      "task_id": "task_diagrams_schematic_callout_target_label"
-    },
-    {
-      "distribution_pass": true,
-      "domain": "diagrams",
-      "inspection_count": 125,
-      "inspection_workbook": "diagrams/task_diagrams_set_diagram_region_sum_value/task_diagrams_set_diagram_region_sum_value.xlsx",
-      "inspection_workbook_sheets": {
-        "sum_in_exactly_two_sets": "sum_in_exactly_two_sets",
-        "sum_in_named_intersection": "sum_in_named_intersection",
-        "sum_in_named_set": "sum_in_named_set",
-        "sum_in_named_union": "sum_in_named_union",
-        "sum_only_in_named_set": "sum_only_in_named_set"
-      },
-      "reports": {
-        "distribution_review": "diagrams/task_diagrams_set_diagram_region_sum_value/distribution_review.json",
-        "inspection_manifest": "diagrams/task_diagrams_set_diagram_region_sum_value/manifest.json",
-        "random_review": "diagrams/task_diagrams_set_diagram_region_sum_value/random_review_100.json"
-      },
-      "task_group": "set_diagram",
-      "task_id": "task_diagrams_set_diagram_region_sum_value"
+      "task_group": "dominoes",
+      "task_id": "task_games_dominoes_chain_count"
     }
   ]
 }

@@ -17,9 +17,10 @@
 11. Expand the new maps domain beyond `task_maps_region_association_label|task_maps_region_count` while reusing the same stylized region+legend scene contract first (`region_compare`, `region_lookup`) before moving into transit-map families.
 12. Expand the new diagrams domain beyond `task_diagrams_flow_next_step_label|task_diagrams_hierarchy_ancestor_label|task_diagrams_cycle_offset_stage_label|task_diagrams_set_diagram_region_sum_value|task_diagrams_schematic_callout_target_label` with additional schematic and flow/set tasks while reusing the same local-evidence diagram contracts and keeping swimlane as a scene variant rather than a separate task group.
 13. Expand the physics domain beyond `task_physics_mechanics_force_diagram|task_physics_mechanics_lever_balance|task_physics_mechanics_spring_extension|task_physics_circuits_equivalent_resistance|task_physics_optics_ray_trace` with additional mechanics / circuits / optics families while keeping tasks diagram-first and evidence local to the operative scene objects.
-14. Improve dataset QA diagnostics/report summaries.
-15. Extend geometry beyond the current value + transformation + similarity + coordinate + solid + graphing surface with additional visually distinct families (symmetry, solid/net reasoning, partition/region reasoning) rather than re-splitting value tasks back into one task id per predicate.
-16. Extend consolidated analytical geometry beyond the current `task_geometry_analytical_2d_value` / `task_geometry_analytical_3d_value` scene/query surface (additional 3D objectives, richer conic/composite-region reasoning).
+14. Expand the games domain beyond `task_games_cards_hand_count|task_games_dominoes_chain_count` with additional visible game-state families while keeping early evidence local to the operative pieces.
+15. Improve dataset QA diagnostics/report summaries.
+16. Extend geometry beyond the current value + transformation + similarity + coordinate + solid + graphing surface with additional visually distinct families (symmetry, solid/net reasoning, partition/region reasoning) rather than re-splitting value tasks back into one task id per predicate.
+17. Extend consolidated analytical geometry beyond the current `task_geometry_analytical_2d_value` / `task_geometry_analytical_3d_value` scene/query surface (additional 3D objectives, richer conic/composite-region reasoning).
 
 ## Later (P2)
 1. Add split-artifact generation with deterministic split policy metadata.

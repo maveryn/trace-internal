@@ -1,0 +1,97 @@
+{
+  "bundle_id": "games_dominoes_v1",
+  "schema_version": "v1",
+  "task_family_templates": {
+    "visible_domino_chain": [
+      "The image shows {object_description}.",
+      "Look at the domino scene in the image. It shows {object_description}.",
+      "You are given an image with {object_description}.",
+      "Work from the domino scene shown in the image: {object_description}.",
+      "Use the face-up domino layout in the image. It shows {object_description}."
+    ]
+  },
+  "task_templates": {
+    "domino_chain_query": [
+      "Answer the question using only the loose dominoes below the top chain unless the prompt says to compare with `REF`.",
+      "Read the loose dominoes below the top chain and determine the requested count.",
+      "Work from the visible loose dominoes below the chain to answer the question.",
+      "Use the displayed dominoes to determine the requested count.",
+      "Determine the requested domino-count value from the visible scene."
+    ]
+  },
+  "task_variant_templates": {
+    "matching_end_count": [
+      "The top chain ends with a tile marked `REF`. {connection_rule_text} How many loose dominoes below can connect to that open right end? Answer with an integer.",
+      "Focus on the tile marked `REF` at the end of the top chain. {connection_rule_text} Count the loose dominoes below that could connect to its open right end. Answer with an integer.",
+      "The chain's last tile is marked `REF`. {connection_rule_text} How many loose dominoes shown below match that open right end? Answer with an integer.",
+      "Using the `REF` tile at the end of the chain, {connection_rule_text} what is the number of loose dominoes below that could be attached to the open right end? Answer with an integer.",
+      "The right end of the `REF` tile is open. {connection_rule_text} How many loose dominoes below could legally connect there? Answer with an integer."
+    ],
+    "higher_sum_than_reference_count": [
+      "The tile marked `REF` is part of the top chain. {pip_sum_rule_text} How many loose dominoes below have a larger pip sum than `REF`? Answer with an integer.",
+      "{pip_sum_rule_text} Count the loose dominoes below whose pip sum is greater than the `REF` tile in the top chain. Answer with an integer.",
+      "Using the `REF` tile in the chain as the reference, {pip_sum_rule_text} how many loose dominoes below have a higher total? Answer with an integer.",
+      "{pip_sum_rule_text} What is the number of loose dominoes below whose pip sum exceeds the `REF` tile's pip sum? Answer with an integer.",
+      "Compare the loose dominoes below against the chain tile marked `REF`. {pip_sum_rule_text} How many loose dominoes below have a larger total? Answer with an integer."
+    ],
+    "sum_to_target_count": [
+      "{pip_sum_rule_text} How many loose dominoes below have pip sum equal to {target_total_text}? Answer with an integer.",
+      "Count the loose dominoes below whose pip sum is {target_total_text}. {pip_sum_rule_text} Answer with an integer.",
+      "{pip_sum_rule_text} What is the number of loose dominoes below with total {target_total_text}? Answer with an integer.",
+      "Looking only at the loose dominoes below the chain, {pip_sum_rule_text} how many have pip sum {target_total_text}? Answer with an integer.",
+      "{pip_sum_rule_text} Determine how many loose dominoes below add up to {target_total_text}. Answer with an integer."
+    ],
+    "double_count": [
+      "{double_rule_text} How many loose dominoes below are doubles? Answer with an integer.",
+      "Count the loose dominoes below that are doubles. {double_rule_text} Answer with an integer.",
+      "Looking only at the loose dominoes below the top chain, how many are doubles? {double_rule_text} Answer with an integer.",
+      "{double_rule_text} What is the number of loose dominoes below whose two halves match? Answer with an integer.",
+      "Among the loose dominoes below, how many are doubles? {double_rule_text} Answer with an integer."
+    ]
+  },
+  "required_slots_by_key": {
+    "task_family:visible_domino_chain": [
+      "object_description"
+    ],
+    "task_variant:matching_end_count": [
+      "connection_rule_text"
+    ],
+    "task_variant:higher_sum_than_reference_count": [
+      "pip_sum_rule_text"
+    ],
+    "task_variant:sum_to_target_count": [
+      "pip_sum_rule_text",
+      "target_total_text"
+    ],
+    "task_variant:double_count": [
+      "double_rule_text"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence: {evidence_hint}.\nAnswer: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence requirement: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence field: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence rule: {evidence_hint}.\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  }
+}

@@ -229,6 +229,8 @@ Use this checklist during implementation and refactor reviews.
 207. When retiring or simplifying a scene/query variant inside an active domain, scrub the removed surface from shared complexity docs and setup docs in the same patch; stale variant names make review/debug output harder to trust.
 208. For scene/query families with constructively limited answer supports, intersect configured answer supports with the feasible subset during sampling rather than silently falling back to impossible targets and skewing review distributions.
 209. When one task balances multiple axes under the same task-review `_sampling_index`, decorrelate those axes with namespace-specific explicit-index salts so scene cycling does not alias the answer-support cycle.
+210. For card-hand tasks whose reasoning depends on display order across wrapped rows, render an explicit continuation cue in the image and state the row-reading rule in the prompt; do not assume solvers will infer whether the second row restarts or continues the first row.
+211. For game-state tasks that use one visible reference/context object plus a separate candidate pool (for example a top domino chain plus loose tiles below), keep the prompt and prompt-facing evidence explicit that only the candidate pool is counted; do not widen evidence to the contextual reference pieces when those pieces are only there to define the predicate.
 
 ## 3) Process rule
 When a new reusable issue is discovered:

@@ -38,7 +38,7 @@ Use this whenever the task lives under `domain=physics`.
 - `trace/tasks/physics/shared/visual_defaults.py`
 - `trace/tasks/physics/shared/complexity.py`
 - `trace/tasks/physics/shared/style.py`
-- `trace/tasks/physics/shared/support_sampling.py`
+- `trace/tasks/shared/support_sampling.py`
 - `trace/tasks/shared/drawing.py`
 - `trace/tasks/shared/graph_point_evidence.py`
 - `trace/tasks/shared/text_rendering.py`

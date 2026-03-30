@@ -105,3 +105,5 @@ Current task docs:
 95. [task_physics_mechanics_spring_extension.md](task_physics_mechanics_spring_extension.md)
 96. [task_physics_circuits_equivalent_resistance.md](task_physics_circuits_equivalent_resistance.md)
 97. [task_physics_optics_ray_trace.md](task_physics_optics_ray_trace.md)
+98. [task_games_cards_hand_count.md](task_games_cards_hand_count.md)
+99. [task_games_dominoes_chain_count.md](task_games_dominoes_chain_count.md)

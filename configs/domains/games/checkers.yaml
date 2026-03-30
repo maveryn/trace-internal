@@ -1,0 +1,61 @@
+generation:
+  shared: {}
+  task_overrides:
+    task_games_checkers_move_count:
+      scene_variant_weights:
+        midgame_board: 1.0
+        crowded_board: 1.0
+      query_variant_weights:
+        legal_move_count: 1.0
+        capture_move_count: 1.0
+      style_variant_weights:
+        classic: 1.0
+        soft: 1.0
+        outlined: 1.0
+      balanced_scene_variant_sampling: true
+      balanced_query_variant_sampling: true
+      balanced_style_variant_sampling: true
+      balanced_target_answer_sampling: true
+      legal_move_count_support: [0, 1, 2, 3, 4, 5]
+      capture_move_count_support: [0, 1, 2, 3, 4]
+
+rendering:
+  shared:
+    canvas_width: 980
+    canvas_height: 920
+    panel_margin_px: 48
+    player_badge_height_px: 52
+    player_badge_width_px: 230
+    header_gap_px: 18
+    max_board_size_px: 780
+    board_corner_radius_px: 26
+    board_frame_width_px: 10
+    piece_inset_fraction: 0.17
+    player_badge_font_size_px: 22
+
+complexity:
+  shared: {}
+  task_overrides:
+    task_games_checkers_move_count:
+      criteria_weights:
+        visual_scan: 0.32
+        card_reasoning: 0.42
+        ambiguity: 0.16
+        output_burden: 0.10
+
+prompt:
+  shared:
+    bundle_id: games_checkers_v1
+  task_overrides:
+    task_games_checkers_move_count:
+      task_family_key: visible_checkers_board
+      task_key: checkers_move_query
+      object_description_midgame_board: one visible 8 by 8 checkers board with red and black pieces on the dark squares
+      object_description_crowded_board: one crowded visible 8 by 8 checkers board with many red and black pieces on the dark squares
+      capture_rule_text: A capture jumps diagonally over one adjacent opponent piece into the empty dark square immediately beyond.
+      single_jump_rule_text: Count only one move at a time and ignore any additional jumps after landing.
+      legal_move_rule_text: For this task, ordinary diagonal steps and single captures both count as legal moves, and captures are not mandatory.
+      evidence_hint_legal_move_count: set "evidence" to an array of bounding boxes [x1, y1, x2, y2] for every landing square of a legal move for the current player
+      evidence_hint_capture_move_count: set "evidence" to an array of bounding boxes [x1, y1, x2, y2] for every landing square of a legal capturing move for the current player
+      answer_hint_legal_move_count: set "answer" to the number of legal moves for the current player
+      answer_hint_capture_move_count: set "answer" to the number of legal capture moves for the current player

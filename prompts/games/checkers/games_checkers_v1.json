@@ -1,0 +1,83 @@
+{
+  "bundle_id": "games_checkers_v1",
+  "schema_version": "v1",
+  "task_family_templates": {
+    "visible_checkers_board": [
+      "The image shows {object_description}.",
+      "Look at the visible checkers board in the image. It shows {object_description}.",
+      "You are given a checkers board image with {object_description}.",
+      "Work from the checkers position shown in the image: {object_description}.",
+      "Use the visible checkers board state in the image. It shows {object_description}."
+    ]
+  },
+  "task_templates": {
+    "checkers_move_query": [
+      "Answer the question using the visible board state.",
+      "Read the board and determine the requested value.",
+      "Work from the shown checkers position to answer the question.",
+      "Use the displayed checkers state to determine the requested count.",
+      "Determine the requested move value from the visible board."
+    ]
+  },
+  "task_variant_templates": {
+    "legal_move_count": [
+      "It is {current_player_name}'s turn. {movement_rule_text} {capture_rule_text} {single_jump_rule_text} {legal_move_rule_text} How many legal moves does {current_player_name} have? Answer with an integer.",
+      "It is {current_player_name}'s turn. {movement_rule_text} {capture_rule_text} {single_jump_rule_text} {legal_move_rule_text} Count the legal moves available to {current_player_name}. Answer with an integer.",
+      "It is {current_player_name}'s turn. {movement_rule_text} {capture_rule_text} {single_jump_rule_text} {legal_move_rule_text} What is the number of legal landing squares for {current_player_name}? Answer with an integer.",
+      "It is {current_player_name}'s turn. {movement_rule_text} {capture_rule_text} {single_jump_rule_text} {legal_move_rule_text} How many single-move options does {current_player_name} have? Answer with an integer.",
+      "It is {current_player_name}'s turn. {movement_rule_text} {capture_rule_text} {single_jump_rule_text} {legal_move_rule_text} Determine the number of legal moves for {current_player_name}. Answer with an integer."
+    ],
+    "capture_move_count": [
+      "It is {current_player_name}'s turn. {movement_rule_text} {capture_rule_text} {single_jump_rule_text} How many legal capturing moves does {current_player_name} have? Answer with an integer.",
+      "It is {current_player_name}'s turn. {movement_rule_text} {capture_rule_text} {single_jump_rule_text} Count the legal captures available to {current_player_name}. Answer with an integer.",
+      "It is {current_player_name}'s turn. {movement_rule_text} {capture_rule_text} {single_jump_rule_text} What is the number of landing squares for legal capturing moves by {current_player_name}? Answer with an integer.",
+      "It is {current_player_name}'s turn. {movement_rule_text} {capture_rule_text} {single_jump_rule_text} How many single jumps can {current_player_name} make right now? Answer with an integer.",
+      "It is {current_player_name}'s turn. {movement_rule_text} {capture_rule_text} {single_jump_rule_text} Determine the number of legal capturing moves for {current_player_name}. Answer with an integer."
+    ]
+  },
+  "required_slots_by_key": {
+    "task_family:visible_checkers_board": [
+      "object_description"
+    ],
+    "task_variant:legal_move_count": [
+      "current_player_name",
+      "movement_rule_text",
+      "capture_rule_text",
+      "single_jump_rule_text",
+      "legal_move_rule_text"
+    ],
+    "task_variant:capture_move_count": [
+      "current_player_name",
+      "movement_rule_text",
+      "capture_rule_text",
+      "single_jump_rule_text"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence: {evidence_hint}.\nAnswer: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence requirement: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence field: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence rule: {evidence_hint}.\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  }
+}

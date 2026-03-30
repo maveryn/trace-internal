@@ -54,3 +54,4 @@ Update this table after each review run.
 | task_games_dominoes_chain_count | task_games_dominoes_chain_count | alright_for_now | distribution pass (top-chain plus loose-domino scenes with matching-end, higher-sum, target-sum, and double-count variants) |
 | task_games_reversi_move_count | task_games_reversi_move_count | alright_for_now | distribution pass (compact/classic visible Reversi boards with legal-move, corner-move, and marked flip-count queries) |
 | task_games_connect_four_move_count | task_games_connect_four_move_count | alright_for_now | distribution pass (midgame/crowded Connect Four boards with immediate-win and safe-move count variants) |
+| task_games_checkers_move_count | task_games_checkers_move_count | alright_for_now | distribution pass (midgame/crowded Checkers boards with legal-move and capture-move count variants over unique landing squares) |

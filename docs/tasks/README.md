@@ -107,3 +107,4 @@ Current task docs:
 97. [task_games_dominoes_chain_count.md](task_games_dominoes_chain_count.md)
 98. [task_games_reversi_move_count.md](task_games_reversi_move_count.md)
 99. [task_games_connect_four_move_count.md](task_games_connect_four_move_count.md)
+100. [task_games_checkers_move_count.md](task_games_checkers_move_count.md)

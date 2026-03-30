@@ -93,6 +93,27 @@ class ConnectFourTheme:
     marked_square_fill_rgba: Tuple[int, int, int, int]
 
 
+@dataclass(frozen=True)
+class CheckersTheme:
+    """Resolved Checkers board palette for one style variant."""
+
+    board_frame_rgb: Tuple[int, int, int]
+    light_square_rgb: Tuple[int, int, int]
+    dark_square_rgb: Tuple[int, int, int]
+    grid_line_rgb: Tuple[int, int, int]
+    grid_line_width_px: int
+    badge_fill_rgb: Tuple[int, int, int]
+    badge_outline_rgb: Tuple[int, int, int]
+    badge_text_rgb: Tuple[int, int, int]
+    red_piece_fill_rgb: Tuple[int, int, int]
+    red_piece_outline_rgb: Tuple[int, int, int]
+    red_piece_shine_rgb: Tuple[int, int, int]
+    black_piece_fill_rgb: Tuple[int, int, int]
+    black_piece_outline_rgb: Tuple[int, int, int]
+    black_piece_shine_rgb: Tuple[int, int, int]
+    piece_outline_width_px: int
+
+
 def build_games_card_theme(*, style_variant: str) -> CardTheme:
     """Return one resolved card-scene theme for the active style variant."""
 
@@ -317,6 +338,65 @@ def build_games_connect_four_theme(*, style_variant: str) -> ConnectFourTheme:
     )
 
 
+def build_games_checkers_theme(*, style_variant: str) -> CheckersTheme:
+    """Return one resolved Checkers theme for the active style variant."""
+
+    variant = str(style_variant)
+    if variant == "soft":
+        return CheckersTheme(
+            board_frame_rgb=(103, 70, 44),
+            light_square_rgb=(235, 223, 198),
+            dark_square_rgb=(110, 76, 48),
+            grid_line_rgb=(88, 63, 42),
+            grid_line_width_px=2,
+            badge_fill_rgb=(241, 244, 247),
+            badge_outline_rgb=(102, 112, 122),
+            badge_text_rgb=(32, 38, 44),
+            red_piece_fill_rgb=(205, 74, 69),
+            red_piece_outline_rgb=(144, 45, 40),
+            red_piece_shine_rgb=(238, 166, 158),
+            black_piece_fill_rgb=(47, 50, 56),
+            black_piece_outline_rgb=(21, 24, 29),
+            black_piece_shine_rgb=(112, 118, 128),
+            piece_outline_width_px=3,
+        )
+    if variant == "outlined":
+        return CheckersTheme(
+            board_frame_rgb=(94, 62, 37),
+            light_square_rgb=(246, 239, 220),
+            dark_square_rgb=(117, 80, 46),
+            grid_line_rgb=(82, 59, 40),
+            grid_line_width_px=3,
+            badge_fill_rgb=(255, 255, 255),
+            badge_outline_rgb=(72, 82, 92),
+            badge_text_rgb=(26, 30, 36),
+            red_piece_fill_rgb=(215, 61, 58),
+            red_piece_outline_rgb=(147, 34, 31),
+            red_piece_shine_rgb=(244, 165, 160),
+            black_piece_fill_rgb=(36, 39, 44),
+            black_piece_outline_rgb=(9, 12, 15),
+            black_piece_shine_rgb=(104, 112, 122),
+            piece_outline_width_px=4,
+        )
+    return CheckersTheme(
+        board_frame_rgb=(98, 66, 41),
+        light_square_rgb=(241, 232, 210),
+        dark_square_rgb=(103, 70, 42),
+        grid_line_rgb=(84, 60, 39),
+        grid_line_width_px=2,
+        badge_fill_rgb=(248, 249, 251),
+        badge_outline_rgb=(94, 102, 110),
+        badge_text_rgb=(27, 32, 38),
+        red_piece_fill_rgb=(210, 67, 63),
+        red_piece_outline_rgb=(143, 41, 37),
+        red_piece_shine_rgb=(241, 162, 156),
+        black_piece_fill_rgb=(41, 44, 50),
+        black_piece_outline_rgb=(15, 18, 22),
+        black_piece_shine_rgb=(106, 114, 124),
+        piece_outline_width_px=3,
+    )
+
+
 def suit_color(theme: CardTheme, *, suit_name: str) -> Tuple[int, int, int]:
     """Return the rendered suit/rank color for one suit under the active theme."""
 
@@ -336,11 +416,13 @@ def style_probability_map() -> Dict[str, float]:
 
 __all__ = [
     "CardTheme",
+    "CheckersTheme",
     "ConnectFourTheme",
     "DominoTheme",
     "ReversiTheme",
     "SUPPORTED_GAMES_STYLE_VARIANTS",
     "build_games_card_theme",
+    "build_games_checkers_theme",
     "build_games_connect_four_theme",
     "build_games_domino_theme",
     "build_games_reversi_theme",

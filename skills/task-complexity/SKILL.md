@@ -36,6 +36,7 @@ Use this whenever a change touches `complexity_score`, `complexity_components`, 
 ## Read as needed
 - General policy and config shape: `references/policy.md`
 - Graph: `references/graph.md`
+- Documents: `references/documents.md`
 - Temporal: `references/temporal.md`
 - Geometry: `references/geometry.md`
 - Icons: `references/icons.md`

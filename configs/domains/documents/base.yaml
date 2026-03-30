@@ -1,0 +1,38 @@
+complexity:
+  shared:
+    criteria_weights:
+      visual_scan: 0.42
+      reasoning_load: 0.34
+      scene_variant_load: 0.24
+
+prompt:
+  shared:
+    json_output_contract: Return a valid JSON object with keys "evidence" and "answer" in that order.
+    json_output_contract_answer_only: Return a valid JSON object with key "answer".
+
+visual:
+  background:
+    enabled: true
+    styles:
+      paper_light:
+        kind: solid
+        color: [241, 241, 238]
+    weights:
+      paper_light: 1.0
+  noise:
+    apply_prob: 0.0
+    edit_types:
+      - blur
+      - downsample
+      - jpeg
+      - noise
+    edit_count_range: [1, 2]
+    value_ranges:
+      blur:
+        radius: [0.2, 0.6]
+      downsample:
+        scale: [0.88, 0.96]
+      jpeg:
+        quality: [72.0, 90.0]
+      noise:
+        alpha: [0.02, 0.06]

@@ -1,0 +1,914 @@
+{
+  "answer_gt": {
+    "type": "string",
+    "value": "REF-12800"
+  },
+  "evidence_gt": {
+    "type": "bbox_set",
+    "value": [
+      [
+        666.0,
+        221.5,
+        829.0,
+        240.5
+      ],
+      [
+        666.0,
+        263.0,
+        821.0,
+        285.0
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "documents/task_documents_readout_field_value/images/lookup_identifier/0018.png"
+  },
+  "instance_seed": 3973780006481478,
+  "prompt": "The image shows a structured application form with labeled fields and boxed sections. Locate the field and then answer: What is the reference ID? Return the exact field text as written.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value.\nAnswer rule: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"INV-48217\"}",
+  "prompt_variants": {
+    "answer_and_evidence": "The image shows a structured application form with labeled fields and boxed sections. Locate the field and then answer: What is the reference ID? Return the exact field text as written.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value.\nAnswer rule: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"INV-48217\"}",
+    "answer_only": "The image shows a structured application form with labeled fields and boxed sections. Locate the field and then answer: What is the reference ID? Return the exact field text as written.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"answer\":\"INV-48217\"}"
+  },
+  "task": "task_documents_readout_field_value",
+  "task_variant": "lookup_identifier",
+  "trace_payload": {
+    "answer_gt": {
+      "type": "string",
+      "value": "REF-12800"
+    },
+    "background": {
+      "available_styles": [
+        "paper_light"
+      ],
+      "enabled": true,
+      "selected_style": "paper_light",
+      "style_spec": {
+        "color": [
+          241,
+          241,
+          238
+        ],
+        "kind": "solid"
+      }
+    },
+    "evidence_gt": {
+      "type": "bbox_set",
+      "value": [
+        [
+          666.0,
+          221.5,
+          829.0,
+          240.5
+        ],
+        [
+          666.0,
+          263.0,
+          821.0,
+          285.0
+        ]
+      ]
+    },
+    "execution_trace": {
+      "field_count": 9,
+      "field_specs": [
+        {
+          "field_category": "lookup_name",
+          "field_id": "applicant_name",
+          "field_label": "Applicant Name",
+          "field_value": "Levi Ellis",
+          "label_bbox_id": "applicant_name:label",
+          "question_name": "applicant name",
+          "value_bbox_id": "applicant_name:value"
+        },
+        {
+          "field_category": "lookup_identifier",
+          "field_id": "reference_id",
+          "field_label": "Reference ID",
+          "field_value": "REF-12800",
+          "label_bbox_id": "reference_id:label",
+          "question_name": "reference ID",
+          "value_bbox_id": "reference_id:value"
+        },
+        {
+          "field_category": "lookup_date",
+          "field_id": "submission_date",
+          "field_label": "Submission Date",
+          "field_value": "03/29/2026",
+          "label_bbox_id": "submission_date:label",
+          "question_name": "submission date",
+          "value_bbox_id": "submission_date:value"
+        },
+        {
+          "field_category": "lookup_contact",
+          "field_id": "contact_phone",
+          "field_label": "Phone",
+          "field_value": "(503) 567-9885",
+          "label_bbox_id": "contact_phone:label",
+          "question_name": "phone number",
+          "value_bbox_id": "contact_phone:value"
+        },
+        {
+          "field_category": "lookup_contact",
+          "field_id": "contact_email",
+          "field_label": "Email",
+          "field_value": "leviellis@mailhub.net",
+          "label_bbox_id": "contact_email:label",
+          "question_name": "email address",
+          "value_bbox_id": "contact_email:value"
+        },
+        {
+          "field_category": "lookup_name",
+          "field_id": "department",
+          "field_label": "Department",
+          "field_value": "Facilities",
+          "label_bbox_id": "department:label",
+          "question_name": "department",
+          "value_bbox_id": "department:value"
+        },
+        {
+          "field_category": "lookup_name",
+          "field_id": "city",
+          "field_label": "City",
+          "field_value": "Harbor Point",
+          "label_bbox_id": "city:label",
+          "question_name": "city",
+          "value_bbox_id": "city:value"
+        },
+        {
+          "field_category": "lookup_amount",
+          "field_id": "fee_amount",
+          "field_label": "Fee Amount",
+          "field_value": "$63.62",
+          "label_bbox_id": "fee_amount:label",
+          "question_name": "fee amount",
+          "value_bbox_id": "fee_amount:value"
+        },
+        {
+          "field_category": "lookup_name",
+          "field_id": "reviewer_name",
+          "field_label": "Reviewer",
+          "field_value": "Cole Turner",
+          "label_bbox_id": "reviewer_name:label",
+          "question_name": "reviewer name",
+          "value_bbox_id": "reviewer_name:value"
+        }
+      ],
+      "query_field_category": "lookup_identifier",
+      "query_field_id": "reference_id",
+      "query_field_label": "Reference ID",
+      "query_field_value": "REF-12800",
+      "query_label_bbox_id": "reference_id:label",
+      "query_value_bbox_id": "reference_id:value",
+      "question_format": "document_field_lookup",
+      "question_text": "What is the reference ID?",
+      "scene_title": "Application Form",
+      "scene_variant": "form_sheet",
+      "task_variant": "lookup_identifier",
+      "view_family": "structured_document"
+    },
+    "post_image_noise": {
+      "applied": false,
+      "apply_prob": 0.0,
+      "edit_count_range": [
+        1,
+        2
+      ],
+      "edit_types": [
+        "blur",
+        "downsample",
+        "jpeg",
+        "noise"
+      ],
+      "edits": [],
+      "enabled": false
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          666.0,
+          221.5,
+          829.0,
+          240.5
+        ],
+        [
+          666.0,
+          263.0,
+          821.0,
+          285.0
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "field_count": 9,
+        "field_count_range": [
+          8,
+          11
+        ],
+        "scene_variant": "form_sheet",
+        "scene_variant_probabilities": {
+          "form_sheet": 0.3333333333333333,
+          "invoice_sheet": 0.3333333333333333,
+          "receipt_sheet": 0.3333333333333333
+        },
+        "task_variant": "lookup_identifier",
+        "task_variant_probabilities": {
+          "lookup_amount": 0.0,
+          "lookup_contact": 0.0,
+          "lookup_date": 0.0,
+          "lookup_identifier": 1.0,
+          "lookup_name": 0.0
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 4,
+        "prompt_bundle_id": "documents_readout_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the exact field text shown in the document",
+          "evidence_hint": "set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value",
+          "json_example": "{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"INV-48217\"}",
+          "json_example_answer_only": "{\"answer\":\"INV-48217\"}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a structured application form with labeled fields and boxed sections",
+          "question_text": "What is the reference ID?"
+        },
+        "task_family_key": "structured_document",
+        "task_family_variant_index": 0,
+        "task_key": "field_lookup_query",
+        "task_variant_index": 4,
+        "task_variant_key": "lookup_identifier",
+        "task_variant_template_index": 1,
+        "template_paths": [
+          "documents/readout/documents_readout_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:field_lookup_query": 5,
+          "task_family:structured_document": 5,
+          "task_variant:lookup_identifier": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 4,
+            "prompt_bundle_id": "documents_readout_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the exact field text shown in the document",
+              "evidence_hint": "set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value",
+              "json_example": "{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"INV-48217\"}",
+              "json_example_answer_only": "{\"answer\":\"INV-48217\"}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a structured application form with labeled fields and boxed sections",
+              "question_text": "What is the reference ID?"
+            },
+            "task_family_key": "structured_document",
+            "task_family_variant_index": 0,
+            "task_key": "field_lookup_query",
+            "task_variant_index": 4,
+            "task_variant_key": "lookup_identifier",
+            "task_variant_template_index": 1,
+            "template_paths": [
+              "documents/readout/documents_readout_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:field_lookup_query": 5,
+              "task_family:structured_document": 5,
+              "task_variant:lookup_identifier": 5
+            }
+          },
+          "prompt": "The image shows a structured application form with labeled fields and boxed sections. Locate the field and then answer: What is the reference ID? Return the exact field text as written.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value.\nAnswer rule: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"INV-48217\"}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "documents_readout_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the exact field text shown in the document",
+              "evidence_hint": "set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value",
+              "json_example": "{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"INV-48217\"}",
+              "json_example_answer_only": "{\"answer\":\"INV-48217\"}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a structured application form with labeled fields and boxed sections",
+              "question_text": "What is the reference ID?"
+            },
+            "task_family_key": "structured_document",
+            "task_family_variant_index": 0,
+            "task_key": "field_lookup_query",
+            "task_variant_index": 4,
+            "task_variant_key": "lookup_identifier",
+            "task_variant_template_index": 1,
+            "template_paths": [
+              "documents/readout/documents_readout_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:field_lookup_query": 5,
+              "task_family:structured_document": 5,
+              "task_variant:lookup_identifier": 5
+            }
+          },
+          "prompt": "The image shows a structured application form with labeled fields and boxed sections. Locate the field and then answer: What is the reference ID? Return the exact field text as written.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"answer\":\"INV-48217\"}"
+        }
+      },
+      "task_variant": "lookup_identifier",
+      "template_id": "documents_readout_v1"
+    },
+    "render_map": {
+      "field_box_bboxes_px": {
+        "applicant_name": [
+          204.0,
+          208.0,
+          628.0,
+          316.0
+        ],
+        "city": [
+          204.0,
+          586.0,
+          628.0,
+          694.0
+        ],
+        "contact_email": [
+          204.0,
+          460.0,
+          628.0,
+          568.0
+        ],
+        "contact_phone": [
+          652.0,
+          334.0,
+          1076.0,
+          442.0
+        ],
+        "department": [
+          652.0,
+          460.0,
+          1076.0,
+          568.0
+        ],
+        "fee_amount": [
+          652.0,
+          586.0,
+          1076.0,
+          694.0
+        ],
+        "reference_id": [
+          652.0,
+          208.0,
+          1076.0,
+          316.0
+        ],
+        "reviewer_name": [
+          204.0,
+          712.0,
+          1076.0,
+          820.0
+        ],
+        "submission_date": [
+          204.0,
+          334.0,
+          628.0,
+          442.0
+        ]
+      },
+      "field_label_bboxes_px": {
+        "applicant_name:label": [
+          218.0,
+          219.0,
+          419.0,
+          243.0
+        ],
+        "city:label": [
+          218.0,
+          597.0,
+          269.0,
+          621.0
+        ],
+        "contact_email:label": [
+          218.0,
+          473.5,
+          289.0,
+          492.5
+        ],
+        "contact_phone:label": [
+          666.0,
+          347.5,
+          746.0,
+          366.5
+        ],
+        "department:label": [
+          666.0,
+          471.5,
+          819.0,
+          494.5
+        ],
+        "fee_amount:label": [
+          666.0,
+          600.0,
+          819.0,
+          618.0
+        ],
+        "reference_id:label": [
+          666.0,
+          221.5,
+          829.0,
+          240.5
+        ],
+        "reviewer_name:label": [
+          218.0,
+          725.5,
+          335.0,
+          744.5
+        ],
+        "submission_date:label": [
+          218.0,
+          347.5,
+          431.0,
+          366.5
+        ]
+      },
+      "field_value_bboxes_px": {
+        "applicant_name:value": [
+          218.0,
+          262.5,
+          344.0,
+          285.5
+        ],
+        "city:value": [
+          218.0,
+          640.5,
+          397.0,
+          663.5
+        ],
+        "contact_email:value": [
+          218.0,
+          512.0,
+          523.0,
+          540.0
+        ],
+        "contact_phone:value": [
+          666.0,
+          386.5,
+          889.0,
+          413.5
+        ],
+        "department:value": [
+          666.0,
+          514.5,
+          791.0,
+          537.5
+        ],
+        "fee_amount:value": [
+          666.0,
+          638.5,
+          767.0,
+          665.5
+        ],
+        "reference_id:value": [
+          666.0,
+          263.0,
+          821.0,
+          285.0
+        ],
+        "reviewer_name:value": [
+          218.0,
+          766.5,
+          385.0,
+          789.5
+        ],
+        "submission_date:value": [
+          218.0,
+          387.5,
+          382.0,
+          412.5
+        ]
+      },
+      "page_bbox_px": [
+        160.0,
+        80.0,
+        1120.0,
+        840.0
+      ],
+      "title_bbox_px": [
+        191.0,
+        100.5,
+        598.0,
+        143.5
+      ]
+    },
+    "render_spec": {
+      "canvas_height": 920,
+      "canvas_width": 1280,
+      "geometry_seed": 3973780006481478,
+      "page_shadow_offset_px": 14,
+      "receipt_page_height_px": 760,
+      "receipt_page_width_px": 520,
+      "scene_variant": "form_sheet",
+      "sheet_page_height_px": 760,
+      "sheet_page_width_px": 960
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "bbox_id": "page",
+          "bbox_px": [
+            160.0,
+            80.0,
+            1120.0,
+            840.0
+          ],
+          "entity_id": "page",
+          "entity_type": "document_page"
+        },
+        {
+          "bbox_id": "title",
+          "bbox_px": [
+            191.0,
+            100.5,
+            598.0,
+            143.5
+          ],
+          "entity_id": "title",
+          "entity_type": "document_title",
+          "text": "Application Form"
+        },
+        {
+          "bbox_id": "applicant_name",
+          "bbox_px": [
+            204.0,
+            208.0,
+            628.0,
+            316.0
+          ],
+          "entity_id": "applicant_name:field",
+          "entity_type": "document_field_box",
+          "field_id": "applicant_name"
+        },
+        {
+          "bbox_id": "applicant_name:label",
+          "bbox_px": [
+            218.0,
+            219.0,
+            419.0,
+            243.0
+          ],
+          "entity_id": "applicant_name:label",
+          "entity_type": "document_field_label",
+          "field_id": "applicant_name",
+          "text": "Applicant Name"
+        },
+        {
+          "bbox_id": "applicant_name:value",
+          "bbox_px": [
+            218.0,
+            262.5,
+            344.0,
+            285.5
+          ],
+          "entity_id": "applicant_name:value",
+          "entity_type": "document_field_value",
+          "field_id": "applicant_name",
+          "text": "Levi Ellis"
+        },
+        {
+          "bbox_id": "reference_id",
+          "bbox_px": [
+            652.0,
+            208.0,
+            1076.0,
+            316.0
+          ],
+          "entity_id": "reference_id:field",
+          "entity_type": "document_field_box",
+          "field_id": "reference_id"
+        },
+        {
+          "bbox_id": "reference_id:label",
+          "bbox_px": [
+            666.0,
+            221.5,
+            829.0,
+            240.5
+          ],
+          "entity_id": "reference_id:label",
+          "entity_type": "document_field_label",
+          "field_id": "reference_id",
+          "text": "Reference ID"
+        },
+        {
+          "bbox_id": "reference_id:value",
+          "bbox_px": [
+            666.0,
+            263.0,
+            821.0,
+            285.0
+          ],
+          "entity_id": "reference_id:value",
+          "entity_type": "document_field_value",
+          "field_id": "reference_id",
+          "text": "REF-12800"
+        },
+        {
+          "bbox_id": "submission_date",
+          "bbox_px": [
+            204.0,
+            334.0,
+            628.0,
+            442.0
+          ],
+          "entity_id": "submission_date:field",
+          "entity_type": "document_field_box",
+          "field_id": "submission_date"
+        },
+        {
+          "bbox_id": "submission_date:label",
+          "bbox_px": [
+            218.0,
+            347.5,
+            431.0,
+            366.5
+          ],
+          "entity_id": "submission_date:label",
+          "entity_type": "document_field_label",
+          "field_id": "submission_date",
+          "text": "Submission Date"
+        },
+        {
+          "bbox_id": "submission_date:value",
+          "bbox_px": [
+            218.0,
+            387.5,
+            382.0,
+            412.5
+          ],
+          "entity_id": "submission_date:value",
+          "entity_type": "document_field_value",
+          "field_id": "submission_date",
+          "text": "03/29/2026"
+        },
+        {
+          "bbox_id": "contact_phone",
+          "bbox_px": [
+            652.0,
+            334.0,
+            1076.0,
+            442.0
+          ],
+          "entity_id": "contact_phone:field",
+          "entity_type": "document_field_box",
+          "field_id": "contact_phone"
+        },
+        {
+          "bbox_id": "contact_phone:label",
+          "bbox_px": [
+            666.0,
+            347.5,
+            746.0,
+            366.5
+          ],
+          "entity_id": "contact_phone:label",
+          "entity_type": "document_field_label",
+          "field_id": "contact_phone",
+          "text": "Phone"
+        },
+        {
+          "bbox_id": "contact_phone:value",
+          "bbox_px": [
+            666.0,
+            386.5,
+            889.0,
+            413.5
+          ],
+          "entity_id": "contact_phone:value",
+          "entity_type": "document_field_value",
+          "field_id": "contact_phone",
+          "text": "(503) 567-9885"
+        },
+        {
+          "bbox_id": "contact_email",
+          "bbox_px": [
+            204.0,
+            460.0,
+            628.0,
+            568.0
+          ],
+          "entity_id": "contact_email:field",
+          "entity_type": "document_field_box",
+          "field_id": "contact_email"
+        },
+        {
+          "bbox_id": "contact_email:label",
+          "bbox_px": [
+            218.0,
+            473.5,
+            289.0,
+            492.5
+          ],
+          "entity_id": "contact_email:label",
+          "entity_type": "document_field_label",
+          "field_id": "contact_email",
+          "text": "Email"
+        },
+        {
+          "bbox_id": "contact_email:value",
+          "bbox_px": [
+            218.0,
+            512.0,
+            523.0,
+            540.0
+          ],
+          "entity_id": "contact_email:value",
+          "entity_type": "document_field_value",
+          "field_id": "contact_email",
+          "text": "leviellis@mailhub.net"
+        },
+        {
+          "bbox_id": "department",
+          "bbox_px": [
+            652.0,
+            460.0,
+            1076.0,
+            568.0
+          ],
+          "entity_id": "department:field",
+          "entity_type": "document_field_box",
+          "field_id": "department"
+        },
+        {
+          "bbox_id": "department:label",
+          "bbox_px": [
+            666.0,
+            471.5,
+            819.0,
+            494.5
+          ],
+          "entity_id": "department:label",
+          "entity_type": "document_field_label",
+          "field_id": "department",
+          "text": "Department"
+        },
+        {
+          "bbox_id": "department:value",
+          "bbox_px": [
+            666.0,
+            514.5,
+            791.0,
+            537.5
+          ],
+          "entity_id": "department:value",
+          "entity_type": "document_field_value",
+          "field_id": "department",
+          "text": "Facilities"
+        },
+        {
+          "bbox_id": "city",
+          "bbox_px": [
+            204.0,
+            586.0,
+            628.0,
+            694.0
+          ],
+          "entity_id": "city:field",
+          "entity_type": "document_field_box",
+          "field_id": "city"
+        },
+        {
+          "bbox_id": "city:label",
+          "bbox_px": [
+            218.0,
+            597.0,
+            269.0,
+            621.0
+          ],
+          "entity_id": "city:label",
+          "entity_type": "document_field_label",
+          "field_id": "city",
+          "text": "City"
+        },
+        {
+          "bbox_id": "city:value",
+          "bbox_px": [
+            218.0,
+            640.5,
+            397.0,
+            663.5
+          ],
+          "entity_id": "city:value",
+          "entity_type": "document_field_value",
+          "field_id": "city",
+          "text": "Harbor Point"
+        },
+        {
+          "bbox_id": "fee_amount",
+          "bbox_px": [
+            652.0,
+            586.0,
+            1076.0,
+            694.0
+          ],
+          "entity_id": "fee_amount:field",
+          "entity_type": "document_field_box",
+          "field_id": "fee_amount"
+        },
+        {
+          "bbox_id": "fee_amount:label",
+          "bbox_px": [
+            666.0,
+            600.0,
+            819.0,
+            618.0
+          ],
+          "entity_id": "fee_amount:label",
+          "entity_type": "document_field_label",
+          "field_id": "fee_amount",
+          "text": "Fee Amount"
+        },
+        {
+          "bbox_id": "fee_amount:value",
+          "bbox_px": [
+            666.0,
+            638.5,
+            767.0,
+            665.5
+          ],
+          "entity_id": "fee_amount:value",
+          "entity_type": "document_field_value",
+          "field_id": "fee_amount",
+          "text": "$63.62"
+        },
+        {
+          "bbox_id": "reviewer_name",
+          "bbox_px": [
+            204.0,
+            712.0,
+            1076.0,
+            820.0
+          ],
+          "entity_id": "reviewer_name:field",
+          "entity_type": "document_field_box",
+          "field_id": "reviewer_name"
+        },
+        {
+          "bbox_id": "reviewer_name:label",
+          "bbox_px": [
+            218.0,
+            725.5,
+            335.0,
+            744.5
+          ],
+          "entity_id": "reviewer_name:label",
+          "entity_type": "document_field_label",
+          "field_id": "reviewer_name",
+          "text": "Reviewer"
+        },
+        {
+          "bbox_id": "reviewer_name:value",
+          "bbox_px": [
+            218.0,
+            766.5,
+            385.0,
+            789.5
+          ],
+          "entity_id": "reviewer_name:value",
+          "entity_type": "document_field_value",
+          "field_id": "reviewer_name",
+          "text": "Cole Turner"
+        }
+      ],
+      "relations": {
+        "query_field_id": "reference_id",
+        "query_field_label": "Reference ID",
+        "scene_variant": "form_sheet",
+        "task_variant": "lookup_identifier",
+        "view_family": "structured_document"
+      },
+      "scene_kind": "document_form_sheet"
+    },
+    "witness_symbolic": {
+      "bbox_id_sequence": [
+        "reference_id:label",
+        "reference_id:value"
+      ],
+      "field_id": "reference_id"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

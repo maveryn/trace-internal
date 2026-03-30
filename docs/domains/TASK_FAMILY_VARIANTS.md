@@ -93,6 +93,18 @@ Define how we split tasks into reusable families so each dataset slice stays com
 7. Prompt-facing region-label evidence should stay as one-box `bbox_set` grounding on the winning region, while region-count tasks use one ordered bbox per counted region.
 8. When a map task's reasoning depends on legend colors, enforce or validate the active category palette in Lab space and record the threshold in trace metadata.
 
+## Documents direction (current)
+1. Documents should start with structured page reasoning families such as `readout`, `forms`, and later `line_items` or `selection`; avoid counting a task as `documents` if it is really a free-form OCR paragraph benchmark.
+2. The first active documents family is `readout`, where one structured page contains visible labeled fields and one queried field must be read exactly.
+3. `task_documents_readout_field_value` uses semantic `task_variant` values `lookup_identifier`, `lookup_name`, `lookup_date`, `lookup_contact`, and `lookup_amount`.
+4. `task_documents_readout_field_value` uses visual `scene_variant` values `form_sheet`, `invoice_sheet`, and `receipt_sheet`.
+5. The active structured-document grammar keeps the same label/value semantics across the three page styles:
+   - boxed field grids for forms,
+   - header blocks and summary boxes for invoices,
+   - narrow labeled rows for receipts.
+6. Prompt-facing document readout evidence should stay as one ordered `bbox_set` pair `[label_bbox, value_bbox]`.
+7. Document text generation should stay typed and short; prefer IDs, dates, amounts, names, and contact fields over long prose in early families.
+
 ## Puzzles direction (current)
 1. Puzzles use `task_group` for hidden-rule reasoning families such as `arithmetic`, `logic`, `spatial`, and `topology`; avoid splitting families by one-off visual templates when the reasoning contract is still the same.
 2. Early arithmetic puzzle tasks should favor explicit unknown slots so evidence can stay local and visually obvious.

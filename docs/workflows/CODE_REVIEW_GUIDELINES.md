@@ -214,6 +214,7 @@ Use this checklist during implementation and refactor reviews.
 192. For paper-fold spatial puzzles, keep fold-direction arrows outside the sheet whenever interior arrows would crowd the marks or make the fold cue harder to parse.
 193. For section-local document checkbox-count tasks, keep prompt-facing evidence on the counted checkbox squares only, and treat zero-count answers as a valid empty `bbox_set` rather than widening evidence to the full section or page.
 194. When a second documents task family reuses the same section-aware page grammar, promote the shared section templates and typed scene-value builders into a neutral `trace/tasks/documents/shared/sectioned_document_common.py` layer instead of leaving those helpers inside one task-group-specific module.
+195. When adding a new domain family or shared helper module, review the domain setup doc and `docs/workflows/SHARED_UTILITIES.md` together in the same patch; do not leave a new family missing from the domain-scope sentence or listed under the wrong domain helper inventory.
 
 ## 3) Process rule
 When a new reusable issue is discovered:

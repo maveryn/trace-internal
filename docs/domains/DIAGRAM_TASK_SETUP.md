@@ -3,7 +3,7 @@
 This document captures the concrete reusable setup for the active early `diagrams` task families.
 
 ## 1) Domain scope
-1. `domain=diagrams` is for schematic visual reasoning over process diagrams, swimlanes, hierarchies, cycles, and set-overlap diagrams.
+1. `domain=diagrams` is for schematic visual reasoning over process diagrams, swimlanes, hierarchies, cycles, set-overlap diagrams, and annotated schematics.
 2. The first active families focus on:
    - `flow` reasoning over labeled process nodes connected by visible arrows,
    - `hierarchy` reasoning over labeled org charts connected by visible parent-child lines,
@@ -90,8 +90,8 @@ This document captures the concrete reusable setup for the active early `diagram
    - `bbox_set` with one bbox per contributing digit, ordered from top to bottom and then left to right.
 5. Schematic callout-target tasks should keep prompt-facing evidence local:
    - `bbox_set` with exactly one bbox for the queried target part.
-5. Keep query-node, lane, edge-label, connector, and region geometry in trace for review/debugging, but do not widen prompt-facing evidence to whole paths, full subtrees, whole loops, or whole regions when the answer depends on a local set of visible digits.
-6. Keep callout-badge and leader-line geometry in trace for review/debugging, but do not widen prompt-facing evidence to the answer badge when the reasoning target is the part itself.
+6. Keep query-node, lane, edge-label, connector, and region geometry in trace for review/debugging, but do not widen prompt-facing evidence to whole paths, full subtrees, whole loops, or whole regions when the answer depends on a local set of visible digits.
+7. Keep callout-badge and leader-line geometry in trace for review/debugging, but do not widen prompt-facing evidence to the answer badge when the reasoning target is the part itself.
 
 ## 5) Reuse guidance
 1. Keep diagram-axis resolution, prompt-facing bbox projection, and reusable panel/title helpers under `trace/tasks/diagrams/shared/common.py`.

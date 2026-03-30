@@ -34,6 +34,14 @@ Use these criteria when assigning or reviewing diagrams-domain complexity.
 3. `scene_variant_load`
    - early set diagrams currently use one `set_diagram` scene variant, so this stays a light constant baseline until additional set chrome is introduced.
 
+## Active family: `schematic`
+1. `visual_scan`
+   - driven by visible part count, callout count, and how much of the panel must be scanned before the solver can match the queried part to its callout.
+2. `reasoning_load`
+   - driven by whether the query names a part directly or only highlights it, plus how much local callout-following is required to reach the answer badge.
+3. `scene_variant_load`
+   - early schematic currently uses one `annotated_schematic` scene variant, so this stays a light constant baseline until additional schematic chrome is introduced.
+
 ## General rule
 1. Normalize each criterion inside the task before combining them.
 2. Keep the weighted aggregate inside `[0, 1]`.

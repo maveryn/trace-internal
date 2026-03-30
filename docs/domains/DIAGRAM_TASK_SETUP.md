@@ -8,7 +8,8 @@ This document captures the concrete reusable setup for the active early `diagram
    - `flow` reasoning over labeled process nodes connected by visible arrows,
    - `hierarchy` reasoning over labeled org charts connected by visible parent-child lines,
    - `cycle` reasoning over labeled directed stage rings,
-   - `set_diagram` reasoning over explicit set-overlap regions.
+   - `set_diagram` reasoning over explicit set-overlap regions,
+   - `schematic` reasoning over annotated parts connected to visible external callouts.
 3. Diagram tasks should stay diagram-native:
    - explicit node/connector semantics,
    - short visible labels,
@@ -30,6 +31,7 @@ This document captures the concrete reusable setup for the active early `diagram
 6. The org-chart scene adds top-down rooted-tree structure, but it should not change the meaning of the parent-child connectors.
 7. The cycle-ring scene adds a single clockwise stage loop, but it should not change the meaning of the directed cycle order across the `before` and `after` query variants.
 8. The set-diagram scene adds one numeric `3`-set overlap layout, but it should not change the meaning of the explicit set-sum semantics named in the prompt.
+9. The schematic scene adds one annotated part-and-callout layout, but it should not change the meaning of the target-part-to-callout mapping named in the prompt.
 
 ## 3) Active family
 1. `task_group=flow`
@@ -68,6 +70,14 @@ This document captures the concrete reusable setup for the active early `diagram
    - `sum_in_exactly_two_sets`
 16. Active set-diagram visual variants:
    - `set_diagram`
+17. `task_group=schematic`
+18. Active schematic task:
+   - `task_diagrams_schematic_callout_target_label`
+19. Active schematic semantic variants:
+   - `callout_for_named_part`
+   - `callout_for_highlighted_part`
+20. Active schematic visual variants:
+   - `annotated_schematic`
 
 ## 4) Evidence policy
 1. Flow next-step tasks should keep prompt-facing evidence local:
@@ -78,7 +88,10 @@ This document captures the concrete reusable setup for the active early `diagram
    - `bbox_set` with exactly one bbox for the target stage.
 4. Set-diagram region-sum tasks should keep prompt-facing evidence local:
    - `bbox_set` with one bbox per contributing digit, ordered from top to bottom and then left to right.
+5. Schematic callout-target tasks should keep prompt-facing evidence local:
+   - `bbox_set` with exactly one bbox for the queried target part.
 5. Keep query-node, lane, edge-label, connector, and region geometry in trace for review/debugging, but do not widen prompt-facing evidence to whole paths, full subtrees, whole loops, or whole regions when the answer depends on a local set of visible digits.
+6. Keep callout-badge and leader-line geometry in trace for review/debugging, but do not widen prompt-facing evidence to the answer badge when the reasoning target is the part itself.
 
 ## 5) Reuse guidance
 1. Keep diagram-axis resolution, prompt-facing bbox projection, and reusable panel/title helpers under `trace/tasks/diagrams/shared/common.py`.
@@ -92,4 +105,6 @@ This document captures the concrete reusable setup for the active early `diagram
 9. Keep cycle-ring rendering, directed-edge routing, and traced stage/edge bbox maps under `trace/tasks/diagrams/shared/cycle_scene.py`.
 10. Keep set-diagram-specific dataset construction, axis resolution, and render-param resolution under `trace/tasks/diagrams/shared/set_common.py`.
 11. Keep set-overlap rendering, digit placement, sampled set-palette handling, and traced region/number bbox maps under `trace/tasks/diagrams/shared/set_scene.py` and `trace/tasks/diagrams/shared/set_common.py`.
-12. Future flow-family tasks should reuse the same diagram grammar before adding a second renderer, future hierarchy tasks should reuse the same org-chart grammar before adding a second hierarchy renderer, future cycle tasks should reuse the same ring grammar before adding a second cycle renderer, and future set-diagram tasks should reuse the same overlap grammar before adding a second set renderer.
+12. Keep schematic-specific dataset construction, axis resolution, and render-param resolution under `trace/tasks/diagrams/shared/schematic_common.py`.
+13. Keep annotated schematic rendering, callout routing, and traced part/callout/leader bbox maps under `trace/tasks/diagrams/shared/schematic_scene.py`.
+14. Future flow-family tasks should reuse the same diagram grammar before adding a second renderer, future hierarchy tasks should reuse the same org-chart grammar before adding a second hierarchy renderer, future cycle tasks should reuse the same ring grammar before adding a second cycle renderer, future set-diagram tasks should reuse the same overlap grammar before adding a second set renderer, and future schematic tasks should reuse the same annotated part-and-callout grammar before adding a second schematic renderer.

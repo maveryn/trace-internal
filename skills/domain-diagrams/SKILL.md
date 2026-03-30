@@ -1,6 +1,6 @@
 ---
 name: domain-diagrams
-description: Use when designing, implementing, or reviewing TRACE diagrams-domain tasks, especially flowcharts, swimlanes, hierarchies, cycles, and set diagrams with clean local evidence contracts.
+description: Use when designing, implementing, or reviewing TRACE diagrams-domain tasks, especially flowcharts, swimlanes, hierarchies, cycles, set diagrams, and annotated schematics with clean local evidence contracts.
 ---
 
 # Diagrams Domain
@@ -17,7 +17,7 @@ Use this whenever the task lives under `domain=diagrams`.
 
 ## Diagrams-domain rules
 - Treat `diagrams` as schematic visual reasoning over boxes, arrows, lanes, cycles, or set regions, not as generic graph or document tasks with a new skin.
-- Prefer broad families such as `flow`, `hierarchy`, `cycle`, and `set_diagram` over one-off templates.
+- Prefer broad families such as `flow`, `hierarchy`, `cycle`, `set_diagram`, and `schematic` over one-off templates.
 - Reuse one shared scene contract whenever multiple tasks use the same diagram grammar.
 - Keep prompts explicit when branch labels or containment rules matter.
 
@@ -32,9 +32,11 @@ Use this whenever the task lives under `domain=diagrams`.
 - `hierarchy`: labeled parent/child containment over tree connectors; good early tasks are parent lookup and lowest-common-ancestor lookup with one-box target evidence.
 - Active `cycle`: ordered `k`-step before/after reasoning over circular process layouts with short visible labels and one-box target-stage evidence.
 - Active `set_diagram`: numeric `3`-set overlap reasoning over one digit per region, with sum queries grounded on the contributing digit boxes.
+- Active `schematic`: annotated part-and-callout reasoning where prompts should stay explicit about whether the query names a part or relies on a highlighted part.
 
 ## Evidence rules
 - Flow next-step tasks should ground prompt-facing evidence on the single target step box.
+- Schematic callout-target tasks should ground prompt-facing evidence on the single queried part, not on the answer callout badge.
 - Keep edge-label bboxes and lane bboxes in trace for review/debugging, but do not widen prompt-facing evidence to whole paths when the answer is one visible target node.
 
 ## First-family lessons

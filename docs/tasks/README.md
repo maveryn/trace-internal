@@ -99,3 +99,4 @@ Current task docs:
 89. [task_diagrams_hierarchy_ancestor_label.md](task_diagrams_hierarchy_ancestor_label.md)
 90. [task_diagrams_cycle_offset_stage_label.md](task_diagrams_cycle_offset_stage_label.md)
 91. [task_diagrams_set_diagram_region_sum_value.md](task_diagrams_set_diagram_region_sum_value.md)
+92. [task_diagrams_schematic_callout_target_label.md](task_diagrams_schematic_callout_target_label.md)

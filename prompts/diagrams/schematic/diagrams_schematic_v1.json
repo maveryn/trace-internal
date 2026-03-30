@@ -1,0 +1,73 @@
+{
+  "bundle_id": "diagrams_schematic_v1",
+  "schema_version": "v1",
+  "task_family_templates": {
+    "annotated_schematic_diagram": [
+      "The image shows {object_description}.",
+      "Look at the annotated schematic in the image: {object_description}.",
+      "You are given {object_description}.",
+      "Use the labeled schematic in the image: {object_description}.",
+      "Work from the schematic callouts and leader lines: {object_description}."
+    ]
+  },
+  "task_templates": {
+    "callout_target_query": [
+      "{question_text}",
+      "Use the schematic to answer: {question_text}",
+      "Read the callouts and answer: {question_text}",
+      "Follow the leader lines and answer: {question_text}",
+      "Determine the correct callout from the annotated schematic: {question_text}"
+    ]
+  },
+  "task_variant_templates": {
+    "callout_for_named_part": [
+      "Answer with the exact callout label shown.",
+      "Return the exact visible callout label.",
+      "Respond with the callout label only.",
+      "Give the full callout label exactly as shown.",
+      "Answer using the exact visible callout label."
+    ],
+    "callout_for_highlighted_part": [
+      "Answer with the exact callout label shown.",
+      "Return the exact visible callout label.",
+      "Respond with the callout label only.",
+      "Give the full callout label exactly as shown.",
+      "Answer using the exact visible callout label."
+    ]
+  },
+  "required_slots_by_key": {
+    "task_family:annotated_schematic_diagram": [
+      "object_description"
+    ],
+    "task:callout_target_query": [
+      "question_text"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence: {evidence_hint}.\nAnswer: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence requirement: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence field: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence rule: {evidence_hint}.\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  }
+}

@@ -8,7 +8,7 @@
     "random_count": 100,
     "seed": 0,
     "tasks": [
-      "task_diagrams_set_diagram_region_sum_value"
+      "task_diagrams_schematic_callout_target_label"
     ],
     "workers": 16
   },
@@ -21,22 +21,19 @@
     {
       "distribution_pass": true,
       "domain": "diagrams",
-      "inspection_count": 125,
-      "inspection_workbook": "diagrams/task_diagrams_set_diagram_region_sum_value/task_diagrams_set_diagram_region_sum_value.xlsx",
+      "inspection_count": 50,
+      "inspection_workbook": "diagrams/task_diagrams_schematic_callout_target_label/task_diagrams_schematic_callout_target_label.xlsx",
       "inspection_workbook_sheets": {
-        "sum_in_exactly_two_sets": "sum_in_exactly_two_sets",
-        "sum_in_named_intersection": "sum_in_named_intersection",
-        "sum_in_named_set": "sum_in_named_set",
-        "sum_in_named_union": "sum_in_named_union",
-        "sum_only_in_named_set": "sum_only_in_named_set"
+        "callout_for_highlighted_part": "callout_for_highlighted_part",
+        "callout_for_named_part": "callout_for_named_part"
       },
       "reports": {
-        "distribution_review": "diagrams/task_diagrams_set_diagram_region_sum_value/distribution_review.json",
-        "inspection_manifest": "diagrams/task_diagrams_set_diagram_region_sum_value/manifest.json",
-        "random_review": "diagrams/task_diagrams_set_diagram_region_sum_value/random_review_100.json"
+        "distribution_review": "diagrams/task_diagrams_schematic_callout_target_label/distribution_review.json",
+        "inspection_manifest": "diagrams/task_diagrams_schematic_callout_target_label/manifest.json",
+        "random_review": "diagrams/task_diagrams_schematic_callout_target_label/random_review_100.json"
       },
-      "task_group": "set_diagram",
-      "task_id": "task_diagrams_set_diagram_region_sum_value"
+      "task_group": "schematic",
+      "task_id": "task_diagrams_schematic_callout_target_label"
     }
   ]
 }

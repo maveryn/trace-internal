@@ -156,7 +156,44 @@ def build_games_dominoes_chain_complexity(
     )
 
 
+def build_games_bingo_completed_line_complexity(
+    *,
+    task_group_defaults: Mapping[str, Any],
+    task_id: str,
+    query_variant: str,
+    marked_cell_count: int,
+    target_answer: int,
+    evidence_count: int,
+) -> TaskComplexity:
+    """Build normalized complexity for bingo completed-line counting scenes."""
+
+    weights = resolve_games_complexity_weights(task_group_defaults, task_id=task_id)
+    visual_scan = clamp_unit_interval(
+        (0.44 * normalize_linear(float(marked_cell_count), min_value=0.0, max_value=25.0))
+        + (0.14 if str(query_variant) == "completed_straight_line_count" else 0.0)
+    )
+    state_reasoning = clamp_unit_interval(
+        (0.34 if str(query_variant) == "completed_row_count" else 0.38 if str(query_variant) == "completed_column_count" else 0.54)
+        + (0.12 * normalize_linear(float(target_answer), min_value=0.0, max_value=8.0))
+    )
+    ambiguity = clamp_unit_interval(
+        (0.18 * normalize_linear(float(evidence_count), min_value=0.0, max_value=25.0))
+        + (0.08 if str(query_variant) == "completed_straight_line_count" and int(target_answer) == 0 else 0.0)
+    )
+    output_burden = normalize_linear(float(evidence_count), min_value=0.0, max_value=25.0)
+    return build_games_complexity(
+        weights=weights,
+        components={
+            "visual_scan": float(visual_scan),
+            "state_reasoning": float(state_reasoning),
+            "ambiguity": float(ambiguity),
+            "output_burden": float(output_burden),
+        },
+    )
+
+
 __all__ = [
+    "build_games_bingo_completed_line_complexity",
     "build_games_cards_hand_complexity",
     "build_games_dominoes_chain_complexity",
     "build_games_complexity",

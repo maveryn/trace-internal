@@ -164,6 +164,7 @@ Implementation map for the contracts in `docs/core/BLUEPRINT.md`.
    - `trace/tasks/physics/mechanics/spring_extension.py`
    - `trace/tasks/physics/optics/ray_trace.py`
 12. Games:
+   - `trace/tasks/games/bingo/completed_line_count.py`
    - `trace/tasks/games/cards/hand_count.py`
    - `trace/tasks/games/dominoes/chain_count.py`
 ## 5) Architecture invariants

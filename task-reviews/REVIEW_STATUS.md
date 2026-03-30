@@ -45,5 +45,6 @@ Update this table after each review run.
 | task_physics_mechanics_spring_extension | task_physics_mechanics_spring_extension | alright_for_now | distribution pass (identical-spring missing-weight / missing-extension / extension-difference variants) |
 | task_physics_circuits_equivalent_resistance | task_physics_circuits_equivalent_resistance | alright_for_now | distribution pass (single-circuit total-resistance scenes plus paired missing-resistor scenes with equal resistance between labeled terminals A and B) |
 | task_physics_optics_ray_trace | task_physics_optics_ray_trace | alright_for_now | distribution pass (hidden-path optics with graph-point evidence over bounce points / hit targets) |
+| task_games_bingo_completed_line_count | task_games_bingo_completed_line_count | alright_for_now | distribution pass (single-card `5 x 5` bingo boards with completed-row, completed-column, and completed-straight-line count variants) |
 | task_games_cards_hand_count | task_games_cards_hand_count | alright_for_now | distribution pass (single-row/two-row visible card hands with same-suit, higher-rank, exact-pair, and longest-run count variants) |
 | task_games_dominoes_chain_count | task_games_dominoes_chain_count | alright_for_now | distribution pass (top-chain plus loose-domino scenes with matching-end, higher-sum, target-sum, and double-count variants) |

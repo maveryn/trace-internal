@@ -51,6 +51,7 @@ from .documents.layout import section_membership_label as _task_documents_layout
 from .documents.relation import section_extremum_value as _task_documents_relation_section_extremum_value
 from .documents.readout import field_value as _task_documents_readout_field_value
 from .documents.selection import checkbox_count as _task_documents_selection_checkbox_count
+from .games.bingo import completed_line_count as _task_games_bingo_completed_line_count
 from .games.cards import hand_count as _task_games_cards_hand_count
 from .games.dominoes import chain_count as _task_games_dominoes_chain_count
 from .tables.counting import value_count as _task_tables_counting_value_count

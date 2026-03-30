@@ -49,6 +49,25 @@ class DominoTheme:
     reference_tag_text_rgb: Tuple[int, int, int]
 
 
+@dataclass(frozen=True)
+class BingoTheme:
+    """Resolved bingo-card palette for one style variant."""
+
+    card_fill_rgb: Tuple[int, int, int]
+    card_border_rgb: Tuple[int, int, int]
+    card_border_width_px: int
+    shadow_rgb: Tuple[int, int, int]
+    shadow_alpha: int
+    shadow_offset_px: Tuple[int, int]
+    title_rgb: Tuple[int, int, int]
+    header_rgb: Tuple[int, int, int]
+    grid_line_rgb: Tuple[int, int, int]
+    cell_fill_rgb: Tuple[int, int, int]
+    number_rgb: Tuple[int, int, int]
+    mark_fill_rgba: Tuple[int, int, int, int]
+    mark_outline_rgb: Tuple[int, int, int]
+
+
 def build_games_card_theme(*, style_variant: str) -> CardTheme:
     """Return one resolved card-scene theme for the active style variant."""
 
@@ -149,6 +168,59 @@ def build_games_domino_theme(*, style_variant: str) -> DominoTheme:
     )
 
 
+def build_games_bingo_theme(*, style_variant: str) -> BingoTheme:
+    """Return one resolved bingo-card theme for the active style variant."""
+
+    variant = str(style_variant)
+    if variant == "soft":
+        return BingoTheme(
+            card_fill_rgb=(251, 246, 236),
+            card_border_rgb=(102, 112, 124),
+            card_border_width_px=3,
+            shadow_rgb=(18, 24, 20),
+            shadow_alpha=56,
+            shadow_offset_px=(5, 6),
+            title_rgb=(40, 63, 121),
+            header_rgb=(56, 84, 146),
+            grid_line_rgb=(132, 142, 152),
+            cell_fill_rgb=(255, 252, 247),
+            number_rgb=(41, 46, 54),
+            mark_fill_rgba=(214, 84, 76, 136),
+            mark_outline_rgb=(184, 58, 54),
+        )
+    if variant == "outlined":
+        return BingoTheme(
+            card_fill_rgb=(255, 255, 255),
+            card_border_rgb=(62, 70, 80),
+            card_border_width_px=4,
+            shadow_rgb=(14, 18, 20),
+            shadow_alpha=40,
+            shadow_offset_px=(4, 5),
+            title_rgb=(44, 75, 168),
+            header_rgb=(51, 88, 186),
+            grid_line_rgb=(92, 100, 110),
+            cell_fill_rgb=(255, 255, 255),
+            number_rgb=(33, 38, 44),
+            mark_fill_rgba=(218, 66, 60, 126),
+            mark_outline_rgb=(196, 48, 44),
+        )
+    return BingoTheme(
+        card_fill_rgb=(255, 253, 247),
+        card_border_rgb=(74, 82, 92),
+        card_border_width_px=3,
+        shadow_rgb=(18, 22, 24),
+        shadow_alpha=48,
+        shadow_offset_px=(4, 5),
+        title_rgb=(42, 72, 160),
+        header_rgb=(48, 82, 180),
+        grid_line_rgb=(108, 116, 126),
+        cell_fill_rgb=(255, 255, 252),
+        number_rgb=(29, 34, 40),
+        mark_fill_rgba=(212, 62, 56, 132),
+        mark_outline_rgb=(190, 46, 42),
+    )
+
+
 def suit_color(theme: CardTheme, *, suit_name: str) -> Tuple[int, int, int]:
     """Return the rendered suit/rank color for one suit under the active theme."""
 
@@ -167,9 +239,11 @@ def style_probability_map() -> Dict[str, float]:
 
 
 __all__ = [
+    "BingoTheme",
     "CardTheme",
     "DominoTheme",
     "SUPPORTED_GAMES_STYLE_VARIANTS",
+    "build_games_bingo_theme",
     "build_games_card_theme",
     "build_games_domino_theme",
     "style_probability_map",

@@ -1,0 +1,67 @@
+generation:
+  shared: {}
+  task_overrides:
+    task_games_bingo_completed_line_count:
+      scene_variant_weights:
+        single_card: 1.0
+      query_variant_weights:
+        completed_row_count: 1.0
+        completed_column_count: 1.0
+        completed_straight_line_count: 1.0
+      style_variant_weights:
+        classic: 1.0
+        soft: 1.0
+        outlined: 1.0
+      balanced_scene_variant_sampling: true
+      balanced_query_variant_sampling: true
+      balanced_style_variant_sampling: true
+      balanced_target_answer_sampling: true
+      completed_row_count_support: [0, 1, 2, 3, 4, 5]
+      completed_column_count_support: [0, 1, 2, 3, 4, 5]
+      completed_straight_line_count_support: [0, 1, 2, 3, 4, 5, 6, 7, 8]
+
+rendering:
+  shared:
+    canvas_width: 1180
+    canvas_height: 760
+    card_width_px: 760
+    card_height_px: 620
+    card_corner_radius_px: 24
+    panel_margin_px: 56
+    title_font_size_px: 34
+    title_band_height_px: 62
+    header_font_size_px: 28
+    header_height_px: 42
+    grid_gap_px: 18
+    number_font_size_px: 28
+    cell_corner_radius_px: 14
+    cell_gap_px: 10
+    mark_inset_px: 12
+
+complexity:
+  shared: {}
+  task_overrides:
+    task_games_bingo_completed_line_count:
+      criteria_weights:
+        visual_scan: 0.28
+        state_reasoning: 0.42
+        ambiguity: 0.16
+        output_burden: 0.14
+
+prompt:
+  shared:
+    bundle_id: games_bingo_v1
+  task_overrides:
+    task_games_bingo_completed_line_count:
+      task_family_key: visible_bingo_card
+      task_key: bingo_completed_line_query
+      object_description_single_card: one face-up 5 x 5 bingo card with some cells marked on a green table
+      completed_row_rule_text: A completed row is a row with all five cells marked.
+      completed_column_rule_text: A completed column is a column with all five cells marked.
+      completed_straight_line_rule_text: A completed straight line is any row or column with all five cells marked.
+      evidence_hint_completed_row_count: set "evidence" to an array of bounding boxes [x1, y1, x2, y2] for every marked cell that belongs to one of the completed rows
+      evidence_hint_completed_column_count: set "evidence" to an array of bounding boxes [x1, y1, x2, y2] for every marked cell that belongs to one of the completed columns
+      evidence_hint_completed_straight_line_count: set "evidence" to an array of bounding boxes [x1, y1, x2, y2] for every marked cell that belongs to one of the counted completed rows or columns
+      answer_hint_completed_row_count: set "answer" to the number of completed rows
+      answer_hint_completed_column_count: set "answer" to the number of completed columns
+      answer_hint_completed_straight_line_count: set "answer" to the number of completed rows or columns

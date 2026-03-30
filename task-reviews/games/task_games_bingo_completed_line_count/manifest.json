@@ -1,0 +1,15 @@
+{
+  "inspection_count": 75,
+  "task_id": "task_games_bingo_completed_line_count",
+  "variants": {
+    "completed_column_count": 25,
+    "completed_row_count": 25,
+    "completed_straight_line_count": 25
+  },
+  "workbook": "games/task_games_bingo_completed_line_count/task_games_bingo_completed_line_count.xlsx",
+  "workbook_sheets": {
+    "completed_column_count": "completed_column_count",
+    "completed_row_count": "completed_row_count",
+    "completed_straight_line_count": "completed_straight_line_count"
+  }
+}

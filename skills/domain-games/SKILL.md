@@ -22,6 +22,8 @@ Use this whenever the task lives under `domain=games`.
 - When a task varies layout scaffold and query type independently, use the chart-style `scene_variant` / `query_variant` split rather than one task id per question stem.
 
 ## Current coverage
+- `bingo`
+  - `task_games_bingo_completed_line_count`
 - `cards`
   - `task_games_cards_hand_count`
 - `dominoes`
@@ -31,6 +33,8 @@ Use this whenever the task lives under `domain=games`.
 - `trace/tasks/shared/support_sampling.py`
 - `trace/tasks/shared/variant_sampling.py`
 - `trace/tasks/shared/text_rendering.py`
+- `trace/tasks/games/shared/bingo_common.py`
+- `trace/tasks/games/shared/bingo_scene.py`
 - `trace/tasks/games/shared/card_scene.py`
 - `trace/tasks/games/shared/domino_scene.py`
 - `trace/tasks/games/shared/style.py`

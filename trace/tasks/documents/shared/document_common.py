@@ -27,6 +27,11 @@ SUPPORTED_DOCUMENT_SCENE_VARIANTS: Tuple[str, ...] = (
     "invoice_sheet",
     "receipt_sheet",
 )
+DOCUMENT_SCENE_TITLES: Dict[str, str] = {
+    "form_sheet": "Application Form",
+    "invoice_sheet": "Invoice",
+    "receipt_sheet": "Receipt",
+}
 
 
 @dataclass(frozen=True)
@@ -272,11 +277,7 @@ def build_document_field_lookup_dataset(
         return {
             "scene_variant": str(scene_variant),
             "task_variant": str(task_variant),
-            "scene_title": {
-                "form_sheet": "Application Form",
-                "invoice_sheet": "Invoice",
-                "receipt_sheet": "Receipt",
-            }[str(scene_variant)],
+            "scene_title": str(DOCUMENT_SCENE_TITLES[str(scene_variant)]),
             "question_text": str(question_text),
             "field_specs": list(field_specs),
             "query_field_id": str(query_field["field_id"]),
@@ -294,6 +295,7 @@ def build_document_field_lookup_dataset(
 
 
 __all__ = [
+    "DOCUMENT_SCENE_TITLES",
     "DocumentDefaults",
     "DocumentRenderParams",
     "SUPPORTED_DOCUMENT_FIELD_TASK_VARIANTS",

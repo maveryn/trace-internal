@@ -149,6 +149,8 @@ Implementation map for the contracts in `docs/core/BLUEPRINT.md`.
    - `trace/tasks/maps/region/association_label.py`
    - `trace/tasks/maps/region/count.py`
 10. Documents:
+   - `trace/tasks/documents/arithmetic/section_expression_value.py`
+   - `trace/tasks/documents/layout/section_membership_label.py`
    - `trace/tasks/documents/readout/field_value.py`
    - `trace/tasks/documents/relation/section_extremum_value.py`
    - `trace/tasks/documents/selection/checkbox_count.py`

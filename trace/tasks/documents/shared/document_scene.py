@@ -554,6 +554,14 @@ def render_document_scene(
         stroke_width=1,
         stroke_fill=tuple(int(value) for value in render_params.page_fill_rgb),
     )
+    subtitle_bbox_px = _round_bbox(
+        [
+            float(subtitle_origin[0] + subtitle_bbox[0]),
+            float(subtitle_origin[1] + subtitle_bbox[1]),
+            float(subtitle_origin[0] + subtitle_bbox[2]),
+            float(subtitle_origin[1] + subtitle_bbox[3]),
+        ]
+    )
 
     if str(scene_variant) == "form_sheet":
         field_boxes = _form_layout(page_bbox)
@@ -596,7 +604,8 @@ def render_document_scene(
         section_font = load_font(max(15, int(render_params.section_font_size_px) - 2), bold=True)
         section_outline_rgb = _mix_rgb(render_params.divider_rgb, style["accent_fill_rgb"], 0.30)
         section_fill_rgb = _mix_rgb(render_params.page_fill_rgb, style["accent_fill_rgb"], 0.08)
-        title_band_bottom = float(page_bbox[1] + 84.0)
+        title_content_bottom = max(float(title_bbox_px[3]), float(subtitle_bbox_px[3]))
+        title_band_bottom = float(max(float(page_bbox[1] + 56.0), title_content_bottom + 12.0))
         for section_spec in section_specs:
             section_id = str(section_spec["section_id"])
             member_ids = [str(field_id) for field_id in section_spec["field_ids"]]
@@ -658,14 +667,14 @@ def render_document_scene(
         text_bbox = draw.textbbox((0, 0), section_label, font=section_header["font"], stroke_width=1)
         pill_padding_x = 12.0
         available_top = float(container_box[1] + 6.0)
-        available_bottom = float(union_box[1] - 6.0)
+        available_bottom = float(union_box[1] - 8.0)
         pill_height = max(18.0, min(30.0, float(available_bottom - available_top)))
         pill_width = min(
             float(container_box[2] - container_box[0] - 32.0),
             float((text_bbox[2] - text_bbox[0]) + 2.0 * pill_padding_x),
         )
         pill_left = float(container_box[0] + 16.0)
-        pill_top = float(max(available_top, available_bottom - pill_height))
+        pill_top = float(max(available_top, available_bottom - pill_height - 2.0))
         pill_box = (
             pill_left,
             pill_top,
@@ -691,13 +700,13 @@ def render_document_scene(
             align="center",
             padding_px=4,
         )
-        section_label_bbox_map[section_id] = list(label_bbox_px)
+        section_label_bbox_map[section_id] = _round_bbox(pill_box)
         entities.append(
             {
                 "entity_id": f"{section_id}:label",
                 "entity_type": "document_section_label",
                 "bbox_id": f"{section_id}:label",
-                "bbox_px": list(label_bbox_px),
+                "bbox_px": list(section_label_bbox_map[section_id]),
                 "section_id": section_id,
                 "text": section_label,
             }
@@ -802,6 +811,7 @@ def render_document_selection_scene(
         subtitle_text = "Delivery and billing flags"
     elif str(scene_variant) == "receipt_sheet":
         subtitle_text = "Selections and follow-up"
+    subtitle_bbox_px: List[float] | None = None
     if str(scene_variant) != "receipt_sheet":
         subtitle_bbox = draw.textbbox((0, 0), subtitle_text, font=subtitle_font, stroke_width=1)
         subtitle_origin = (
@@ -815,6 +825,14 @@ def render_document_selection_scene(
             fill=tuple(int(value) for value in style["accent_text_rgb"]),
             stroke_width=1,
             stroke_fill=tuple(int(value) for value in render_params.page_fill_rgb),
+        )
+        subtitle_bbox_px = _round_bbox(
+            [
+                float(subtitle_origin[0] + subtitle_bbox[0]),
+                float(subtitle_origin[1] + subtitle_bbox[1]),
+                float(subtitle_origin[0] + subtitle_bbox[2]),
+                float(subtitle_origin[1] + subtitle_bbox[3]),
+            ]
         )
 
     if str(scene_variant) == "form_sheet":
@@ -860,7 +878,10 @@ def render_document_selection_scene(
     checkbox_bbox_map: Dict[str, List[float]] = {}
     checkbox_label_bbox_map: Dict[str, List[float]] = {}
 
-    title_band_bottom = float(page_bbox[1] + 84.0)
+    title_content_bottom = float(title_bbox_px[3])
+    if subtitle_bbox_px is not None:
+        title_content_bottom = max(title_content_bottom, float(subtitle_bbox_px[3]))
+    title_band_bottom = float(max(float(page_bbox[1] + 56.0), title_content_bottom + 12.0))
     for section_spec, row_boxes in zip(checkbox_section_specs, section_row_boxes):
         section_id = str(section_spec["section_id"])
         section_label = str(section_spec["section_label"])

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, Mapping, Sequence, Tuple
+from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from ....core.seed import spawn_rng
 from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
@@ -61,7 +61,63 @@ def projected_document_bbox_evidence(
     }
 
 
+def build_document_field_specs(
+    templates: Sequence[Mapping[str, str]],
+    *,
+    visible_values: Mapping[str, str],
+) -> List[Dict[str, str]] | None:
+    """Build canonical field specs from visible values or return `None` on duplicates/empties."""
+
+    field_specs: List[Dict[str, str]] = []
+    seen_values = set()
+    for template in templates:
+        field_id = str(template["field_id"])
+        field_value = str(visible_values[field_id]).strip()
+        if not field_value or field_value in seen_values:
+            return None
+        seen_values.add(field_value)
+        field_specs.append(
+            {
+                "field_id": field_id,
+                "field_label": str(template["field_label"]),
+                "field_value": field_value,
+                "section_id": str(template["section_id"]),
+                "section_label": str(template["section_label"]),
+                "comparison_kind": str(template.get("comparison_kind", "other")),
+                "label_bbox_id": f"{field_id}:label",
+                "value_bbox_id": f"{field_id}:value",
+            }
+        )
+    return list(field_specs)
+
+
+def build_document_section_specs(field_specs: Sequence[Mapping[str, str]]) -> List[Dict[str, Any]]:
+    """Build ordered unique section specs from document field specs."""
+
+    section_specs: List[Dict[str, Any]] = []
+    seen_sections = set()
+    for spec in field_specs:
+        section_id = str(spec["section_id"])
+        if section_id in seen_sections:
+            continue
+        seen_sections.add(section_id)
+        section_specs.append(
+            {
+                "section_id": section_id,
+                "section_label": str(spec["section_label"]),
+                "field_ids": [
+                    str(other_spec["field_id"])
+                    for other_spec in field_specs
+                    if str(other_spec["section_id"]) == section_id
+                ],
+            }
+        )
+    return list(section_specs)
+
+
 __all__ = [
+    "build_document_field_specs",
+    "build_document_section_specs",
     "projected_document_bbox_evidence",
     "resolve_documents_axis_variant",
 ]

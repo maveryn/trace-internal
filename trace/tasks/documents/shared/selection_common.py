@@ -7,6 +7,7 @@ from typing import Any, Dict, Mapping, Sequence, Tuple
 from ....core.seed import hash64, spawn_rng
 from ...shared.deterministic_sampling import resolve_selection_index
 from .common import resolve_documents_axis_variant
+from .document_common import DOCUMENT_SCENE_TITLES
 from .text_generation import (
     sample_company_name,
     sample_date,
@@ -27,11 +28,6 @@ SUPPORTED_DOCUMENT_SELECTION_SCENE_VARIANTS: Tuple[str, ...] = (
 _QUESTION_TEXT_BY_VARIANT = {
     "checked_box_count": "In the {section_label} section, how many checkboxes are checked?",
     "unchecked_box_count": "In the {section_label} section, how many checkboxes are not checked?",
-}
-_SCENE_TITLE_BY_VARIANT = {
-    "form_sheet": "Application Form",
-    "invoice_sheet": "Invoice",
-    "receipt_sheet": "Receipt",
 }
 _CONTEXT_FIELDS_BY_SCENE = {
     "form_sheet": (
@@ -275,7 +271,7 @@ def build_document_checkbox_count_dataset(
     return {
         "scene_variant": scene_variant,
         "task_variant": task_variant,
-        "scene_title": str(_SCENE_TITLE_BY_VARIANT[scene_variant]),
+        "scene_title": str(DOCUMENT_SCENE_TITLES[scene_variant]),
         "question_text": str(_QUESTION_TEXT_BY_VARIANT[task_variant]).format(
             section_label=str(target_group["section_label"])
         ),

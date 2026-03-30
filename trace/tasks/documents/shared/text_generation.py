@@ -90,11 +90,17 @@ def sample_email(rng: Random, *, local_hint: str) -> str:
     return f"{local}@{rng.choice(_EMAIL_DOMAINS)}"
 
 
+def format_currency_from_cents(cents: int) -> str:
+    """Return one visible currency string from integer cents."""
+
+    return f"${float(int(cents)) / 100.0:.2f}"
+
+
 def sample_currency_amount(rng: Random, *, min_cents: int, max_cents: int) -> str:
     """Return one currency amount in `$12.34` format."""
 
     cents = rng.randint(int(min_cents), int(max_cents))
-    return f"${float(cents) / 100.0:.2f}"
+    return format_currency_from_cents(int(cents))
 
 
 def sample_date(rng: Random, *, style: str, start: dt.date | None = None, day_offset_range: Tuple[int, int] = (0, 180)) -> str:
@@ -181,6 +187,7 @@ __all__ = [
     "build_form_field_values",
     "build_invoice_field_values",
     "build_receipt_field_values",
+    "format_currency_from_cents",
     "sample_city_name",
     "sample_company_name",
     "sample_currency_amount",

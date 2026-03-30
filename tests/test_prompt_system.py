@@ -146,6 +146,11 @@ def test_active_task_bundles_use_json_output_contracts_for_both_modes() -> None:
         ("charts", "composition", "charts_composition_v1"),
         ("charts", "counting", "charts_counting_v1"),
         ("charts", "statistics", "charts_statistics_v1"),
+        ("documents", "arithmetic", "documents_arithmetic_v1"),
+        ("documents", "layout", "documents_layout_v1"),
+        ("documents", "readout", "documents_readout_v1"),
+        ("documents", "relation", "documents_relation_v1"),
+        ("documents", "selection", "documents_selection_v1"),
         ("geometry", "comparison", "geometry_comparison_v1"),
         ("geometry", "counting", "geometry_counting_v1"),
         ("geometry", "graphing", "geometry_graphing_v1"),
@@ -229,6 +234,20 @@ def test_maps_region_bundle_supports_region_association_query() -> None:
     assert len(bundle.task_family_templates["choropleth_region_map"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.task_templates["region_association_query"]) == REQUIRED_PROMPT_VARIANTS
     assert list(bundle.required_slots_by_key["task:region_association_query"]) == ["question_text"]
+
+
+def test_documents_arithmetic_bundle_supports_section_expression_query() -> None:
+    bundle = load_prompt_bundle("documents", "arithmetic", "documents_arithmetic_v1")
+    assert len(bundle.task_family_templates["structured_document_sections"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_templates["section_expression_query"]) == REQUIRED_PROMPT_VARIANTS
+    assert list(bundle.required_slots_by_key["task:section_expression_query"]) == ["question_text"]
+
+
+def test_documents_layout_bundle_supports_section_membership_query() -> None:
+    bundle = load_prompt_bundle("documents", "layout", "documents_layout_v1")
+    assert len(bundle.task_family_templates["structured_document_sections"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_templates["section_membership_query"]) == REQUIRED_PROMPT_VARIANTS
+    assert list(bundle.required_slots_by_key["task:section_membership_query"]) == ["question_text"]
 
 
 def test_icons_relation_bundle_supports_anchor_relation_query() -> None:

@@ -9,6 +9,8 @@ This document captures the concrete reusable setup for the active `documents` ta
    - stable labeled regions,
    - no long paragraphs or handwriting.
 3. The domain should test reading and local field reasoning over structured pages, not generic table QA with a paper skin.
+4. Early arithmetic document tasks should keep the queried computation local to one named section and use visible typed values as the only operands.
+5. Early layout document tasks should use visible section headers so the answer can be one exact section title grounded on the page itself.
 
 ## 2) First reusable scene contract
 1. V1 document scenes use one page on a light background.
@@ -56,30 +58,47 @@ This document captures the concrete reusable setup for the active `documents` ta
      - `latest_date_in_section`
      - `largest_amount_in_section`
      - `smallest_amount_in_section`
-3. `task_group=selection`
+3. `task_group=arithmetic`
+   - active task: `task_documents_arithmetic_section_expression_value`
+   - active semantic variants:
+     - `sum_two_amounts_in_section`
+     - `difference_two_amounts_in_section`
+     - `sum_minus_amount_in_section`
+4. `task_group=layout`
+   - active task: `task_documents_layout_section_membership_label`
+   - active semantic variants:
+     - `section_of_field_label`
+     - `section_of_field_value`
+     - `section_of_label_value_pair`
+5. `task_group=selection`
    - active task: `task_documents_selection_checkbox_count`
    - active semantic variants:
      - `checked_box_count`
      - `unchecked_box_count`
-4. Active visual variants:
+6. Active visual variants:
    - `form_sheet`
    - `invoice_sheet`
    - `receipt_sheet`
-5. Relation and selection tasks should make the relevant document block visually explicit with section headers and grouped section chrome so the question can target only one part of the page.
+7. Layout, relation, arithmetic, and selection tasks should make the relevant document block visually explicit with section headers and grouped section chrome so the question can target only one part of the page.
 
 ## 5) Evidence policy
 1. Field-readout tasks should keep prompt-facing evidence local and ordered:
    - first the queried field label bbox,
    - then the queried field value bbox.
-2. Section-local extremum tasks should keep prompt-facing evidence to the single winning value bbox rather than widening the witness to every compared field.
-3. Checkbox-count tasks should keep prompt-facing evidence to the counted checkbox squares themselves, in reading order; zero-count answers may use an empty `bbox_set`.
-4. Do not use the full page bbox as prompt-facing evidence for simple field lookup, section-local value reasoning, or checkbox counts.
+2. Section-local arithmetic tasks should keep prompt-facing evidence to the operand value bboxes only, in the same order as the expression in the prompt.
+3. Section-membership layout tasks should keep prompt-facing evidence to the matching section-header bbox only.
+4. Section-local extremum tasks should keep prompt-facing evidence to the single winning value bbox rather than widening the witness to every compared field.
+5. Checkbox-count tasks should keep prompt-facing evidence to the counted checkbox squares themselves, in reading order; zero-count answers may use an empty `bbox_set`.
+6. Do not use the full page bbox as prompt-facing evidence for simple field lookup, layout localization, section-local value reasoning, or checkbox counts.
 
 ## 6) Reuse guidance
 1. Keep document-axis resolution and bbox evidence helpers under `trace/tasks/documents/shared/common.py`.
 2. Keep typed field-value generation under `trace/tasks/documents/shared/text_generation.py`.
 3. Keep reusable document layout sampling and render-param resolution under `trace/tasks/documents/shared/document_common.py`.
-4. Keep section-local relation dataset builders under `trace/tasks/documents/shared/relation_common.py`.
-5. Keep section-local checkbox/count dataset builders under `trace/tasks/documents/shared/selection_common.py`.
-6. Keep reusable document page rendering, including section chrome and checkbox-section rendering, under `trace/tasks/documents/shared/document_scene.py`.
-7. Future document tasks should reuse the same page grammar before adding genuinely new task groups.
+4. Keep shared section-aware field templates and typed value builders under `trace/tasks/documents/shared/sectioned_document_common.py` when multiple document families reuse the same grouped page grammar.
+5. Keep section-local arithmetic dataset builders under `trace/tasks/documents/shared/arithmetic_common.py`.
+6. Keep section-local layout dataset builders under `trace/tasks/documents/shared/layout_common.py`.
+7. Keep section-local relation dataset builders under `trace/tasks/documents/shared/relation_common.py`.
+8. Keep section-local checkbox/count dataset builders under `trace/tasks/documents/shared/selection_common.py`.
+9. Keep reusable document page rendering, including section chrome and checkbox-section rendering, under `trace/tasks/documents/shared/document_scene.py`.
+10. Future document tasks should reuse the same page grammar before adding genuinely new task groups.

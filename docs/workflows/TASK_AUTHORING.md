@@ -218,6 +218,7 @@ Prompt wording rule:
 - for temporal timeline tasks, prefer event-card `bbox_set` evidence over whole-axis or connector-line evidence; keep the witness anchored to the milestone cards even when the reasoning depends on their left-to-right order.
 - for month-view calendar tasks, keep the visual scaffold fixed to one month grid and vary the question through `task_variant`; date-cell `bbox_set` evidence should stay local to the relevant day cells rather than widening to week rows, headers, or the month title.
 - when a task renders text inside compact glyphs or cells, fit the font against the available box instead of assuming one fixed font size will work for every label variant; multi-character labels and alternate glyph shapes should stay readable without overflowing the witness object.
+- when a second documents-family task reuses the same grouped page grammar, promote the shared section templates and typed scene-value builders into a neutral documents shared helper instead of leaving them under one task-group-specific module.
 
 Use `--mode inspection` when only visual/prompt inspection is needed and distribution checks should be skipped.
 

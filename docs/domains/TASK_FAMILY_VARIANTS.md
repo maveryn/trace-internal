@@ -94,19 +94,23 @@ Define how we split tasks into reusable families so each dataset slice stays com
 8. When a map task's reasoning depends on legend colors, enforce or validate the active category palette in Lab space and record the threshold in trace metadata.
 
 ## Documents direction (current)
-1. Documents should start with structured page reasoning families such as `readout`, `relation`, `selection`, and later `line_items`; avoid counting a task as `documents` if it is really a free-form OCR paragraph benchmark.
-2. The active early documents families are `readout`, `relation`, and `selection`.
+1. Documents should start with structured page reasoning families such as `readout`, `arithmetic`, `layout`, `relation`, `selection`, and later `line_items`; avoid counting a task as `documents` if it is really a free-form OCR paragraph benchmark.
+2. The active early documents families are `readout`, `arithmetic`, `layout`, `relation`, and `selection`.
 3. `task_documents_readout_field_value` uses semantic `task_variant` values `lookup_identifier`, `lookup_name`, `lookup_date`, `lookup_contact`, and `lookup_amount`.
-4. `task_documents_relation_section_extremum_value` uses semantic `task_variant` values `earliest_date_in_section`, `latest_date_in_section`, `largest_amount_in_section`, and `smallest_amount_in_section`.
-5. `task_documents_selection_checkbox_count` uses semantic `task_variant` values `checked_box_count` and `unchecked_box_count`.
-5. Both active document tasks use visual `scene_variant` values drawn from `form_sheet`, `invoice_sheet`, and `receipt_sheet`, though section-local amount variants intentionally use only the scenes that expose a named amount-summary block.
-6. Document relation tasks should target a named visible section like `Schedule`, `Dates`, or `Billing Summary` so the model must localize the relevant block before reasoning over the values inside it.
-5. The active structured-document grammar keeps the same label/value semantics across the three page styles:
+4. `task_documents_arithmetic_section_expression_value` uses semantic `task_variant` values `sum_two_amounts_in_section`, `difference_two_amounts_in_section`, and `sum_minus_amount_in_section`.
+5. `task_documents_layout_section_membership_label` uses semantic `task_variant` values `section_of_field_label`, `section_of_field_value`, and `section_of_label_value_pair`.
+6. `task_documents_relation_section_extremum_value` uses semantic `task_variant` values `earliest_date_in_section`, `latest_date_in_section`, `largest_amount_in_section`, and `smallest_amount_in_section`.
+7. `task_documents_selection_checkbox_count` uses semantic `task_variant` values `checked_box_count` and `unchecked_box_count`.
+8. The active document task families all use visual `scene_variant` values drawn from `form_sheet`, `invoice_sheet`, and `receipt_sheet`.
+9. Document arithmetic, layout, and relation tasks should target a named visible section like `Profile`, `Fees`, `Dates`, `Billing Summary`, or `Totals` so the model must localize the relevant block before answering.
+10. The active structured-document grammar keeps the same label/value semantics across the three page styles:
    - boxed field grids for forms,
    - header blocks and summary boxes for invoices,
    - narrow labeled rows for receipts.
-6. Prompt-facing document readout evidence should stay as one ordered `bbox_set` pair `[label_bbox, value_bbox]`.
-7. Document text generation should stay typed and short; prefer IDs, dates, amounts, names, and contact fields over long prose in early families.
+11. Prompt-facing document readout evidence should stay as one ordered `bbox_set` pair `[label_bbox, value_bbox]`.
+12. Prompt-facing document arithmetic evidence should stay as the ordered operand value boxes only; do not widen it to the whole section or include unrelated labels when the computation is local to visible amount fields.
+13. Prompt-facing document layout evidence should stay as the matching section-header bbox only; do not widen section-membership tasks to the whole section or full page when the answer is one named block.
+14. Document text generation should stay typed and short; prefer IDs, dates, amounts, names, and contact fields over long prose in early families.
 
 ## Puzzles direction (current)
 1. Puzzles use `task_group` for hidden-rule reasoning families such as `arithmetic`, `logic`, `spatial`, and `topology`; avoid splitting families by one-off visual templates when the reasoning contract is still the same.

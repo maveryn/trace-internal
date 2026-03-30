@@ -8,73 +8,52 @@
     "random_count": 100,
     "seed": 0,
     "tasks": [
-      "task_documents_readout_field_value",
-      "task_documents_relation_section_extremum_value",
-      "task_documents_selection_checkbox_count"
+      "task_documents_arithmetic_section_expression_value",
+      "task_documents_layout_section_membership_label"
     ],
     "workers": 16
   },
   "summary": {
     "distribution_tasks_failed": 0,
     "failed_distribution_task_ids": [],
-    "total_tasks": 3
+    "total_tasks": 2
   },
   "tasks": [
     {
       "distribution_pass": true,
       "domain": "documents",
-      "inspection_count": 125,
-      "inspection_workbook": "documents/task_documents_readout_field_value/task_documents_readout_field_value.xlsx",
+      "inspection_count": 75,
+      "inspection_workbook": "documents/task_documents_arithmetic_section_expression_value/task_documents_arithmetic_section_expression_value.xlsx",
       "inspection_workbook_sheets": {
-        "lookup_amount": "lookup_amount",
-        "lookup_contact": "lookup_contact",
-        "lookup_date": "lookup_date",
-        "lookup_identifier": "lookup_identifier",
-        "lookup_name": "lookup_name"
+        "difference_two_amounts_in_section": "difference_two_amounts_in_secti",
+        "sum_minus_amount_in_section": "sum_minus_amount_in_section",
+        "sum_two_amounts_in_section": "sum_two_amounts_in_section"
       },
       "reports": {
-        "distribution_review": "documents/task_documents_readout_field_value/distribution_review.json",
-        "inspection_manifest": "documents/task_documents_readout_field_value/manifest.json",
-        "random_review": "documents/task_documents_readout_field_value/random_review_100.json"
+        "distribution_review": "documents/task_documents_arithmetic_section_expression_value/distribution_review.json",
+        "inspection_manifest": "documents/task_documents_arithmetic_section_expression_value/manifest.json",
+        "random_review": "documents/task_documents_arithmetic_section_expression_value/random_review_100.json"
       },
-      "task_group": "readout",
-      "task_id": "task_documents_readout_field_value"
+      "task_group": "arithmetic",
+      "task_id": "task_documents_arithmetic_section_expression_value"
     },
     {
       "distribution_pass": true,
       "domain": "documents",
-      "inspection_count": 100,
-      "inspection_workbook": "documents/task_documents_relation_section_extremum_value/task_documents_relation_section_extremum_value.xlsx",
+      "inspection_count": 75,
+      "inspection_workbook": "documents/task_documents_layout_section_membership_label/task_documents_layout_section_membership_label.xlsx",
       "inspection_workbook_sheets": {
-        "earliest_date_in_section": "earliest_date_in_section",
-        "largest_amount_in_section": "largest_amount_in_section",
-        "latest_date_in_section": "latest_date_in_section",
-        "smallest_amount_in_section": "smallest_amount_in_section"
+        "section_of_field_label": "section_of_field_label",
+        "section_of_field_value": "section_of_field_value",
+        "section_of_label_value_pair": "section_of_label_value_pair"
       },
       "reports": {
-        "distribution_review": "documents/task_documents_relation_section_extremum_value/distribution_review.json",
-        "inspection_manifest": "documents/task_documents_relation_section_extremum_value/manifest.json",
-        "random_review": "documents/task_documents_relation_section_extremum_value/random_review_100.json"
+        "distribution_review": "documents/task_documents_layout_section_membership_label/distribution_review.json",
+        "inspection_manifest": "documents/task_documents_layout_section_membership_label/manifest.json",
+        "random_review": "documents/task_documents_layout_section_membership_label/random_review_100.json"
       },
-      "task_group": "relation",
-      "task_id": "task_documents_relation_section_extremum_value"
-    },
-    {
-      "distribution_pass": true,
-      "domain": "documents",
-      "inspection_count": 50,
-      "inspection_workbook": "documents/task_documents_selection_checkbox_count/task_documents_selection_checkbox_count.xlsx",
-      "inspection_workbook_sheets": {
-        "checked_box_count": "checked_box_count",
-        "unchecked_box_count": "unchecked_box_count"
-      },
-      "reports": {
-        "distribution_review": "documents/task_documents_selection_checkbox_count/distribution_review.json",
-        "inspection_manifest": "documents/task_documents_selection_checkbox_count/manifest.json",
-        "random_review": "documents/task_documents_selection_checkbox_count/random_review_100.json"
-      },
-      "task_group": "selection",
-      "task_id": "task_documents_selection_checkbox_count"
+      "task_group": "layout",
+      "task_id": "task_documents_layout_section_membership_label"
     }
   ]
 }

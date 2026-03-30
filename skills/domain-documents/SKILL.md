@@ -17,7 +17,7 @@ Use this whenever the task lives under `domain=documents`.
 
 ## Documents-domain rules
 - Treat `documents` as structured page reasoning, not generic OCR over arbitrary prose.
-- Prefer broad families such as `readout`, `relation`, `selection`, `forms`, and later `line_items` over one-off page templates.
+- Prefer broad families such as `readout`, `arithmetic`, `layout`, `relation`, `selection`, `forms`, and later `line_items` over one-off page templates.
 - Keep one reusable page grammar whenever multiple tasks share the same document scaffold.
 - Keep prompts explicit about the requested field so correctness does not depend on hidden assumptions about layout conventions.
 
@@ -28,6 +28,8 @@ Use this whenever the task lives under `domain=documents`.
 
 ## Early-family guidance
 - `readout`: one queried field, one exact visible value.
+- `arithmetic`: one named section, several visible typed values inside that section, one derived amount answer, and evidence on the operand value boxes only.
+- `layout`: one queried field cue, one containing named section, and evidence on the matching section header.
 - `relation`: one named section, several comparable values inside that section, and one exact winning visible value.
 - `selection`: one named checkbox section, a local count over checked or unchecked boxes, and evidence on the counted checkbox squares only.
 - Early scene variants can range from boxed forms to invoice sheets and receipt rows, as long as they reuse the same label/value field semantics.
@@ -41,6 +43,8 @@ Use this whenever the task lives under `domain=documents`.
 
 ## Evidence rules
 - Field lookup tasks should usually ground prompt-facing evidence on the queried field label bbox plus the queried field value bbox, in that order.
+- Section-local arithmetic tasks should usually ground prompt-facing evidence on the operand value bboxes only, in the same order as the expression in the prompt.
+- Section-membership layout tasks should usually ground prompt-facing evidence on the matching section header bbox.
 - Section-local extremum tasks should usually ground prompt-facing evidence on the single winning value bbox.
 - Checkbox-count tasks should usually ground prompt-facing evidence on the counted checkbox squares in reading order, with an empty `bbox_set` allowed when the count is zero.
 - Keep page-level boxes and section chrome in trace for review, but do not widen simple field-readout or section-local value evidence to the entire document.
@@ -55,3 +59,4 @@ Use this whenever the task lives under `domain=documents`.
 - Structured-random documents should vary through reusable blocks, spacing, and field selection rather than arbitrary paragraph noise.
 - Typed field generators make later document tasks much easier to verify than raw free-form text.
 - Section-aware document chrome is worth centralizing early because later checkbox, key-value, and line-item tasks will need the same block structure.
+- When two or more document families reuse the same grouped page grammar, promote the shared section templates and typed scene-value builders into a neutral shared helper instead of leaving them in one task-group-specific module.

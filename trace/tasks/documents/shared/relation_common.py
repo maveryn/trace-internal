@@ -7,8 +7,14 @@ from random import Random
 from typing import Any, Dict, Mapping, Sequence, Tuple
 
 from ....core.seed import spawn_rng
-from .common import resolve_documents_axis_variant
+from .common import (
+    build_document_field_specs,
+    build_document_section_specs,
+    resolve_documents_axis_variant,
+)
+from .document_common import DOCUMENT_SCENE_TITLES
 from .text_generation import (
+    format_currency_from_cents,
     sample_company_name,
     sample_email,
     sample_identifier,
@@ -40,11 +46,6 @@ _QUESTION_TEXT_BY_VARIANT = {
     "latest_date_in_section": "In the {section_label} section, what is the latest date shown? Return the exact date shown.",
     "largest_amount_in_section": "In the {section_label} section, what is the largest amount shown? Return the exact amount shown.",
     "smallest_amount_in_section": "In the {section_label} section, what is the smallest amount shown? Return the exact amount shown.",
-}
-_SCENE_TITLE_BY_VARIANT = {
-    "form_sheet": "Application Form",
-    "invoice_sheet": "Invoice",
-    "receipt_sheet": "Receipt",
 }
 _TARGET_SECTION_BY_SCENE_AND_KIND = {
     "form_sheet": {"date": ("schedule", "Schedule")},
@@ -282,12 +283,6 @@ def _format_date(value: dt.date, *, style: str) -> str:
     raise ValueError(f"unsupported date style '{style}'")
 
 
-def _format_currency_from_cents(cents: int) -> str:
-    """Return one visible currency string from integer cents."""
-
-    return f"${float(int(cents)) / 100.0:.2f}"
-
-
 def _ordered_dates(anchor: dt.date, offsets: Sequence[int]) -> Sequence[dt.date]:
     """Return one ordered sequence of dates from the provided offsets."""
 
@@ -314,7 +309,7 @@ def _build_form_relation_values(rng: Random) -> Tuple[Dict[str, str], Dict[str, 
         "submission_date": _format_date(schedule_dates[0], style="slash"),
         "review_date": _format_date(schedule_dates[1], style="slash"),
         "approval_date": _format_date(schedule_dates[2], style="slash"),
-        "processing_fee": _format_currency_from_cents(rng.randint(2500, 14800)),
+        "processing_fee": format_currency_from_cents(rng.randint(2500, 14800)),
     }
     comparable = {
         "submission_date": schedule_dates[0].toordinal(),
@@ -344,9 +339,9 @@ def _build_invoice_relation_values(rng: Random) -> Tuple[Dict[str, str], Dict[st
         "issue_date": _format_date(date_values[0], style="iso"),
         "service_date": _format_date(date_values[1], style="iso"),
         "due_date": _format_date(date_values[2], style="iso"),
-        "subtotal_amount": _format_currency_from_cents(subtotal_cents),
-        "tax_amount": _format_currency_from_cents(tax_cents),
-        "total_due": _format_currency_from_cents(total_due_cents),
+        "subtotal_amount": format_currency_from_cents(subtotal_cents),
+        "tax_amount": format_currency_from_cents(tax_cents),
+        "total_due": format_currency_from_cents(total_due_cents),
     }
     comparable = {
         "issue_date": date_values[0].toordinal(),
@@ -377,9 +372,9 @@ def _build_receipt_relation_values(rng: Random) -> Tuple[Dict[str, str], Dict[st
         "purchase_date": _format_date(date_values[0], style="long"),
         "pickup_date": _format_date(date_values[1], style="long"),
         "return_date": _format_date(date_values[2], style="long"),
-        "subtotal_amount": _format_currency_from_cents(subtotal_cents),
-        "tax_amount": _format_currency_from_cents(tax_cents),
-        "total_paid": _format_currency_from_cents(total_paid_cents),
+        "subtotal_amount": format_currency_from_cents(subtotal_cents),
+        "tax_amount": format_currency_from_cents(tax_cents),
+        "total_paid": format_currency_from_cents(total_paid_cents),
     }
     comparable = {
         "purchase_date": date_values[0].toordinal(),
@@ -465,27 +460,8 @@ def build_document_section_extremum_dataset(
     for attempt in range(64):
         value_rng = spawn_rng(int(instance_seed), f"{task_id}.relation_values", index=int(attempt))
         visible_values, comparable_values = _VALUE_BUILDERS[str(scene_variant)](value_rng)
-        field_specs = []
-        seen_values = set()
-        for template in templates:
-            field_id = str(template["field_id"])
-            field_value = str(visible_values[field_id]).strip()
-            if not field_value or field_value in seen_values:
-                break
-            seen_values.add(field_value)
-            field_specs.append(
-                {
-                    "field_id": field_id,
-                    "field_label": str(template["field_label"]),
-                    "field_value": field_value,
-                    "section_id": str(template["section_id"]),
-                    "section_label": str(template["section_label"]),
-                    "comparison_kind": str(template["comparison_kind"]),
-                    "label_bbox_id": f"{field_id}:label",
-                    "value_bbox_id": f"{field_id}:value",
-                }
-            )
-        if len(field_specs) != len(templates):
+        field_specs = build_document_field_specs(templates, visible_values=visible_values)
+        if field_specs is None or len(field_specs) != len(templates):
             continue
 
         candidate_specs = [
@@ -505,28 +481,11 @@ def build_document_section_extremum_dataset(
             range(len(candidate_values)), key=candidate_values.__getitem__
         )
         winning_field = dict(candidate_specs[int(winning_index)])
-        section_specs = []
-        seen_sections = set()
-        for spec in field_specs:
-            section_id = str(spec["section_id"])
-            if section_id in seen_sections:
-                continue
-            seen_sections.add(section_id)
-            section_specs.append(
-                {
-                    "section_id": section_id,
-                    "section_label": str(spec["section_label"]),
-                    "field_ids": [
-                        str(other_spec["field_id"])
-                        for other_spec in field_specs
-                        if str(other_spec["section_id"]) == section_id
-                    ],
-                }
-            )
+        section_specs = build_document_section_specs(field_specs)
         return {
             "scene_variant": str(scene_variant),
             "task_variant": str(task_variant),
-            "scene_title": str(_SCENE_TITLE_BY_VARIANT[str(scene_variant)]),
+            "scene_title": str(DOCUMENT_SCENE_TITLES[str(scene_variant)]),
             "question_text": str(_QUESTION_TEXT_BY_VARIANT[str(task_variant)]).format(
                 section_label=str(target_section_label)
             ),

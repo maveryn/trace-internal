@@ -18,7 +18,6 @@ def test_physics_mechanics_force_diagram_defaults_expose_scene_query_and_answer_
     assert bool(generation["balanced_target_force_sampling"]) is True
     assert set(generation["scene_variant_weights"].keys()) == {
         "free_body_box",
-        "surface_block",
         "textured_block",
     }
     assert set(generation["query_variant_weights"].keys()) == {
@@ -36,4 +35,4 @@ def test_physics_mechanics_force_diagram_defaults_expose_scene_query_and_answer_
     assert str(prompt["bundle_id"]) == "physics_mechanics_v1"
     assert "textured block" in str(prompt["object_description_textured_block"])
     assert "force arrows" in str(prompt["evidence_hint_net_force"])
-    assert "? N" in str(prompt["evidence_hint_balancing_force"])
+    assert "`?`" in str(prompt["evidence_hint_balancing_force"])

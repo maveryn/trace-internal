@@ -152,10 +152,15 @@ Define how we split tasks into reusable families so each dataset slice stays com
 2. `task_group` should encode the reasoning family (for example `mechanics`, later `circuits` or `optics`), while `scene_variant` names the scaffold and `query_variant` names the requested quantity.
 3. The first active physics family is `mechanics`.
 4. `task_physics_mechanics_force_diagram`
-   - uses scene variants `free_body_box|surface_block|textured_block`
+   - uses scene variants `free_body_box|textured_block`
    - uses query variants `net_horizontal_force|net_vertical_force|balancing_force_horizontal|balancing_force_vertical`
-   - keeps integer answers with unordered `bbox_set` evidence over either the shown queried-axis arrows (`net_*`) or the marked `? N` arrow (`balancing_force_*`)
-5. Early physics tasks should prefer light arithmetic over heavy formula derivations, and prompt-facing evidence should stay on the visible witness objects rather than decorative scene chrome.
+   - keeps integer answers with unordered `bbox_set` evidence over either the shown queried-axis arrows (`net_*`) or the marked `?` arrow (`balancing_force_*`)
+5. `task_physics_mechanics_lever_balance`
+   - uses scene variants `center_fulcrum|offset_fulcrum|textured_beam`
+   - uses query variants `left_torque|right_torque|missing_weight_to_balance`
+   - keeps integer answers with unordered `bbox_set` evidence over either the relevant side’s weight blocks (`*_torque`) or the marked `?` weight block (`missing_weight_to_balance`)
+   - samples one non-semantic `accent_color_name` palette for the beam / fulcrum / shown weights while leaving the red `?` weight semantics unchanged
+6. Early physics tasks should prefer light arithmetic over heavy formula derivations, and prompt-facing evidence should stay on the visible witness objects rather than decorative scene chrome.
 
 ## Geometry direction (current)
 1. Geometry now exposes ten active task ids:

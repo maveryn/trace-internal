@@ -187,4 +187,4 @@ Active task-to-bundle mapping:
 16. Maps:
    - `task_maps_region_association_label|task_maps_region_count` -> `maps_region_v1`
 17. Physics:
-   - `task_physics_mechanics_force_diagram` -> `physics_mechanics_v1`
+   - `task_physics_mechanics_force_diagram|task_physics_mechanics_lever_balance` -> `physics_mechanics_v1`

@@ -8,6 +8,13 @@
       "You are given an image with {object_description}.",
       "Work from the force diagram shown in the image: {object_description}.",
       "Use the mechanics force diagram in the image. It shows {object_description}."
+    ],
+    "lever_balance_diagram": [
+      "The image shows {object_description}.",
+      "Look at the mechanics lever diagram in the image. It shows {object_description}.",
+      "You are given an image with {object_description}.",
+      "Work from the lever-balance diagram shown in the image: {object_description}.",
+      "Use the mechanics lever diagram in the image. It shows {object_description}."
     ]
   },
   "task_templates": {
@@ -17,6 +24,13 @@
       "Work from the labeled force arrows to answer the question.",
       "Answer using only the forces shown in the diagram.",
       "Determine the requested force value from the diagram."
+    ],
+    "lever_balance_query": [
+      "Use the shown weights and distances to answer the question.",
+      "Read the lever diagram and determine the requested value.",
+      "Work from the beam, fulcrum, weights, and distance marks to answer the question.",
+      "Answer using only the information shown in the lever diagram.",
+      "Determine the requested lever-balance value from the diagram."
     ]
   },
   "task_variant_templates": {
@@ -47,6 +61,27 @@
       "How large must the marked {marked_direction_label} vertical force be so the vertical net force becomes zero? Answer with an integer number of newtons.",
       "Use the shown vertical forces and the marked {marked_direction_label} direction. What force magnitude would balance them? Answer with an integer number of newtons.",
       "What magnitude is required for the marked {marked_direction_label} vertical force so the object has zero net vertical force? Answer with an integer number of newtons."
+    ],
+    "left_torque": [
+      "What is the total torque from the weights on the left side of the fulcrum? Answer with an integer.",
+      "Using the shown left-side weights and their distances from the fulcrum, what left-side torque is produced? Answer with an integer.",
+      "Determine the torque contributed by the weights on the left side of the lever. Answer with an integer.",
+      "What total left-side torque is implied by the lever diagram? Answer with an integer.",
+      "Read the left-side weights and distance marks. What torque do they produce about the fulcrum? Answer with an integer."
+    ],
+    "right_torque": [
+      "What is the total torque from the weights on the right side of the fulcrum? Answer with an integer.",
+      "Using the shown right-side weights and their distances from the fulcrum, what right-side torque is produced? Answer with an integer.",
+      "Determine the torque contributed by the weights on the right side of the lever. Answer with an integer.",
+      "What total right-side torque is implied by the lever diagram? Answer with an integer.",
+      "Read the right-side weights and distance marks. What torque do they produce about the fulcrum? Answer with an integer."
+    ],
+    "missing_weight_to_balance": [
+      "What weight should replace the marked `?` block so the lever balances? Answer with an integer.",
+      "A missing weight is marked with `?`. What value would balance the lever? Answer with an integer.",
+      "How large should the marked `?` weight be so the torques on both sides match? Answer with an integer.",
+      "Use the shown weights and distances. What value must the marked `?` weight have for the lever to balance? Answer with an integer.",
+      "What integer weight is required in the marked `?` block so the beam is balanced about the fulcrum?"
     ]
   },
   "required_slots_by_key": {

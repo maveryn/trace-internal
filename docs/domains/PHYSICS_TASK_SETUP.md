@@ -9,18 +9,31 @@ Use this document for the active `physics` domain contract.
 
 ## 2) Active family
 ### `mechanics`
-1. Active task: `task_physics_mechanics_force_diagram`
-2. Current scene/query surface:
-   - `scene_variant`: `free_body_box|surface_block|textured_block`
+1. Active tasks:
+   - `task_physics_mechanics_force_diagram`
+   - `task_physics_mechanics_lever_balance`
+2. `task_physics_mechanics_force_diagram` scene/query surface:
+   - `scene_variant`: `free_body_box|textured_block`
    - `query_variant`: `net_horizontal_force|net_vertical_force|balancing_force_horizontal|balancing_force_vertical`
-3. Evidence contract:
+3. `task_physics_mechanics_force_diagram` evidence contract:
    - unordered `bbox_set` over the shown queried-axis arrows for `net_*`
-   - one-box `bbox_set` over the marked `? N` arrow for `balancing_force_*`
-4. Prompt policy:
+   - one-box `bbox_set` over the marked `?` arrow for `balancing_force_*`
+4. `task_physics_mechanics_force_diagram` prompt policy:
    - ask for force magnitudes only (no signed-force convention),
    - balancing variants must mention the marked direction explicitly,
-   - balancing placeholders should stay aligned to the shown-arrow lane system and remain within the block-side span,
-    - answers remain plain integers in newtons.
+   - balancing placeholders should stay aligned to the shown-arrow lane system as one more arrow on the queried side of the block,
+   - answers remain plain integers in newtons.
+5. `task_physics_mechanics_lever_balance` scene/query surface:
+   - `scene_variant`: `center_fulcrum|offset_fulcrum|textured_beam`
+   - `query_variant`: `left_torque|right_torque|missing_weight_to_balance`
+6. `task_physics_mechanics_lever_balance` evidence contract:
+   - unordered `bbox_set` over the weight blocks on the queried side for `left_torque|right_torque`
+   - one-box `bbox_set` over the marked `?` weight block for `missing_weight_to_balance`
+7. `task_physics_mechanics_lever_balance` prompt policy:
+   - ask for torque or missing-weight magnitudes only,
+   - keep all needed distances visible on the beam,
+   - keep prompt-facing evidence on the weight blocks rather than the beam or fulcrum,
+   - allow non-semantic accent-color variation on the beam / fulcrum / shown weights, but keep the marked `?` weight visibly red.
 
 ## 3) V1 physics-domain policy
 1. Prefer one stable diagram scaffold per task id; widen scene/query variety inside that task before adding more ids.
@@ -38,3 +51,4 @@ Use this document for the active `physics` domain contract.
 1. Cross-domain scene/query compatibility sampling now lives in `trace/tasks/shared/variant_sampling.py`.
 2. Physics-domain visual defaults belong in `trace/tasks/physics/shared/visual_defaults.py`.
 3. Physics-domain normalized complexity helpers belong in `trace/tasks/physics/shared/complexity.py`.
+4. Physics-domain named accent themes belong in `trace/tasks/physics/shared/style.py`.

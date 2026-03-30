@@ -28,8 +28,8 @@ def _bboxes_overlap(a: list[float], b: list[float]) -> bool:
     ("params", "expected_answer"),
     (
         ({"scene_variant": "free_body_box", "query_variant": "net_horizontal_force", "target_force": 5}, 5),
-        ({"scene_variant": "surface_block", "query_variant": "net_vertical_force", "target_force": 0}, 0),
-        ({"scene_variant": "surface_block", "query_variant": "balancing_force_horizontal", "target_force": 4}, 4),
+        ({"scene_variant": "free_body_box", "query_variant": "net_vertical_force", "target_force": 0}, 0),
+        ({"scene_variant": "free_body_box", "query_variant": "balancing_force_horizontal", "target_force": 4}, 4),
         ({"scene_variant": "textured_block", "task_variant": "balancing_force_vertical", "target_force": 6}, 6),
     ),
 )
@@ -90,22 +90,34 @@ def test_physics_mechanics_force_diagram_rejects_unknown_scene_variant() -> None
 def test_physics_mechanics_force_diagram_uses_non_overlapping_balancing_marker_lane() -> None:
     task = PhysicsMechanicsForceDiagramTask()
     cases = (
-        {"scene_variant": "surface_block", "query_variant": "balancing_force_horizontal", "target_force": 5},
+        {"scene_variant": "free_body_box", "query_variant": "balancing_force_horizontal", "target_force": 5},
         {"scene_variant": "textured_block", "query_variant": "balancing_force_vertical", "target_force": 6},
     )
     for seed_offset, params in enumerate(cases):
         for sample_index in range(6):
             out = task.generate(24041 + (100 * seed_offset) + sample_index, params=params, max_attempts=30)
             render_map = out.trace_payload["render_map"]
+            execution = out.trace_payload["execution_trace"]
             marker_bbox = render_map["balancing_force_marker_bbox_px"]
             object_bbox = render_map["object_bbox_px"]
             assert out.evidence_gt.value == [marker_bbox]
+            balancing_direction = str(execution["balancing_direction"])
             if str(params["query_variant"]).endswith("horizontal"):
-                assert float(object_bbox[1]) <= float(marker_bbox[1]) <= float(object_bbox[3])
-                assert float(object_bbox[1]) <= float(marker_bbox[3]) <= float(object_bbox[3])
+                allowed_margin = 80.0
+                marker_center_y = 0.5 * float(marker_bbox[1] + marker_bbox[3])
+                assert float(object_bbox[1] - allowed_margin) <= float(marker_center_y) <= float(object_bbox[3] + allowed_margin)
+                if balancing_direction == "left":
+                    assert float(marker_bbox[2]) <= float(object_bbox[0])
+                else:
+                    assert float(marker_bbox[0]) >= float(object_bbox[2])
             else:
-                assert float(object_bbox[0]) <= float(marker_bbox[0]) <= float(object_bbox[2])
-                assert float(object_bbox[0]) <= float(marker_bbox[2]) <= float(object_bbox[2])
+                allowed_margin = 80.0
+                marker_center_x = 0.5 * float(marker_bbox[0] + marker_bbox[2])
+                assert float(object_bbox[0] - allowed_margin) <= float(marker_center_x) <= float(object_bbox[2] + allowed_margin)
+                if balancing_direction == "up":
+                    assert float(marker_bbox[3]) <= float(object_bbox[1])
+                else:
+                    assert float(marker_bbox[1]) >= float(object_bbox[3])
             for arrow_bbox in render_map["arrow_bboxes_px"].values():
                 assert not _bboxes_overlap(list(marker_bbox), list(arrow_bbox))
 

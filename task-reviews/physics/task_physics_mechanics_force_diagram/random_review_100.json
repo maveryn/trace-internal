@@ -137,16 +137,14 @@
     "scene_variant": {
       "expected_conflict": false,
       "expected_probabilities": {
-        "free_body_box": 0.3333333333333333,
-        "surface_block": 0.3333333333333333,
-        "textured_block": 0.3333333333333333
+        "free_body_box": 0.5,
+        "textured_block": 0.5
       },
       "expected_source": "query_params",
-      "max_observed_frequency": 0.4,
+      "max_observed_frequency": 0.51,
       "observed_counts": {
-        "free_body_box": 30,
-        "surface_block": 30,
-        "textured_block": 40
+        "free_body_box": 51,
+        "textured_block": 49
       },
       "sample_count": 100
     },

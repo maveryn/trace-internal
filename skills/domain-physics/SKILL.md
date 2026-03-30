@@ -24,11 +24,14 @@ Use this whenever the task lives under `domain=physics`.
 ## Current coverage
 - `mechanics`
   - `task_physics_mechanics_force_diagram`
+  - `task_physics_mechanics_lever_balance`
 
 ## Shared helpers to prefer
 - `trace/tasks/shared/variant_sampling.py`
 - `trace/tasks/physics/shared/visual_defaults.py`
 - `trace/tasks/physics/shared/complexity.py`
+- `trace/tasks/physics/shared/style.py`
+- `trace/tasks/physics/shared/support_sampling.py`
 - `trace/tasks/shared/drawing.py`
 - `trace/tasks/shared/text_rendering.py`
 

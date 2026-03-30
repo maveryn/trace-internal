@@ -8,7 +8,7 @@
     "random_count": 100,
     "seed": 0,
     "tasks": [
-      "task_physics_mechanics_force_diagram"
+      "task_physics_mechanics_lever_balance"
     ],
     "workers": 16
   },
@@ -21,21 +21,20 @@
     {
       "distribution_pass": true,
       "domain": "physics",
-      "inspection_count": 100,
-      "inspection_workbook": "physics/task_physics_mechanics_force_diagram/task_physics_mechanics_force_diagram.xlsx",
+      "inspection_count": 75,
+      "inspection_workbook": "physics/task_physics_mechanics_lever_balance/task_physics_mechanics_lever_balance.xlsx",
       "inspection_workbook_sheets": {
-        "balancing_force_horizontal": "balancing_force_horizontal",
-        "balancing_force_vertical": "balancing_force_vertical",
-        "net_horizontal_force": "net_horizontal_force",
-        "net_vertical_force": "net_vertical_force"
+        "left_torque": "left_torque",
+        "missing_weight_to_balance": "missing_weight_to_balance",
+        "right_torque": "right_torque"
       },
       "reports": {
-        "distribution_review": "physics/task_physics_mechanics_force_diagram/distribution_review.json",
-        "inspection_manifest": "physics/task_physics_mechanics_force_diagram/manifest.json",
-        "random_review": "physics/task_physics_mechanics_force_diagram/random_review_100.json"
+        "distribution_review": "physics/task_physics_mechanics_lever_balance/distribution_review.json",
+        "inspection_manifest": "physics/task_physics_mechanics_lever_balance/manifest.json",
+        "random_review": "physics/task_physics_mechanics_lever_balance/random_review_100.json"
       },
       "task_group": "mechanics",
-      "task_id": "task_physics_mechanics_force_diagram"
+      "task_id": "task_physics_mechanics_lever_balance"
     }
   ]
 }

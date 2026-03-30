@@ -224,8 +224,10 @@ Promote helpers when a second consumer appears.
    - `visual_defaults.py` is the canonical maps-domain background/noise loader layer shared across future maps task groups.
    - `region_common.py` is the shared region-map helper layer; it owns stylized contiguous region-partition generation, ordered legend/category construction, Lab-separated category palette sampling, shared scene-base construction, association/count dataset builders, task/scene variant resolution, and render-param resolution for active region-map tasks.
    - `region_scene.py` is the canonical region+legend renderer for active maps region tasks; it owns the map/legend layout, merged-region rendering over the hidden partition grid, region label placement, legend chrome, and region/legend bbox tracing for the `map_strip|map_card|map_outline|region_map` scene variants, including the atlas-style `region_map` chrome.
-11. Physics: `trace/tasks/physics/shared/complexity.py`, `visual_defaults.py`
-   - `complexity.py` is the shared physics-domain complexity layer; it owns normalized `[0,1]` score construction, complexity-weight resolution, and family builders for active physics tasks (currently mechanics force-diagram reasoning).
+11. Physics: `trace/tasks/physics/shared/complexity.py`, `style.py`, `support_sampling.py`, `visual_defaults.py`
+   - `complexity.py` is the shared physics-domain complexity layer; it owns normalized `[0,1]` score construction, complexity-weight resolution, and family builders for active physics tasks (currently mechanics force-diagram and lever-balance reasoning).
+   - `style.py` is the shared physics-domain named-theme layer; it owns reusable accent-color palettes for non-semantic physics styling (currently the lever-balance beam / fulcrum / shown weights) so new physics tasks do not hardcode separate per-task color mixes.
+   - `support_sampling.py` is the shared physics-domain integer-support resolver layer; use it when multiple physics tasks need the same deterministic support-list parsing and balanced answer cycling behavior instead of keeping parallel local helpers.
    - `visual_defaults.py` is the canonical physics-domain background/noise loader layer shared across future mechanics / circuits / optics task groups.
 
 ## 3) Reuse rules

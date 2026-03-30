@@ -120,9 +120,50 @@ def build_physics_force_diagram_complexity(
     )
 
 
+def build_physics_lever_balance_complexity(
+    *,
+    task_group_defaults: Mapping[str, Any],
+    task_id: str,
+    scene_variant: str,
+    query_variant: str,
+    weight_count: int,
+    relevant_weight_count: int,
+    max_distance: int,
+    target_answer: int,
+) -> TaskComplexity:
+    """Build normalized complexity for mechanics lever-balance scenes."""
+
+    weights = resolve_physics_complexity_weights(task_group_defaults, task_id=task_id)
+    visual_scan = clamp_unit_interval(
+        (0.55 * normalize_linear(float(weight_count), min_value=2.0, max_value=4.0))
+        + (0.14 if str(scene_variant) == "offset_fulcrum" else 0.0)
+        + (0.10 if str(scene_variant) == "textured_beam" else 0.0)
+    )
+    torque_reasoning = clamp_unit_interval(
+        (0.42 if str(query_variant) in {"left_torque", "right_torque"} else 0.62)
+        + (0.14 * normalize_linear(float(max_distance), min_value=1.0, max_value=4.0))
+        + (0.08 * normalize_linear(float(target_answer), min_value=1.0, max_value=24.0))
+    )
+    ambiguity = clamp_unit_interval(
+        (0.35 * normalize_linear(float(relevant_weight_count), min_value=1.0, max_value=2.0))
+        + (0.15 if str(query_variant) == "missing_weight_to_balance" else 0.0)
+    )
+    output_burden = normalize_linear(float(relevant_weight_count), min_value=1.0, max_value=2.0)
+    return build_physics_complexity(
+        weights=weights,
+        components={
+            "visual_scan": float(visual_scan),
+            "torque_reasoning": float(torque_reasoning),
+            "ambiguity": float(ambiguity),
+            "output_burden": float(output_burden),
+        },
+    )
+
+
 __all__ = [
     "build_physics_complexity",
     "build_physics_force_diagram_complexity",
+    "build_physics_lever_balance_complexity",
     "clamp_unit_interval",
     "normalize_int_with_bounds",
     "resolve_physics_complexity_weights",

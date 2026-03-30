@@ -45,4 +45,5 @@ Update this table after each review run.
 | task_temporal_calendar_month_view | task_temporal_calendar_month_view | alright_for_now | distribution pass |
 | task_temporal_schedule_day_planner | task_temporal_schedule_day_planner | alright_for_now | distribution pass |
 | task_temporal_timeline_milestones | task_temporal_timeline_milestones | alright_for_now | distribution pass |
-| task_physics_mechanics_force_diagram | task_physics_mechanics_force_diagram | alright_for_now | distribution pass (axis-aligned free-body/surface/textured-block force-diagram net-force + balancing-force variants) |
+| task_physics_mechanics_force_diagram | task_physics_mechanics_force_diagram | alright_for_now | distribution pass (axis-aligned free-body/textured-block force-diagram net-force + balancing-force variants) |
+| task_physics_mechanics_lever_balance | task_physics_mechanics_lever_balance | alright_for_now | distribution pass (lever-balance left/right torque + missing-weight variants) |

@@ -9,7 +9,6 @@
 ## 2) Scene + task contract
 1. Supported `scene_variant` values:
    - `free_body_box`
-   - `surface_block`
    - `textured_block`
 2. Supported `query_variant` / emitted `task_variant` values:
    - `net_horizontal_force`
@@ -18,15 +17,14 @@
    - `balancing_force_vertical`
 3. Compatibility:
    - `free_body_box` supports all four query variants,
-   - `surface_block` supports all four query variants,
    - `textured_block` supports all four query variants.
 4. `answer_gt.type`: `integer`
 5. `evidence_gt.type`: `bbox_set`
 6. Scene contract:
-   - all shown force arrows are axis-aligned and have integer magnitudes in newtons,
-   - the image contains one main block plus scene-specific chrome (`surface_block` adds a horizontal support line; `textured_block` adds a subtle cross-hatch texture),
+   - all shown force arrows are axis-aligned and display plain integer magnitudes in the image,
+   - the image contains one main block, with `textured_block` adding a subtle cross-hatch texture,
    - the block is sampled near-square with a bounded `1:2` / `2:1` aspect ratio and a slightly taller default footprint than the initial draft,
-   - `balancing_force_*` variants add one visible dashed placeholder arrow marked with `? N` in the requested direction, aligned to the same lane system as the shown arrows and kept within the block-side span so it reads as part of the same force diagram.
+   - `balancing_force_*` variants add one visible red placeholder arrow marked with `?` in the requested direction, aligned to the same outside lane system as the shown arrows so it reads as one more force arrow on that side of the block.
 7. Query contract:
    - `net_horizontal_force` asks for the magnitude of the object's net horizontal force,
    - `net_vertical_force` asks for the magnitude of the object's net vertical force,
@@ -56,11 +54,10 @@
 
 ## 4) Evidence + trace contract
 1. Prompt-facing evidence is an unordered `bbox_set` over exactly the shown force arrows that contribute along the queried axis.
-2. For `balancing_force_*`, prompt-facing evidence is the single bbox of the marked `? N` placeholder arrow rather than the supporting shown arrows.
+2. For `balancing_force_*`, prompt-facing evidence is the single bbox of the marked `?` placeholder arrow rather than the supporting shown arrows.
 3. Supporting arrows on the queried axis still remain recorded in trace as the reasoning witness set for balancing variants.
 4. `scene_ir.entities` stores:
    - one `physics_object`,
-   - zero or one `physics_surface`,
    - one `physics_force_arrow` entity per shown force arrow,
    - zero or one `physics_missing_force_marker`.
 5. `render_map` includes:
@@ -69,7 +66,7 @@
    - `arrow_label_bboxes_px`,
    - `relevant_arrow_ids`,
    - `evidence_entity_ids`,
-   - optional `surface_bbox_px|balancing_force_marker_bbox_px`.
+   - optional `balancing_force_marker_bbox_px`.
 6. `execution_trace` records:
    - `scene_variant`
    - `query_variant`
@@ -85,7 +82,7 @@
 1. Background and post-image noise use the merged physics-domain visual defaults from `configs/domains/physics/base.yaml`.
 2. Scene variants change only the mechanics scaffold around the same force-arithmetic contract.
 3. Force labels should stay off the main object and off other arrows whenever the deterministic slot layout allows it.
-4. Prompt-facing evidence should stay local to the queried target: queried-axis shown arrows for `net_*`, and the marked `? N` arrow for `balancing_force_*`; do not widen it to the full object, surface, or texture fill.
+4. Prompt-facing evidence should stay local to the queried target: queried-axis shown arrows for `net_*`, and the marked `?` arrow for `balancing_force_*`; do not widen it to the full object, surface, or texture fill.
 
 ## 6) Determinism + constraints
 1. Deterministic sampling/rendering from `instance_seed`.

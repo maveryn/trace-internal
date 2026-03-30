@@ -92,7 +92,7 @@
       ],
       "balancing_direction": null,
       "dominant_direction": "down",
-      "evidence_arrow_ids": [
+      "evidence_entity_ids": [
         "force_arrow_2",
         "force_arrow_3",
         "force_arrow_4"
@@ -102,6 +102,11 @@
       "object_width_px": 225,
       "query_axis": "vertical",
       "query_variant": "net_vertical_force",
+      "relevant_arrow_ids": [
+        "force_arrow_2",
+        "force_arrow_3",
+        "force_arrow_4"
+      ],
       "scene_variant": "free_body_box",
       "target_force": 7,
       "target_force_support": [
@@ -357,7 +362,7 @@
           528.0
         ]
       },
-      "evidence_arrow_ids": [
+      "evidence_entity_ids": [
         "force_arrow_2",
         "force_arrow_3",
         "force_arrow_4"
@@ -371,6 +376,11 @@
       ],
       "object_height_px": 112,
       "object_width_px": 225,
+      "relevant_arrow_ids": [
+        "force_arrow_2",
+        "force_arrow_3",
+        "force_arrow_4"
+      ],
       "scene_center_px": [
         361.2,
         310.0
@@ -465,7 +475,7 @@
       ],
       "relations": {
         "answer_force_n": 7,
-        "evidence_arrow_ids": [
+        "evidence_entity_ids": [
           "force_arrow_2",
           "force_arrow_3",
           "force_arrow_4"
@@ -473,6 +483,11 @@
         "object_aspect_ratio": 2.0089,
         "query_axis": "vertical",
         "query_variant": "net_vertical_force",
+        "relevant_arrow_ids": [
+          "force_arrow_2",
+          "force_arrow_3",
+          "force_arrow_4"
+        ],
         "scene_variant": "free_body_box",
         "task_variant": "net_vertical_force"
       },

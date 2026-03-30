@@ -14,12 +14,13 @@ Use this document for the active `physics` domain contract.
    - `scene_variant`: `free_body_box|surface_block|textured_block`
    - `query_variant`: `net_horizontal_force|net_vertical_force|balancing_force_horizontal|balancing_force_vertical`
 3. Evidence contract:
-   - unordered `bbox_set` over the shown force arrows that contribute along the queried axis
+   - unordered `bbox_set` over the shown queried-axis arrows for `net_*`
+   - one-box `bbox_set` over the marked `? N` arrow for `balancing_force_*`
 4. Prompt policy:
    - ask for force magnitudes only (no signed-force convention),
    - balancing variants must mention the marked direction explicitly,
-   - balancing placeholders should occupy a dedicated outer lane instead of reusing one of the shown-arrow lanes,
-   - answers remain plain integers in newtons.
+   - balancing placeholders should stay aligned to the shown-arrow lane system and remain within the block-side span,
+    - answers remain plain integers in newtons.
 
 ## 3) V1 physics-domain policy
 1. Prefer one stable diagram scaffold per task id; widen scene/query variety inside that task before adding more ids.

@@ -213,8 +213,9 @@ Use this checklist during implementation and refactor reviews.
 191. For map-region count tasks, order prompt-facing `bbox_set` evidence by counted region reading order rather than legend order; the evidence should enumerate the matching regions on the map, not the legend bins that justify the threshold.
 192. For paper-fold spatial puzzles, keep fold-direction arrows outside the sheet whenever interior arrows would crowd the marks or make the fold cue harder to parse.
 193. When a second domain needs the same compatible `scene_variant` / `query_variant` sampling policy, promote that resolver into `trace/tasks/shared/variant_sampling.py` instead of importing a geometry-local compatibility helper across domains.
-194. For physics force-diagram tasks, keep prompt-facing `bbox_set` evidence on the shown arrows that contribute along the queried axis; do not widen evidence to the object, support surface, rope, or missing-force marker when those items are only scene context.
-195. For physics balancing-force diagrams, place the dashed missing-force marker in a dedicated outer lane rather than reusing one of the shown-arrow slots; the placeholder should stay visually separate from the measured arrows so the prompt’s “marked direction” cue is obvious.
+194. For physics net-force diagram variants, keep prompt-facing `bbox_set` evidence on the shown arrows that contribute along the queried axis; do not widen evidence to the object, support surface, or other scene chrome when those items are only context.
+195. For physics balancing-force diagrams, keep the dashed missing-force marker on the same lane lattice as the shown arrows and within the block-side span; it should read as one aligned missing force on the object, not as an off-diagram annotation floating above or beside the block.
+196. When a physics prompt asks for the value of a visibly marked missing quantity (for example a `? N` balancing-force arrow), ground prompt-facing evidence on that marked placeholder rather than on the supporting givens; keep the supporting arrows in trace as the reasoning witness set, but make the prompt-facing witness point at the asked-for object.
 
 ## 3) Process rule
 When a new reusable issue is discovered:

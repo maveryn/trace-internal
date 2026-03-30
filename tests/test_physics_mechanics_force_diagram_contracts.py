@@ -47,11 +47,15 @@ def test_physics_mechanics_force_diagram_emits_expected_contract(
     assert trace["query_spec"]["params"]["task_variant"] == out.task_variant
     assert int(execution["target_force"]) == int(expected_answer)
     assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
-    assert len(out.evidence_gt.value) == len(execution["evidence_arrow_ids"])
-    assert len(out.evidence_gt.value) >= 2
     if str(out.task_variant).startswith("balancing_force_"):
         assert "marked" in out.prompt.lower()
         assert execution["balancing_direction"] is not None
+        assert out.evidence_gt.value == [trace["render_map"]["balancing_force_marker_bbox_px"]]
+        assert execution["evidence_entity_ids"] == ["balancing_force_marker"]
+        assert len(execution["relevant_arrow_ids"]) >= 2
+    else:
+        assert len(out.evidence_gt.value) == len(execution["relevant_arrow_ids"])
+        assert len(out.evidence_gt.value) >= 2
     for arrow_spec in execution["arrow_specs"]:
         if bool(arrow_spec["relevant_to_query"]):
             assert str(arrow_spec["axis"]) == str(execution["query_axis"])
@@ -94,6 +98,14 @@ def test_physics_mechanics_force_diagram_uses_non_overlapping_balancing_marker_l
             out = task.generate(24041 + (100 * seed_offset) + sample_index, params=params, max_attempts=30)
             render_map = out.trace_payload["render_map"]
             marker_bbox = render_map["balancing_force_marker_bbox_px"]
+            object_bbox = render_map["object_bbox_px"]
+            assert out.evidence_gt.value == [marker_bbox]
+            if str(params["query_variant"]).endswith("horizontal"):
+                assert float(object_bbox[1]) <= float(marker_bbox[1]) <= float(object_bbox[3])
+                assert float(object_bbox[1]) <= float(marker_bbox[3]) <= float(object_bbox[3])
+            else:
+                assert float(object_bbox[0]) <= float(marker_bbox[0]) <= float(object_bbox[2])
+                assert float(object_bbox[0]) <= float(marker_bbox[2]) <= float(object_bbox[2])
             for arrow_bbox in render_map["arrow_bboxes_px"].values():
                 assert not _bboxes_overlap(list(marker_bbox), list(arrow_bbox))
 

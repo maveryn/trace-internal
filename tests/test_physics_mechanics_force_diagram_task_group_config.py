@@ -35,4 +35,5 @@ def test_physics_mechanics_force_diagram_defaults_expose_scene_query_and_answer_
     assert int(rendering["label_font_size_px"]) > 0
     assert str(prompt["bundle_id"]) == "physics_mechanics_v1"
     assert "textured block" in str(prompt["object_description_textured_block"])
-    assert "force arrows" in str(prompt["evidence_hint"])
+    assert "force arrows" in str(prompt["evidence_hint_net_force"])
+    assert "? N" in str(prompt["evidence_hint_balancing_force"])

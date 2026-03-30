@@ -45,7 +45,6 @@ rendering:
     arrow_head_width_px: 18
     arrow_gap_px: 18
     arrow_slot_gap_px: 34
-    balancing_arrow_gap_extra_px: 54
     balancing_label_gap_extra_px: 10
     label_gap_px: 28
     label_font_size_px: 24
@@ -73,5 +72,6 @@ prompt:
       object_description_free_body_box: one isolated block with labeled horizontal and vertical force arrows
       object_description_surface_block: one block on a horizontal surface with labeled horizontal and vertical force arrows
       object_description_textured_block: one textured block with labeled horizontal and vertical force arrows
-      evidence_hint: set "evidence" to an array of bounding boxes [x1, y1, x2, y2] for all shown force arrows that contribute along the queried axis
+      evidence_hint_net_force: set "evidence" to an array of bounding boxes [x1, y1, x2, y2] for all shown force arrows that contribute along the queried axis
+      evidence_hint_balancing_force: set "evidence" to an array containing the bounding box [x1, y1, x2, y2] of the marked `? N` force arrow
       answer_hint: set "answer" to the requested force magnitude as a non-negative integer number of newtons

@@ -7,16 +7,10 @@
     "type": "bbox_set",
     "value": [
       [
-        99.2,
-        341.6,
         274.7,
-        377.6
-      ],
-      [
-        447.7,
-        341.6,
-        631.7,
-        377.6
+        324.6,
+        414.7,
+        360.6
       ]
     ]
   },
@@ -25,9 +19,9 @@
     "path": "physics/task_physics_mechanics_force_diagram/images/balancing_force_horizontal/0011.png"
   },
   "instance_seed": 4088615283622538,
-  "prompt": "You are given an image with one block on a horizontal surface with labeled horizontal and vertical force arrows. Use the shown force arrows to answer the question. How large must the marked leftward horizontal force be so the horizontal net force becomes zero? Answer with an integer number of newtons.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for all shown force arrows that contribute along the queried axis.\nAnswer: set \"answer\" to the requested force magnitude as a non-negative integer number of newtons.\nExample JSON:\n{\"evidence\":[[2.5,3.5,4.5,5.5],[3.5,4.5,5.5,6.5]],\"answer\":8}",
+  "prompt": "You are given an image with one block on a horizontal surface with labeled horizontal and vertical force arrows. Use the shown force arrows to answer the question. How large must the marked leftward horizontal force be so the horizontal net force becomes zero? Answer with an integer number of newtons.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing the bounding box [x1, y1, x2, y2] of the marked `? N` force arrow.\nAnswer: set \"answer\" to the requested force magnitude as a non-negative integer number of newtons.\nExample JSON:\n{\"evidence\":[[2.5,3.5,4.5,5.5]],\"answer\":8}",
   "prompt_variants": {
-    "answer_and_evidence": "You are given an image with one block on a horizontal surface with labeled horizontal and vertical force arrows. Use the shown force arrows to answer the question. How large must the marked leftward horizontal force be so the horizontal net force becomes zero? Answer with an integer number of newtons.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for all shown force arrows that contribute along the queried axis.\nAnswer: set \"answer\" to the requested force magnitude as a non-negative integer number of newtons.\nExample JSON:\n{\"evidence\":[[2.5,3.5,4.5,5.5],[3.5,4.5,5.5,6.5]],\"answer\":8}",
+    "answer_and_evidence": "You are given an image with one block on a horizontal surface with labeled horizontal and vertical force arrows. Use the shown force arrows to answer the question. How large must the marked leftward horizontal force be so the horizontal net force becomes zero? Answer with an integer number of newtons.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing the bounding box [x1, y1, x2, y2] of the marked `? N` force arrow.\nAnswer: set \"answer\" to the requested force magnitude as a non-negative integer number of newtons.\nExample JSON:\n{\"evidence\":[[2.5,3.5,4.5,5.5]],\"answer\":8}",
     "answer_only": "You are given an image with one block on a horizontal surface with labeled horizontal and vertical force arrows. Use the shown force arrows to answer the question. How large must the marked leftward horizontal force be so the horizontal net force becomes zero? Answer with an integer number of newtons.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the requested force magnitude as a non-negative integer number of newtons.\nExample JSON:\n{\"answer\":8}"
   },
   "task": "task_physics_mechanics_force_diagram",
@@ -86,15 +80,18 @@
       ],
       "balancing_direction": "left",
       "dominant_direction": "right",
-      "evidence_arrow_ids": [
-        "force_arrow_1",
-        "force_arrow_2"
+      "evidence_entity_ids": [
+        "balancing_force_marker"
       ],
       "object_aspect_ratio": 1.5043,
       "object_height_px": 115,
       "object_width_px": 173,
       "query_axis": "horizontal",
       "query_variant": "balancing_force_horizontal",
+      "relevant_arrow_ids": [
+        "force_arrow_1",
+        "force_arrow_2"
+      ],
       "scene_variant": "surface_block",
       "target_force": 10,
       "target_force_support": [
@@ -132,16 +129,10 @@
     "projected_evidence": {
       "bbox_set": [
         [
-          99.2,
-          341.6,
           274.7,
-          377.6
-        ],
-        [
-          447.7,
-          341.6,
-          631.7,
-          377.6
+          324.6,
+          414.7,
+          360.6
         ]
       ]
     },
@@ -191,8 +182,8 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the requested force magnitude as a non-negative integer number of newtons",
-          "evidence_hint": "set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for all shown force arrows that contribute along the queried axis",
-          "json_example": "{\"evidence\":[[2.5,3.5,4.5,5.5],[3.5,4.5,5.5,6.5]],\"answer\":8}",
+          "evidence_hint": "set \"evidence\" to an array containing the bounding box [x1, y1, x2, y2] of the marked `? N` force arrow",
+          "json_example": "{\"evidence\":[[2.5,3.5,4.5,5.5]],\"answer\":8}",
           "json_example_answer_only": "{\"answer\":8}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -225,8 +216,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the requested force magnitude as a non-negative integer number of newtons",
-              "evidence_hint": "set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for all shown force arrows that contribute along the queried axis",
-              "json_example": "{\"evidence\":[[2.5,3.5,4.5,5.5],[3.5,4.5,5.5,6.5]],\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to an array containing the bounding box [x1, y1, x2, y2] of the marked `? N` force arrow",
+              "json_example": "{\"evidence\":[[2.5,3.5,4.5,5.5]],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -249,7 +240,7 @@
               "task_variant:balancing_force_horizontal": 5
             }
           },
-          "prompt": "You are given an image with one block on a horizontal surface with labeled horizontal and vertical force arrows. Use the shown force arrows to answer the question. How large must the marked leftward horizontal force be so the horizontal net force becomes zero? Answer with an integer number of newtons.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for all shown force arrows that contribute along the queried axis.\nAnswer: set \"answer\" to the requested force magnitude as a non-negative integer number of newtons.\nExample JSON:\n{\"evidence\":[[2.5,3.5,4.5,5.5],[3.5,4.5,5.5,6.5]],\"answer\":8}"
+          "prompt": "You are given an image with one block on a horizontal surface with labeled horizontal and vertical force arrows. Use the shown force arrows to answer the question. How large must the marked leftward horizontal force be so the horizontal net force becomes zero? Answer with an integer number of newtons.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing the bounding box [x1, y1, x2, y2] of the marked `? N` force arrow.\nAnswer: set \"answer\" to the requested force magnitude as a non-negative integer number of newtons.\nExample JSON:\n{\"evidence\":[[2.5,3.5,4.5,5.5]],\"answer\":8}"
         },
         "answer_only": {
           "metadata": {
@@ -259,8 +250,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the requested force magnitude as a non-negative integer number of newtons",
-              "evidence_hint": "set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for all shown force arrows that contribute along the queried axis",
-              "json_example": "{\"evidence\":[[2.5,3.5,4.5,5.5],[3.5,4.5,5.5,6.5]],\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to an array containing the bounding box [x1, y1, x2, y2] of the marked `? N` force arrow",
+              "json_example": "{\"evidence\":[[2.5,3.5,4.5,5.5]],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -343,14 +334,13 @@
         ]
       },
       "balancing_force_marker_bbox_px": [
-        36.7,
-        273.6,
-        220.7,
-        309.6
+        274.7,
+        324.6,
+        414.7,
+        360.6
       ],
-      "evidence_arrow_ids": [
-        "force_arrow_1",
-        "force_arrow_2"
+      "evidence_entity_ids": [
+        "balancing_force_marker"
       ],
       "object_aspect_ratio": 1.5043,
       "object_bbox_px": [
@@ -361,6 +351,10 @@
       ],
       "object_height_px": 115,
       "object_width_px": 173,
+      "relevant_arrow_ids": [
+        "force_arrow_1",
+        "force_arrow_2"
+      ],
       "scene_center_px": [
         361.2,
         359.6
@@ -470,10 +464,10 @@
         },
         {
           "bbox_px": [
-            36.7,
-            273.6,
-            220.7,
-            309.6
+            274.7,
+            324.6,
+            414.7,
+            360.6
           ],
           "entity_id": "balancing_force_marker",
           "entity_type": "physics_missing_force_marker",
@@ -485,13 +479,16 @@
       ],
       "relations": {
         "answer_force_n": 10,
-        "evidence_arrow_ids": [
-          "force_arrow_1",
-          "force_arrow_2"
+        "evidence_entity_ids": [
+          "balancing_force_marker"
         ],
         "object_aspect_ratio": 1.5043,
         "query_axis": "horizontal",
         "query_variant": "balancing_force_horizontal",
+        "relevant_arrow_ids": [
+          "force_arrow_1",
+          "force_arrow_2"
+        ],
         "scene_variant": "surface_block",
         "task_variant": "balancing_force_horizontal"
       },
@@ -499,8 +496,7 @@
     },
     "witness_symbolic": {
       "ids": [
-        "force_arrow_1",
-        "force_arrow_2"
+        "balancing_force_marker"
       ],
       "type": "id_set"
     }

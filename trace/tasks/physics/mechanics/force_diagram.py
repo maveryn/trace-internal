@@ -97,7 +97,6 @@ class _TaskDefaults:
     arrow_head_width_px: int = 18
     arrow_gap_px: int = 18
     arrow_slot_gap_px: int = 34
-    balancing_arrow_gap_extra_px: int = 54
     balancing_label_gap_extra_px: int = 10
     label_gap_px: int = 28
     label_font_size_px: int = 24
@@ -153,8 +152,10 @@ class _RenderedScene:
     object_width_px: int
     object_height_px: int
     surface_bbox_px: List[float] | None
+    relevant_arrow_bboxes: List[List[float]]
+    relevant_arrow_ids: List[str]
     evidence_bboxes: List[List[float]]
-    evidence_arrow_ids: List[str]
+    evidence_entity_ids: List[str]
     render_map: Dict[str, Any]
     scene_entities: List[Dict[str, Any]]
 
@@ -601,6 +602,61 @@ def _arrow_geometry_for_offset(
     )
 
 
+def _placeholder_geometry_inside_object(
+    *,
+    object_bbox_px: Sequence[float],
+    direction: str,
+    perpendicular_offset_px: float,
+    arrow_length_px: int,
+) -> Tuple[Tuple[float, float], Tuple[float, float]]:
+    """Return start/end coordinates for one balancing arrow drawn inside the block."""
+
+    obj_left, obj_top, obj_right, obj_bottom = [float(value) for value in object_bbox_px]
+    center_x = 0.5 * float(obj_left + obj_right)
+    center_y = 0.5 * float(obj_top + obj_bottom)
+    width = float(obj_right - obj_left)
+    height = float(obj_bottom - obj_top)
+    inset_px = 18.0
+    if str(direction) in {"left", "right"}:
+        arrow_length = min(float(arrow_length_px), max(36.0, float(width - (2.0 * inset_px) - 8.0)))
+        if str(direction) == "left":
+            end_xy = (float(obj_left + inset_px), float(center_y + perpendicular_offset_px))
+            start_xy = (float(end_xy[0] + arrow_length), float(end_xy[1]))
+            return start_xy, end_xy
+        end_xy = (float(obj_right - inset_px), float(center_y + perpendicular_offset_px))
+        start_xy = (float(end_xy[0] - arrow_length), float(end_xy[1]))
+        return start_xy, end_xy
+    arrow_length = min(float(arrow_length_px), max(36.0, float(height - (2.0 * inset_px) - 8.0)))
+    if str(direction) == "up":
+        end_xy = (float(center_x + perpendicular_offset_px), float(obj_top + inset_px))
+        start_xy = (float(end_xy[0]), float(end_xy[1] + arrow_length))
+        return start_xy, end_xy
+    end_xy = (float(center_x + perpendicular_offset_px), float(obj_bottom - inset_px))
+    start_xy = (float(end_xy[0]), float(end_xy[1] - arrow_length))
+    return start_xy, end_xy
+
+
+def _placeholder_label_center_inside_object(
+    *,
+    object_bbox_px: Sequence[float],
+    start_xy: Tuple[float, float],
+    end_xy: Tuple[float, float],
+    text_bbox: Sequence[float],
+) -> Tuple[float, float]:
+    """Return one placeholder label center clamped inside the block bbox."""
+
+    obj_left, obj_top, obj_right, obj_bottom = [float(value) for value in object_bbox_px]
+    text_left, text_top, text_right, text_bottom = [float(value) for value in text_bbox]
+    half_width = 0.5 * float(text_right - text_left)
+    half_height = 0.5 * float(text_bottom - text_top)
+    raw_center_x = float(0.5 * (float(start_xy[0]) + float(end_xy[0])))
+    raw_center_y = float(0.5 * (float(start_xy[1]) + float(end_xy[1])))
+    inset = 6.0
+    clamped_x = min(max(float(raw_center_x), float(obj_left + half_width + inset)), float(obj_right - half_width - inset))
+    clamped_y = min(max(float(raw_center_y), float(obj_top + half_height + inset)), float(obj_bottom - half_height - inset))
+    return (float(clamped_x), float(clamped_y))
+
+
 def _sample_block_dimensions(
     rng,
     *,
@@ -667,25 +723,50 @@ def _arrow_geometry_for_slot(
     )
 
 
-def _placeholder_perpendicular_offset(
+def _placeholder_perpendicular_offset_candidates(
     *,
     axis: str,
+    balancing_direction: str,
+    object_bbox_px: Sequence[float],
     direction_to_specs: Mapping[str, Sequence[Tuple[int, bool]]],
     slot_gap_px: int,
-) -> float:
-    """Return one dedicated outer lane for the balancing-force placeholder arrow."""
+) -> List[float]:
+    """Return ordered aligned placeholder-lane candidates within the block-side span."""
 
-    axis_directions = ("left", "right") if str(axis) == "horizontal" else ("up", "down")
-    existing_offsets: List[float] = []
-    for direction in axis_directions:
-        count = len(direction_to_specs.get(str(direction), ()))
-        if int(count) > 0:
-            existing_offsets.extend(_slot_offsets_for_direction(count=int(count)))
-    max_abs_offset = max((abs(float(value)) for value in existing_offsets), default=0.0)
-    placeholder_offset = float(max_abs_offset + (2.0 * float(slot_gap_px)))
-    if str(axis) == "horizontal":
-        return float(-placeholder_offset)
-    return float(placeholder_offset)
+    same_direction = str(balancing_direction)
+    opposite_direction = str(_OPPOSITE_DIRECTION[str(balancing_direction)])
+    same_offsets = _slot_offsets_for_direction(count=len(direction_to_specs.get(str(same_direction), ())))
+    opposite_offsets = _slot_offsets_for_direction(count=len(direction_to_specs.get(str(opposite_direction), ())))
+
+    def _is_free(candidate: float) -> bool:
+        return all(abs(float(candidate) - float(existing)) > 1e-6 for existing in same_offsets)
+
+    aligned_candidates = [float(offset) for offset in opposite_offsets if _is_free(float(offset))]
+    obj_left, obj_top, obj_right, obj_bottom = [float(value) for value in object_bbox_px]
+    half_span = (
+        0.5 * float(obj_bottom - obj_top)
+        if str(axis) == "horizontal"
+        else 0.5 * float(obj_right - obj_left)
+    )
+    lane_limit = max(0.0, float(half_span - 18.0))
+    lane_step = max(8.0, 0.5 * float(slot_gap_px))
+    max_index = max(0, int(math.floor(float(lane_limit) / float(lane_step))))
+    lattice = [float(index * lane_step) for index in range(-max_index, max_index + 1)]
+    free_lattice = [candidate for candidate in lattice if _is_free(float(candidate))]
+
+    def _ordered(values: Sequence[float]) -> List[float]:
+        unique: List[float] = []
+        for value in values:
+            candidate = float(value)
+            if any(abs(candidate - existing) <= 1e-6 for existing in unique):
+                continue
+            unique.append(candidate)
+        if str(axis) == "horizontal":
+            return sorted(unique, key=lambda value: (float(value) >= 0.0, abs(float(value))))
+        return sorted(unique, key=lambda value: (float(value) <= 0.0, abs(float(value))))
+
+    ordered = _ordered(list(aligned_candidates) + list(free_lattice))
+    return ordered if ordered else [0.0]
 
 
 def _draw_block_texture(
@@ -828,8 +909,8 @@ def _render_force_scene(
         )
 
     arrow_counter = 0
-    evidence_bboxes: List[List[float]] = []
-    evidence_arrow_ids: List[str] = []
+    relevant_arrow_bboxes: List[List[float]] = []
+    relevant_arrow_ids: List[str] = []
     for direction in ("left", "right", "up", "down"):
         specs_for_direction = direction_to_specs.get(str(direction), [])
         for slot_index, (magnitude, relevant) in enumerate(specs_for_direction):
@@ -902,24 +983,104 @@ def _render_force_scene(
                 }
             )
             if bool(relevant):
-                evidence_bboxes.append(list(arrow_bbox))
-                evidence_arrow_ids.append(str(arrow_id))
+                relevant_arrow_bboxes.append(list(arrow_bbox))
+                relevant_arrow_ids.append(str(arrow_id))
 
     placeholder_bbox_px: List[float] | None = None
     if balancing_direction is not None:
-        placeholder_offset_px = _placeholder_perpendicular_offset(
+        candidate_offsets = _placeholder_perpendicular_offset_candidates(
             axis=str(relevant_axis),
+            balancing_direction=str(balancing_direction),
+            object_bbox_px=object_bbox_px,
             direction_to_specs=direction_to_specs,
             slot_gap_px=int(render_defaults["arrow_slot_gap_px"]),
         )
-        placeholder_start_xy, placeholder_end_xy = _arrow_geometry_for_offset(
-            object_bbox_px=object_bbox_px,
-            direction=str(balancing_direction),
-            perpendicular_offset_px=float(placeholder_offset_px),
-            arrow_length_px=int(render_defaults["arrow_length_px"]),
-            arrow_gap_px=int(render_defaults["arrow_gap_px"]) + int(render_defaults["balancing_arrow_gap_extra_px"]),
-        )
         placeholder_color = (181, 52, 77)
+        placeholder_text_bbox = draw.textbbox(
+            (0, 0),
+            "? N",
+            font=label_font,
+            stroke_width=max(0, int(render_defaults["label_stroke_width_px"])),
+        )
+        selected_geometry: Tuple[Tuple[float, float], Tuple[float, float], List[float]] | None = None
+        for candidate_offset in candidate_offsets:
+            start_xy, end_xy = _placeholder_geometry_inside_object(
+                object_bbox_px=object_bbox_px,
+                direction=str(balancing_direction),
+                perpendicular_offset_px=float(candidate_offset),
+                arrow_length_px=int(render_defaults["arrow_length_px"]),
+            )
+            label_center = _placeholder_label_center_inside_object(
+                object_bbox_px=object_bbox_px,
+                start_xy=start_xy,
+                end_xy=end_xy,
+                text_bbox=placeholder_text_bbox,
+            )
+            label_left, label_top, label_right, label_bottom = [float(value) for value in placeholder_text_bbox]
+            label_bbox = [
+                float(label_center[0] - (0.5 * (label_right - label_left))),
+                float(label_center[1] - (0.5 * (label_bottom - label_top))),
+                float(label_center[0] + (0.5 * (label_right - label_left))),
+                float(label_center[1] + (0.5 * (label_bottom - label_top))),
+            ]
+            candidate_bbox = _union_bbox(
+                _arrow_line_bbox(
+                    start_xy,
+                    end_xy,
+                    padding=max(
+                        float(render_defaults["arrow_head_width_px"]),
+                        float(render_defaults["label_box_padding_px"]),
+                    ),
+                ),
+                label_bbox,
+            )
+            overlap = any(
+                not (
+                    float(candidate_bbox[2]) <= float(spec.bbox_px[0])
+                    or float(candidate_bbox[0]) >= float(spec.bbox_px[2])
+                    or float(candidate_bbox[3]) <= float(spec.bbox_px[1])
+                    or float(candidate_bbox[1]) >= float(spec.bbox_px[3])
+                )
+                for spec in arrow_specs
+            )
+            if not overlap:
+                selected_geometry = (start_xy, end_xy, candidate_bbox)
+                break
+        if selected_geometry is None:
+            fallback_offset = float(candidate_offsets[0])
+            start_xy, end_xy = _placeholder_geometry_inside_object(
+                object_bbox_px=object_bbox_px,
+                direction=str(balancing_direction),
+                perpendicular_offset_px=float(fallback_offset),
+                arrow_length_px=int(render_defaults["arrow_length_px"]),
+            )
+            label_center = _placeholder_label_center_inside_object(
+                object_bbox_px=object_bbox_px,
+                start_xy=start_xy,
+                end_xy=end_xy,
+                text_bbox=placeholder_text_bbox,
+            )
+            placeholder_bbox_px = _union_bbox(
+                _arrow_line_bbox(
+                    start_xy,
+                    end_xy,
+                    padding=max(
+                        float(render_defaults["arrow_head_width_px"]),
+                        float(render_defaults["label_box_padding_px"]),
+                    ),
+                ),
+                _draw_force_label(
+                    draw,
+                    text="? N",
+                    center_xy=label_center,
+                    font=label_font,
+                    fill=placeholder_color,
+                    stroke_width_px=int(render_defaults["label_stroke_width_px"]),
+                ),
+            )
+            placeholder_start_xy, placeholder_end_xy = start_xy, end_xy
+        else:
+            placeholder_start_xy, placeholder_end_xy, placeholder_bbox_px = selected_geometry
         _draw_placeholder_arrow(
             draw,
             start_xy=placeholder_start_xy,
@@ -929,10 +1090,11 @@ def _render_force_scene(
             head_width_px=int(render_defaults["arrow_head_width_px"]),
             color=placeholder_color,
         )
-        label_center = _label_center_for_direction(
-            direction=str(balancing_direction),
+        label_center = _placeholder_label_center_inside_object(
+            object_bbox_px=object_bbox_px,
+            start_xy=placeholder_start_xy,
             end_xy=placeholder_end_xy,
-            label_gap_px=int(render_defaults["label_gap_px"]) + int(render_defaults["balancing_label_gap_extra_px"]),
+            text_bbox=placeholder_text_bbox,
         )
         label_bbox = _draw_force_label(
             draw,
@@ -965,11 +1127,19 @@ def _render_force_scene(
             }
         )
 
+    if balancing_direction is not None and placeholder_bbox_px is not None:
+        evidence_bboxes = [list(placeholder_bbox_px)]
+        evidence_entity_ids = ["balancing_force_marker"]
+    else:
+        evidence_bboxes = [list(bbox) for bbox in relevant_arrow_bboxes]
+        evidence_entity_ids = [str(item) for item in relevant_arrow_ids]
+
     render_map = {
         "object_bbox_px": [round(float(value), 3) for value in object_bbox_px],
         "arrow_bboxes_px": {spec.arrow_id: list(spec.bbox_px) for spec in arrow_specs},
         "arrow_label_bboxes_px": {spec.arrow_id: list(spec.label_bbox_px) for spec in arrow_specs},
-        "evidence_arrow_ids": list(evidence_arrow_ids),
+        "relevant_arrow_ids": list(relevant_arrow_ids),
+        "evidence_entity_ids": list(evidence_entity_ids),
         "scene_center_px": [round(float(center_x), 3), round(float(center_y), 3)],
     }
     if surface_bbox_px is not None:
@@ -989,8 +1159,10 @@ def _render_force_scene(
         object_width_px=int(object_width_px),
         object_height_px=int(object_height_px),
         surface_bbox_px=list(surface_bbox_px) if surface_bbox_px is not None else None,
+        relevant_arrow_bboxes=list(relevant_arrow_bboxes),
+        relevant_arrow_ids=list(relevant_arrow_ids),
         evidence_bboxes=list(evidence_bboxes),
-        evidence_arrow_ids=list(evidence_arrow_ids),
+        evidence_entity_ids=list(evidence_entity_ids),
         render_map=render_map,
         scene_entities=list(scene_entities),
     )
@@ -1065,7 +1237,6 @@ class PhysicsMechanicsForceDiagramTask:
                         "arrow_head_width_px",
                         "arrow_gap_px",
                         "arrow_slot_gap_px",
-                        "balancing_arrow_gap_extra_px",
                         "balancing_label_gap_extra_px",
                         "label_gap_px",
                         "label_font_size_px",
@@ -1095,7 +1266,8 @@ class PhysicsMechanicsForceDiagramTask:
                     "json_output_contract",
                     "json_output_contract_answer_only",
                     "answer_hint",
-                    "evidence_hint",
+                    "evidence_hint_net_force",
+                    "evidence_hint_balancing_force",
                     "object_description_free_body_box",
                     "object_description_surface_block",
                     "object_description_textured_block",
@@ -1119,7 +1291,11 @@ class PhysicsMechanicsForceDiagramTask:
                     "marked_direction_label": str(_QUERY_DIRECTION_TEXT.get(str(rendered_scene.placeholder_direction), "marked")),
                     "json_output_contract": str(prompt_defaults["json_output_contract"]),
                     "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                    "evidence_hint": str(prompt_defaults["evidence_hint"]),
+                    "evidence_hint": str(
+                        prompt_defaults["evidence_hint_balancing_force"]
+                        if _is_balancing_query(str(axes.query_variant))
+                        else prompt_defaults["evidence_hint_net_force"]
+                    ),
                     "answer_hint": str(prompt_defaults["answer_hint"]),
                     "json_example": str(json_example),
                     "json_example_answer_only": str(json_example_answer_only),
@@ -1136,7 +1312,7 @@ class PhysicsMechanicsForceDiagramTask:
                 scene_variant=str(axes.scene_variant),
                 query_variant=str(axes.query_variant),
                 arrow_count=len(rendered_scene.arrow_specs),
-                relevant_arrow_count=len(rendered_scene.evidence_arrow_ids),
+                relevant_arrow_count=len(rendered_scene.relevant_arrow_ids),
                 target_force=int(axes.target_force),
             )
             trace_payload = {
@@ -1149,7 +1325,8 @@ class PhysicsMechanicsForceDiagramTask:
                         "task_variant": str(axes.query_variant),
                         "query_axis": str(query_axis),
                         "answer_force_n": int(axes.target_force),
-                        "evidence_arrow_ids": list(rendered_scene.evidence_arrow_ids),
+                        "relevant_arrow_ids": list(rendered_scene.relevant_arrow_ids),
+                        "evidence_entity_ids": list(rendered_scene.evidence_entity_ids),
                         "object_aspect_ratio": round(
                             float(rendered_scene.object_width_px) / float(rendered_scene.object_height_px),
                             4,
@@ -1215,11 +1392,12 @@ class PhysicsMechanicsForceDiagramTask:
                         }
                         for spec in rendered_scene.arrow_specs
                     ],
-                    "evidence_arrow_ids": list(rendered_scene.evidence_arrow_ids),
+                    "relevant_arrow_ids": list(rendered_scene.relevant_arrow_ids),
+                    "evidence_entity_ids": list(rendered_scene.evidence_entity_ids),
                 },
                 "witness_symbolic": {
                     "type": "id_set",
-                    "ids": [str(item) for item in rendered_scene.evidence_arrow_ids],
+                    "ids": [str(item) for item in rendered_scene.evidence_entity_ids],
                 },
                 "projected_evidence": {
                     "bbox_set": [list(bbox) for bbox in rendered_scene.evidence_bboxes],

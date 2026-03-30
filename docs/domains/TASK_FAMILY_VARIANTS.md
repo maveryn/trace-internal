@@ -210,26 +210,32 @@ Define how we split tasks into reusable families so each dataset slice stays com
 
 ## Games direction (current)
 1. Games should start with real game-state artifacts whose visible pieces are sufficient to answer the question; do not hide state or rely on unstated house rules in early tasks.
-2. The active games families are `bingo`, `cards`, and `dominoes`.
-3. `task_games_bingo_completed_line_count`
+2. The active games families are `dots_and_boxes`, `bingo`, `cards`, and `dominoes`.
+3. `task_games_dots_and_boxes_capture_count`
+   - uses scene variant `single_board`
+   - uses query variant `forced_turn_capture_count`
+   - keeps integer answers with unordered `bbox_set` evidence over the boxes captured during the highlighted forced turn
+   - uses one non-semantic `style_variant` axis `classic|soft|outlined` for paper-board chrome only
+4. `task_games_bingo_completed_line_count`
    - uses scene variant `single_card`
    - uses query variants `completed_row_count|completed_column_count|completed_straight_line_count`
    - keeps integer answers with unordered marked-cell `bbox_set` evidence over the cells in the counted completed lines
    - uses one non-semantic `style_variant` axis `classic|soft|outlined` for bingo-card chrome and mark styling only
-4. `task_games_cards_hand_count`
+5. `task_games_cards_hand_count`
    - uses scene variants `single_row|two_row`
    - uses query variants `same_suit_as_reference_count|higher_than_reference_count|pair_count|longest_run_length`
    - keeps integer answers with unordered `bbox_set` evidence over the relevant cards in the visible hand
    - uses one non-semantic `style_variant` axis `classic|soft|outlined` for card chrome only
-5. `task_games_dominoes_chain_count`
+6. `task_games_dominoes_chain_count`
    - uses scene variants `single_row|two_row`
    - uses query variants `matching_end_count|higher_sum_than_reference_count|sum_to_target_count|double_count`
    - keeps integer answers with unordered `bbox_set` evidence over the matching loose dominoes below the top chain
    - uses one non-semantic `style_variant` axis `classic|soft|outlined` for domino chrome only
-6. Bingo-card tasks should keep the first scaffold to one visible `5 x 5` card and state exactly which line types count; do not imply diagonal or free-center rules unless the prompt says so directly.
-7. Card-hand tasks should keep visible card counts in the `7..14` range, with two-row layouts reserved for larger hands so cards stay readable.
-8. Domino-chain tasks should keep the top chain as reference/context and the loose dominoes below as the counted witness set, with explicit rule text whenever the query depends on open-end matching, pip sums, or doubles.
-9. When a card-hand task depends on display order across wrapped rows (for example longest-run questions), keep an explicit continuation cue in the image and state the reading order directly in the prompt.
+7. Dots-and-boxes tasks should keep the highlighted starting move explicit in the image and state the bonus-turn / forced-continuation rule directly in the prompt so the task stays grounded in the visible board state instead of hidden strategy.
+8. Bingo-card tasks should keep the first scaffold to one visible `5 x 5` card and state exactly which line types count; do not imply diagonal or free-center rules unless the prompt says so directly.
+9. Card-hand tasks should keep visible card counts in the `7..14` range, with two-row layouts reserved for larger hands so cards stay readable.
+10. Domino-chain tasks should keep the top chain as reference/context and the loose dominoes below as the counted witness set, with explicit rule text whenever the query depends on open-end matching, pip sums, or doubles.
+11. When a card-hand task depends on display order across wrapped rows (for example longest-run questions), keep an explicit continuation cue in the image and state the reading order directly in the prompt.
 
 ## Geometry direction (current)
 1. Geometry now exposes ten active task ids:

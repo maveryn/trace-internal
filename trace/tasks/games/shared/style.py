@@ -68,6 +68,25 @@ class BingoTheme:
     mark_outline_rgb: Tuple[int, int, int]
 
 
+@dataclass(frozen=True)
+class DotsAndBoxesTheme:
+    """Resolved dots-and-boxes palette for one style variant."""
+
+    board_fill_rgb: Tuple[int, int, int]
+    board_border_rgb: Tuple[int, int, int]
+    board_border_width_px: int
+    shadow_rgb: Tuple[int, int, int]
+    shadow_alpha: int
+    shadow_offset_px: Tuple[int, int]
+    title_rgb: Tuple[int, int, int]
+    dot_rgb: Tuple[int, int, int]
+    edge_rgb: Tuple[int, int, int]
+    edge_width_px: int
+    highlight_rgb: Tuple[int, int, int]
+    highlight_width_px: int
+    guide_rgb: Tuple[int, int, int]
+
+
 def build_games_card_theme(*, style_variant: str) -> CardTheme:
     """Return one resolved card-scene theme for the active style variant."""
 
@@ -221,6 +240,59 @@ def build_games_bingo_theme(*, style_variant: str) -> BingoTheme:
     )
 
 
+def build_games_dots_and_boxes_theme(*, style_variant: str) -> DotsAndBoxesTheme:
+    """Return one resolved dots-and-boxes theme for the active style variant."""
+
+    variant = str(style_variant)
+    if variant == "soft":
+        return DotsAndBoxesTheme(
+            board_fill_rgb=(249, 244, 234),
+            board_border_rgb=(102, 112, 124),
+            board_border_width_px=3,
+            shadow_rgb=(18, 24, 20),
+            shadow_alpha=56,
+            shadow_offset_px=(5, 6),
+            title_rgb=(52, 76, 132),
+            dot_rgb=(54, 60, 68),
+            edge_rgb=(66, 74, 86),
+            edge_width_px=8,
+            highlight_rgb=(202, 74, 60),
+            highlight_width_px=10,
+            guide_rgb=(176, 184, 194),
+        )
+    if variant == "outlined":
+        return DotsAndBoxesTheme(
+            board_fill_rgb=(255, 255, 255),
+            board_border_rgb=(62, 70, 80),
+            board_border_width_px=4,
+            shadow_rgb=(14, 18, 20),
+            shadow_alpha=40,
+            shadow_offset_px=(4, 5),
+            title_rgb=(44, 75, 168),
+            dot_rgb=(36, 40, 46),
+            edge_rgb=(52, 58, 68),
+            edge_width_px=8,
+            highlight_rgb=(214, 60, 54),
+            highlight_width_px=10,
+            guide_rgb=(196, 202, 210),
+        )
+    return DotsAndBoxesTheme(
+        board_fill_rgb=(255, 252, 244),
+        board_border_rgb=(74, 82, 92),
+        board_border_width_px=3,
+        shadow_rgb=(18, 22, 24),
+        shadow_alpha=48,
+        shadow_offset_px=(4, 5),
+        title_rgb=(45, 76, 160),
+        dot_rgb=(30, 34, 40),
+        edge_rgb=(46, 52, 60),
+        edge_width_px=8,
+        highlight_rgb=(210, 58, 52),
+        highlight_width_px=10,
+        guide_rgb=(184, 190, 198),
+    )
+
+
 def suit_color(theme: CardTheme, *, suit_name: str) -> Tuple[int, int, int]:
     """Return the rendered suit/rank color for one suit under the active theme."""
 
@@ -242,10 +314,12 @@ __all__ = [
     "BingoTheme",
     "CardTheme",
     "DominoTheme",
+    "DotsAndBoxesTheme",
     "SUPPORTED_GAMES_STYLE_VARIANTS",
     "build_games_bingo_theme",
     "build_games_card_theme",
     "build_games_domino_theme",
+    "build_games_dots_and_boxes_theme",
     "style_probability_map",
     "suit_color",
 ]

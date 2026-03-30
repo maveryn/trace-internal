@@ -1,0 +1,66 @@
+{
+  "bundle_id": "games_dots_and_boxes_v1",
+  "schema_version": "v1",
+  "task_family_templates": {
+    "visible_dots_and_boxes_board": [
+      "The image shows {object_description}.",
+      "Look at the dots-and-boxes board in the image. It shows {object_description}.",
+      "You are given an image with {object_description}.",
+      "Work from the dots-and-boxes board shown in the image: {object_description}.",
+      "Use the visible dots-and-boxes board in the image. It shows {object_description}."
+    ]
+  },
+  "task_templates": {
+    "dots_and_boxes_capture_query": [
+      "Answer the question using the highlighted edge and the visible board state.",
+      "Work from the shown dots-and-boxes position to determine the requested capture count.",
+      "Use the displayed board to answer the turn-capture question.",
+      "Determine the requested turn-capture value from the visible board.",
+      "Use the highlighted edge and the current board state to answer the question."
+    ]
+  },
+  "task_variant_templates": {
+    "forced_turn_capture_count": [
+      "{forced_turn_rule_text} If the player draws the highlighted edge, how many boxes will be captured this turn? Answer with an integer.",
+      "How many boxes will the player capture this turn by drawing the highlighted edge? {forced_turn_rule_text} Answer with an integer.",
+      "Count the total boxes captured this turn after drawing the highlighted edge. {forced_turn_rule_text} Answer with an integer.",
+      "{forced_turn_rule_text} What is the total number of boxes captured in that turn after the highlighted move? Answer with an integer.",
+      "Starting from the highlighted edge, how many boxes are captured before the turn ends? {forced_turn_rule_text} Answer with an integer."
+    ]
+  },
+  "required_slots_by_key": {
+    "task_family:visible_dots_and_boxes_board": [
+      "object_description"
+    ],
+    "task_variant:forced_turn_capture_count": [
+      "forced_turn_rule_text"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence: {evidence_hint}.\nAnswer: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence requirement: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence field: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence rule: {evidence_hint}.\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  }
+}

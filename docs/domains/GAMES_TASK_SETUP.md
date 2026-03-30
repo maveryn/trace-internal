@@ -8,6 +8,20 @@ Use this document for the active `games` domain contract.
 3. Prompt-facing evidence should stay on the visible game pieces themselves (for example card boxes), not on decorative table chrome.
 
 ## 2) Active families
+### `dots_and_boxes`
+1. Active tasks:
+   - `task_games_dots_and_boxes_capture_count`
+2. `task_games_dots_and_boxes_capture_count` scene/query surface:
+   - `scene_variant`: `single_board`
+   - `query_variant`: `forced_turn_capture_count`
+3. `task_games_dots_and_boxes_capture_count` evidence contract:
+   - unordered captured-box `bbox_set` evidence over the boxes captured during the highlighted forced turn
+4. `task_games_dots_and_boxes_capture_count` prompt policy:
+   - show one visible dots-and-boxes board with one missing edge highlighted,
+   - define the bonus-turn rule explicitly in the prompt,
+   - make the continuation rule explicit as “keep following the forced box-completing move” so the task never depends on unstated strategy,
+   - keep the first version to one stable board scaffold rather than mixing board sizes or alternate rule text.
+
 ### `bingo`
 1. Active tasks:
    - `task_games_bingo_completed_line_count`
@@ -56,19 +70,23 @@ Use this document for the active `games` domain contract.
 4. Keep evidence local to the actual pieces that satisfy the queried predicate.
 
 ## 4) Active coverage snapshot
-1. `bingo`
+1. `dots_and_boxes`
+   - `task_games_dots_and_boxes_capture_count`
+2. `bingo`
    - `task_games_bingo_completed_line_count`
-2. `cards`
+3. `cards`
    - `task_games_cards_hand_count`
-3. `dominoes`
+4. `dominoes`
    - `task_games_dominoes_chain_count`
 
 ## 5) Shared helper placement
 1. Cross-domain integer-support balancing now lives in `trace/tasks/shared/support_sampling.py`.
 2. Games-domain visual defaults belong in `trace/tasks/games/shared/visual_defaults.py`.
 3. Games-domain card/domino theming belongs in `trace/tasks/games/shared/style.py`.
-4. Games-domain bingo-card construction helpers belong in `trace/tasks/games/shared/bingo_common.py`.
-5. Games-domain bingo-card rendering helpers belong in `trace/tasks/games/shared/bingo_scene.py`.
-6. Games-domain card-hand rendering helpers belong in `trace/tasks/games/shared/card_scene.py`.
-7. Games-domain domino-chain rendering helpers belong in `trace/tasks/games/shared/domino_scene.py`.
-8. Games-domain normalized complexity helpers belong in `trace/tasks/games/shared/complexity.py`.
+4. Games-domain dots-and-boxes board construction helpers belong in `trace/tasks/games/shared/dots_boxes_common.py`.
+5. Games-domain dots-and-boxes board rendering helpers belong in `trace/tasks/games/shared/dots_boxes_scene.py`.
+6. Games-domain bingo-card construction helpers belong in `trace/tasks/games/shared/bingo_common.py`.
+7. Games-domain bingo-card rendering helpers belong in `trace/tasks/games/shared/bingo_scene.py`.
+8. Games-domain card-hand rendering helpers belong in `trace/tasks/games/shared/card_scene.py`.
+9. Games-domain domino-chain rendering helpers belong in `trace/tasks/games/shared/domino_scene.py`.
+10. Games-domain normalized complexity helpers belong in `trace/tasks/games/shared/complexity.py`.

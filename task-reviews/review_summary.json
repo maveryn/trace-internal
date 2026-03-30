@@ -8,7 +8,7 @@
     "random_count": 100,
     "seed": 0,
     "tasks": [
-      "task_games_bingo_completed_line_count"
+      "task_games_dots_and_boxes_capture_count"
     ],
     "workers": 16
   },
@@ -21,20 +21,18 @@
     {
       "distribution_pass": true,
       "domain": "games",
-      "inspection_count": 75,
-      "inspection_workbook": "games/task_games_bingo_completed_line_count/task_games_bingo_completed_line_count.xlsx",
+      "inspection_count": 25,
+      "inspection_workbook": "games/task_games_dots_and_boxes_capture_count/task_games_dots_and_boxes_capture_count.xlsx",
       "inspection_workbook_sheets": {
-        "completed_column_count": "completed_column_count",
-        "completed_row_count": "completed_row_count",
-        "completed_straight_line_count": "completed_straight_line_count"
+        "forced_turn_capture_count": "forced_turn_capture_count"
       },
       "reports": {
-        "distribution_review": "games/task_games_bingo_completed_line_count/distribution_review.json",
-        "inspection_manifest": "games/task_games_bingo_completed_line_count/manifest.json",
-        "random_review": "games/task_games_bingo_completed_line_count/random_review_100.json"
+        "distribution_review": "games/task_games_dots_and_boxes_capture_count/distribution_review.json",
+        "inspection_manifest": "games/task_games_dots_and_boxes_capture_count/manifest.json",
+        "random_review": "games/task_games_dots_and_boxes_capture_count/random_review_100.json"
       },
-      "task_group": "bingo",
-      "task_id": "task_games_bingo_completed_line_count"
+      "task_group": "dots_and_boxes",
+      "task_id": "task_games_dots_and_boxes_capture_count"
     }
   ]
 }

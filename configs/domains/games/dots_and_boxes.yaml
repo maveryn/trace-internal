@@ -1,0 +1,56 @@
+generation:
+  shared:
+    box_rows: 3
+    box_cols: 4
+  task_overrides:
+    task_games_dots_and_boxes_capture_count:
+      scene_variant_weights:
+        single_board: 1.0
+      query_variant_weights:
+        forced_turn_capture_count: 1.0
+      style_variant_weights:
+        classic: 1.0
+        soft: 1.0
+        outlined: 1.0
+      balanced_scene_variant_sampling: true
+      balanced_query_variant_sampling: true
+      balanced_style_variant_sampling: true
+      balanced_target_answer_sampling: true
+      capture_count_support: [1, 2, 3, 4, 5, 6]
+
+rendering:
+  shared:
+    canvas_width: 1180
+    canvas_height: 820
+    board_width_px: 880
+    board_height_px: 640
+    board_corner_radius_px: 24
+    panel_margin_px: 56
+    title_font_size_px: 34
+    title_band_height_px: 62
+    board_padding_px: 62
+    dot_radius_px: 7
+    dash_length_px: 30
+    dash_gap_px: 18
+
+complexity:
+  shared: {}
+  task_overrides:
+    task_games_dots_and_boxes_capture_count:
+      criteria_weights:
+        visual_scan: 0.24
+        state_reasoning: 0.46
+        ambiguity: 0.12
+        output_burden: 0.18
+
+prompt:
+  shared:
+    bundle_id: games_dots_and_boxes_v1
+  task_overrides:
+    task_games_dots_and_boxes_capture_count:
+      task_family_key: visible_dots_and_boxes_board
+      task_key: dots_and_boxes_capture_query
+      object_description_single_board: one visible dots-and-boxes board with some edges already drawn and one missing edge highlighted on a green table
+      forced_turn_rule_text: If drawing an edge completes a box, the player captures that box and keeps the turn. Continue following the forced box-completing move each time until no more boxes can be completed.
+      evidence_hint_forced_turn_capture_count: set "evidence" to an array of bounding boxes [x1, y1, x2, y2] for every box that will be captured during that turn
+      answer_hint_forced_turn_capture_count: set "answer" to the total number of boxes captured during that turn

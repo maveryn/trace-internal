@@ -192,9 +192,50 @@ def build_games_bingo_completed_line_complexity(
     )
 
 
+def build_games_dots_and_boxes_capture_complexity(
+    *,
+    task_group_defaults: Mapping[str, Any],
+    task_id: str,
+    box_rows: int,
+    box_cols: int,
+    drawn_edge_count: int,
+    target_answer: int,
+    path_turn_count: int,
+    evidence_count: int,
+) -> TaskComplexity:
+    """Build normalized complexity for dots-and-boxes forced-turn capture scenes."""
+
+    weights = resolve_games_complexity_weights(task_group_defaults, task_id=task_id)
+    total_boxes = int(box_rows) * int(box_cols)
+    visual_scan = clamp_unit_interval(
+        (0.30 * normalize_linear(float(total_boxes), min_value=6.0, max_value=16.0))
+        + (0.30 * normalize_linear(float(drawn_edge_count), min_value=3.0, max_value=22.0))
+    )
+    state_reasoning = clamp_unit_interval(
+        0.34
+        + (0.36 * normalize_linear(float(target_answer), min_value=1.0, max_value=6.0))
+        + (0.12 * normalize_linear(float(path_turn_count), min_value=0.0, max_value=5.0))
+    )
+    ambiguity = clamp_unit_interval(
+        (0.10 * normalize_linear(float(path_turn_count), min_value=0.0, max_value=5.0))
+        + (0.06 if int(target_answer) >= 4 else 0.0)
+    )
+    output_burden = normalize_linear(float(evidence_count), min_value=1.0, max_value=6.0)
+    return build_games_complexity(
+        weights=weights,
+        components={
+            "visual_scan": float(visual_scan),
+            "state_reasoning": float(state_reasoning),
+            "ambiguity": float(ambiguity),
+            "output_burden": float(output_burden),
+        },
+    )
+
+
 __all__ = [
     "build_games_bingo_completed_line_complexity",
     "build_games_cards_hand_complexity",
+    "build_games_dots_and_boxes_capture_complexity",
     "build_games_dominoes_chain_complexity",
     "build_games_complexity",
     "clamp_unit_interval",

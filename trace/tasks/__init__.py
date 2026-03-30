@@ -51,9 +51,6 @@ from .documents.layout import section_membership_label as _task_documents_layout
 from .documents.relation import section_extremum_value as _task_documents_relation_section_extremum_value
 from .documents.readout import field_value as _task_documents_readout_field_value
 from .documents.selection import checkbox_count as _task_documents_selection_checkbox_count
-from .games.bingo import completed_line_count as _task_games_bingo_completed_line_count
-from .games.cards import hand_count as _task_games_cards_hand_count
-from .games.dominoes import chain_count as _task_games_dominoes_chain_count
 from .tables.counting import value_count as _task_tables_counting_value_count
 from .tables.ranking import label as _task_tables_ranking_label
 from .tables.relation import extremum_transfer_value as _task_tables_relation_extremum_transfer_value
@@ -84,6 +81,10 @@ from .physics.mechanics import lever_balance as _task_physics_mechanics_lever_ba
 from .physics.mechanics import spring_extension as _task_physics_mechanics_spring_extension
 from .physics.circuits import equivalent_resistance as _task_physics_circuits_equivalent_resistance
 from .physics.optics import ray_trace as _task_physics_optics_ray_trace
+from .games.bingo import completed_line_count as _task_games_bingo_completed_line_count
+from .games.cards import hand_count as _task_games_cards_hand_count
+from .games.dominoes import chain_count as _task_games_dominoes_chain_count
+from .games.dots_and_boxes import capture_count as _task_games_dots_and_boxes_capture_count
 from .tile import count_color_components as _task_tile_count_color_components
 from .tile import count_color_count as _task_tile_count_color_count
 from .tile import count_largest_component_size as _task_tile_count_largest_component_size

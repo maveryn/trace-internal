@@ -129,6 +129,7 @@ Active bundles:
    - `prompts/diagrams/schematic/diagrams_schematic_v1.json`
    - `prompts/diagrams/set_diagram/diagrams_set_diagram_v1.json`
 11. Games:
+   - `prompts/games/dots_and_boxes/games_dots_and_boxes_v1.json`
    - `prompts/games/cards/games_cards_v1.json`
    - `prompts/games/dominoes/games_dominoes_v1.json`
    - `prompts/games/bingo/games_bingo_v1.json`
@@ -212,6 +213,7 @@ Active task-to-bundle mapping:
    - `task_documents_relation_section_extremum_value` -> `documents_relation_v1`
    - `task_documents_selection_checkbox_count` -> `documents_selection_v1`
 18. Games:
+   - `task_games_dots_and_boxes_capture_count` -> `games_dots_and_boxes_v1`
    - `task_games_bingo_completed_line_count` -> `games_bingo_v1`
    - `task_games_cards_hand_count` -> `games_cards_v1`
    - `task_games_dominoes_chain_count` -> `games_dominoes_v1`

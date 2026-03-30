@@ -81,18 +81,6 @@ Define how we split tasks into reusable families so each dataset slice stays com
 5. Keep graph sampling variation split between topology families and layout families so graph semantics remain stable while scenes still vary visually.
 6. If a graph task supports directed variants, make the prompt wording, trace metadata, and rendered arrowheads explicit; do not reuse plain `degree` wording for directed in-/out-degree queries.
 
-## Maps direction (current)
-1. Maps should start with map-native visual reasoning families such as `region`, `legend`, and later `transit`; avoid counting a task as `maps` if it is really generic pathfinding with a map skin.
-2. The first active maps family is `region`, where a stylized choropleth-style map and legend form one reusable scene contract.
-3. `task_maps_region_association_label` uses semantic `task_variant` values `max_category_region`, `min_category_region`, and `matches_legend_bin`.
-4. `task_maps_region_association_label` uses visual `scene_variant` values `map_strip`, `map_card`, `map_outline`, and `region_map`.
-5. `task_maps_region_count` uses semantic `task_variant` values `count_regions_in_category`, `count_regions_above_category`, and `count_regions_below_category`.
-6. `task_maps_region_count` reuses the same visual `scene_variant` values `map_strip`, `map_card`, `map_outline`, and `region_map`.
-5. The active region-map grammar uses one synthetic contiguous region partition with `5..7` labeled regions on the left and one ordered category legend on the right.
-6. Region tasks should keep legend order explicit in the prompt and should not make correctness depend on an unstated darker-is-higher convention.
-7. Prompt-facing region-label evidence should stay as one-box `bbox_set` grounding on the winning region, while region-count tasks use one ordered bbox per counted region.
-8. When a map task's reasoning depends on legend colors, enforce or validate the active category palette in Lab space and record the threshold in trace metadata.
-
 ## Diagrams direction (current)
 1. Diagrams should stay schematic and diagram-native; do not use `diagrams` for generic graph problems or document layouts with a few connectors.
 2. The active early diagrams families are `flow`, `hierarchy`, `cycle`, `set_diagram`, and `schematic`.

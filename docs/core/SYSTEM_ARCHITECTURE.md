@@ -145,28 +145,25 @@ Implementation map for the contracts in `docs/core/BLUEPRINT.md`.
    - `trace/tasks/puzzles/spatial/assembly_label.py`
    - `trace/tasks/puzzles/spatial/overlay_result_label.py`
    - `trace/tasks/puzzles/topology/bead_equivalence_count.py`
-9. Maps:
-   - `trace/tasks/maps/region/association_label.py`
-   - `trace/tasks/maps/region/count.py`
-10. Documents:
+9. Documents:
    - `trace/tasks/documents/arithmetic/section_expression_value.py`
    - `trace/tasks/documents/layout/section_membership_label.py`
    - `trace/tasks/documents/readout/field_value.py`
    - `trace/tasks/documents/relation/section_extremum_value.py`
    - `trace/tasks/documents/selection/checkbox_count.py`
-11. Diagrams:
+10. Diagrams:
    - `trace/tasks/diagrams/cycle/offset_stage_label.py`
    - `trace/tasks/diagrams/flow/next_step_label.py`
    - `trace/tasks/diagrams/hierarchy/ancestor_label.py`
    - `trace/tasks/diagrams/schematic/callout_target_label.py`
    - `trace/tasks/diagrams/set_diagram/region_sum_value.py`
-12. Physics:
+11. Physics:
    - `trace/tasks/physics/circuits/equivalent_resistance.py`
    - `trace/tasks/physics/mechanics/force_diagram.py`
    - `trace/tasks/physics/mechanics/lever_balance.py`
    - `trace/tasks/physics/mechanics/spring_extension.py`
    - `trace/tasks/physics/optics/ray_trace.py`
-13. Games:
+12. Games:
    - `trace/tasks/games/cards/hand_count.py`
    - `trace/tasks/games/dominoes/chain_count.py`
 ## 5) Architecture invariants

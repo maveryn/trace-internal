@@ -10,7 +10,6 @@ Paired repo-local skills:
 - `skills/domain-temporal/`
 - `skills/domain-physics/`
 - `skills/domain-games/`
-- `skills/domain-maps/`
 - `skills/domain-puzzles/`
 - `skills/domain-tables/`
 - `skills/domain-tile/`
@@ -22,7 +21,6 @@ Paired repo-local skills:
 - `DIAGRAM_TASK_SETUP.md` — concrete v1 setup for the active early diagrams-domain task families.
 - `DOCUMENT_TASK_SETUP.md` — concrete v1 setup for the first documents-domain task family.
 - `GRAPH_TASK_SETUP.md` — concrete v1 setup for the active graph-domain task families.
-- `MAP_TASK_SETUP.md` — concrete v1 contract for the first maps-domain task family.
 - `PUZZLE_TASK_SETUP.md` — concrete active setup for the first puzzles-domain family.
 - `PHYSICS_TASK_SETUP.md` — concrete active setup for the first physics-domain family.
 - `GAMES_TASK_SETUP.md` — concrete active setup for the current games-domain families.

@@ -22,18 +22,17 @@ Repo-local skills live under `skills/`, but skills are operational overlays. Can
 8. `docs/domains/GRAPH_TASK_SETUP.md` — concrete v1 contract for the active graph-domain task families.
 9. `docs/domains/DIAGRAM_TASK_SETUP.md` — concrete v1 contract for the active early diagrams-domain task families.
 10. `docs/domains/DOCUMENT_TASK_SETUP.md` — concrete v1 setup for the first documents-domain family.
-11. `docs/domains/MAP_TASK_SETUP.md` — concrete v1 contract for the first maps-domain task family.
-12. `docs/domains/TABLE_TASK_SETUP.md` — concrete v1 contract for the first tables-domain task family.
-13. `docs/domains/PUZZLE_TASK_SETUP.md` — concrete v1 setup for puzzle hidden-variable tasks.
-14. `docs/domains/TEMPORAL_TASK_SETUP.md` — concrete v1 setup for the active temporal-domain families.
-15. `docs/domains/PHYSICS_TASK_SETUP.md` — concrete active setup for the current physics-domain families.
-16. `docs/domains/GAMES_TASK_SETUP.md` — concrete active setup for the current games-domain families.
-17. `docs/core/PROMPT_SYSTEM.md` — prompt bundles, variants, and metadata.
-18. `docs/workflows/SHARED_UTILITIES.md` — helper placement and reuse rules.
-19. `docs/workflows/BUILD_VALIDATION.md` + `docs/workflows/VALIDATION_ERROR_CODES.md` — pre-finalize checks and error taxonomy.
-20. `docs/workflows/CODE_DOCUMENTATION.md` + `docs/workflows/CODE_REVIEW_GUIDELINES.md` — quality/process guidance.
-21. `docs/project/STATUS.md` + `docs/project/TODO.md` — current snapshot and backlog.
-22. `../task-reviews/README.md` — task-by-task review workflow and artifacts.
+11. `docs/domains/TABLE_TASK_SETUP.md` — concrete v1 contract for the first tables-domain task family.
+12. `docs/domains/PUZZLE_TASK_SETUP.md` — concrete v1 setup for puzzle hidden-variable tasks.
+13. `docs/domains/TEMPORAL_TASK_SETUP.md` — concrete v1 setup for the active temporal-domain families.
+14. `docs/domains/PHYSICS_TASK_SETUP.md` — concrete active setup for the current physics-domain families.
+15. `docs/domains/GAMES_TASK_SETUP.md` — concrete active setup for the current games-domain families.
+16. `docs/core/PROMPT_SYSTEM.md` — prompt bundles, variants, and metadata.
+17. `docs/workflows/SHARED_UTILITIES.md` — helper placement and reuse rules.
+18. `docs/workflows/BUILD_VALIDATION.md` + `docs/workflows/VALIDATION_ERROR_CODES.md` — pre-finalize checks and error taxonomy.
+19. `docs/workflows/CODE_DOCUMENTATION.md` + `docs/workflows/CODE_REVIEW_GUIDELINES.md` — quality/process guidance.
+20. `docs/project/STATUS.md` + `docs/project/TODO.md` — current snapshot and backlog.
+21. `../task-reviews/README.md` — task-by-task review workflow and artifacts.
 
 ## Task docs
 - Rules: `docs/tasks/README.md`

@@ -83,8 +83,6 @@ from .puzzles.spatial import cube_removal_count as _task_puzzles_spatial_cube_re
 from .puzzles.spatial import fold_result_label as _task_puzzles_spatial_fold_result_label
 from .puzzles.spatial import overlay_result_label as _task_puzzles_spatial_overlay_result_label
 from .puzzles.topology import bead_equivalence_count as _task_puzzles_topology_bead_equivalence_count
-from .maps.region import association_label as _task_maps_region_association_label
-from .maps.region import count as _task_maps_region_count
 from .physics.mechanics import force_diagram as _task_physics_mechanics_force_diagram
 from .physics.mechanics import lever_balance as _task_physics_mechanics_lever_balance
 from .physics.mechanics import spring_extension as _task_physics_mechanics_spring_extension

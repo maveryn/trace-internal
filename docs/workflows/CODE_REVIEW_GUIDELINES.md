@@ -198,6 +198,7 @@ Use this checklist during implementation and refactor reviews.
 175. For geometry solid-view tasks whose answer depends on an implied orthographic projection, keep a visible query-view panel in the scene and place prompt-facing `bbox_set` evidence on the query-panel cells rather than inventing synthetic labels or hiding the witness entirely off-scene.
 176. For orthographic query panels derived from a latent 3D scene, crop the panel grid to the tight occupied support of the requested projection; do not preserve decorative empty rows or columns that come only from unused latent footprint padding.
 177. For geometry solid-view count tasks, reject queried projections that completely fill their cropped orthographic grid by default; keep at least one empty cell so the task tests silhouette reasoning instead of only bounding-box size.
+178. For plotted-function geometry tasks, prefer count questions whose witnesses are discovered coordinates (`graph_point_set`) over direct readout questions where the queried x/y value and the evidence would collapse to the same single point; if the task counts intersections or extrema, sample the graph so those witnesses land exactly on graph-paper coordinates.
 
 ## 3) Process rule
 When a new reusable issue is discovered:

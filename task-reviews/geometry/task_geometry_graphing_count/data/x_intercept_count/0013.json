@@ -1,0 +1,933 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 0
+  },
+  "evidence_gt": {
+    "type": "graph_point_set",
+    "value": []
+  },
+  "image": {
+    "format": "png",
+    "path": "geometry/task_geometry_graphing_count/images/x_intercept_count/0013.png"
+  },
+  "instance_seed": 1167228182227197,
+  "prompt": "You are given a graph-paper image with a plotted quadratic curve on graph paper. Use the plotted graph and axes to answer the question. How many times does the graph intersect the x-axis in the shown window?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array of every graph-paper coordinate [x, y] that satisfies the question; use [] when there are none.\nAnswer field: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"evidence\":[],\"answer\":8}",
+  "prompt_variants": {
+    "answer_and_evidence": "You are given a graph-paper image with a plotted quadratic curve on graph paper. Use the plotted graph and axes to answer the question. How many times does the graph intersect the x-axis in the shown window?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array of every graph-paper coordinate [x, y] that satisfies the question; use [] when there are none.\nAnswer field: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"evidence\":[],\"answer\":8}",
+    "answer_only": "You are given a graph-paper image with a plotted quadratic curve on graph paper. Use the plotted graph and axes to answer the question. How many times does the graph intersect the x-axis in the shown window?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"answer\":8}"
+  },
+  "task": "task_geometry_graphing_count",
+  "task_variant": "x_intercept_count",
+  "trace_payload": {
+    "execution_trace": {
+      "evidence_points_graph": [],
+      "family": "quadratic",
+      "parameters": {
+        "a": -1,
+        "h": 2,
+        "k": -4
+      },
+      "query_line_y": null,
+      "query_variant": "x_intercept_count",
+      "query_variant_probabilities": {
+        "horizontal_line_intersection_count": 0.0,
+        "local_maxima_count": 0.0,
+        "local_minima_count": 0.0,
+        "turning_point_count": 0.0,
+        "x_intercept_count": 1.0
+      },
+      "question_format": "count_graph_feature_points",
+      "required_evidence_labels": [],
+      "scene_variant": "quadratic",
+      "scene_variant_probabilities": {
+        "absolute_value": 0.3333333333333333,
+        "piecewise_linear": 0.3333333333333333,
+        "quadratic": 0.3333333333333333
+      },
+      "target_count": 0,
+      "target_count_probabilities": {
+        "0": 0.2,
+        "1": 0.2,
+        "2": 0.2,
+        "3": 0.2,
+        "4": 0.2
+      },
+      "task_variant": "x_intercept_count",
+      "task_variant_probabilities": {
+        "horizontal_line_intersection_count": 0.0,
+        "local_maxima_count": 0.0,
+        "local_minima_count": 0.0,
+        "turning_point_count": 0.0,
+        "x_intercept_count": 1.0
+      }
+    },
+    "projected_evidence": {
+      "grid_point_set": [],
+      "pixel_point_set": [],
+      "type": "graph_point_set"
+    },
+    "query_spec": {
+      "params": {
+        "query_variant": "x_intercept_count",
+        "query_variant_probabilities": {
+          "horizontal_line_intersection_count": 0.0,
+          "local_maxima_count": 0.0,
+          "local_minima_count": 0.0,
+          "turning_point_count": 0.0,
+          "x_intercept_count": 1.0
+        },
+        "scene_variant": "quadratic",
+        "scene_variant_probabilities": {
+          "absolute_value": 0.3333333333333333,
+          "piecewise_linear": 0.3333333333333333,
+          "quadratic": 0.3333333333333333
+        },
+        "target_count": 0,
+        "target_count_probabilities": {
+          "0": 0.2,
+          "1": 0.2,
+          "2": 0.2,
+          "3": 0.2,
+          "4": 0.2
+        },
+        "task_variant": "x_intercept_count",
+        "variant_probabilities": {
+          "horizontal_line_intersection_count": 0.0,
+          "local_maxima_count": 0.0,
+          "local_minima_count": 0.0,
+          "turning_point_count": 0.0,
+          "x_intercept_count": 1.0
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 3,
+        "prompt_bundle_id": "geometry_graphing_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the requested count as an integer",
+          "evidence_hint": "set \"evidence\" to an array of every graph-paper coordinate [x, y] that satisfies the question; use [] when there are none",
+          "json_example": "{\"evidence\":[],\"answer\":8}",
+          "json_example_answer_only": "{\"answer\":8}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a plotted quadratic curve on graph paper",
+          "query_line_equation": ""
+        },
+        "task_family_key": "graphing_scene",
+        "task_family_variant_index": 4,
+        "task_key": "graphing_query",
+        "task_variant_index": 1,
+        "task_variant_key": "x_intercept_count",
+        "task_variant_template_index": 3,
+        "template_paths": [
+          "geometry/graphing/geometry_graphing_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:graphing_query": 5,
+          "task_family:graphing_scene": 5,
+          "task_variant:x_intercept_count": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 3,
+            "prompt_bundle_id": "geometry_graphing_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the requested count as an integer",
+              "evidence_hint": "set \"evidence\" to an array of every graph-paper coordinate [x, y] that satisfies the question; use [] when there are none",
+              "json_example": "{\"evidence\":[],\"answer\":8}",
+              "json_example_answer_only": "{\"answer\":8}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a plotted quadratic curve on graph paper",
+              "query_line_equation": ""
+            },
+            "task_family_key": "graphing_scene",
+            "task_family_variant_index": 4,
+            "task_key": "graphing_query",
+            "task_variant_index": 1,
+            "task_variant_key": "x_intercept_count",
+            "task_variant_template_index": 3,
+            "template_paths": [
+              "geometry/graphing/geometry_graphing_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:graphing_query": 5,
+              "task_family:graphing_scene": 5,
+              "task_variant:x_intercept_count": 5
+            }
+          },
+          "prompt": "You are given a graph-paper image with a plotted quadratic curve on graph paper. Use the plotted graph and axes to answer the question. How many times does the graph intersect the x-axis in the shown window?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array of every graph-paper coordinate [x, y] that satisfies the question; use [] when there are none.\nAnswer field: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"evidence\":[],\"answer\":8}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "geometry_graphing_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the requested count as an integer",
+              "evidence_hint": "set \"evidence\" to an array of every graph-paper coordinate [x, y] that satisfies the question; use [] when there are none",
+              "json_example": "{\"evidence\":[],\"answer\":8}",
+              "json_example_answer_only": "{\"answer\":8}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a plotted quadratic curve on graph paper",
+              "query_line_equation": ""
+            },
+            "task_family_key": "graphing_scene",
+            "task_family_variant_index": 4,
+            "task_key": "graphing_query",
+            "task_variant_index": 1,
+            "task_variant_key": "x_intercept_count",
+            "task_variant_template_index": 3,
+            "template_paths": [
+              "geometry/graphing/geometry_graphing_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:graphing_query": 5,
+              "task_family:graphing_scene": 5,
+              "task_variant:x_intercept_count": 5
+            }
+          },
+          "prompt": "You are given a graph-paper image with a plotted quadratic curve on graph paper. Use the plotted graph and axes to answer the question. How many times does the graph intersect the x-axis in the shown window?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"answer\":8}"
+        }
+      },
+      "task_variant": "x_intercept_count",
+      "template_id": "geometry_graphing_v1"
+    },
+    "render_map": {
+      "evidence_points_graph": [],
+      "function_parameters": {
+        "a": -1,
+        "h": 2,
+        "k": -4
+      },
+      "function_polyline_pixel": [
+        [
+          66.0,
+          4098.0
+        ],
+        [
+          75.0,
+          3920.25
+        ],
+        [
+          84.0,
+          3747.0
+        ],
+        [
+          93.0,
+          3578.25
+        ],
+        [
+          102.0,
+          3414.0
+        ],
+        [
+          111.0,
+          3254.25
+        ],
+        [
+          120.0,
+          3099.0
+        ],
+        [
+          129.0,
+          2948.25
+        ],
+        [
+          138.0,
+          2802.0
+        ],
+        [
+          147.0,
+          2660.25
+        ],
+        [
+          156.0,
+          2523.0
+        ],
+        [
+          165.0,
+          2390.25
+        ],
+        [
+          174.0,
+          2262.0
+        ],
+        [
+          183.0,
+          2138.25
+        ],
+        [
+          192.0,
+          2019.0
+        ],
+        [
+          201.0,
+          1904.25
+        ],
+        [
+          210.0,
+          1794.0
+        ],
+        [
+          219.0,
+          1688.25
+        ],
+        [
+          228.0,
+          1587.0
+        ],
+        [
+          237.0,
+          1490.25
+        ],
+        [
+          246.0,
+          1398.0
+        ],
+        [
+          255.0,
+          1310.25
+        ],
+        [
+          264.0,
+          1227.0
+        ],
+        [
+          273.0,
+          1148.25
+        ],
+        [
+          282.0,
+          1074.0
+        ],
+        [
+          291.0,
+          1004.25
+        ],
+        [
+          300.0,
+          939.0
+        ],
+        [
+          309.0,
+          878.25
+        ],
+        [
+          318.0,
+          822.0
+        ],
+        [
+          327.0,
+          770.25
+        ],
+        [
+          336.0,
+          723.0
+        ],
+        [
+          345.0,
+          680.25
+        ],
+        [
+          354.0,
+          642.0
+        ],
+        [
+          363.0,
+          608.25
+        ],
+        [
+          372.0,
+          579.0
+        ],
+        [
+          381.0,
+          554.25
+        ],
+        [
+          390.0,
+          534.0
+        ],
+        [
+          399.0,
+          518.25
+        ],
+        [
+          408.0,
+          507.0
+        ],
+        [
+          417.0,
+          500.25
+        ],
+        [
+          426.0,
+          498.0
+        ],
+        [
+          435.0,
+          500.25
+        ],
+        [
+          444.0,
+          507.0
+        ],
+        [
+          453.0,
+          518.25
+        ],
+        [
+          462.0,
+          534.0
+        ],
+        [
+          471.0,
+          554.25
+        ],
+        [
+          480.0,
+          579.0
+        ],
+        [
+          489.0,
+          608.25
+        ],
+        [
+          498.0,
+          642.0
+        ],
+        [
+          507.0,
+          680.25
+        ],
+        [
+          516.0,
+          723.0
+        ],
+        [
+          525.0,
+          770.25
+        ],
+        [
+          534.0,
+          822.0
+        ],
+        [
+          543.0,
+          878.25
+        ],
+        [
+          552.0,
+          939.0
+        ],
+        [
+          561.0,
+          1004.25
+        ],
+        [
+          570.0,
+          1074.0
+        ],
+        [
+          579.0,
+          1148.25
+        ],
+        [
+          588.0,
+          1227.0
+        ],
+        [
+          597.0,
+          1310.25
+        ],
+        [
+          606.0,
+          1398.0
+        ],
+        [
+          615.0,
+          1490.25
+        ],
+        [
+          624.0,
+          1587.0
+        ],
+        [
+          633.0,
+          1688.25
+        ],
+        [
+          642.0,
+          1794.0
+        ]
+      ],
+      "function_polyline_render": [
+        [
+          198.0,
+          12294.0
+        ],
+        [
+          225.0,
+          11760.75
+        ],
+        [
+          252.0,
+          11241.0
+        ],
+        [
+          279.0,
+          10734.75
+        ],
+        [
+          306.0,
+          10242.0
+        ],
+        [
+          333.0,
+          9762.75
+        ],
+        [
+          360.0,
+          9297.0
+        ],
+        [
+          387.0,
+          8844.75
+        ],
+        [
+          414.0,
+          8406.0
+        ],
+        [
+          441.0,
+          7980.75
+        ],
+        [
+          468.0,
+          7569.0
+        ],
+        [
+          495.0,
+          7170.75
+        ],
+        [
+          522.0,
+          6786.0
+        ],
+        [
+          549.0,
+          6414.75
+        ],
+        [
+          576.0,
+          6057.0
+        ],
+        [
+          603.0,
+          5712.75
+        ],
+        [
+          630.0,
+          5382.0
+        ],
+        [
+          657.0,
+          5064.75
+        ],
+        [
+          684.0,
+          4761.0
+        ],
+        [
+          711.0,
+          4470.75
+        ],
+        [
+          738.0,
+          4194.0
+        ],
+        [
+          765.0,
+          3930.75
+        ],
+        [
+          792.0,
+          3681.0
+        ],
+        [
+          819.0,
+          3444.75
+        ],
+        [
+          846.0,
+          3222.0
+        ],
+        [
+          873.0,
+          3012.75
+        ],
+        [
+          900.0,
+          2817.0
+        ],
+        [
+          927.0,
+          2634.75
+        ],
+        [
+          954.0,
+          2466.0
+        ],
+        [
+          981.0,
+          2310.75
+        ],
+        [
+          1008.0,
+          2169.0
+        ],
+        [
+          1035.0,
+          2040.75
+        ],
+        [
+          1062.0,
+          1926.0
+        ],
+        [
+          1089.0,
+          1824.75
+        ],
+        [
+          1116.0,
+          1737.0
+        ],
+        [
+          1143.0,
+          1662.75
+        ],
+        [
+          1170.0,
+          1602.0
+        ],
+        [
+          1197.0,
+          1554.75
+        ],
+        [
+          1224.0,
+          1521.0
+        ],
+        [
+          1251.0,
+          1500.75
+        ],
+        [
+          1278.0,
+          1494.0
+        ],
+        [
+          1305.0,
+          1500.75
+        ],
+        [
+          1332.0,
+          1521.0
+        ],
+        [
+          1359.0,
+          1554.75
+        ],
+        [
+          1386.0,
+          1602.0
+        ],
+        [
+          1413.0,
+          1662.75
+        ],
+        [
+          1440.0,
+          1737.0
+        ],
+        [
+          1467.0,
+          1824.75
+        ],
+        [
+          1494.0,
+          1926.0
+        ],
+        [
+          1521.0,
+          2040.75
+        ],
+        [
+          1548.0,
+          2169.0
+        ],
+        [
+          1575.0,
+          2310.75
+        ],
+        [
+          1602.0,
+          2466.0
+        ],
+        [
+          1629.0,
+          2634.75
+        ],
+        [
+          1656.0,
+          2817.0
+        ],
+        [
+          1683.0,
+          3012.75
+        ],
+        [
+          1710.0,
+          3222.0
+        ],
+        [
+          1737.0,
+          3444.75
+        ],
+        [
+          1764.0,
+          3681.0
+        ],
+        [
+          1791.0,
+          3930.75
+        ],
+        [
+          1818.0,
+          4194.0
+        ],
+        [
+          1845.0,
+          4470.75
+        ],
+        [
+          1872.0,
+          4761.0
+        ],
+        [
+          1899.0,
+          5064.75
+        ],
+        [
+          1926.0,
+          5382.0
+        ]
+      ],
+      "query_line_y": null,
+      "scene_variant": "quadratic"
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "graph_paper"
+        ],
+        "enabled": true,
+        "render_scale": 3,
+        "selected_style": "graph_paper",
+        "style_spec": {
+          "axis_arrow_size": 10,
+          "axis_arrows_enabled": true,
+          "axis_color": [
+            180,
+            185,
+            192
+          ],
+          "axis_darken_range": [
+            32,
+            48
+          ],
+          "axis_enabled": true,
+          "axis_line_width": 2,
+          "axis_scale_label_max_abs": 8,
+          "axis_scale_labels_enabled": true,
+          "base_color": [
+            255,
+            255,
+            255
+          ],
+          "base_color_jitter": [
+            0,
+            0
+          ],
+          "center_point_color": [
+            167,
+            172,
+            179
+          ],
+          "center_point_darken_extra_range": [
+            8,
+            14
+          ],
+          "center_point_enabled": true,
+          "center_point_radius": 2,
+          "color_variation_applied": true,
+          "color_variation_enabled": true,
+          "color_variation_sampled": {
+            "axis_darken": 40,
+            "base_color_delta": 0,
+            "center_point_darken_extra": 13,
+            "line_color_delta": -4,
+            "major_line_darken": 6,
+            "origin_label_darken_extra": 12
+          },
+          "kind": "grid",
+          "line_color": [
+            220,
+            225,
+            232
+          ],
+          "line_color_jitter": [
+            -5,
+            5
+          ],
+          "line_width": 1,
+          "major_every": 0,
+          "major_line_color": [
+            214,
+            219,
+            226
+          ],
+          "major_line_darken_range": [
+            6,
+            14
+          ],
+          "major_line_width": 1,
+          "origin_fraction_x": 0.5,
+          "origin_fraction_y": 0.5,
+          "origin_label_color": [
+            168,
+            173,
+            180
+          ],
+          "origin_label_darken_extra_range": [
+            6,
+            12
+          ],
+          "origin_label_enabled": false,
+          "origin_label_text": "0",
+          "outer_margin_px": 16,
+          "scene_supersample_scale": 3,
+          "spacing": 36,
+          "supersample_scale": 1
+        }
+      },
+      "canvas_size": 710,
+      "coord_space": "pixel",
+      "graph_coordinate_frame": {
+        "coord_space": "graph_unit",
+        "full_cells_x": 18,
+        "full_cells_y": 18,
+        "origin_fraction_x": 0.5,
+        "origin_fraction_y": 0.5,
+        "origin_pixel": [
+          354,
+          354
+        ],
+        "outer_margin_px": 16,
+        "partial_edge_cells": true,
+        "spacing_px": 36,
+        "target_cells_x": 20,
+        "target_cells_y": 20,
+        "x_positive": "right",
+        "y_positive": "up"
+      },
+      "graph_paper_grid": {
+        "full_cells_x": 18,
+        "full_cells_y": 18,
+        "partial_edge_cells": true,
+        "spacing_px": 36,
+        "target_cells_x": 20,
+        "target_cells_y": 20
+      },
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.5,
+        "edit_count_range": [
+          1,
+          1
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": true
+      },
+      "scene_variant": "quadratic",
+      "shape_style": {
+        "label_color": [
+          131,
+          23,
+          90
+        ],
+        "label_stroke_color": [
+          253,
+          253,
+          252
+        ],
+        "line_color": [
+          131,
+          23,
+          90
+        ]
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "entity_id": "function_graph",
+          "entity_type": "function_graph",
+          "family": "quadratic",
+          "parameters": {
+            "a": -1,
+            "h": 2,
+            "k": -4
+          }
+        }
+      ],
+      "relations": {
+        "query_variant": "x_intercept_count",
+        "scene_variant": "quadratic",
+        "target_count": 0,
+        "task_variant": "x_intercept_count"
+      },
+      "scene_kind": "geometry_graphing_count"
+    },
+    "witness_symbolic": {
+      "labels": [],
+      "type": "graph_feature_points"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

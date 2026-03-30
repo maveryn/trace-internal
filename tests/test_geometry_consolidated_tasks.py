@@ -12,6 +12,7 @@ from trace.tasks.geometry.analytical_3d.value import GeometryAnalytical3DValueTa
 from trace.tasks.geometry.comparison.value import GeometryComparisonValueTask
 from trace.tasks.geometry.coordinate.relation import GeometryCoordinateRelationTask, _resolve_axes as _resolve_coordinate_axes
 from trace.tasks.geometry.counting.value import GeometryCountingValueTask
+from trace.tasks.geometry.graphing.count import GeometryGraphingCountTask, _resolve_axes as _resolve_graphing_axes
 from trace.tasks.geometry.measurement.value import GeometryMeasurementValueTask
 from trace.tasks.geometry.similarity.count import GeometrySimilarityCountTask, _resolve_axes as _resolve_similarity_axes
 from trace.tasks.geometry.solid.view_count import GeometrySolidViewCountTask, _resolve_axes as _resolve_solid_axes
@@ -24,6 +25,7 @@ EXPECTED_GEOMETRY_TASKS = {
     "task_geometry_comparison_value",
     "task_geometry_coordinate_relation",
     "task_geometry_counting_value",
+    "task_geometry_graphing_count",
     "task_geometry_analytical_2d_value",
     "task_geometry_analytical_3d_value",
     "task_geometry_similarity_count",
@@ -267,6 +269,40 @@ def test_geometry_solid_view_count_tracks_scene_and_query_variants(
     assert trace["query_spec"]["params"]["variant_probabilities"] == trace["query_spec"]["params"]["query_variant_probabilities"]
 
 
+@pytest.mark.parametrize(
+    ("scene_variant", "query_variant", "target_count"),
+    (
+        ("quadratic", "x_intercept_count", 2),
+        ("absolute_value", "horizontal_line_intersection_count", 1),
+        ("piecewise_linear", "turning_point_count", 3),
+        ("piecewise_linear", "local_minima_count", 2),
+        ("piecewise_linear", "local_maxima_count", 2),
+    ),
+)
+def test_geometry_graphing_count_tracks_scene_and_query_variants(
+    scene_variant: str,
+    query_variant: str,
+    target_count: int,
+) -> None:
+    task = GeometryGraphingCountTask()
+    out = task.generate(
+        23095,
+        params={"scene_variant": scene_variant, "query_variant": query_variant, "target_count": target_count},
+        max_attempts=40,
+    )
+    trace = out.trace_payload
+    assert out.answer_gt.type == "integer"
+    assert out.evidence_gt.type == "graph_point_set"
+    assert int(out.answer_gt.value) == int(target_count)
+    assert len(out.evidence_gt.value) == int(target_count)
+    assert out.task_variant == query_variant
+    assert trace["execution_trace"]["scene_variant"] == scene_variant
+    assert trace["execution_trace"]["query_variant"] == query_variant
+    assert trace["execution_trace"]["task_variant"] == query_variant
+    assert trace["execution_trace"]["task_variant_probabilities"] == trace["execution_trace"]["query_variant_probabilities"]
+    assert trace["query_spec"]["params"]["variant_probabilities"] == trace["query_spec"]["params"]["query_variant_probabilities"]
+
+
 def test_geometry_transformation_match_balances_winner_labels_across_review_seed_stream() -> None:
     per_variant_labels: dict[str, Counter[str]] = {
         "translation_match": Counter(),
@@ -333,6 +369,46 @@ def test_geometry_solid_view_count_balances_target_counts_across_review_seed_str
 
     assert set(target_counts.keys()) == {2, 3, 4, 5, 6, 7}
     assert min(target_counts.values()) >= 30
+
+
+def test_geometry_graphing_count_balances_target_counts_across_review_seed_stream() -> None:
+    per_variant_counts: dict[str, Counter[int]] = {
+        "x_intercept_count": Counter(),
+        "horizontal_line_intersection_count": Counter(),
+        "turning_point_count": Counter(),
+        "local_minima_count": Counter(),
+        "local_maxima_count": Counter(),
+    }
+    collected_counts = {key: 0 for key in per_variant_counts}
+
+    for index in range(10_000):
+        if all(int(value) >= 100 for value in collected_counts.values()):
+            break
+        instance_seed = hash64(0, "task_geometry_graphing_count", index)
+        resolved = _resolve_graphing_axes(int(instance_seed), params={})
+        query_variant = str(resolved.query_variant)
+        if int(collected_counts[query_variant]) >= 100:
+            continue
+        collected_counts[query_variant] += 1
+        per_variant_counts[query_variant][int(resolved.target_count)] += 1
+
+    assert collected_counts == {
+        "x_intercept_count": 100,
+        "horizontal_line_intersection_count": 100,
+        "turning_point_count": 100,
+        "local_minima_count": 100,
+        "local_maxima_count": 100,
+    }
+    assert set(per_variant_counts["x_intercept_count"].keys()) == {0, 1, 2, 3, 4}
+    assert max(per_variant_counts["x_intercept_count"].values()) <= 25
+    assert set(per_variant_counts["horizontal_line_intersection_count"].keys()) == {0, 1, 2, 3, 4}
+    assert max(per_variant_counts["horizontal_line_intersection_count"].values()) <= 25
+    assert set(per_variant_counts["turning_point_count"].keys()) == {0, 1, 2, 3, 4}
+    assert max(per_variant_counts["turning_point_count"].values()) <= 25
+    assert set(per_variant_counts["local_minima_count"].keys()) == {0, 1, 2, 3, 4}
+    assert max(per_variant_counts["local_minima_count"].values()) <= 25
+    assert set(per_variant_counts["local_maxima_count"].keys()) == {0, 1, 2, 3, 4}
+    assert max(per_variant_counts["local_maxima_count"].values()) <= 25
 
 
 @pytest.mark.parametrize(

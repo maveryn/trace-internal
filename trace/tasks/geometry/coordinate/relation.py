@@ -23,7 +23,7 @@ from ..shared.background_defaults import load_geometry_background_defaults
 from ..shared.complexity import build_geometry_coordinate_relation_complexity
 from ..shared.consolidated_sampling import resolve_compatible_scene_query_variants
 from ..shared.graph_rendering import graph_paper_grid_from_frame, graph_units_to_pixel, scale_point
-from ..shared.labeled_point_evidence import graph_point_set_evidence_artifacts
+from ..shared.labeled_point_evidence import empty_graph_point_set_evidence_artifacts, graph_point_set_evidence_artifacts
 from ..shared.noise_defaults import load_geometry_noise_defaults
 from ..shared.point_labels import draw_labeled_points
 from ..shared.polygon_transformations import apply_rigid_transform_recipe, translate_polygon
@@ -741,19 +741,7 @@ def _sample_segment_count_scene(
             ),
         )
         if matching_ids
-        else {
-            "evidence_value": [],
-            "projected_evidence": {
-                "type": "graph_point_set",
-                "pixel_point_set": [],
-                "grid_point_set": [],
-            },
-            "witness_symbolic": {
-                "type": "matching_segment_endpoints",
-                "labels": [],
-            },
-            "required_labels": [],
-        }
+        else empty_graph_point_set_evidence_artifacts(witness_type="matching_segment_endpoints")
     )
 
     scene_entities: List[Dict[str, Any]] = [
@@ -899,19 +887,7 @@ def _sample_quadrant_count_scene(
             ordered_labels=tuple(f"match_{int(index) + 1}" for index in range(len(matching_labels))),
         )
         if matching_labels
-        else {
-            "evidence_value": [],
-            "projected_evidence": {
-                "type": "graph_point_set",
-                "pixel_point_set": [],
-                "grid_point_set": [],
-            },
-            "witness_symbolic": {
-                "type": "same_quadrant_points",
-                "labels": [],
-            },
-            "required_labels": [],
-        }
+        else empty_graph_point_set_evidence_artifacts(witness_type="same_quadrant_points")
     )
     scene_entities = [
         {
@@ -1086,19 +1062,7 @@ def _sample_collinear_count_scene(
             ordered_labels=tuple(f"match_{int(index) + 1}" for index in range(len(matching_points))),
         )
         if matching_points
-        else {
-            "evidence_value": [],
-            "projected_evidence": {
-                "type": "graph_point_set",
-                "pixel_point_set": [],
-                "grid_point_set": [],
-            },
-            "witness_symbolic": {
-                "type": "collinear_points",
-                "labels": [],
-            },
-            "required_labels": [],
-        }
+        else empty_graph_point_set_evidence_artifacts(witness_type="collinear_points")
     )
 
     scene_entities: List[Dict[str, Any]] = [
@@ -1322,19 +1286,7 @@ def _sample_point_in_shape_scene(
         graph_spacing=int(context.graph_spacing),
         witness_type="strict_interior_lattice_points",
         ordered_labels=tuple(f"point_{int(index) + 1}" for index in range(len(interior_points))),
-    ) if interior_points else {
-        "evidence_value": [],
-        "projected_evidence": {
-            "type": "graph_point_set",
-            "pixel_point_set": [],
-            "grid_point_set": [],
-        },
-        "witness_symbolic": {
-            "type": "strict_interior_lattice_points",
-            "labels": [],
-        },
-        "required_labels": [],
-    }
+    ) if interior_points else empty_graph_point_set_evidence_artifacts(witness_type="strict_interior_lattice_points")
 
     return _RenderedCoordinateScene(
         scene_entities=[

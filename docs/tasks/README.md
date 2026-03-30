@@ -20,6 +20,7 @@ Generated task-doc index for all registered TRACE tasks.
 16. [task_geometry_coordinate_relation.md](task_geometry_coordinate_relation.md)
 17. [task_geometry_similarity_count.md](task_geometry_similarity_count.md)
 18. [task_geometry_transformation_match.md](task_geometry_transformation_match.md)
+19. [task_geometry_graphing_count.md](task_geometry_graphing_count.md)
 19. [task_graph_comparison_largest_component_size.md](task_graph_comparison_largest_component_size.md)
 20. [task_graph_counting_articulation_point_count.md](task_graph_counting_articulation_point_count.md)
 21. [task_graph_counting_bridge_count.md](task_graph_counting_bridge_count.md)

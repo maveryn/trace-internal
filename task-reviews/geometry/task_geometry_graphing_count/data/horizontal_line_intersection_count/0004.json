@@ -1,0 +1,1052 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 2
+  },
+  "evidence_gt": {
+    "type": "graph_point_set",
+    "value": [
+      [
+        1,
+        4
+      ],
+      [
+        3,
+        4
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "geometry/task_geometry_graphing_count/images/horizontal_line_intersection_count/0004.png"
+  },
+  "instance_seed": 8018807256545912,
+  "prompt": "Work from the graph-paper plot showing a plotted absolute-value graph on graph paper and a dashed horizontal guide line. Determine the answer from the graph-paper function plot. How many times does the graph intersect the dashed line y = 4 in the shown window?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array of every graph-paper coordinate [x, y] that satisfies the question; use [] when there are none.\nAnswer format: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"evidence\":[[0,0],[4,0]],\"answer\":8}",
+  "prompt_variants": {
+    "answer_and_evidence": "Work from the graph-paper plot showing a plotted absolute-value graph on graph paper and a dashed horizontal guide line. Determine the answer from the graph-paper function plot. How many times does the graph intersect the dashed line y = 4 in the shown window?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array of every graph-paper coordinate [x, y] that satisfies the question; use [] when there are none.\nAnswer format: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"evidence\":[[0,0],[4,0]],\"answer\":8}",
+    "answer_only": "Work from the graph-paper plot showing a plotted absolute-value graph on graph paper and a dashed horizontal guide line. Determine the answer from the graph-paper function plot. How many times does the graph intersect the dashed line y = 4 in the shown window?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"answer\":8}"
+  },
+  "task": "task_geometry_graphing_count",
+  "task_variant": "horizontal_line_intersection_count",
+  "trace_payload": {
+    "execution_trace": {
+      "evidence_points_graph": [
+        [
+          1,
+          4
+        ],
+        [
+          3,
+          4
+        ]
+      ],
+      "family": "absolute_value",
+      "parameters": {
+        "h": 2,
+        "k": 2,
+        "orientation": 1,
+        "slope": 2
+      },
+      "query_line_y": 4,
+      "query_variant": "horizontal_line_intersection_count",
+      "query_variant_probabilities": {
+        "horizontal_line_intersection_count": 1.0,
+        "local_maxima_count": 0.0,
+        "local_minima_count": 0.0,
+        "turning_point_count": 0.0,
+        "x_intercept_count": 0.0
+      },
+      "question_format": "count_graph_feature_points",
+      "required_evidence_labels": [
+        "point_1",
+        "point_2"
+      ],
+      "scene_variant": "absolute_value",
+      "scene_variant_probabilities": {
+        "absolute_value": 0.3333333333333333,
+        "piecewise_linear": 0.3333333333333333,
+        "quadratic": 0.3333333333333333
+      },
+      "target_count": 2,
+      "target_count_probabilities": {
+        "0": 0.2,
+        "1": 0.2,
+        "2": 0.2,
+        "3": 0.2,
+        "4": 0.2
+      },
+      "task_variant": "horizontal_line_intersection_count",
+      "task_variant_probabilities": {
+        "horizontal_line_intersection_count": 1.0,
+        "local_maxima_count": 0.0,
+        "local_minima_count": 0.0,
+        "turning_point_count": 0.0,
+        "x_intercept_count": 0.0
+      }
+    },
+    "projected_evidence": {
+      "grid_point_map": {
+        "point_1": [
+          1,
+          4
+        ],
+        "point_2": [
+          3,
+          4
+        ]
+      },
+      "grid_point_path": [
+        [
+          1,
+          4
+        ],
+        [
+          3,
+          4
+        ]
+      ],
+      "grid_point_set": [
+        [
+          1,
+          4
+        ],
+        [
+          3,
+          4
+        ]
+      ],
+      "pixel_point_map": {
+        "point_1": [
+          359.0,
+          194.0
+        ],
+        "point_2": [
+          425.0,
+          194.0
+        ]
+      },
+      "pixel_point_path": [
+        [
+          359.0,
+          194.0
+        ],
+        [
+          425.0,
+          194.0
+        ]
+      ],
+      "pixel_point_set": [
+        [
+          359.0,
+          194.0
+        ],
+        [
+          425.0,
+          194.0
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "query_variant": "horizontal_line_intersection_count",
+        "query_variant_probabilities": {
+          "horizontal_line_intersection_count": 1.0,
+          "local_maxima_count": 0.0,
+          "local_minima_count": 0.0,
+          "turning_point_count": 0.0,
+          "x_intercept_count": 0.0
+        },
+        "scene_variant": "absolute_value",
+        "scene_variant_probabilities": {
+          "absolute_value": 0.3333333333333333,
+          "piecewise_linear": 0.3333333333333333,
+          "quadratic": 0.3333333333333333
+        },
+        "target_count": 2,
+        "target_count_probabilities": {
+          "0": 0.2,
+          "1": 0.2,
+          "2": 0.2,
+          "3": 0.2,
+          "4": 0.2
+        },
+        "task_variant": "horizontal_line_intersection_count",
+        "variant_probabilities": {
+          "horizontal_line_intersection_count": 1.0,
+          "local_maxima_count": 0.0,
+          "local_minima_count": 0.0,
+          "turning_point_count": 0.0,
+          "x_intercept_count": 0.0
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 1,
+        "prompt_bundle_id": "geometry_graphing_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the requested count as an integer",
+          "evidence_hint": "set \"evidence\" to an array of every graph-paper coordinate [x, y] that satisfies the question; use [] when there are none",
+          "json_example": "{\"evidence\":[[0,0],[4,0]],\"answer\":8}",
+          "json_example_answer_only": "{\"answer\":8}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a plotted absolute-value graph on graph paper and a dashed horizontal guide line",
+          "query_line_equation": "y = 4"
+        },
+        "task_family_key": "graphing_scene",
+        "task_family_variant_index": 3,
+        "task_key": "graphing_query",
+        "task_variant_index": 4,
+        "task_variant_key": "horizontal_line_intersection_count",
+        "task_variant_template_index": 2,
+        "template_paths": [
+          "geometry/graphing/geometry_graphing_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:graphing_query": 5,
+          "task_family:graphing_scene": 5,
+          "task_variant:horizontal_line_intersection_count": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 1,
+            "prompt_bundle_id": "geometry_graphing_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the requested count as an integer",
+              "evidence_hint": "set \"evidence\" to an array of every graph-paper coordinate [x, y] that satisfies the question; use [] when there are none",
+              "json_example": "{\"evidence\":[[0,0],[4,0]],\"answer\":8}",
+              "json_example_answer_only": "{\"answer\":8}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a plotted absolute-value graph on graph paper and a dashed horizontal guide line",
+              "query_line_equation": "y = 4"
+            },
+            "task_family_key": "graphing_scene",
+            "task_family_variant_index": 3,
+            "task_key": "graphing_query",
+            "task_variant_index": 4,
+            "task_variant_key": "horizontal_line_intersection_count",
+            "task_variant_template_index": 2,
+            "template_paths": [
+              "geometry/graphing/geometry_graphing_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:graphing_query": 5,
+              "task_family:graphing_scene": 5,
+              "task_variant:horizontal_line_intersection_count": 5
+            }
+          },
+          "prompt": "Work from the graph-paper plot showing a plotted absolute-value graph on graph paper and a dashed horizontal guide line. Determine the answer from the graph-paper function plot. How many times does the graph intersect the dashed line y = 4 in the shown window?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array of every graph-paper coordinate [x, y] that satisfies the question; use [] when there are none.\nAnswer format: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"evidence\":[[0,0],[4,0]],\"answer\":8}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 4,
+            "prompt_bundle_id": "geometry_graphing_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the requested count as an integer",
+              "evidence_hint": "set \"evidence\" to an array of every graph-paper coordinate [x, y] that satisfies the question; use [] when there are none",
+              "json_example": "{\"evidence\":[[0,0],[4,0]],\"answer\":8}",
+              "json_example_answer_only": "{\"answer\":8}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a plotted absolute-value graph on graph paper and a dashed horizontal guide line",
+              "query_line_equation": "y = 4"
+            },
+            "task_family_key": "graphing_scene",
+            "task_family_variant_index": 3,
+            "task_key": "graphing_query",
+            "task_variant_index": 4,
+            "task_variant_key": "horizontal_line_intersection_count",
+            "task_variant_template_index": 2,
+            "template_paths": [
+              "geometry/graphing/geometry_graphing_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:graphing_query": 5,
+              "task_family:graphing_scene": 5,
+              "task_variant:horizontal_line_intersection_count": 5
+            }
+          },
+          "prompt": "Work from the graph-paper plot showing a plotted absolute-value graph on graph paper and a dashed horizontal guide line. Determine the answer from the graph-paper function plot. How many times does the graph intersect the dashed line y = 4 in the shown window?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"answer\":8}"
+        }
+      },
+      "task_variant": "horizontal_line_intersection_count",
+      "template_id": "geometry_graphing_v1"
+    },
+    "render_map": {
+      "evidence_points_graph": [
+        [
+          1,
+          4
+        ],
+        [
+          3,
+          4
+        ]
+      ],
+      "function_parameters": {
+        "h": 2,
+        "k": 2,
+        "orientation": 1,
+        "slope": 2
+      },
+      "function_polyline_pixel": [
+        [
+          62.0,
+          -400.0
+        ],
+        [
+          70.25,
+          -383.5
+        ],
+        [
+          78.5,
+          -367.0
+        ],
+        [
+          86.75,
+          -350.5
+        ],
+        [
+          95.0,
+          -334.0
+        ],
+        [
+          103.25,
+          -317.5
+        ],
+        [
+          111.5,
+          -301.0
+        ],
+        [
+          119.75,
+          -284.5
+        ],
+        [
+          128.0,
+          -268.0
+        ],
+        [
+          136.25,
+          -251.5
+        ],
+        [
+          144.5,
+          -235.0
+        ],
+        [
+          152.75,
+          -218.5
+        ],
+        [
+          161.0,
+          -202.0
+        ],
+        [
+          169.25,
+          -185.5
+        ],
+        [
+          177.5,
+          -169.0
+        ],
+        [
+          185.75,
+          -152.5
+        ],
+        [
+          194.0,
+          -136.0
+        ],
+        [
+          202.25,
+          -119.5
+        ],
+        [
+          210.5,
+          -103.0
+        ],
+        [
+          218.75,
+          -86.5
+        ],
+        [
+          227.0,
+          -70.0
+        ],
+        [
+          235.25,
+          -53.5
+        ],
+        [
+          243.5,
+          -37.0
+        ],
+        [
+          251.75,
+          -20.5
+        ],
+        [
+          260.0,
+          -4.0
+        ],
+        [
+          268.25,
+          12.5
+        ],
+        [
+          276.5,
+          29.0
+        ],
+        [
+          284.75,
+          45.5
+        ],
+        [
+          293.0,
+          62.0
+        ],
+        [
+          301.25,
+          78.5
+        ],
+        [
+          309.5,
+          95.0
+        ],
+        [
+          317.75,
+          111.5
+        ],
+        [
+          326.0,
+          128.0
+        ],
+        [
+          334.25,
+          144.5
+        ],
+        [
+          342.5,
+          161.0
+        ],
+        [
+          350.75,
+          177.5
+        ],
+        [
+          359.0,
+          194.0
+        ],
+        [
+          367.25,
+          210.5
+        ],
+        [
+          375.5,
+          227.0
+        ],
+        [
+          383.75,
+          243.5
+        ],
+        [
+          392.0,
+          260.0
+        ],
+        [
+          400.25,
+          243.5
+        ],
+        [
+          408.5,
+          227.0
+        ],
+        [
+          416.75,
+          210.5
+        ],
+        [
+          425.0,
+          194.0
+        ],
+        [
+          433.25,
+          177.5
+        ],
+        [
+          441.5,
+          161.0
+        ],
+        [
+          449.75,
+          144.5
+        ],
+        [
+          458.0,
+          128.0
+        ],
+        [
+          466.25,
+          111.5
+        ],
+        [
+          474.5,
+          95.0
+        ],
+        [
+          482.75,
+          78.5
+        ],
+        [
+          491.0,
+          62.0
+        ],
+        [
+          499.25,
+          45.5
+        ],
+        [
+          507.5,
+          29.0
+        ],
+        [
+          515.75,
+          12.5
+        ],
+        [
+          524.0,
+          -4.0
+        ],
+        [
+          532.25,
+          -20.5
+        ],
+        [
+          540.5,
+          -37.0
+        ],
+        [
+          548.75,
+          -53.5
+        ],
+        [
+          557.0,
+          -70.0
+        ],
+        [
+          565.25,
+          -86.5
+        ],
+        [
+          573.5,
+          -103.0
+        ],
+        [
+          581.75,
+          -119.5
+        ],
+        [
+          590.0,
+          -136.0
+        ]
+      ],
+      "function_polyline_render": [
+        [
+          186.0,
+          -1200.0
+        ],
+        [
+          210.75,
+          -1150.5
+        ],
+        [
+          235.5,
+          -1101.0
+        ],
+        [
+          260.25,
+          -1051.5
+        ],
+        [
+          285.0,
+          -1002.0
+        ],
+        [
+          309.75,
+          -952.5
+        ],
+        [
+          334.5,
+          -903.0
+        ],
+        [
+          359.25,
+          -853.5
+        ],
+        [
+          384.0,
+          -804.0
+        ],
+        [
+          408.75,
+          -754.5
+        ],
+        [
+          433.5,
+          -705.0
+        ],
+        [
+          458.25,
+          -655.5
+        ],
+        [
+          483.0,
+          -606.0
+        ],
+        [
+          507.75,
+          -556.5
+        ],
+        [
+          532.5,
+          -507.0
+        ],
+        [
+          557.25,
+          -457.5
+        ],
+        [
+          582.0,
+          -408.0
+        ],
+        [
+          606.75,
+          -358.5
+        ],
+        [
+          631.5,
+          -309.0
+        ],
+        [
+          656.25,
+          -259.5
+        ],
+        [
+          681.0,
+          -210.0
+        ],
+        [
+          705.75,
+          -160.5
+        ],
+        [
+          730.5,
+          -111.0
+        ],
+        [
+          755.25,
+          -61.5
+        ],
+        [
+          780.0,
+          -12.0
+        ],
+        [
+          804.75,
+          37.5
+        ],
+        [
+          829.5,
+          87.0
+        ],
+        [
+          854.25,
+          136.5
+        ],
+        [
+          879.0,
+          186.0
+        ],
+        [
+          903.75,
+          235.5
+        ],
+        [
+          928.5,
+          285.0
+        ],
+        [
+          953.25,
+          334.5
+        ],
+        [
+          978.0,
+          384.0
+        ],
+        [
+          1002.75,
+          433.5
+        ],
+        [
+          1027.5,
+          483.0
+        ],
+        [
+          1052.25,
+          532.5
+        ],
+        [
+          1077.0,
+          582.0
+        ],
+        [
+          1101.75,
+          631.5
+        ],
+        [
+          1126.5,
+          681.0
+        ],
+        [
+          1151.25,
+          730.5
+        ],
+        [
+          1176.0,
+          780.0
+        ],
+        [
+          1200.75,
+          730.5
+        ],
+        [
+          1225.5,
+          681.0
+        ],
+        [
+          1250.25,
+          631.5
+        ],
+        [
+          1275.0,
+          582.0
+        ],
+        [
+          1299.75,
+          532.5
+        ],
+        [
+          1324.5,
+          483.0
+        ],
+        [
+          1349.25,
+          433.5
+        ],
+        [
+          1374.0,
+          384.0
+        ],
+        [
+          1398.75,
+          334.5
+        ],
+        [
+          1423.5,
+          285.0
+        ],
+        [
+          1448.25,
+          235.5
+        ],
+        [
+          1473.0,
+          186.0
+        ],
+        [
+          1497.75,
+          136.5
+        ],
+        [
+          1522.5,
+          87.0
+        ],
+        [
+          1547.25,
+          37.5
+        ],
+        [
+          1572.0,
+          -12.0
+        ],
+        [
+          1596.75,
+          -61.5
+        ],
+        [
+          1621.5,
+          -111.0
+        ],
+        [
+          1646.25,
+          -160.5
+        ],
+        [
+          1671.0,
+          -210.0
+        ],
+        [
+          1695.75,
+          -259.5
+        ],
+        [
+          1720.5,
+          -309.0
+        ],
+        [
+          1745.25,
+          -358.5
+        ],
+        [
+          1770.0,
+          -408.0
+        ]
+      ],
+      "query_label_bbox": [
+        569.5,
+        169.667,
+        640.5,
+        194.333
+      ],
+      "query_line_pixel": [
+        [
+          29.0,
+          194.0
+        ],
+        [
+          623.0,
+          194.0
+        ]
+      ],
+      "query_line_render": [
+        [
+          87.0,
+          582.0
+        ],
+        [
+          1869.0,
+          582.0
+        ]
+      ],
+      "query_line_y": 4,
+      "scene_variant": "absolute_value"
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "graph_paper"
+        ],
+        "enabled": true,
+        "render_scale": 3,
+        "selected_style": "graph_paper",
+        "style_spec": {
+          "axis_arrow_size": 10,
+          "axis_arrows_enabled": true,
+          "axis_color": [
+            190,
+            195,
+            202
+          ],
+          "axis_darken_range": [
+            32,
+            48
+          ],
+          "axis_enabled": true,
+          "axis_line_width": 2,
+          "axis_scale_label_max_abs": 8,
+          "axis_scale_labels_enabled": true,
+          "base_color": [
+            255,
+            255,
+            255
+          ],
+          "base_color_jitter": [
+            0,
+            0
+          ],
+          "center_point_color": [
+            181,
+            186,
+            193
+          ],
+          "center_point_darken_extra_range": [
+            8,
+            14
+          ],
+          "center_point_enabled": true,
+          "center_point_radius": 2,
+          "color_variation_applied": true,
+          "color_variation_enabled": true,
+          "color_variation_sampled": {
+            "axis_darken": 39,
+            "base_color_delta": 0,
+            "center_point_darken_extra": 9,
+            "line_color_delta": 5,
+            "major_line_darken": 14,
+            "origin_label_darken_extra": 6
+          },
+          "kind": "grid",
+          "line_color": [
+            229,
+            234,
+            241
+          ],
+          "line_color_jitter": [
+            -5,
+            5
+          ],
+          "line_width": 1,
+          "major_every": 0,
+          "major_line_color": [
+            215,
+            220,
+            227
+          ],
+          "major_line_darken_range": [
+            6,
+            14
+          ],
+          "major_line_width": 1,
+          "origin_fraction_x": 0.5,
+          "origin_fraction_y": 0.5,
+          "origin_label_color": [
+            184,
+            189,
+            196
+          ],
+          "origin_label_darken_extra_range": [
+            6,
+            12
+          ],
+          "origin_label_enabled": false,
+          "origin_label_text": "0",
+          "outer_margin_px": 16,
+          "scene_supersample_scale": 3,
+          "spacing": 33,
+          "supersample_scale": 1
+        }
+      },
+      "canvas_size": 652,
+      "coord_space": "pixel",
+      "graph_coordinate_frame": {
+        "coord_space": "graph_unit",
+        "full_cells_x": 18,
+        "full_cells_y": 18,
+        "origin_fraction_x": 0.5,
+        "origin_fraction_y": 0.5,
+        "origin_pixel": [
+          326,
+          326
+        ],
+        "outer_margin_px": 16,
+        "partial_edge_cells": true,
+        "spacing_px": 33,
+        "target_cells_x": 20,
+        "target_cells_y": 20,
+        "x_positive": "right",
+        "y_positive": "up"
+      },
+      "graph_paper_grid": {
+        "full_cells_x": 18,
+        "full_cells_y": 18,
+        "partial_edge_cells": true,
+        "spacing_px": 33,
+        "target_cells_x": 20,
+        "target_cells_y": 20
+      },
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.5,
+        "edit_count_range": [
+          1,
+          1
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": true
+      },
+      "scene_variant": "absolute_value",
+      "shape_style": {
+        "label_color": [
+          23,
+          35,
+          141
+        ],
+        "label_stroke_color": [
+          252,
+          255,
+          249
+        ],
+        "line_color": [
+          23,
+          35,
+          141
+        ]
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "entity_id": "function_graph",
+          "entity_type": "function_graph",
+          "family": "absolute_value",
+          "parameters": {
+            "h": 2,
+            "k": 2,
+            "orientation": 1,
+            "slope": 2
+          }
+        }
+      ],
+      "relations": {
+        "query_variant": "horizontal_line_intersection_count",
+        "scene_variant": "absolute_value",
+        "target_count": 2,
+        "task_variant": "horizontal_line_intersection_count"
+      },
+      "scene_kind": "geometry_graphing_count"
+    },
+    "witness_symbolic": {
+      "labels": [
+        "point_1",
+        "point_2"
+      ],
+      "type": "graph_feature_points"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

@@ -1,0 +1,94 @@
+{
+  "bundle_id": "geometry_graphing_v1",
+  "schema_version": "v1",
+  "task_family_templates": {
+    "graphing_scene": [
+      "The graph-paper image shows {object_description}.",
+      "Look at the graph-paper plot showing {object_description}.",
+      "Use the graph-paper graph with {object_description}.",
+      "Work from the graph-paper plot showing {object_description}.",
+      "You are given a graph-paper image with {object_description}."
+    ]
+  },
+  "task_templates": {
+    "graphing_query": [
+      "Answer the question using the full graph window.",
+      "Use the plotted graph and axes to answer the question.",
+      "Read the entire graph-paper plot carefully, then answer the question.",
+      "Work from the full plotted graph to answer the question.",
+      "Determine the answer from the graph-paper function plot."
+    ]
+  },
+  "task_variant_templates": {
+    "x_intercept_count": [
+      "How many intersection points does the graph have with the x-axis?",
+      "Count the points where the graph intersects the x-axis.",
+      "How many x-axis intersection points are visible in the graph window?",
+      "How many times does the graph intersect the x-axis in the shown window?",
+      "Count the graph's intersection points with the x-axis."
+    ],
+    "horizontal_line_intersection_count": [
+      "How many intersection points does the graph have with the dashed line {query_line_equation}?",
+      "Count the points where the graph intersects the dashed horizontal line {query_line_equation}.",
+      "How many times does the graph intersect the dashed line {query_line_equation} in the shown window?",
+      "How many visible intersection points are there between the graph and the dashed line {query_line_equation}?",
+      "Count the graph's intersection points with the dashed line {query_line_equation}."
+    ],
+    "turning_point_count": [
+      "How many turning points are visible in the graph window?",
+      "Count the turning points visible on the plotted graph.",
+      "How many visible corners or turning points does the graph have?",
+      "Count the graph's turning points in the shown window.",
+      "How many turning-point coordinates are visible on the graph?"
+    ],
+    "local_minima_count": [
+      "How many local minima are visible in the graph window?",
+      "Count the visible local minimum points on the plotted graph.",
+      "How many visible valleys or local minima does the graph have?",
+      "Count the graph's local minima in the shown window.",
+      "How many local-minimum coordinates are visible on the graph?"
+    ],
+    "local_maxima_count": [
+      "How many local maxima are visible in the graph window?",
+      "Count the visible local maximum points on the plotted graph.",
+      "How many visible peaks or local maxima does the graph have?",
+      "Count the graph's local maxima in the shown window.",
+      "How many local-maximum coordinates are visible on the graph?"
+    ]
+  },
+  "required_slots_by_key": {
+    "task_family:graphing_scene": [
+      "object_description"
+    ],
+    "task_variant:horizontal_line_intersection_count": [
+      "query_line_equation"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence: {evidence_hint}.\nAnswer: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence requirement: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence field: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence rule: {evidence_hint}.\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  }
+}

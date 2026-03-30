@@ -1,0 +1,757 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 4
+  },
+  "evidence_gt": {
+    "type": "graph_point_set",
+    "value": [
+      [
+        -7,
+        3
+      ],
+      [
+        -3,
+        3
+      ],
+      [
+        1,
+        5
+      ],
+      [
+        5,
+        4
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "geometry/task_geometry_graphing_count/images/local_maxima_count/0005.png"
+  },
+  "instance_seed": 3380260024769139,
+  "prompt": "The graph-paper image shows a plotted piecewise-linear graph on graph paper. Read the entire graph-paper plot carefully, then answer the question. Count the visible local maximum points on the plotted graph.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array of every graph-paper coordinate [x, y] that satisfies the question; use [] when there are none.\nAnswer rule: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"evidence\":[[0,0],[4,0],[4,2],[0,2]],\"answer\":8}",
+  "prompt_variants": {
+    "answer_and_evidence": "The graph-paper image shows a plotted piecewise-linear graph on graph paper. Read the entire graph-paper plot carefully, then answer the question. Count the visible local maximum points on the plotted graph.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array of every graph-paper coordinate [x, y] that satisfies the question; use [] when there are none.\nAnswer rule: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"evidence\":[[0,0],[4,0],[4,2],[0,2]],\"answer\":8}",
+    "answer_only": "The graph-paper image shows a plotted piecewise-linear graph on graph paper. Read the entire graph-paper plot carefully, then answer the question. Count the visible local maximum points on the plotted graph.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"answer\":8}"
+  },
+  "task": "task_geometry_graphing_count",
+  "task_variant": "local_maxima_count",
+  "trace_payload": {
+    "execution_trace": {
+      "evidence_points_graph": [
+        [
+          -7,
+          3
+        ],
+        [
+          -3,
+          3
+        ],
+        [
+          1,
+          5
+        ],
+        [
+          5,
+          4
+        ]
+      ],
+      "family": "piecewise_linear",
+      "polyline_vertices_graph": [
+        [
+          -9,
+          -4
+        ],
+        [
+          -7,
+          3
+        ],
+        [
+          -5,
+          -4
+        ],
+        [
+          -3,
+          3
+        ],
+        [
+          -1,
+          -4
+        ],
+        [
+          1,
+          5
+        ],
+        [
+          3,
+          -4
+        ],
+        [
+          5,
+          4
+        ],
+        [
+          7,
+          -2
+        ]
+      ],
+      "query_line_y": null,
+      "query_variant": "local_maxima_count",
+      "query_variant_probabilities": {
+        "horizontal_line_intersection_count": 0.0,
+        "local_maxima_count": 1.0,
+        "local_minima_count": 0.0,
+        "turning_point_count": 0.0,
+        "x_intercept_count": 0.0
+      },
+      "question_format": "count_graph_feature_points",
+      "required_evidence_labels": [
+        "point_1",
+        "point_2",
+        "point_3",
+        "point_4"
+      ],
+      "scene_variant": "piecewise_linear",
+      "scene_variant_probabilities": {
+        "absolute_value": 0.0,
+        "piecewise_linear": 1.0,
+        "quadratic": 0.0
+      },
+      "target_count": 4,
+      "target_count_probabilities": {
+        "0": 0.2,
+        "1": 0.2,
+        "2": 0.2,
+        "3": 0.2,
+        "4": 0.2
+      },
+      "task_variant": "local_maxima_count",
+      "task_variant_probabilities": {
+        "horizontal_line_intersection_count": 0.0,
+        "local_maxima_count": 1.0,
+        "local_minima_count": 0.0,
+        "turning_point_count": 0.0,
+        "x_intercept_count": 0.0
+      }
+    },
+    "projected_evidence": {
+      "grid_point_map": {
+        "point_1": [
+          -7,
+          3
+        ],
+        "point_2": [
+          -3,
+          3
+        ],
+        "point_3": [
+          1,
+          5
+        ],
+        "point_4": [
+          5,
+          4
+        ]
+      },
+      "grid_point_path": [
+        [
+          -7,
+          3
+        ],
+        [
+          -3,
+          3
+        ],
+        [
+          1,
+          5
+        ],
+        [
+          5,
+          4
+        ]
+      ],
+      "grid_point_set": [
+        [
+          -7,
+          3
+        ],
+        [
+          -3,
+          3
+        ],
+        [
+          1,
+          5
+        ],
+        [
+          5,
+          4
+        ]
+      ],
+      "pixel_point_map": {
+        "point_1": [
+          99.0,
+          231.0
+        ],
+        "point_2": [
+          231.0,
+          231.0
+        ],
+        "point_3": [
+          363.0,
+          165.0
+        ],
+        "point_4": [
+          495.0,
+          198.0
+        ]
+      },
+      "pixel_point_path": [
+        [
+          99.0,
+          231.0
+        ],
+        [
+          231.0,
+          231.0
+        ],
+        [
+          363.0,
+          165.0
+        ],
+        [
+          495.0,
+          198.0
+        ]
+      ],
+      "pixel_point_set": [
+        [
+          99.0,
+          231.0
+        ],
+        [
+          231.0,
+          231.0
+        ],
+        [
+          363.0,
+          165.0
+        ],
+        [
+          495.0,
+          198.0
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "query_variant": "local_maxima_count",
+        "query_variant_probabilities": {
+          "horizontal_line_intersection_count": 0.0,
+          "local_maxima_count": 1.0,
+          "local_minima_count": 0.0,
+          "turning_point_count": 0.0,
+          "x_intercept_count": 0.0
+        },
+        "scene_variant": "piecewise_linear",
+        "scene_variant_probabilities": {
+          "absolute_value": 0.0,
+          "piecewise_linear": 1.0,
+          "quadratic": 0.0
+        },
+        "target_count": 4,
+        "target_count_probabilities": {
+          "0": 0.2,
+          "1": 0.2,
+          "2": 0.2,
+          "3": 0.2,
+          "4": 0.2
+        },
+        "task_variant": "local_maxima_count",
+        "variant_probabilities": {
+          "horizontal_line_intersection_count": 0.0,
+          "local_maxima_count": 1.0,
+          "local_minima_count": 0.0,
+          "turning_point_count": 0.0,
+          "x_intercept_count": 0.0
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 4,
+        "prompt_bundle_id": "geometry_graphing_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the requested count as an integer",
+          "evidence_hint": "set \"evidence\" to an array of every graph-paper coordinate [x, y] that satisfies the question; use [] when there are none",
+          "json_example": "{\"evidence\":[[0,0],[4,0],[4,2],[0,2]],\"answer\":8}",
+          "json_example_answer_only": "{\"answer\":8}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a plotted piecewise-linear graph on graph paper",
+          "query_line_equation": ""
+        },
+        "task_family_key": "graphing_scene",
+        "task_family_variant_index": 0,
+        "task_key": "graphing_query",
+        "task_variant_index": 2,
+        "task_variant_key": "local_maxima_count",
+        "task_variant_template_index": 1,
+        "template_paths": [
+          "geometry/graphing/geometry_graphing_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:graphing_query": 5,
+          "task_family:graphing_scene": 5,
+          "task_variant:local_maxima_count": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 4,
+            "prompt_bundle_id": "geometry_graphing_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the requested count as an integer",
+              "evidence_hint": "set \"evidence\" to an array of every graph-paper coordinate [x, y] that satisfies the question; use [] when there are none",
+              "json_example": "{\"evidence\":[[0,0],[4,0],[4,2],[0,2]],\"answer\":8}",
+              "json_example_answer_only": "{\"answer\":8}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a plotted piecewise-linear graph on graph paper",
+              "query_line_equation": ""
+            },
+            "task_family_key": "graphing_scene",
+            "task_family_variant_index": 0,
+            "task_key": "graphing_query",
+            "task_variant_index": 2,
+            "task_variant_key": "local_maxima_count",
+            "task_variant_template_index": 1,
+            "template_paths": [
+              "geometry/graphing/geometry_graphing_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:graphing_query": 5,
+              "task_family:graphing_scene": 5,
+              "task_variant:local_maxima_count": 5
+            }
+          },
+          "prompt": "The graph-paper image shows a plotted piecewise-linear graph on graph paper. Read the entire graph-paper plot carefully, then answer the question. Count the visible local maximum points on the plotted graph.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array of every graph-paper coordinate [x, y] that satisfies the question; use [] when there are none.\nAnswer rule: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"evidence\":[[0,0],[4,0],[4,2],[0,2]],\"answer\":8}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 2,
+            "prompt_bundle_id": "geometry_graphing_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the requested count as an integer",
+              "evidence_hint": "set \"evidence\" to an array of every graph-paper coordinate [x, y] that satisfies the question; use [] when there are none",
+              "json_example": "{\"evidence\":[[0,0],[4,0],[4,2],[0,2]],\"answer\":8}",
+              "json_example_answer_only": "{\"answer\":8}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a plotted piecewise-linear graph on graph paper",
+              "query_line_equation": ""
+            },
+            "task_family_key": "graphing_scene",
+            "task_family_variant_index": 0,
+            "task_key": "graphing_query",
+            "task_variant_index": 2,
+            "task_variant_key": "local_maxima_count",
+            "task_variant_template_index": 1,
+            "template_paths": [
+              "geometry/graphing/geometry_graphing_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:graphing_query": 5,
+              "task_family:graphing_scene": 5,
+              "task_variant:local_maxima_count": 5
+            }
+          },
+          "prompt": "The graph-paper image shows a plotted piecewise-linear graph on graph paper. Read the entire graph-paper plot carefully, then answer the question. Count the visible local maximum points on the plotted graph.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"answer\":8}"
+        }
+      },
+      "task_variant": "local_maxima_count",
+      "template_id": "geometry_graphing_v1"
+    },
+    "render_map": {
+      "evidence_points_graph": [
+        [
+          -7,
+          3
+        ],
+        [
+          -3,
+          3
+        ],
+        [
+          1,
+          5
+        ],
+        [
+          5,
+          4
+        ]
+      ],
+      "function_polyline_pixel": [
+        [
+          33.0,
+          462.0
+        ],
+        [
+          99.0,
+          231.0
+        ],
+        [
+          165.0,
+          462.0
+        ],
+        [
+          231.0,
+          231.0
+        ],
+        [
+          297.0,
+          462.0
+        ],
+        [
+          363.0,
+          165.0
+        ],
+        [
+          429.0,
+          462.0
+        ],
+        [
+          495.0,
+          198.0
+        ],
+        [
+          561.0,
+          396.0
+        ]
+      ],
+      "function_polyline_render": [
+        [
+          99.0,
+          1386.0
+        ],
+        [
+          297.0,
+          693.0
+        ],
+        [
+          495.0,
+          1386.0
+        ],
+        [
+          693.0,
+          693.0
+        ],
+        [
+          891.0,
+          1386.0
+        ],
+        [
+          1089.0,
+          495.0
+        ],
+        [
+          1287.0,
+          1386.0
+        ],
+        [
+          1485.0,
+          594.0
+        ],
+        [
+          1683.0,
+          1188.0
+        ]
+      ],
+      "polyline_vertices_graph": [
+        [
+          -9,
+          -4
+        ],
+        [
+          -7,
+          3
+        ],
+        [
+          -5,
+          -4
+        ],
+        [
+          -3,
+          3
+        ],
+        [
+          -1,
+          -4
+        ],
+        [
+          1,
+          5
+        ],
+        [
+          3,
+          -4
+        ],
+        [
+          5,
+          4
+        ],
+        [
+          7,
+          -2
+        ]
+      ],
+      "query_line_y": null,
+      "scene_variant": "piecewise_linear"
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "graph_paper"
+        ],
+        "enabled": true,
+        "render_scale": 3,
+        "selected_style": "graph_paper",
+        "style_spec": {
+          "axis_arrow_size": 10,
+          "axis_arrows_enabled": true,
+          "axis_color": [
+            178,
+            183,
+            190
+          ],
+          "axis_darken_range": [
+            32,
+            48
+          ],
+          "axis_enabled": true,
+          "axis_line_width": 2,
+          "axis_scale_label_max_abs": 8,
+          "axis_scale_labels_enabled": true,
+          "base_color": [
+            255,
+            255,
+            255
+          ],
+          "base_color_jitter": [
+            0,
+            0
+          ],
+          "center_point_color": [
+            165,
+            170,
+            177
+          ],
+          "center_point_darken_extra_range": [
+            8,
+            14
+          ],
+          "center_point_enabled": true,
+          "center_point_radius": 2,
+          "color_variation_applied": true,
+          "color_variation_enabled": true,
+          "color_variation_sampled": {
+            "axis_darken": 45,
+            "base_color_delta": 0,
+            "center_point_darken_extra": 13,
+            "line_color_delta": -1,
+            "major_line_darken": 7,
+            "origin_label_darken_extra": 11
+          },
+          "kind": "grid",
+          "line_color": [
+            223,
+            228,
+            235
+          ],
+          "line_color_jitter": [
+            -5,
+            5
+          ],
+          "line_width": 1,
+          "major_every": 0,
+          "major_line_color": [
+            216,
+            221,
+            228
+          ],
+          "major_line_darken_range": [
+            6,
+            14
+          ],
+          "major_line_width": 1,
+          "origin_fraction_x": 0.5,
+          "origin_fraction_y": 0.5,
+          "origin_label_color": [
+            167,
+            172,
+            179
+          ],
+          "origin_label_darken_extra_range": [
+            6,
+            12
+          ],
+          "origin_label_enabled": false,
+          "origin_label_text": "0",
+          "outer_margin_px": 16,
+          "scene_supersample_scale": 3,
+          "spacing": 33,
+          "supersample_scale": 1
+        }
+      },
+      "canvas_size": 661,
+      "coord_space": "pixel",
+      "graph_coordinate_frame": {
+        "coord_space": "graph_unit",
+        "full_cells_x": 18,
+        "full_cells_y": 18,
+        "origin_fraction_x": 0.5,
+        "origin_fraction_y": 0.5,
+        "origin_pixel": [
+          330,
+          330
+        ],
+        "outer_margin_px": 16,
+        "partial_edge_cells": true,
+        "spacing_px": 33,
+        "target_cells_x": 20,
+        "target_cells_y": 20,
+        "x_positive": "right",
+        "y_positive": "up"
+      },
+      "graph_paper_grid": {
+        "full_cells_x": 18,
+        "full_cells_y": 18,
+        "partial_edge_cells": true,
+        "spacing_px": 33,
+        "target_cells_x": 20,
+        "target_cells_y": 20
+      },
+      "post_image_noise": {
+        "applied": true,
+        "apply_prob": 0.5,
+        "edit_count_range": [
+          1,
+          1
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [
+          {
+            "params": {
+              "scale": 0.964331
+            },
+            "type": "downsample"
+          }
+        ],
+        "enabled": true
+      },
+      "scene_variant": "piecewise_linear",
+      "shape_style": {
+        "label_color": [
+          153,
+          14,
+          106
+        ],
+        "label_stroke_color": [
+          253,
+          251,
+          252
+        ],
+        "line_color": [
+          153,
+          14,
+          106
+        ]
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "entity_id": "function_graph",
+          "entity_type": "function_graph",
+          "family": "piecewise_linear",
+          "vertices_graph": [
+            [
+              -9,
+              -4
+            ],
+            [
+              -7,
+              3
+            ],
+            [
+              -5,
+              -4
+            ],
+            [
+              -3,
+              3
+            ],
+            [
+              -1,
+              -4
+            ],
+            [
+              1,
+              5
+            ],
+            [
+              3,
+              -4
+            ],
+            [
+              5,
+              4
+            ],
+            [
+              7,
+              -2
+            ]
+          ]
+        }
+      ],
+      "relations": {
+        "query_variant": "local_maxima_count",
+        "scene_variant": "piecewise_linear",
+        "target_count": 4,
+        "task_variant": "local_maxima_count"
+      },
+      "scene_kind": "geometry_graphing_count"
+    },
+    "witness_symbolic": {
+      "labels": [
+        "point_1",
+        "point_2",
+        "point_3",
+        "point_4"
+      ],
+      "type": "graph_feature_points"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

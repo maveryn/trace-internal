@@ -1,16 +1,16 @@
 {
   "config": {
     "count_per_variant": 100,
-    "inspection_count_per_variant": 10,
+    "inspection_count_per_variant": 25,
     "max_attempts_per_instance": 200,
     "max_total_samples_per_task": 30000,
-    "mode": "inspection",
+    "mode": "full",
     "random_count": 100,
     "seed": 0,
     "tasks": [
-      "task_geometry_solid_view_count"
+      "task_geometry_graphing_count"
     ],
-    "workers": 1
+    "workers": 16
   },
   "summary": {
     "distribution_tasks_failed": 0,
@@ -19,19 +19,24 @@
   },
   "tasks": [
     {
+      "distribution_pass": true,
       "domain": "geometry",
-      "inspection_count": 30,
-      "inspection_workbook": "geometry/task_geometry_solid_view_count/task_geometry_solid_view_count.xlsx",
+      "inspection_count": 125,
+      "inspection_workbook": "geometry/task_geometry_graphing_count/task_geometry_graphing_count.xlsx",
       "inspection_workbook_sheets": {
-        "front_view_visible_count": "front_view_visible_count",
-        "right_view_visible_count": "right_view_visible_count",
-        "top_view_visible_count": "top_view_visible_count"
+        "horizontal_line_intersection_count": "horizontal_line_intersection_co",
+        "local_maxima_count": "local_maxima_count",
+        "local_minima_count": "local_minima_count",
+        "turning_point_count": "turning_point_count",
+        "x_intercept_count": "x_intercept_count"
       },
       "reports": {
-        "inspection_manifest": "geometry/task_geometry_solid_view_count/manifest.json"
+        "distribution_review": "geometry/task_geometry_graphing_count/distribution_review.json",
+        "inspection_manifest": "geometry/task_geometry_graphing_count/manifest.json",
+        "random_review": "geometry/task_geometry_graphing_count/random_review_100.json"
       },
-      "task_group": "solid",
-      "task_id": "task_geometry_solid_view_count"
+      "task_group": "graphing",
+      "task_id": "task_geometry_graphing_count"
     }
   ]
 }

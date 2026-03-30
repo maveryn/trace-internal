@@ -660,6 +660,71 @@ def build_geometry_solid_view_complexity(
     )
 
 
+def geometry_graphing_reasoning_score(*, scene_variant: str, query_variant: str) -> float:
+    """Return normalized reasoning load for one plotted-function query."""
+
+    normalized_query = str(query_variant).strip().lower()
+    score_by_query = {
+        "x_intercept_count": 0.42,
+        "horizontal_line_intersection_count": 0.58,
+        "turning_point_count": 0.66,
+        "local_minima_count": 0.68,
+        "local_maxima_count": 0.68,
+    }
+    if normalized_query not in score_by_query:
+        raise ValueError(f"unsupported geometry graphing query_variant: {query_variant}")
+    scene_bonus = {
+        "quadratic": 0.00,
+        "absolute_value": 0.03,
+        "piecewise_linear": 0.12,
+    }.get(str(scene_variant).strip().lower())
+    if scene_bonus is None:
+        raise ValueError(f"unsupported geometry graphing scene_variant: {scene_variant}")
+    return clamp_unit_interval(float(score_by_query[normalized_query]) + float(scene_bonus))
+
+
+def build_geometry_graphing_complexity(
+    *,
+    task_group_defaults: Mapping[str, Any],
+    task_id: str,
+    scene_variant: str,
+    query_variant: str,
+    object_count: int,
+    target_count: int,
+    evidence_count: int,
+    has_query_line: bool,
+) -> TaskComplexity:
+    """Build one normalized complexity payload for geometry graphing count tasks."""
+
+    weights = resolve_geometry_complexity_weights(task_group_defaults, task_id=task_id)
+    visual_scan = clamp_unit_interval(
+        (0.72 * normalize_linear(float(object_count), min_value=1.0, max_value=9.0))
+        + (0.28 * (0.24 if bool(has_query_line) else 0.0))
+    )
+    ambiguity = clamp_unit_interval(
+        (0.58 * normalize_linear(float(target_count), min_value=0.0, max_value=4.0))
+        + (0.18 if str(query_variant).strip().lower() == "horizontal_line_intersection_count" else 0.0)
+        + (0.10 if str(scene_variant).strip().lower() == "piecewise_linear" else 0.0)
+    )
+    output_burden = normalize_linear(
+        float(evidence_count),
+        min_value=0.0,
+        max_value=4.0,
+    )
+    return build_geometry_task_complexity(
+        weights=weights,
+        components={
+            "visual_scan": float(visual_scan),
+            "graphing_reasoning": geometry_graphing_reasoning_score(
+                scene_variant=str(scene_variant),
+                query_variant=str(query_variant),
+            ),
+            "ambiguity": float(ambiguity),
+            "output_burden": float(output_burden),
+        },
+    )
+
+
 def geometry_analytical_reasoning_score(*, task_kind: str, task_variant: str) -> float:
     """Return normalized reasoning load for one analytical geometry variant."""
 
@@ -844,8 +909,10 @@ __all__ = [
     "build_geometry_counting_complexity",
     "build_geometry_coordinate_relation_complexity",
     "build_geometry_comparison_complexity",
+    "build_geometry_graphing_complexity",
     "build_geometry_measurement_complexity",
     "build_geometry_similarity_complexity",
+    "build_geometry_solid_view_complexity",
     "build_geometry_transformation_complexity",
     "build_geometry_task_complexity",
     "clamp_unit_interval",
@@ -859,10 +926,12 @@ __all__ = [
     "geometry_counting_density_balance",
     "geometry_counting_variant_ambiguity_score",
     "geometry_gap_ambiguity_score",
+    "geometry_graphing_reasoning_score",
     "geometry_graph_point_output_burden",
     "geometry_label_set_output_burden",
     "geometry_measurement_output_burden",
     "geometry_similarity_reasoning_score",
+    "geometry_solid_view_reasoning_score",
     "geometry_transformation_reasoning_score",
     "geometry_visual_scan_score",
     "normalize_linear",

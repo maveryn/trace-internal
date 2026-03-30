@@ -148,6 +148,7 @@ def test_active_task_bundles_use_json_output_contracts_for_both_modes() -> None:
         ("charts", "statistics", "charts_statistics_v1"),
         ("geometry", "comparison", "geometry_comparison_v1"),
         ("geometry", "counting", "geometry_counting_v1"),
+        ("geometry", "graphing", "geometry_graphing_v1"),
         ("geometry", "similarity", "geometry_similarity_v1"),
         ("geometry", "solid", "geometry_solid_v1"),
         ("geometry", "coordinate", "geometry_coordinate_v1"),

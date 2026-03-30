@@ -6,6 +6,7 @@ from .geometry.analytical_3d import value as _task_geometry_analytical_3d_value
 from .geometry.comparison import value as _task_geometry_comparison_label
 from .geometry.coordinate import relation as _task_geometry_coordinate_relation
 from .geometry.counting import value as _task_geometry_counting_value
+from .geometry.graphing import count as _task_geometry_graphing_count
 from .geometry.measurement import value as _task_geometry_measurement_value
 from .geometry.similarity import count as _task_geometry_similarity_count
 from .geometry.solid import view_count as _task_geometry_solid_view_count

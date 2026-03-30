@@ -98,6 +98,30 @@ def graph_point_set_evidence_artifacts(
     }
 
 
+def empty_graph_point_set_evidence_artifacts(*, witness_type: str) -> Dict[str, Any]:
+    """Build one empty graph-point-set evidence payload.
+
+    Some count-style geometry tasks legitimately have zero witnesses. In those
+    cases the contract still wants `graph_point_set` evidence, but with empty
+    symbolic/projection payloads instead of inventing placeholder points.
+    """
+
+    return {
+        "evidence_type": "graph_point_set",
+        "evidence_value": [],
+        "required_labels": [],
+        "witness_symbolic": {
+            "type": str(witness_type),
+            "labels": [],
+        },
+        "projected_evidence": {
+            "type": "graph_point_set",
+            "pixel_point_set": [],
+            "grid_point_set": [],
+        },
+    }
+
+
 def graph_point_evidence_artifacts(
     *,
     points_by_label: Mapping[str, Sequence[float]],

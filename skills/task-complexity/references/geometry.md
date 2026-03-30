@@ -130,6 +130,20 @@ Measure:
 - how much the requested view hides compared with the full cube count,
 - prompt-facing `bbox_set` burden from the number of filled query-grid cells.
 
+### `graphing`
+```yaml
+visual_scan: 0.24
+graphing_reasoning: 0.40
+ambiguity: 0.22
+output_burden: 0.14
+```
+
+Measure:
+- scene-family difficulty (`quadratic` < `absolute_value` < `piecewise_linear`),
+- query difficulty (`x_intercept_count` < `horizontal_line_intersection_count` < `turning_point_count ≈ local_minima_count ≈ local_maxima_count`),
+- whether the scene includes one extra dashed horizontal guide line,
+- prompt-facing `graph_point_set` burden from the visible witness coordinates.
+
 ## Notes
 - Domain-level criteria must apply to every geometry task; keep `measurement_precision`, `comparison_reasoning`, `classification_reasoning`, and `analytical_reasoning` at task-group scope rather than forcing them onto unrelated families.
 - Geometry usually wants criterion values from explicit `scene_variant` / `query_variant` structure, not from answer magnitude alone.
@@ -140,3 +154,4 @@ Measure:
 - Geometry similarity tasks should stay evidence-first too: prefer count/list questions whose witness is the matching candidate-label subset, and keep scale/shape-family difficulty inside `similarity_reasoning` / `ambiguity` rather than splitting the family into separate tiny weight tables.
 - Geometry coordinate-relation tasks should keep the evidence contract aligned to the queried object type: segment-count variants should expose coordinate-grounded endpoint evidence for every matching segment, while point-membership/count variants should expose graph-point evidence whenever the visible witness is an unlabeled point set rather than a label identity problem.
 - Geometry solid-view tasks should keep difficulty tied to hidden-cube/projection reasoning rather than answer magnitude alone; if the orthographic witness stays the same query-grid `bbox_set`, widen view variants inside the same family instead of splitting one task id per view direction.
+- Geometry graphing tasks should keep difficulty tied to plotted-scene/query structure and witness cardinality rather than raw y-values; if the prompt-facing witness stays a coordinate `graph_point_set`, keep intercept / dashed-line / turning-point variants inside one family weighting policy instead of splitting one task id per graph question.

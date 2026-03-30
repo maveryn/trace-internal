@@ -21,18 +21,18 @@
   },
   "task_variant_templates": {
     "x_intercept_count": [
-      "How many intersection points does the graph have with the x-axis?",
-      "Count the points where the graph intersects the x-axis.",
-      "How many x-axis intersection points are visible in the graph window?",
-      "How many times does the graph intersect the x-axis in the shown window?",
-      "Count the graph's intersection points with the x-axis."
+      "How many points does the graph meet the x-axis at, including touching points?",
+      "Count the points where the graph meets the x-axis, even if it only touches there.",
+      "How many x-axis meeting points, including tangencies, are visible in the graph window?",
+      "How many times does the graph meet or touch the x-axis in the shown window?",
+      "Count the graph's meeting points with the x-axis, including touches."
     ],
     "horizontal_line_intersection_count": [
-      "How many intersection points does the graph have with the dashed line {query_line_equation}?",
-      "Count the points where the graph intersects the dashed horizontal line {query_line_equation}.",
-      "How many times does the graph intersect the dashed line {query_line_equation} in the shown window?",
-      "How many visible intersection points are there between the graph and the dashed line {query_line_equation}?",
-      "Count the graph's intersection points with the dashed line {query_line_equation}."
+      "How many points does the graph meet the dashed line {query_line_equation} at, including touching points?",
+      "Count the points where the graph meets the dashed horizontal line {query_line_equation}, even if it only touches there.",
+      "How many times does the graph meet or touch the dashed line {query_line_equation} in the shown window?",
+      "How many visible meeting points are there between the graph and the dashed line {query_line_equation}, including tangencies?",
+      "Count the graph's meeting points with the dashed line {query_line_equation}, including touches."
     ],
     "turning_point_count": [
       "How many turning points are visible in the graph window?",
@@ -44,14 +44,14 @@
     "local_minima_count": [
       "How many local minima are visible in the graph window?",
       "Count the visible local minimum points on the plotted graph.",
-      "How many visible valleys or local minima does the graph have?",
+      "How many visible valleys or local minima does the curve have?",
       "Count the graph's local minima in the shown window.",
       "How many local-minimum coordinates are visible on the graph?"
     ],
     "local_maxima_count": [
       "How many local maxima are visible in the graph window?",
       "Count the visible local maximum points on the plotted graph.",
-      "How many visible peaks or local maxima does the graph have?",
+      "How many visible peaks or local maxima does the curve have?",
       "Count the graph's local maxima in the shown window.",
       "How many local-maximum coordinates are visible on the graph?"
     ]

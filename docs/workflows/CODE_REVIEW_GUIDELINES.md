@@ -199,6 +199,8 @@ Use this checklist during implementation and refactor reviews.
 176. For orthographic query panels derived from a latent 3D scene, crop the panel grid to the tight occupied support of the requested projection; do not preserve decorative empty rows or columns that come only from unused latent footprint padding.
 177. For geometry solid-view count tasks, reject queried projections that completely fill their cropped orthographic grid by default; keep at least one empty cell so the task tests silhouette reasoning instead of only bounding-box size.
 178. For plotted-function geometry tasks, prefer count questions whose witnesses are discovered coordinates (`graph_point_set`) over direct readout questions where the queried x/y value and the evidence would collapse to the same single point; if the task counts intersections or extrema, sample the graph so those witnesses land exactly on graph-paper coordinates.
+179. When adding curved plotted-function families (for example cubic or sinusoidal graphs), constrain the function parameters so any prompt-facing intersection/extremum witnesses still land on exact graph-paper coordinates; do not rely on approximate floating-point readout for TRACE evidence.
+180. For plotted-function count prompts, be explicit about tangencies: if a graph merely touches an axis or guide line and that case should count, say so directly in every prompt variant; otherwise restrict sampling to strict crossings so the prompt semantics stay unambiguous.
 
 ## 3) Process rule
 When a new reusable issue is discovered:

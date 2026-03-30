@@ -7,12 +7,12 @@
     "type": "graph_point_set",
     "value": [
       [
-        1,
-        -3
+        -9,
+        -6
       ],
       [
-        5,
-        -3
+        3,
+        -6
       ]
     ]
   },
@@ -21,10 +21,10 @@
     "path": "geometry/task_geometry_graphing_count/images/local_minima_count/0009.png"
   },
   "instance_seed": 1112347127845849,
-  "prompt": "Use the graph-paper graph with a plotted piecewise-linear graph on graph paper. Use the plotted graph and axes to answer the question. How many local-minimum coordinates are visible on the graph?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array of every graph-paper coordinate [x, y] that satisfies the question; use [] when there are none.\nAnswer rule: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"evidence\":[[0,0],[4,0]],\"answer\":8}",
+  "prompt": "Use the graph-paper graph with a plotted function graph on graph paper. Use the plotted graph and axes to answer the question. How many local-minimum coordinates are visible on the graph?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array of every graph-paper coordinate [x, y] that satisfies the question; use [] when there are none.\nAnswer rule: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"evidence\":[[0,0],[4,0]],\"answer\":8}",
   "prompt_variants": {
-    "answer_and_evidence": "Use the graph-paper graph with a plotted piecewise-linear graph on graph paper. Use the plotted graph and axes to answer the question. How many local-minimum coordinates are visible on the graph?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array of every graph-paper coordinate [x, y] that satisfies the question; use [] when there are none.\nAnswer rule: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"evidence\":[[0,0],[4,0]],\"answer\":8}",
-    "answer_only": "Use the graph-paper graph with a plotted piecewise-linear graph on graph paper. Use the plotted graph and axes to answer the question. How many local-minimum coordinates are visible on the graph?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"answer\":8}"
+    "answer_and_evidence": "Use the graph-paper graph with a plotted function graph on graph paper. Use the plotted graph and axes to answer the question. How many local-minimum coordinates are visible on the graph?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array of every graph-paper coordinate [x, y] that satisfies the question; use [] when there are none.\nAnswer rule: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"evidence\":[[0,0],[4,0]],\"answer\":8}",
+    "answer_only": "Use the graph-paper graph with a plotted function graph on graph paper. Use the plotted graph and axes to answer the question. How many local-minimum coordinates are visible on the graph?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"answer\":8}"
   },
   "task": "task_geometry_graphing_count",
   "task_variant": "local_minima_count",
@@ -32,37 +32,22 @@
     "execution_trace": {
       "evidence_points_graph": [
         [
-          1,
-          -3
-        ],
-        [
-          5,
-          -3
-        ]
-      ],
-      "family": "piecewise_linear",
-      "polyline_vertices_graph": [
-        [
-          -1,
-          2
-        ],
-        [
-          1,
-          -3
+          -9,
+          -6
         ],
         [
           3,
-          3
-        ],
-        [
-          5,
-          -3
-        ],
-        [
-          7,
-          3
+          -6
         ]
       ],
+      "family": "sinusoid",
+      "parameters": {
+        "amplitude": 4,
+        "family_form": "cosine",
+        "midline_y": -2,
+        "period": 12,
+        "phase_shift": -3
+      },
       "query_line_y": null,
       "query_variant": "local_minima_count",
       "query_variant_probabilities": {
@@ -77,11 +62,13 @@
         "point_1",
         "point_2"
       ],
-      "scene_variant": "piecewise_linear",
+      "scene_variant": "sinusoid",
       "scene_variant_probabilities": {
         "absolute_value": 0.0,
-        "piecewise_linear": 1.0,
-        "quadratic": 0.0
+        "cubic": 0.0,
+        "piecewise_linear": 0.5,
+        "quadratic": 0.0,
+        "sinusoid": 0.5
       },
       "target_count": 2,
       "target_count_probabilities": {
@@ -103,62 +90,62 @@
     "projected_evidence": {
       "grid_point_map": {
         "point_1": [
-          1,
-          -3
+          -9,
+          -6
         ],
         "point_2": [
-          5,
-          -3
+          3,
+          -6
         ]
       },
       "grid_point_path": [
         [
-          1,
-          -3
+          -9,
+          -6
         ],
         [
-          5,
-          -3
+          3,
+          -6
         ]
       ],
       "grid_point_set": [
         [
-          1,
-          -3
+          -9,
+          -6
         ],
         [
-          5,
-          -3
+          3,
+          -6
         ]
       ],
       "pixel_point_map": {
         "point_1": [
-          380.0,
-          450.0
+          30.0,
+          555.0
         ],
         "point_2": [
-          520.0,
-          450.0
+          450.0,
+          555.0
         ]
       },
       "pixel_point_path": [
         [
-          380.0,
-          450.0
+          30.0,
+          555.0
         ],
         [
-          520.0,
-          450.0
+          450.0,
+          555.0
         ]
       ],
       "pixel_point_set": [
         [
-          380.0,
-          450.0
+          30.0,
+          555.0
         ],
         [
-          520.0,
-          450.0
+          450.0,
+          555.0
         ]
       ]
     },
@@ -172,11 +159,13 @@
           "turning_point_count": 0.0,
           "x_intercept_count": 0.0
         },
-        "scene_variant": "piecewise_linear",
+        "scene_variant": "sinusoid",
         "scene_variant_probabilities": {
           "absolute_value": 0.0,
-          "piecewise_linear": 1.0,
-          "quadratic": 0.0
+          "cubic": 0.0,
+          "piecewise_linear": 0.5,
+          "quadratic": 0.0,
+          "sinusoid": 0.5
         },
         "target_count": 2,
         "target_count_probabilities": {
@@ -207,7 +196,7 @@
           "json_example_answer_only": "{\"answer\":8}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "object_description": "a plotted piecewise-linear graph on graph paper",
+          "object_description": "a plotted function graph on graph paper",
           "query_line_equation": ""
         },
         "task_family_key": "graphing_scene",
@@ -241,7 +230,7 @@
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a plotted piecewise-linear graph on graph paper",
+              "object_description": "a plotted function graph on graph paper",
               "query_line_equation": ""
             },
             "task_family_key": "graphing_scene",
@@ -260,7 +249,7 @@
               "task_variant:local_minima_count": 5
             }
           },
-          "prompt": "Use the graph-paper graph with a plotted piecewise-linear graph on graph paper. Use the plotted graph and axes to answer the question. How many local-minimum coordinates are visible on the graph?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array of every graph-paper coordinate [x, y] that satisfies the question; use [] when there are none.\nAnswer rule: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"evidence\":[[0,0],[4,0]],\"answer\":8}"
+          "prompt": "Use the graph-paper graph with a plotted function graph on graph paper. Use the plotted graph and axes to answer the question. How many local-minimum coordinates are visible on the graph?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array of every graph-paper coordinate [x, y] that satisfies the question; use [] when there are none.\nAnswer rule: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"evidence\":[[0,0],[4,0]],\"answer\":8}"
         },
         "answer_only": {
           "metadata": {
@@ -275,7 +264,7 @@
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a plotted piecewise-linear graph on graph paper",
+              "object_description": "a plotted function graph on graph paper",
               "query_line_equation": ""
             },
             "task_family_key": "graphing_scene",
@@ -294,7 +283,7 @@
               "task_variant:local_minima_count": 5
             }
           },
-          "prompt": "Use the graph-paper graph with a plotted piecewise-linear graph on graph paper. Use the plotted graph and axes to answer the question. How many local-minimum coordinates are visible on the graph?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"answer\":8}"
+          "prompt": "Use the graph-paper graph with a plotted function graph on graph paper. Use the plotted graph and axes to answer the question. How many local-minimum coordinates are visible on the graph?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"answer\":8}"
         }
       },
       "task_variant": "local_minima_count",
@@ -303,82 +292,675 @@
     "render_map": {
       "evidence_points_graph": [
         [
-          1,
-          -3
+          -9,
+          -6
         ],
         [
-          5,
-          -3
+          3,
+          -6
         ]
       ],
+      "function_parameters": {
+        "amplitude": 4,
+        "family_form": "cosine",
+        "midline_y": -2,
+        "period": 12,
+        "phase_shift": -3
+      },
       "function_polyline_pixel": [
         [
-          310.0,
+          -5.0,
+          536.244
+        ],
+        [
+          3.75,
+          544.343
+        ],
+        [
+          12.5,
+          550.23
+        ],
+        [
+          21.25,
+          553.802
+        ],
+        [
+          30.0,
+          555.0
+        ],
+        [
+          38.75,
+          553.802
+        ],
+        [
+          47.5,
+          550.23
+        ],
+        [
+          56.25,
+          544.343
+        ],
+        [
+          65.0,
+          536.244
+        ],
+        [
+          73.75,
+          526.069
+        ],
+        [
+          82.5,
+          513.995
+        ],
+        [
+          91.25,
+          500.227
+        ],
+        [
+          100.0,
+          485.0
+        ],
+        [
+          108.75,
+          468.576
+        ],
+        [
+          117.5,
+          451.235
+        ],
+        [
+          126.25,
+          433.274
+        ],
+        [
+          135.0,
+          415.0
+        ],
+        [
+          143.75,
+          396.726
+        ],
+        [
+          152.5,
+          378.765
+        ],
+        [
+          161.25,
+          361.424
+        ],
+        [
+          170.0,
+          345.0
+        ],
+        [
+          178.75,
+          329.773
+        ],
+        [
+          187.5,
+          316.005
+        ],
+        [
+          196.25,
+          303.931
+        ],
+        [
+          205.0,
+          293.756
+        ],
+        [
+          213.75,
+          285.657
+        ],
+        [
+          222.5,
+          279.77
+        ],
+        [
+          231.25,
+          276.198
+        ],
+        [
+          240.0,
           275.0
         ],
         [
+          248.75,
+          276.198
+        ],
+        [
+          257.5,
+          279.77
+        ],
+        [
+          266.25,
+          285.657
+        ],
+        [
+          275.0,
+          293.756
+        ],
+        [
+          283.75,
+          303.931
+        ],
+        [
+          292.5,
+          316.005
+        ],
+        [
+          301.25,
+          329.773
+        ],
+        [
+          310.0,
+          345.0
+        ],
+        [
+          318.75,
+          361.424
+        ],
+        [
+          327.5,
+          378.765
+        ],
+        [
+          336.25,
+          396.726
+        ],
+        [
+          345.0,
+          415.0
+        ],
+        [
+          353.75,
+          433.274
+        ],
+        [
+          362.5,
+          451.235
+        ],
+        [
+          371.25,
+          468.576
+        ],
+        [
           380.0,
-          450.0
+          485.0
+        ],
+        [
+          388.75,
+          500.227
+        ],
+        [
+          397.5,
+          513.995
+        ],
+        [
+          406.25,
+          526.069
+        ],
+        [
+          415.0,
+          536.244
+        ],
+        [
+          423.75,
+          544.343
+        ],
+        [
+          432.5,
+          550.23
+        ],
+        [
+          441.25,
+          553.802
         ],
         [
           450.0,
-          240.0
+          555.0
+        ],
+        [
+          458.75,
+          553.802
+        ],
+        [
+          467.5,
+          550.23
+        ],
+        [
+          476.25,
+          544.343
+        ],
+        [
+          485.0,
+          536.244
+        ],
+        [
+          493.75,
+          526.069
+        ],
+        [
+          502.5,
+          513.995
+        ],
+        [
+          511.25,
+          500.227
         ],
         [
           520.0,
-          450.0
+          485.0
+        ],
+        [
+          528.75,
+          468.576
+        ],
+        [
+          537.5,
+          451.235
+        ],
+        [
+          546.25,
+          433.274
+        ],
+        [
+          555.0,
+          415.0
+        ],
+        [
+          563.75,
+          396.726
+        ],
+        [
+          572.5,
+          378.765
+        ],
+        [
+          581.25,
+          361.424
         ],
         [
           590.0,
-          240.0
+          345.0
+        ],
+        [
+          598.75,
+          329.773
+        ],
+        [
+          607.5,
+          316.005
+        ],
+        [
+          616.25,
+          303.931
+        ],
+        [
+          625.0,
+          293.756
+        ],
+        [
+          633.75,
+          285.657
+        ],
+        [
+          642.5,
+          279.77
+        ],
+        [
+          651.25,
+          276.198
+        ],
+        [
+          660.0,
+          275.0
+        ],
+        [
+          668.75,
+          276.198
+        ],
+        [
+          677.5,
+          279.77
+        ],
+        [
+          686.25,
+          285.657
+        ],
+        [
+          695.0,
+          293.756
         ]
       ],
       "function_polyline_render": [
         [
-          930.0,
+          -15.0,
+          1608.731
+        ],
+        [
+          11.25,
+          1633.029
+        ],
+        [
+          37.5,
+          1650.689
+        ],
+        [
+          63.75,
+          1661.407
+        ],
+        [
+          90.0,
+          1665.0
+        ],
+        [
+          116.25,
+          1661.407
+        ],
+        [
+          142.5,
+          1650.689
+        ],
+        [
+          168.75,
+          1633.029
+        ],
+        [
+          195.0,
+          1608.731
+        ],
+        [
+          221.25,
+          1578.208
+        ],
+        [
+          247.5,
+          1541.985
+        ],
+        [
+          273.75,
+          1500.68
+        ],
+        [
+          300.0,
+          1455.0
+        ],
+        [
+          326.25,
+          1405.727
+        ],
+        [
+          352.5,
+          1353.704
+        ],
+        [
+          378.75,
+          1299.821
+        ],
+        [
+          405.0,
+          1245.0
+        ],
+        [
+          431.25,
+          1190.179
+        ],
+        [
+          457.5,
+          1136.296
+        ],
+        [
+          483.75,
+          1084.273
+        ],
+        [
+          510.0,
+          1035.0
+        ],
+        [
+          536.25,
+          989.32
+        ],
+        [
+          562.5,
+          948.015
+        ],
+        [
+          588.75,
+          911.792
+        ],
+        [
+          615.0,
+          881.269
+        ],
+        [
+          641.25,
+          856.971
+        ],
+        [
+          667.5,
+          839.311
+        ],
+        [
+          693.75,
+          828.593
+        ],
+        [
+          720.0,
           825.0
         ],
         [
+          746.25,
+          828.593
+        ],
+        [
+          772.5,
+          839.311
+        ],
+        [
+          798.75,
+          856.971
+        ],
+        [
+          825.0,
+          881.269
+        ],
+        [
+          851.25,
+          911.792
+        ],
+        [
+          877.5,
+          948.015
+        ],
+        [
+          903.75,
+          989.32
+        ],
+        [
+          930.0,
+          1035.0
+        ],
+        [
+          956.25,
+          1084.273
+        ],
+        [
+          982.5,
+          1136.296
+        ],
+        [
+          1008.75,
+          1190.179
+        ],
+        [
+          1035.0,
+          1245.0
+        ],
+        [
+          1061.25,
+          1299.821
+        ],
+        [
+          1087.5,
+          1353.704
+        ],
+        [
+          1113.75,
+          1405.727
+        ],
+        [
           1140.0,
-          1350.0
+          1455.0
+        ],
+        [
+          1166.25,
+          1500.68
+        ],
+        [
+          1192.5,
+          1541.985
+        ],
+        [
+          1218.75,
+          1578.208
+        ],
+        [
+          1245.0,
+          1608.731
+        ],
+        [
+          1271.25,
+          1633.029
+        ],
+        [
+          1297.5,
+          1650.689
+        ],
+        [
+          1323.75,
+          1661.407
         ],
         [
           1350.0,
-          720.0
+          1665.0
+        ],
+        [
+          1376.25,
+          1661.407
+        ],
+        [
+          1402.5,
+          1650.689
+        ],
+        [
+          1428.75,
+          1633.029
+        ],
+        [
+          1455.0,
+          1608.731
+        ],
+        [
+          1481.25,
+          1578.208
+        ],
+        [
+          1507.5,
+          1541.985
+        ],
+        [
+          1533.75,
+          1500.68
         ],
         [
           1560.0,
-          1350.0
+          1455.0
+        ],
+        [
+          1586.25,
+          1405.727
+        ],
+        [
+          1612.5,
+          1353.704
+        ],
+        [
+          1638.75,
+          1299.821
+        ],
+        [
+          1665.0,
+          1245.0
+        ],
+        [
+          1691.25,
+          1190.179
+        ],
+        [
+          1717.5,
+          1136.296
+        ],
+        [
+          1743.75,
+          1084.273
         ],
         [
           1770.0,
-          720.0
-        ]
-      ],
-      "polyline_vertices_graph": [
-        [
-          -1,
-          2
+          1035.0
         ],
         [
-          1,
-          -3
+          1796.25,
+          989.32
         ],
         [
-          3,
-          3
+          1822.5,
+          948.015
         ],
         [
-          5,
-          -3
+          1848.75,
+          911.792
         ],
         [
-          7,
-          3
+          1875.0,
+          881.269
+        ],
+        [
+          1901.25,
+          856.971
+        ],
+        [
+          1927.5,
+          839.311
+        ],
+        [
+          1953.75,
+          828.593
+        ],
+        [
+          1980.0,
+          825.0
+        ],
+        [
+          2006.25,
+          828.593
+        ],
+        [
+          2032.5,
+          839.311
+        ],
+        [
+          2058.75,
+          856.971
+        ],
+        [
+          2085.0,
+          881.269
         ]
       ],
       "query_line_y": null,
-      "scene_variant": "piecewise_linear"
+      "scene_variant": "sinusoid"
     },
     "render_spec": {
       "background_style": {
@@ -519,7 +1101,7 @@
         "edits": [],
         "enabled": true
       },
-      "scene_variant": "piecewise_linear",
+      "scene_variant": "sinusoid",
       "shape_style": {
         "label_color": [
           67,
@@ -543,34 +1125,19 @@
         {
           "entity_id": "function_graph",
           "entity_type": "function_graph",
-          "family": "piecewise_linear",
-          "vertices_graph": [
-            [
-              -1,
-              2
-            ],
-            [
-              1,
-              -3
-            ],
-            [
-              3,
-              3
-            ],
-            [
-              5,
-              -3
-            ],
-            [
-              7,
-              3
-            ]
-          ]
+          "family": "sinusoid",
+          "parameters": {
+            "amplitude": 4,
+            "family_form": "cosine",
+            "midline_y": -2,
+            "period": 12,
+            "phase_shift": -3
+          }
         }
       ],
       "relations": {
         "query_variant": "local_minima_count",
-        "scene_variant": "piecewise_linear",
+        "scene_variant": "sinusoid",
         "target_count": 2,
         "task_variant": "local_minima_count"
       },

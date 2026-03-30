@@ -29,10 +29,10 @@
     "path": "geometry/task_geometry_graphing_count/images/local_minima_count/0012.png"
   },
   "instance_seed": 6705282395002120,
-  "prompt": "Look at the graph-paper plot showing a plotted piecewise-linear graph on graph paper. Work from the full plotted graph to answer the question. How many local minima are visible in the graph window?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array of every graph-paper coordinate [x, y] that satisfies the question; use [] when there are none.\nAnswer rule: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"evidence\":[[0,0],[4,0],[4,2],[0,2]],\"answer\":8}",
+  "prompt": "Look at the graph-paper plot showing a plotted function graph on graph paper. Work from the full plotted graph to answer the question. How many local minima are visible in the graph window?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array of every graph-paper coordinate [x, y] that satisfies the question; use [] when there are none.\nAnswer rule: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"evidence\":[[0,0],[4,0],[4,2],[0,2]],\"answer\":8}",
   "prompt_variants": {
-    "answer_and_evidence": "Look at the graph-paper plot showing a plotted piecewise-linear graph on graph paper. Work from the full plotted graph to answer the question. How many local minima are visible in the graph window?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array of every graph-paper coordinate [x, y] that satisfies the question; use [] when there are none.\nAnswer rule: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"evidence\":[[0,0],[4,0],[4,2],[0,2]],\"answer\":8}",
-    "answer_only": "Look at the graph-paper plot showing a plotted piecewise-linear graph on graph paper. Work from the full plotted graph to answer the question. How many local minima are visible in the graph window?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"answer\":8}"
+    "answer_and_evidence": "Look at the graph-paper plot showing a plotted function graph on graph paper. Work from the full plotted graph to answer the question. How many local minima are visible in the graph window?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array of every graph-paper coordinate [x, y] that satisfies the question; use [] when there are none.\nAnswer rule: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"evidence\":[[0,0],[4,0],[4,2],[0,2]],\"answer\":8}",
+    "answer_only": "Look at the graph-paper plot showing a plotted function graph on graph paper. Work from the full plotted graph to answer the question. How many local minima are visible in the graph window?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"answer\":8}"
   },
   "task": "task_geometry_graphing_count",
   "task_variant": "local_minima_count",
@@ -114,8 +114,10 @@
       "scene_variant": "piecewise_linear",
       "scene_variant_probabilities": {
         "absolute_value": 0.0,
+        "cubic": 0.0,
         "piecewise_linear": 1.0,
-        "quadratic": 0.0
+        "quadratic": 0.0,
+        "sinusoid": 0.0
       },
       "target_count": 4,
       "target_count_probabilities": {
@@ -257,8 +259,10 @@
         "scene_variant": "piecewise_linear",
         "scene_variant_probabilities": {
           "absolute_value": 0.0,
+          "cubic": 0.0,
           "piecewise_linear": 1.0,
-          "quadratic": 0.0
+          "quadratic": 0.0,
+          "sinusoid": 0.0
         },
         "target_count": 4,
         "target_count_probabilities": {
@@ -289,7 +293,7 @@
           "json_example_answer_only": "{\"answer\":8}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "object_description": "a plotted piecewise-linear graph on graph paper",
+          "object_description": "a plotted function graph on graph paper",
           "query_line_equation": ""
         },
         "task_family_key": "graphing_scene",
@@ -323,7 +327,7 @@
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a plotted piecewise-linear graph on graph paper",
+              "object_description": "a plotted function graph on graph paper",
               "query_line_equation": ""
             },
             "task_family_key": "graphing_scene",
@@ -342,7 +346,7 @@
               "task_variant:local_minima_count": 5
             }
           },
-          "prompt": "Look at the graph-paper plot showing a plotted piecewise-linear graph on graph paper. Work from the full plotted graph to answer the question. How many local minima are visible in the graph window?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array of every graph-paper coordinate [x, y] that satisfies the question; use [] when there are none.\nAnswer rule: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"evidence\":[[0,0],[4,0],[4,2],[0,2]],\"answer\":8}"
+          "prompt": "Look at the graph-paper plot showing a plotted function graph on graph paper. Work from the full plotted graph to answer the question. How many local minima are visible in the graph window?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array of every graph-paper coordinate [x, y] that satisfies the question; use [] when there are none.\nAnswer rule: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"evidence\":[[0,0],[4,0],[4,2],[0,2]],\"answer\":8}"
         },
         "answer_only": {
           "metadata": {
@@ -357,7 +361,7 @@
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a plotted piecewise-linear graph on graph paper",
+              "object_description": "a plotted function graph on graph paper",
               "query_line_equation": ""
             },
             "task_family_key": "graphing_scene",
@@ -376,7 +380,7 @@
               "task_variant:local_minima_count": 5
             }
           },
-          "prompt": "Look at the graph-paper plot showing a plotted piecewise-linear graph on graph paper. Work from the full plotted graph to answer the question. How many local minima are visible in the graph window?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"answer\":8}"
+          "prompt": "Look at the graph-paper plot showing a plotted function graph on graph paper. Work from the full plotted graph to answer the question. How many local minima are visible in the graph window?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"answer\":8}"
         }
       },
       "task_variant": "local_minima_count",

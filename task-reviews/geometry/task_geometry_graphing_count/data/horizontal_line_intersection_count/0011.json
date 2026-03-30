@@ -21,10 +21,10 @@
     "path": "geometry/task_geometry_graphing_count/images/horizontal_line_intersection_count/0011.png"
   },
   "instance_seed": 6428131736716016,
-  "prompt": "Work from the graph-paper plot showing a plotted absolute-value graph on graph paper and a dashed horizontal guide line. Work from the full plotted graph to answer the question. How many times does the graph intersect the dashed line y = 1 in the shown window?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array of every graph-paper coordinate [x, y] that satisfies the question; use [] when there are none.\nAnswer requirement: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"evidence\":[[0,0],[4,0]],\"answer\":8}",
+  "prompt": "Work from the graph-paper plot showing a plotted function graph on graph paper and a dashed horizontal guide line. Work from the full plotted graph to answer the question. How many times does the graph intersect the dashed line y = 1 in the shown window?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array of every graph-paper coordinate [x, y] that satisfies the question; use [] when there are none.\nAnswer requirement: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"evidence\":[[0,0],[4,0]],\"answer\":8}",
   "prompt_variants": {
-    "answer_and_evidence": "Work from the graph-paper plot showing a plotted absolute-value graph on graph paper and a dashed horizontal guide line. Work from the full plotted graph to answer the question. How many times does the graph intersect the dashed line y = 1 in the shown window?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array of every graph-paper coordinate [x, y] that satisfies the question; use [] when there are none.\nAnswer requirement: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"evidence\":[[0,0],[4,0]],\"answer\":8}",
-    "answer_only": "Work from the graph-paper plot showing a plotted absolute-value graph on graph paper and a dashed horizontal guide line. Work from the full plotted graph to answer the question. How many times does the graph intersect the dashed line y = 1 in the shown window?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"answer\":8}"
+    "answer_and_evidence": "Work from the graph-paper plot showing a plotted function graph on graph paper and a dashed horizontal guide line. Work from the full plotted graph to answer the question. How many times does the graph intersect the dashed line y = 1 in the shown window?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array of every graph-paper coordinate [x, y] that satisfies the question; use [] when there are none.\nAnswer requirement: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"evidence\":[[0,0],[4,0]],\"answer\":8}",
+    "answer_only": "Work from the graph-paper plot showing a plotted function graph on graph paper and a dashed horizontal guide line. Work from the full plotted graph to answer the question. How many times does the graph intersect the dashed line y = 1 in the shown window?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"answer\":8}"
   },
   "task": "task_geometry_graphing_count",
   "task_variant": "horizontal_line_intersection_count",
@@ -63,9 +63,11 @@
       ],
       "scene_variant": "absolute_value",
       "scene_variant_probabilities": {
-        "absolute_value": 0.3333333333333333,
-        "piecewise_linear": 0.3333333333333333,
-        "quadratic": 0.3333333333333333
+        "absolute_value": 0.2,
+        "cubic": 0.2,
+        "piecewise_linear": 0.2,
+        "quadratic": 0.2,
+        "sinusoid": 0.2
       },
       "target_count": 2,
       "target_count_probabilities": {
@@ -158,9 +160,11 @@
         },
         "scene_variant": "absolute_value",
         "scene_variant_probabilities": {
-          "absolute_value": 0.3333333333333333,
-          "piecewise_linear": 0.3333333333333333,
-          "quadratic": 0.3333333333333333
+          "absolute_value": 0.2,
+          "cubic": 0.2,
+          "piecewise_linear": 0.2,
+          "quadratic": 0.2,
+          "sinusoid": 0.2
         },
         "target_count": 2,
         "target_count_probabilities": {
@@ -191,7 +195,7 @@
           "json_example_answer_only": "{\"answer\":8}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "object_description": "a plotted absolute-value graph on graph paper and a dashed horizontal guide line",
+          "object_description": "a plotted function graph on graph paper and a dashed horizontal guide line",
           "query_line_equation": "y = 1"
         },
         "task_family_key": "graphing_scene",
@@ -225,7 +229,7 @@
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a plotted absolute-value graph on graph paper and a dashed horizontal guide line",
+              "object_description": "a plotted function graph on graph paper and a dashed horizontal guide line",
               "query_line_equation": "y = 1"
             },
             "task_family_key": "graphing_scene",
@@ -244,7 +248,7 @@
               "task_variant:horizontal_line_intersection_count": 5
             }
           },
-          "prompt": "Work from the graph-paper plot showing a plotted absolute-value graph on graph paper and a dashed horizontal guide line. Work from the full plotted graph to answer the question. How many times does the graph intersect the dashed line y = 1 in the shown window?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array of every graph-paper coordinate [x, y] that satisfies the question; use [] when there are none.\nAnswer requirement: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"evidence\":[[0,0],[4,0]],\"answer\":8}"
+          "prompt": "Work from the graph-paper plot showing a plotted function graph on graph paper and a dashed horizontal guide line. Work from the full plotted graph to answer the question. How many times does the graph intersect the dashed line y = 1 in the shown window?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array of every graph-paper coordinate [x, y] that satisfies the question; use [] when there are none.\nAnswer requirement: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"evidence\":[[0,0],[4,0]],\"answer\":8}"
         },
         "answer_only": {
           "metadata": {
@@ -259,7 +263,7 @@
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a plotted absolute-value graph on graph paper and a dashed horizontal guide line",
+              "object_description": "a plotted function graph on graph paper and a dashed horizontal guide line",
               "query_line_equation": "y = 1"
             },
             "task_family_key": "graphing_scene",
@@ -278,7 +282,7 @@
               "task_variant:horizontal_line_intersection_count": 5
             }
           },
-          "prompt": "Work from the graph-paper plot showing a plotted absolute-value graph on graph paper and a dashed horizontal guide line. Work from the full plotted graph to answer the question. How many times does the graph intersect the dashed line y = 1 in the shown window?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"answer\":8}"
+          "prompt": "Work from the graph-paper plot showing a plotted function graph on graph paper and a dashed horizontal guide line. Work from the full plotted graph to answer the question. How many times does the graph intersect the dashed line y = 1 in the shown window?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"answer\":8}"
         }
       },
       "task_variant": "horizontal_line_intersection_count",

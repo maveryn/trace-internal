@@ -11,7 +11,7 @@
         0
       ],
       [
-        -3,
+        7,
         0
       ]
     ]
@@ -21,10 +21,10 @@
     "path": "geometry/task_geometry_graphing_count/images/x_intercept_count/0020.png"
   },
   "instance_seed": 7378440884534391,
-  "prompt": "The graph-paper image shows a plotted quadratic curve on graph paper. Work from the full plotted graph to answer the question. How many times does the graph intersect the x-axis in the shown window?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array of every graph-paper coordinate [x, y] that satisfies the question; use [] when there are none.\nAnswer rule: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"evidence\":[[0,0],[4,0]],\"answer\":8}",
+  "prompt": "The graph-paper image shows a plotted function graph on graph paper. Work from the full plotted graph to answer the question. How many times does the graph intersect the x-axis in the shown window?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array of every graph-paper coordinate [x, y] that satisfies the question; use [] when there are none.\nAnswer rule: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"evidence\":[[0,0],[4,0]],\"answer\":8}",
   "prompt_variants": {
-    "answer_and_evidence": "The graph-paper image shows a plotted quadratic curve on graph paper. Work from the full plotted graph to answer the question. How many times does the graph intersect the x-axis in the shown window?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array of every graph-paper coordinate [x, y] that satisfies the question; use [] when there are none.\nAnswer rule: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"evidence\":[[0,0],[4,0]],\"answer\":8}",
-    "answer_only": "The graph-paper image shows a plotted quadratic curve on graph paper. Work from the full plotted graph to answer the question. How many times does the graph intersect the x-axis in the shown window?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"answer\":8}"
+    "answer_and_evidence": "The graph-paper image shows a plotted function graph on graph paper. Work from the full plotted graph to answer the question. How many times does the graph intersect the x-axis in the shown window?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array of every graph-paper coordinate [x, y] that satisfies the question; use [] when there are none.\nAnswer rule: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"evidence\":[[0,0],[4,0]],\"answer\":8}",
+    "answer_only": "The graph-paper image shows a plotted function graph on graph paper. Work from the full plotted graph to answer the question. How many times does the graph intersect the x-axis in the shown window?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"answer\":8}"
   },
   "task": "task_geometry_graphing_count",
   "task_variant": "x_intercept_count",
@@ -36,15 +36,17 @@
           0
         ],
         [
-          -3,
+          7,
           0
         ]
       ],
-      "family": "quadratic",
+      "family": "sinusoid",
       "parameters": {
-        "a": -1,
-        "h": -4,
-        "k": 1
+        "amplitude": 4,
+        "family_form": "cosine",
+        "midline_y": -4,
+        "period": 12,
+        "phase_shift": -5
       },
       "query_line_y": null,
       "query_variant": "x_intercept_count",
@@ -60,11 +62,13 @@
         "point_1",
         "point_2"
       ],
-      "scene_variant": "quadratic",
+      "scene_variant": "sinusoid",
       "scene_variant_probabilities": {
-        "absolute_value": 0.3333333333333333,
-        "piecewise_linear": 0.3333333333333333,
-        "quadratic": 0.3333333333333333
+        "absolute_value": 0.2,
+        "cubic": 0.2,
+        "piecewise_linear": 0.2,
+        "quadratic": 0.2,
+        "sinusoid": 0.2
       },
       "target_count": 2,
       "target_count_probabilities": {
@@ -90,7 +94,7 @@
           0
         ],
         "point_2": [
-          -3,
+          7,
           0
         ]
       },
@@ -100,7 +104,7 @@
           0
         ],
         [
-          -3,
+          7,
           0
         ]
       ],
@@ -110,7 +114,7 @@
           0
         ],
         [
-          -3,
+          7,
           0
         ]
       ],
@@ -120,7 +124,7 @@
           326.0
         ],
         "point_2": [
-          227.0,
+          557.0,
           326.0
         ]
       },
@@ -130,7 +134,7 @@
           326.0
         ],
         [
-          227.0,
+          557.0,
           326.0
         ]
       ],
@@ -140,7 +144,7 @@
           326.0
         ],
         [
-          227.0,
+          557.0,
           326.0
         ]
       ]
@@ -155,11 +159,13 @@
           "turning_point_count": 0.0,
           "x_intercept_count": 1.0
         },
-        "scene_variant": "quadratic",
+        "scene_variant": "sinusoid",
         "scene_variant_probabilities": {
-          "absolute_value": 0.3333333333333333,
-          "piecewise_linear": 0.3333333333333333,
-          "quadratic": 0.3333333333333333
+          "absolute_value": 0.2,
+          "cubic": 0.2,
+          "piecewise_linear": 0.2,
+          "quadratic": 0.2,
+          "sinusoid": 0.2
         },
         "target_count": 2,
         "target_count_probabilities": {
@@ -190,7 +196,7 @@
           "json_example_answer_only": "{\"answer\":8}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "object_description": "a plotted quadratic curve on graph paper",
+          "object_description": "a plotted function graph on graph paper",
           "query_line_equation": ""
         },
         "task_family_key": "graphing_scene",
@@ -224,7 +230,7 @@
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a plotted quadratic curve on graph paper",
+              "object_description": "a plotted function graph on graph paper",
               "query_line_equation": ""
             },
             "task_family_key": "graphing_scene",
@@ -243,7 +249,7 @@
               "task_variant:x_intercept_count": 5
             }
           },
-          "prompt": "The graph-paper image shows a plotted quadratic curve on graph paper. Work from the full plotted graph to answer the question. How many times does the graph intersect the x-axis in the shown window?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array of every graph-paper coordinate [x, y] that satisfies the question; use [] when there are none.\nAnswer rule: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"evidence\":[[0,0],[4,0]],\"answer\":8}"
+          "prompt": "The graph-paper image shows a plotted function graph on graph paper. Work from the full plotted graph to answer the question. How many times does the graph intersect the x-axis in the shown window?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array of every graph-paper coordinate [x, y] that satisfies the question; use [] when there are none.\nAnswer rule: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"evidence\":[[0,0],[4,0]],\"answer\":8}"
         },
         "answer_only": {
           "metadata": {
@@ -258,7 +264,7 @@
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a plotted quadratic curve on graph paper",
+              "object_description": "a plotted function graph on graph paper",
               "query_line_equation": ""
             },
             "task_family_key": "graphing_scene",
@@ -277,7 +283,7 @@
               "task_variant:x_intercept_count": 5
             }
           },
-          "prompt": "The graph-paper image shows a plotted quadratic curve on graph paper. Work from the full plotted graph to answer the question. How many times does the graph intersect the x-axis in the shown window?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"answer\":8}"
+          "prompt": "The graph-paper image shows a plotted function graph on graph paper. Work from the full plotted graph to answer the question. How many times does the graph intersect the x-axis in the shown window?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"answer\":8}"
         }
       },
       "task_variant": "x_intercept_count",
@@ -290,63 +296,97 @@
           0
         ],
         [
-          -3,
+          7,
           0
         ]
       ],
       "function_parameters": {
-        "a": -1,
-        "h": -4,
-        "k": 1
+        "amplitude": 4,
+        "family_form": "cosine",
+        "midline_y": -4,
+        "period": 12,
+        "phase_shift": -5
       },
       "function_polyline_pixel": [
         [
+          -4.0,
+          572.315
+        ],
+        [
+          4.25,
+          562.723
+        ],
+        [
+          12.5,
+          551.338
+        ],
+        [
+          20.75,
+          538.357
+        ],
+        [
+          29.0,
+          524.0
+        ],
+        [
+          37.25,
+          508.514
+        ],
+        [
+          45.5,
+          492.164
+        ],
+        [
+          53.75,
+          475.229
+        ],
+        [
           62.0,
-          821.0
+          458.0
         ],
         [
           70.25,
-          757.062
+          440.771
         ],
         [
           78.5,
-          697.25
+          423.836
         ],
         [
           86.75,
-          641.562
+          407.486
         ],
         [
           95.0,
-          590.0
+          392.0
         ],
         [
           103.25,
-          542.562
+          377.643
         ],
         [
           111.5,
-          499.25
+          364.662
         ],
         [
           119.75,
-          460.062
+          353.277
         ],
         [
           128.0,
-          425.0
+          343.685
         ],
         [
           136.25,
-          394.062
+          336.048
         ],
         [
           144.5,
-          367.25
+          330.498
         ],
         [
           152.75,
-          344.562
+          327.129
         ],
         [
           161.0,
@@ -354,261 +394,325 @@
         ],
         [
           169.25,
-          311.562
+          327.129
         ],
         [
           177.5,
-          301.25
+          330.498
         ],
         [
           185.75,
-          295.062
+          336.048
         ],
         [
           194.0,
-          293.0
+          343.685
         ],
         [
           202.25,
-          295.062
+          353.277
         ],
         [
           210.5,
-          301.25
+          364.662
         ],
         [
           218.75,
-          311.562
+          377.643
         ],
         [
           227.0,
-          326.0
+          392.0
         ],
         [
           235.25,
-          344.562
+          407.486
         ],
         [
           243.5,
-          367.25
+          423.836
         ],
         [
           251.75,
-          394.062
+          440.771
         ],
         [
           260.0,
-          425.0
+          458.0
         ],
         [
           268.25,
-          460.062
+          475.229
         ],
         [
           276.5,
-          499.25
+          492.164
         ],
         [
           284.75,
-          542.562
+          508.514
         ],
         [
           293.0,
-          590.0
+          524.0
         ],
         [
           301.25,
-          641.562
+          538.357
         ],
         [
           309.5,
-          697.25
+          551.338
         ],
         [
           317.75,
-          757.062
+          562.723
         ],
         [
           326.0,
-          821.0
+          572.315
         ],
         [
           334.25,
-          889.062
+          579.952
         ],
         [
           342.5,
-          961.25
+          585.502
         ],
         [
           350.75,
-          1037.562
+          588.871
         ],
         [
           359.0,
-          1118.0
+          590.0
         ],
         [
           367.25,
-          1202.562
+          588.871
         ],
         [
           375.5,
-          1291.25
+          585.502
         ],
         [
           383.75,
-          1384.062
+          579.952
         ],
         [
           392.0,
-          1481.0
+          572.315
         ],
         [
           400.25,
-          1582.062
+          562.723
         ],
         [
           408.5,
-          1687.25
+          551.338
         ],
         [
           416.75,
-          1796.562
+          538.357
         ],
         [
           425.0,
-          1910.0
+          524.0
         ],
         [
           433.25,
-          2027.562
+          508.514
         ],
         [
           441.5,
-          2149.25
+          492.164
         ],
         [
           449.75,
-          2275.062
+          475.229
         ],
         [
           458.0,
-          2405.0
+          458.0
         ],
         [
           466.25,
-          2539.062
+          440.771
         ],
         [
           474.5,
-          2677.25
+          423.836
         ],
         [
           482.75,
-          2819.562
+          407.486
         ],
         [
           491.0,
-          2966.0
+          392.0
         ],
         [
           499.25,
-          3116.562
+          377.643
         ],
         [
           507.5,
-          3271.25
+          364.662
         ],
         [
           515.75,
-          3430.062
+          353.277
         ],
         [
           524.0,
-          3593.0
+          343.685
         ],
         [
           532.25,
-          3760.062
+          336.048
         ],
         [
           540.5,
-          3931.25
+          330.498
         ],
         [
           548.75,
-          4106.562
+          327.129
         ],
         [
           557.0,
-          4286.0
+          326.0
         ],
         [
           565.25,
-          4469.562
+          327.129
         ],
         [
           573.5,
-          4657.25
+          330.498
         ],
         [
           581.75,
-          4849.062
+          336.048
         ],
         [
           590.0,
-          5045.0
+          343.685
+        ],
+        [
+          598.25,
+          353.277
+        ],
+        [
+          606.5,
+          364.662
+        ],
+        [
+          614.75,
+          377.643
+        ],
+        [
+          623.0,
+          392.0
+        ],
+        [
+          631.25,
+          407.486
+        ],
+        [
+          639.5,
+          423.836
+        ],
+        [
+          647.75,
+          440.771
+        ],
+        [
+          656.0,
+          458.0
         ]
       ],
       "function_polyline_render": [
         [
+          -12.0,
+          1716.946
+        ],
+        [
+          12.75,
+          1688.168
+        ],
+        [
+          37.5,
+          1654.014
+        ],
+        [
+          62.25,
+          1615.07
+        ],
+        [
+          87.0,
+          1572.0
+        ],
+        [
+          111.75,
+          1525.543
+        ],
+        [
+          136.5,
+          1476.492
+        ],
+        [
+          161.25,
+          1425.688
+        ],
+        [
           186.0,
-          2463.0
+          1374.0
         ],
         [
           210.75,
-          2271.188
+          1322.312
         ],
         [
           235.5,
-          2091.75
+          1271.508
         ],
         [
           260.25,
-          1924.688
+          1222.457
         ],
         [
           285.0,
-          1770.0
+          1176.0
         ],
         [
           309.75,
-          1627.688
+          1132.93
         ],
         [
           334.5,
-          1497.75
+          1093.986
         ],
         [
           359.25,
-          1380.188
+          1059.832
         ],
         [
           384.0,
-          1275.0
+          1031.054
         ],
         [
           408.75,
-          1182.188
+          1008.144
         ],
         [
           433.5,
-          1101.75
+          991.493
         ],
         [
           458.25,
-          1033.688
+          981.388
         ],
         [
           483.0,
@@ -616,215 +720,247 @@
         ],
         [
           507.75,
-          934.688
+          981.388
         ],
         [
           532.5,
-          903.75
+          991.493
         ],
         [
           557.25,
-          885.188
+          1008.144
         ],
         [
           582.0,
-          879.0
+          1031.054
         ],
         [
           606.75,
-          885.188
+          1059.832
         ],
         [
           631.5,
-          903.75
+          1093.986
         ],
         [
           656.25,
-          934.688
+          1132.93
         ],
         [
           681.0,
-          978.0
+          1176.0
         ],
         [
           705.75,
-          1033.688
+          1222.457
         ],
         [
           730.5,
-          1101.75
+          1271.508
         ],
         [
           755.25,
-          1182.188
+          1322.312
         ],
         [
           780.0,
-          1275.0
+          1374.0
         ],
         [
           804.75,
-          1380.188
+          1425.688
         ],
         [
           829.5,
-          1497.75
+          1476.492
         ],
         [
           854.25,
-          1627.688
+          1525.543
         ],
         [
           879.0,
-          1770.0
+          1572.0
         ],
         [
           903.75,
-          1924.688
+          1615.07
         ],
         [
           928.5,
-          2091.75
+          1654.014
         ],
         [
           953.25,
-          2271.188
+          1688.168
         ],
         [
           978.0,
-          2463.0
+          1716.946
         ],
         [
           1002.75,
-          2667.188
+          1739.856
         ],
         [
           1027.5,
-          2883.75
+          1756.507
         ],
         [
           1052.25,
-          3112.688
+          1766.612
         ],
         [
           1077.0,
-          3354.0
+          1770.0
         ],
         [
           1101.75,
-          3607.688
+          1766.612
         ],
         [
           1126.5,
-          3873.75
+          1756.507
         ],
         [
           1151.25,
-          4152.188
+          1739.856
         ],
         [
           1176.0,
-          4443.0
+          1716.946
         ],
         [
           1200.75,
-          4746.188
+          1688.168
         ],
         [
           1225.5,
-          5061.75
+          1654.014
         ],
         [
           1250.25,
-          5389.688
+          1615.07
         ],
         [
           1275.0,
-          5730.0
+          1572.0
         ],
         [
           1299.75,
-          6082.688
+          1525.543
         ],
         [
           1324.5,
-          6447.75
+          1476.492
         ],
         [
           1349.25,
-          6825.188
+          1425.688
         ],
         [
           1374.0,
-          7215.0
+          1374.0
         ],
         [
           1398.75,
-          7617.188
+          1322.312
         ],
         [
           1423.5,
-          8031.75
+          1271.508
         ],
         [
           1448.25,
-          8458.688
+          1222.457
         ],
         [
           1473.0,
-          8898.0
+          1176.0
         ],
         [
           1497.75,
-          9349.688
+          1132.93
         ],
         [
           1522.5,
-          9813.75
+          1093.986
         ],
         [
           1547.25,
-          10290.188
+          1059.832
         ],
         [
           1572.0,
-          10779.0
+          1031.054
         ],
         [
           1596.75,
-          11280.188
+          1008.144
         ],
         [
           1621.5,
-          11793.75
+          991.493
         ],
         [
           1646.25,
-          12319.688
+          981.388
         ],
         [
           1671.0,
-          12858.0
+          978.0
         ],
         [
           1695.75,
-          13408.688
+          981.388
         ],
         [
           1720.5,
-          13971.75
+          991.493
         ],
         [
           1745.25,
-          14547.188
+          1008.144
         ],
         [
           1770.0,
-          15135.0
+          1031.054
+        ],
+        [
+          1794.75,
+          1059.832
+        ],
+        [
+          1819.5,
+          1093.986
+        ],
+        [
+          1844.25,
+          1132.93
+        ],
+        [
+          1869.0,
+          1176.0
+        ],
+        [
+          1893.75,
+          1222.457
+        ],
+        [
+          1918.5,
+          1271.508
+        ],
+        [
+          1943.25,
+          1322.312
+        ],
+        [
+          1968.0,
+          1374.0
         ]
       ],
       "query_line_y": null,
-      "scene_variant": "quadratic"
+      "scene_variant": "sinusoid"
     },
     "render_spec": {
       "background_style": {
@@ -965,7 +1101,7 @@
         "edits": [],
         "enabled": true
       },
-      "scene_variant": "quadratic",
+      "scene_variant": "sinusoid",
       "shape_style": {
         "label_color": [
           81,
@@ -989,17 +1125,19 @@
         {
           "entity_id": "function_graph",
           "entity_type": "function_graph",
-          "family": "quadratic",
+          "family": "sinusoid",
           "parameters": {
-            "a": -1,
-            "h": -4,
-            "k": 1
+            "amplitude": 4,
+            "family_form": "cosine",
+            "midline_y": -4,
+            "period": 12,
+            "phase_shift": -5
           }
         }
       ],
       "relations": {
         "query_variant": "x_intercept_count",
-        "scene_variant": "quadratic",
+        "scene_variant": "sinusoid",
         "target_count": 2,
         "task_variant": "x_intercept_count"
       },

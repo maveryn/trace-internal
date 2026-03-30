@@ -274,6 +274,11 @@ def test_geometry_solid_view_count_tracks_scene_and_query_variants(
     (
         ("quadratic", "x_intercept_count", 2),
         ("absolute_value", "horizontal_line_intersection_count", 1),
+        ("cubic", "x_intercept_count", 3),
+        ("sinusoid", "horizontal_line_intersection_count", 4),
+        ("sinusoid", "turning_point_count", 4),
+        ("sinusoid", "local_minima_count", 2),
+        ("sinusoid", "local_maxima_count", 2),
         ("piecewise_linear", "turning_point_count", 3),
         ("piecewise_linear", "local_minima_count", 2),
         ("piecewise_linear", "local_maxima_count", 2),

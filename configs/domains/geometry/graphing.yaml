@@ -4,6 +4,13 @@ generation:
     quadratic_horizontal_support: [0, 1, 2]
     absolute_value_x_intercept_support: [0, 1, 2]
     absolute_value_horizontal_support: [0, 1, 2]
+    cubic_x_intercept_support: [1, 2, 3]
+    cubic_horizontal_support: [1, 2, 3]
+    sinusoid_x_intercept_support: [0, 1, 2, 3, 4]
+    sinusoid_horizontal_support: [0, 1, 2, 3, 4]
+    sinusoid_turning_support: [3, 4]
+    sinusoid_local_minima_support: [1, 2]
+    sinusoid_local_maxima_support: [1, 2]
     piecewise_x_intercept_support: [0, 1, 2, 3, 4]
     piecewise_horizontal_support: [0, 1, 2, 3, 4]
     piecewise_turning_support: [0, 1, 2, 3, 4]
@@ -17,6 +24,8 @@ generation:
       scene_variant_weights:
         quadratic: 1.0
         absolute_value: 1.0
+        cubic: 1.0
+        sinusoid: 1.0
         piecewise_linear: 1.0
       query_variant_weights:
         x_intercept_count: 1.0
@@ -47,12 +56,16 @@ prompt:
     bundle_id: geometry_graphing_v1
     task_family_key: graphing_scene
     task_key: graphing_query
-    object_description_quadratic: a plotted quadratic curve on graph paper
-    object_description_quadratic_with_guide_line: a plotted quadratic curve on graph paper and a dashed horizontal guide line
-    object_description_absolute_value: a plotted absolute-value graph on graph paper
-    object_description_absolute_value_with_guide_line: a plotted absolute-value graph on graph paper and a dashed horizontal guide line
-    object_description_piecewise_linear: a plotted piecewise-linear graph on graph paper
-    object_description_piecewise_linear_with_guide_line: a plotted piecewise-linear graph on graph paper and a dashed horizontal guide line
+    object_description_quadratic: a plotted function graph on graph paper
+    object_description_quadratic_with_guide_line: a plotted function graph on graph paper and a dashed horizontal guide line
+    object_description_absolute_value: a plotted function graph on graph paper
+    object_description_absolute_value_with_guide_line: a plotted function graph on graph paper and a dashed horizontal guide line
+    object_description_cubic: a plotted function graph on graph paper
+    object_description_cubic_with_guide_line: a plotted function graph on graph paper and a dashed horizontal guide line
+    object_description_sinusoid: a plotted function graph on graph paper
+    object_description_sinusoid_with_guide_line: a plotted function graph on graph paper and a dashed horizontal guide line
+    object_description_piecewise_linear: a plotted function graph on graph paper
+    object_description_piecewise_linear_with_guide_line: a plotted function graph on graph paper and a dashed horizontal guide line
     answer_hint_integer: 'set "answer" to the requested count as an integer'
     evidence_hint_graph_point_set: 'set "evidence" to an array of every graph-paper coordinate [x, y] that satisfies the question; use [] when there are none'
 

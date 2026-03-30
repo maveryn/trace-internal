@@ -7,20 +7,20 @@
     "type": "graph_point_set",
     "value": [
       [
-        -6,
-        4
+        -9,
+        -1
       ],
       [
-        -2,
-        4
+        -3,
+        -1
       ],
       [
-        2,
-        4
+        3,
+        -1
       ],
       [
-        6,
-        4
+        9,
+        -1
       ]
     ]
   },
@@ -29,10 +29,10 @@
     "path": "geometry/task_geometry_graphing_count/images/horizontal_line_intersection_count/0022.png"
   },
   "instance_seed": 6260313537047981,
-  "prompt": "Look at the graph-paper plot showing a plotted piecewise-linear graph on graph paper and a dashed horizontal guide line. Use the plotted graph and axes to answer the question. How many times does the graph intersect the dashed line y = 4 in the shown window?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array of every graph-paper coordinate [x, y] that satisfies the question; use [] when there are none.\nAnswer format: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"evidence\":[[0,0],[4,0],[4,2],[0,2]],\"answer\":8}",
+  "prompt": "Look at the graph-paper plot showing a plotted function graph on graph paper and a dashed horizontal guide line. Use the plotted graph and axes to answer the question. How many times does the graph intersect the dashed line y = -1 in the shown window?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array of every graph-paper coordinate [x, y] that satisfies the question; use [] when there are none.\nAnswer format: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"evidence\":[[0,0],[4,0],[4,2],[0,2]],\"answer\":8}",
   "prompt_variants": {
-    "answer_and_evidence": "Look at the graph-paper plot showing a plotted piecewise-linear graph on graph paper and a dashed horizontal guide line. Use the plotted graph and axes to answer the question. How many times does the graph intersect the dashed line y = 4 in the shown window?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array of every graph-paper coordinate [x, y] that satisfies the question; use [] when there are none.\nAnswer format: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"evidence\":[[0,0],[4,0],[4,2],[0,2]],\"answer\":8}",
-    "answer_only": "Look at the graph-paper plot showing a plotted piecewise-linear graph on graph paper and a dashed horizontal guide line. Use the plotted graph and axes to answer the question. How many times does the graph intersect the dashed line y = 4 in the shown window?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"answer\":8}"
+    "answer_and_evidence": "Look at the graph-paper plot showing a plotted function graph on graph paper and a dashed horizontal guide line. Use the plotted graph and axes to answer the question. How many times does the graph intersect the dashed line y = -1 in the shown window?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array of every graph-paper coordinate [x, y] that satisfies the question; use [] when there are none.\nAnswer format: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"evidence\":[[0,0],[4,0],[4,2],[0,2]],\"answer\":8}",
+    "answer_only": "Look at the graph-paper plot showing a plotted function graph on graph paper and a dashed horizontal guide line. Use the plotted graph and axes to answer the question. How many times does the graph intersect the dashed line y = -1 in the shown window?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"answer\":8}"
   },
   "task": "task_geometry_graphing_count",
   "task_variant": "horizontal_line_intersection_count",
@@ -40,62 +40,31 @@
     "execution_trace": {
       "evidence_points_graph": [
         [
-          -6,
-          4
+          -9,
+          -1
         ],
         [
-          -2,
-          4
+          -3,
+          -1
         ],
         [
-          2,
-          4
+          3,
+          -1
         ],
         [
-          6,
-          4
+          9,
+          -1
         ]
       ],
-      "family": "piecewise_linear",
-      "polyline_vertices_graph": [
-        [
-          -8,
-          8
-        ],
-        [
-          -6,
-          4
-        ],
-        [
-          -4,
-          1
-        ],
-        [
-          -2,
-          4
-        ],
-        [
-          0,
-          8
-        ],
-        [
-          2,
-          4
-        ],
-        [
-          4,
-          1
-        ],
-        [
-          6,
-          4
-        ],
-        [
-          8,
-          6
-        ]
-      ],
-      "query_line_y": 4,
+      "family": "sinusoid",
+      "parameters": {
+        "amplitude": 3,
+        "family_form": "cosine",
+        "midline_y": -1,
+        "period": 12,
+        "phase_shift": 0
+      },
+      "query_line_y": -1,
       "query_variant": "horizontal_line_intersection_count",
       "query_variant_probabilities": {
         "horizontal_line_intersection_count": 1.0,
@@ -111,11 +80,13 @@
         "point_3",
         "point_4"
       ],
-      "scene_variant": "piecewise_linear",
+      "scene_variant": "sinusoid",
       "scene_variant_probabilities": {
         "absolute_value": 0.0,
-        "piecewise_linear": 1.0,
-        "quadratic": 0.0
+        "cubic": 0.0,
+        "piecewise_linear": 0.5,
+        "quadratic": 0.0,
+        "sinusoid": 0.5
       },
       "target_count": 4,
       "target_count_probabilities": {
@@ -137,110 +108,110 @@
     "projected_evidence": {
       "grid_point_map": {
         "point_1": [
-          -6,
-          4
+          -9,
+          -1
         ],
         "point_2": [
-          -2,
-          4
+          -3,
+          -1
         ],
         "point_3": [
-          2,
-          4
+          3,
+          -1
         ],
         "point_4": [
-          6,
-          4
+          9,
+          -1
         ]
       },
       "grid_point_path": [
         [
-          -6,
-          4
+          -9,
+          -1
         ],
         [
-          -2,
-          4
+          -3,
+          -1
         ],
         [
-          2,
-          4
+          3,
+          -1
         ],
         [
-          6,
-          4
+          9,
+          -1
         ]
       ],
       "grid_point_set": [
         [
-          -6,
-          4
+          -9,
+          -1
         ],
         [
-          -2,
-          4
+          -3,
+          -1
         ],
         [
-          2,
-          4
+          3,
+          -1
         ],
         [
-          6,
-          4
+          9,
+          -1
         ]
       ],
       "pixel_point_map": {
         "point_1": [
-          134.0,
-          200.0
+          35.0,
+          365.0
         ],
         "point_2": [
-          266.0,
-          200.0
+          233.0,
+          365.0
         ],
         "point_3": [
-          398.0,
-          200.0
+          431.0,
+          365.0
         ],
         "point_4": [
-          530.0,
-          200.0
+          629.0,
+          365.0
         ]
       },
       "pixel_point_path": [
         [
-          134.0,
-          200.0
+          35.0,
+          365.0
         ],
         [
-          266.0,
-          200.0
+          233.0,
+          365.0
         ],
         [
-          398.0,
-          200.0
+          431.0,
+          365.0
         ],
         [
-          530.0,
-          200.0
+          629.0,
+          365.0
         ]
       ],
       "pixel_point_set": [
         [
-          134.0,
-          200.0
+          35.0,
+          365.0
         ],
         [
-          266.0,
-          200.0
+          233.0,
+          365.0
         ],
         [
-          398.0,
-          200.0
+          431.0,
+          365.0
         ],
         [
-          530.0,
-          200.0
+          629.0,
+          365.0
         ]
       ]
     },
@@ -254,11 +225,13 @@
           "turning_point_count": 0.0,
           "x_intercept_count": 0.0
         },
-        "scene_variant": "piecewise_linear",
+        "scene_variant": "sinusoid",
         "scene_variant_probabilities": {
           "absolute_value": 0.0,
-          "piecewise_linear": 1.0,
-          "quadratic": 0.0
+          "cubic": 0.0,
+          "piecewise_linear": 0.5,
+          "quadratic": 0.0,
+          "sinusoid": 0.5
         },
         "target_count": 4,
         "target_count_probabilities": {
@@ -289,8 +262,8 @@
           "json_example_answer_only": "{\"answer\":8}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "object_description": "a plotted piecewise-linear graph on graph paper and a dashed horizontal guide line",
-          "query_line_equation": "y = 4"
+          "object_description": "a plotted function graph on graph paper and a dashed horizontal guide line",
+          "query_line_equation": "y = -1"
         },
         "task_family_key": "graphing_scene",
         "task_family_variant_index": 1,
@@ -323,8 +296,8 @@
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a plotted piecewise-linear graph on graph paper and a dashed horizontal guide line",
-              "query_line_equation": "y = 4"
+              "object_description": "a plotted function graph on graph paper and a dashed horizontal guide line",
+              "query_line_equation": "y = -1"
             },
             "task_family_key": "graphing_scene",
             "task_family_variant_index": 1,
@@ -342,7 +315,7 @@
               "task_variant:horizontal_line_intersection_count": 5
             }
           },
-          "prompt": "Look at the graph-paper plot showing a plotted piecewise-linear graph on graph paper and a dashed horizontal guide line. Use the plotted graph and axes to answer the question. How many times does the graph intersect the dashed line y = 4 in the shown window?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array of every graph-paper coordinate [x, y] that satisfies the question; use [] when there are none.\nAnswer format: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"evidence\":[[0,0],[4,0],[4,2],[0,2]],\"answer\":8}"
+          "prompt": "Look at the graph-paper plot showing a plotted function graph on graph paper and a dashed horizontal guide line. Use the plotted graph and axes to answer the question. How many times does the graph intersect the dashed line y = -1 in the shown window?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array of every graph-paper coordinate [x, y] that satisfies the question; use [] when there are none.\nAnswer format: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"evidence\":[[0,0],[4,0],[4,2],[0,2]],\"answer\":8}"
         },
         "answer_only": {
           "metadata": {
@@ -357,8 +330,8 @@
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a plotted piecewise-linear graph on graph paper and a dashed horizontal guide line",
-              "query_line_equation": "y = 4"
+              "object_description": "a plotted function graph on graph paper and a dashed horizontal guide line",
+              "query_line_equation": "y = -1"
             },
             "task_family_key": "graphing_scene",
             "task_family_variant_index": 1,
@@ -376,7 +349,7 @@
               "task_variant:horizontal_line_intersection_count": 5
             }
           },
-          "prompt": "Look at the graph-paper plot showing a plotted piecewise-linear graph on graph paper and a dashed horizontal guide line. Use the plotted graph and axes to answer the question. How many times does the graph intersect the dashed line y = 4 in the shown window?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"answer\":8}"
+          "prompt": "Look at the graph-paper plot showing a plotted function graph on graph paper and a dashed horizontal guide line. Use the plotted graph and axes to answer the question. How many times does the graph intersect the dashed line y = -1 in the shown window?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"answer\":8}"
         }
       },
       "task_variant": "horizontal_line_intersection_count",
@@ -385,164 +358,709 @@
     "render_map": {
       "evidence_points_graph": [
         [
-          -6,
-          4
+          -9,
+          -1
         ],
         [
-          -2,
-          4
+          -3,
+          -1
         ],
         [
-          2,
-          4
+          3,
+          -1
         ],
         [
-          6,
-          4
+          9,
+          -1
         ]
       ],
+      "function_parameters": {
+        "amplitude": 3,
+        "family_form": "cosine",
+        "midline_y": -1,
+        "period": 12,
+        "phase_shift": 0
+      },
       "function_polyline_pixel": [
         [
+          2.0,
+          315.5
+        ],
+        [
+          10.25,
+          327.114
+        ],
+        [
+          18.5,
+          339.377
+        ],
+        [
+          26.75,
+          352.078
+        ],
+        [
+          35.0,
+          365.0
+        ],
+        [
+          43.25,
+          377.922
+        ],
+        [
+          51.5,
+          390.623
+        ],
+        [
+          59.75,
+          402.886
+        ],
+        [
           68.0,
-          68.0
+          414.5
+        ],
+        [
+          76.25,
+          425.267
+        ],
+        [
+          84.5,
+          435.004
+        ],
+        [
+          92.75,
+          443.542
+        ],
+        [
+          101.0,
+          450.737
+        ],
+        [
+          109.25,
+          456.464
+        ],
+        [
+          117.5,
+          460.627
+        ],
+        [
+          125.75,
+          463.153
         ],
         [
           134.0,
-          200.0
+          464.0
+        ],
+        [
+          142.25,
+          463.153
+        ],
+        [
+          150.5,
+          460.627
+        ],
+        [
+          158.75,
+          456.464
+        ],
+        [
+          167.0,
+          450.737
+        ],
+        [
+          175.25,
+          443.542
+        ],
+        [
+          183.5,
+          435.004
+        ],
+        [
+          191.75,
+          425.267
         ],
         [
           200.0,
-          299.0
+          414.5
+        ],
+        [
+          208.25,
+          402.886
+        ],
+        [
+          216.5,
+          390.623
+        ],
+        [
+          224.75,
+          377.922
+        ],
+        [
+          233.0,
+          365.0
+        ],
+        [
+          241.25,
+          352.078
+        ],
+        [
+          249.5,
+          339.377
+        ],
+        [
+          257.75,
+          327.114
         ],
         [
           266.0,
-          200.0
+          315.5
+        ],
+        [
+          274.25,
+          304.733
+        ],
+        [
+          282.5,
+          294.996
+        ],
+        [
+          290.75,
+          286.458
+        ],
+        [
+          299.0,
+          279.263
+        ],
+        [
+          307.25,
+          273.536
+        ],
+        [
+          315.5,
+          269.373
+        ],
+        [
+          323.75,
+          266.847
         ],
         [
           332.0,
-          68.0
+          266.0
+        ],
+        [
+          340.25,
+          266.847
+        ],
+        [
+          348.5,
+          269.373
+        ],
+        [
+          356.75,
+          273.536
+        ],
+        [
+          365.0,
+          279.263
+        ],
+        [
+          373.25,
+          286.458
+        ],
+        [
+          381.5,
+          294.996
+        ],
+        [
+          389.75,
+          304.733
         ],
         [
           398.0,
-          200.0
+          315.5
+        ],
+        [
+          406.25,
+          327.114
+        ],
+        [
+          414.5,
+          339.377
+        ],
+        [
+          422.75,
+          352.078
+        ],
+        [
+          431.0,
+          365.0
+        ],
+        [
+          439.25,
+          377.922
+        ],
+        [
+          447.5,
+          390.623
+        ],
+        [
+          455.75,
+          402.886
         ],
         [
           464.0,
-          299.0
+          414.5
+        ],
+        [
+          472.25,
+          425.267
+        ],
+        [
+          480.5,
+          435.004
+        ],
+        [
+          488.75,
+          443.542
+        ],
+        [
+          497.0,
+          450.737
+        ],
+        [
+          505.25,
+          456.464
+        ],
+        [
+          513.5,
+          460.627
+        ],
+        [
+          521.75,
+          463.153
         ],
         [
           530.0,
-          200.0
+          464.0
+        ],
+        [
+          538.25,
+          463.153
+        ],
+        [
+          546.5,
+          460.627
+        ],
+        [
+          554.75,
+          456.464
+        ],
+        [
+          563.0,
+          450.737
+        ],
+        [
+          571.25,
+          443.542
+        ],
+        [
+          579.5,
+          435.004
+        ],
+        [
+          587.75,
+          425.267
         ],
         [
           596.0,
-          134.0
+          414.5
+        ],
+        [
+          604.25,
+          402.886
+        ],
+        [
+          612.5,
+          390.623
+        ],
+        [
+          620.75,
+          377.922
+        ],
+        [
+          629.0,
+          365.0
+        ],
+        [
+          637.25,
+          352.078
+        ],
+        [
+          645.5,
+          339.377
+        ],
+        [
+          653.75,
+          327.114
+        ],
+        [
+          662.0,
+          315.5
         ]
       ],
       "function_polyline_render": [
         [
+          6.0,
+          946.5
+        ],
+        [
+          30.75,
+          981.343
+        ],
+        [
+          55.5,
+          1018.131
+        ],
+        [
+          80.25,
+          1056.234
+        ],
+        [
+          105.0,
+          1095.0
+        ],
+        [
+          129.75,
+          1133.766
+        ],
+        [
+          154.5,
+          1171.869
+        ],
+        [
+          179.25,
+          1208.657
+        ],
+        [
           204.0,
-          204.0
+          1243.5
+        ],
+        [
+          228.75,
+          1275.802
+        ],
+        [
+          253.5,
+          1305.011
+        ],
+        [
+          278.25,
+          1330.626
+        ],
+        [
+          303.0,
+          1352.21
+        ],
+        [
+          327.75,
+          1369.392
+        ],
+        [
+          352.5,
+          1381.88
+        ],
+        [
+          377.25,
+          1389.459
         ],
         [
           402.0,
-          600.0
+          1392.0
+        ],
+        [
+          426.75,
+          1389.459
+        ],
+        [
+          451.5,
+          1381.88
+        ],
+        [
+          476.25,
+          1369.392
+        ],
+        [
+          501.0,
+          1352.21
+        ],
+        [
+          525.75,
+          1330.626
+        ],
+        [
+          550.5,
+          1305.011
+        ],
+        [
+          575.25,
+          1275.802
         ],
         [
           600.0,
-          897.0
+          1243.5
+        ],
+        [
+          624.75,
+          1208.657
+        ],
+        [
+          649.5,
+          1171.869
+        ],
+        [
+          674.25,
+          1133.766
+        ],
+        [
+          699.0,
+          1095.0
+        ],
+        [
+          723.75,
+          1056.234
+        ],
+        [
+          748.5,
+          1018.131
+        ],
+        [
+          773.25,
+          981.343
         ],
         [
           798.0,
-          600.0
+          946.5
+        ],
+        [
+          822.75,
+          914.198
+        ],
+        [
+          847.5,
+          884.989
+        ],
+        [
+          872.25,
+          859.374
+        ],
+        [
+          897.0,
+          837.79
+        ],
+        [
+          921.75,
+          820.608
+        ],
+        [
+          946.5,
+          808.12
+        ],
+        [
+          971.25,
+          800.541
         ],
         [
           996.0,
-          204.0
+          798.0
+        ],
+        [
+          1020.75,
+          800.541
+        ],
+        [
+          1045.5,
+          808.12
+        ],
+        [
+          1070.25,
+          820.608
+        ],
+        [
+          1095.0,
+          837.79
+        ],
+        [
+          1119.75,
+          859.374
+        ],
+        [
+          1144.5,
+          884.989
+        ],
+        [
+          1169.25,
+          914.198
         ],
         [
           1194.0,
-          600.0
+          946.5
+        ],
+        [
+          1218.75,
+          981.343
+        ],
+        [
+          1243.5,
+          1018.131
+        ],
+        [
+          1268.25,
+          1056.234
+        ],
+        [
+          1293.0,
+          1095.0
+        ],
+        [
+          1317.75,
+          1133.766
+        ],
+        [
+          1342.5,
+          1171.869
+        ],
+        [
+          1367.25,
+          1208.657
         ],
         [
           1392.0,
-          897.0
+          1243.5
+        ],
+        [
+          1416.75,
+          1275.802
+        ],
+        [
+          1441.5,
+          1305.011
+        ],
+        [
+          1466.25,
+          1330.626
+        ],
+        [
+          1491.0,
+          1352.21
+        ],
+        [
+          1515.75,
+          1369.392
+        ],
+        [
+          1540.5,
+          1381.88
+        ],
+        [
+          1565.25,
+          1389.459
         ],
         [
           1590.0,
-          600.0
+          1392.0
+        ],
+        [
+          1614.75,
+          1389.459
+        ],
+        [
+          1639.5,
+          1381.88
+        ],
+        [
+          1664.25,
+          1369.392
+        ],
+        [
+          1689.0,
+          1352.21
+        ],
+        [
+          1713.75,
+          1330.626
+        ],
+        [
+          1738.5,
+          1305.011
+        ],
+        [
+          1763.25,
+          1275.802
         ],
         [
           1788.0,
-          402.0
-        ]
-      ],
-      "polyline_vertices_graph": [
-        [
-          -8,
-          8
+          1243.5
         ],
         [
-          -6,
-          4
+          1812.75,
+          1208.657
         ],
         [
-          -4,
-          1
+          1837.5,
+          1171.869
         ],
         [
-          -2,
-          4
+          1862.25,
+          1133.766
         ],
         [
-          0,
-          8
+          1887.0,
+          1095.0
         ],
         [
-          2,
-          4
+          1911.75,
+          1056.234
         ],
         [
-          4,
-          1
+          1936.5,
+          1018.131
         ],
         [
-          6,
-          4
+          1961.25,
+          981.343
         ],
         [
-          8,
-          6
+          1986.0,
+          946.5
         ]
       ],
       "query_label_bbox": [
-        575.5,
-        175.667,
-        646.5,
-        200.333
+        570.5,
+        340.667,
+        651.5,
+        365.333
       ],
       "query_line_pixel": [
         [
           35.0,
-          200.0
+          365.0
         ],
         [
           629.0,
-          200.0
+          365.0
         ]
       ],
       "query_line_render": [
         [
           105.0,
-          600.0
+          1095.0
         ],
         [
           1887.0,
-          600.0
+          1095.0
         ]
       ],
-      "query_line_y": 4,
-      "scene_variant": "piecewise_linear"
+      "query_line_y": -1,
+      "scene_variant": "sinusoid"
     },
     "render_spec": {
       "background_style": {
@@ -683,7 +1201,7 @@
         "edits": [],
         "enabled": true
       },
-      "scene_variant": "piecewise_linear",
+      "scene_variant": "sinusoid",
       "shape_style": {
         "label_color": [
           21,
@@ -707,50 +1225,19 @@
         {
           "entity_id": "function_graph",
           "entity_type": "function_graph",
-          "family": "piecewise_linear",
-          "vertices_graph": [
-            [
-              -8,
-              8
-            ],
-            [
-              -6,
-              4
-            ],
-            [
-              -4,
-              1
-            ],
-            [
-              -2,
-              4
-            ],
-            [
-              0,
-              8
-            ],
-            [
-              2,
-              4
-            ],
-            [
-              4,
-              1
-            ],
-            [
-              6,
-              4
-            ],
-            [
-              8,
-              6
-            ]
-          ]
+          "family": "sinusoid",
+          "parameters": {
+            "amplitude": 3,
+            "family_form": "cosine",
+            "midline_y": -1,
+            "period": 12,
+            "phase_shift": 0
+          }
         }
       ],
       "relations": {
         "query_variant": "horizontal_line_intersection_count",
-        "scene_variant": "piecewise_linear",
+        "scene_variant": "sinusoid",
         "target_count": 4,
         "task_variant": "horizontal_line_intersection_count"
       },

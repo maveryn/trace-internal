@@ -14,7 +14,7 @@ Use this whenever the task lives under `domain=geometry`.
 4. `docs/workflows/SHARED_UTILITIES.md`
 
 ## Geometry-domain rules
-- Geometry currently uses five consolidated value tasks plus five distinct visual families: `task_geometry_measurement_value`, `task_geometry_comparison_value`, `task_geometry_counting_value`, `task_geometry_analytical_2d_value`, `task_geometry_analytical_3d_value`, `task_geometry_transformation_match`, `task_geometry_similarity_count`, `task_geometry_coordinate_relation`, `task_geometry_solid_view_count`, and `task_geometry_graphing_count`.
+- Geometry currently uses five consolidated value tasks plus five distinct visual families: `task_geometry_measurement_value`, `task_geometry_comparison_value`, `task_geometry_counting_value`, `task_geometry_analytical_2d_value`, `task_geometry_analytical_3d_value`, `task_geometry_transformation_match`, `task_geometry_similarity_count`, `task_geometry_coordinate_relation`, `task_geometry_solid_view_count`, and `task_geometry_graphing_count` (now spanning quadratic, absolute-value, cubic, sinusoidal, and piecewise plotted curves).
 - Active geometry tasks follow a chart-style two-axis contract: `scene_variant` names the geometric scene family, while `query_variant` names the requested question type.
 - Measurement tasks use graph-paper-style coordinate grounding and geometry shared helpers.
 - Analytical 2D / 3D tasks use structured `measurement_ref_map` evidence.

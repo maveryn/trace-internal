@@ -12,10 +12,10 @@
     "path": "geometry/task_geometry_graphing_count/images/horizontal_line_intersection_count/0019.png"
   },
   "instance_seed": 8628631788853728,
-  "prompt": "Use the graph-paper graph with a plotted quadratic curve on graph paper and a dashed horizontal guide line. Read the entire graph-paper plot carefully, then answer the question. How many times does the graph intersect the dashed line y = 5 in the shown window?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array of every graph-paper coordinate [x, y] that satisfies the question; use [] when there are none.\nAnswer format: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"evidence\":[],\"answer\":8}",
+  "prompt": "Use the graph-paper graph with a plotted function graph on graph paper and a dashed horizontal guide line. Read the entire graph-paper plot carefully, then answer the question. How many times does the graph intersect the dashed line y = 5 in the shown window?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array of every graph-paper coordinate [x, y] that satisfies the question; use [] when there are none.\nAnswer format: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"evidence\":[],\"answer\":8}",
   "prompt_variants": {
-    "answer_and_evidence": "Use the graph-paper graph with a plotted quadratic curve on graph paper and a dashed horizontal guide line. Read the entire graph-paper plot carefully, then answer the question. How many times does the graph intersect the dashed line y = 5 in the shown window?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array of every graph-paper coordinate [x, y] that satisfies the question; use [] when there are none.\nAnswer format: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"evidence\":[],\"answer\":8}",
-    "answer_only": "Use the graph-paper graph with a plotted quadratic curve on graph paper and a dashed horizontal guide line. Read the entire graph-paper plot carefully, then answer the question. How many times does the graph intersect the dashed line y = 5 in the shown window?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"answer\":8}"
+    "answer_and_evidence": "Use the graph-paper graph with a plotted function graph on graph paper and a dashed horizontal guide line. Read the entire graph-paper plot carefully, then answer the question. How many times does the graph intersect the dashed line y = 5 in the shown window?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array of every graph-paper coordinate [x, y] that satisfies the question; use [] when there are none.\nAnswer format: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"evidence\":[],\"answer\":8}",
+    "answer_only": "Use the graph-paper graph with a plotted function graph on graph paper and a dashed horizontal guide line. Read the entire graph-paper plot carefully, then answer the question. How many times does the graph intersect the dashed line y = 5 in the shown window?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"answer\":8}"
   },
   "task": "task_geometry_graphing_count",
   "task_variant": "horizontal_line_intersection_count",
@@ -41,9 +41,11 @@
       "required_evidence_labels": [],
       "scene_variant": "quadratic",
       "scene_variant_probabilities": {
-        "absolute_value": 0.3333333333333333,
-        "piecewise_linear": 0.3333333333333333,
-        "quadratic": 0.3333333333333333
+        "absolute_value": 0.25,
+        "cubic": 0.0,
+        "piecewise_linear": 0.25,
+        "quadratic": 0.25,
+        "sinusoid": 0.25
       },
       "target_count": 0,
       "target_count_probabilities": {
@@ -79,9 +81,11 @@
         },
         "scene_variant": "quadratic",
         "scene_variant_probabilities": {
-          "absolute_value": 0.3333333333333333,
-          "piecewise_linear": 0.3333333333333333,
-          "quadratic": 0.3333333333333333
+          "absolute_value": 0.25,
+          "cubic": 0.0,
+          "piecewise_linear": 0.25,
+          "quadratic": 0.25,
+          "sinusoid": 0.25
         },
         "target_count": 0,
         "target_count_probabilities": {
@@ -112,7 +116,7 @@
           "json_example_answer_only": "{\"answer\":8}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "object_description": "a plotted quadratic curve on graph paper and a dashed horizontal guide line",
+          "object_description": "a plotted function graph on graph paper and a dashed horizontal guide line",
           "query_line_equation": "y = 5"
         },
         "task_family_key": "graphing_scene",
@@ -146,7 +150,7 @@
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a plotted quadratic curve on graph paper and a dashed horizontal guide line",
+              "object_description": "a plotted function graph on graph paper and a dashed horizontal guide line",
               "query_line_equation": "y = 5"
             },
             "task_family_key": "graphing_scene",
@@ -165,7 +169,7 @@
               "task_variant:horizontal_line_intersection_count": 5
             }
           },
-          "prompt": "Use the graph-paper graph with a plotted quadratic curve on graph paper and a dashed horizontal guide line. Read the entire graph-paper plot carefully, then answer the question. How many times does the graph intersect the dashed line y = 5 in the shown window?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array of every graph-paper coordinate [x, y] that satisfies the question; use [] when there are none.\nAnswer format: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"evidence\":[],\"answer\":8}"
+          "prompt": "Use the graph-paper graph with a plotted function graph on graph paper and a dashed horizontal guide line. Read the entire graph-paper plot carefully, then answer the question. How many times does the graph intersect the dashed line y = 5 in the shown window?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array of every graph-paper coordinate [x, y] that satisfies the question; use [] when there are none.\nAnswer format: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"evidence\":[],\"answer\":8}"
         },
         "answer_only": {
           "metadata": {
@@ -180,7 +184,7 @@
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a plotted quadratic curve on graph paper and a dashed horizontal guide line",
+              "object_description": "a plotted function graph on graph paper and a dashed horizontal guide line",
               "query_line_equation": "y = 5"
             },
             "task_family_key": "graphing_scene",
@@ -199,7 +203,7 @@
               "task_variant:horizontal_line_intersection_count": 5
             }
           },
-          "prompt": "Use the graph-paper graph with a plotted quadratic curve on graph paper and a dashed horizontal guide line. Read the entire graph-paper plot carefully, then answer the question. How many times does the graph intersect the dashed line y = 5 in the shown window?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"answer\":8}"
+          "prompt": "Use the graph-paper graph with a plotted function graph on graph paper and a dashed horizontal guide line. Read the entire graph-paper plot carefully, then answer the question. How many times does the graph intersect the dashed line y = 5 in the shown window?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"answer\":8}"
         }
       },
       "task_variant": "horizontal_line_intersection_count",

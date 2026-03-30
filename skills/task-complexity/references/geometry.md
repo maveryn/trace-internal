@@ -139,7 +139,7 @@ output_burden: 0.14
 ```
 
 Measure:
-- scene-family difficulty (`quadratic` < `absolute_value` < `piecewise_linear`),
+- scene-family difficulty (`quadratic` < `absolute_value` < `cubic` < `piecewise_linear ≈ sinusoid`),
 - query difficulty (`x_intercept_count` < `horizontal_line_intersection_count` < `turning_point_count ≈ local_minima_count ≈ local_maxima_count`),
 - whether the scene includes one extra dashed horizontal guide line,
 - prompt-facing `graph_point_set` burden from the visible witness coordinates.

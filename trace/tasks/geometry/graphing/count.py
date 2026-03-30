@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
@@ -65,6 +66,8 @@ LOCAL_MAXIMA_COUNT = "local_maxima_count"
 SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = (
     "quadratic",
     "absolute_value",
+    "cubic",
+    "sinusoid",
     "piecewise_linear",
 )
 SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = (
@@ -77,6 +80,14 @@ SUPPORTED_QUERY_VARIANTS: Tuple[str, ...] = (
 COMPATIBILITY: Dict[str, Sequence[str]] = {
     "quadratic": (X_INTERCEPT_COUNT, HORIZONTAL_LINE_INTERSECTION_COUNT),
     "absolute_value": (X_INTERCEPT_COUNT, HORIZONTAL_LINE_INTERSECTION_COUNT),
+    "cubic": (X_INTERCEPT_COUNT, HORIZONTAL_LINE_INTERSECTION_COUNT),
+    "sinusoid": (
+        X_INTERCEPT_COUNT,
+        HORIZONTAL_LINE_INTERSECTION_COUNT,
+        TURNING_POINT_COUNT,
+        LOCAL_MINIMA_COUNT,
+        LOCAL_MAXIMA_COUNT,
+    ),
     "piecewise_linear": (
         X_INTERCEPT_COUNT,
         HORIZONTAL_LINE_INTERSECTION_COUNT,
@@ -110,6 +121,13 @@ class _TaskDefaults:
     quadratic_horizontal_support: Tuple[int, ...] = (0, 1, 2)
     absolute_value_x_intercept_support: Tuple[int, ...] = (0, 1, 2)
     absolute_value_horizontal_support: Tuple[int, ...] = (0, 1, 2)
+    cubic_x_intercept_support: Tuple[int, ...] = (1, 2, 3)
+    cubic_horizontal_support: Tuple[int, ...] = (1, 2, 3)
+    sinusoid_x_intercept_support: Tuple[int, ...] = (0, 1, 2, 3, 4)
+    sinusoid_horizontal_support: Tuple[int, ...] = (0, 1, 2, 3, 4)
+    sinusoid_turning_support: Tuple[int, ...] = (3, 4)
+    sinusoid_local_minima_support: Tuple[int, ...] = (1, 2)
+    sinusoid_local_maxima_support: Tuple[int, ...] = (1, 2)
     piecewise_x_intercept_support: Tuple[int, ...] = (0, 1, 2, 3, 4)
     piecewise_horizontal_support: Tuple[int, ...] = (0, 1, 2, 3, 4)
     piecewise_turning_support: Tuple[int, ...] = (0, 1, 2, 3, 4)
@@ -207,6 +225,41 @@ def _count_target_support(*, scene_variant: str, query_variant: str) -> Tuple[in
             _GEN_DEFAULTS,
             "absolute_value_horizontal_support",
             _DEFAULTS.absolute_value_horizontal_support,
+        ),
+        ("cubic", X_INTERCEPT_COUNT): _int_tuple_default(
+            _GEN_DEFAULTS,
+            "cubic_x_intercept_support",
+            _DEFAULTS.cubic_x_intercept_support,
+        ),
+        ("cubic", HORIZONTAL_LINE_INTERSECTION_COUNT): _int_tuple_default(
+            _GEN_DEFAULTS,
+            "cubic_horizontal_support",
+            _DEFAULTS.cubic_horizontal_support,
+        ),
+        ("sinusoid", X_INTERCEPT_COUNT): _int_tuple_default(
+            _GEN_DEFAULTS,
+            "sinusoid_x_intercept_support",
+            _DEFAULTS.sinusoid_x_intercept_support,
+        ),
+        ("sinusoid", HORIZONTAL_LINE_INTERSECTION_COUNT): _int_tuple_default(
+            _GEN_DEFAULTS,
+            "sinusoid_horizontal_support",
+            _DEFAULTS.sinusoid_horizontal_support,
+        ),
+        ("sinusoid", TURNING_POINT_COUNT): _int_tuple_default(
+            _GEN_DEFAULTS,
+            "sinusoid_turning_support",
+            _DEFAULTS.sinusoid_turning_support,
+        ),
+        ("sinusoid", LOCAL_MINIMA_COUNT): _int_tuple_default(
+            _GEN_DEFAULTS,
+            "sinusoid_local_minima_support",
+            _DEFAULTS.sinusoid_local_minima_support,
+        ),
+        ("sinusoid", LOCAL_MAXIMA_COUNT): _int_tuple_default(
+            _GEN_DEFAULTS,
+            "sinusoid_local_maxima_support",
+            _DEFAULTS.sinusoid_local_maxima_support,
         ),
         ("piecewise_linear", X_INTERCEPT_COUNT): _int_tuple_default(
             _GEN_DEFAULTS,
@@ -679,6 +732,348 @@ def _build_absolute_value_scene(
     )
 
 
+def _cubic_sample_points(
+    *,
+    scale_value: float,
+    roots: Sequence[int],
+    baseline_y: int,
+) -> Tuple[GraphPolylinePoint, ...]:
+    """Return dense sample points for one factored cubic graph."""
+
+    root_a, root_b, root_c = (float(value) for value in roots)
+    return tuple(
+        (
+            float(x_value) / 4.0,
+            float(
+                scale_value
+                * (((float(x_value) / 4.0) - root_a) * (((float(x_value) / 4.0) - root_b)) * (((float(x_value) / 4.0) - root_c)))
+                + float(baseline_y)
+            ),
+        )
+        for x_value in range(-40, 41)
+    )
+
+
+def _choose_distinct_integers(
+    rng,
+    *,
+    count: int,
+    support: Sequence[int],
+) -> Tuple[int, ...]:
+    """Choose sorted distinct integers from one finite support."""
+
+    values = [int(value) for value in support]
+    if int(count) > len(values):
+        raise ValueError("requested too many distinct integers")
+    rng.shuffle(values)
+    return tuple(sorted(int(value) for value in values[: int(count)]))
+
+
+def _cubic_roots_for_target(
+    rng,
+    *,
+    target_count: int,
+) -> Tuple[int, int, int]:
+    """Return one integer root multiset with the requested number of distinct roots."""
+
+    support = [-7, -5, -3, -1, 1, 3, 5, 7]
+    if int(target_count) == 1:
+        root = int(_sample_from(support, rng))
+        return (root, root, root)
+    if int(target_count) == 2:
+        first_root, second_root = _choose_distinct_integers(rng, count=2, support=support)
+        duplicate_first = bool(rng.choice((True, False)))
+        return (
+            int(first_root),
+            int(first_root if duplicate_first else second_root),
+            int(second_root if duplicate_first else first_root),
+        )
+    if int(target_count) == 3:
+        roots = _choose_distinct_integers(rng, count=3, support=support)
+        return (int(roots[0]), int(roots[1]), int(roots[2]))
+    raise ValueError(f"unsupported cubic target_count: {target_count}")
+
+
+def _build_cubic_scene(
+    rng,
+    *,
+    query_variant: str,
+    target_count: int,
+) -> _SampledGraphScene:
+    """Sample one factored cubic graph with integer witness coordinates."""
+
+    roots = _cubic_roots_for_target(rng, target_count=int(target_count))
+    scale_value = float(rng.choice((-0.05, -0.04, 0.04, 0.05)))
+    query_line_y: int | None = None
+
+    if str(query_variant) == X_INTERCEPT_COUNT:
+        baseline_y = 0
+        evidence_points = tuple(sorted({(int(root), 0) for root in roots}))
+    elif str(query_variant) == HORIZONTAL_LINE_INTERSECTION_COUNT:
+        baseline_y = int(
+            _sample_from(
+                [value for value in _int_tuple_default(_GEN_DEFAULTS, "horizontal_line_support", _DEFAULTS.horizontal_line_support) if int(value) != 0],
+                rng,
+            )
+        )
+        query_line_y = int(baseline_y)
+        evidence_points = tuple(sorted({(int(root), int(query_line_y)) for root in roots}))
+    else:
+        raise ValueError(f"unsupported cubic query_variant: {query_variant}")
+
+    sample_points = _cubic_sample_points(
+        scale_value=float(scale_value),
+        roots=roots,
+        baseline_y=int(baseline_y),
+    )
+    parameters = {
+        "scale": float(scale_value),
+        "roots": [int(value) for value in roots],
+        "baseline_y": int(baseline_y),
+    }
+    return _SampledGraphScene(
+        polyline_graph=sample_points,
+        evidence_graph_points=tuple(evidence_points),
+        query_line_y=(None if query_line_y is None else int(query_line_y)),
+        scene_entities=[
+            {
+                "entity_id": "function_graph",
+                "entity_type": "function_graph",
+                "family": "cubic",
+                "parameters": dict(parameters),
+            }
+        ],
+        render_map={
+            "scene_variant": "cubic",
+            "function_parameters": dict(parameters),
+            "evidence_points_graph": [list(point) for point in evidence_points],
+            "query_line_y": (None if query_line_y is None else int(query_line_y)),
+        },
+        execution_trace={
+            "family": "cubic",
+            "parameters": dict(parameters),
+            "evidence_points_graph": [list(point) for point in evidence_points],
+            "query_line_y": (None if query_line_y is None else int(query_line_y)),
+        },
+        object_count=1,
+    )
+
+
+def _sinusoid_sample_points(
+    *,
+    amplitude: int,
+    phase_shift: int,
+    midline_y: int,
+) -> Tuple[GraphPolylinePoint, ...]:
+    """Return dense sample points for one constrained cosine curve.
+
+    We use period `12`, so maxima/minima/midline crossings land on integer x
+    coordinates for integer `phase_shift`.
+    """
+
+    return tuple(
+        (
+            float(x_value) / 4.0,
+            float(
+                (float(amplitude) * math.cos((math.pi / 6.0) * (((float(x_value) / 4.0) - float(phase_shift)))))
+                + float(midline_y)
+            ),
+        )
+        for x_value in range(-40, 41)
+    )
+
+
+def _positions_in_window(positions: Sequence[int]) -> Tuple[int, ...]:
+    """Keep only graph-x positions that are visible in the fixed window."""
+
+    return tuple(int(value) for value in positions if -9 <= int(value) <= 9)
+
+
+def _sinusoid_maxima_positions(phase_shift: int) -> Tuple[int, ...]:
+    """Return visible local maxima x-positions for the constrained cosine family."""
+
+    return _positions_in_window([int(phase_shift + (12 * k_value)) for k_value in range(-2, 3)])
+
+
+def _sinusoid_minima_positions(phase_shift: int) -> Tuple[int, ...]:
+    """Return visible local minima x-positions for the constrained cosine family."""
+
+    return _positions_in_window([int(phase_shift + 6 + (12 * k_value)) for k_value in range(-2, 3)])
+
+
+def _sinusoid_midline_positions(phase_shift: int) -> Tuple[int, ...]:
+    """Return visible midline-intersection x-positions for the constrained cosine family."""
+
+    return _positions_in_window([int(phase_shift + 3 + (6 * k_value)) for k_value in range(-3, 4)])
+
+
+def _phase_shift_for_sinusoid_count(*, target_count: int, mode: str) -> int:
+    """Resolve one integer phase shift whose visible witness count matches the target."""
+
+    candidates: List[int] = []
+    for phase_shift in range(-5, 7):
+        if str(mode) == "maxima":
+            count = len(_sinusoid_maxima_positions(int(phase_shift)))
+        elif str(mode) == "minima":
+            count = len(_sinusoid_minima_positions(int(phase_shift)))
+        elif str(mode) == "midline":
+            count = len(_sinusoid_midline_positions(int(phase_shift)))
+        else:
+            raise ValueError(f"unsupported sinusoid mode: {mode}")
+        if int(count) == int(target_count):
+            candidates.append(int(phase_shift))
+    if not candidates:
+        raise ValueError(f"no sinusoid phase_shift supports {mode} target_count={target_count}")
+    return int(candidates[0])
+
+
+def _build_sinusoid_scene(
+    rng,
+    *,
+    query_variant: str,
+    target_count: int,
+) -> _SampledGraphScene:
+    """Sample one constrained cosine curve with integer-coordinate witnesses."""
+
+    amplitude = int(rng.randint(2, 4))
+    query_line_y: int | None = None
+    midline_y = 0
+    evidence_points: Tuple[GraphPoint, ...]
+
+    if str(query_variant) == X_INTERCEPT_COUNT:
+        if int(target_count) == 0:
+            phase_shift = int(_sample_from(range(-5, 7), rng))
+            midline_y = int(rng.choice((amplitude + 1, amplitude + 2, -amplitude - 1, -amplitude - 2)))
+            evidence_points = tuple()
+        elif int(target_count) in {1, 2}:
+            extremum_mode = str(rng.choice(("maxima", "minima")))
+            phase_shift = _phase_shift_for_sinusoid_count(target_count=int(target_count), mode=extremum_mode)
+            midline_y = -int(amplitude) if extremum_mode == "maxima" else int(amplitude)
+            positions = (
+                _sinusoid_maxima_positions(int(phase_shift))
+                if extremum_mode == "maxima"
+                else _sinusoid_minima_positions(int(phase_shift))
+            )
+            evidence_points = tuple((int(x_value), 0) for x_value in positions)
+        elif int(target_count) in {3, 4}:
+            phase_shift = _phase_shift_for_sinusoid_count(target_count=int(target_count), mode="midline")
+            midline_y = 0
+            evidence_points = tuple((int(x_value), 0) for x_value in _sinusoid_midline_positions(int(phase_shift)))
+        else:
+            raise ValueError(f"unsupported sinusoid x-intercept target_count: {target_count}")
+    elif str(query_variant) == HORIZONTAL_LINE_INTERSECTION_COUNT:
+        if int(target_count) == 0:
+            phase_shift = int(_sample_from(range(-5, 7), rng))
+            midline_y = int(_sample_from((-3, -2, -1, 1, 2, 3), rng))
+            query_line_y = int(midline_y + rng.choice((amplitude + 1, amplitude + 2, -amplitude - 1, -amplitude - 2)))
+            if int(query_line_y) == 0:
+                query_line_y += 1 if int(midline_y) >= 0 else -1
+            evidence_points = tuple()
+        elif int(target_count) in {1, 2}:
+            extremum_mode = str(rng.choice(("maxima", "minima")))
+            phase_shift = _phase_shift_for_sinusoid_count(target_count=int(target_count), mode=extremum_mode)
+            valid_midlines = [value for value in (-3, -2, -1, 1, 2, 3) if int(value + (amplitude if extremum_mode == "maxima" else -amplitude)) != 0]
+            midline_y = int(_sample_from(valid_midlines, rng))
+            query_line_y = int(midline_y + (amplitude if extremum_mode == "maxima" else -amplitude))
+            positions = (
+                _sinusoid_maxima_positions(int(phase_shift))
+                if extremum_mode == "maxima"
+                else _sinusoid_minima_positions(int(phase_shift))
+            )
+            evidence_points = tuple((int(x_value), int(query_line_y)) for x_value in positions)
+        elif int(target_count) in {3, 4}:
+            phase_shift = _phase_shift_for_sinusoid_count(target_count=int(target_count), mode="midline")
+            midline_y = int(_sample_from((-3, -2, -1, 1, 2, 3), rng))
+            query_line_y = int(midline_y)
+            evidence_points = tuple((int(x_value), int(query_line_y)) for x_value in _sinusoid_midline_positions(int(phase_shift)))
+        else:
+            raise ValueError(f"unsupported sinusoid horizontal target_count: {target_count}")
+    elif str(query_variant) == TURNING_POINT_COUNT:
+        if int(target_count) not in {3, 4}:
+            raise ValueError(f"unsupported sinusoid turning target_count: {target_count}")
+        phase_shift = _phase_shift_for_sinusoid_count(target_count=(1 if int(target_count) == 3 else 2), mode="maxima")
+        # Choose the paired minima count that yields the requested total.
+        if int(target_count) == 3:
+            candidate_phase_shifts = [
+                value
+                for value in range(-5, 7)
+                if len(_sinusoid_maxima_positions(int(value))) + len(_sinusoid_minima_positions(int(value))) == 3
+            ]
+            phase_shift = int(candidate_phase_shifts[0])
+        else:
+            candidate_phase_shifts = [
+                value
+                for value in range(-5, 7)
+                if len(_sinusoid_maxima_positions(int(value))) + len(_sinusoid_minima_positions(int(value))) == 4
+            ]
+            phase_shift = int(candidate_phase_shifts[0])
+        midline_y = int(_sample_from((-2, -1, 0, 1, 2), rng))
+        evidence_points = tuple(
+            (int(x_value), int(midline_y + amplitude)) for x_value in _sinusoid_maxima_positions(int(phase_shift))
+        ) + tuple(
+            (int(x_value), int(midline_y - amplitude)) for x_value in _sinusoid_minima_positions(int(phase_shift))
+        )
+    elif str(query_variant) == LOCAL_MINIMA_COUNT:
+        if int(target_count) not in {1, 2}:
+            raise ValueError(f"unsupported sinusoid local-minima target_count: {target_count}")
+        phase_shift = _phase_shift_for_sinusoid_count(target_count=int(target_count), mode="minima")
+        midline_y = int(_sample_from((-2, -1, 0, 1, 2), rng))
+        evidence_points = tuple(
+            (int(x_value), int(midline_y - amplitude))
+            for x_value in _sinusoid_minima_positions(int(phase_shift))
+        )
+    elif str(query_variant) == LOCAL_MAXIMA_COUNT:
+        if int(target_count) not in {1, 2}:
+            raise ValueError(f"unsupported sinusoid local-maxima target_count: {target_count}")
+        phase_shift = _phase_shift_for_sinusoid_count(target_count=int(target_count), mode="maxima")
+        midline_y = int(_sample_from((-2, -1, 0, 1, 2), rng))
+        evidence_points = tuple(
+            (int(x_value), int(midline_y + amplitude))
+            for x_value in _sinusoid_maxima_positions(int(phase_shift))
+        )
+    else:
+        raise ValueError(f"unsupported sinusoid query_variant: {query_variant}")
+
+    sample_points = _sinusoid_sample_points(
+        amplitude=int(amplitude),
+        phase_shift=int(phase_shift),
+        midline_y=int(midline_y),
+    )
+    parameters = {
+        "amplitude": int(amplitude),
+        "phase_shift": int(phase_shift),
+        "midline_y": int(midline_y),
+        "period": 12,
+        "family_form": "cosine",
+    }
+    return _SampledGraphScene(
+        polyline_graph=sample_points,
+        evidence_graph_points=tuple(evidence_points),
+        query_line_y=(None if query_line_y is None else int(query_line_y)),
+        scene_entities=[
+            {
+                "entity_id": "function_graph",
+                "entity_type": "function_graph",
+                "family": "sinusoid",
+                "parameters": dict(parameters),
+            }
+        ],
+        render_map={
+            "scene_variant": "sinusoid",
+            "function_parameters": dict(parameters),
+            "evidence_points_graph": [list(point) for point in evidence_points],
+            "query_line_y": (None if query_line_y is None else int(query_line_y)),
+        },
+        execution_trace={
+            "family": "sinusoid",
+            "parameters": dict(parameters),
+            "evidence_points_graph": [list(point) for point in evidence_points],
+            "query_line_y": (None if query_line_y is None else int(query_line_y)),
+        },
+        object_count=1,
+    )
+
+
 def _piecewise_polyline_for_intersections(
     rng,
     *,
@@ -910,6 +1305,18 @@ def _sample_scene(
         )
     if str(scene_variant) == "absolute_value":
         return _build_absolute_value_scene(
+            rng,
+            query_variant=str(query_variant),
+            target_count=int(target_count),
+        )
+    if str(scene_variant) == "cubic":
+        return _build_cubic_scene(
+            rng,
+            query_variant=str(query_variant),
+            target_count=int(target_count),
+        )
+    if str(scene_variant) == "sinusoid":
+        return _build_sinusoid_scene(
             rng,
             query_variant=str(query_variant),
             target_count=int(target_count),

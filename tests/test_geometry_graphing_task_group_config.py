@@ -16,7 +16,13 @@ def test_geometry_graphing_task_overrides_expose_scene_query_and_count_axes() ->
 
     assert bool(generation["balanced_scene_variant_sampling"]) is True
     assert bool(generation["balanced_query_variant_sampling"]) is True
-    assert set(generation["scene_variant_weights"].keys()) == {"quadratic", "absolute_value", "piecewise_linear"}
+    assert set(generation["scene_variant_weights"].keys()) == {
+        "quadratic",
+        "absolute_value",
+        "cubic",
+        "sinusoid",
+        "piecewise_linear",
+    }
     assert set(generation["query_variant_weights"].keys()) == {
         "x_intercept_count",
         "horizontal_line_intersection_count",
@@ -25,7 +31,12 @@ def test_geometry_graphing_task_overrides_expose_scene_query_and_count_axes() ->
         "local_maxima_count",
     }
     assert list(generation["quadratic_x_intercept_support"]) == [0, 1, 2]
+    assert list(generation["cubic_x_intercept_support"]) == [1, 2, 3]
+    assert list(generation["sinusoid_x_intercept_support"]) == [0, 1, 2, 3, 4]
     assert list(generation["piecewise_turning_support"]) == [0, 1, 2, 3, 4]
+    assert list(generation["sinusoid_turning_support"]) == [3, 4]
+    assert list(generation["sinusoid_local_minima_support"]) == [1, 2]
+    assert list(generation["sinusoid_local_maxima_support"]) == [1, 2]
     assert list(generation["piecewise_local_minima_support"]) == [0, 1, 2, 3, 4]
     assert list(generation["piecewise_local_maxima_support"]) == [0, 1, 2, 3, 4]
     assert list(generation["horizontal_line_support"]) == [-4, -3, -2, -1, 1, 2, 3, 4]

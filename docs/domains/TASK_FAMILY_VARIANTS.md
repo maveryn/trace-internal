@@ -173,7 +173,7 @@ Define how we split tasks into reusable families so each dataset slice stays com
    - uses integer answers plus unordered `graph_point_set` evidence for `same_quadrant_count`, where the witness is the set of dot-point coordinates in the same quadrant as the X-marked reference point
    - uses integer answers plus `graph_point_set` evidence for `point_in_shape_count`, where the witness is the set of integer lattice points strictly inside the polygon
 12. `task_geometry_graphing_count`
-   - uses scene variants `quadratic|absolute_value|piecewise_linear`
+   - uses scene variants `quadratic|absolute_value|cubic|sinusoid|piecewise_linear`
    - uses query variants `x_intercept_count|horizontal_line_intersection_count|turning_point_count|local_minima_count|local_maxima_count`
    - keeps integer answers with unordered `graph_point_set` evidence over the relevant intersection or turning-point coordinates
 13. `task_geometry_solid_view_count`

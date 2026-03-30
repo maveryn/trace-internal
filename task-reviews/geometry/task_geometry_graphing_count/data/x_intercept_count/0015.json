@@ -25,10 +25,10 @@
     "path": "geometry/task_geometry_graphing_count/images/x_intercept_count/0015.png"
   },
   "instance_seed": 1468260365169812,
-  "prompt": "The graph-paper image shows a plotted piecewise-linear graph on graph paper. Determine the answer from the graph-paper function plot. Count the graph's intersection points with the x-axis.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array of every graph-paper coordinate [x, y] that satisfies the question; use [] when there are none.\nAnswer format: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"evidence\":[[0,0],[4,0],[0,3]],\"answer\":8}",
+  "prompt": "The graph-paper image shows a plotted function graph on graph paper. Determine the answer from the graph-paper function plot. Count the graph's intersection points with the x-axis.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array of every graph-paper coordinate [x, y] that satisfies the question; use [] when there are none.\nAnswer format: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"evidence\":[[0,0],[4,0],[0,3]],\"answer\":8}",
   "prompt_variants": {
-    "answer_and_evidence": "The graph-paper image shows a plotted piecewise-linear graph on graph paper. Determine the answer from the graph-paper function plot. Count the graph's intersection points with the x-axis.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array of every graph-paper coordinate [x, y] that satisfies the question; use [] when there are none.\nAnswer format: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"evidence\":[[0,0],[4,0],[0,3]],\"answer\":8}",
-    "answer_only": "The graph-paper image shows a plotted piecewise-linear graph on graph paper. Determine the answer from the graph-paper function plot. Count the graph's intersection points with the x-axis.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"answer\":8}"
+    "answer_and_evidence": "The graph-paper image shows a plotted function graph on graph paper. Determine the answer from the graph-paper function plot. Count the graph's intersection points with the x-axis.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array of every graph-paper coordinate [x, y] that satisfies the question; use [] when there are none.\nAnswer format: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"evidence\":[[0,0],[4,0],[0,3]],\"answer\":8}",
+    "answer_only": "The graph-paper image shows a plotted function graph on graph paper. Determine the answer from the graph-paper function plot. Count the graph's intersection points with the x-axis.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"answer\":8}"
   },
   "task": "task_geometry_graphing_count",
   "task_variant": "x_intercept_count",
@@ -97,8 +97,10 @@
       "scene_variant": "piecewise_linear",
       "scene_variant_probabilities": {
         "absolute_value": 0.0,
-        "piecewise_linear": 1.0,
-        "quadratic": 0.0
+        "cubic": 0.3333333333333333,
+        "piecewise_linear": 0.3333333333333333,
+        "quadratic": 0.0,
+        "sinusoid": 0.3333333333333333
       },
       "target_count": 3,
       "target_count_probabilities": {
@@ -216,8 +218,10 @@
         "scene_variant": "piecewise_linear",
         "scene_variant_probabilities": {
           "absolute_value": 0.0,
-          "piecewise_linear": 1.0,
-          "quadratic": 0.0
+          "cubic": 0.3333333333333333,
+          "piecewise_linear": 0.3333333333333333,
+          "quadratic": 0.0,
+          "sinusoid": 0.3333333333333333
         },
         "target_count": 3,
         "target_count_probabilities": {
@@ -248,7 +252,7 @@
           "json_example_answer_only": "{\"answer\":8}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "object_description": "a plotted piecewise-linear graph on graph paper",
+          "object_description": "a plotted function graph on graph paper",
           "query_line_equation": ""
         },
         "task_family_key": "graphing_scene",
@@ -282,7 +286,7 @@
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a plotted piecewise-linear graph on graph paper",
+              "object_description": "a plotted function graph on graph paper",
               "query_line_equation": ""
             },
             "task_family_key": "graphing_scene",
@@ -301,7 +305,7 @@
               "task_variant:x_intercept_count": 5
             }
           },
-          "prompt": "The graph-paper image shows a plotted piecewise-linear graph on graph paper. Determine the answer from the graph-paper function plot. Count the graph's intersection points with the x-axis.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array of every graph-paper coordinate [x, y] that satisfies the question; use [] when there are none.\nAnswer format: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"evidence\":[[0,0],[4,0],[0,3]],\"answer\":8}"
+          "prompt": "The graph-paper image shows a plotted function graph on graph paper. Determine the answer from the graph-paper function plot. Count the graph's intersection points with the x-axis.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array of every graph-paper coordinate [x, y] that satisfies the question; use [] when there are none.\nAnswer format: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"evidence\":[[0,0],[4,0],[0,3]],\"answer\":8}"
         },
         "answer_only": {
           "metadata": {
@@ -316,7 +320,7 @@
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a plotted piecewise-linear graph on graph paper",
+              "object_description": "a plotted function graph on graph paper",
               "query_line_equation": ""
             },
             "task_family_key": "graphing_scene",
@@ -335,7 +339,7 @@
               "task_variant:x_intercept_count": 5
             }
           },
-          "prompt": "The graph-paper image shows a plotted piecewise-linear graph on graph paper. Determine the answer from the graph-paper function plot. Count the graph's intersection points with the x-axis.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"answer\":8}"
+          "prompt": "The graph-paper image shows a plotted function graph on graph paper. Determine the answer from the graph-paper function plot. Count the graph's intersection points with the x-axis.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"answer\":8}"
         }
       },
       "task_variant": "x_intercept_count",

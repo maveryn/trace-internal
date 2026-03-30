@@ -10,7 +10,7 @@ Update this table after each review run.
 | task_geometry_counting_value | task_geometry_counting_value | alright_for_now | distribution pass (scene/query consolidated wrapper) |
 | task_geometry_measurement_value | task_geometry_measurement_value | alright_for_now | distribution pass (scene/query consolidated wrapper) |
 | task_geometry_coordinate_relation | task_geometry_coordinate_relation | alright_for_now | distribution pass (collinear + segment parallel/perpendicular counts + quadrant count + polygon interior-lattice count variants) |
-| task_geometry_graphing_count | task_geometry_graphing_count | alright_for_now | distribution pass (quadratic/absolute-value/piecewise graphing x x-intercept/horizontal-line/turning-point/local-minima/local-maxima counts) |
+| task_geometry_graphing_count | task_geometry_graphing_count | alright_for_now | distribution pass (quadratic/absolute-value/cubic/sinusoid/piecewise graphing x x-intercept/horizontal-line/turning-point/local-minima/local-maxima counts) |
 | task_geometry_solid_view_count | task_geometry_solid_view_count | alright_for_now | distribution pass (top/front/right orthographic cube-view count variants) |
 | task_geometry_similarity_count | task_geometry_similarity_count | alright_for_now | distribution pass (triangle/quadrilateral x congruent/similar with `target_count` support `0..5`) |
 | task_geometry_transformation_match | task_geometry_transformation_match | alright_for_now | distribution pass (triangle/quadrilateral x translation/reflection/rotation) |

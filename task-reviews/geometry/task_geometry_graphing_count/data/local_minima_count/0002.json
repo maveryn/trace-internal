@@ -8,7 +8,7 @@
     "value": [
       [
         1,
-        -5
+        -4
       ]
     ]
   },
@@ -17,10 +17,10 @@
     "path": "geometry/task_geometry_graphing_count/images/local_minima_count/0002.png"
   },
   "instance_seed": 8953751381234208,
-  "prompt": "Work from the graph-paper plot showing a plotted piecewise-linear graph on graph paper. Use the plotted graph and axes to answer the question. How many visible valleys or local minima does the graph have?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array of every graph-paper coordinate [x, y] that satisfies the question; use [] when there are none.\nAnswer requirement: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"evidence\":[[0,0]],\"answer\":8}",
+  "prompt": "Work from the graph-paper plot showing a plotted function graph on graph paper. Use the plotted graph and axes to answer the question. How many visible valleys or local minima does the curve have?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array of every graph-paper coordinate [x, y] that satisfies the question; use [] when there are none.\nAnswer requirement: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"evidence\":[[0,0]],\"answer\":8}",
   "prompt_variants": {
-    "answer_and_evidence": "Work from the graph-paper plot showing a plotted piecewise-linear graph on graph paper. Use the plotted graph and axes to answer the question. How many visible valleys or local minima does the graph have?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array of every graph-paper coordinate [x, y] that satisfies the question; use [] when there are none.\nAnswer requirement: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"evidence\":[[0,0]],\"answer\":8}",
-    "answer_only": "Work from the graph-paper plot showing a plotted piecewise-linear graph on graph paper. Use the plotted graph and axes to answer the question. How many visible valleys or local minima does the graph have?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"answer\":8}"
+    "answer_and_evidence": "Work from the graph-paper plot showing a plotted function graph on graph paper. Use the plotted graph and axes to answer the question. How many visible valleys or local minima does the curve have?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array of every graph-paper coordinate [x, y] that satisfies the question; use [] when there are none.\nAnswer requirement: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"evidence\":[[0,0]],\"answer\":8}",
+    "answer_only": "Work from the graph-paper plot showing a plotted function graph on graph paper. Use the plotted graph and axes to answer the question. How many visible valleys or local minima does the curve have?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"answer\":8}"
   },
   "task": "task_geometry_graphing_count",
   "task_variant": "local_minima_count",
@@ -29,24 +29,17 @@
       "evidence_points_graph": [
         [
           1,
-          -5
+          -4
         ]
       ],
-      "family": "piecewise_linear",
-      "polyline_vertices_graph": [
-        [
-          -1,
-          4
-        ],
-        [
-          1,
-          -5
-        ],
-        [
-          3,
-          2
-        ]
-      ],
+      "family": "sinusoid",
+      "parameters": {
+        "amplitude": 4,
+        "family_form": "cosine",
+        "midline_y": 0,
+        "period": 12,
+        "phase_shift": -5
+      },
       "query_line_y": null,
       "query_variant": "local_minima_count",
       "query_variant_probabilities": {
@@ -60,11 +53,13 @@
       "required_evidence_labels": [
         "point_1"
       ],
-      "scene_variant": "piecewise_linear",
+      "scene_variant": "sinusoid",
       "scene_variant_probabilities": {
         "absolute_value": 0.0,
-        "piecewise_linear": 1.0,
-        "quadratic": 0.0
+        "cubic": 0.0,
+        "piecewise_linear": 0.5,
+        "quadratic": 0.0,
+        "sinusoid": 0.5
       },
       "target_count": 1,
       "target_count_probabilities": {
@@ -87,37 +82,37 @@
       "grid_point_map": {
         "point_1": [
           1,
-          -5
+          -4
         ]
       },
       "grid_point_path": [
         [
           1,
-          -5
+          -4
         ]
       ],
       "grid_point_set": [
         [
           1,
-          -5
+          -4
         ]
       ],
       "pixel_point_map": {
         "point_1": [
           378.0,
-          514.0
+          480.0
         ]
       },
       "pixel_point_path": [
         [
           378.0,
-          514.0
+          480.0
         ]
       ],
       "pixel_point_set": [
         [
           378.0,
-          514.0
+          480.0
         ]
       ]
     },
@@ -131,11 +126,13 @@
           "turning_point_count": 0.0,
           "x_intercept_count": 0.0
         },
-        "scene_variant": "piecewise_linear",
+        "scene_variant": "sinusoid",
         "scene_variant_probabilities": {
           "absolute_value": 0.0,
-          "piecewise_linear": 1.0,
-          "quadratic": 0.0
+          "cubic": 0.0,
+          "piecewise_linear": 0.5,
+          "quadratic": 0.0,
+          "sinusoid": 0.5
         },
         "target_count": 1,
         "target_count_probabilities": {
@@ -166,7 +163,7 @@
           "json_example_answer_only": "{\"answer\":8}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "object_description": "a plotted piecewise-linear graph on graph paper",
+          "object_description": "a plotted function graph on graph paper",
           "query_line_equation": ""
         },
         "task_family_key": "graphing_scene",
@@ -200,7 +197,7 @@
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a plotted piecewise-linear graph on graph paper",
+              "object_description": "a plotted function graph on graph paper",
               "query_line_equation": ""
             },
             "task_family_key": "graphing_scene",
@@ -219,7 +216,7 @@
               "task_variant:local_minima_count": 5
             }
           },
-          "prompt": "Work from the graph-paper plot showing a plotted piecewise-linear graph on graph paper. Use the plotted graph and axes to answer the question. How many visible valleys or local minima does the graph have?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array of every graph-paper coordinate [x, y] that satisfies the question; use [] when there are none.\nAnswer requirement: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"evidence\":[[0,0]],\"answer\":8}"
+          "prompt": "Work from the graph-paper plot showing a plotted function graph on graph paper. Use the plotted graph and axes to answer the question. How many visible valleys or local minima does the curve have?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array of every graph-paper coordinate [x, y] that satisfies the question; use [] when there are none.\nAnswer requirement: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"evidence\":[[0,0]],\"answer\":8}"
         },
         "answer_only": {
           "metadata": {
@@ -234,7 +231,7 @@
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a plotted piecewise-linear graph on graph paper",
+              "object_description": "a plotted function graph on graph paper",
               "query_line_equation": ""
             },
             "task_family_key": "graphing_scene",
@@ -253,7 +250,7 @@
               "task_variant:local_minima_count": 5
             }
           },
-          "prompt": "Work from the graph-paper plot showing a plotted piecewise-linear graph on graph paper. Use the plotted graph and axes to answer the question. How many visible valleys or local minima does the graph have?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"answer\":8}"
+          "prompt": "Work from the graph-paper plot showing a plotted function graph on graph paper. Use the plotted graph and axes to answer the question. How many visible valleys or local minima does the curve have?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"answer\":8}"
         }
       },
       "task_variant": "local_minima_count",
@@ -263,53 +260,670 @@
       "evidence_points_graph": [
         [
           1,
-          -5
+          -4
         ]
       ],
+      "function_parameters": {
+        "amplitude": 4,
+        "family_form": "cosine",
+        "midline_y": 0,
+        "period": 12,
+        "phase_shift": -5
+      },
       "function_polyline_pixel": [
         [
-          310.0,
+          4.0,
+          461.779
+        ],
+        [
+          12.5,
+          451.896
+        ],
+        [
+          21.0,
+          440.167
+        ],
+        [
+          29.5,
+          426.792
+        ],
+        [
+          38.0,
+          412.0
+        ],
+        [
+          46.5,
+          396.045
+        ],
+        [
+          55.0,
+          379.199
+        ],
+        [
+          63.5,
+          361.752
+        ],
+        [
+          72.0,
+          344.0
+        ],
+        [
+          80.5,
+          326.248
+        ],
+        [
+          89.0,
+          308.801
+        ],
+        [
+          97.5,
+          291.955
+        ],
+        [
+          106.0,
+          276.0
+        ],
+        [
+          114.5,
+          261.208
+        ],
+        [
+          123.0,
+          247.833
+        ],
+        [
+          131.5,
+          236.104
+        ],
+        [
+          140.0,
+          226.221
+        ],
+        [
+          148.5,
+          218.352
+        ],
+        [
+          157.0,
+          212.634
+        ],
+        [
+          165.5,
+          209.163
+        ],
+        [
+          174.0,
           208.0
         ],
         [
+          182.5,
+          209.163
+        ],
+        [
+          191.0,
+          212.634
+        ],
+        [
+          199.5,
+          218.352
+        ],
+        [
+          208.0,
+          226.221
+        ],
+        [
+          216.5,
+          236.104
+        ],
+        [
+          225.0,
+          247.833
+        ],
+        [
+          233.5,
+          261.208
+        ],
+        [
+          242.0,
+          276.0
+        ],
+        [
+          250.5,
+          291.955
+        ],
+        [
+          259.0,
+          308.801
+        ],
+        [
+          267.5,
+          326.248
+        ],
+        [
+          276.0,
+          344.0
+        ],
+        [
+          284.5,
+          361.752
+        ],
+        [
+          293.0,
+          379.199
+        ],
+        [
+          301.5,
+          396.045
+        ],
+        [
+          310.0,
+          412.0
+        ],
+        [
+          318.5,
+          426.792
+        ],
+        [
+          327.0,
+          440.167
+        ],
+        [
+          335.5,
+          451.896
+        ],
+        [
+          344.0,
+          461.779
+        ],
+        [
+          352.5,
+          469.648
+        ],
+        [
+          361.0,
+          475.366
+        ],
+        [
+          369.5,
+          478.837
+        ],
+        [
           378.0,
-          514.0
+          480.0
+        ],
+        [
+          386.5,
+          478.837
+        ],
+        [
+          395.0,
+          475.366
+        ],
+        [
+          403.5,
+          469.648
+        ],
+        [
+          412.0,
+          461.779
+        ],
+        [
+          420.5,
+          451.896
+        ],
+        [
+          429.0,
+          440.167
+        ],
+        [
+          437.5,
+          426.792
         ],
         [
           446.0,
+          412.0
+        ],
+        [
+          454.5,
+          396.045
+        ],
+        [
+          463.0,
+          379.199
+        ],
+        [
+          471.5,
+          361.752
+        ],
+        [
+          480.0,
+          344.0
+        ],
+        [
+          488.5,
+          326.248
+        ],
+        [
+          497.0,
+          308.801
+        ],
+        [
+          505.5,
+          291.955
+        ],
+        [
+          514.0,
           276.0
+        ],
+        [
+          522.5,
+          261.208
+        ],
+        [
+          531.0,
+          247.833
+        ],
+        [
+          539.5,
+          236.104
+        ],
+        [
+          548.0,
+          226.221
+        ],
+        [
+          556.5,
+          218.352
+        ],
+        [
+          565.0,
+          212.634
+        ],
+        [
+          573.5,
+          209.163
+        ],
+        [
+          582.0,
+          208.0
+        ],
+        [
+          590.5,
+          209.163
+        ],
+        [
+          599.0,
+          212.634
+        ],
+        [
+          607.5,
+          218.352
+        ],
+        [
+          616.0,
+          226.221
+        ],
+        [
+          624.5,
+          236.104
+        ],
+        [
+          633.0,
+          247.833
+        ],
+        [
+          641.5,
+          261.208
+        ],
+        [
+          650.0,
+          276.0
+        ],
+        [
+          658.5,
+          291.955
+        ],
+        [
+          667.0,
+          308.801
+        ],
+        [
+          675.5,
+          326.248
+        ],
+        [
+          684.0,
+          344.0
         ]
       ],
       "function_polyline_render": [
         [
-          930.0,
+          12.0,
+          1385.338
+        ],
+        [
+          37.5,
+          1355.688
+        ],
+        [
+          63.0,
+          1320.5
+        ],
+        [
+          88.5,
+          1280.375
+        ],
+        [
+          114.0,
+          1236.0
+        ],
+        [
+          139.5,
+          1188.135
+        ],
+        [
+          165.0,
+          1137.598
+        ],
+        [
+          190.5,
+          1085.255
+        ],
+        [
+          216.0,
+          1032.0
+        ],
+        [
+          241.5,
+          978.745
+        ],
+        [
+          267.0,
+          926.402
+        ],
+        [
+          292.5,
+          875.865
+        ],
+        [
+          318.0,
+          828.0
+        ],
+        [
+          343.5,
+          783.625
+        ],
+        [
+          369.0,
+          743.5
+        ],
+        [
+          394.5,
+          708.312
+        ],
+        [
+          420.0,
+          678.662
+        ],
+        [
+          445.5,
+          655.057
+        ],
+        [
+          471.0,
+          637.902
+        ],
+        [
+          496.5,
+          627.49
+        ],
+        [
+          522.0,
           624.0
         ],
         [
+          547.5,
+          627.49
+        ],
+        [
+          573.0,
+          637.902
+        ],
+        [
+          598.5,
+          655.057
+        ],
+        [
+          624.0,
+          678.662
+        ],
+        [
+          649.5,
+          708.312
+        ],
+        [
+          675.0,
+          743.5
+        ],
+        [
+          700.5,
+          783.625
+        ],
+        [
+          726.0,
+          828.0
+        ],
+        [
+          751.5,
+          875.865
+        ],
+        [
+          777.0,
+          926.402
+        ],
+        [
+          802.5,
+          978.745
+        ],
+        [
+          828.0,
+          1032.0
+        ],
+        [
+          853.5,
+          1085.255
+        ],
+        [
+          879.0,
+          1137.598
+        ],
+        [
+          904.5,
+          1188.135
+        ],
+        [
+          930.0,
+          1236.0
+        ],
+        [
+          955.5,
+          1280.375
+        ],
+        [
+          981.0,
+          1320.5
+        ],
+        [
+          1006.5,
+          1355.688
+        ],
+        [
+          1032.0,
+          1385.338
+        ],
+        [
+          1057.5,
+          1408.943
+        ],
+        [
+          1083.0,
+          1426.098
+        ],
+        [
+          1108.5,
+          1436.51
+        ],
+        [
           1134.0,
-          1542.0
+          1440.0
+        ],
+        [
+          1159.5,
+          1436.51
+        ],
+        [
+          1185.0,
+          1426.098
+        ],
+        [
+          1210.5,
+          1408.943
+        ],
+        [
+          1236.0,
+          1385.338
+        ],
+        [
+          1261.5,
+          1355.688
+        ],
+        [
+          1287.0,
+          1320.5
+        ],
+        [
+          1312.5,
+          1280.375
         ],
         [
           1338.0,
+          1236.0
+        ],
+        [
+          1363.5,
+          1188.135
+        ],
+        [
+          1389.0,
+          1137.598
+        ],
+        [
+          1414.5,
+          1085.255
+        ],
+        [
+          1440.0,
+          1032.0
+        ],
+        [
+          1465.5,
+          978.745
+        ],
+        [
+          1491.0,
+          926.402
+        ],
+        [
+          1516.5,
+          875.865
+        ],
+        [
+          1542.0,
           828.0
-        ]
-      ],
-      "polyline_vertices_graph": [
-        [
-          -1,
-          4
         ],
         [
-          1,
-          -5
+          1567.5,
+          783.625
         ],
         [
-          3,
-          2
+          1593.0,
+          743.5
+        ],
+        [
+          1618.5,
+          708.312
+        ],
+        [
+          1644.0,
+          678.662
+        ],
+        [
+          1669.5,
+          655.057
+        ],
+        [
+          1695.0,
+          637.902
+        ],
+        [
+          1720.5,
+          627.49
+        ],
+        [
+          1746.0,
+          624.0
+        ],
+        [
+          1771.5,
+          627.49
+        ],
+        [
+          1797.0,
+          637.902
+        ],
+        [
+          1822.5,
+          655.057
+        ],
+        [
+          1848.0,
+          678.662
+        ],
+        [
+          1873.5,
+          708.312
+        ],
+        [
+          1899.0,
+          743.5
+        ],
+        [
+          1924.5,
+          783.625
+        ],
+        [
+          1950.0,
+          828.0
+        ],
+        [
+          1975.5,
+          875.865
+        ],
+        [
+          2001.0,
+          926.402
+        ],
+        [
+          2026.5,
+          978.745
+        ],
+        [
+          2052.0,
+          1032.0
         ]
       ],
       "query_line_y": null,
-      "scene_variant": "piecewise_linear"
+      "scene_variant": "sinusoid"
     },
     "render_spec": {
       "background_style": {
@@ -450,7 +1064,7 @@
         "edits": [],
         "enabled": true
       },
-      "scene_variant": "piecewise_linear",
+      "scene_variant": "sinusoid",
       "shape_style": {
         "label_color": [
           35,
@@ -474,26 +1088,19 @@
         {
           "entity_id": "function_graph",
           "entity_type": "function_graph",
-          "family": "piecewise_linear",
-          "vertices_graph": [
-            [
-              -1,
-              4
-            ],
-            [
-              1,
-              -5
-            ],
-            [
-              3,
-              2
-            ]
-          ]
+          "family": "sinusoid",
+          "parameters": {
+            "amplitude": 4,
+            "family_form": "cosine",
+            "midline_y": 0,
+            "period": 12,
+            "phase_shift": -5
+          }
         }
       ],
       "relations": {
         "query_variant": "local_minima_count",
-        "scene_variant": "piecewise_linear",
+        "scene_variant": "sinusoid",
         "target_count": 1,
         "task_variant": "local_minima_count"
       },

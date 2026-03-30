@@ -676,6 +676,8 @@ def geometry_graphing_reasoning_score(*, scene_variant: str, query_variant: str)
     scene_bonus = {
         "quadratic": 0.00,
         "absolute_value": 0.03,
+        "cubic": 0.08,
+        "sinusoid": 0.14,
         "piecewise_linear": 0.12,
     }.get(str(scene_variant).strip().lower())
     if scene_bonus is None:

@@ -556,14 +556,16 @@
     "scene_variant": {
       "expected_conflict": true,
       "expected_probabilities": {
-        "piecewise_linear": 1.0
+        "piecewise_linear": 0.5,
+        "sinusoid": 0.5
       },
       "expected_source": "execution_trace",
-      "max_observed_frequency": 0.89,
+      "max_observed_frequency": 0.7,
       "observed_counts": {
-        "absolute_value": 7,
-        "piecewise_linear": 89,
-        "quadratic": 4
+        "absolute_value": 4,
+        "cubic": 2,
+        "piecewise_linear": 70,
+        "sinusoid": 24
       },
       "sample_count": 100
     },

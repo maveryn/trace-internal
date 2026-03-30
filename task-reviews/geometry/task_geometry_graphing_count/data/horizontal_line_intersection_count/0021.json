@@ -7,8 +7,8 @@
     "type": "graph_point_set",
     "value": [
       [
-        -1,
-        -1
+        1,
+        -5
       ]
     ]
   },
@@ -17,10 +17,10 @@
     "path": "geometry/task_geometry_graphing_count/images/horizontal_line_intersection_count/0021.png"
   },
   "instance_seed": 1897970331292402,
-  "prompt": "The graph-paper image shows a plotted absolute-value graph on graph paper and a dashed horizontal guide line. Determine the answer from the graph-paper function plot. How many times does the graph intersect the dashed line y = -1 in the shown window?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array of every graph-paper coordinate [x, y] that satisfies the question; use [] when there are none.\nAnswer field: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"evidence\":[[0,0]],\"answer\":8}",
+  "prompt": "The graph-paper image shows a plotted function graph on graph paper and a dashed horizontal guide line. Determine the answer from the graph-paper function plot. How many times does the graph intersect the dashed line y = -5 in the shown window?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array of every graph-paper coordinate [x, y] that satisfies the question; use [] when there are none.\nAnswer field: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"evidence\":[[0,0]],\"answer\":8}",
   "prompt_variants": {
-    "answer_and_evidence": "The graph-paper image shows a plotted absolute-value graph on graph paper and a dashed horizontal guide line. Determine the answer from the graph-paper function plot. How many times does the graph intersect the dashed line y = -1 in the shown window?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array of every graph-paper coordinate [x, y] that satisfies the question; use [] when there are none.\nAnswer field: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"evidence\":[[0,0]],\"answer\":8}",
-    "answer_only": "The graph-paper image shows a plotted absolute-value graph on graph paper and a dashed horizontal guide line. Determine the answer from the graph-paper function plot. How many times does the graph intersect the dashed line y = -1 in the shown window?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"answer\":8}"
+    "answer_and_evidence": "The graph-paper image shows a plotted function graph on graph paper and a dashed horizontal guide line. Determine the answer from the graph-paper function plot. How many times does the graph intersect the dashed line y = -5 in the shown window?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array of every graph-paper coordinate [x, y] that satisfies the question; use [] when there are none.\nAnswer field: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"evidence\":[[0,0]],\"answer\":8}",
+    "answer_only": "The graph-paper image shows a plotted function graph on graph paper and a dashed horizontal guide line. Determine the answer from the graph-paper function plot. How many times does the graph intersect the dashed line y = -5 in the shown window?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"answer\":8}"
   },
   "task": "task_geometry_graphing_count",
   "task_variant": "horizontal_line_intersection_count",
@@ -28,18 +28,19 @@
     "execution_trace": {
       "evidence_points_graph": [
         [
-          -1,
-          -1
+          1,
+          -5
         ]
       ],
-      "family": "absolute_value",
+      "family": "sinusoid",
       "parameters": {
-        "h": -1,
-        "k": -1,
-        "orientation": 1,
-        "slope": 2
+        "amplitude": 3,
+        "family_form": "cosine",
+        "midline_y": -2,
+        "period": 12,
+        "phase_shift": -5
       },
-      "query_line_y": -1,
+      "query_line_y": -5,
       "query_variant": "horizontal_line_intersection_count",
       "query_variant_probabilities": {
         "horizontal_line_intersection_count": 1.0,
@@ -52,11 +53,13 @@
       "required_evidence_labels": [
         "point_1"
       ],
-      "scene_variant": "absolute_value",
+      "scene_variant": "sinusoid",
       "scene_variant_probabilities": {
-        "absolute_value": 0.3333333333333333,
-        "piecewise_linear": 0.3333333333333333,
-        "quadratic": 0.3333333333333333
+        "absolute_value": 0.2,
+        "cubic": 0.2,
+        "piecewise_linear": 0.2,
+        "quadratic": 0.2,
+        "sinusoid": 0.2
       },
       "target_count": 1,
       "target_count_probabilities": {
@@ -78,38 +81,38 @@
     "projected_evidence": {
       "grid_point_map": {
         "point_1": [
-          -1,
-          -1
+          1,
+          -5
         ]
       },
       "grid_point_path": [
         [
-          -1,
-          -1
+          1,
+          -5
         ]
       ],
       "grid_point_set": [
         [
-          -1,
-          -1
+          1,
+          -5
         ]
       ],
       "pixel_point_map": {
         "point_1": [
-          290.0,
-          354.0
+          354.0,
+          482.0
         ]
       },
       "pixel_point_path": [
         [
-          290.0,
-          354.0
+          354.0,
+          482.0
         ]
       ],
       "pixel_point_set": [
         [
-          290.0,
-          354.0
+          354.0,
+          482.0
         ]
       ]
     },
@@ -123,11 +126,13 @@
           "turning_point_count": 0.0,
           "x_intercept_count": 0.0
         },
-        "scene_variant": "absolute_value",
+        "scene_variant": "sinusoid",
         "scene_variant_probabilities": {
-          "absolute_value": 0.3333333333333333,
-          "piecewise_linear": 0.3333333333333333,
-          "quadratic": 0.3333333333333333
+          "absolute_value": 0.2,
+          "cubic": 0.2,
+          "piecewise_linear": 0.2,
+          "quadratic": 0.2,
+          "sinusoid": 0.2
         },
         "target_count": 1,
         "target_count_probabilities": {
@@ -158,8 +163,8 @@
           "json_example_answer_only": "{\"answer\":8}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "object_description": "a plotted absolute-value graph on graph paper and a dashed horizontal guide line",
-          "query_line_equation": "y = -1"
+          "object_description": "a plotted function graph on graph paper and a dashed horizontal guide line",
+          "query_line_equation": "y = -5"
         },
         "task_family_key": "graphing_scene",
         "task_family_variant_index": 0,
@@ -192,8 +197,8 @@
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a plotted absolute-value graph on graph paper and a dashed horizontal guide line",
-              "query_line_equation": "y = -1"
+              "object_description": "a plotted function graph on graph paper and a dashed horizontal guide line",
+              "query_line_equation": "y = -5"
             },
             "task_family_key": "graphing_scene",
             "task_family_variant_index": 0,
@@ -211,7 +216,7 @@
               "task_variant:horizontal_line_intersection_count": 5
             }
           },
-          "prompt": "The graph-paper image shows a plotted absolute-value graph on graph paper and a dashed horizontal guide line. Determine the answer from the graph-paper function plot. How many times does the graph intersect the dashed line y = -1 in the shown window?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array of every graph-paper coordinate [x, y] that satisfies the question; use [] when there are none.\nAnswer field: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"evidence\":[[0,0]],\"answer\":8}"
+          "prompt": "The graph-paper image shows a plotted function graph on graph paper and a dashed horizontal guide line. Determine the answer from the graph-paper function plot. How many times does the graph intersect the dashed line y = -5 in the shown window?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array of every graph-paper coordinate [x, y] that satisfies the question; use [] when there are none.\nAnswer field: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"evidence\":[[0,0]],\"answer\":8}"
         },
         "answer_only": {
           "metadata": {
@@ -226,8 +231,8 @@
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a plotted absolute-value graph on graph paper and a dashed horizontal guide line",
-              "query_line_equation": "y = -1"
+              "object_description": "a plotted function graph on graph paper and a dashed horizontal guide line",
+              "query_line_equation": "y = -5"
             },
             "task_family_key": "graphing_scene",
             "task_family_variant_index": 0,
@@ -245,7 +250,7 @@
               "task_variant:horizontal_line_intersection_count": 5
             }
           },
-          "prompt": "The graph-paper image shows a plotted absolute-value graph on graph paper and a dashed horizontal guide line. Determine the answer from the graph-paper function plot. How many times does the graph intersect the dashed line y = -1 in the shown window?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"answer\":8}"
+          "prompt": "The graph-paper image shows a plotted function graph on graph paper and a dashed horizontal guide line. Determine the answer from the graph-paper function plot. How many times does the graph intersect the dashed line y = -5 in the shown window?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"answer\":8}"
         }
       },
       "task_variant": "horizontal_line_intersection_count",
@@ -254,568 +259,697 @@
     "render_map": {
       "evidence_points_graph": [
         [
-          -1,
-          -1
+          1,
+          -5
         ]
       ],
       "function_parameters": {
-        "h": -1,
-        "k": -1,
-        "orientation": 1,
-        "slope": 2
+        "amplitude": 3,
+        "family_form": "cosine",
+        "midline_y": -2,
+        "period": 12,
+        "phase_shift": -5
       },
       "function_polyline_pixel": [
         [
+          2.0,
+          469.138
+        ],
+        [
+          10.0,
+          462.162
+        ],
+        [
+          18.0,
+          453.882
+        ],
+        [
+          26.0,
+          444.441
+        ],
+        [
+          34.0,
+          434.0
+        ],
+        [
+          42.0,
+          422.738
+        ],
+        [
+          50.0,
+          410.847
+        ],
+        [
+          58.0,
+          398.531
+        ],
+        [
           66.0,
-          -94.0
+          386.0
         ],
         [
           74.0,
-          -78.0
+          373.469
         ],
         [
           82.0,
-          -62.0
+          361.153
         ],
         [
           90.0,
-          -46.0
+          349.262
         ],
         [
           98.0,
-          -30.0
+          338.0
         ],
         [
           106.0,
-          -14.0
+          327.559
         ],
         [
           114.0,
-          2.0
+          318.118
         ],
         [
           122.0,
-          18.0
+          309.838
         ],
         [
           130.0,
-          34.0
+          302.862
         ],
         [
           138.0,
-          50.0
+          297.308
         ],
         [
           146.0,
-          66.0
+          293.271
         ],
         [
           154.0,
-          82.0
+          290.821
         ],
         [
           162.0,
-          98.0
+          290.0
         ],
         [
           170.0,
-          114.0
+          290.821
         ],
         [
           178.0,
-          130.0
+          293.271
         ],
         [
           186.0,
-          146.0
+          297.308
         ],
         [
           194.0,
-          162.0
+          302.862
         ],
         [
           202.0,
-          178.0
+          309.838
         ],
         [
           210.0,
-          194.0
+          318.118
         ],
         [
           218.0,
-          210.0
+          327.559
         ],
         [
           226.0,
-          226.0
+          338.0
         ],
         [
           234.0,
-          242.0
+          349.262
         ],
         [
           242.0,
-          258.0
+          361.153
         ],
         [
           250.0,
-          274.0
+          373.469
         ],
         [
           258.0,
-          290.0
+          386.0
         ],
         [
           266.0,
-          306.0
+          398.531
         ],
         [
           274.0,
-          322.0
+          410.847
         ],
         [
           282.0,
-          338.0
+          422.738
         ],
         [
           290.0,
-          354.0
+          434.0
         ],
         [
           298.0,
-          338.0
+          444.441
         ],
         [
           306.0,
-          322.0
+          453.882
         ],
         [
           314.0,
-          306.0
+          462.162
         ],
         [
           322.0,
-          290.0
+          469.138
         ],
         [
           330.0,
-          274.0
+          474.692
         ],
         [
           338.0,
-          258.0
+          478.729
         ],
         [
           346.0,
-          242.0
+          481.179
         ],
         [
           354.0,
-          226.0
+          482.0
         ],
         [
           362.0,
-          210.0
+          481.179
         ],
         [
           370.0,
-          194.0
+          478.729
         ],
         [
           378.0,
-          178.0
+          474.692
         ],
         [
           386.0,
-          162.0
+          469.138
         ],
         [
           394.0,
-          146.0
+          462.162
         ],
         [
           402.0,
-          130.0
+          453.882
         ],
         [
           410.0,
-          114.0
+          444.441
         ],
         [
           418.0,
-          98.0
+          434.0
         ],
         [
           426.0,
-          82.0
+          422.738
         ],
         [
           434.0,
-          66.0
+          410.847
         ],
         [
           442.0,
-          50.0
+          398.531
         ],
         [
           450.0,
-          34.0
+          386.0
         ],
         [
           458.0,
-          18.0
+          373.469
         ],
         [
           466.0,
-          2.0
+          361.153
         ],
         [
           474.0,
-          -14.0
+          349.262
         ],
         [
           482.0,
-          -30.0
+          338.0
         ],
         [
           490.0,
-          -46.0
+          327.559
         ],
         [
           498.0,
-          -62.0
+          318.118
         ],
         [
           506.0,
-          -78.0
+          309.838
         ],
         [
           514.0,
-          -94.0
+          302.862
         ],
         [
           522.0,
-          -110.0
+          297.308
         ],
         [
           530.0,
-          -126.0
+          293.271
         ],
         [
           538.0,
-          -142.0
+          290.821
         ],
         [
           546.0,
-          -158.0
+          290.0
         ],
         [
           554.0,
-          -174.0
+          290.821
         ],
         [
           562.0,
-          -190.0
+          293.271
         ],
         [
           570.0,
-          -206.0
+          297.308
         ],
         [
           578.0,
-          -222.0
+          302.862
+        ],
+        [
+          586.0,
+          309.838
+        ],
+        [
+          594.0,
+          318.118
+        ],
+        [
+          602.0,
+          327.559
+        ],
+        [
+          610.0,
+          338.0
+        ],
+        [
+          618.0,
+          349.262
+        ],
+        [
+          626.0,
+          361.153
+        ],
+        [
+          634.0,
+          373.469
+        ],
+        [
+          642.0,
+          386.0
         ]
       ],
       "function_polyline_render": [
         [
+          6.0,
+          1407.415
+        ],
+        [
+          30.0,
+          1386.486
+        ],
+        [
+          54.0,
+          1361.647
+        ],
+        [
+          78.0,
+          1333.323
+        ],
+        [
+          102.0,
+          1302.0
+        ],
+        [
+          126.0,
+          1268.213
+        ],
+        [
+          150.0,
+          1232.54
+        ],
+        [
+          174.0,
+          1195.592
+        ],
+        [
           198.0,
-          -282.0
+          1158.0
         ],
         [
           222.0,
-          -234.0
+          1120.408
         ],
         [
           246.0,
-          -186.0
+          1083.46
         ],
         [
           270.0,
-          -138.0
+          1047.787
         ],
         [
           294.0,
-          -90.0
+          1014.0
         ],
         [
           318.0,
-          -42.0
+          982.677
         ],
         [
           342.0,
-          6.0
+          954.353
         ],
         [
           366.0,
-          54.0
+          929.514
         ],
         [
           390.0,
-          102.0
+          908.585
         ],
         [
           414.0,
-          150.0
+          891.923
         ],
         [
           438.0,
-          198.0
+          879.813
         ],
         [
           462.0,
-          246.0
+          872.464
         ],
         [
           486.0,
-          294.0
+          870.0
         ],
         [
           510.0,
-          342.0
+          872.464
         ],
         [
           534.0,
-          390.0
+          879.813
         ],
         [
           558.0,
-          438.0
+          891.923
         ],
         [
           582.0,
-          486.0
+          908.585
         ],
         [
           606.0,
-          534.0
+          929.514
         ],
         [
           630.0,
-          582.0
+          954.353
         ],
         [
           654.0,
-          630.0
+          982.677
         ],
         [
           678.0,
-          678.0
+          1014.0
         ],
         [
           702.0,
-          726.0
+          1047.787
         ],
         [
           726.0,
-          774.0
+          1083.46
         ],
         [
           750.0,
-          822.0
+          1120.408
         ],
         [
           774.0,
-          870.0
+          1158.0
         ],
         [
           798.0,
-          918.0
+          1195.592
         ],
         [
           822.0,
-          966.0
+          1232.54
         ],
         [
           846.0,
-          1014.0
+          1268.213
         ],
         [
           870.0,
-          1062.0
+          1302.0
         ],
         [
           894.0,
-          1014.0
+          1333.323
         ],
         [
           918.0,
-          966.0
+          1361.647
         ],
         [
           942.0,
-          918.0
+          1386.486
         ],
         [
           966.0,
-          870.0
+          1407.415
         ],
         [
           990.0,
-          822.0
+          1424.077
         ],
         [
           1014.0,
-          774.0
+          1436.187
         ],
         [
           1038.0,
-          726.0
+          1443.536
         ],
         [
           1062.0,
-          678.0
+          1446.0
         ],
         [
           1086.0,
-          630.0
+          1443.536
         ],
         [
           1110.0,
-          582.0
+          1436.187
         ],
         [
           1134.0,
-          534.0
+          1424.077
         ],
         [
           1158.0,
-          486.0
+          1407.415
         ],
         [
           1182.0,
-          438.0
+          1386.486
         ],
         [
           1206.0,
-          390.0
+          1361.647
         ],
         [
           1230.0,
-          342.0
+          1333.323
         ],
         [
           1254.0,
-          294.0
+          1302.0
         ],
         [
           1278.0,
-          246.0
+          1268.213
         ],
         [
           1302.0,
-          198.0
+          1232.54
         ],
         [
           1326.0,
-          150.0
+          1195.592
         ],
         [
           1350.0,
-          102.0
+          1158.0
         ],
         [
           1374.0,
-          54.0
+          1120.408
         ],
         [
           1398.0,
-          6.0
+          1083.46
         ],
         [
           1422.0,
-          -42.0
+          1047.787
         ],
         [
           1446.0,
-          -90.0
+          1014.0
         ],
         [
           1470.0,
-          -138.0
+          982.677
         ],
         [
           1494.0,
-          -186.0
+          954.353
         ],
         [
           1518.0,
-          -234.0
+          929.514
         ],
         [
           1542.0,
-          -282.0
+          908.585
         ],
         [
           1566.0,
-          -330.0
+          891.923
         ],
         [
           1590.0,
-          -378.0
+          879.813
         ],
         [
           1614.0,
-          -426.0
+          872.464
         ],
         [
           1638.0,
-          -474.0
+          870.0
         ],
         [
           1662.0,
-          -522.0
+          872.464
         ],
         [
           1686.0,
-          -570.0
+          879.813
         ],
         [
           1710.0,
-          -618.0
+          891.923
         ],
         [
           1734.0,
-          -666.0
+          908.585
+        ],
+        [
+          1758.0,
+          929.514
+        ],
+        [
+          1782.0,
+          954.353
+        ],
+        [
+          1806.0,
+          982.677
+        ],
+        [
+          1830.0,
+          1014.0
+        ],
+        [
+          1854.0,
+          1047.787
+        ],
+        [
+          1878.0,
+          1083.46
+        ],
+        [
+          1902.0,
+          1120.408
+        ],
+        [
+          1926.0,
+          1158.0
         ]
       ],
       "query_label_bbox": [
         551.5,
-        329.667,
+        457.667,
         632.5,
-        354.333
+        482.333
       ],
       "query_line_pixel": [
         [
           34.0,
-          354.0
+          482.0
         ],
         [
           610.0,
-          354.0
+          482.0
         ]
       ],
       "query_line_render": [
         [
           102.0,
-          1062.0
+          1446.0
         ],
         [
           1830.0,
-          1062.0
+          1446.0
         ]
       ],
-      "query_line_y": -1,
-      "scene_variant": "absolute_value"
+      "query_line_y": -5,
+      "scene_variant": "sinusoid"
     },
     "render_spec": {
       "background_style": {
@@ -963,7 +1097,7 @@
         ],
         "enabled": true
       },
-      "scene_variant": "absolute_value",
+      "scene_variant": "sinusoid",
       "shape_style": {
         "label_color": [
           144,
@@ -987,18 +1121,19 @@
         {
           "entity_id": "function_graph",
           "entity_type": "function_graph",
-          "family": "absolute_value",
+          "family": "sinusoid",
           "parameters": {
-            "h": -1,
-            "k": -1,
-            "orientation": 1,
-            "slope": 2
+            "amplitude": 3,
+            "family_form": "cosine",
+            "midline_y": -2,
+            "period": 12,
+            "phase_shift": -5
           }
         }
       ],
       "relations": {
         "query_variant": "horizontal_line_intersection_count",
-        "scene_variant": "absolute_value",
+        "scene_variant": "sinusoid",
         "target_count": 1,
         "task_variant": "horizontal_line_intersection_count"
       },

@@ -25,10 +25,10 @@
     "path": "geometry/task_geometry_graphing_count/images/horizontal_line_intersection_count/0003.png"
   },
   "instance_seed": 5166322647420708,
-  "prompt": "Use the graph-paper graph with a plotted piecewise-linear graph on graph paper and a dashed horizontal guide line. Read the entire graph-paper plot carefully, then answer the question. Count the points where the graph intersects the dashed horizontal line y = 3.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array of every graph-paper coordinate [x, y] that satisfies the question; use [] when there are none.\nAnswer rule: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"evidence\":[[0,0],[4,0],[0,3]],\"answer\":8}",
+  "prompt": "Use the graph-paper graph with a plotted function graph on graph paper and a dashed horizontal guide line. Read the entire graph-paper plot carefully, then answer the question. Count the points where the graph intersects the dashed horizontal line y = 3.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array of every graph-paper coordinate [x, y] that satisfies the question; use [] when there are none.\nAnswer rule: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"evidence\":[[0,0],[4,0],[0,3]],\"answer\":8}",
   "prompt_variants": {
-    "answer_and_evidence": "Use the graph-paper graph with a plotted piecewise-linear graph on graph paper and a dashed horizontal guide line. Read the entire graph-paper plot carefully, then answer the question. Count the points where the graph intersects the dashed horizontal line y = 3.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array of every graph-paper coordinate [x, y] that satisfies the question; use [] when there are none.\nAnswer rule: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"evidence\":[[0,0],[4,0],[0,3]],\"answer\":8}",
-    "answer_only": "Use the graph-paper graph with a plotted piecewise-linear graph on graph paper and a dashed horizontal guide line. Read the entire graph-paper plot carefully, then answer the question. Count the points where the graph intersects the dashed horizontal line y = 3.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"answer\":8}"
+    "answer_and_evidence": "Use the graph-paper graph with a plotted function graph on graph paper and a dashed horizontal guide line. Read the entire graph-paper plot carefully, then answer the question. Count the points where the graph intersects the dashed horizontal line y = 3.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array of every graph-paper coordinate [x, y] that satisfies the question; use [] when there are none.\nAnswer rule: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"evidence\":[[0,0],[4,0],[0,3]],\"answer\":8}",
+    "answer_only": "Use the graph-paper graph with a plotted function graph on graph paper and a dashed horizontal guide line. Read the entire graph-paper plot carefully, then answer the question. Count the points where the graph intersects the dashed horizontal line y = 3.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"answer\":8}"
   },
   "task": "task_geometry_graphing_count",
   "task_variant": "horizontal_line_intersection_count",
@@ -97,8 +97,10 @@
       "scene_variant": "piecewise_linear",
       "scene_variant_probabilities": {
         "absolute_value": 0.0,
-        "piecewise_linear": 1.0,
-        "quadratic": 0.0
+        "cubic": 0.3333333333333333,
+        "piecewise_linear": 0.3333333333333333,
+        "quadratic": 0.0,
+        "sinusoid": 0.3333333333333333
       },
       "target_count": 3,
       "target_count_probabilities": {
@@ -216,8 +218,10 @@
         "scene_variant": "piecewise_linear",
         "scene_variant_probabilities": {
           "absolute_value": 0.0,
-          "piecewise_linear": 1.0,
-          "quadratic": 0.0
+          "cubic": 0.3333333333333333,
+          "piecewise_linear": 0.3333333333333333,
+          "quadratic": 0.0,
+          "sinusoid": 0.3333333333333333
         },
         "target_count": 3,
         "target_count_probabilities": {
@@ -248,7 +252,7 @@
           "json_example_answer_only": "{\"answer\":8}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "object_description": "a plotted piecewise-linear graph on graph paper and a dashed horizontal guide line",
+          "object_description": "a plotted function graph on graph paper and a dashed horizontal guide line",
           "query_line_equation": "y = 3"
         },
         "task_family_key": "graphing_scene",
@@ -282,7 +286,7 @@
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a plotted piecewise-linear graph on graph paper and a dashed horizontal guide line",
+              "object_description": "a plotted function graph on graph paper and a dashed horizontal guide line",
               "query_line_equation": "y = 3"
             },
             "task_family_key": "graphing_scene",
@@ -301,7 +305,7 @@
               "task_variant:horizontal_line_intersection_count": 5
             }
           },
-          "prompt": "Use the graph-paper graph with a plotted piecewise-linear graph on graph paper and a dashed horizontal guide line. Read the entire graph-paper plot carefully, then answer the question. Count the points where the graph intersects the dashed horizontal line y = 3.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array of every graph-paper coordinate [x, y] that satisfies the question; use [] when there are none.\nAnswer rule: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"evidence\":[[0,0],[4,0],[0,3]],\"answer\":8}"
+          "prompt": "Use the graph-paper graph with a plotted function graph on graph paper and a dashed horizontal guide line. Read the entire graph-paper plot carefully, then answer the question. Count the points where the graph intersects the dashed horizontal line y = 3.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array of every graph-paper coordinate [x, y] that satisfies the question; use [] when there are none.\nAnswer rule: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"evidence\":[[0,0],[4,0],[0,3]],\"answer\":8}"
         },
         "answer_only": {
           "metadata": {
@@ -316,7 +320,7 @@
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a plotted piecewise-linear graph on graph paper and a dashed horizontal guide line",
+              "object_description": "a plotted function graph on graph paper and a dashed horizontal guide line",
               "query_line_equation": "y = 3"
             },
             "task_family_key": "graphing_scene",
@@ -335,7 +339,7 @@
               "task_variant:horizontal_line_intersection_count": 5
             }
           },
-          "prompt": "Use the graph-paper graph with a plotted piecewise-linear graph on graph paper and a dashed horizontal guide line. Read the entire graph-paper plot carefully, then answer the question. Count the points where the graph intersects the dashed horizontal line y = 3.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"answer\":8}"
+          "prompt": "Use the graph-paper graph with a plotted function graph on graph paper and a dashed horizontal guide line. Read the entire graph-paper plot carefully, then answer the question. Count the points where the graph intersects the dashed horizontal line y = 3.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"answer\":8}"
         }
       },
       "task_variant": "horizontal_line_intersection_count",

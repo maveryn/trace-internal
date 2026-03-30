@@ -124,7 +124,9 @@ Active bundles:
    - `prompts/documents/readout/documents_readout_v1.json`
    - `prompts/documents/relation/documents_relation_v1.json`
    - `prompts/documents/selection/documents_selection_v1.json`
-
+11. Diagrams:
+   - `prompts/diagrams/flow/diagrams_flow_v1.json`
+   - `prompts/diagrams/hierarchy/diagrams_hierarchy_v1.json`
 Active task-to-bundle mapping:
 1. Geometry comparison task (`task_geometry_comparison_value`) delegates to `geometry_comparison_v1`
 2. Geometry counting task (`task_geometry_counting_value`) delegates to `geometry_counting_v1`
@@ -190,6 +192,7 @@ Active task-to-bundle mapping:
    - `task_puzzles_topology_bead_equivalence_count` -> `puzzles_topology_v1`
 16. Diagrams:
    - `task_diagrams_flow_next_step_label` -> `diagrams_flow_v1`
+   - `task_diagrams_hierarchy_ancestor_label` -> `diagrams_hierarchy_v1`
 17. Maps:
    - `task_maps_region_association_label|task_maps_region_count` -> `maps_region_v1`
 18. Documents:

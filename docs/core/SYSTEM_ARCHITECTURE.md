@@ -156,6 +156,7 @@ Implementation map for the contracts in `docs/core/BLUEPRINT.md`.
    - `trace/tasks/documents/selection/checkbox_count.py`
 11. Diagrams:
    - `trace/tasks/diagrams/flow/next_step_label.py`
+   - `trace/tasks/diagrams/hierarchy/ancestor_label.py`
 ## 5) Architecture invariants
 1. Determinism from config + seeds + versions.
 2. `TrainInstance` stays lightweight; heavy replay metadata stays in sidecar trace.

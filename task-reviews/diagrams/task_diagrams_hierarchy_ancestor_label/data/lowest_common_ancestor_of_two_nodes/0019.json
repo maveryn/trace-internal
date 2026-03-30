@@ -1,0 +1,974 @@
+{
+  "answer_gt": {
+    "type": "string",
+    "value": "Bond"
+  },
+  "evidence_gt": {
+    "type": "bbox_set",
+    "value": [
+      [
+        535.0,
+        174.0,
+        699.0,
+        246.0
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "diagrams/task_diagrams_hierarchy_ancestor_label/images/lowest_common_ancestor_of_two_nodes/0019.png"
+  },
+  "instance_seed": 1334156097139163,
+  "prompt": "Look at the hierarchy diagram in the image: a hierarchical org chart with labeled boxes and parent-child connector lines. What is the lowest common ancestor of Jit and Olli? Return the exact label shown. Return the exact visible label.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct ancestor box.\nAnswer rule: set \"answer\" to the exact visible ancestor label.\nExample JSON:\n{\"evidence\":[[558,530,722,602]],\"answer\":\"Cott\"}",
+  "prompt_variants": {
+    "answer_and_evidence": "Look at the hierarchy diagram in the image: a hierarchical org chart with labeled boxes and parent-child connector lines. What is the lowest common ancestor of Jit and Olli? Return the exact label shown. Return the exact visible label.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct ancestor box.\nAnswer rule: set \"answer\" to the exact visible ancestor label.\nExample JSON:\n{\"evidence\":[[558,530,722,602]],\"answer\":\"Cott\"}",
+    "answer_only": "Look at the hierarchy diagram in the image: a hierarchical org chart with labeled boxes and parent-child connector lines. What is the lowest common ancestor of Jit and Olli? Return the exact label shown. Return the exact visible label.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the exact visible ancestor label.\nExample JSON:\n{\"answer\":\"Cott\"}"
+  },
+  "task": "task_diagrams_hierarchy_ancestor_label",
+  "task_variant": "lowest_common_ancestor_of_two_nodes",
+  "trace_payload": {
+    "background": {
+      "available_styles": [
+        "solid_light"
+      ],
+      "enabled": true,
+      "selected_style": "solid_light",
+      "style_spec": {
+        "color": [
+          246,
+          247,
+          250
+        ],
+        "kind": "solid"
+      }
+    },
+    "execution_trace": {
+      "answer_node_bbox_id": "node_bbox_0",
+      "answer_node_depth": 0,
+      "answer_node_id": "node_0",
+      "answer_node_label": "Bond",
+      "edge_specs": [
+        {
+          "edge_id": "edge_0",
+          "source_node_id": "node_0",
+          "target_node_id": "node_1"
+        },
+        {
+          "edge_id": "edge_1",
+          "source_node_id": "node_0",
+          "target_node_id": "node_2"
+        },
+        {
+          "edge_id": "edge_2",
+          "source_node_id": "node_1",
+          "target_node_id": "node_3"
+        },
+        {
+          "edge_id": "edge_3",
+          "source_node_id": "node_1",
+          "target_node_id": "node_4"
+        },
+        {
+          "edge_id": "edge_4",
+          "source_node_id": "node_1",
+          "target_node_id": "node_5"
+        },
+        {
+          "edge_id": "edge_5",
+          "source_node_id": "node_2",
+          "target_node_id": "node_6"
+        },
+        {
+          "edge_id": "edge_6",
+          "source_node_id": "node_2",
+          "target_node_id": "node_7"
+        },
+        {
+          "edge_id": "edge_7",
+          "source_node_id": "node_7",
+          "target_node_id": "node_8"
+        },
+        {
+          "edge_id": "edge_8",
+          "source_node_id": "node_7",
+          "target_node_id": "node_9"
+        }
+      ],
+      "lca_span": 5,
+      "leaf_count": 6,
+      "node_specs": [
+        {
+          "depth": 0,
+          "is_leaf": false,
+          "node_bbox_id": "node_bbox_0",
+          "node_id": "node_0",
+          "node_label": "Bond",
+          "node_label_bbox_id": "node_label_bbox_0",
+          "parent_node_id": null
+        },
+        {
+          "depth": 1,
+          "is_leaf": false,
+          "node_bbox_id": "node_bbox_1",
+          "node_id": "node_1",
+          "node_label": "Jac",
+          "node_label_bbox_id": "node_label_bbox_1",
+          "parent_node_id": "node_0"
+        },
+        {
+          "depth": 1,
+          "is_leaf": false,
+          "node_bbox_id": "node_bbox_2",
+          "node_id": "node_2",
+          "node_label": "Devy",
+          "node_label_bbox_id": "node_label_bbox_2",
+          "parent_node_id": "node_0"
+        },
+        {
+          "depth": 2,
+          "is_leaf": true,
+          "node_bbox_id": "node_bbox_3",
+          "node_id": "node_3",
+          "node_label": "Haze",
+          "node_label_bbox_id": "node_label_bbox_3",
+          "parent_node_id": "node_1"
+        },
+        {
+          "depth": 2,
+          "is_leaf": true,
+          "node_bbox_id": "node_bbox_4",
+          "node_id": "node_4",
+          "node_label": "Jit",
+          "node_label_bbox_id": "node_label_bbox_4",
+          "parent_node_id": "node_1"
+        },
+        {
+          "depth": 2,
+          "is_leaf": true,
+          "node_bbox_id": "node_bbox_5",
+          "node_id": "node_5",
+          "node_label": "Leff",
+          "node_label_bbox_id": "node_label_bbox_5",
+          "parent_node_id": "node_1"
+        },
+        {
+          "depth": 2,
+          "is_leaf": true,
+          "node_bbox_id": "node_bbox_6",
+          "node_id": "node_6",
+          "node_label": "Lust",
+          "node_label_bbox_id": "node_label_bbox_6",
+          "parent_node_id": "node_2"
+        },
+        {
+          "depth": 2,
+          "is_leaf": false,
+          "node_bbox_id": "node_bbox_7",
+          "node_id": "node_7",
+          "node_label": "Dame",
+          "node_label_bbox_id": "node_label_bbox_7",
+          "parent_node_id": "node_2"
+        },
+        {
+          "depth": 3,
+          "is_leaf": true,
+          "node_bbox_id": "node_bbox_8",
+          "node_id": "node_8",
+          "node_label": "Olli",
+          "node_label_bbox_id": "node_label_bbox_8",
+          "parent_node_id": "node_7"
+        },
+        {
+          "depth": 3,
+          "is_leaf": true,
+          "node_bbox_id": "node_bbox_9",
+          "node_id": "node_9",
+          "node_label": "Lise",
+          "node_label_bbox_id": "node_label_bbox_9",
+          "parent_node_id": "node_7"
+        }
+      ],
+      "query_depths": [
+        2,
+        3
+      ],
+      "query_node_ids": [
+        "node_4",
+        "node_8"
+      ],
+      "query_node_labels": [
+        "Jit",
+        "Olli"
+      ],
+      "query_relationship": "lowest_common_ancestor",
+      "question_format": "hierarchy_ancestor_label",
+      "question_text": "What is the lowest common ancestor of Jit and Olli? Return the exact label shown.",
+      "root_node_id": "node_0",
+      "scene_title": "Organization Chart",
+      "scene_variant": "org_chart",
+      "supporting_node_bbox_ids": [
+        "node_bbox_0"
+      ],
+      "task_variant": "lowest_common_ancestor_of_two_nodes",
+      "template_id": "dual_pillars",
+      "tree_depth": 3,
+      "tree_node_count": 10,
+      "view_family": "org_chart_diagram"
+    },
+    "post_image_noise": {
+      "applied": false,
+      "apply_prob": 0.0,
+      "edit_count_range": [
+        1,
+        2
+      ],
+      "edit_types": [
+        "blur",
+        "downsample",
+        "jpeg",
+        "noise"
+      ],
+      "edits": [],
+      "enabled": false
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          535.0,
+          174.0,
+          699.0,
+          246.0
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "leaf_count": 6,
+        "query_relationship": "lowest_common_ancestor",
+        "scene_variant": "org_chart",
+        "scene_variant_probabilities": {
+          "org_chart": 1.0
+        },
+        "task_variant": "lowest_common_ancestor_of_two_nodes",
+        "task_variant_probabilities": {
+          "lowest_common_ancestor_of_two_nodes": 1.0,
+          "parent_of_node": 0.0
+        },
+        "tree_depth": 3,
+        "tree_node_count": 10
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 4,
+        "prompt_bundle_id": "diagrams_hierarchy_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the exact visible ancestor label",
+          "evidence_hint": "set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct ancestor box",
+          "json_example": "{\"evidence\":[[558,530,722,602]],\"answer\":\"Cott\"}",
+          "json_example_answer_only": "{\"answer\":\"Cott\"}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a hierarchical org chart with labeled boxes and parent-child connector lines",
+          "question_text": "What is the lowest common ancestor of Jit and Olli? Return the exact label shown."
+        },
+        "task_family_key": "hierarchy_diagram",
+        "task_family_variant_index": 1,
+        "task_key": "ancestor_query",
+        "task_variant_index": 0,
+        "task_variant_key": "lowest_common_ancestor_of_two_nodes",
+        "task_variant_template_index": 1,
+        "template_paths": [
+          "diagrams/hierarchy/diagrams_hierarchy_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:ancestor_query": 5,
+          "task_family:hierarchy_diagram": 5,
+          "task_variant:lowest_common_ancestor_of_two_nodes": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 4,
+            "prompt_bundle_id": "diagrams_hierarchy_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the exact visible ancestor label",
+              "evidence_hint": "set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct ancestor box",
+              "json_example": "{\"evidence\":[[558,530,722,602]],\"answer\":\"Cott\"}",
+              "json_example_answer_only": "{\"answer\":\"Cott\"}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a hierarchical org chart with labeled boxes and parent-child connector lines",
+              "question_text": "What is the lowest common ancestor of Jit and Olli? Return the exact label shown."
+            },
+            "task_family_key": "hierarchy_diagram",
+            "task_family_variant_index": 1,
+            "task_key": "ancestor_query",
+            "task_variant_index": 0,
+            "task_variant_key": "lowest_common_ancestor_of_two_nodes",
+            "task_variant_template_index": 1,
+            "template_paths": [
+              "diagrams/hierarchy/diagrams_hierarchy_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:ancestor_query": 5,
+              "task_family:hierarchy_diagram": 5,
+              "task_variant:lowest_common_ancestor_of_two_nodes": 5
+            }
+          },
+          "prompt": "Look at the hierarchy diagram in the image: a hierarchical org chart with labeled boxes and parent-child connector lines. What is the lowest common ancestor of Jit and Olli? Return the exact label shown. Return the exact visible label.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct ancestor box.\nAnswer rule: set \"answer\" to the exact visible ancestor label.\nExample JSON:\n{\"evidence\":[[558,530,722,602]],\"answer\":\"Cott\"}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 3,
+            "prompt_bundle_id": "diagrams_hierarchy_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the exact visible ancestor label",
+              "evidence_hint": "set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct ancestor box",
+              "json_example": "{\"evidence\":[[558,530,722,602]],\"answer\":\"Cott\"}",
+              "json_example_answer_only": "{\"answer\":\"Cott\"}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a hierarchical org chart with labeled boxes and parent-child connector lines",
+              "question_text": "What is the lowest common ancestor of Jit and Olli? Return the exact label shown."
+            },
+            "task_family_key": "hierarchy_diagram",
+            "task_family_variant_index": 1,
+            "task_key": "ancestor_query",
+            "task_variant_index": 0,
+            "task_variant_key": "lowest_common_ancestor_of_two_nodes",
+            "task_variant_template_index": 1,
+            "template_paths": [
+              "diagrams/hierarchy/diagrams_hierarchy_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:ancestor_query": 5,
+              "task_family:hierarchy_diagram": 5,
+              "task_variant:lowest_common_ancestor_of_two_nodes": 5
+            }
+          },
+          "prompt": "Look at the hierarchy diagram in the image: a hierarchical org chart with labeled boxes and parent-child connector lines. What is the lowest common ancestor of Jit and Olli? Return the exact label shown. Return the exact visible label.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the exact visible ancestor label.\nExample JSON:\n{\"answer\":\"Cott\"}"
+        }
+      },
+      "task_variant": "lowest_common_ancestor_of_two_nodes",
+      "template_id": "diagrams_hierarchy_v1"
+    },
+    "render_map": {
+      "edge_bboxes_px": {
+        "edge_0": [
+          364.0,
+          246.0,
+          617.0,
+          352.0
+        ],
+        "edge_1": [
+          617.0,
+          246.0,
+          870.0,
+          352.0
+        ],
+        "edge_2": [
+          180.0,
+          424.0,
+          364.0,
+          530.0
+        ],
+        "edge_3": [
+          364.0,
+          424.0,
+          364.0,
+          530.0
+        ],
+        "edge_4": [
+          364.0,
+          424.0,
+          548.0,
+          530.0
+        ],
+        "edge_5": [
+          732.0,
+          424.0,
+          870.0,
+          530.0
+        ],
+        "edge_6": [
+          870.0,
+          424.0,
+          1008.0,
+          530.0
+        ],
+        "edge_7": [
+          916.0,
+          602.0,
+          1008.0,
+          708.0
+        ],
+        "edge_8": [
+          1008.0,
+          602.0,
+          1100.0,
+          708.0
+        ]
+      },
+      "node_bboxes_px": {
+        "node_bbox_0": [
+          535.0,
+          174.0,
+          699.0,
+          246.0
+        ],
+        "node_bbox_1": [
+          282.0,
+          352.0,
+          446.0,
+          424.0
+        ],
+        "node_bbox_2": [
+          788.0,
+          352.0,
+          952.0,
+          424.0
+        ],
+        "node_bbox_3": [
+          98.0,
+          530.0,
+          262.0,
+          602.0
+        ],
+        "node_bbox_4": [
+          282.0,
+          530.0,
+          446.0,
+          602.0
+        ],
+        "node_bbox_5": [
+          466.0,
+          530.0,
+          630.0,
+          602.0
+        ],
+        "node_bbox_6": [
+          650.0,
+          530.0,
+          814.0,
+          602.0
+        ],
+        "node_bbox_7": [
+          926.0,
+          530.0,
+          1090.0,
+          602.0
+        ],
+        "node_bbox_8": [
+          834.0,
+          708.0,
+          998.0,
+          780.0
+        ],
+        "node_bbox_9": [
+          1018.0,
+          708.0,
+          1182.0,
+          780.0
+        ]
+      },
+      "node_label_bboxes_px": {
+        "node_label_bbox_0": [
+          582.0,
+          200.0,
+          652.0,
+          220.0
+        ],
+        "node_label_bbox_1": [
+          342.5,
+          375.5,
+          385.5,
+          400.5
+        ],
+        "node_label_bbox_2": [
+          835.0,
+          375.5,
+          905.0,
+          400.5
+        ],
+        "node_label_bbox_3": [
+          146.0,
+          556.0,
+          214.0,
+          576.0
+        ],
+        "node_label_bbox_4": [
+          348.0,
+          553.5,
+          380.0,
+          578.5
+        ],
+        "node_label_bbox_5": [
+          521.0,
+          556.0,
+          575.0,
+          576.0
+        ],
+        "node_label_bbox_6": [
+          702.5,
+          556.0,
+          761.5,
+          576.0
+        ],
+        "node_label_bbox_7": [
+          968.5,
+          556.0,
+          1047.5,
+          576.0
+        ],
+        "node_label_bbox_8": [
+          893.0,
+          734.0,
+          939.0,
+          754.0
+        ],
+        "node_label_bbox_9": [
+          1072.5,
+          734.0,
+          1127.5,
+          754.0
+        ]
+      },
+      "panel_bbox_px": [
+        52.0,
+        52.0,
+        1228.0,
+        828.0
+      ],
+      "title_bbox_px": [
+        467.0,
+        74.5,
+        813.0,
+        107.5
+      ]
+    },
+    "render_spec": {
+      "canvas_height": 880,
+      "canvas_width": 1280,
+      "connector_width_px": 5,
+      "geometry_seed": 1334156097139163,
+      "node_height_px": 72,
+      "node_width_px": 164,
+      "scene_variant": "org_chart"
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "bbox_xyxy": [
+            52.0,
+            52.0,
+            1228.0,
+            828.0
+          ],
+          "entity_id": "diagram_panel",
+          "entity_type": "diagram_panel"
+        },
+        {
+          "bbox_xyxy": [
+            467.0,
+            74.5,
+            813.0,
+            107.5
+          ],
+          "entity_id": "diagram_title",
+          "entity_type": "diagram_title",
+          "text": "Organization Chart"
+        },
+        {
+          "bbox_xyxy": [
+            364.0,
+            246.0,
+            617.0,
+            352.0
+          ],
+          "entity_id": "edge_0",
+          "entity_type": "diagram_edge",
+          "source_node_id": "node_0",
+          "target_node_id": "node_1"
+        },
+        {
+          "bbox_xyxy": [
+            617.0,
+            246.0,
+            870.0,
+            352.0
+          ],
+          "entity_id": "edge_1",
+          "entity_type": "diagram_edge",
+          "source_node_id": "node_0",
+          "target_node_id": "node_2"
+        },
+        {
+          "bbox_xyxy": [
+            180.0,
+            424.0,
+            364.0,
+            530.0
+          ],
+          "entity_id": "edge_2",
+          "entity_type": "diagram_edge",
+          "source_node_id": "node_1",
+          "target_node_id": "node_3"
+        },
+        {
+          "bbox_xyxy": [
+            364.0,
+            424.0,
+            364.0,
+            530.0
+          ],
+          "entity_id": "edge_3",
+          "entity_type": "diagram_edge",
+          "source_node_id": "node_1",
+          "target_node_id": "node_4"
+        },
+        {
+          "bbox_xyxy": [
+            364.0,
+            424.0,
+            548.0,
+            530.0
+          ],
+          "entity_id": "edge_4",
+          "entity_type": "diagram_edge",
+          "source_node_id": "node_1",
+          "target_node_id": "node_5"
+        },
+        {
+          "bbox_xyxy": [
+            732.0,
+            424.0,
+            870.0,
+            530.0
+          ],
+          "entity_id": "edge_5",
+          "entity_type": "diagram_edge",
+          "source_node_id": "node_2",
+          "target_node_id": "node_6"
+        },
+        {
+          "bbox_xyxy": [
+            870.0,
+            424.0,
+            1008.0,
+            530.0
+          ],
+          "entity_id": "edge_6",
+          "entity_type": "diagram_edge",
+          "source_node_id": "node_2",
+          "target_node_id": "node_7"
+        },
+        {
+          "bbox_xyxy": [
+            916.0,
+            602.0,
+            1008.0,
+            708.0
+          ],
+          "entity_id": "edge_7",
+          "entity_type": "diagram_edge",
+          "source_node_id": "node_7",
+          "target_node_id": "node_8"
+        },
+        {
+          "bbox_xyxy": [
+            1008.0,
+            602.0,
+            1100.0,
+            708.0
+          ],
+          "entity_id": "edge_8",
+          "entity_type": "diagram_edge",
+          "source_node_id": "node_7",
+          "target_node_id": "node_9"
+        },
+        {
+          "bbox_xyxy": [
+            535.0,
+            174.0,
+            699.0,
+            246.0
+          ],
+          "depth": 0,
+          "entity_id": "node_bbox_0",
+          "entity_type": "diagram_node",
+          "node_id": "node_0",
+          "text": "Bond"
+        },
+        {
+          "bbox_xyxy": [
+            582.0,
+            200.0,
+            652.0,
+            220.0
+          ],
+          "entity_id": "node_label_bbox_0",
+          "entity_type": "diagram_node_label",
+          "node_id": "node_0",
+          "text": "Bond"
+        },
+        {
+          "bbox_xyxy": [
+            282.0,
+            352.0,
+            446.0,
+            424.0
+          ],
+          "depth": 1,
+          "entity_id": "node_bbox_1",
+          "entity_type": "diagram_node",
+          "node_id": "node_1",
+          "text": "Jac"
+        },
+        {
+          "bbox_xyxy": [
+            342.5,
+            375.5,
+            385.5,
+            400.5
+          ],
+          "entity_id": "node_label_bbox_1",
+          "entity_type": "diagram_node_label",
+          "node_id": "node_1",
+          "text": "Jac"
+        },
+        {
+          "bbox_xyxy": [
+            788.0,
+            352.0,
+            952.0,
+            424.0
+          ],
+          "depth": 1,
+          "entity_id": "node_bbox_2",
+          "entity_type": "diagram_node",
+          "node_id": "node_2",
+          "text": "Devy"
+        },
+        {
+          "bbox_xyxy": [
+            835.0,
+            375.5,
+            905.0,
+            400.5
+          ],
+          "entity_id": "node_label_bbox_2",
+          "entity_type": "diagram_node_label",
+          "node_id": "node_2",
+          "text": "Devy"
+        },
+        {
+          "bbox_xyxy": [
+            98.0,
+            530.0,
+            262.0,
+            602.0
+          ],
+          "depth": 2,
+          "entity_id": "node_bbox_3",
+          "entity_type": "diagram_node",
+          "node_id": "node_3",
+          "text": "Haze"
+        },
+        {
+          "bbox_xyxy": [
+            146.0,
+            556.0,
+            214.0,
+            576.0
+          ],
+          "entity_id": "node_label_bbox_3",
+          "entity_type": "diagram_node_label",
+          "node_id": "node_3",
+          "text": "Haze"
+        },
+        {
+          "bbox_xyxy": [
+            282.0,
+            530.0,
+            446.0,
+            602.0
+          ],
+          "depth": 2,
+          "entity_id": "node_bbox_4",
+          "entity_type": "diagram_node",
+          "node_id": "node_4",
+          "text": "Jit"
+        },
+        {
+          "bbox_xyxy": [
+            348.0,
+            553.5,
+            380.0,
+            578.5
+          ],
+          "entity_id": "node_label_bbox_4",
+          "entity_type": "diagram_node_label",
+          "node_id": "node_4",
+          "text": "Jit"
+        },
+        {
+          "bbox_xyxy": [
+            466.0,
+            530.0,
+            630.0,
+            602.0
+          ],
+          "depth": 2,
+          "entity_id": "node_bbox_5",
+          "entity_type": "diagram_node",
+          "node_id": "node_5",
+          "text": "Leff"
+        },
+        {
+          "bbox_xyxy": [
+            521.0,
+            556.0,
+            575.0,
+            576.0
+          ],
+          "entity_id": "node_label_bbox_5",
+          "entity_type": "diagram_node_label",
+          "node_id": "node_5",
+          "text": "Leff"
+        },
+        {
+          "bbox_xyxy": [
+            650.0,
+            530.0,
+            814.0,
+            602.0
+          ],
+          "depth": 2,
+          "entity_id": "node_bbox_6",
+          "entity_type": "diagram_node",
+          "node_id": "node_6",
+          "text": "Lust"
+        },
+        {
+          "bbox_xyxy": [
+            702.5,
+            556.0,
+            761.5,
+            576.0
+          ],
+          "entity_id": "node_label_bbox_6",
+          "entity_type": "diagram_node_label",
+          "node_id": "node_6",
+          "text": "Lust"
+        },
+        {
+          "bbox_xyxy": [
+            926.0,
+            530.0,
+            1090.0,
+            602.0
+          ],
+          "depth": 2,
+          "entity_id": "node_bbox_7",
+          "entity_type": "diagram_node",
+          "node_id": "node_7",
+          "text": "Dame"
+        },
+        {
+          "bbox_xyxy": [
+            968.5,
+            556.0,
+            1047.5,
+            576.0
+          ],
+          "entity_id": "node_label_bbox_7",
+          "entity_type": "diagram_node_label",
+          "node_id": "node_7",
+          "text": "Dame"
+        },
+        {
+          "bbox_xyxy": [
+            834.0,
+            708.0,
+            998.0,
+            780.0
+          ],
+          "depth": 3,
+          "entity_id": "node_bbox_8",
+          "entity_type": "diagram_node",
+          "node_id": "node_8",
+          "text": "Olli"
+        },
+        {
+          "bbox_xyxy": [
+            893.0,
+            734.0,
+            939.0,
+            754.0
+          ],
+          "entity_id": "node_label_bbox_8",
+          "entity_type": "diagram_node_label",
+          "node_id": "node_8",
+          "text": "Olli"
+        },
+        {
+          "bbox_xyxy": [
+            1018.0,
+            708.0,
+            1182.0,
+            780.0
+          ],
+          "depth": 3,
+          "entity_id": "node_bbox_9",
+          "entity_type": "diagram_node",
+          "node_id": "node_9",
+          "text": "Lise"
+        },
+        {
+          "bbox_xyxy": [
+            1072.5,
+            734.0,
+            1127.5,
+            754.0
+          ],
+          "entity_id": "node_label_bbox_9",
+          "entity_type": "diagram_node_label",
+          "node_id": "node_9",
+          "text": "Lise"
+        }
+      ],
+      "relations": {
+        "answer_node_bbox_id": "node_bbox_0",
+        "answer_node_id": "node_0",
+        "root_node_id": "node_0",
+        "scene_variant": "org_chart",
+        "task_variant": "lowest_common_ancestor_of_two_nodes",
+        "view_family": "org_chart_diagram"
+      },
+      "scene_kind": "diagram_hierarchy_org_chart"
+    },
+    "witness_symbolic": {
+      "ids": [
+        "node_0"
+      ],
+      "type": "id_set"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

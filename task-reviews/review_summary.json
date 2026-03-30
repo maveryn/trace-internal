@@ -8,14 +8,15 @@
     "random_count": 100,
     "seed": 0,
     "tasks": [
-      "task_diagrams_flow_next_step_label"
+      "task_diagrams_flow_next_step_label",
+      "task_diagrams_hierarchy_ancestor_label"
     ],
     "workers": 16
   },
   "summary": {
     "distribution_tasks_failed": 0,
     "failed_distribution_task_ids": [],
-    "total_tasks": 1
+    "total_tasks": 2
   },
   "tasks": [
     {
@@ -34,6 +35,23 @@
       },
       "task_group": "flow",
       "task_id": "task_diagrams_flow_next_step_label"
+    },
+    {
+      "distribution_pass": true,
+      "domain": "diagrams",
+      "inspection_count": 50,
+      "inspection_workbook": "diagrams/task_diagrams_hierarchy_ancestor_label/task_diagrams_hierarchy_ancestor_label.xlsx",
+      "inspection_workbook_sheets": {
+        "lowest_common_ancestor_of_two_nodes": "lowest_common_ancestor_of_two_n",
+        "parent_of_node": "parent_of_node"
+      },
+      "reports": {
+        "distribution_review": "diagrams/task_diagrams_hierarchy_ancestor_label/distribution_review.json",
+        "inspection_manifest": "diagrams/task_diagrams_hierarchy_ancestor_label/manifest.json",
+        "random_review": "diagrams/task_diagrams_hierarchy_ancestor_label/random_review_100.json"
+      },
+      "task_group": "hierarchy",
+      "task_id": "task_diagrams_hierarchy_ancestor_label"
     }
   ]
 }

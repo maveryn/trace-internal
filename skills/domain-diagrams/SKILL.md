@@ -27,9 +27,9 @@ Use this whenever the task lives under `domain=diagrams`.
 - If the reasoning depends on arrows, lanes, parent-child connectors, stage ordering, or explicit set overlap regions, it is a good fit for `diagrams`.
 
 ## Early-family guidance
-- `flow`: labeled process nodes plus arrows; good first tasks are next-step and terminal-outcome questions.
+- `flow`: labeled process nodes plus arrows; good early tasks are next-step and terminal-outcome questions.
 - `swimlane` is a visual scene variant within `flow`, not a separate task group.
-- Later `hierarchy`: labeled parent/child containment over tree connectors.
+- `hierarchy`: labeled parent/child containment over tree connectors; good early tasks are parent lookup and lowest-common-ancestor lookup with one-box target evidence.
 - Later `cycle`: ordered adjacent-stage reasoning over circular process layouts.
 - Later `set_diagram`: region membership and overlap reasoning.
 

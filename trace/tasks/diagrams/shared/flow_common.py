@@ -6,9 +6,9 @@ from dataclasses import dataclass
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from ....core.seed import spawn_rng
-from ...shared.config_defaults import group_default, resolve_required_int_bounds
+from ...shared.config_defaults import resolve_required_int_bounds
 from ...shared.deterministic_sampling import resolve_selection_index
-from ..shared.common import resolve_diagrams_axis_variant
+from ..shared.common import resolve_diagrams_axis_variant, resolve_diagrams_int_param, resolve_diagrams_rgb_triple
 
 
 SUPPORTED_DIAGRAM_FLOW_SCENE_VARIANTS: Tuple[str, ...] = ("flowchart", "swimlane")
@@ -132,18 +132,6 @@ class FlowRenderParams:
     branch_label_border_rgb: Tuple[int, int, int]
     branch_label_text_rgb: Tuple[int, int, int]
 
-
-def _resolve_int_param(
-    params: Mapping[str, Any],
-    defaults: Mapping[str, Any],
-    key: str,
-    fallback: int,
-) -> int:
-    """Resolve one integer generation or rendering parameter."""
-
-    return int(params.get(str(key), group_default(defaults, str(key), int(fallback))))
-
-
 def resolve_flow_scene_variant(
     params: Mapping[str, Any],
     *,
@@ -196,35 +184,32 @@ def resolve_flow_render_params(
     """Resolve rendering params for flow scenes."""
 
     def _triple(key: str, fallback: Tuple[int, int, int]) -> Tuple[int, int, int]:
-        raw = params.get(str(key), group_default(render_defaults, str(key), list(fallback)))
-        if not isinstance(raw, Sequence) or len(raw) != 3:
-            raise ValueError(f"{key} must be a length-3 RGB sequence")
-        return tuple(int(value) for value in raw)
+        return resolve_diagrams_rgb_triple(params, render_defaults, key, fallback)
 
     return FlowRenderParams(
-        canvas_width=int(_resolve_int_param(params, render_defaults, "canvas_width", 1200)),
-        canvas_height=int(_resolve_int_param(params, render_defaults, "canvas_height", 840)),
-        outer_margin_px=int(_resolve_int_param(params, render_defaults, "outer_margin_px", 52)),
-        panel_padding_px=int(_resolve_int_param(params, render_defaults, "panel_padding_px", 28)),
-        panel_corner_radius_px=int(_resolve_int_param(params, render_defaults, "panel_corner_radius_px", 30)),
-        title_font_size_px=int(_resolve_int_param(params, render_defaults, "title_font_size_px", 32)),
-        title_band_height_px=int(_resolve_int_param(params, render_defaults, "title_band_height_px", 78)),
-        lane_gutter_width_px=int(_resolve_int_param(params, render_defaults, "lane_gutter_width_px", 160)),
-        lane_label_font_size_px=int(_resolve_int_param(params, render_defaults, "lane_label_font_size_px", 24)),
-        lane_divider_width_px=int(_resolve_int_param(params, render_defaults, "lane_divider_width_px", 3)),
+        canvas_width=int(resolve_diagrams_int_param(params, render_defaults, "canvas_width", 1200)),
+        canvas_height=int(resolve_diagrams_int_param(params, render_defaults, "canvas_height", 840)),
+        outer_margin_px=int(resolve_diagrams_int_param(params, render_defaults, "outer_margin_px", 52)),
+        panel_padding_px=int(resolve_diagrams_int_param(params, render_defaults, "panel_padding_px", 28)),
+        panel_corner_radius_px=int(resolve_diagrams_int_param(params, render_defaults, "panel_corner_radius_px", 30)),
+        title_font_size_px=int(resolve_diagrams_int_param(params, render_defaults, "title_font_size_px", 32)),
+        title_band_height_px=int(resolve_diagrams_int_param(params, render_defaults, "title_band_height_px", 78)),
+        lane_gutter_width_px=int(resolve_diagrams_int_param(params, render_defaults, "lane_gutter_width_px", 160)),
+        lane_label_font_size_px=int(resolve_diagrams_int_param(params, render_defaults, "lane_label_font_size_px", 24)),
+        lane_divider_width_px=int(resolve_diagrams_int_param(params, render_defaults, "lane_divider_width_px", 3)),
         lane_fill_rgb=_triple("lane_fill_rgb", (243, 246, 251)),
         lane_divider_rgb=_triple("lane_divider_rgb", (206, 213, 223)),
-        node_width_px=int(_resolve_int_param(params, render_defaults, "node_width_px", 214)),
-        node_height_px=int(_resolve_int_param(params, render_defaults, "node_height_px", 84)),
-        decision_diameter_px=int(_resolve_int_param(params, render_defaults, "decision_diameter_px", 132)),
-        node_corner_radius_px=int(_resolve_int_param(params, render_defaults, "node_corner_radius_px", 22)),
-        node_border_width_px=int(_resolve_int_param(params, render_defaults, "node_border_width_px", 3)),
-        edge_width_px=int(_resolve_int_param(params, render_defaults, "edge_width_px", 5)),
-        arrow_head_length_px=int(_resolve_int_param(params, render_defaults, "arrow_head_length_px", 18)),
-        arrow_head_width_px=int(_resolve_int_param(params, render_defaults, "arrow_head_width_px", 16)),
-        label_font_size_px=int(_resolve_int_param(params, render_defaults, "label_font_size_px", 28)),
-        branch_label_font_size_px=int(_resolve_int_param(params, render_defaults, "branch_label_font_size_px", 20)),
-        branch_label_padding_px=int(_resolve_int_param(params, render_defaults, "branch_label_padding_px", 10)),
+        node_width_px=int(resolve_diagrams_int_param(params, render_defaults, "node_width_px", 214)),
+        node_height_px=int(resolve_diagrams_int_param(params, render_defaults, "node_height_px", 84)),
+        decision_diameter_px=int(resolve_diagrams_int_param(params, render_defaults, "decision_diameter_px", 132)),
+        node_corner_radius_px=int(resolve_diagrams_int_param(params, render_defaults, "node_corner_radius_px", 22)),
+        node_border_width_px=int(resolve_diagrams_int_param(params, render_defaults, "node_border_width_px", 3)),
+        edge_width_px=int(resolve_diagrams_int_param(params, render_defaults, "edge_width_px", 5)),
+        arrow_head_length_px=int(resolve_diagrams_int_param(params, render_defaults, "arrow_head_length_px", 18)),
+        arrow_head_width_px=int(resolve_diagrams_int_param(params, render_defaults, "arrow_head_width_px", 16)),
+        label_font_size_px=int(resolve_diagrams_int_param(params, render_defaults, "label_font_size_px", 28)),
+        branch_label_font_size_px=int(resolve_diagrams_int_param(params, render_defaults, "branch_label_font_size_px", 20)),
+        branch_label_padding_px=int(resolve_diagrams_int_param(params, render_defaults, "branch_label_padding_px", 10)),
         panel_fill_rgb=_triple("panel_fill_rgb", (252, 252, 255)),
         panel_border_rgb=_triple("panel_border_rgb", (88, 98, 112)),
         title_color_rgb=_triple("title_color_rgb", (34, 40, 48)),

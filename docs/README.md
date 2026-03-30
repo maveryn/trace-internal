@@ -20,7 +20,7 @@ Repo-local skills live under `skills/`, but skills are operational overlays. Can
 6. `docs/domains/CHART_DOMAIN_PLAN.md` — chart-type universe under consideration and the first chart-family rollout plan.
 7. `docs/domains/CHART_TASK_SETUP.md` — concrete v1 contract for the first chart-domain task family.
 8. `docs/domains/GRAPH_TASK_SETUP.md` — concrete v1 contract for the active graph-domain task families.
-9. `docs/domains/DIAGRAM_TASK_SETUP.md` — concrete v1 contract for the first diagrams-domain task family.
+9. `docs/domains/DIAGRAM_TASK_SETUP.md` — concrete v1 contract for the active early diagrams-domain task families.
 10. `docs/domains/DOCUMENT_TASK_SETUP.md` — concrete v1 setup for the first documents-domain family.
 11. `docs/domains/MAP_TASK_SETUP.md` — concrete v1 contract for the first maps-domain task family.
 12. `docs/domains/TABLE_TASK_SETUP.md` — concrete v1 contract for the first tables-domain task family.

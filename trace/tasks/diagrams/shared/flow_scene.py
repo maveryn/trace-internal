@@ -9,7 +9,8 @@ from typing import Dict, List, Mapping, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from ...shared.drawing import draw_arrow, draw_centered_text, draw_rounded_rect
-from ...shared.text_rendering import fit_font_to_box, load_font
+from ...shared.text_rendering import load_font
+from .common import draw_diagram_text_in_box, resolve_diagram_panel_geometry, round_diagram_bbox
 from .flow_common import FlowRenderParams
 
 
@@ -32,71 +33,18 @@ class RenderedFlowScene:
     edge_label_bbox_map: Dict[str, List[float]]
 
 
-def _round_bbox(bbox: Sequence[float]) -> List[float]:
-    """Round one bbox into trace-safe float precision."""
-
-    return [round(float(value), 3) for value in bbox]
-
-
-def _draw_text_in_box(
-    draw: ImageDraw.ImageDraw,
-    *,
-    bbox: BBox,
-    text: str,
-    font_size_px: int,
-    bold: bool,
-    fill: Sequence[int],
-    stroke_fill: Sequence[int],
-    padding_px: int,
-) -> List[float]:
-    """Draw one centered fitted string inside a box and return the rendered bbox."""
-
-    left, top, right, bottom = [float(value) for value in bbox]
-    font = fit_font_to_box(
-        draw,
-        text=str(text),
-        max_width=float(right - left - (2.0 * padding_px)),
-        max_height=float(bottom - top - (2.0 * padding_px)),
-        bold=bool(bold),
-        min_size_px=max(10, int(font_size_px * 0.58)),
-        max_size_px=int(font_size_px),
-        fill_ratio=0.98,
-    )
-    return draw_centered_text(
-        draw,
-        text=str(text),
-        center=(0.5 * float(left + right), 0.5 * float(top + bottom)),
-        font=font,
-        fill=tuple(int(value) for value in fill),
-        stroke_fill=tuple(int(value) for value in stroke_fill),
-        stroke_width=1,
-    )
-
-
 def _panel_geometry(
     *,
     render_params: FlowRenderParams,
 ) -> Tuple[BBox, BBox, BBox]:
     """Resolve the panel, title band, and content area."""
 
-    margin = float(render_params.outer_margin_px)
-    panel = (
-        margin,
-        margin,
-        float(render_params.canvas_width - render_params.outer_margin_px),
-        float(render_params.canvas_height - render_params.outer_margin_px),
-    )
-    title_band = (
-        float(panel[0]),
-        float(panel[1]),
-        float(panel[2]),
-        float(panel[1] + render_params.title_band_height_px),
-    )
-    content = (
-        float(panel[0] + render_params.panel_padding_px),
-        float(title_band[3] + render_params.panel_padding_px),
-        float(panel[2] - render_params.panel_padding_px),
-        float(panel[3] - render_params.panel_padding_px),
+    panel, title_band, content = resolve_diagram_panel_geometry(
+        canvas_width=int(render_params.canvas_width),
+        canvas_height=int(render_params.canvas_height),
+        outer_margin_px=int(render_params.outer_margin_px),
+        title_band_height_px=int(render_params.title_band_height_px),
+        panel_padding_px=int(render_params.panel_padding_px),
     )
     return panel, title_band, content
 
@@ -271,7 +219,7 @@ def render_flow_scene(
         outline=render_params.panel_border_rgb,
         width=2,
     )
-    title_text_bbox = _draw_text_in_box(
+    title_text_bbox = draw_diagram_text_in_box(
         draw,
         bbox=title_bbox,
         text=str(scene_title),
@@ -285,7 +233,7 @@ def render_flow_scene(
         {
             "entity_id": "diagram_panel",
             "entity_type": "diagram_panel",
-            "bbox_xyxy": _round_bbox(panel_bbox),
+            "bbox_xyxy": round_diagram_bbox(panel_bbox),
         }
     )
     entities.append(
@@ -326,7 +274,7 @@ def render_flow_scene(
                 float(content_left - 12.0),
                 float(lane_box[3] - 8.0),
             )
-            label_bbox = _draw_text_in_box(
+            label_bbox = draw_diagram_text_in_box(
                 draw,
                 bbox=lane_label_box,
                 text=str(lane_spec["lane_label"]),
@@ -336,13 +284,13 @@ def render_flow_scene(
                 stroke_fill=render_params.panel_fill_rgb,
                 padding_px=6,
             )
-            lane_bbox_map[lane_id] = _round_bbox(lane_box)
+            lane_bbox_map[lane_id] = round_diagram_bbox(lane_box)
             lane_label_bbox_map[lane_id] = list(label_bbox)
             entities.append(
                 {
                     "entity_id": str(lane_spec["lane_bbox_id"]),
                     "entity_type": "diagram_lane",
-                    "bbox_xyxy": _round_bbox(lane_box),
+                    "bbox_xyxy": round_diagram_bbox(lane_box),
                     "lane_id": lane_id,
                     "text": str(lane_spec["lane_label"]),
                 }
@@ -429,12 +377,12 @@ def render_flow_scene(
             )
             label_bbox_id = str(edge_spec["edge_label_bbox_id"])
             if label_bbox_id:
-                edge_label_bbox_map[label_bbox_id] = _round_bbox(label_box)
+                edge_label_bbox_map[label_bbox_id] = round_diagram_bbox(label_box)
             entities.append(
                 {
                     "entity_id": label_bbox_id,
                     "entity_type": "diagram_edge_label",
-                    "bbox_xyxy": _round_bbox(label_box),
+                    "bbox_xyxy": round_diagram_bbox(label_box),
                     "text": str(edge_label),
                     "text_bbox_xyxy": list(rendered_label_bbox),
                 }
@@ -462,7 +410,7 @@ def render_flow_scene(
                 outline=render_params.node_border_rgb,
                 width=int(render_params.node_border_width_px),
             )
-        label_bbox = _draw_text_in_box(
+        label_bbox = draw_diagram_text_in_box(
             draw,
             bbox=node_box,
             text=node_label,
@@ -472,13 +420,13 @@ def render_flow_scene(
             stroke_fill=render_params.label_stroke_rgb,
             padding_px=10,
         )
-        node_bbox_map[node_bbox_id] = _round_bbox(node_box)
+        node_bbox_map[node_bbox_id] = round_diagram_bbox(node_box)
         node_label_bbox_map[node_label_bbox_id] = list(label_bbox)
         entities.append(
             {
                 "entity_id": node_bbox_id,
                 "entity_type": "diagram_node",
-                "bbox_xyxy": _round_bbox(node_box),
+                "bbox_xyxy": round_diagram_bbox(node_box),
                 "node_id": node_id,
                 "node_kind": str(node_spec["node_kind"]),
                 "text": node_label,
@@ -498,7 +446,7 @@ def render_flow_scene(
     return RenderedFlowScene(
         image=image,
         entities=entities,
-        panel_bbox_px=_round_bbox(panel_bbox),
+        panel_bbox_px=round_diagram_bbox(panel_bbox),
         title_bbox_px=list(title_text_bbox),
         lane_bbox_map=lane_bbox_map,
         lane_label_bbox_map=lane_label_bbox_map,

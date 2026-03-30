@@ -1,0 +1,57 @@
+generation:
+  task_overrides:
+    task_diagrams_hierarchy_ancestor_label:
+      balanced_task_variant_sampling: true
+      balanced_scene_variant_sampling: true
+      task_variant_weights:
+        parent_of_node: 1.0
+        lowest_common_ancestor_of_two_nodes: 1.0
+      scene_variant_weights:
+        org_chart: 1.0
+
+rendering:
+  task_overrides:
+    task_diagrams_hierarchy_ancestor_label:
+      canvas_width: 1280
+      canvas_height: 880
+      outer_margin_px: 52
+      panel_padding_px: 28
+      panel_corner_radius_px: 30
+      title_font_size_px: 32
+      title_band_height_px: 78
+      node_width_px: 164
+      node_height_px: 72
+      node_corner_radius_px: 20
+      node_border_width_px: 3
+      connector_width_px: 5
+      connector_branch_gap_px: 22
+      label_font_size_px: 24
+      root_fill_rgb: [236, 244, 255]
+      node_fill_rgb: [246, 248, 252]
+      panel_fill_rgb: [252, 252, 255]
+      panel_border_rgb: [88, 98, 112]
+      title_color_rgb: [34, 40, 48]
+      node_border_rgb: [77, 90, 109]
+      label_color_rgb: [29, 34, 41]
+      label_stroke_rgb: [255, 255, 255]
+      connector_color_rgb: [95, 104, 118]
+
+prompt:
+  shared:
+    bundle_id: diagrams_hierarchy_v1
+    answer_hint: set "answer" to the exact visible ancestor label
+  task_overrides:
+    task_diagrams_hierarchy_ancestor_label:
+      task_family_key: hierarchy_diagram
+      task_key: ancestor_query
+      object_description_org_chart: a hierarchical org chart with labeled boxes and parent-child connector lines
+      evidence_hint_parent_of_node: set "evidence" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct parent box
+      evidence_hint_lowest_common_ancestor_of_two_nodes: set "evidence" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct ancestor box
+
+complexity:
+  task_overrides:
+    task_diagrams_hierarchy_ancestor_label:
+      criteria_weights:
+        visual_scan: 0.34
+        reasoning_load: 0.49
+        scene_variant_load: 0.17

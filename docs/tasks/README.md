@@ -96,3 +96,4 @@ Current task docs:
 86. [task_tile_symmetry_violation_count.md](task_tile_symmetry_violation_count.md)
 87. [task_tile_transition_gravity_max_drop.md](task_tile_transition_gravity_max_drop.md)
 88. [task_diagrams_flow_next_step_label.md](task_diagrams_flow_next_step_label.md)
+89. [task_diagrams_hierarchy_ancestor_label.md](task_diagrams_hierarchy_ancestor_label.md)

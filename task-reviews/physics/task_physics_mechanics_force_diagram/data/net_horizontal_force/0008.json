@@ -1,33 +1,27 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 0
+    "value": 8
   },
   "evidence_gt": {
     "type": "bbox_set",
     "value": [
       [
-        140.7,
+        111.2,
+        292.0,
+        281.2,
+        328.0
+      ],
+      [
+        441.2,
         275.0,
-        302.2,
+        602.7,
         311.0
       ],
       [
-        140.7,
+        441.2,
         309.0,
-        302.2,
-        345.0
-      ],
-      [
-        420.2,
-        275.0,
-        581.7,
-        311.0
-      ],
-      [
-        420.2,
-        309.0,
-        581.7,
+        602.7,
         345.0
       ]
     ]
@@ -36,11 +30,11 @@
     "format": "png",
     "path": "physics/task_physics_mechanics_force_diagram/images/net_horizontal_force/0008.png"
   },
-  "instance_seed": 7073238403116283,
-  "prompt": "The image shows one textured block with labeled horizontal and vertical force arrows. Work from the labeled force arrows to answer the question. What is the magnitude of the net horizontal force on the object? Answer with an integer number of newtons.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for all shown force arrows that contribute along the queried axis.\nAnswer rule: set \"answer\" to the requested force magnitude as a non-negative integer number of newtons.\nExample JSON:\n{\"evidence\":[[2.5,3,4.5,5],[3.5,4,5.5,6]],\"answer\":8}",
+  "instance_seed": 3187625379258115,
+  "prompt": "You are given an image with one textured block with labeled horizontal and vertical force arrows. Determine the requested force value from the diagram. Determine the object's net horizontal force magnitude from the diagram. Answer with an integer number of newtons.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for all shown force arrows that contribute along the queried axis.\nAnswer: set \"answer\" to the requested force magnitude as a non-negative integer number of newtons.\nExample JSON:\n{\"evidence\":[[2.5,3,4.5,5],[3.5,4,5.5,6]],\"answer\":8}",
   "prompt_variants": {
-    "answer_and_evidence": "The image shows one textured block with labeled horizontal and vertical force arrows. Work from the labeled force arrows to answer the question. What is the magnitude of the net horizontal force on the object? Answer with an integer number of newtons.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for all shown force arrows that contribute along the queried axis.\nAnswer rule: set \"answer\" to the requested force magnitude as a non-negative integer number of newtons.\nExample JSON:\n{\"evidence\":[[2.5,3,4.5,5],[3.5,4,5.5,6]],\"answer\":8}",
-    "answer_only": "The image shows one textured block with labeled horizontal and vertical force arrows. Work from the labeled force arrows to answer the question. What is the magnitude of the net horizontal force on the object? Answer with an integer number of newtons.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the requested force magnitude as a non-negative integer number of newtons.\nExample JSON:\n{\"answer\":8}"
+    "answer_and_evidence": "You are given an image with one textured block with labeled horizontal and vertical force arrows. Determine the requested force value from the diagram. Determine the object's net horizontal force magnitude from the diagram. Answer with an integer number of newtons.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for all shown force arrows that contribute along the queried axis.\nAnswer: set \"answer\" to the requested force magnitude as a non-negative integer number of newtons.\nExample JSON:\n{\"evidence\":[[2.5,3,4.5,5],[3.5,4,5.5,6]],\"answer\":8}",
+    "answer_only": "You are given an image with one textured block with labeled horizontal and vertical force arrows. Determine the requested force value from the diagram. Determine the object's net horizontal force magnitude from the diagram. Answer with an integer number of newtons.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the requested force magnitude as a non-negative integer number of newtons.\nExample JSON:\n{\"answer\":8}"
   },
   "task": "task_physics_mechanics_force_diagram",
   "task_variant": "net_horizontal_force",
@@ -61,21 +55,21 @@
       }
     },
     "execution_trace": {
-      "answer_force_n": 0,
+      "answer_force_n": 8,
       "arrow_specs": [
         {
           "arrow_id": "force_arrow_1",
           "axis": "horizontal",
           "direction": "left",
-          "magnitude_n": 1,
+          "magnitude_n": 11,
           "relevant_to_query": true,
           "role": "evidence"
         },
         {
           "arrow_id": "force_arrow_2",
           "axis": "horizontal",
-          "direction": "left",
-          "magnitude_n": 1,
+          "direction": "right",
+          "magnitude_n": 2,
           "relevant_to_query": true,
           "role": "evidence"
         },
@@ -86,45 +80,27 @@
           "magnitude_n": 1,
           "relevant_to_query": true,
           "role": "evidence"
-        },
-        {
-          "arrow_id": "force_arrow_4",
-          "axis": "horizontal",
-          "direction": "right",
-          "magnitude_n": 1,
-          "relevant_to_query": true,
-          "role": "evidence"
-        },
-        {
-          "arrow_id": "force_arrow_5",
-          "axis": "vertical",
-          "direction": "down",
-          "magnitude_n": 12,
-          "relevant_to_query": false,
-          "role": "distractor"
         }
       ],
       "balancing_direction": null,
-      "dominant_direction": "right",
+      "dominant_direction": "left",
       "evidence_entity_ids": [
         "force_arrow_1",
         "force_arrow_2",
-        "force_arrow_3",
-        "force_arrow_4"
+        "force_arrow_3"
       ],
-      "object_aspect_ratio": 0.6705,
-      "object_height_px": 176,
-      "object_width_px": 118,
+      "object_aspect_ratio": 1.0,
+      "object_height_px": 160,
+      "object_width_px": 160,
       "query_axis": "horizontal",
       "query_variant": "net_horizontal_force",
       "relevant_arrow_ids": [
         "force_arrow_1",
         "force_arrow_2",
-        "force_arrow_3",
-        "force_arrow_4"
+        "force_arrow_3"
       ],
       "scene_variant": "textured_block",
-      "target_force": 0,
+      "target_force": 8,
       "target_force_support": [
         0,
         1,
@@ -161,27 +137,21 @@
     "projected_evidence": {
       "bbox_set": [
         [
-          140.7,
+          111.2,
+          292.0,
+          281.2,
+          328.0
+        ],
+        [
+          441.2,
           275.0,
-          302.2,
+          602.7,
           311.0
         ],
         [
-          140.7,
+          441.2,
           309.0,
-          302.2,
-          345.0
-        ],
-        [
-          420.2,
-          275.0,
-          581.7,
-          311.0
-        ],
-        [
-          420.2,
-          309.0,
-          581.7,
+          602.7,
           345.0
         ]
       ]
@@ -201,7 +171,7 @@
           "free_body_box": 0.5,
           "textured_block": 0.5
         },
-        "target_force": 0,
+        "target_force": 8,
         "target_force_probabilities": {
           "0": 0.07692307692307693,
           "1": 0.07692307692307693,
@@ -227,7 +197,7 @@
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 4,
+        "answer_or_evidence_variant_index": 0,
         "prompt_bundle_id": "physics_mechanics_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -241,11 +211,11 @@
           "object_description": "one textured block with labeled horizontal and vertical force arrows"
         },
         "task_family_key": "axis_aligned_force_diagram",
-        "task_family_variant_index": 0,
+        "task_family_variant_index": 2,
         "task_key": "force_diagram_query",
-        "task_variant_index": 2,
+        "task_variant_index": 4,
         "task_variant_key": "net_horizontal_force",
-        "task_variant_template_index": 0,
+        "task_variant_template_index": 2,
         "template_paths": [
           "physics/mechanics/physics_mechanics_v1.json"
         ],
@@ -261,7 +231,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 4,
+            "answer_or_evidence_variant_index": 0,
             "prompt_bundle_id": "physics_mechanics_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -275,11 +245,11 @@
               "object_description": "one textured block with labeled horizontal and vertical force arrows"
             },
             "task_family_key": "axis_aligned_force_diagram",
-            "task_family_variant_index": 0,
+            "task_family_variant_index": 2,
             "task_key": "force_diagram_query",
-            "task_variant_index": 2,
+            "task_variant_index": 4,
             "task_variant_key": "net_horizontal_force",
-            "task_variant_template_index": 0,
+            "task_variant_template_index": 2,
             "template_paths": [
               "physics/mechanics/physics_mechanics_v1.json"
             ],
@@ -290,7 +260,7 @@
               "task_variant:net_horizontal_force": 5
             }
           },
-          "prompt": "The image shows one textured block with labeled horizontal and vertical force arrows. Work from the labeled force arrows to answer the question. What is the magnitude of the net horizontal force on the object? Answer with an integer number of newtons.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for all shown force arrows that contribute along the queried axis.\nAnswer rule: set \"answer\" to the requested force magnitude as a non-negative integer number of newtons.\nExample JSON:\n{\"evidence\":[[2.5,3,4.5,5],[3.5,4,5.5,6]],\"answer\":8}"
+          "prompt": "You are given an image with one textured block with labeled horizontal and vertical force arrows. Determine the requested force value from the diagram. Determine the object's net horizontal force magnitude from the diagram. Answer with an integer number of newtons.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for all shown force arrows that contribute along the queried axis.\nAnswer: set \"answer\" to the requested force magnitude as a non-negative integer number of newtons.\nExample JSON:\n{\"evidence\":[[2.5,3,4.5,5],[3.5,4,5.5,6]],\"answer\":8}"
         },
         "answer_only": {
           "metadata": {
@@ -309,11 +279,11 @@
               "object_description": "one textured block with labeled horizontal and vertical force arrows"
             },
             "task_family_key": "axis_aligned_force_diagram",
-            "task_family_variant_index": 0,
+            "task_family_variant_index": 2,
             "task_key": "force_diagram_query",
-            "task_variant_index": 2,
+            "task_variant_index": 4,
             "task_variant_key": "net_horizontal_force",
-            "task_variant_template_index": 0,
+            "task_variant_template_index": 2,
             "template_paths": [
               "physics/mechanics/physics_mechanics_v1.json"
             ],
@@ -324,7 +294,7 @@
               "task_variant:net_horizontal_force": 5
             }
           },
-          "prompt": "The image shows one textured block with labeled horizontal and vertical force arrows. Work from the labeled force arrows to answer the question. What is the magnitude of the net horizontal force on the object? Answer with an integer number of newtons.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the requested force magnitude as a non-negative integer number of newtons.\nExample JSON:\n{\"answer\":8}"
+          "prompt": "You are given an image with one textured block with labeled horizontal and vertical force arrows. Determine the requested force value from the diagram. Determine the object's net horizontal force magnitude from the diagram. Answer with an integer number of newtons.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the requested force magnitude as a non-negative integer number of newtons.\nExample JSON:\n{\"answer\":8}"
         }
       },
       "task_variant": "net_horizontal_force",
@@ -333,88 +303,62 @@
     "render_map": {
       "arrow_bboxes_px": {
         "force_arrow_1": [
-          140.7,
-          275.0,
-          302.2,
-          311.0
+          111.2,
+          292.0,
+          281.2,
+          328.0
         ],
         "force_arrow_2": [
-          140.7,
-          309.0,
-          302.2,
-          345.0
-        ],
-        "force_arrow_3": [
-          420.2,
+          441.2,
           275.0,
-          581.7,
+          602.7,
           311.0
         ],
-        "force_arrow_4": [
-          420.2,
+        "force_arrow_3": [
+          441.2,
           309.0,
-          581.7,
+          602.7,
           345.0
-        ],
-        "force_arrow_5": [
-          341.2,
-          398.0,
-          381.2,
-          560.0
         ]
       },
       "arrow_label_bboxes_px": {
         "force_arrow_1": [
-          140.7,
-          281.0,
-          163.7,
-          305.0
+          111.2,
+          298.0,
+          151.2,
+          322.0
         ],
         "force_arrow_2": [
-          140.7,
-          315.0,
-          163.7,
-          339.0
-        ],
-        "force_arrow_3": [
-          558.7,
+          579.7,
           281.0,
-          581.7,
+          602.7,
           305.0
         ],
-        "force_arrow_4": [
-          558.7,
+        "force_arrow_3": [
+          579.7,
           315.0,
-          581.7,
+          602.7,
           339.0
-        ],
-        "force_arrow_5": [
-          341.2,
-          536.0,
-          381.2,
-          560.0
         ]
       },
       "evidence_entity_ids": [
         "force_arrow_1",
         "force_arrow_2",
-        "force_arrow_3",
-        "force_arrow_4"
+        "force_arrow_3"
       ],
-      "object_aspect_ratio": 0.6705,
+      "object_aspect_ratio": 1.0,
       "object_bbox_px": [
-        302.2,
-        222.0,
-        420.2,
-        398.0
+        281.2,
+        230.0,
+        441.2,
+        390.0
       ],
-      "object_height_px": 176,
-      "object_width_px": 118,
+      "object_height_px": 160,
+      "object_width_px": 160,
       "relevant_arrow_ids": [
         "force_arrow_1",
         "force_arrow_2",
-        "force_arrow_3",
-        "force_arrow_4"
+        "force_arrow_3"
       ],
       "scene_center_px": [
         361.2,
@@ -424,18 +368,18 @@
     "render_spec": {
       "canvas_height": 620,
       "canvas_width": 860,
-      "object_height_px": 176,
-      "object_width_px": 118,
+      "object_height_px": 160,
+      "object_width_px": 160,
       "scene_variant": "textured_block"
     },
     "scene_ir": {
       "entities": [
         {
           "bbox_px": [
-            302.2,
-            222.0,
-            420.2,
-            398.0
+            281.2,
+            230.0,
+            441.2,
+            390.0
           ],
           "entity_id": "force_object",
           "entity_type": "physics_object",
@@ -445,42 +389,42 @@
         },
         {
           "bbox_px": [
-            140.7,
-            275.0,
-            302.2,
-            311.0
+            111.2,
+            292.0,
+            281.2,
+            328.0
           ],
           "entity_id": "force_arrow_1",
           "entity_type": "physics_force_arrow",
           "meta": {
             "axis": "horizontal",
             "direction": "left",
-            "magnitude_n": 1,
+            "magnitude_n": 11,
             "relevant_to_query": true
           }
         },
         {
           "bbox_px": [
-            140.7,
-            309.0,
-            302.2,
-            345.0
+            441.2,
+            275.0,
+            602.7,
+            311.0
           ],
           "entity_id": "force_arrow_2",
           "entity_type": "physics_force_arrow",
           "meta": {
             "axis": "horizontal",
-            "direction": "left",
-            "magnitude_n": 1,
+            "direction": "right",
+            "magnitude_n": 2,
             "relevant_to_query": true
           }
         },
         {
           "bbox_px": [
-            420.2,
-            275.0,
-            581.7,
-            311.0
+            441.2,
+            309.0,
+            602.7,
+            345.0
           ],
           "entity_id": "force_arrow_3",
           "entity_type": "physics_force_arrow",
@@ -490,56 +434,22 @@
             "magnitude_n": 1,
             "relevant_to_query": true
           }
-        },
-        {
-          "bbox_px": [
-            420.2,
-            309.0,
-            581.7,
-            345.0
-          ],
-          "entity_id": "force_arrow_4",
-          "entity_type": "physics_force_arrow",
-          "meta": {
-            "axis": "horizontal",
-            "direction": "right",
-            "magnitude_n": 1,
-            "relevant_to_query": true
-          }
-        },
-        {
-          "bbox_px": [
-            341.2,
-            398.0,
-            381.2,
-            560.0
-          ],
-          "entity_id": "force_arrow_5",
-          "entity_type": "physics_force_arrow",
-          "meta": {
-            "axis": "vertical",
-            "direction": "down",
-            "magnitude_n": 12,
-            "relevant_to_query": false
-          }
         }
       ],
       "relations": {
-        "answer_force_n": 0,
+        "answer_force_n": 8,
         "evidence_entity_ids": [
           "force_arrow_1",
           "force_arrow_2",
-          "force_arrow_3",
-          "force_arrow_4"
+          "force_arrow_3"
         ],
-        "object_aspect_ratio": 0.6705,
+        "object_aspect_ratio": 1.0,
         "query_axis": "horizontal",
         "query_variant": "net_horizontal_force",
         "relevant_arrow_ids": [
           "force_arrow_1",
           "force_arrow_2",
-          "force_arrow_3",
-          "force_arrow_4"
+          "force_arrow_3"
         ],
         "scene_variant": "textured_block",
         "task_variant": "net_horizontal_force"
@@ -550,8 +460,7 @@
       "ids": [
         "force_arrow_1",
         "force_arrow_2",
-        "force_arrow_3",
-        "force_arrow_4"
+        "force_arrow_3"
       ],
       "type": "id_set"
     }

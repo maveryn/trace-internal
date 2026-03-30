@@ -1,16 +1,16 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 9
+    "value": 5
   },
   "evidence_gt": {
     "type": "bbox_set",
     "value": [
       [
         394.2,
-        65.0,
+        72.5,
         430.2,
-        227.0
+        234.5
       ]
     ]
   },
@@ -18,11 +18,11 @@
     "format": "png",
     "path": "physics/task_physics_mechanics_force_diagram/images/balancing_force_vertical/0011.png"
   },
-  "instance_seed": 5700090344173319,
-  "prompt": "You are given an image with one isolated block with labeled horizontal and vertical force arrows. Read the force arrows and determine the requested value. What magnitude is required for the marked upward vertical force so the object has zero net vertical force? Answer with an integer number of newtons.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing the bounding box [x1, y1, x2, y2] of the marked `?` force arrow.\nAnswer: set \"answer\" to the requested force magnitude as a non-negative integer number of newtons.\nExample JSON:\n{\"evidence\":[[2.5,3,4.5,5]],\"answer\":8}",
+  "instance_seed": 3878806747814025,
+  "prompt": "Look at the mechanics diagram in the image. It shows one isolated block with labeled horizontal and vertical force arrows. Answer using only the forces shown in the diagram. Use the shown vertical forces and the marked upward direction. What force magnitude would balance them? Answer with an integer number of newtons.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing the bounding box [x1, y1, x2, y2] of the marked `?` force arrow.\nAnswer: set \"answer\" to the requested force magnitude as a non-negative integer number of newtons.\nExample JSON:\n{\"evidence\":[[2.5,3.5,4.5,5.5]],\"answer\":8}",
   "prompt_variants": {
-    "answer_and_evidence": "You are given an image with one isolated block with labeled horizontal and vertical force arrows. Read the force arrows and determine the requested value. What magnitude is required for the marked upward vertical force so the object has zero net vertical force? Answer with an integer number of newtons.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing the bounding box [x1, y1, x2, y2] of the marked `?` force arrow.\nAnswer: set \"answer\" to the requested force magnitude as a non-negative integer number of newtons.\nExample JSON:\n{\"evidence\":[[2.5,3,4.5,5]],\"answer\":8}",
-    "answer_only": "You are given an image with one isolated block with labeled horizontal and vertical force arrows. Read the force arrows and determine the requested value. What magnitude is required for the marked upward vertical force so the object has zero net vertical force? Answer with an integer number of newtons.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the requested force magnitude as a non-negative integer number of newtons.\nExample JSON:\n{\"answer\":8}"
+    "answer_and_evidence": "Look at the mechanics diagram in the image. It shows one isolated block with labeled horizontal and vertical force arrows. Answer using only the forces shown in the diagram. Use the shown vertical forces and the marked upward direction. What force magnitude would balance them? Answer with an integer number of newtons.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing the bounding box [x1, y1, x2, y2] of the marked `?` force arrow.\nAnswer: set \"answer\" to the requested force magnitude as a non-negative integer number of newtons.\nExample JSON:\n{\"evidence\":[[2.5,3.5,4.5,5.5]],\"answer\":8}",
+    "answer_only": "Look at the mechanics diagram in the image. It shows one isolated block with labeled horizontal and vertical force arrows. Answer using only the forces shown in the diagram. Use the shown vertical forces and the marked upward direction. What force magnitude would balance them? Answer with an integer number of newtons.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the requested force magnitude as a non-negative integer number of newtons.\nExample JSON:\n{\"answer\":8}"
   },
   "task": "task_physics_mechanics_force_diagram",
   "task_variant": "balancing_force_vertical",
@@ -43,13 +43,13 @@
       }
     },
     "execution_trace": {
-      "answer_force_n": 9,
+      "answer_force_n": 5,
       "arrow_specs": [
         {
           "arrow_id": "force_arrow_1",
           "axis": "horizontal",
-          "direction": "right",
-          "magnitude_n": 5,
+          "direction": "left",
+          "magnitude_n": 11,
           "relevant_to_query": false,
           "role": "distractor"
         },
@@ -57,7 +57,7 @@
           "arrow_id": "force_arrow_2",
           "axis": "horizontal",
           "direction": "right",
-          "magnitude_n": 11,
+          "magnitude_n": 2,
           "relevant_to_query": false,
           "role": "distractor"
         },
@@ -73,7 +73,7 @@
           "arrow_id": "force_arrow_4",
           "axis": "vertical",
           "direction": "down",
-          "magnitude_n": 10,
+          "magnitude_n": 6,
           "relevant_to_query": true,
           "role": "evidence"
         }
@@ -83,9 +83,9 @@
       "evidence_entity_ids": [
         "balancing_force_marker"
       ],
-      "object_aspect_ratio": 1.0,
-      "object_height_px": 166,
-      "object_width_px": 166,
+      "object_aspect_ratio": 1.2517,
+      "object_height_px": 151,
+      "object_width_px": 189,
       "query_axis": "vertical",
       "query_variant": "balancing_force_vertical",
       "relevant_arrow_ids": [
@@ -93,7 +93,7 @@
         "force_arrow_4"
       ],
       "scene_variant": "free_body_box",
-      "target_force": 9,
+      "target_force": 5,
       "target_force_support": [
         1,
         2,
@@ -130,9 +130,9 @@
       "bbox_set": [
         [
           394.2,
-          65.0,
+          72.5,
           430.2,
-          227.0
+          234.5
         ]
       ]
     },
@@ -151,7 +151,7 @@
           "free_body_box": 0.5,
           "textured_block": 0.5
         },
-        "target_force": 9,
+        "target_force": 5,
         "target_force_probabilities": {
           "1": 0.08333333333333333,
           "10": 0.08333333333333333,
@@ -182,7 +182,7 @@
         "slot_values": {
           "answer_hint": "set \"answer\" to the requested force magnitude as a non-negative integer number of newtons",
           "evidence_hint": "set \"evidence\" to an array containing the bounding box [x1, y1, x2, y2] of the marked `?` force arrow",
-          "json_example": "{\"evidence\":[[2.5,3,4.5,5]],\"answer\":8}",
+          "json_example": "{\"evidence\":[[2.5,3.5,4.5,5.5]],\"answer\":8}",
           "json_example_answer_only": "{\"answer\":8}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -190,11 +190,11 @@
           "object_description": "one isolated block with labeled horizontal and vertical force arrows"
         },
         "task_family_key": "axis_aligned_force_diagram",
-        "task_family_variant_index": 2,
+        "task_family_variant_index": 1,
         "task_key": "force_diagram_query",
-        "task_variant_index": 1,
+        "task_variant_index": 3,
         "task_variant_key": "balancing_force_vertical",
-        "task_variant_template_index": 4,
+        "task_variant_template_index": 3,
         "template_paths": [
           "physics/mechanics/physics_mechanics_v1.json"
         ],
@@ -216,7 +216,7 @@
             "slot_values": {
               "answer_hint": "set \"answer\" to the requested force magnitude as a non-negative integer number of newtons",
               "evidence_hint": "set \"evidence\" to an array containing the bounding box [x1, y1, x2, y2] of the marked `?` force arrow",
-              "json_example": "{\"evidence\":[[2.5,3,4.5,5]],\"answer\":8}",
+              "json_example": "{\"evidence\":[[2.5,3.5,4.5,5.5]],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -224,11 +224,11 @@
               "object_description": "one isolated block with labeled horizontal and vertical force arrows"
             },
             "task_family_key": "axis_aligned_force_diagram",
-            "task_family_variant_index": 2,
+            "task_family_variant_index": 1,
             "task_key": "force_diagram_query",
-            "task_variant_index": 1,
+            "task_variant_index": 3,
             "task_variant_key": "balancing_force_vertical",
-            "task_variant_template_index": 4,
+            "task_variant_template_index": 3,
             "template_paths": [
               "physics/mechanics/physics_mechanics_v1.json"
             ],
@@ -239,18 +239,18 @@
               "task_variant:balancing_force_vertical": 5
             }
           },
-          "prompt": "You are given an image with one isolated block with labeled horizontal and vertical force arrows. Read the force arrows and determine the requested value. What magnitude is required for the marked upward vertical force so the object has zero net vertical force? Answer with an integer number of newtons.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing the bounding box [x1, y1, x2, y2] of the marked `?` force arrow.\nAnswer: set \"answer\" to the requested force magnitude as a non-negative integer number of newtons.\nExample JSON:\n{\"evidence\":[[2.5,3,4.5,5]],\"answer\":8}"
+          "prompt": "Look at the mechanics diagram in the image. It shows one isolated block with labeled horizontal and vertical force arrows. Answer using only the forces shown in the diagram. Use the shown vertical forces and the marked upward direction. What force magnitude would balance them? Answer with an integer number of newtons.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing the bounding box [x1, y1, x2, y2] of the marked `?` force arrow.\nAnswer: set \"answer\" to the requested force magnitude as a non-negative integer number of newtons.\nExample JSON:\n{\"evidence\":[[2.5,3.5,4.5,5.5]],\"answer\":8}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 3,
+            "answer_or_evidence_variant_index": 0,
             "prompt_bundle_id": "physics_mechanics_v1",
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the requested force magnitude as a non-negative integer number of newtons",
               "evidence_hint": "set \"evidence\" to an array containing the bounding box [x1, y1, x2, y2] of the marked `?` force arrow",
-              "json_example": "{\"evidence\":[[2.5,3,4.5,5]],\"answer\":8}",
+              "json_example": "{\"evidence\":[[2.5,3.5,4.5,5.5]],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -258,11 +258,11 @@
               "object_description": "one isolated block with labeled horizontal and vertical force arrows"
             },
             "task_family_key": "axis_aligned_force_diagram",
-            "task_family_variant_index": 2,
+            "task_family_variant_index": 1,
             "task_key": "force_diagram_query",
-            "task_variant_index": 1,
+            "task_variant_index": 3,
             "task_variant_key": "balancing_force_vertical",
-            "task_variant_template_index": 4,
+            "task_variant_template_index": 3,
             "template_paths": [
               "physics/mechanics/physics_mechanics_v1.json"
             ],
@@ -273,7 +273,7 @@
               "task_variant:balancing_force_vertical": 5
             }
           },
-          "prompt": "You are given an image with one isolated block with labeled horizontal and vertical force arrows. Read the force arrows and determine the requested value. What magnitude is required for the marked upward vertical force so the object has zero net vertical force? Answer with an integer number of newtons.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the requested force magnitude as a non-negative integer number of newtons.\nExample JSON:\n{\"answer\":8}"
+          "prompt": "Look at the mechanics diagram in the image. It shows one isolated block with labeled horizontal and vertical force arrows. Answer using only the forces shown in the diagram. Use the shown vertical forces and the marked upward direction. What force magnitude would balance them? Answer with an integer number of newtons.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the requested force magnitude as a non-negative integer number of newtons.\nExample JSON:\n{\"answer\":8}"
         }
       },
       "task_variant": "balancing_force_vertical",
@@ -282,74 +282,74 @@
     "render_map": {
       "arrow_bboxes_px": {
         "force_arrow_1": [
-          444.2,
-          275.0,
-          605.7,
-          311.0
+          96.7,
+          292.0,
+          266.7,
+          328.0
         ],
         "force_arrow_2": [
-          444.2,
-          309.0,
-          614.2,
-          345.0
+          455.7,
+          292.0,
+          617.2,
+          328.0
         ],
         "force_arrow_3": [
           343.2,
-          65.0,
+          72.5,
           379.2,
-          227.0
+          234.5
         ],
         "force_arrow_4": [
-          341.2,
-          393.0,
-          381.2,
-          555.0
+          343.2,
+          385.5,
+          379.2,
+          547.5
         ]
       },
       "arrow_label_bboxes_px": {
         "force_arrow_1": [
-          582.7,
-          281.0,
-          605.7,
-          305.0
+          96.7,
+          298.0,
+          136.7,
+          322.0
         ],
         "force_arrow_2": [
-          574.2,
-          315.0,
-          614.2,
-          339.0
+          594.2,
+          298.0,
+          617.2,
+          322.0
         ],
         "force_arrow_3": [
           349.7,
-          65.0,
+          72.5,
           372.7,
-          89.0
+          96.5
         ],
         "force_arrow_4": [
-          341.2,
-          531.0,
-          381.2,
-          555.0
+          349.7,
+          523.5,
+          372.7,
+          547.5
         ]
       },
       "balancing_force_marker_bbox_px": [
         394.2,
-        65.0,
+        72.5,
         430.2,
-        227.0
+        234.5
       ],
       "evidence_entity_ids": [
         "balancing_force_marker"
       ],
-      "object_aspect_ratio": 1.0,
+      "object_aspect_ratio": 1.2517,
       "object_bbox_px": [
-        278.2,
-        227.0,
-        444.2,
-        393.0
+        266.7,
+        234.5,
+        455.7,
+        385.5
       ],
-      "object_height_px": 166,
-      "object_width_px": 166,
+      "object_height_px": 151,
+      "object_width_px": 189,
       "relevant_arrow_ids": [
         "force_arrow_3",
         "force_arrow_4"
@@ -362,18 +362,18 @@
     "render_spec": {
       "canvas_height": 620,
       "canvas_width": 860,
-      "object_height_px": 166,
-      "object_width_px": 166,
+      "object_height_px": 151,
+      "object_width_px": 189,
       "scene_variant": "free_body_box"
     },
     "scene_ir": {
       "entities": [
         {
           "bbox_px": [
-            278.2,
-            227.0,
-            444.2,
-            393.0
+            266.7,
+            234.5,
+            455.7,
+            385.5
           ],
           "entity_id": "force_object",
           "entity_type": "physics_object",
@@ -383,42 +383,42 @@
         },
         {
           "bbox_px": [
-            444.2,
-            275.0,
-            605.7,
-            311.0
+            96.7,
+            292.0,
+            266.7,
+            328.0
           ],
           "entity_id": "force_arrow_1",
           "entity_type": "physics_force_arrow",
           "meta": {
             "axis": "horizontal",
-            "direction": "right",
-            "magnitude_n": 5,
-            "relevant_to_query": false
-          }
-        },
-        {
-          "bbox_px": [
-            444.2,
-            309.0,
-            614.2,
-            345.0
-          ],
-          "entity_id": "force_arrow_2",
-          "entity_type": "physics_force_arrow",
-          "meta": {
-            "axis": "horizontal",
-            "direction": "right",
+            "direction": "left",
             "magnitude_n": 11,
             "relevant_to_query": false
           }
         },
         {
           "bbox_px": [
+            455.7,
+            292.0,
+            617.2,
+            328.0
+          ],
+          "entity_id": "force_arrow_2",
+          "entity_type": "physics_force_arrow",
+          "meta": {
+            "axis": "horizontal",
+            "direction": "right",
+            "magnitude_n": 2,
+            "relevant_to_query": false
+          }
+        },
+        {
+          "bbox_px": [
             343.2,
-            65.0,
+            72.5,
             379.2,
-            227.0
+            234.5
           ],
           "entity_id": "force_arrow_3",
           "entity_type": "physics_force_arrow",
@@ -431,26 +431,26 @@
         },
         {
           "bbox_px": [
-            341.2,
-            393.0,
-            381.2,
-            555.0
+            343.2,
+            385.5,
+            379.2,
+            547.5
           ],
           "entity_id": "force_arrow_4",
           "entity_type": "physics_force_arrow",
           "meta": {
             "axis": "vertical",
             "direction": "down",
-            "magnitude_n": 10,
+            "magnitude_n": 6,
             "relevant_to_query": true
           }
         },
         {
           "bbox_px": [
             394.2,
-            65.0,
+            72.5,
             430.2,
-            227.0
+            234.5
           ],
           "entity_id": "balancing_force_marker",
           "entity_type": "physics_missing_force_marker",
@@ -461,11 +461,11 @@
         }
       ],
       "relations": {
-        "answer_force_n": 9,
+        "answer_force_n": 5,
         "evidence_entity_ids": [
           "balancing_force_marker"
         ],
-        "object_aspect_ratio": 1.0,
+        "object_aspect_ratio": 1.2517,
         "query_axis": "vertical",
         "query_variant": "balancing_force_vertical",
         "relevant_arrow_ids": [

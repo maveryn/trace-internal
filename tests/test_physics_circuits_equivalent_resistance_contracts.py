@@ -92,6 +92,44 @@ def test_physics_circuits_equivalent_resistance_is_deterministic() -> None:
     assert out_a.image.tobytes() == out_b.image.tobytes()
 
 
+@pytest.mark.parametrize(
+    ("params", "expected_support"),
+    (
+        (
+            {"scene_variant": "parallel", "query_variant": "total_resistance"},
+            [1, 2, 3, 4],
+        ),
+        (
+            {"scene_variant": "parallel", "query_variant": "missing_resistor_value"},
+            [2, 3, 4, 5, 6, 8, 9, 10, 12],
+        ),
+    ),
+)
+def test_physics_circuits_equivalent_resistance_filters_support_to_feasible_targets(
+    params: dict[str, int | str],
+    expected_support: list[int],
+) -> None:
+    out = PhysicsCircuitsEquivalentResistanceTask().generate(26027, params=params, max_attempts=40)
+    execution = out.trace_payload["execution_trace"]
+
+    assert execution["target_answer_support"] == expected_support
+    assert int(out.answer_gt.value) in set(int(value) for value in expected_support)
+
+
+@pytest.mark.parametrize(
+    "params",
+    (
+        {"scene_variant": "parallel", "query_variant": "total_resistance", "target_answer": 5},
+        {"scene_variant": "parallel", "query_variant": "missing_resistor_value", "target_answer": 1},
+    ),
+)
+def test_physics_circuits_equivalent_resistance_rejects_infeasible_target_answer(
+    params: dict[str, int | str],
+) -> None:
+    with pytest.raises(ValueError, match="unsupported target_answer"):
+        PhysicsCircuitsEquivalentResistanceTask().generate(26029, params=params, max_attempts=40)
+
+
 def test_physics_circuits_equivalent_resistance_rejects_unknown_scene_variant() -> None:
     with pytest.raises(ValueError):
         PhysicsCircuitsEquivalentResistanceTask().generate(

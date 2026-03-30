@@ -7,9 +7,9 @@
     "type": "bbox_set",
     "value": [
       [
-        183.0,
+        307.0,
         235.0,
-        241.0,
+        365.0,
         287.0
       ]
     ]
@@ -18,11 +18,11 @@
     "format": "png",
     "path": "physics/task_physics_mechanics_lever_balance/images/missing_weight_to_balance/0002.png"
   },
-  "instance_seed": 8722327499827277,
-  "prompt": "Work from the lever-balance diagram shown in the image: one lever-balance diagram with a textured beam, a fulcrum, numbered distance marks, and weight blocks on both sides. Determine the requested lever-balance value from the diagram. A missing weight is marked with `?`. What value would balance the lever? Answer with an integer.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing the bounding box [x1, y1, x2, y2] of the marked `?` weight block.\nAnswer format: set \"answer\" to the requested integer torque or missing weight value.\nExample JSON:\n{\"evidence\":[[2,3,4,5]],\"answer\":8}",
+  "instance_seed": 2086418486512464,
+  "prompt": "Work from the lever-balance diagram shown in the image: one lever-balance diagram with a textured beam, a fulcrum, numbered distance marks, and weight blocks on both sides. Work from the beam, fulcrum, weights, and distance marks to answer the question. What weight should replace the marked `?` block so the lever balances? Answer with an integer.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing the bounding box [x1, y1, x2, y2] of the marked `?` weight block.\nAnswer: set \"answer\" to the requested integer torque or missing weight value.\nExample JSON:\n{\"evidence\":[[2,3,4,5]],\"answer\":8}",
   "prompt_variants": {
-    "answer_and_evidence": "Work from the lever-balance diagram shown in the image: one lever-balance diagram with a textured beam, a fulcrum, numbered distance marks, and weight blocks on both sides. Determine the requested lever-balance value from the diagram. A missing weight is marked with `?`. What value would balance the lever? Answer with an integer.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing the bounding box [x1, y1, x2, y2] of the marked `?` weight block.\nAnswer format: set \"answer\" to the requested integer torque or missing weight value.\nExample JSON:\n{\"evidence\":[[2,3,4,5]],\"answer\":8}",
-    "answer_only": "Work from the lever-balance diagram shown in the image: one lever-balance diagram with a textured beam, a fulcrum, numbered distance marks, and weight blocks on both sides. Determine the requested lever-balance value from the diagram. A missing weight is marked with `?`. What value would balance the lever? Answer with an integer.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the requested integer torque or missing weight value.\nExample JSON:\n{\"answer\":8}"
+    "answer_and_evidence": "Work from the lever-balance diagram shown in the image: one lever-balance diagram with a textured beam, a fulcrum, numbered distance marks, and weight blocks on both sides. Work from the beam, fulcrum, weights, and distance marks to answer the question. What weight should replace the marked `?` block so the lever balances? Answer with an integer.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing the bounding box [x1, y1, x2, y2] of the marked `?` weight block.\nAnswer: set \"answer\" to the requested integer torque or missing weight value.\nExample JSON:\n{\"evidence\":[[2,3,4,5]],\"answer\":8}",
+    "answer_only": "Work from the lever-balance diagram shown in the image: one lever-balance diagram with a textured beam, a fulcrum, numbered distance marks, and weight blocks on both sides. Work from the beam, fulcrum, weights, and distance marks to answer the question. What weight should replace the marked `?` block so the lever balances? Answer with an integer.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the requested integer torque or missing weight value.\nExample JSON:\n{\"answer\":8}"
   },
   "task": "task_physics_mechanics_lever_balance",
   "task_variant": "missing_weight_to_balance",
@@ -43,19 +43,20 @@
       }
     },
     "execution_trace": {
-      "accent_color_name": "green",
+      "accent_color_name": "magenta",
       "evidence_entity_ids": [
         "missing_weight_marker"
       ],
-      "known_torque_left": 0,
-      "known_torque_right": 12,
-      "placeholder_distance_units": 4,
+      "known_torque_left": 3,
+      "known_torque_right": 9,
+      "placeholder_distance_units": 2,
       "placeholder_side": "left",
       "query_side": null,
       "query_variant": "missing_weight_to_balance",
       "relevant_weight_ids": [
         "missing_weight_marker",
-        "lever_weight_2"
+        "lever_weight_2",
+        "lever_weight_3"
       ],
       "scene_variant": "textured_beam",
       "target_answer": 3,
@@ -76,7 +77,7 @@
       "task_variant": "missing_weight_to_balance",
       "weight_specs": [
         {
-          "distance_units": 4,
+          "distance_units": 2,
           "missing": true,
           "relevant_to_query": true,
           "side": "left",
@@ -84,12 +85,20 @@
           "weight_id": "missing_weight_marker"
         },
         {
-          "distance_units": 4,
+          "distance_units": 1,
+          "missing": false,
+          "relevant_to_query": true,
+          "side": "left",
+          "value": 3,
+          "weight_id": "lever_weight_2"
+        },
+        {
+          "distance_units": 3,
           "missing": false,
           "relevant_to_query": true,
           "side": "right",
           "value": 3,
-          "weight_id": "lever_weight_2"
+          "weight_id": "lever_weight_3"
         }
       ]
     },
@@ -112,16 +121,16 @@
     "projected_evidence": {
       "bbox_set": [
         [
-          183.0,
+          307.0,
           235.0,
-          241.0,
+          365.0,
           287.0
         ]
       ]
     },
     "query_spec": {
       "params": {
-        "accent_color_name": "green",
+        "accent_color_name": "magenta",
         "accent_color_name_probabilities": {
           "blue": 0.1,
           "brown": 0.1,
@@ -170,7 +179,7 @@
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 1,
+        "answer_or_evidence_variant_index": 0,
         "prompt_bundle_id": "physics_mechanics_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -185,9 +194,9 @@
         "task_family_key": "lever_balance_diagram",
         "task_family_variant_index": 3,
         "task_key": "lever_balance_query",
-        "task_variant_index": 4,
+        "task_variant_index": 2,
         "task_variant_key": "missing_weight_to_balance",
-        "task_variant_template_index": 1,
+        "task_variant_template_index": 0,
         "template_paths": [
           "physics/mechanics/physics_mechanics_v1.json"
         ],
@@ -203,7 +212,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 1,
+            "answer_or_evidence_variant_index": 0,
             "prompt_bundle_id": "physics_mechanics_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -218,9 +227,9 @@
             "task_family_key": "lever_balance_diagram",
             "task_family_variant_index": 3,
             "task_key": "lever_balance_query",
-            "task_variant_index": 4,
+            "task_variant_index": 2,
             "task_variant_key": "missing_weight_to_balance",
-            "task_variant_template_index": 1,
+            "task_variant_template_index": 0,
             "template_paths": [
               "physics/mechanics/physics_mechanics_v1.json"
             ],
@@ -231,12 +240,12 @@
               "task_variant:missing_weight_to_balance": 5
             }
           },
-          "prompt": "Work from the lever-balance diagram shown in the image: one lever-balance diagram with a textured beam, a fulcrum, numbered distance marks, and weight blocks on both sides. Determine the requested lever-balance value from the diagram. A missing weight is marked with `?`. What value would balance the lever? Answer with an integer.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing the bounding box [x1, y1, x2, y2] of the marked `?` weight block.\nAnswer format: set \"answer\" to the requested integer torque or missing weight value.\nExample JSON:\n{\"evidence\":[[2,3,4,5]],\"answer\":8}"
+          "prompt": "Work from the lever-balance diagram shown in the image: one lever-balance diagram with a textured beam, a fulcrum, numbered distance marks, and weight blocks on both sides. Work from the beam, fulcrum, weights, and distance marks to answer the question. What weight should replace the marked `?` block so the lever balances? Answer with an integer.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing the bounding box [x1, y1, x2, y2] of the marked `?` weight block.\nAnswer: set \"answer\" to the requested integer torque or missing weight value.\nExample JSON:\n{\"evidence\":[[2,3,4,5]],\"answer\":8}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 1,
+            "answer_or_evidence_variant_index": 2,
             "prompt_bundle_id": "physics_mechanics_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -251,9 +260,9 @@
             "task_family_key": "lever_balance_diagram",
             "task_family_variant_index": 3,
             "task_key": "lever_balance_query",
-            "task_variant_index": 4,
+            "task_variant_index": 2,
             "task_variant_key": "missing_weight_to_balance",
-            "task_variant_template_index": 1,
+            "task_variant_template_index": 0,
             "template_paths": [
               "physics/mechanics/physics_mechanics_v1.json"
             ],
@@ -264,14 +273,14 @@
               "task_variant:missing_weight_to_balance": 5
             }
           },
-          "prompt": "Work from the lever-balance diagram shown in the image: one lever-balance diagram with a textured beam, a fulcrum, numbered distance marks, and weight blocks on both sides. Determine the requested lever-balance value from the diagram. A missing weight is marked with `?`. What value would balance the lever? Answer with an integer.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the requested integer torque or missing weight value.\nExample JSON:\n{\"answer\":8}"
+          "prompt": "Work from the lever-balance diagram shown in the image: one lever-balance diagram with a textured beam, a fulcrum, numbered distance marks, and weight blocks on both sides. Work from the beam, fulcrum, weights, and distance marks to answer the question. What weight should replace the marked `?` block so the lever balances? Answer with an integer.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the requested integer torque or missing weight value.\nExample JSON:\n{\"answer\":8}"
         }
       },
       "task_variant": "missing_weight_to_balance",
       "template_id": "physics_mechanics_v1"
     },
     "render_map": {
-      "accent_color_name": "green",
+      "accent_color_name": "magenta",
       "beam_bbox_px": [
         170.0,
         295.0,
@@ -291,34 +300,41 @@
         515.0,
         401.0
       ],
-      "max_distance_units": 4,
+      "max_distance_units": 3,
       "missing_weight_marker_bbox_px": [
-        183.0,
+        307.0,
         235.0,
-        241.0,
+        365.0,
         287.0
       ],
       "relevant_weight_ids": [
         "missing_weight_marker",
-        "lever_weight_2"
+        "lever_weight_2",
+        "lever_weight_3"
       ],
       "weight_bboxes_px": {
         "lever_weight_2": [
-          679.0,
+          369.0,
           235.0,
-          737.0,
+          427.0,
+          287.0
+        ],
+        "lever_weight_3": [
+          617.0,
+          235.0,
+          675.0,
           287.0
         ],
         "missing_weight_marker": [
-          183.0,
+          307.0,
           235.0,
-          241.0,
+          365.0,
           287.0
         ]
       }
     },
     "render_spec": {
-      "accent_color_name": "green",
+      "accent_color_name": "magenta",
       "canvas_height": 560,
       "canvas_width": 920,
       "scene_variant": "textured_beam"
@@ -350,15 +366,15 @@
         },
         {
           "bbox_px": [
-            183.0,
+            307.0,
             235.0,
-            241.0,
+            365.0,
             287.0
           ],
           "entity_id": "missing_weight_marker",
           "entity_type": "physics_missing_weight_marker",
           "meta": {
-            "distance_units": 4,
+            "distance_units": 2,
             "missing": true,
             "relevant_to_query": true,
             "side": "left",
@@ -367,15 +383,32 @@
         },
         {
           "bbox_px": [
-            679.0,
+            369.0,
             235.0,
-            737.0,
+            427.0,
             287.0
           ],
           "entity_id": "lever_weight_2",
           "entity_type": "physics_lever_weight",
           "meta": {
-            "distance_units": 4,
+            "distance_units": 1,
+            "missing": false,
+            "relevant_to_query": true,
+            "side": "left",
+            "value": 3
+          }
+        },
+        {
+          "bbox_px": [
+            617.0,
+            235.0,
+            675.0,
+            287.0
+          ],
+          "entity_id": "lever_weight_3",
+          "entity_type": "physics_lever_weight",
+          "meta": {
+            "distance_units": 3,
             "missing": false,
             "relevant_to_query": true,
             "side": "right",
@@ -384,14 +417,15 @@
         }
       ],
       "relations": {
-        "accent_color_name": "green",
+        "accent_color_name": "magenta",
         "evidence_entity_ids": [
           "missing_weight_marker"
         ],
         "query_variant": "missing_weight_to_balance",
         "relevant_weight_ids": [
           "missing_weight_marker",
-          "lever_weight_2"
+          "lever_weight_2",
+          "lever_weight_3"
         ],
         "scene_variant": "textured_beam",
         "target_answer": 3,

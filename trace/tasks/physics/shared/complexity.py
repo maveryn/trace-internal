@@ -96,12 +96,10 @@ def build_physics_force_diagram_complexity(
     weights = resolve_physics_complexity_weights(task_group_defaults, task_id=task_id)
     visual_scan = clamp_unit_interval(
         (0.70 * normalize_linear(float(arrow_count), min_value=2.0, max_value=6.0))
-        + (0.12 if str(scene_variant) == "surface_block" else 0.0)
         + (0.08 if str(scene_variant) == "textured_block" else 0.0)
     )
     force_reasoning = clamp_unit_interval(
         (0.42 if str(query_variant).startswith("net_") else 0.58)
-        + (0.16 if str(scene_variant) == "surface_block" else 0.0)
         + (0.06 * normalize_linear(float(target_force), min_value=0.0, max_value=12.0))
     )
     ambiguity = clamp_unit_interval(

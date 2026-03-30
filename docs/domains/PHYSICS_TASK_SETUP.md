@@ -60,6 +60,7 @@ Use this document for the active `physics` domain contract.
    - keep resistor labels as plain integers in the boxes and leave units to the prompt text,
    - keep prompt-facing evidence on the resistor boxes rather than on the wires,
    - require every active scene to contain a real parallel section rather than a pure series chain,
+   - filter configured answer supports down to the constructively feasible subset for the chosen scene/query family before balanced sampling,
    - for `missing_resistor_value`, use two side-by-side circuits with an equality cue and keep the missing resistor visibly red in the left circuit.
 ### `optics`
 1. Active tasks:
@@ -83,11 +84,15 @@ Use this document for the active `physics` domain contract.
 3. Early mechanics tasks should keep vectors axis-aligned unless the task is explicitly about angled-force decomposition.
 4. Prefer integer-valued constructions so answer verification stays exact and prompt-facing evidence remains local.
 
-## 4) Good next physics families
-1. `mechanics/lever_balance`
-2. `circuits/equivalent_resistance`
-3. `optics/ray_trace`
-4. `mechanics/spring_extension` (now active)
+## 4) Active coverage snapshot
+1. `mechanics`
+   - `task_physics_mechanics_force_diagram`
+   - `task_physics_mechanics_lever_balance`
+   - `task_physics_mechanics_spring_extension`
+2. `circuits`
+   - `task_physics_circuits_equivalent_resistance`
+3. `optics`
+   - `task_physics_optics_ray_trace`
 
 ## 5) Shared helper placement
 1. Cross-domain scene/query compatibility sampling now lives in `trace/tasks/shared/variant_sampling.py`.

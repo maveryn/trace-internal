@@ -1,16 +1,16 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 8
+    "value": 3
   },
   "evidence_gt": {
     "type": "bbox_set",
     "value": [
       [
-        85.0,
-        257.0,
-        181.0,
-        303.0
+        176.0,
+        353.0,
+        272.0,
+        399.0
       ]
     ]
   },
@@ -18,11 +18,11 @@
     "format": "png",
     "path": "physics/task_physics_circuits_equivalent_resistance/images/missing_resistor_value/0005.png"
   },
-  "instance_seed": 1223995386165486,
-  "prompt": "You are given an image with two side-by-side resistor networks between labeled terminals A and B that have the same total resistance, where the left circuit has one red `?` resistor in the series part of the network. Read the resistor values and determine the requested equivalent resistance. Use the fact that the left and right circuits have the same equivalent resistance between A and B. What value should the red `?` resistor on the left be? Answer with an integer.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array with the single bounding box [x1, y1, x2, y2] of the red `?` resistor in the left circuit.\nAnswer format: set \"answer\" to the integer resistor value that should replace the red `?` resistor.\nExample JSON:\n{\"evidence\":[[2,3,4,5]],\"answer\":8}",
+  "instance_seed": 418977592921915,
+  "prompt": "Work from the resistor-network diagram shown in the image: two side-by-side resistor networks between labeled terminals A and B that have the same total resistance, where the left circuit has one red `?` resistor in the series part of the network. Answer using only the resistor values shown in the network. The left and right circuits have the same total equivalent resistance between terminals A and B. What integer value should replace the red `?` resistor in the left circuit?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array with the single bounding box [x1, y1, x2, y2] of the red `?` resistor in the left circuit.\nAnswer rule: set \"answer\" to the integer resistor value that should replace the red `?` resistor.\nExample JSON:\n{\"evidence\":[[2,3,4,5]],\"answer\":8}",
   "prompt_variants": {
-    "answer_and_evidence": "You are given an image with two side-by-side resistor networks between labeled terminals A and B that have the same total resistance, where the left circuit has one red `?` resistor in the series part of the network. Read the resistor values and determine the requested equivalent resistance. Use the fact that the left and right circuits have the same equivalent resistance between A and B. What value should the red `?` resistor on the left be? Answer with an integer.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array with the single bounding box [x1, y1, x2, y2] of the red `?` resistor in the left circuit.\nAnswer format: set \"answer\" to the integer resistor value that should replace the red `?` resistor.\nExample JSON:\n{\"evidence\":[[2,3,4,5]],\"answer\":8}",
-    "answer_only": "You are given an image with two side-by-side resistor networks between labeled terminals A and B that have the same total resistance, where the left circuit has one red `?` resistor in the series part of the network. Read the resistor values and determine the requested equivalent resistance. Use the fact that the left and right circuits have the same equivalent resistance between A and B. What value should the red `?` resistor on the left be? Answer with an integer.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the integer resistor value that should replace the red `?` resistor.\nExample JSON:\n{\"answer\":8}"
+    "answer_and_evidence": "Work from the resistor-network diagram shown in the image: two side-by-side resistor networks between labeled terminals A and B that have the same total resistance, where the left circuit has one red `?` resistor in the series part of the network. Answer using only the resistor values shown in the network. The left and right circuits have the same total equivalent resistance between terminals A and B. What integer value should replace the red `?` resistor in the left circuit?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array with the single bounding box [x1, y1, x2, y2] of the red `?` resistor in the left circuit.\nAnswer rule: set \"answer\" to the integer resistor value that should replace the red `?` resistor.\nExample JSON:\n{\"evidence\":[[2,3,4,5]],\"answer\":8}",
+    "answer_only": "Work from the resistor-network diagram shown in the image: two side-by-side resistor networks between labeled terminals A and B that have the same total resistance, where the left circuit has one red `?` resistor in the series part of the network. Answer using only the resistor values shown in the network. The left and right circuits have the same total equivalent resistance between terminals A and B. What integer value should replace the red `?` resistor in the left circuit?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the integer resistor value that should replace the red `?` resistor.\nExample JSON:\n{\"answer\":8}"
   },
   "task": "task_physics_circuits_equivalent_resistance",
   "task_variant": "missing_resistor_value",
@@ -43,43 +43,43 @@
       }
     },
     "execution_trace": {
-      "accent_color_name": "brown",
+      "accent_color_name": "blue",
       "evidence_entity_ids": [
-        "left_resistor_1"
+        "left_resistor_3"
       ],
-      "left_orientation": "series_then_parallel",
+      "left_orientation": "parallel_then_series",
       "left_parallel_values": [
-        4,
-        12
+        3,
+        6
       ],
       "left_series_values": [
-        8
+        3
       ],
       "missing_component_group": "series",
-      "missing_resistor_index": 1,
-      "paired_total_resistance": 11,
+      "missing_resistor_index": 3,
+      "paired_total_resistance": 5,
       "parallel_values": [],
       "query_variant": "missing_resistor_value",
       "resistor_specs": [
         {
-          "missing": true,
+          "missing": false,
           "resistor_id": "left_resistor_1",
-          "value": null
+          "value": 3
         },
         {
           "missing": false,
           "resistor_id": "left_resistor_2",
-          "value": 4
+          "value": 3
         },
         {
-          "missing": false,
+          "missing": true,
           "resistor_id": "left_resistor_3",
-          "value": 12
+          "value": null
         },
         {
           "missing": false,
           "resistor_id": "right_resistor_1",
-          "value": 7
+          "value": 2
         },
         {
           "missing": false,
@@ -89,21 +89,21 @@
         {
           "missing": false,
           "resistor_id": "right_resistor_3",
-          "value": 12
+          "value": 6
         }
       ],
-      "right_orientation": "parallel_then_series",
+      "right_orientation": "series_then_parallel",
       "right_parallel_values": [
         6,
-        12
+        6
       ],
       "right_series_values": [
-        7
+        2
       ],
       "scene_variant": "simple_series_parallel",
       "series_parallel_orientation": null,
       "series_values": [],
-      "target_answer": 8,
+      "target_answer": 3,
       "target_answer_support": [
         1,
         2,
@@ -139,16 +139,16 @@
     "projected_evidence": {
       "bbox_set": [
         [
-          85.0,
-          257.0,
-          181.0,
-          303.0
+          176.0,
+          353.0,
+          272.0,
+          399.0
         ]
       ]
     },
     "query_spec": {
       "params": {
-        "accent_color_name": "brown",
+        "accent_color_name": "blue",
         "accent_color_name_probabilities": {
           "blue": 0.1,
           "brown": 0.1,
@@ -171,7 +171,7 @@
           "parallel": 0.5,
           "simple_series_parallel": 0.5
         },
-        "target_answer": 8,
+        "target_answer": 3,
         "target_answer_probabilities": {
           "1": 0.08333333333333333,
           "10": 0.08333333333333333,
@@ -186,6 +186,20 @@
           "8": 0.08333333333333333,
           "9": 0.08333333333333333
         },
+        "target_answer_support": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12
+        ],
         "task_variant": "missing_resistor_value",
         "task_variant_probabilities": {
           "missing_resistor_value": 1.0,
@@ -194,7 +208,7 @@
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 1,
+        "answer_or_evidence_variant_index": 4,
         "prompt_bundle_id": "physics_circuits_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -207,11 +221,11 @@
           "object_description": "two side-by-side resistor networks between labeled terminals A and B that have the same total resistance, where the left circuit has one red `?` resistor in the series part of the network"
         },
         "task_family_key": "resistor_network_diagram",
-        "task_family_variant_index": 2,
+        "task_family_variant_index": 3,
         "task_key": "equivalent_resistance_query",
-        "task_variant_index": 1,
+        "task_variant_index": 3,
         "task_variant_key": "missing_resistor_value",
-        "task_variant_template_index": 3,
+        "task_variant_template_index": 0,
         "template_paths": [
           "physics/circuits/physics_circuits_v1.json"
         ],
@@ -227,7 +241,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 1,
+            "answer_or_evidence_variant_index": 4,
             "prompt_bundle_id": "physics_circuits_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -240,11 +254,11 @@
               "object_description": "two side-by-side resistor networks between labeled terminals A and B that have the same total resistance, where the left circuit has one red `?` resistor in the series part of the network"
             },
             "task_family_key": "resistor_network_diagram",
-            "task_family_variant_index": 2,
+            "task_family_variant_index": 3,
             "task_key": "equivalent_resistance_query",
-            "task_variant_index": 1,
+            "task_variant_index": 3,
             "task_variant_key": "missing_resistor_value",
-            "task_variant_template_index": 3,
+            "task_variant_template_index": 0,
             "template_paths": [
               "physics/circuits/physics_circuits_v1.json"
             ],
@@ -255,12 +269,12 @@
               "task_variant:missing_resistor_value": 5
             }
           },
-          "prompt": "You are given an image with two side-by-side resistor networks between labeled terminals A and B that have the same total resistance, where the left circuit has one red `?` resistor in the series part of the network. Read the resistor values and determine the requested equivalent resistance. Use the fact that the left and right circuits have the same equivalent resistance between A and B. What value should the red `?` resistor on the left be? Answer with an integer.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array with the single bounding box [x1, y1, x2, y2] of the red `?` resistor in the left circuit.\nAnswer format: set \"answer\" to the integer resistor value that should replace the red `?` resistor.\nExample JSON:\n{\"evidence\":[[2,3,4,5]],\"answer\":8}"
+          "prompt": "Work from the resistor-network diagram shown in the image: two side-by-side resistor networks between labeled terminals A and B that have the same total resistance, where the left circuit has one red `?` resistor in the series part of the network. Answer using only the resistor values shown in the network. The left and right circuits have the same total equivalent resistance between terminals A and B. What integer value should replace the red `?` resistor in the left circuit?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array with the single bounding box [x1, y1, x2, y2] of the red `?` resistor in the left circuit.\nAnswer rule: set \"answer\" to the integer resistor value that should replace the red `?` resistor.\nExample JSON:\n{\"evidence\":[[2,3,4,5]],\"answer\":8}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 0,
+            "answer_or_evidence_variant_index": 4,
             "prompt_bundle_id": "physics_circuits_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -273,11 +287,11 @@
               "object_description": "two side-by-side resistor networks between labeled terminals A and B that have the same total resistance, where the left circuit has one red `?` resistor in the series part of the network"
             },
             "task_family_key": "resistor_network_diagram",
-            "task_family_variant_index": 2,
+            "task_family_variant_index": 3,
             "task_key": "equivalent_resistance_query",
-            "task_variant_index": 1,
+            "task_variant_index": 3,
             "task_variant_key": "missing_resistor_value",
-            "task_variant_template_index": 3,
+            "task_variant_template_index": 0,
             "template_paths": [
               "physics/circuits/physics_circuits_v1.json"
             ],
@@ -288,14 +302,14 @@
               "task_variant:missing_resistor_value": 5
             }
           },
-          "prompt": "You are given an image with two side-by-side resistor networks between labeled terminals A and B that have the same total resistance, where the left circuit has one red `?` resistor in the series part of the network. Read the resistor values and determine the requested equivalent resistance. Use the fact that the left and right circuits have the same equivalent resistance between A and B. What value should the red `?` resistor on the left be? Answer with an integer.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the integer resistor value that should replace the red `?` resistor.\nExample JSON:\n{\"answer\":8}"
+          "prompt": "Work from the resistor-network diagram shown in the image: two side-by-side resistor networks between labeled terminals A and B that have the same total resistance, where the left circuit has one red `?` resistor in the series part of the network. Answer using only the resistor values shown in the network. The left and right circuits have the same total equivalent resistance between terminals A and B. What integer value should replace the red `?` resistor in the left circuit?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the integer resistor value that should replace the red `?` resistor.\nExample JSON:\n{\"answer\":8}"
         }
       },
       "task_variant": "missing_resistor_value",
       "template_id": "physics_circuits_v1"
     },
     "render_map": {
-      "accent_color_name": "brown",
+      "accent_color_name": "blue",
       "equals_sign_bbox_px": [
         447.0,
         265.5,
@@ -303,23 +317,23 @@
         294.5
       ],
       "evidence_entity_ids": [
-        "left_resistor_1"
+        "left_resistor_3"
       ],
       "left_scene": {
-        "accent_color_name": "brown",
+        "accent_color_name": "blue",
         "evidence_entity_ids": [
           "left_resistor_1",
           "left_resistor_2",
           "left_resistor_3"
         ],
         "missing_resistor_entity_ids": [
-          "left_resistor_1"
+          "left_resistor_3"
         ],
         "resistor_bboxes_px": {
           "left_resistor_1": [
-            85.0,
+            267.0,
             257.0,
-            181.0,
+            363.0,
             303.0
           ],
           "left_resistor_2": [
@@ -370,16 +384,6 @@
               280.0
             ],
             [
-              85.0,
-              280.0
-            ]
-          ],
-          [
-            [
-              181.0,
-              280.0
-            ],
-            [
               176.0,
               280.0
             ]
@@ -387,6 +391,16 @@
           [
             [
               272.0,
+              280.0
+            ],
+            [
+              267.0,
+              280.0
+            ]
+          ],
+          [
+            [
+              363.0,
               280.0
             ],
             [
@@ -457,13 +471,13 @@
         ]
       },
       "missing_resistor_entity_ids": [
-        "left_resistor_1"
+        "left_resistor_3"
       ],
       "resistor_bboxes_px": {
         "left_resistor_1": [
-          85.0,
+          267.0,
           257.0,
-          181.0,
+          363.0,
           303.0
         ],
         "left_resistor_2": [
@@ -479,9 +493,9 @@
           399.0
         ],
         "right_resistor_1": [
-          759.0,
+          577.0,
           257.0,
-          855.0,
+          673.0,
           303.0
         ],
         "right_resistor_2": [
@@ -498,7 +512,7 @@
         ]
       },
       "right_scene": {
-        "accent_color_name": "brown",
+        "accent_color_name": "blue",
         "evidence_entity_ids": [
           "right_resistor_1",
           "right_resistor_2",
@@ -507,9 +521,9 @@
         "missing_resistor_entity_ids": [],
         "resistor_bboxes_px": {
           "right_resistor_1": [
-            759.0,
+            577.0,
             257.0,
-            855.0,
+            673.0,
             303.0
           ],
           "right_resistor_2": [
@@ -560,6 +574,16 @@
               280.0
             ],
             [
+              577.0,
+              280.0
+            ]
+          ],
+          [
+            [
+              673.0,
+              280.0
+            ],
+            [
               668.0,
               280.0
             ]
@@ -567,16 +591,6 @@
           [
             [
               764.0,
-              280.0
-            ],
-            [
-              759.0,
-              280.0
-            ]
-          ],
-          [
-            [
-              855.0,
               280.0
             ],
             [
@@ -705,16 +719,6 @@
             280.0
           ],
           [
-            85.0,
-            280.0
-          ]
-        ],
-        [
-          [
-            181.0,
-            280.0
-          ],
-          [
             176.0,
             280.0
           ]
@@ -722,6 +726,16 @@
         [
           [
             272.0,
+            280.0
+          ],
+          [
+            267.0,
+            280.0
+          ]
+        ],
+        [
+          [
+            363.0,
             280.0
           ],
           [
@@ -795,6 +809,16 @@
             280.0
           ],
           [
+            577.0,
+            280.0
+          ]
+        ],
+        [
+          [
+            673.0,
+            280.0
+          ],
+          [
             668.0,
             280.0
           ]
@@ -802,16 +826,6 @@
         [
           [
             764.0,
-            280.0
-          ],
-          [
-            759.0,
-            280.0
-          ]
-        ],
-        [
-          [
-            855.0,
             280.0
           ],
           [
@@ -882,7 +896,7 @@
       ]
     },
     "render_spec": {
-      "accent_color_name": "brown",
+      "accent_color_name": "blue",
       "canvas_height": 560,
       "canvas_width": 940,
       "scene_variant": "simple_series_parallel"
@@ -917,16 +931,16 @@
         },
         {
           "bbox_px": [
-            85.0,
+            267.0,
             257.0,
-            181.0,
+            363.0,
             303.0
           ],
           "entity_id": "left_resistor_1",
           "entity_type": "physics_resistor",
           "meta": {
-            "missing": true,
-            "value": null
+            "missing": false,
+            "value": 3
           }
         },
         {
@@ -940,7 +954,7 @@
           "entity_type": "physics_resistor",
           "meta": {
             "missing": false,
-            "value": 4
+            "value": 3
           }
         },
         {
@@ -953,8 +967,8 @@
           "entity_id": "left_resistor_3",
           "entity_type": "physics_resistor",
           "meta": {
-            "missing": false,
-            "value": 12
+            "missing": true,
+            "value": null
           }
         },
         {
@@ -985,16 +999,16 @@
         },
         {
           "bbox_px": [
-            759.0,
+            577.0,
             257.0,
-            855.0,
+            673.0,
             303.0
           ],
           "entity_id": "right_resistor_1",
           "entity_type": "physics_resistor",
           "meta": {
             "missing": false,
-            "value": 7
+            "value": 2
           }
         },
         {
@@ -1022,26 +1036,26 @@
           "entity_type": "physics_resistor",
           "meta": {
             "missing": false,
-            "value": 12
+            "value": 6
           }
         }
       ],
       "relations": {
-        "accent_color_name": "brown",
+        "accent_color_name": "blue",
         "evidence_entity_ids": [
-          "left_resistor_1"
+          "left_resistor_3"
         ],
-        "paired_total_resistance": 11,
+        "paired_total_resistance": 5,
         "query_variant": "missing_resistor_value",
         "scene_variant": "simple_series_parallel",
-        "target_answer": 8,
+        "target_answer": 3,
         "task_variant": "missing_resistor_value"
       },
       "scene_kind": "physics_resistor_network_pair_simple_series_parallel"
     },
     "witness_symbolic": {
       "ids": [
-        "left_resistor_1"
+        "left_resistor_3"
       ],
       "type": "id_set"
     }

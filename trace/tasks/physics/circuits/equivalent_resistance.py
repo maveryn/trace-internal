@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from fractions import Fraction
+from functools import lru_cache
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from PIL import ImageDraw
@@ -91,6 +92,7 @@ class _ResolvedAxes:
     query_variant: str
     accent_color_name: str
     target_answer: int
+    target_answer_support: Tuple[int, ...]
     scene_variant_probabilities: Dict[str, float]
     query_variant_probabilities: Dict[str, float]
     accent_color_name_probabilities: Dict[str, float]
@@ -152,21 +154,119 @@ def _resolve_target_answer(
     params: Mapping[str, Any],
     scene_variant: str,
     query_variant: str,
-) -> Tuple[int, Dict[str, float]]:
+) -> Tuple[int, Tuple[int, ...], Dict[str, float]]:
     """Resolve the sampled target resistance support for one scene family."""
 
     support_key = _target_support_key(scene_variant=str(scene_variant), query_variant=str(query_variant))
     fallback = getattr(_DEFAULTS, support_key)
-    return resolve_integer_choice(
+    raw_support = resolve_integer_support(
+        params,
+        gen_defaults=_GEN_DEFAULTS,
+        key=str(support_key),
+        fallback=fallback,
+    )
+    resistor_value_min = int(
+        params.get("resistor_value_min", group_default(_GEN_DEFAULTS, "resistor_value_min", _DEFAULTS.resistor_value_min))
+    )
+    resistor_value_max = int(
+        params.get("resistor_value_max", group_default(_GEN_DEFAULTS, "resistor_value_max", _DEFAULTS.resistor_value_max))
+    )
+    feasible_support = _feasible_target_support(
+        scene_variant=str(scene_variant),
+        query_variant=str(query_variant),
+        raw_support=raw_support,
+        resistor_value_min=int(resistor_value_min),
+        resistor_value_max=int(resistor_value_max),
+    )
+    if not feasible_support:
+        raise ValueError(f"no feasible target_answer values remain for {scene_variant}/{query_variant}")
+    resolved_params = dict(params)
+    resolved_params[str(support_key)] = list(int(value) for value in feasible_support)
+    target_answer, probabilities = resolve_integer_choice(
         instance_seed=int(instance_seed),
-        params=params,
+        params=resolved_params,
         gen_defaults=_GEN_DEFAULTS,
         support_key=str(support_key),
         explicit_key="target_answer",
-        fallback_support=fallback,
+        fallback_support=feasible_support,
         namespace=f"{TASK_ID}.target_answer.{str(scene_variant)}",
         balanced_flag_key="balanced_target_answer_sampling",
+        namespace_explicit_sampling_index=True,
     )
+    return int(target_answer), tuple(int(value) for value in feasible_support), dict(probabilities)
+
+
+@lru_cache(maxsize=None)
+def _is_feasible_target_answer(
+    *,
+    scene_variant: str,
+    query_variant: str,
+    target_answer: int,
+    resistor_value_min: int,
+    resistor_value_max: int,
+) -> bool:
+    """Return whether one scene/query pair can realize the requested target answer."""
+
+    if str(query_variant) == "missing_resistor_value":
+        if str(scene_variant) == "parallel":
+            return bool(
+                _parallel_missing_pair_candidates(
+                    target_answer=int(target_answer),
+                    resistor_value_min=int(resistor_value_min),
+                    resistor_value_max=int(resistor_value_max),
+                )
+            )
+        return bool(
+            _simple_series_parallel_missing_pair_candidates(
+                target_answer=int(target_answer),
+                resistor_value_min=int(resistor_value_min),
+                resistor_value_max=int(resistor_value_max),
+            )
+        )
+
+    if str(scene_variant) == "parallel":
+        return any(
+            bool(
+                _parallel_bank_candidates_for_total(
+                    target_answer=int(target_answer),
+                    resistor_count=int(branch_count),
+                    resistor_value_min=int(resistor_value_min),
+                    resistor_value_max=int(resistor_value_max),
+                )
+            )
+            for branch_count in (3, 4)
+        )
+    return bool(
+        _series_parallel_candidates_for_total(
+            target_answer=int(target_answer),
+            resistor_value_min=int(resistor_value_min),
+            resistor_value_max=int(resistor_value_max),
+        )
+    )
+
+
+def _feasible_target_support(
+    *,
+    scene_variant: str,
+    query_variant: str,
+    raw_support: Sequence[int],
+    resistor_value_min: int,
+    resistor_value_max: int,
+) -> Tuple[int, ...]:
+    """Return the subset of one configured support that is constructively feasible."""
+
+    feasible: List[int] = []
+    for raw_value in raw_support:
+        target_answer = int(raw_value)
+        if _is_feasible_target_answer(
+            scene_variant=str(scene_variant),
+            query_variant=str(query_variant),
+            target_answer=int(target_answer),
+            resistor_value_min=int(resistor_value_min),
+            resistor_value_max=int(resistor_value_max),
+        ):
+            feasible.append(int(target_answer))
+    return tuple(int(value) for value in feasible)
 
 
 def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _ResolvedAxes:
@@ -184,7 +284,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         scene_sampling_namespace=f"{TASK_ID}.scene_variant",
         query_sampling_namespace=f"{TASK_ID}.query_variant",
     )
-    target_answer, target_answer_probabilities = _resolve_target_answer(
+    target_answer, target_answer_support, target_answer_probabilities = _resolve_target_answer(
         instance_seed=int(instance_seed),
         params=params,
         scene_variant=str(scene_variant),
@@ -216,6 +316,7 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         query_variant=str(query_variant),
         accent_color_name=str(accent_color_name),
         target_answer=int(target_answer),
+        target_answer_support=tuple(int(value) for value in target_answer_support),
         scene_variant_probabilities=dict(scene_probs),
         query_variant_probabilities=dict(query_probs),
         accent_color_name_probabilities=dict(accent_color_name_probabilities),
@@ -940,7 +1041,6 @@ class PhysicsCircuitsEquivalentResistanceTask:
                 resistor_count=len(rendered_scene.resistor_specs),
                 target_answer=int(axes.target_answer),
             )
-            support_key = _target_support_key(scene_variant=str(axes.scene_variant), query_variant=str(axes.query_variant))
             trace_payload = {
                 "scene_ir": {
                     "scene_kind": (
@@ -977,6 +1077,7 @@ class PhysicsCircuitsEquivalentResistanceTask:
                         "task_variant_probabilities": dict(axes.query_variant_probabilities),
                         "accent_color_name_probabilities": dict(axes.accent_color_name_probabilities),
                         "target_answer": int(axes.target_answer),
+                        "target_answer_support": [int(value) for value in axes.target_answer_support],
                         "target_answer_probabilities": dict(axes.target_answer_probabilities),
                     },
                 },
@@ -993,14 +1094,7 @@ class PhysicsCircuitsEquivalentResistanceTask:
                     "task_variant": str(axes.query_variant),
                     "accent_color_name": str(axes.accent_color_name),
                     "target_answer": int(axes.target_answer),
-                    "target_answer_support": list(
-                        resolve_integer_support(
-                            params,
-                            gen_defaults=_GEN_DEFAULTS,
-                            key=str(support_key),
-                            fallback=getattr(_DEFAULTS, support_key),
-                        )
-                    ),
+                    "target_answer_support": [int(value) for value in axes.target_answer_support],
                     "series_parallel_orientation": None if layout is None else layout.series_parallel_orientation,
                     "series_values": [] if layout is None else [int(value) for value in layout.series_values],
                     "parallel_values": [] if layout is None else [int(value) for value in layout.parallel_values],

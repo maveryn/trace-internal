@@ -31,7 +31,8 @@
    - `missing_resistor_value` asks for the integer value that should replace the red `?` resistor in the left circuit so the left and right circuits have the same total equivalent resistance between `A` and `B`.
 8. Answer policy:
    - all answers are positive integers,
-   - all scenes are sampled only when the resulting equivalent resistance is integral.
+   - all scenes are sampled only when the resulting equivalent resistance is integral,
+   - active `target_answer` support is filtered to the constructively feasible subset for the chosen `scene_variant` + `query_variant` before balanced sampling.
 
 ## 3) Prompt contract
 1. Bundle: `physics_circuits_v1`
@@ -84,9 +85,10 @@
 ## 6) Determinism + constraints
 1. Deterministic sampling/rendering from `instance_seed`.
 2. `scene_variant`, `query_variant`, `accent_color_name`, and `target_answer` are sampled through explicit supports/weights with deterministic balancing.
-3. Answers and evidence come from the same finalized resistor layout.
-4. No semantic auto-relaxation.
-5. Reject/resample conditions:
+3. When configured supports include values that the constructive sampler cannot realize, generation first intersects them with the feasible subset for that scene/query family; explicit infeasible `target_answer` values are rejected immediately.
+4. Answers and evidence come from the same finalized resistor layout.
+5. No semantic auto-relaxation.
+6. Reject/resample conditions:
    - unsupported scene/query combinations,
    - explicit `target_answer` outside the active scene/query-specific support,
    - failure to construct an integer-valued resistor layout for the requested scene/answer pair,

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any, Dict, Mapping, Sequence, Tuple
 
+from ....core.seed import hash64
 from ....core.seed import spawn_rng
 from ...shared.config_defaults import group_default
 from ...shared.deterministic_sampling import resolve_selection_index, uniform_probability_map
@@ -40,8 +41,14 @@ def resolve_integer_choice(
     namespace: str,
     balanced_flag_key: str,
     use_instance_seed_cycle: bool = False,
+    namespace_explicit_sampling_index: bool = False,
 ) -> Tuple[int, Dict[str, float]]:
-    """Resolve one integer choice from explicit support with optional balanced cycling."""
+    """Resolve one integer choice from explicit support with optional balanced cycling.
+
+    When `namespace_explicit_sampling_index` is enabled, review-time `_sampling_index`
+    is mixed with `namespace` before cycling the support so multiple balanced axes do
+    not alias the same raw review index.
+    """
 
     support = resolve_integer_support(
         params,
@@ -58,11 +65,17 @@ def resolve_integer_choice(
 
     balanced_enabled = bool(params.get(str(balanced_flag_key), group_default(gen_defaults, str(balanced_flag_key), True)))
     if bool(balanced_enabled):
+        selection_params = params
+        if bool(namespace_explicit_sampling_index) and params.get("_sampling_index") is not None:
+            selection_params = dict(params)
+            selection_params["_sampling_index"] = abs(
+                int(hash64(int(instance_seed), str(namespace), int(params.get("_sampling_index")), 0))
+            )
         if bool(use_instance_seed_cycle) and params.get("_sampling_index") is None:
             selection_index = abs(int(instance_seed))
         else:
             selection_index = resolve_selection_index(
-                params=params,
+                params=selection_params,
                 instance_seed=int(instance_seed),
                 namespace=str(namespace),
             )

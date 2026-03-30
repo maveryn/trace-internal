@@ -1,7 +1,7 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 5
+    "value": 12
   },
   "evidence_gt": {
     "type": "bbox_set",
@@ -18,11 +18,11 @@
     "format": "png",
     "path": "physics/task_physics_circuits_equivalent_resistance/images/missing_resistor_value/0024.png"
   },
-  "instance_seed": 1868376080195241,
-  "prompt": "Use the circuit diagram in the image. It shows two side-by-side resistor networks between labeled terminals A and B that have the same total resistance, where the left circuit has one red `?` resistor in the series part of the network. Work from the labeled resistor boxes between terminals A and B. The two shown resistor networks are equal in total resistance between A and B. What integer resistor value belongs in the red `?` box on the left?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array with the single bounding box [x1, y1, x2, y2] of the red `?` resistor in the left circuit.\nAnswer: set \"answer\" to the integer resistor value that should replace the red `?` resistor.\nExample JSON:\n{\"evidence\":[[2,3,4,5]],\"answer\":8}",
+  "instance_seed": 6717988806220528,
+  "prompt": "Look at the resistor-network diagram in the image. It shows two side-by-side resistor networks between labeled terminals A and B that have the same total resistance, where the left circuit has one red `?` resistor in the series part of the network. Read the resistor values and determine the requested equivalent resistance. Both circuits shown have the same total resistance between terminals A and B. What integer value must the red `?` resistor in the left network have?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array with the single bounding box [x1, y1, x2, y2] of the red `?` resistor in the left circuit.\nAnswer: set \"answer\" to the integer resistor value that should replace the red `?` resistor.\nExample JSON:\n{\"evidence\":[[2,3,4,5]],\"answer\":8}",
   "prompt_variants": {
-    "answer_and_evidence": "Use the circuit diagram in the image. It shows two side-by-side resistor networks between labeled terminals A and B that have the same total resistance, where the left circuit has one red `?` resistor in the series part of the network. Work from the labeled resistor boxes between terminals A and B. The two shown resistor networks are equal in total resistance between A and B. What integer resistor value belongs in the red `?` box on the left?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array with the single bounding box [x1, y1, x2, y2] of the red `?` resistor in the left circuit.\nAnswer: set \"answer\" to the integer resistor value that should replace the red `?` resistor.\nExample JSON:\n{\"evidence\":[[2,3,4,5]],\"answer\":8}",
-    "answer_only": "Use the circuit diagram in the image. It shows two side-by-side resistor networks between labeled terminals A and B that have the same total resistance, where the left circuit has one red `?` resistor in the series part of the network. Work from the labeled resistor boxes between terminals A and B. The two shown resistor networks are equal in total resistance between A and B. What integer resistor value belongs in the red `?` box on the left?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the integer resistor value that should replace the red `?` resistor.\nExample JSON:\n{\"answer\":8}"
+    "answer_and_evidence": "Look at the resistor-network diagram in the image. It shows two side-by-side resistor networks between labeled terminals A and B that have the same total resistance, where the left circuit has one red `?` resistor in the series part of the network. Read the resistor values and determine the requested equivalent resistance. Both circuits shown have the same total resistance between terminals A and B. What integer value must the red `?` resistor in the left network have?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array with the single bounding box [x1, y1, x2, y2] of the red `?` resistor in the left circuit.\nAnswer: set \"answer\" to the integer resistor value that should replace the red `?` resistor.\nExample JSON:\n{\"evidence\":[[2,3,4,5]],\"answer\":8}",
+    "answer_only": "Look at the resistor-network diagram in the image. It shows two side-by-side resistor networks between labeled terminals A and B that have the same total resistance, where the left circuit has one red `?` resistor in the series part of the network. Read the resistor values and determine the requested equivalent resistance. Both circuits shown have the same total resistance between terminals A and B. What integer value must the red `?` resistor in the left network have?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the integer resistor value that should replace the red `?` resistor.\nExample JSON:\n{\"answer\":8}"
   },
   "task": "task_physics_circuits_equivalent_resistance",
   "task_variant": "missing_resistor_value",
@@ -49,15 +49,15 @@
       ],
       "left_orientation": "series_then_parallel",
       "left_parallel_values": [
-        4,
-        4
+        6,
+        12
       ],
       "left_series_values": [
-        5
+        12
       ],
       "missing_component_group": "series",
       "missing_resistor_index": 1,
-      "paired_total_resistance": 7,
+      "paired_total_resistance": 16,
       "parallel_values": [],
       "query_variant": "missing_resistor_value",
       "resistor_specs": [
@@ -69,17 +69,17 @@
         {
           "missing": false,
           "resistor_id": "left_resistor_2",
-          "value": 4
+          "value": 6
         },
         {
           "missing": false,
           "resistor_id": "left_resistor_3",
-          "value": 4
+          "value": 12
         },
         {
           "missing": false,
           "resistor_id": "right_resistor_1",
-          "value": 1
+          "value": 10
         },
         {
           "missing": false,
@@ -98,12 +98,12 @@
         12
       ],
       "right_series_values": [
-        1
+        10
       ],
       "scene_variant": "simple_series_parallel",
       "series_parallel_orientation": null,
       "series_values": [],
-      "target_answer": 5,
+      "target_answer": 12,
       "target_answer_support": [
         1,
         2,
@@ -171,7 +171,7 @@
           "parallel": 0.5,
           "simple_series_parallel": 0.5
         },
-        "target_answer": 5,
+        "target_answer": 12,
         "target_answer_probabilities": {
           "1": 0.08333333333333333,
           "10": 0.08333333333333333,
@@ -186,6 +186,20 @@
           "8": 0.08333333333333333,
           "9": 0.08333333333333333
         },
+        "target_answer_support": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12
+        ],
         "task_variant": "missing_resistor_value",
         "task_variant_probabilities": {
           "missing_resistor_value": 1.0,
@@ -207,11 +221,11 @@
           "object_description": "two side-by-side resistor networks between labeled terminals A and B that have the same total resistance, where the left circuit has one red `?` resistor in the series part of the network"
         },
         "task_family_key": "resistor_network_diagram",
-        "task_family_variant_index": 4,
+        "task_family_variant_index": 1,
         "task_key": "equivalent_resistance_query",
-        "task_variant_index": 2,
+        "task_variant_index": 1,
         "task_variant_key": "missing_resistor_value",
-        "task_variant_template_index": 2,
+        "task_variant_template_index": 4,
         "template_paths": [
           "physics/circuits/physics_circuits_v1.json"
         ],
@@ -240,11 +254,11 @@
               "object_description": "two side-by-side resistor networks between labeled terminals A and B that have the same total resistance, where the left circuit has one red `?` resistor in the series part of the network"
             },
             "task_family_key": "resistor_network_diagram",
-            "task_family_variant_index": 4,
+            "task_family_variant_index": 1,
             "task_key": "equivalent_resistance_query",
-            "task_variant_index": 2,
+            "task_variant_index": 1,
             "task_variant_key": "missing_resistor_value",
-            "task_variant_template_index": 2,
+            "task_variant_template_index": 4,
             "template_paths": [
               "physics/circuits/physics_circuits_v1.json"
             ],
@@ -255,12 +269,12 @@
               "task_variant:missing_resistor_value": 5
             }
           },
-          "prompt": "Use the circuit diagram in the image. It shows two side-by-side resistor networks between labeled terminals A and B that have the same total resistance, where the left circuit has one red `?` resistor in the series part of the network. Work from the labeled resistor boxes between terminals A and B. The two shown resistor networks are equal in total resistance between A and B. What integer resistor value belongs in the red `?` box on the left?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array with the single bounding box [x1, y1, x2, y2] of the red `?` resistor in the left circuit.\nAnswer: set \"answer\" to the integer resistor value that should replace the red `?` resistor.\nExample JSON:\n{\"evidence\":[[2,3,4,5]],\"answer\":8}"
+          "prompt": "Look at the resistor-network diagram in the image. It shows two side-by-side resistor networks between labeled terminals A and B that have the same total resistance, where the left circuit has one red `?` resistor in the series part of the network. Read the resistor values and determine the requested equivalent resistance. Both circuits shown have the same total resistance between terminals A and B. What integer value must the red `?` resistor in the left network have?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array with the single bounding box [x1, y1, x2, y2] of the red `?` resistor in the left circuit.\nAnswer: set \"answer\" to the integer resistor value that should replace the red `?` resistor.\nExample JSON:\n{\"evidence\":[[2,3,4,5]],\"answer\":8}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 1,
+            "answer_or_evidence_variant_index": 0,
             "prompt_bundle_id": "physics_circuits_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -273,11 +287,11 @@
               "object_description": "two side-by-side resistor networks between labeled terminals A and B that have the same total resistance, where the left circuit has one red `?` resistor in the series part of the network"
             },
             "task_family_key": "resistor_network_diagram",
-            "task_family_variant_index": 4,
+            "task_family_variant_index": 1,
             "task_key": "equivalent_resistance_query",
-            "task_variant_index": 2,
+            "task_variant_index": 1,
             "task_variant_key": "missing_resistor_value",
-            "task_variant_template_index": 2,
+            "task_variant_template_index": 4,
             "template_paths": [
               "physics/circuits/physics_circuits_v1.json"
             ],
@@ -288,7 +302,7 @@
               "task_variant:missing_resistor_value": 5
             }
           },
-          "prompt": "Use the circuit diagram in the image. It shows two side-by-side resistor networks between labeled terminals A and B that have the same total resistance, where the left circuit has one red `?` resistor in the series part of the network. Work from the labeled resistor boxes between terminals A and B. The two shown resistor networks are equal in total resistance between A and B. What integer resistor value belongs in the red `?` box on the left?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the integer resistor value that should replace the red `?` resistor.\nExample JSON:\n{\"answer\":8}"
+          "prompt": "Look at the resistor-network diagram in the image. It shows two side-by-side resistor networks between labeled terminals A and B that have the same total resistance, where the left circuit has one red `?` resistor in the series part of the network. Read the resistor values and determine the requested equivalent resistance. Both circuits shown have the same total resistance between terminals A and B. What integer value must the red `?` resistor in the left network have?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the integer resistor value that should replace the red `?` resistor.\nExample JSON:\n{\"answer\":8}"
         }
       },
       "task_variant": "missing_resistor_value",
@@ -940,7 +954,7 @@
           "entity_type": "physics_resistor",
           "meta": {
             "missing": false,
-            "value": 4
+            "value": 6
           }
         },
         {
@@ -954,7 +968,7 @@
           "entity_type": "physics_resistor",
           "meta": {
             "missing": false,
-            "value": 4
+            "value": 12
           }
         },
         {
@@ -994,7 +1008,7 @@
           "entity_type": "physics_resistor",
           "meta": {
             "missing": false,
-            "value": 1
+            "value": 10
           }
         },
         {
@@ -1031,10 +1045,10 @@
         "evidence_entity_ids": [
           "left_resistor_1"
         ],
-        "paired_total_resistance": 7,
+        "paired_total_resistance": 16,
         "query_variant": "missing_resistor_value",
         "scene_variant": "simple_series_parallel",
-        "target_answer": 5,
+        "target_answer": 12,
         "task_variant": "missing_resistor_value"
       },
       "scene_kind": "physics_resistor_network_pair_simple_series_parallel"

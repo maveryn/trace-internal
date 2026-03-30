@@ -1,7 +1,7 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 7
+    "value": 22
   },
   "evidence_gt": {
     "type": "bbox_set",
@@ -24,11 +24,11 @@
     "format": "png",
     "path": "physics/task_physics_mechanics_lever_balance/images/right_torque/0004.png"
   },
-  "instance_seed": 3716567747357102,
-  "prompt": "Use the mechanics lever diagram in the image. It shows one lever-balance diagram with a horizontal beam, an offset fulcrum, numbered distance marks, and weight blocks on both sides. Use the shown weights and distances to answer the question. Determine the torque contributed by the weights on the right side of the lever. Answer with an integer.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for all weight blocks on the queried side of the fulcrum.\nAnswer field: set \"answer\" to the requested integer torque or missing weight value.\nExample JSON:\n{\"evidence\":[[2,3,4,5],[3,4,5,6]],\"answer\":8}",
+  "instance_seed": 7910171360761178,
+  "prompt": "Use the mechanics lever diagram in the image. It shows one lever-balance diagram with a horizontal beam, an offset fulcrum, numbered distance marks, and weight blocks on both sides. Answer using only the information shown in the lever diagram. What is the total torque from the weights on the right side of the fulcrum? Answer with an integer.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for all weight blocks on the queried side of the fulcrum.\nAnswer: set \"answer\" to the requested integer torque or missing weight value.\nExample JSON:\n{\"evidence\":[[2,3,4,5],[3,4,5,6]],\"answer\":8}",
   "prompt_variants": {
-    "answer_and_evidence": "Use the mechanics lever diagram in the image. It shows one lever-balance diagram with a horizontal beam, an offset fulcrum, numbered distance marks, and weight blocks on both sides. Use the shown weights and distances to answer the question. Determine the torque contributed by the weights on the right side of the lever. Answer with an integer.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for all weight blocks on the queried side of the fulcrum.\nAnswer field: set \"answer\" to the requested integer torque or missing weight value.\nExample JSON:\n{\"evidence\":[[2,3,4,5],[3,4,5,6]],\"answer\":8}",
-    "answer_only": "Use the mechanics lever diagram in the image. It shows one lever-balance diagram with a horizontal beam, an offset fulcrum, numbered distance marks, and weight blocks on both sides. Use the shown weights and distances to answer the question. Determine the torque contributed by the weights on the right side of the lever. Answer with an integer.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the requested integer torque or missing weight value.\nExample JSON:\n{\"answer\":8}"
+    "answer_and_evidence": "Use the mechanics lever diagram in the image. It shows one lever-balance diagram with a horizontal beam, an offset fulcrum, numbered distance marks, and weight blocks on both sides. Answer using only the information shown in the lever diagram. What is the total torque from the weights on the right side of the fulcrum? Answer with an integer.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for all weight blocks on the queried side of the fulcrum.\nAnswer: set \"answer\" to the requested integer torque or missing weight value.\nExample JSON:\n{\"evidence\":[[2,3,4,5],[3,4,5,6]],\"answer\":8}",
+    "answer_only": "Use the mechanics lever diagram in the image. It shows one lever-balance diagram with a horizontal beam, an offset fulcrum, numbered distance marks, and weight blocks on both sides. Answer using only the information shown in the lever diagram. What is the total torque from the weights on the right side of the fulcrum? Answer with an integer.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the requested integer torque or missing weight value.\nExample JSON:\n{\"answer\":8}"
   },
   "task": "task_physics_mechanics_lever_balance",
   "task_variant": "right_torque",
@@ -54,8 +54,8 @@
         "lever_weight_1",
         "lever_weight_2"
       ],
-      "known_torque_left": 21,
-      "known_torque_right": 7,
+      "known_torque_left": 4,
+      "known_torque_right": 22,
       "placeholder_distance_units": null,
       "placeholder_side": null,
       "query_side": "right",
@@ -65,7 +65,7 @@
         "lever_weight_2"
       ],
       "scene_variant": "offset_fulcrum",
-      "target_answer": 7,
+      "target_answer": 22,
       "target_answer_support": [
         2,
         3,
@@ -98,7 +98,7 @@
           "missing": false,
           "relevant_to_query": true,
           "side": "right",
-          "value": 1,
+          "value": 6,
           "weight_id": "lever_weight_1"
         },
         {
@@ -106,24 +106,16 @@
           "missing": false,
           "relevant_to_query": true,
           "side": "right",
-          "value": 3,
+          "value": 8,
           "weight_id": "lever_weight_2"
         },
         {
-          "distance_units": 1,
+          "distance_units": 4,
           "missing": false,
           "relevant_to_query": false,
           "side": "left",
-          "value": 7,
+          "value": 1,
           "weight_id": "lever_weight_3"
-        },
-        {
-          "distance_units": 2,
-          "missing": false,
-          "relevant_to_query": false,
-          "side": "left",
-          "value": 7,
-          "weight_id": "lever_weight_4"
         }
       ]
     },
@@ -186,7 +178,7 @@
           "offset_fulcrum": 0.3333333333333333,
           "textured_beam": 0.3333333333333333
         },
-        "target_answer": 7,
+        "target_answer": 22,
         "target_answer_probabilities": {
           "10": 0.043478260869565216,
           "11": 0.043478260869565216,
@@ -221,7 +213,7 @@
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 3,
+        "answer_or_evidence_variant_index": 0,
         "prompt_bundle_id": "physics_mechanics_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -236,9 +228,9 @@
         "task_family_key": "lever_balance_diagram",
         "task_family_variant_index": 4,
         "task_key": "lever_balance_query",
-        "task_variant_index": 0,
+        "task_variant_index": 3,
         "task_variant_key": "right_torque",
-        "task_variant_template_index": 2,
+        "task_variant_template_index": 0,
         "template_paths": [
           "physics/mechanics/physics_mechanics_v1.json"
         ],
@@ -254,7 +246,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 3,
+            "answer_or_evidence_variant_index": 0,
             "prompt_bundle_id": "physics_mechanics_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -269,9 +261,9 @@
             "task_family_key": "lever_balance_diagram",
             "task_family_variant_index": 4,
             "task_key": "lever_balance_query",
-            "task_variant_index": 0,
+            "task_variant_index": 3,
             "task_variant_key": "right_torque",
-            "task_variant_template_index": 2,
+            "task_variant_template_index": 0,
             "template_paths": [
               "physics/mechanics/physics_mechanics_v1.json"
             ],
@@ -282,7 +274,7 @@
               "task_variant:right_torque": 5
             }
           },
-          "prompt": "Use the mechanics lever diagram in the image. It shows one lever-balance diagram with a horizontal beam, an offset fulcrum, numbered distance marks, and weight blocks on both sides. Use the shown weights and distances to answer the question. Determine the torque contributed by the weights on the right side of the lever. Answer with an integer.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for all weight blocks on the queried side of the fulcrum.\nAnswer field: set \"answer\" to the requested integer torque or missing weight value.\nExample JSON:\n{\"evidence\":[[2,3,4,5],[3,4,5,6]],\"answer\":8}"
+          "prompt": "Use the mechanics lever diagram in the image. It shows one lever-balance diagram with a horizontal beam, an offset fulcrum, numbered distance marks, and weight blocks on both sides. Answer using only the information shown in the lever diagram. What is the total torque from the weights on the right side of the fulcrum? Answer with an integer.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for all weight blocks on the queried side of the fulcrum.\nAnswer: set \"answer\" to the requested integer torque or missing weight value.\nExample JSON:\n{\"evidence\":[[2,3,4,5],[3,4,5,6]],\"answer\":8}"
         },
         "answer_only": {
           "metadata": {
@@ -302,9 +294,9 @@
             "task_family_key": "lever_balance_diagram",
             "task_family_variant_index": 4,
             "task_key": "lever_balance_query",
-            "task_variant_index": 0,
+            "task_variant_index": 3,
             "task_variant_key": "right_torque",
-            "task_variant_template_index": 2,
+            "task_variant_template_index": 0,
             "template_paths": [
               "physics/mechanics/physics_mechanics_v1.json"
             ],
@@ -315,7 +307,7 @@
               "task_variant:right_torque": 5
             }
           },
-          "prompt": "Use the mechanics lever diagram in the image. It shows one lever-balance diagram with a horizontal beam, an offset fulcrum, numbered distance marks, and weight blocks on both sides. Use the shown weights and distances to answer the question. Determine the torque contributed by the weights on the right side of the lever. Answer with an integer.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the requested integer torque or missing weight value.\nExample JSON:\n{\"answer\":8}"
+          "prompt": "Use the mechanics lever diagram in the image. It shows one lever-balance diagram with a horizontal beam, an offset fulcrum, numbered distance marks, and weight blocks on both sides. Answer using only the information shown in the lever diagram. What is the total torque from the weights on the right side of the fulcrum? Answer with an integer.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the requested integer torque or missing weight value.\nExample JSON:\n{\"answer\":8}"
         }
       },
       "task_variant": "right_torque",
@@ -343,7 +335,7 @@
         591.0,
         401.0
       ],
-      "max_distance_units": 2,
+      "max_distance_units": 4,
       "relevant_weight_ids": [
         "lever_weight_1",
         "lever_weight_2"
@@ -362,15 +354,9 @@
           287.0
         ],
         "lever_weight_3": [
-          445.0,
+          259.0,
           235.0,
-          503.0,
-          287.0
-        ],
-        "lever_weight_4": [
-          383.0,
-          235.0,
-          441.0,
+          317.0,
           287.0
         ]
       }
@@ -420,7 +406,7 @@
             "missing": false,
             "relevant_to_query": true,
             "side": "right",
-            "value": 1
+            "value": 6
           }
         },
         {
@@ -437,41 +423,24 @@
             "missing": false,
             "relevant_to_query": true,
             "side": "right",
-            "value": 3
+            "value": 8
           }
         },
         {
           "bbox_px": [
-            445.0,
+            259.0,
             235.0,
-            503.0,
+            317.0,
             287.0
           ],
           "entity_id": "lever_weight_3",
           "entity_type": "physics_lever_weight",
           "meta": {
-            "distance_units": 1,
+            "distance_units": 4,
             "missing": false,
             "relevant_to_query": false,
             "side": "left",
-            "value": 7
-          }
-        },
-        {
-          "bbox_px": [
-            383.0,
-            235.0,
-            441.0,
-            287.0
-          ],
-          "entity_id": "lever_weight_4",
-          "entity_type": "physics_lever_weight",
-          "meta": {
-            "distance_units": 2,
-            "missing": false,
-            "relevant_to_query": false,
-            "side": "left",
-            "value": 7
+            "value": 1
           }
         }
       ],
@@ -487,7 +456,7 @@
           "lever_weight_2"
         ],
         "scene_variant": "offset_fulcrum",
-        "target_answer": 7,
+        "target_answer": 22,
         "task_variant": "right_torque"
       },
       "scene_kind": "physics_lever_balance_offset_fulcrum"

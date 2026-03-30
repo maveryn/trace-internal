@@ -1,7 +1,7 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 17
+    "value": 6
   },
   "evidence_gt": {
     "type": "bbox_set",
@@ -13,9 +13,9 @@
         287.0
       ],
       [
-        245.0,
+        183.0,
         235.0,
-        303.0,
+        241.0,
         287.0
       ]
     ]
@@ -24,11 +24,11 @@
     "format": "png",
     "path": "physics/task_physics_mechanics_lever_balance/images/left_torque/0004.png"
   },
-  "instance_seed": 5416891713925286,
-  "prompt": "You are given an image with one lever-balance diagram with a textured beam, a fulcrum, numbered distance marks, and weight blocks on both sides. Use the shown weights and distances to answer the question. What total left-side torque is implied by the lever diagram? Answer with an integer.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for all weight blocks on the queried side of the fulcrum.\nAnswer rule: set \"answer\" to the requested integer torque or missing weight value.\nExample JSON:\n{\"evidence\":[[2,3,4,5],[3,4,5,6]],\"answer\":8}",
+  "instance_seed": 6359534385866481,
+  "prompt": "The image shows one lever-balance diagram with a horizontal beam, a central fulcrum, numbered distance marks, and weight blocks on both sides. Work from the beam, fulcrum, weights, and distance marks to answer the question. What total left-side torque is implied by the lever diagram? Answer with an integer.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for all weight blocks on the queried side of the fulcrum.\nAnswer requirement: set \"answer\" to the requested integer torque or missing weight value.\nExample JSON:\n{\"evidence\":[[2,3,4,5],[3,4,5,6]],\"answer\":8}",
   "prompt_variants": {
-    "answer_and_evidence": "You are given an image with one lever-balance diagram with a textured beam, a fulcrum, numbered distance marks, and weight blocks on both sides. Use the shown weights and distances to answer the question. What total left-side torque is implied by the lever diagram? Answer with an integer.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for all weight blocks on the queried side of the fulcrum.\nAnswer rule: set \"answer\" to the requested integer torque or missing weight value.\nExample JSON:\n{\"evidence\":[[2,3,4,5],[3,4,5,6]],\"answer\":8}",
-    "answer_only": "You are given an image with one lever-balance diagram with a textured beam, a fulcrum, numbered distance marks, and weight blocks on both sides. Use the shown weights and distances to answer the question. What total left-side torque is implied by the lever diagram? Answer with an integer.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the requested integer torque or missing weight value.\nExample JSON:\n{\"answer\":8}"
+    "answer_and_evidence": "The image shows one lever-balance diagram with a horizontal beam, a central fulcrum, numbered distance marks, and weight blocks on both sides. Work from the beam, fulcrum, weights, and distance marks to answer the question. What total left-side torque is implied by the lever diagram? Answer with an integer.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for all weight blocks on the queried side of the fulcrum.\nAnswer requirement: set \"answer\" to the requested integer torque or missing weight value.\nExample JSON:\n{\"evidence\":[[2,3,4,5],[3,4,5,6]],\"answer\":8}",
+    "answer_only": "The image shows one lever-balance diagram with a horizontal beam, a central fulcrum, numbered distance marks, and weight blocks on both sides. Work from the beam, fulcrum, weights, and distance marks to answer the question. What total left-side torque is implied by the lever diagram? Answer with an integer.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the requested integer torque or missing weight value.\nExample JSON:\n{\"answer\":8}"
   },
   "task": "task_physics_mechanics_lever_balance",
   "task_variant": "left_torque",
@@ -49,13 +49,13 @@
       }
     },
     "execution_trace": {
-      "accent_color_name": "maroon",
+      "accent_color_name": "magenta",
       "evidence_entity_ids": [
         "lever_weight_1",
         "lever_weight_2"
       ],
-      "known_torque_left": 17,
-      "known_torque_right": 24,
+      "known_torque_left": 6,
+      "known_torque_right": 15,
       "placeholder_distance_units": null,
       "placeholder_side": null,
       "query_side": "left",
@@ -64,8 +64,8 @@
         "lever_weight_1",
         "lever_weight_2"
       ],
-      "scene_variant": "textured_beam",
-      "target_answer": 17,
+      "scene_variant": "center_fulcrum",
+      "target_answer": 6,
       "target_answer_support": [
         2,
         3,
@@ -98,11 +98,11 @@
           "missing": false,
           "relevant_to_query": true,
           "side": "left",
-          "value": 7,
+          "value": 1,
           "weight_id": "lever_weight_1"
         },
         {
-          "distance_units": 3,
+          "distance_units": 4,
           "missing": false,
           "relevant_to_query": true,
           "side": "left",
@@ -110,11 +110,11 @@
           "weight_id": "lever_weight_2"
         },
         {
-          "distance_units": 4,
+          "distance_units": 3,
           "missing": false,
           "relevant_to_query": false,
           "side": "right",
-          "value": 6,
+          "value": 5,
           "weight_id": "lever_weight_3"
         }
       ]
@@ -144,16 +144,16 @@
           287.0
         ],
         [
-          245.0,
+          183.0,
           235.0,
-          303.0,
+          241.0,
           287.0
         ]
       ]
     },
     "query_spec": {
       "params": {
-        "accent_color_name": "maroon",
+        "accent_color_name": "magenta",
         "accent_color_name_probabilities": {
           "blue": 0.1,
           "brown": 0.1,
@@ -172,13 +172,13 @@
           "missing_weight_to_balance": 0.0,
           "right_torque": 0.0
         },
-        "scene_variant": "textured_beam",
+        "scene_variant": "center_fulcrum",
         "scene_variant_probabilities": {
           "center_fulcrum": 0.3333333333333333,
           "offset_fulcrum": 0.3333333333333333,
           "textured_beam": 0.3333333333333333
         },
-        "target_answer": 17,
+        "target_answer": 6,
         "target_answer_probabilities": {
           "10": 0.043478260869565216,
           "11": 0.043478260869565216,
@@ -213,7 +213,7 @@
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 4,
+        "answer_or_evidence_variant_index": 2,
         "prompt_bundle_id": "physics_mechanics_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -223,12 +223,12 @@
           "json_example_answer_only": "{\"answer\":8}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "object_description": "one lever-balance diagram with a textured beam, a fulcrum, numbered distance marks, and weight blocks on both sides"
+          "object_description": "one lever-balance diagram with a horizontal beam, a central fulcrum, numbered distance marks, and weight blocks on both sides"
         },
         "task_family_key": "lever_balance_diagram",
-        "task_family_variant_index": 2,
+        "task_family_variant_index": 0,
         "task_key": "lever_balance_query",
-        "task_variant_index": 0,
+        "task_variant_index": 2,
         "task_variant_key": "left_torque",
         "task_variant_template_index": 3,
         "template_paths": [
@@ -246,7 +246,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 4,
+            "answer_or_evidence_variant_index": 2,
             "prompt_bundle_id": "physics_mechanics_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -256,12 +256,12 @@
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "one lever-balance diagram with a textured beam, a fulcrum, numbered distance marks, and weight blocks on both sides"
+              "object_description": "one lever-balance diagram with a horizontal beam, a central fulcrum, numbered distance marks, and weight blocks on both sides"
             },
             "task_family_key": "lever_balance_diagram",
-            "task_family_variant_index": 2,
+            "task_family_variant_index": 0,
             "task_key": "lever_balance_query",
-            "task_variant_index": 0,
+            "task_variant_index": 2,
             "task_variant_key": "left_torque",
             "task_variant_template_index": 3,
             "template_paths": [
@@ -274,12 +274,12 @@
               "task_variant:left_torque": 5
             }
           },
-          "prompt": "You are given an image with one lever-balance diagram with a textured beam, a fulcrum, numbered distance marks, and weight blocks on both sides. Use the shown weights and distances to answer the question. What total left-side torque is implied by the lever diagram? Answer with an integer.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for all weight blocks on the queried side of the fulcrum.\nAnswer rule: set \"answer\" to the requested integer torque or missing weight value.\nExample JSON:\n{\"evidence\":[[2,3,4,5],[3,4,5,6]],\"answer\":8}"
+          "prompt": "The image shows one lever-balance diagram with a horizontal beam, a central fulcrum, numbered distance marks, and weight blocks on both sides. Work from the beam, fulcrum, weights, and distance marks to answer the question. What total left-side torque is implied by the lever diagram? Answer with an integer.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for all weight blocks on the queried side of the fulcrum.\nAnswer requirement: set \"answer\" to the requested integer torque or missing weight value.\nExample JSON:\n{\"evidence\":[[2,3,4,5],[3,4,5,6]],\"answer\":8}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 1,
+            "answer_or_evidence_variant_index": 3,
             "prompt_bundle_id": "physics_mechanics_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -289,12 +289,12 @@
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "one lever-balance diagram with a textured beam, a fulcrum, numbered distance marks, and weight blocks on both sides"
+              "object_description": "one lever-balance diagram with a horizontal beam, a central fulcrum, numbered distance marks, and weight blocks on both sides"
             },
             "task_family_key": "lever_balance_diagram",
-            "task_family_variant_index": 2,
+            "task_family_variant_index": 0,
             "task_key": "lever_balance_query",
-            "task_variant_index": 0,
+            "task_variant_index": 2,
             "task_variant_key": "left_torque",
             "task_variant_template_index": 3,
             "template_paths": [
@@ -307,14 +307,14 @@
               "task_variant:left_torque": 5
             }
           },
-          "prompt": "You are given an image with one lever-balance diagram with a textured beam, a fulcrum, numbered distance marks, and weight blocks on both sides. Use the shown weights and distances to answer the question. What total left-side torque is implied by the lever diagram? Answer with an integer.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the requested integer torque or missing weight value.\nExample JSON:\n{\"answer\":8}"
+          "prompt": "The image shows one lever-balance diagram with a horizontal beam, a central fulcrum, numbered distance marks, and weight blocks on both sides. Work from the beam, fulcrum, weights, and distance marks to answer the question. What total left-side torque is implied by the lever diagram? Answer with an integer.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the requested integer torque or missing weight value.\nExample JSON:\n{\"answer\":8}"
         }
       },
       "task_variant": "left_torque",
       "template_id": "physics_mechanics_v1"
     },
     "render_map": {
-      "accent_color_name": "maroon",
+      "accent_color_name": "magenta",
       "beam_bbox_px": [
         170.0,
         295.0,
@@ -348,24 +348,24 @@
           287.0
         ],
         "lever_weight_2": [
-          245.0,
+          183.0,
           235.0,
-          303.0,
+          241.0,
           287.0
         ],
         "lever_weight_3": [
-          679.0,
+          617.0,
           235.0,
-          737.0,
+          675.0,
           287.0
         ]
       }
     },
     "render_spec": {
-      "accent_color_name": "maroon",
+      "accent_color_name": "magenta",
       "canvas_height": 560,
       "canvas_width": 920,
-      "scene_variant": "textured_beam"
+      "scene_variant": "center_fulcrum"
     },
     "scene_ir": {
       "entities": [
@@ -379,7 +379,7 @@
           "entity_id": "lever_beam",
           "entity_type": "physics_lever_beam",
           "meta": {
-            "scene_variant": "textured_beam"
+            "scene_variant": "center_fulcrum"
           }
         },
         {
@@ -406,20 +406,20 @@
             "missing": false,
             "relevant_to_query": true,
             "side": "left",
-            "value": 7
+            "value": 1
           }
         },
         {
           "bbox_px": [
-            245.0,
+            183.0,
             235.0,
-            303.0,
+            241.0,
             287.0
           ],
           "entity_id": "lever_weight_2",
           "entity_type": "physics_lever_weight",
           "meta": {
-            "distance_units": 3,
+            "distance_units": 4,
             "missing": false,
             "relevant_to_query": true,
             "side": "left",
@@ -428,24 +428,24 @@
         },
         {
           "bbox_px": [
-            679.0,
+            617.0,
             235.0,
-            737.0,
+            675.0,
             287.0
           ],
           "entity_id": "lever_weight_3",
           "entity_type": "physics_lever_weight",
           "meta": {
-            "distance_units": 4,
+            "distance_units": 3,
             "missing": false,
             "relevant_to_query": false,
             "side": "right",
-            "value": 6
+            "value": 5
           }
         }
       ],
       "relations": {
-        "accent_color_name": "maroon",
+        "accent_color_name": "magenta",
         "evidence_entity_ids": [
           "lever_weight_1",
           "lever_weight_2"
@@ -455,11 +455,11 @@
           "lever_weight_1",
           "lever_weight_2"
         ],
-        "scene_variant": "textured_beam",
-        "target_answer": 17,
+        "scene_variant": "center_fulcrum",
+        "target_answer": 6,
         "task_variant": "left_torque"
       },
-      "scene_kind": "physics_lever_balance_textured_beam"
+      "scene_kind": "physics_lever_balance_center_fulcrum"
     },
     "witness_symbolic": {
       "ids": [

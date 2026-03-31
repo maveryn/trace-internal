@@ -17,7 +17,7 @@ Set `data.prism_mode` to choose dataset-column behavior:
 
 - `integer`: uses `problem_integer` + `answer_integer`
 - `bbox`: uses `problem_bbox` + `answer_bbox`
-- `trace`: uses TRACE `prompt` + `answer_gt`, preserves `evidence_gt` and `reward_contract`, and resolves TRACE image records from `images[*].path`
+- `trace`: uses TRACE `prompt` + `answer_gt`, preserves `evidence_gt` and `reward_contract`, and resolves exported TRACE image records from `images[*].path`
 - `none`: non-Prism behavior
 
 ### Exporting TRACE builds for RLVR

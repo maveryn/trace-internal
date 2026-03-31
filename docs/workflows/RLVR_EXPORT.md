@@ -59,7 +59,7 @@ Each exported RLVR row currently includes:
 
 Notes:
 1. `uid` is set to `instance_id` so repeated generations stay grouped by prompt in RLVR logging/statistics.
-2. `images` is exported as a list of path strings, not TRACE `ImageRecord` objects.
+2. `images` is exported as a list of lightweight `{"path": ...}` objects so RLVR can normalize relative paths against the exported file location.
 3. `answer_gt`, `evidence_gt`, and `reward_contract` stay in TRACE ABI form so RLVR can dispatch the public reward contract directly.
 
 ## 4) Prompt variant policy

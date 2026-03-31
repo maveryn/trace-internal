@@ -65,7 +65,7 @@ def test_build_rlvr_row_uses_requested_prompt_variant_and_relative_image_paths(t
     assert row["prompt"] == "answer only prompt"
     assert row["prompt_mode"] == "answer_only"
     assert row["images"] == [
-        "../../trace_dataset/images/geometry/task_geometry_coordinate_relation/000000.png"
+        {"path": "../../trace_dataset/images/geometry/task_geometry_coordinate_relation/000000.png"}
     ]
     assert row["answer_gt"] == train_record["answer_gt"]
     assert row["evidence_gt"] == train_record["evidence_gt"]
@@ -91,7 +91,7 @@ def test_export_trace_dataset_to_rlvr_jsonl_and_parquet(tmp_path: Path) -> None:
     assert len(jsonl_rows) == 1
     assert jsonl_rows[0]["prompt"] == "answer and evidence prompt"
     assert jsonl_rows[0]["images"] == [
-        "../trace_dataset/images/geometry/task_geometry_coordinate_relation/000000.png"
+        {"path": "../trace_dataset/images/geometry/task_geometry_coordinate_relation/000000.png"}
     ]
 
     parquet_path = tmp_path / "exports" / "trace_train.parquet"
@@ -108,13 +108,15 @@ def test_export_trace_dataset_to_rlvr_jsonl_and_parquet(tmp_path: Path) -> None:
     assert len(parquet_rows) == 1
     assert parquet_rows[0]["prompt"] == "active prompt"
     assert parquet_rows[0]["images"] == [
-        str(
-            (
-                dataset_root
-                / "images"
-                / "geometry"
-                / "task_geometry_coordinate_relation"
-                / "000000.png"
-            ).resolve()
-        )
+        {
+            "path": str(
+                (
+                    dataset_root
+                    / "images"
+                    / "geometry"
+                    / "task_geometry_coordinate_relation"
+                    / "000000.png"
+                ).resolve()
+            )
+        }
     ]

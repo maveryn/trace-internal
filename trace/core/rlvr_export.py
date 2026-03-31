@@ -158,6 +158,28 @@ def _format_image_path(
     return str(Path(relative).as_posix())
 
 
+def _build_exported_images(
+    train_record: Mapping[str, Any],
+    *,
+    dataset_root: Path,
+    output_parent: Path,
+    image_path_mode: ImagePathMode,
+) -> list[dict[str, str]]:
+    """Build RLVR image records in the path-dict shape that the loader normalizes."""
+
+    return [
+        {
+            "path": _format_image_path(
+                image_path,
+                dataset_root=dataset_root,
+                output_parent=output_parent,
+                image_path_mode=image_path_mode,
+            )
+        }
+        for image_path in _iter_image_paths(train_record, dataset_root)
+    ]
+
+
 def build_rlvr_row(
     train_record: Mapping[str, Any],
     *,
@@ -182,16 +204,6 @@ def build_rlvr_row(
     if not isinstance(reward_contract, Mapping):
         raise ValueError(f"TRACE RLVR export requires reward_contract on {instance_id}")
 
-    exported_images = [
-        _format_image_path(
-            image_path,
-            dataset_root=dataset_root,
-            output_parent=output_parent,
-            image_path_mode=image_path_mode,
-        )
-        for image_path in _iter_image_paths(train_record, dataset_root)
-    ]
-
     return {
         "uid": instance_id,
         "instance_id": instance_id,
@@ -200,7 +212,12 @@ def build_rlvr_row(
         "task": str(train_record.get("task", "")),
         "prompt": _select_prompt(train_record, prompt_variant),
         "prompt_mode": prompt_variant,
-        "images": exported_images,
+        "images": _build_exported_images(
+            train_record,
+            dataset_root=dataset_root,
+            output_parent=output_parent,
+            image_path_mode=image_path_mode,
+        ),
         "answer_gt": dict(answer_gt),
         "evidence_gt": dict(evidence_gt),
         "reward_contract": dict(reward_contract),

@@ -36,8 +36,8 @@ data:
 
 algorithm:
   adv_estimator: grpo
-  disable_kl: false
-  use_kl_loss: true
+  disable_kl: true
+  use_kl_loss: false
   kl_penalty: low_var_kl
   kl_coef: 1.0e-2
   online_filtering: false

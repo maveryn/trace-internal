@@ -429,6 +429,7 @@ def score_trace_response(
     bbox_iou_threshold: float = 0.5,
     answer_weight: float = 0.5,
     evidence_weight: float = 0.5,
+    trace_reward_mode: str = "answer_and_evidence",
 ) -> dict[str, float]:
     answer_value, evidence_value, json_found = extract_trace_prediction(response)
     answer_extracted = answer_value is not None or json_found
@@ -453,13 +454,24 @@ def score_trace_response(
         raise ValueError("TRACE reward weights must sum to a positive value")
     normalized_answer_weight = float(answer_weight / total_weight)
     normalized_evidence_weight = float(evidence_weight / total_weight)
-    overall = float(answer_score * (normalized_answer_weight + (normalized_evidence_weight * evidence_score)))
+    normalized_mode = (trace_reward_mode or "answer_and_evidence").strip().lower()
+    if normalized_mode not in {"answer_only", "answer_and_evidence"}:
+        raise ValueError(
+            "TRACE reward mode must be one of {'answer_only', 'answer_and_evidence'}, "
+            f"got {trace_reward_mode!r}"
+        )
+    if normalized_mode == "answer_only":
+        overall = float(answer_score)
+    else:
+        overall = float(answer_score * (normalized_answer_weight + (normalized_evidence_weight * evidence_score)))
     result = {
         "overall": overall,
         "format": 1.0 if json_found else 0.0,
         "accuracy": float(answer_score),
         "answer_reward": float(answer_score),
         "evidence_reward": float(evidence_score),
+        "trace_reward_mode_answer_only": 1.0 if normalized_mode == "answer_only" else 0.0,
+        "trace_reward_mode_answer_and_evidence": 1.0 if normalized_mode == "answer_and_evidence" else 0.0,
         "answer_parse_ok": 1.0 if answer_parse_ok else 0.0,
         "evidence_parse_ok": 1.0 if evidence_parse_ok else 0.0,
         "json_found": 1.0 if json_found else 0.0,

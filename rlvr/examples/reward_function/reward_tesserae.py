@@ -701,6 +701,7 @@ def compute_score(
     format_weight: float = 0.0,
     list_reward_mode: str = "exact",
     prism_mode: str = "auto",
+    trace_reward_mode: str = "answer_and_evidence",
     bbox_iou_threshold: float = 0.5,
     bbox_r_cnt_mode: str = "soft",
     bbox_set_mode: str = "thresholded",
@@ -771,6 +772,7 @@ def compute_score(
                 evidence_gt=reward_input["evidence_gt"],
                 reward_contract=reward_input["reward_contract"],
                 bbox_iou_threshold=bbox_iou_threshold,
+                trace_reward_mode=trace_reward_mode,
             )
             scores.append(trace_score)
             continue

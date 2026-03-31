@@ -6,6 +6,7 @@ This directory contains the RL training stack used for Prism experiments (EasyR1
 
 - `examples/config.yaml`: main trainer/data/model config.
 - `examples/qwen2_5-7b-vl-*.sh`: launch scripts for Prism training variants.
+- `trace-scripts/qwen2_5-3b-vl-trace-4gpu.sh`: TRACE-specific 4-GPU launcher for `Qwen/Qwen2.5-VL-3B-Instruct`.
 - `examples/reward_function/reward_tesserae.py`: Prism + TRACE custom reward entry point.
 - `verl/trainer/data_loader.py`: Prism/TRACE dataset loading and prompt/answer column selection.
 - `scripts/model_merger.py`: merge sharded actor checkpoints into Hugging Face format.
@@ -38,8 +39,24 @@ Recommended TRACE settings:
 - `data.prism_mode=trace`
 - `data.format_prompt=null`
 - `data.train_files=<exported jsonl/parquet path>`
+- use a multimodal checkpoint such as `Qwen/Qwen2.5-VL-3B-Instruct` or `Qwen/Qwen2.5-VL-7B-Instruct`
 
-The exporter defaults to TRACE `answer_and_evidence` prompts so evidence reward remains trainable.
+The exporter defaults to TRACE `answer_and_evidence` prompts so evidence reward remains trainable, prefixes one `<image>` marker per exported image so the RLVR/vLLM multimodal path matches Tesserae's dataset convention, and can optionally embed image bytes directly into parquet rows for Hugging Face-friendly distribution.
+
+TRACE parquet exports now also include:
+
+- `prompt_active`
+- `prompt_answer_only`
+- `prompt_answer_and_evidence`
+
+That lets one parquet drive multiple ablations by switching `data.prompt_key`.
+
+For the local 128k training parquet built in this repo, the quickest start is:
+
+```bash
+cd /home/jovyan/work/trace/rlvr
+bash trace-scripts/qwen2_5-3b-vl-trace-4gpu.sh
+```
 
 TRACE exports also include:
 

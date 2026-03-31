@@ -12,6 +12,7 @@ from typing import Any, Iterable, Literal, Mapping
 
 PromptVariantMode = Literal["active", "answer_only", "answer_and_evidence"]
 ImagePathMode = Literal["relative", "absolute", "dataset_relative"]
+ImageStorageMode = Literal["path_dict", "embedded_bytes"]
 OutputFormat = Literal["jsonl", "parquet"]
 _PARQUET_JSON_COLUMNS = ("answer_gt", "evidence_gt", "reward_contract", "trace_ref")
 
@@ -130,6 +131,33 @@ def _select_prompt(record: Mapping[str, Any], prompt_variant: PromptVariantMode)
     return prompt
 
 
+def _normalize_multimodal_prompt(prompt: str, *, image_count: int) -> str:
+    """Prefix RLVR image placeholders so exported multimodal rows match their image payload.
+
+    vLLM's multimodal replacement expects prompt tokens to contain one `<image>` marker
+    per image item. TRACE prompts intentionally avoid transport-specific placeholders, so
+    RLVR export normalizes them into the Tesserae-style convention.
+    """
+
+    if image_count <= 0:
+        return prompt
+    cleaned_prompt = prompt.replace("<image>", "").strip()
+    return f"{'<image>' * image_count}{cleaned_prompt}"
+
+
+def _build_prompt_columns(record: Mapping[str, Any], *, image_count: int) -> dict[str, str]:
+    """Export both public TRACE prompt variants so one parquet can drive multiple ablations."""
+
+    return {
+        "prompt_active": _normalize_multimodal_prompt(_select_prompt(record, "active"), image_count=image_count),
+        "prompt_answer_only": _normalize_multimodal_prompt(_select_prompt(record, "answer_only"), image_count=image_count),
+        "prompt_answer_and_evidence": _normalize_multimodal_prompt(
+            _select_prompt(record, "answer_and_evidence"),
+            image_count=image_count,
+        ),
+    }
+
+
 def _iter_image_paths(record: Mapping[str, Any], dataset_root: Path) -> Iterable[Path]:
     images = record.get("images")
     if not isinstance(images, list):
@@ -179,20 +207,33 @@ def _build_exported_images(
     dataset_root: Path,
     output_parent: Path,
     image_path_mode: ImagePathMode,
-) -> list[dict[str, str]]:
+    image_storage_mode: ImageStorageMode,
+) -> list[dict[str, Any]]:
     """Build RLVR image records in the path-dict shape that the loader normalizes."""
 
-    return [
-        {
-            "path": _format_image_path(
-                image_path,
-                dataset_root=dataset_root,
-                output_parent=output_parent,
-                image_path_mode=image_path_mode,
+    exported: list[dict[str, Any]] = []
+    for image_path in _iter_image_paths(train_record, dataset_root):
+        if image_storage_mode == "embedded_bytes":
+            exported.append(
+                {
+                    "bytes": image_path.read_bytes(),
+                    "format": image_path.suffix.lower().lstrip(".") or "png",
+                }
             )
-        }
-        for image_path in _iter_image_paths(train_record, dataset_root)
-    ]
+            continue
+        if image_storage_mode != "path_dict":
+            raise ValueError(f"unsupported image-storage mode: {image_storage_mode}")
+        exported.append(
+            {
+                "path": _format_image_path(
+                    image_path,
+                    dataset_root=dataset_root,
+                    output_parent=output_parent,
+                    image_path_mode=image_path_mode,
+                )
+            }
+        )
+    return exported
 
 
 def _extract_complexity_score(train_record: Mapping[str, Any]) -> float:
@@ -266,6 +307,7 @@ def build_rlvr_row(
     output_parent: Path,
     prompt_variant: PromptVariantMode = "answer_and_evidence",
     image_path_mode: ImagePathMode = "relative",
+    image_storage_mode: ImageStorageMode = "path_dict",
 ) -> dict[str, Any]:
     """Convert one TRACE train record into an RLVR-ready row."""
 
@@ -282,6 +324,19 @@ def build_rlvr_row(
         raise ValueError(f"TRACE RLVR export requires evidence_gt on {instance_id}")
     if not isinstance(reward_contract, Mapping):
         raise ValueError(f"TRACE RLVR export requires reward_contract on {instance_id}")
+    exported_images = _build_exported_images(
+        train_record,
+        dataset_root=dataset_root,
+        output_parent=output_parent,
+        image_path_mode=image_path_mode,
+        image_storage_mode=image_storage_mode,
+    )
+    prompt_columns = _build_prompt_columns(train_record, image_count=len(exported_images))
+    prompt = {
+        "active": prompt_columns["prompt_active"],
+        "answer_only": prompt_columns["prompt_answer_only"],
+        "answer_and_evidence": prompt_columns["prompt_answer_and_evidence"],
+    }[prompt_variant]
 
     return {
         "uid": instance_id,
@@ -290,14 +345,10 @@ def build_rlvr_row(
         "task_group": str(train_record.get("task_group", "")),
         "task": str(train_record.get("task", "")),
         "complexity_score": _extract_complexity_score(train_record),
-        "prompt": _select_prompt(train_record, prompt_variant),
+        "prompt": prompt,
+        **prompt_columns,
         "prompt_mode": prompt_variant,
-        "images": _build_exported_images(
-            train_record,
-            dataset_root=dataset_root,
-            output_parent=output_parent,
-            image_path_mode=image_path_mode,
-        ),
+        "images": exported_images,
         "answer_gt": dict(answer_gt),
         "evidence_gt": dict(evidence_gt),
         "reward_contract": dict(reward_contract),
@@ -320,9 +371,9 @@ def _write_parquet_rows(
     rows: list[dict[str, Any]],
     *,
     parquet_cpu_count: int | None = None,
+    image_storage_mode: ImageStorageMode = "path_dict",
 ) -> None:
     import pyarrow as pa
-    import pyarrow.parquet as pq
 
     path.parent.mkdir(parents=True, exist_ok=True)
     parquet_rows = []
@@ -333,16 +384,27 @@ def _write_parquet_rows(
                 parquet_row[key] = json.dumps(parquet_row[key], ensure_ascii=False, allow_nan=False, sort_keys=True)
         parquet_rows.append(parquet_row)
     requested_cpu_count = _resolve_parquet_cpu_count(parquet_cpu_count)
-    if requested_cpu_count is None:
-        table = pa.Table.from_pylist(parquet_rows)
-        pq.write_table(table, path)
-        return
-
     prior_cpu_count = pa.cpu_count()
     prior_io_thread_count = pa.io_thread_count()
     try:
-        pa.set_cpu_count(int(requested_cpu_count))
-        pa.set_io_thread_count(int(requested_cpu_count))
+        if requested_cpu_count is not None:
+            pa.set_cpu_count(int(requested_cpu_count))
+            pa.set_io_thread_count(int(requested_cpu_count))
+
+        if image_storage_mode == "embedded_bytes":
+            from datasets import Dataset, Sequence
+            from datasets import Image as HFImage
+
+            dataset = Dataset.from_list(parquet_rows)
+            dataset = dataset.cast_column("images", Sequence(HFImage()))
+            dataset.to_parquet(str(path))
+            return
+
+        if image_storage_mode != "path_dict":
+            raise ValueError(f"unsupported image-storage mode: {image_storage_mode}")
+
+        import pyarrow.parquet as pq
+
         table = pa.Table.from_pylist(parquet_rows)
         pq.write_table(table, path)
     finally:
@@ -357,6 +419,7 @@ def export_trace_dataset_to_rlvr(
     output_format: OutputFormat | None = None,
     prompt_variant: PromptVariantMode = "answer_and_evidence",
     image_path_mode: ImagePathMode = "relative",
+    image_storage_mode: ImageStorageMode = "path_dict",
     parquet_cpu_count: int | None = None,
 ) -> RLVRExportResult:
     """Export one TRACE dataset to an RLVR-ready JSONL or parquet file."""
@@ -365,9 +428,13 @@ def export_trace_dataset_to_rlvr(
         raise ValueError(f"unsupported prompt variant: {prompt_variant}")
     if image_path_mode not in {"relative", "absolute", "dataset_relative"}:
         raise ValueError(f"unsupported image-path mode: {image_path_mode}")
+    if image_storage_mode not in {"path_dict", "embedded_bytes"}:
+        raise ValueError(f"unsupported image-storage mode: {image_storage_mode}")
 
     dataset_root, train_instances_path = resolve_train_instances_source(source_path)
     final_output_path, final_format = resolve_export_output_path(output_path, output_format=output_format)
+    if final_format == "jsonl" and image_storage_mode == "embedded_bytes":
+        raise ValueError("embedded_bytes image storage is only supported for parquet exports")
     output_parent = final_output_path.parent.resolve()
 
     records = _read_jsonl_records(train_instances_path)
@@ -380,6 +447,7 @@ def export_trace_dataset_to_rlvr(
                 output_parent=output_parent,
                 prompt_variant=prompt_variant,
                 image_path_mode=image_path_mode,
+                image_storage_mode=image_storage_mode,
             ),
             **curriculum_assignments[str(record.get("instance_id", "")).strip()],
         }
@@ -387,7 +455,12 @@ def export_trace_dataset_to_rlvr(
     ]
 
     if final_format == "parquet":
-        _write_parquet_rows(final_output_path, rows, parquet_cpu_count=parquet_cpu_count)
+        _write_parquet_rows(
+            final_output_path,
+            rows,
+            parquet_cpu_count=parquet_cpu_count,
+            image_storage_mode=image_storage_mode,
+        )
     else:
         _write_jsonl_rows(final_output_path, rows)
 

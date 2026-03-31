@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 import pyarrow.parquet as pq
+from PIL import Image
 
 from trace.core.rlvr_export import build_rlvr_row, export_trace_dataset_to_rlvr
 
@@ -12,7 +13,7 @@ def _write_trace_dataset(tmp_path: Path) -> tuple[Path, dict[str, object]]:
     dataset_root = tmp_path / "trace_dataset"
     image_path = dataset_root / "images" / "geometry" / "task_geometry_coordinate_relation" / "000000.png"
     image_path.parent.mkdir(parents=True, exist_ok=True)
-    image_path.write_bytes(b"fake-image")
+    Image.new("RGB", (8, 8), (255, 255, 255)).save(image_path)
 
     train_record = {
         "instance_id": "inst-001",
@@ -66,7 +67,10 @@ def test_build_rlvr_row_uses_requested_prompt_variant_and_relative_image_paths(t
 
     assert row["uid"] == "inst-001"
     assert row["instance_id"] == "inst-001"
-    assert row["prompt"] == "answer only prompt"
+    assert row["prompt"] == "<image>answer only prompt"
+    assert row["prompt_answer_only"] == "<image>answer only prompt"
+    assert row["prompt_answer_and_evidence"] == "<image>answer and evidence prompt"
+    assert row["prompt_active"] == "<image>active prompt"
     assert row["prompt_mode"] == "answer_only"
     assert row["complexity_score"] == 0.6
     assert row["images"] == [
@@ -75,6 +79,23 @@ def test_build_rlvr_row_uses_requested_prompt_variant_and_relative_image_paths(t
     assert row["answer_gt"] == train_record["answer_gt"]
     assert row["evidence_gt"] == train_record["evidence_gt"]
     assert row["reward_contract"] == train_record["reward_contract"]
+
+
+def test_build_rlvr_row_normalizes_existing_image_placeholders(tmp_path: Path) -> None:
+    dataset_root, train_record = _write_trace_dataset(tmp_path)
+    train_record["prompt_variants"]["answer_and_evidence"] = "<image>   answer and evidence prompt"
+    export_parent = tmp_path / "exports" / "jsonl"
+    export_parent.mkdir(parents=True, exist_ok=True)
+
+    row = build_rlvr_row(
+        train_record,
+        dataset_root=dataset_root,
+        output_parent=export_parent,
+        prompt_variant="answer_and_evidence",
+        image_path_mode="relative",
+    )
+
+    assert row["prompt"] == "<image>answer and evidence prompt"
 
 
 def test_export_trace_dataset_to_rlvr_jsonl_and_parquet(tmp_path: Path) -> None:
@@ -94,7 +115,9 @@ def test_export_trace_dataset_to_rlvr_jsonl_and_parquet(tmp_path: Path) -> None:
         if line.strip()
     ]
     assert len(jsonl_rows) == 1
-    assert jsonl_rows[0]["prompt"] == "answer and evidence prompt"
+    assert jsonl_rows[0]["prompt"] == "<image>answer and evidence prompt"
+    assert jsonl_rows[0]["prompt_answer_only"] == "<image>answer only prompt"
+    assert jsonl_rows[0]["prompt_answer_and_evidence"] == "<image>answer and evidence prompt"
     assert jsonl_rows[0]["complexity_score"] == 0.6
     assert jsonl_rows[0]["difficulty_bin"] == 0
     assert jsonl_rows[0]["bucket_id_str"] == "task_geometry_coordinate_relation::q0"
@@ -115,7 +138,9 @@ def test_export_trace_dataset_to_rlvr_jsonl_and_parquet(tmp_path: Path) -> None:
     table = pq.read_table(parquet_result.output_path)
     parquet_rows = table.to_pylist()
     assert len(parquet_rows) == 1
-    assert parquet_rows[0]["prompt"] == "active prompt"
+    assert parquet_rows[0]["prompt"] == "<image>active prompt"
+    assert parquet_rows[0]["prompt_answer_only"] == "<image>answer only prompt"
+    assert parquet_rows[0]["prompt_answer_and_evidence"] == "<image>answer and evidence prompt"
     assert parquet_rows[0]["complexity_score"] == 0.6
     assert parquet_rows[0]["difficulty_bin"] == 0
     assert parquet_rows[0]["bucket_id_str"] == "task_geometry_coordinate_relation::q0"
@@ -150,6 +175,33 @@ def test_export_trace_dataset_to_rlvr_jsonl_and_parquet(tmp_path: Path) -> None:
             )
         }
     ]
+
+
+def test_export_trace_dataset_to_rlvr_parquet_supports_embedded_images(tmp_path: Path) -> None:
+    from datasets import load_dataset
+
+    dataset_root, _ = _write_trace_dataset(tmp_path)
+    parquet_path = tmp_path / "exports" / "trace_train_embedded.parquet"
+
+    result = export_trace_dataset_to_rlvr(
+        dataset_root,
+        parquet_path,
+        output_format="parquet",
+        prompt_variant="answer_and_evidence",
+        image_storage_mode="embedded_bytes",
+        parquet_cpu_count=1,
+    )
+
+    rows = pq.read_table(result.output_path).to_pylist()
+    assert len(rows) == 1
+    assert "bytes" in rows[0]["images"][0]
+    assert rows[0]["images"][0].get("path") is None
+    assert isinstance(rows[0]["images"][0]["bytes"], (bytes, bytearray))
+
+    loaded = load_dataset("parquet", data_files=str(result.output_path), split="train")
+    loaded_row = loaded[0]
+    assert loaded_row["prompt_answer_only"] == "<image>answer only prompt"
+    assert isinstance(loaded_row["images"][0], Image.Image)
 
 
 def test_export_trace_dataset_to_rlvr_parquet_supports_mixed_trace_contract_types(tmp_path: Path) -> None:

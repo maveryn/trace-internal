@@ -47,6 +47,7 @@ If `--output` is a directory (or has no suffix), the exporter writes:
 For parquet export:
 - `--parquet-cpu-count 0` uses all visible CPUs for Arrow compute + IO threads.
 - Set an explicit positive integer when you want a smaller export footprint.
+- `--image-storage-mode embedded_bytes` writes self-contained parquet rows suitable for Hugging Face distribution.
 
 ## 2b) End-to-end training-dataset helper
 For the standard equal-split all-task RLVR train build, use:
@@ -77,20 +78,25 @@ Each exported RLVR row currently includes:
 7. `difficulty_bin`
 8. `bucket_id_str`
 9. `prompt`
-10. `prompt_mode`
-11. `images`
-12. `answer_gt`
-13. `evidence_gt`
-14. `reward_contract`
-15. `trace_ref`
+10. `prompt_active`
+11. `prompt_answer_only`
+12. `prompt_answer_and_evidence`
+13. `prompt_mode`
+14. `images`
+15. `answer_gt`
+16. `evidence_gt`
+17. `reward_contract`
+18. `trace_ref`
 
 Notes:
 1. `uid` is set to `instance_id` so repeated generations stay grouped by prompt in RLVR logging/statistics.
-2. `images` is exported as a list of lightweight `{"path": ...}` objects so RLVR can normalize relative paths against the exported file location.
-3. `answer_gt`, `evidence_gt`, and `reward_contract` stay in TRACE ABI form so RLVR can dispatch the public reward contract directly.
-4. `complexity_score` is copied from TRACE `task_complexity.complexity_score` for logging/debugging only.
-5. `difficulty_bin` and `bucket_id_str` are generated automatically from task-local curriculum buckets so RLVR self-paced sampling can work without extra preprocessing.
-6. JSONL exports write `answer_gt`, `evidence_gt`, `reward_contract`, and `trace_ref` as structured TRACE objects. Parquet exports serialize those four columns as JSON strings because mixed-task TRACE datasets contain heterogeneous nested value types; the RLVR TRACE loader parses them back automatically.
+2. `prompt_active`, `prompt_answer_only`, and `prompt_answer_and_evidence` are all exported so one parquet can drive multiple ablations by switching `data.prompt_key`.
+3. When a row has images, the exporter rewrites each prompt column into the Tesserae multimodal convention by stripping any existing `<image>` markers and prefixing exactly one `<image>` token per exported image. This keeps TRACE prompts compatible with the RLVR/vLLM multimodal path without changing TRACE build artifacts.
+4. `images` can be exported either as relative/absolute path dicts (`{"path": ...}`) or, for parquet, as embedded byte dicts (`{"bytes": ..., "format": ...}`) for self-contained Hugging Face upload.
+5. `answer_gt`, `evidence_gt`, and `reward_contract` stay in TRACE ABI form so RLVR can dispatch the public reward contract directly.
+6. `complexity_score` is copied from TRACE `task_complexity.complexity_score` for logging/debugging only.
+7. `difficulty_bin` and `bucket_id_str` are generated automatically from task-local curriculum buckets so RLVR self-paced sampling can work without extra preprocessing.
+8. JSONL exports write `answer_gt`, `evidence_gt`, `reward_contract`, and `trace_ref` as structured TRACE objects. Parquet exports serialize those four columns as JSON strings because mixed-task TRACE datasets contain heterogeneous nested value types; the RLVR TRACE loader parses them back automatically.
 
 ## 4) Prompt variant policy
 Default export uses:
@@ -104,6 +110,11 @@ Other options:
 
 If the requested prompt variant is missing, the exporter falls back to the active TRACE `prompt`.
 
+For single-parquet ablations, keep all prompt columns in the same file and switch:
+
+1. `data.prompt_key=prompt_answer_only`
+2. or `data.prompt_key=prompt_answer_and_evidence`
+
 ## 5) Image path policy
 Default export uses:
 - `--image-path-mode relative`
@@ -114,13 +125,20 @@ Other options:
 - `absolute` — writes absolute image paths
 - `dataset_relative` — preserves TRACE dataset-root-relative paths
 
+For Hugging Face parquet distribution, prefer:
+
+1. `--format parquet`
+2. `--image-storage-mode embedded_bytes`
+
+That mirrors the prior Prism/Tesserae parquet workflow, where images were embedded directly into parquet rows instead of relying on checkout-local filesystem paths.
+
 ## 6) RLVR usage
 Pair the export with:
 - `rlvr/examples/config_trace.yaml`
 
 Key RLVR settings for TRACE:
 1. `data.prism_mode=trace`
-2. `data.format_prompt=null` (TRACE prompts already carry the JSON output contract)
+2. `data.format_prompt=null` (TRACE prompts already carry the JSON output contract, and export injects the RLVR `<image>` placeholders when needed)
 3. `data.train_files=<exported jsonl/parquet path>`
 
 ### Self-paced curriculum

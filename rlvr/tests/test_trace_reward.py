@@ -19,11 +19,16 @@ if "mathruler" not in sys.modules:
     )
     sys.modules["mathruler"] = types.SimpleNamespace(grader=grader)
     sys.modules["mathruler.grader"] = grader
-if "datasets" not in sys.modules:
+try:
+    import datasets  # noqa: F401
+except ImportError:
     sys.modules["datasets"] = types.SimpleNamespace(load_dataset=lambda *args, **kwargs: None)
-if "transformers" not in sys.modules:
+try:
+    import transformers  # noqa: F401
+except ImportError:
     sys.modules["transformers"] = types.SimpleNamespace(
         PreTrainedTokenizer=object,
+        PreTrainedTokenizerBase=object,
         ProcessorMixin=object,
     )
 
@@ -113,6 +118,24 @@ def test_trace_reward_gates_evidence_by_answer_correctness() -> None:
     assert wrong_evidence_score["overall"] == 0.5
 
 
+def test_trace_reward_answer_only_mode_ignores_evidence_in_overall() -> None:
+    reward_contract = _reward_contract("symbolic_set_exact_v1", "label_set")
+
+    score = score_trace_response(
+        response='{"answer":2,"evidence":["B"]}',
+        answer_gt={"type": "integer", "value": 2},
+        evidence_gt={"type": "label_set", "value": ["D", "B"]},
+        reward_contract=reward_contract,
+        trace_reward_mode="answer_only",
+    )
+
+    assert score["answer_reward"] == 1.0
+    assert score["evidence_reward"] == 0.0
+    assert score["overall"] == 1.0
+    assert score["trace_reward_mode_answer_only"] == 1.0
+    assert score["trace_reward_mode_answer_and_evidence"] == 0.0
+
+
 def test_trace_dataset_helpers_support_trace_rows(tmp_path: Path) -> None:
     image_path = tmp_path / "images" / "sample.png"
     image_path.parent.mkdir(parents=True, exist_ok=True)
@@ -172,3 +195,23 @@ def test_reward_tesserae_dispatches_trace_reward_contract() -> None:
     assert scores[0]["trace_reward"] == 1.0
     assert scores[0]["answer_reward"] == 1.0
     assert scores[0]["evidence_reward"] == 1.0
+
+
+def test_reward_tesserae_supports_trace_answer_only_mode() -> None:
+    scores = compute_score(
+        [
+            {
+                "prompt": "Return JSON.",
+                "response": '{"answer":2,"evidence":["B"]}',
+                "ground_truth": 2,
+                "answer_gt": {"type": "integer", "value": 2},
+                "evidence_gt": {"type": "label_set", "value": ["D", "B"]},
+                "reward_contract": _reward_contract("symbolic_set_exact_v1", "label_set"),
+            }
+        ],
+        trace_reward_mode="answer_only",
+    )
+    assert len(scores) == 1
+    assert scores[0]["overall"] == 1.0
+    assert scores[0]["answer_reward"] == 1.0
+    assert scores[0]["evidence_reward"] == 0.0

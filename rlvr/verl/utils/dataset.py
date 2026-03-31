@@ -271,6 +271,8 @@ class RLHFDataset(Dataset):
             if prism_prompt_key in example and prism_answer_key in example:
                 return prism_prompt_key, prism_answer_key
         elif self.prism_mode == "trace":
+            if self.prompt_key in example and self.answer_key in example:
+                return self.prompt_key, self.answer_key
             if "prompt" in example and "answer_gt" in example:
                 return "prompt", "answer_gt"
 

@@ -17,7 +17,7 @@ import os
 import sys
 from collections import defaultdict
 from functools import partial
-from typing import Callable, Optional, Tuple, TypedDict
+from typing import Any, Callable, Optional, Tuple, TypedDict
 
 import torch
 from transformers import PreTrainedTokenizer

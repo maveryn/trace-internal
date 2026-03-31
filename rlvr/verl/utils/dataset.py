@@ -317,6 +317,12 @@ class RLHFDataset(Dataset):
             prompt_str = format_prompt.render(content=prompt_str, format_prompt_variant=self.format_prompt_variant)
 
         if self.image_key in example:
+            images = example.get(self.image_key) or []
+            if images and "<image>" not in prompt_str:
+                # External validation rows are single-/multi-image answer-only prompts and
+                # may omit explicit multimodal placeholders. vLLM requires the placeholders
+                # to align with the provided image items, so normalize them here.
+                prompt_str = ("<image>" * len(images)) + prompt_str
             # https://huggingface.co/docs/transformers/en/tasks/image_text_to_text
             content_list = []
             for i, content in enumerate(prompt_str.split("<image>")):

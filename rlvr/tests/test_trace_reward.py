@@ -158,6 +158,24 @@ def test_trace_dataset_helpers_support_trace_rows(tmp_path: Path) -> None:
     )
     assert (prompt_key, answer_key) == ("prompt", "ground_truth")
 
+    dataset.image_key = "images"
+    dataset.video_key = "videos"
+    dataset.format_prompt = None
+    dataset.format_prompt_variant = "boxed_only"
+    messages = dataset._build_messages(
+        {"prompt": "Solve it", "ground_truth": ["A"], "images": [{"path": "images/sample.png"}]},
+        prompt_key="prompt",
+    )
+    assert messages == [
+        {
+            "role": "user",
+            "content": [
+                {"type": "image"},
+                {"type": "text", "text": "Solve it"},
+            ],
+        }
+    ]
+
     normalized_images = dataset._normalize_image_entries([{"path": "images/sample.png"}])
     assert normalized_images == [str(image_path)]
 

@@ -296,6 +296,10 @@ class TablesTemporalValueTask:
                 "evidence_type": "bbox_set",
                 "evidence_order": "query_year_order",
             },
+            "witness_symbolic": {
+                "type": "bbox_set",
+                "value": list(evidence_bboxes),
+            },
             "projected_evidence": dict(evidence_projection),
         }
 

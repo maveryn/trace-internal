@@ -53,3 +53,9 @@ def create_task(task_id: str) -> Task:
     if task_id not in TASK_REGISTRY:
         raise KeyError(task_id)
     return TASK_REGISTRY[task_id]()
+
+
+def list_task_ids() -> list[str]:
+    """Return all registered task ids in deterministic order."""
+
+    return sorted(TASK_REGISTRY)

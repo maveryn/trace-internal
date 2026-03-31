@@ -19,6 +19,7 @@ Prompt text is externalized and deterministic.
 8. For mixed-shape tasks, keep one bundle and switch shape-specific wording via slots (`object_description_*`, `question_text_*`, evidence/answer hint families).
 9. When a prompt asks about a named color, include the canonical hex code in the prompt-facing color label using the format `<color_name> [#RRGGBB]`.
 10. For reference-panel tasks, keep the task-family layer responsible for establishing the panel layout so task-layer wording can focus on the matching rule itself.
+11. When only some task variants need a slot, declare it under `required_slots_by_key["task_variant:<variant>"]` rather than under the shared `task:<task_key>` entry.
 
 ## 2) Bundle schema (v1)
 Required fields:

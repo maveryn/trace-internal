@@ -137,6 +137,21 @@ def test_chart_composition_prompt_examples_match_selected_variant() -> None:
         assert answer_only == {"answer": expected[task_variant]["answer"]}
 
 
+def test_chart_composition_prompt_metadata_uses_variant_specific_required_slots() -> None:
+    task = ChartsCompositionSubsetValueTask()
+    cases = (
+        ("stack_total_at_label", "stacked_bar", ["query_category_label"]),
+        ("stack_segment_value", "stacked_bar", ["query_category_label", "query_series_label"]),
+        ("combined_share_subset", "pie", ["query_label_a", "query_label_b"]),
+    )
+    for seed, (task_variant, scene_variant, required_slots) in enumerate(cases, start=17055):
+        out = task.generate(seed, params={"task_variant": task_variant, "scene_variant": scene_variant}, max_attempts=10)
+        slot_values = out.trace_payload["query_spec"]["prompt_variant"]["slot_values"]
+        assert str(out.trace_payload["query_spec"]["prompt_variant"]["task_variant_key"]) == str(task_variant)
+        for slot in required_slots:
+            assert str(slot_values[str(slot)]).strip()
+
+
 def test_chart_composition_task_is_deterministic() -> None:
     task = ChartsCompositionSubsetValueTask()
     params = {"task_variant": "stack_segment_value", "scene_variant": "stacked_bar"}

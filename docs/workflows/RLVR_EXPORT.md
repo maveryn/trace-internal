@@ -19,7 +19,8 @@ Run:
 PYTHONPATH=. python scripts/export_trace_to_rlvr.py \
   --source <trace_dataset_root> \
   --output <rlvr_output_path_or_dir> \
-  --format parquet
+  --format parquet \
+  --parquet-cpu-count 0
 ```
 
 Examples:
@@ -28,7 +29,8 @@ Examples:
 PYTHONPATH=. python scripts/export_trace_to_rlvr.py \
   --source builds/my_trace_dataset \
   --output rlvr/mydata/my_trace_train.parquet \
-  --format parquet
+  --format parquet \
+  --parquet-cpu-count 0
 ```
 
 ```bash
@@ -41,6 +43,28 @@ PYTHONPATH=. python scripts/export_trace_to_rlvr.py \
 If `--output` is a directory (or has no suffix), the exporter writes:
 - `train.jsonl` for JSONL
 - `train.parquet` for parquet
+
+For parquet export:
+- `--parquet-cpu-count 0` uses all visible CPUs for Arrow compute + IO threads.
+- Set an explicit positive integer when you want a smaller export footprint.
+
+## 2b) End-to-end training-dataset helper
+For the standard equal-split all-task RLVR train build, use:
+
+```bash
+PYTHONPATH=. python scripts/prepare_trace_rlvr_train.py \
+  --output-root ./out \
+  --dataset-name trace_rlvr_train_128k_all_tasks \
+  --num-instances 128000 \
+  --workers 0 \
+  --parquet-cpu-count 0
+```
+
+This helper:
+1. enumerates all active registered tasks,
+2. requires an exact equal split across tasks,
+3. builds the TRACE dataset with `workers=0` meaning all visible CPUs,
+4. exports RLVR parquet in one step.
 
 ## 3) Exported row contract
 Each exported RLVR row currently includes:
@@ -66,6 +90,7 @@ Notes:
 3. `answer_gt`, `evidence_gt`, and `reward_contract` stay in TRACE ABI form so RLVR can dispatch the public reward contract directly.
 4. `complexity_score` is copied from TRACE `task_complexity.complexity_score` for logging/debugging only.
 5. `difficulty_bin` and `bucket_id_str` are generated automatically from task-local curriculum buckets so RLVR self-paced sampling can work without extra preprocessing.
+6. JSONL exports write `answer_gt`, `evidence_gt`, `reward_contract`, and `trace_ref` as structured TRACE objects. Parquet exports serialize those four columns as JSON strings because mixed-task TRACE datasets contain heterogeneous nested value types; the RLVR TRACE loader parses them back automatically.
 
 ## 4) Prompt variant policy
 Default export uses:

@@ -109,6 +109,7 @@ def test_export_trace_dataset_to_rlvr_jsonl_and_parquet(tmp_path: Path) -> None:
         output_format="parquet",
         prompt_variant="active",
         image_path_mode="absolute",
+        parquet_cpu_count=1,
     )
     assert parquet_result.output_path == parquet_path.resolve()
     table = pq.read_table(parquet_result.output_path)
@@ -118,6 +119,24 @@ def test_export_trace_dataset_to_rlvr_jsonl_and_parquet(tmp_path: Path) -> None:
     assert parquet_rows[0]["complexity_score"] == 0.6
     assert parquet_rows[0]["difficulty_bin"] == 0
     assert parquet_rows[0]["bucket_id_str"] == "task_geometry_coordinate_relation::q0"
+    assert json.loads(parquet_rows[0]["answer_gt"]) == {
+        "type": "integer",
+        "value": 3,
+    }
+    assert json.loads(parquet_rows[0]["evidence_gt"]) == {
+        "type": "graph_point_set",
+        "value": [[1, 2], [3, 4], [5, 6]],
+    }
+    assert json.loads(parquet_rows[0]["reward_contract"]) == {
+        "reward_contract_version": "v1",
+        "answer": {"id": "answer_exact_match_v1", "type": "integer"},
+        "evidence": {"id": "point_set_match_v1", "type": "graph_point_set"},
+    }
+    assert json.loads(parquet_rows[0]["trace_ref"]) == {
+        "shard_id": "trace-0001",
+        "line_index": 0,
+        "trace_record_hash": "trace-hash",
+    }
     assert parquet_rows[0]["images"] == [
         {
             "path": str(
@@ -131,6 +150,69 @@ def test_export_trace_dataset_to_rlvr_jsonl_and_parquet(tmp_path: Path) -> None:
             )
         }
     ]
+
+
+def test_export_trace_dataset_to_rlvr_parquet_supports_mixed_trace_contract_types(tmp_path: Path) -> None:
+    dataset_root = tmp_path / "trace_dataset_mixed"
+    image_dir = dataset_root / "images"
+    image_dir.mkdir(parents=True, exist_ok=True)
+    image_a = image_dir / "a.png"
+    image_b = image_dir / "b.png"
+    image_a.write_bytes(b"a")
+    image_b.write_bytes(b"b")
+
+    records = [
+        {
+            "instance_id": "inst-a",
+            "domain": "geometry",
+            "task_group": "coordinate",
+            "task": "task_geometry_coordinate_relation",
+            "prompt": "prompt a",
+            "images": [{"path": "images/a.png"}],
+            "answer_gt": {"type": "integer", "value": 3},
+            "evidence_gt": {"type": "graph_point_set", "value": [[1, 2], [3, 4]]},
+            "reward_contract": {
+                "reward_contract_version": "v1",
+                "answer": {"id": "answer_exact_match_v1", "type": "integer"},
+                "evidence": {"id": "point_set_match_v1", "type": "graph_point_set"},
+            },
+            "task_complexity": {"complexity_score": 0.4, "complexity_components": {}},
+            "trace_ref": {"shard_id": "trace", "line_index": 0, "trace_record_hash": "ha"},
+        },
+        {
+            "instance_id": "inst-b",
+            "domain": "puzzles",
+            "task_group": "logic",
+            "task": "task_puzzles_logic_grid_completion_label",
+            "prompt": "prompt b",
+            "images": [{"path": "images/b.png"}],
+            "answer_gt": {"type": "option_letter", "value": "K"},
+            "evidence_gt": {"type": "bbox_set", "value": [[10, 10, 20, 20]]},
+            "reward_contract": {
+                "reward_contract_version": "v1",
+                "answer": {"id": "answer_exact_match_v1", "type": "option_letter"},
+                "evidence": {"id": "bbox_set_iou_v1", "type": "bbox_set"},
+            },
+            "task_complexity": {"complexity_score": 0.7, "complexity_components": {}},
+            "trace_ref": {"shard_id": "trace", "line_index": 1, "trace_record_hash": "hb"},
+        },
+    ]
+    (dataset_root / "train_instances.jsonl").write_text(
+        "\n".join(json.dumps(record) for record in records) + "\n",
+        encoding="utf-8",
+    )
+
+    result = export_trace_dataset_to_rlvr(
+        dataset_root,
+        tmp_path / "mixed.parquet",
+        output_format="parquet",
+        parquet_cpu_count=1,
+    )
+    rows = pq.read_table(result.output_path).to_pylist()
+    assert len(rows) == 2
+    assert json.loads(rows[0]["answer_gt"])["type"] == "integer"
+    assert json.loads(rows[1]["answer_gt"])["type"] == "option_letter"
+    assert json.loads(rows[1]["answer_gt"])["value"] == "K"
 
 
 def test_export_trace_dataset_to_rlvr_adds_task_local_curriculum_buckets(tmp_path: Path) -> None:

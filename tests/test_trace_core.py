@@ -8,17 +8,36 @@ from pathlib import Path
 import pytest
 from PIL import Image
 
+from trace.core.build_presets import build_equal_split_all_tasks_config, resolve_equal_split_task_count
 from trace.core.builder import BuildError, build_dataset
 from trace.core.canonical import CanonicalizationError, canonical_json_bytes
 from trace.core.config import BuildConfig, BuildTaskConfig
 from trace.core.identity import compute_instance_id
 from trace.core.reward_contracts import ANSWER_REWARD_CONTRACT_ID, resolve_reward_contract
+from trace.core.seed import hash64
 from trace.core.trace_store import read_trace_shard
 from trace.core.types import TaskComplexity, TypedValue
+from trace.tasks import create_task
 from trace.tasks.base import TaskOutput
-from trace.tasks.registry import TASK_REGISTRY, register_task
+from trace.tasks.registry import TASK_REGISTRY, list_task_ids, register_task
 from trace.tasks.tile.path_shortest_path import TileShortestPathTask
 from tests.helpers import read_jsonl
+
+
+def _generate_first_successful_output(task_id: str) -> TaskOutput:
+    last_exc: Exception | None = None
+    task = create_task(task_id)
+    for seed_index in range(8):
+        instance_seed = hash64(0, f"{task_id}:instance_seed", seed_index)
+        try:
+            return task.generate(
+                int(instance_seed),
+                params={"_sampling_index": int(seed_index)},
+                max_attempts=100,
+            )
+        except Exception as exc:  # pragma: no cover - exercised only on unlucky seeds.
+            last_exc = exc
+    pytest.fail(f"failed to generate a sample for {task_id}: {last_exc}")
 
 
 def _register_dummy_tasks() -> None:
@@ -162,6 +181,23 @@ def test_tile_shortest_path_deterministic() -> None:
     assert out_a.image.tobytes() == out_b.image.tobytes()
 
 
+def test_all_registered_tasks_emit_required_trace_fields() -> None:
+    required_keys = {
+        "scene_ir",
+        "query_spec",
+        "render_spec",
+        "render_map",
+        "execution_trace",
+        "witness_symbolic",
+        "projected_evidence",
+    }
+    for task_id in list_task_ids():
+        output = _generate_first_successful_output(task_id)
+        trace_payload = dict(output.trace_payload)
+        assert required_keys <= set(trace_payload)
+        canonical_json_bytes(trace_payload)
+
+
 def test_instance_id_ignores_image_path() -> None:
     base = {
         "instance_version": "v1",
@@ -265,6 +301,74 @@ def test_build_dataset_end_to_end_and_strict_repro(tmp_path: Path) -> None:
     assert strict_final_path.exists()
     tmp_dirs = [path.name for path in (strict_output_root / "tmp").glob("*")] if (strict_output_root / "tmp").exists() else []
     assert all(not name.endswith("__strict_repro") for name in tmp_dirs)
+
+
+def test_parallel_build_matches_serial(tmp_path: Path) -> None:
+    task_params = {
+        "rows": 7,
+        "cols": 7,
+        "target_shortest_len_min": 4,
+        "target_shortest_len_max": 10,
+    }
+    serial_config = BuildConfig(
+        output_root=str(tmp_path / "serial_out"),
+        dataset_name="parallel_match",
+        instance_version="v1",
+        image_format="png",
+        tasks=[BuildTaskConfig(task_id="task_tile_path_shortest_path", count=4, params=task_params)],
+        strict_repro=False,
+        max_attempts_per_instance=120,
+        sampling_seed=23,
+        workers=1,
+    )
+    parallel_config = BuildConfig(
+        output_root=str(tmp_path / "parallel_out"),
+        dataset_name="parallel_match",
+        instance_version="v1",
+        image_format="png",
+        tasks=[BuildTaskConfig(task_id="task_tile_path_shortest_path", count=4, params=task_params)],
+        strict_repro=False,
+        max_attempts_per_instance=120,
+        sampling_seed=23,
+        workers=2,
+        max_in_flight=4,
+    )
+
+    serial_path = build_dataset(serial_config, code_hash="parallel-match")
+    parallel_path = build_dataset(parallel_config, code_hash="parallel-match")
+
+    serial_instances = read_jsonl(serial_path / "train_instances.jsonl")
+    parallel_instances = read_jsonl(parallel_path / "train_instances.jsonl")
+    assert parallel_instances == serial_instances
+
+    serial_traces = read_trace_shard(serial_path / "traces" / "trace_shard_0001.jsonl.zst")
+    parallel_traces = read_trace_shard(parallel_path / "traces" / "trace_shard_0001.jsonl.zst")
+    assert parallel_traces == serial_traces
+
+    for instance in serial_instances:
+        image_rel_path = Path(instance["images"][0]["path"])
+        assert (serial_path / image_rel_path).read_bytes() == (parallel_path / image_rel_path).read_bytes()
+
+
+def test_equal_split_all_tasks_build_preset_uses_registered_tasks() -> None:
+    per_task = resolve_equal_split_task_count(num_instances=len(TASK_REGISTRY) * 2, task_count=len(TASK_REGISTRY))
+    assert per_task == 2
+
+    preset = build_equal_split_all_tasks_config(
+        output_root="./out",
+        dataset_name="all_tasks_equal_split",
+        num_instances=len(TASK_REGISTRY) * 2,
+        sampling_seed=5,
+        workers=0,
+        max_in_flight=0,
+    )
+    assert len(preset.tasks) == len(TASK_REGISTRY)
+    assert [task.task_id for task in preset.tasks] == sorted(TASK_REGISTRY)
+    assert all(int(task.count or 0) == 2 for task in preset.tasks)
+    assert preset.workers == 0
+
+    with pytest.raises(ValueError):
+        resolve_equal_split_task_count(num_instances=(len(TASK_REGISTRY) * 2) + 1, task_count=len(TASK_REGISTRY))
 
 
 def test_weighted_task_sampler(tmp_path: Path) -> None:

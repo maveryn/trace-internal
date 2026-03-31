@@ -46,9 +46,14 @@
     "task_family:composition_chart_value": [
       "object_description"
     ],
-    "task:subset_value_query": [
+    "task_variant:stack_total_at_label": [
+      "query_category_label"
+    ],
+    "task_variant:stack_segment_value": [
       "query_category_label",
-      "query_series_label",
+      "query_series_label"
+    ],
+    "task_variant:combined_share_subset": [
       "query_label_a",
       "query_label_b"
     ],

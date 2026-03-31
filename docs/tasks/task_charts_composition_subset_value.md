@@ -43,7 +43,9 @@
 4. `task_variant_key`: one of `stack_total_at_label|stack_segment_value|combined_share_subset`
 5. Required slots:
    - task-family: `object_description`
-   - task-level: `query_category_label`, `query_series_label`, `query_label_a`, `query_label_b`
+   - task-variant `stack_total_at_label`: `query_category_label`
+   - task-variant `stack_segment_value`: `query_category_label`, `query_series_label`
+   - task-variant `combined_share_subset`: `query_label_a`, `query_label_b`
    - answer-only mode: `json_output_contract_answer_only`, `answer_hint`, `json_example_answer_only`
    - answer+evidence mode: `json_output_contract`, `evidence_hint`, `answer_hint`, `json_example`
 6. Slot source:

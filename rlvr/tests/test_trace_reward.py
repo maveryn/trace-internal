@@ -19,6 +19,13 @@ if "mathruler" not in sys.modules:
     )
     sys.modules["mathruler"] = types.SimpleNamespace(grader=grader)
     sys.modules["mathruler.grader"] = grader
+if "datasets" not in sys.modules:
+    sys.modules["datasets"] = types.SimpleNamespace(load_dataset=lambda *args, **kwargs: None)
+if "transformers" not in sys.modules:
+    sys.modules["transformers"] = types.SimpleNamespace(
+        PreTrainedTokenizer=object,
+        ProcessorMixin=object,
+    )
 
 from verl.utils.dataset import RLHFDataset, process_image
 from verl.utils.trace_reward import score_trace_response
@@ -125,6 +132,23 @@ def test_trace_dataset_helpers_support_trace_rows(tmp_path: Path) -> None:
 
     normalized_images = dataset._normalize_image_entries([{"path": "images/sample.png"}])
     assert normalized_images == [str(image_path)]
+
+    normalized_example = dataset._normalize_trace_metadata_fields(
+        {
+            "prompt": "Solve it",
+            "answer_gt": '{"type":"integer","value":4}',
+            "evidence_gt": '{"type":"bbox_set","value":[[1,2,3,4]]}',
+            "reward_contract": (
+                '{"reward_contract_version":"v1","answer":{"id":"answer_exact_match_v1","type":"integer"},'
+                '"evidence":{"id":"bbox_set_iou_v1","type":"bbox_set"}}'
+            ),
+            "trace_ref": '{"shard_id":"trace-0001","line_index":0,"trace_record_hash":"hash"}',
+        }
+    )
+    assert normalized_example["answer_gt"] == {"type": "integer", "value": 4}
+    assert normalized_example["evidence_gt"] == {"type": "bbox_set", "value": [[1, 2, 3, 4]]}
+    assert normalized_example["reward_contract"]["evidence"]["type"] == "bbox_set"
+    assert normalized_example["trace_ref"]["shard_id"] == "trace-0001"
 
     loaded = process_image({"path": str(image_path)}, min_pixels=None, max_pixels=None)
     assert loaded.size == (12, 12)

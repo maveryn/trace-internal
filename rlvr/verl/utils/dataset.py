@@ -14,6 +14,7 @@
 
 import math
 import os
+import json
 from collections import defaultdict
 from io import BytesIO
 from pathlib import Path
@@ -282,6 +283,24 @@ class RLHFDataset(Dataset):
             )
         return self.prompt_key, self.answer_key
 
+    def _normalize_trace_metadata_fields(self, example: dict[str, Any]) -> dict[str, Any]:
+        if self.prism_mode != "trace":
+            return example
+
+        normalized = dict(example)
+        for key in ("answer_gt", "evidence_gt", "reward_contract", "trace_ref"):
+            value = normalized.get(key)
+            if not isinstance(value, str):
+                continue
+            stripped = value.strip()
+            if not stripped or stripped[0] not in "[{":
+                continue
+            try:
+                normalized[key] = json.loads(stripped)
+            except json.JSONDecodeError:
+                continue
+        return normalized
+
     def _build_messages(self, example: dict[str, Any], prompt_key: Optional[str] = None) -> list[dict[str, Any]]:
         if prompt_key is None:
             prompt_key, _ = self._resolve_prompt_answer_keys(example)
@@ -350,7 +369,7 @@ class RLHFDataset(Dataset):
         return len(self.dataset)
 
     def __getitem__(self, index):
-        example: dict = self.dataset[index]
+        example: dict = self._normalize_trace_metadata_fields(dict(self.dataset[index]))
         prompt_key, answer_key = self._resolve_prompt_answer_keys(example)
         messages = self._build_messages(example, prompt_key=prompt_key)
         example.pop(prompt_key, None)

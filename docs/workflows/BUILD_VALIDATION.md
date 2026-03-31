@@ -14,6 +14,14 @@ Operational policy for build lifecycle and pre-finalize validation.
 1. Sidecar trace export is required.
 2. Every `TrainInstance` must include `trace_ref`.
 3. Trace write failures are hard build failures.
+4. Every generated trace payload must include the full mandatory sidecar surface before finalize:
+   - `scene_ir`
+   - `query_spec`
+   - `render_spec`
+   - `render_map`
+   - `execution_trace`
+   - `witness_symbolic`
+   - `projected_evidence`
 
 ## 3) Required pre-finalize checks
 1. Train-instance schema validity.
@@ -70,3 +78,9 @@ Run CI with a pinned strict-repro config and fail on:
 2. Keep per-task tests focused on task-specific constraints and edge cases.
 3. Avoid duplicating the same determinism/build smoke assertions across every task file.
 4. For config-loading tests, validate merge/wiring/schema behavior (for example `shared` vs `task_overrides`) instead of asserting every literal default value per task.
+
+## 8) Large-build canary policy
+Before launching a large all-task build for training:
+1. run a one-sample-per-task canary build first,
+2. confirm every active task survives builder finalization with the mandatory trace payload keys above,
+3. only then scale to the full target row count and RLVR export.

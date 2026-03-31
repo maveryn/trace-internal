@@ -273,7 +273,7 @@ def _token_catalog_for_variant(
                 "token_label": str(color_name),
                 "render_mode": "color",
                 "object_type": "circle",
-                "fill_rgb": tuple(int(value) for value in color_rgb),
+                "fill_rgb": [int(value) for value in color_rgb],
             }
             for color_name, color_rgb in colors
         }
@@ -296,7 +296,7 @@ def _token_catalog_for_variant(
             "token_label": f"{shape}:{color_name}",
             "render_mode": "mixed",
             "object_type": str(shape),
-            "fill_rgb": tuple(int(value) for value in color_rgb),
+            "fill_rgb": [int(value) for value in color_rgb],
         }
         for shape, (color_name, color_rgb) in zip(shapes, colors)
     }

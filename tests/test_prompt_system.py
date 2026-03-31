@@ -475,9 +475,12 @@ def test_charts_composition_bundle_supports_subset_value_variants() -> None:
     assert len(bundle.task_variant_templates["stack_segment_value"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.task_variant_templates["combined_share_subset"]) == REQUIRED_PROMPT_VARIANTS
     assert list(bundle.required_slots_by_key["task_family:composition_chart_value"]) == ["object_description"]
-    assert list(bundle.required_slots_by_key["task:subset_value_query"]) == [
+    assert list(bundle.required_slots_by_key["task_variant:stack_total_at_label"]) == ["query_category_label"]
+    assert list(bundle.required_slots_by_key["task_variant:stack_segment_value"]) == [
         "query_category_label",
         "query_series_label",
+    ]
+    assert list(bundle.required_slots_by_key["task_variant:combined_share_subset"]) == [
         "query_label_a",
         "query_label_b",
     ]

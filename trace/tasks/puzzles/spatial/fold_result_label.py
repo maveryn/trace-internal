@@ -287,6 +287,10 @@ class PuzzlesSpatialFoldResultLabelTask:
                     "folded_result_mark_specs": [dict(item) for item in dataset["folded_result_mark_specs"]],
                 },
             },
+            "witness_symbolic": {
+                "type": "bbox_set",
+                "value": list(evidence_bboxes),
+            },
             "answer_gt": answer_gt.to_dict(),
             "evidence_gt": evidence_gt.to_dict(),
             "projected_evidence": dict(evidence_projection),

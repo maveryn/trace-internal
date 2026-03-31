@@ -55,21 +55,22 @@
    - `value_at_year`: exactly one queried year-cell bbox,
    - `delta_between_years|absolute_difference_between_years`: exactly two queried year-cell bboxes ordered as `[start year, end year]`,
    - `sum_over_year_interval|mean_over_year_interval`: the ordered queried year-cell bboxes from the start year through the end year.
-2. `projected_evidence` includes:
+2. `witness_symbolic` stores the same ordered `bbox_set` used for the public evidence contract.
+3. `projected_evidence` includes:
    - `bbox_set`
-3. `scene_ir.entities` stores one entity per table cell with:
+4. `scene_ir.entities` stores one entity per table cell with:
    - `cell_role`
    - `row_index`
    - `column_index`
    - row/column labels when applicable
    - rendered cell/text geometry
-4. `render_map` includes:
+5. `render_map` includes:
    - `column_region_bboxes_px`
    - `row_region_bboxes_px`
    - `row_label_bboxes_px`
    - `header_bboxes_px`
    - `cell_bboxes_px`
-5. `execution_trace` records:
+6. `execution_trace` records:
    - `task_variant`
    - `scene_variant`
    - full row labels, year headers, and table values

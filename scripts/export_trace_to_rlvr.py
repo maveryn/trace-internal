@@ -38,6 +38,12 @@ def main() -> int:
         default="relative",
         help="How to rewrite image paths for the exported RLVR rows.",
     )
+    parser.add_argument(
+        "--parquet-cpu-count",
+        type=int,
+        default=None,
+        help="Parquet write CPU count (0=all visible CPUs, default: PyArrow default).",
+    )
     args = parser.parse_args()
 
     result = export_trace_dataset_to_rlvr(
@@ -46,6 +52,7 @@ def main() -> int:
         output_format=args.format,
         prompt_variant=args.prompt_variant,
         image_path_mode=args.image_path_mode,
+        parquet_cpu_count=args.parquet_cpu_count,
     )
     print(
         str(result.output_path),

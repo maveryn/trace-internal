@@ -49,9 +49,10 @@
 
 ## 4) Evidence + trace contract
 1. Prompt-facing evidence is exactly one `bbox_set` item: the bbox of the correct option image.
-2. `projected_evidence` includes:
+2. `witness_symbolic` stores the same one-element winner `bbox_set` used for the prompt-facing evidence contract.
+3. `projected_evidence` includes:
    - `bbox_set`
-3. `scene_ir.entities` stores:
+4. `scene_ir.entities` stores:
    - `puzzle_fold_reference_panel`
    - `puzzle_fold_reference_paper`
    - `puzzle_fold_line`
@@ -60,12 +61,12 @@
    - `puzzle_fold_option_choice`
    - `puzzle_fold_option_label`
    - `puzzle_fold_result_paper`
-4. `render_map` includes:
+5. `render_map` includes:
    - `scene_bbox_px`
    - `reference_panel_bbox_px`
    - `reference_paper_bbox_px`
    - `option_choice_bboxes_px`
-5. `execution_trace` records:
+6. `execution_trace` records:
    - `fold_axis`
    - `fold_direction`
    - `grid_size`

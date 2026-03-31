@@ -37,13 +37,14 @@ Implementation map for the contracts in `docs/core/BLUEPRINT.md`.
 5. `trace/core/type_registry.py` — answer/evidence type checks.
 6. `trace/core/trace_store.py` — sidecar trace shard I/O.
 7. `trace/core/validation.py` — pre-finalize dataset validation.
-8. `trace/core/builder.py` — build orchestration.
-9. `trace/core/reward_contracts.py` — public RLVR reward-contract schema + resolver.
-10. `trace/core/rlvr_export.py` — TRACE-to-RLVR row export helpers.
-11. `trace/core/strict_repro.py` — strict reproducibility comparisons.
-12. `trace/core/task_group_config.py` — merged domain/task-group defaults and section resolution (`shared` + `task_overrides`).
-13. `trace/core/sampling.py` — shared sampling primitives.
-14. `trace/core/json_io.py` — deterministic JSON writing.
+8. `trace/core/builder.py` — build orchestration, including deterministic multi-process generation when `BuildConfig.workers > 1`.
+9. `trace/core/build_presets.py` — reusable build recipes, including equal-split all-task configs for training datasets.
+10. `trace/core/reward_contracts.py` — public RLVR reward-contract schema + resolver.
+11. `trace/core/rlvr_export.py` — TRACE-to-RLVR row export helpers, including parquet CPU-thread control for large exports.
+12. `trace/core/strict_repro.py` — strict reproducibility comparisons.
+13. `trace/core/task_group_config.py` — merged domain/task-group defaults and section resolution (`shared` + `task_overrides`).
+14. `trace/core/sampling.py` — shared sampling primitives.
+15. `trace/core/json_io.py` — deterministic JSON writing.
 
 ### Prompt + visual
 1. `trace/core/prompts/assets.py` — bundle loading/cache.
@@ -177,6 +178,7 @@ Implementation map for the contracts in `docs/core/BLUEPRINT.md`.
 2. `TrainInstance` stays lightweight; heavy replay metadata stays in sidecar trace.
 3. Answer/evidence/witness are consistent from one execution trace.
 4. Shared helpers are reused before adding task-local utilities.
+5. Builder parallelism changes throughput only; dataset identity and finalized row ordering stay invariant for fixed build-critical config.
 
 ## 6) When to update this doc
 Update when:

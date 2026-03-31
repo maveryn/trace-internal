@@ -3,8 +3,11 @@
 from __future__ import annotations
 
 import json
+import multiprocessing as mp
+import os
 import random
 import shutil
+from concurrent.futures import FIRST_COMPLETED, ProcessPoolExecutor, wait
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Mapping
@@ -12,6 +15,7 @@ from typing import Any, Dict, List, Mapping
 from PIL import Image
 
 from ..tasks import create_task
+from ..tasks.base import TaskOutput
 from . import error_codes
 from .canonical import canonical_json_bytes
 from .config import BuildConfig, BuildTaskConfig
@@ -48,6 +52,38 @@ class _BuildStageResult:
     domain_sampling_probabilities: Dict[str, float]
     task_group_sampling_probabilities: Dict[str, float]
     warnings: List[str]
+
+
+@dataclass(frozen=True)
+class _TaskAttemptSpec:
+    """Deterministic generation request for one task attempt."""
+
+    task_id: str
+    instance_seed: int
+    params: Dict[str, Any]
+    max_attempts: int
+    seed_index: int
+
+
+@dataclass
+class _TaskAttemptOutcome:
+    """Worker result for one task attempt."""
+
+    status: str
+    spec: _TaskAttemptSpec
+    generated: TaskOutput | None = None
+    error_reason: str | None = None
+
+
+_REQUIRED_TRACE_PAYLOAD_KEYS = (
+    "scene_ir",
+    "query_spec",
+    "render_spec",
+    "render_map",
+    "execution_trace",
+    "witness_symbolic",
+    "projected_evidence",
+)
 
 
 def _to_jsonl(path: Path, records: List[Dict[str, Any]]) -> None:
@@ -92,6 +128,17 @@ def _save_image(image: Image.Image, path: Path, image_format: str) -> None:
     image.save(path, format=image_format.upper())
 
 
+def _validate_trace_payload_keys(*, task_id: str, instance_seed: int, trace_payload: Mapping[str, Any]) -> None:
+    """Fail fast when a task omits mandatory sidecar-trace fields."""
+
+    missing = [key for key in _REQUIRED_TRACE_PAYLOAD_KEYS if key not in trace_payload]
+    if missing:
+        raise BuildError(
+            f"{task_id} instance_seed={instance_seed} missing required trace payload keys: "
+            + ", ".join(missing)
+        )
+
+
 def _serialize_config(config: BuildConfig) -> Dict[str, Any]:
     """Serialize build config for failure bundles and diagnostics."""
     return {
@@ -103,8 +150,86 @@ def _serialize_config(config: BuildConfig) -> Dict[str, Any]:
         "strict_repro": config.strict_repro,
         "max_attempts_per_instance": config.max_attempts_per_instance,
         "sampling_seed": config.sampling_seed,
+        "workers": config.workers,
+        "max_in_flight": config.max_in_flight,
         "tasks": [_serialize_task_config(task) for task in config.tasks],
     }
+
+
+def _resolve_parallelism(config: BuildConfig, *, task_target: int) -> tuple[int, int]:
+    """Resolve worker count and queue depth for one task build."""
+
+    raw_workers = int(config.workers)
+    if raw_workers < 0:
+        raise BuildError("workers must be >= 0")
+    if raw_workers == 0:
+        workers = max(1, int(os.cpu_count() or 1))
+    else:
+        workers = raw_workers
+
+    # Small task targets do not benefit from an oversized process pool.
+    if int(task_target) > 0:
+        workers = min(workers, int(task_target))
+    workers = max(1, workers)
+
+    raw_max_in_flight = int(config.max_in_flight)
+    if raw_max_in_flight < 0:
+        raise BuildError("max_in_flight must be >= 0")
+    if raw_max_in_flight == 0:
+        max_in_flight = max(1, workers * 2)
+    else:
+        max_in_flight = raw_max_in_flight
+    return workers, max_in_flight
+
+
+def _build_task_attempt_spec(
+    *,
+    task_cfg: BuildTaskConfig,
+    config: BuildConfig,
+    seed_index: int,
+) -> _TaskAttemptSpec:
+    """Build one deterministic task-attempt request."""
+
+    instance_seed = hash64(config.sampling_seed, f"{task_cfg.task_id}:instance_seed", seed_index)
+    params = dict(task_cfg.params)
+    params["_sampling_index"] = int(seed_index)
+    return _TaskAttemptSpec(
+        task_id=str(task_cfg.task_id),
+        instance_seed=int(instance_seed),
+        params=params,
+        max_attempts=int(config.max_attempts_per_instance),
+        seed_index=int(seed_index),
+    )
+
+
+def _worker_generate_attempt(spec: _TaskAttemptSpec) -> _TaskAttemptOutcome:
+    """Generate one task attempt inside a worker process."""
+
+    task = create_task(spec.task_id)
+    try:
+        generated = task.generate(
+            int(spec.instance_seed),
+            params=dict(spec.params),
+            max_attempts=int(spec.max_attempts),
+        )
+    except Exception as exc:
+        return _TaskAttemptOutcome(
+            status="error",
+            spec=spec,
+            error_reason=type(exc).__name__,
+        )
+    return _TaskAttemptOutcome(status="ok", spec=spec, generated=generated)
+
+
+def _resolve_process_pool_context() -> mp.context.BaseContext | None:
+    """Prefer a safe process start method for worker pools."""
+
+    for method in ("forkserver", "spawn"):
+        try:
+            return mp.get_context(method)
+        except ValueError:
+            continue
+    return None
 
 
 def _write_failure_bundle(
@@ -186,6 +311,289 @@ def _aggregate_sampling_probabilities(task_probabilities: Mapping[str, float]) -
     return dict(sorted(domain_probs.items())), dict(sorted(task_group_probs.items()))
 
 
+def _finalize_generated_output(
+    *,
+    task: Any,
+    generated: TaskOutput,
+    accepted_index: int,
+    instance_seed: int,
+    config: BuildConfig,
+    stage_root: Path,
+    code_hash: str,
+    type_registry: TypeRegistry,
+    trace_writer: TraceShardWriter,
+) -> tuple[Dict[str, Any], Dict[str, Any], str]:
+    """Finalize one generated task output into train/trace records."""
+
+    task_variant_used = str(getattr(generated, "task_variant", "default") or "default")
+    if not type_registry.validate_answer_type(generated.answer_gt.type):
+        raise BuildError(f"unregistered answer type: {generated.answer_gt.type}")
+    if not type_registry.validate_evidence_type(generated.evidence_gt.type):
+        raise BuildError(f"unregistered evidence type: {generated.evidence_gt.type}")
+    try:
+        reward_contract = resolve_reward_contract(
+            answer_type=generated.answer_gt.type,
+            evidence_type=generated.evidence_gt.type,
+        )
+    except ValueError as exc:
+        raise BuildError(str(exc)) from exc
+
+    image_rel_path = Path("images") / task.domain / task.task_id / f"{accepted_index:06d}.{config.image_format}"
+    image_abs_path = stage_root / image_rel_path
+    _save_image(generated.image, image_abs_path, config.image_format)
+    image_hash = blake3_file(image_abs_path)
+
+    image_record = ImageRecord(
+        image_id=generated.image_id,
+        format=config.image_format,
+        image_hash=image_hash,
+        path=str(image_rel_path.as_posix()),
+    )
+
+    partial_record = {
+        "instance_version": config.instance_version,
+        "instance_seed": int(instance_seed),
+        "domain": task.domain,
+        "task_group": task.task_group,
+        "task": task.task_id,
+        "prompt": generated.prompt,
+        "prompt_variants": dict(getattr(generated, "prompt_variants", {}) or {}),
+        "images": [image_record.to_dict()],
+        "answer_gt": generated.answer_gt.to_dict(),
+        "evidence_gt": generated.evidence_gt.to_dict(),
+        "reward_contract": reward_contract.to_dict(),
+        "versions": {
+            "seed_derivation_version": SEED_DERIVATION_VERSION,
+            **generated.task_versions,
+            "code_hash": code_hash,
+        },
+    }
+    instance_id = compute_instance_id(partial_record)
+
+    trace_payload = dict(generated.trace_payload)
+    _validate_trace_payload_keys(
+        task_id=str(task.task_id),
+        instance_seed=int(instance_seed),
+        trace_payload=trace_payload,
+    )
+    query_spec = trace_payload.get("query_spec")
+    if isinstance(query_spec, dict):
+        query_spec.setdefault("task_variant", task_variant_used)
+
+    trace_instance = TraceInstance(
+        instance_id=instance_id,
+        scene_ir=trace_payload["scene_ir"],
+        query_spec=trace_payload["query_spec"],
+        render_spec=trace_payload["render_spec"],
+        render_map=trace_payload["render_map"],
+        execution_trace=trace_payload["execution_trace"],
+        witness_symbolic=trace_payload["witness_symbolic"],
+        projected_evidence=trace_payload["projected_evidence"],
+        answer_gt=generated.answer_gt,
+        evidence_gt=generated.evidence_gt,
+        reward_contract=reward_contract,
+    )
+    trace_ref = trace_writer.append(trace_instance.to_dict())
+
+    train = TrainInstance(
+        instance_version=config.instance_version,
+        instance_id=instance_id,
+        instance_seed=int(instance_seed),
+        domain=task.domain,
+        task_group=task.task_group,
+        task=task.task_id,
+        prompt=generated.prompt,
+        prompt_variants=dict(getattr(generated, "prompt_variants", {}) or {}),
+        images=[image_record],
+        answer_gt=generated.answer_gt,
+        evidence_gt=generated.evidence_gt,
+        reward_contract=reward_contract,
+        task_complexity=generated.complexity,
+        trace_ref=trace_ref,
+        versions={
+            "seed_derivation_version": SEED_DERIVATION_VERSION,
+            **generated.task_versions,
+            "code_hash": code_hash,
+        },
+    )
+    curriculum_record = CurriculumIndex(
+        instance_id=instance_id,
+        domain=task.domain,
+        task_group=task.task_group,
+        task=task.task_id,
+        task_complexity=generated.complexity,
+    ).to_dict()
+    return train.to_dict(), curriculum_record, str(generated.evidence_gt.type)
+
+
+def _build_task_serial(
+    *,
+    task_cfg: BuildTaskConfig,
+    task: Any,
+    task_target: int,
+    config: BuildConfig,
+    stage_root: Path,
+    code_hash: str,
+    type_registry: TypeRegistry,
+    trace_writer: TraceShardWriter,
+) -> tuple[list[Dict[str, Any]], list[Dict[str, Any]], int, int, Dict[str, int], str | None]:
+    """Generate all accepted instances for one task in-process."""
+
+    accepted = 0
+    rejected = 0
+    rejection_reasons: Dict[str, int] = {}
+    seed_index = 0
+    max_candidates = max(1, task_target * 20)
+    train_records: list[Dict[str, Any]] = []
+    curriculum_records: list[Dict[str, Any]] = []
+    evidence_type: str | None = None
+
+    while accepted < task_target and seed_index < max_candidates:
+        attempt = _build_task_attempt_spec(task_cfg=task_cfg, config=config, seed_index=seed_index)
+        seed_index += 1
+        try:
+            generated = task.generate(
+                int(attempt.instance_seed),
+                params=dict(attempt.params),
+                max_attempts=int(attempt.max_attempts),
+            )
+        except Exception as exc:
+            rejected += 1
+            reason = type(exc).__name__
+            rejection_reasons[reason] = rejection_reasons.get(reason, 0) + 1
+            continue
+
+        train_record, curriculum_record, evidence_type = _finalize_generated_output(
+            task=task,
+            generated=generated,
+            accepted_index=accepted,
+            instance_seed=int(attempt.instance_seed),
+            config=config,
+            stage_root=stage_root,
+            code_hash=code_hash,
+            type_registry=type_registry,
+            trace_writer=trace_writer,
+        )
+        train_records.append(train_record)
+        curriculum_records.append(curriculum_record)
+        accepted += 1
+
+    return (
+        train_records,
+        curriculum_records,
+        accepted,
+        rejected,
+        dict(sorted(rejection_reasons.items())),
+        evidence_type,
+    )
+
+
+def _build_task_parallel(
+    *,
+    task_cfg: BuildTaskConfig,
+    task: Any,
+    task_target: int,
+    config: BuildConfig,
+    stage_root: Path,
+    code_hash: str,
+    type_registry: TypeRegistry,
+    trace_writer: TraceShardWriter,
+) -> tuple[list[Dict[str, Any]], list[Dict[str, Any]], int, int, Dict[str, int], str | None]:
+    """Generate all accepted instances for one task with a deterministic worker pool."""
+
+    workers, max_in_flight = _resolve_parallelism(config, task_target=task_target)
+    if workers <= 1:
+        return _build_task_serial(
+            task_cfg=task_cfg,
+            task=task,
+            task_target=task_target,
+            config=config,
+            stage_root=stage_root,
+            code_hash=code_hash,
+            type_registry=type_registry,
+            trace_writer=trace_writer,
+        )
+
+    accepted = 0
+    rejected = 0
+    rejection_reasons: Dict[str, int] = {}
+    seed_index = 0
+    next_finalize = 0
+    max_candidates = max(1, task_target * 20)
+    pending_results: Dict[int, _TaskAttemptOutcome] = {}
+    futures: Dict[Any, int] = {}
+    train_records: list[Dict[str, Any]] = []
+    curriculum_records: list[Dict[str, Any]] = []
+    evidence_type: str | None = None
+
+    executor_kwargs: Dict[str, Any] = {"max_workers": workers}
+    process_pool_context = _resolve_process_pool_context()
+    if process_pool_context is not None:
+        executor_kwargs["mp_context"] = process_pool_context
+
+    with ProcessPoolExecutor(**executor_kwargs) as executor:
+        while futures or (seed_index < max_candidates and accepted < task_target):
+            while accepted < task_target and seed_index < max_candidates and len(futures) < max_in_flight:
+                attempt = _build_task_attempt_spec(task_cfg=task_cfg, config=config, seed_index=seed_index)
+                future = executor.submit(_worker_generate_attempt, attempt)
+                futures[future] = int(attempt.seed_index)
+                seed_index += 1
+
+            if not futures:
+                break
+
+            done, _ = wait(futures, return_when=FIRST_COMPLETED)
+            for future in done:
+                result_seed_index = futures.pop(future)
+                try:
+                    outcome = future.result()
+                except Exception as exc:
+                    attempt = _build_task_attempt_spec(task_cfg=task_cfg, config=config, seed_index=result_seed_index)
+                    outcome = _TaskAttemptOutcome(
+                        status="error",
+                        spec=attempt,
+                        error_reason=type(exc).__name__,
+                    )
+                pending_results[result_seed_index] = outcome
+
+            while next_finalize in pending_results and accepted < task_target:
+                outcome = pending_results.pop(next_finalize)
+                if outcome.status != "ok" or outcome.generated is None:
+                    rejected += 1
+                    reason = str(outcome.error_reason or "TaskGenerationError")
+                    rejection_reasons[reason] = rejection_reasons.get(reason, 0) + 1
+                else:
+                    train_record, curriculum_record, evidence_type = _finalize_generated_output(
+                        task=task,
+                        generated=outcome.generated,
+                        accepted_index=accepted,
+                        instance_seed=int(outcome.spec.instance_seed),
+                        config=config,
+                        stage_root=stage_root,
+                        code_hash=code_hash,
+                        type_registry=type_registry,
+                        trace_writer=trace_writer,
+                    )
+                    train_records.append(train_record)
+                    curriculum_records.append(curriculum_record)
+                    accepted += 1
+                next_finalize += 1
+
+            if accepted >= task_target:
+                for future in futures:
+                    future.cancel()
+                break
+
+    return (
+        train_records,
+        curriculum_records,
+        accepted,
+        rejected,
+        dict(sorted(rejection_reasons.items())),
+        evidence_type,
+    )
+
+
 def _build_staging(
     config: BuildConfig,
     *,
@@ -214,133 +622,32 @@ def _build_staging(
         for task_cfg in config.tasks:
             task = create_task(task_cfg.task_id)
             task_target = int(target_counts_by_task.get(task_cfg.task_id, 0))
-            accepted = 0
-            rejected = 0
-            rejection_reasons: Dict[str, int] = {}
-            seed_index = 0
-            max_candidates = max(1, task_target * 20)
+            (
+                task_instances,
+                task_curriculum,
+                accepted,
+                rejected,
+                rejection_reasons,
+                evidence_type,
+            ) = _build_task_parallel(
+                task_cfg=task_cfg,
+                task=task,
+                task_target=task_target,
+                config=config,
+                stage_root=stage_root,
+                code_hash=code_hash,
+                type_registry=type_registry,
+                trace_writer=trace_writer,
+            )
 
-            while accepted < task_target and seed_index < max_candidates:
-                instance_seed = hash64(config.sampling_seed, f"{task_cfg.task_id}:instance_seed", seed_index)
-                seed_index += 1
-
-                params = dict(task_cfg.params)
-                params["_sampling_index"] = int(seed_index - 1)
-                try:
-                    generated = task.generate(
-                        instance_seed,
-                        params=params,
-                        max_attempts=config.max_attempts_per_instance,
-                    )
-                except Exception as exc:
-                    rejected += 1
-                    reason = type(exc).__name__
-                    rejection_reasons[reason] = rejection_reasons.get(reason, 0) + 1
-                    continue
-
-                task_variant_used = str(getattr(generated, "task_variant", "default") or "default")
-                if not type_registry.validate_answer_type(generated.answer_gt.type):
-                    raise BuildError(f"unregistered answer type: {generated.answer_gt.type}")
-                if not type_registry.validate_evidence_type(generated.evidence_gt.type):
-                    raise BuildError(f"unregistered evidence type: {generated.evidence_gt.type}")
-                try:
-                    reward_contract = resolve_reward_contract(
-                        answer_type=generated.answer_gt.type,
-                        evidence_type=generated.evidence_gt.type,
-                    )
-                except ValueError as exc:
-                    raise BuildError(str(exc)) from exc
-
-                image_rel_path = Path("images") / task.domain / task.task_id / f"{accepted:06d}.{config.image_format}"
-                image_abs_path = stage_root / image_rel_path
-                _save_image(generated.image, image_abs_path, config.image_format)
-                image_hash = blake3_file(image_abs_path)
-
-                image_record = ImageRecord(
-                    image_id=generated.image_id,
-                    format=config.image_format,
-                    image_hash=image_hash,
-                    path=str(image_rel_path.as_posix()),
-                )
-
-                partial_record = {
-                    "instance_version": config.instance_version,
-                    "instance_seed": int(instance_seed),
-                    "domain": task.domain,
-                    "task_group": task.task_group,
-                    "task": task.task_id,
-                    "prompt": generated.prompt,
-                    "prompt_variants": dict(getattr(generated, "prompt_variants", {}) or {}),
-                    "images": [image_record.to_dict()],
-                    "answer_gt": generated.answer_gt.to_dict(),
-                    "evidence_gt": generated.evidence_gt.to_dict(),
-                    "reward_contract": reward_contract.to_dict(),
-                    "versions": {
-                        "seed_derivation_version": SEED_DERIVATION_VERSION,
-                        **generated.task_versions,
-                        "code_hash": code_hash,
-                    },
-                }
-                instance_id = compute_instance_id(partial_record)
-
-                trace_payload = dict(generated.trace_payload)
-                query_spec = trace_payload.get("query_spec")
-                if isinstance(query_spec, dict):
-                    query_spec.setdefault("task_variant", task_variant_used)
-
-                trace_instance = TraceInstance(
-                    instance_id=instance_id,
-                    scene_ir=trace_payload["scene_ir"],
-                    query_spec=trace_payload["query_spec"],
-                    render_spec=trace_payload["render_spec"],
-                    render_map=trace_payload["render_map"],
-                    execution_trace=trace_payload["execution_trace"],
-                    witness_symbolic=trace_payload["witness_symbolic"],
-                    projected_evidence=trace_payload["projected_evidence"],
-                    answer_gt=generated.answer_gt,
-                    evidence_gt=generated.evidence_gt,
-                    reward_contract=reward_contract,
-                )
-                trace_ref = trace_writer.append(trace_instance.to_dict())
-
-                train = TrainInstance(
-                    instance_version=config.instance_version,
-                    instance_id=instance_id,
-                    instance_seed=int(instance_seed),
-                    domain=task.domain,
-                    task_group=task.task_group,
-                    task=task.task_id,
-                    prompt=generated.prompt,
-                    prompt_variants=dict(getattr(generated, "prompt_variants", {}) or {}),
-                    images=[image_record],
-                    answer_gt=generated.answer_gt,
-                    evidence_gt=generated.evidence_gt,
-                    reward_contract=reward_contract,
-                    task_complexity=generated.complexity,
-                    trace_ref=trace_ref,
-                    versions={
-                        "seed_derivation_version": SEED_DERIVATION_VERSION,
-                        **generated.task_versions,
-                        "code_hash": code_hash,
-                    },
-                )
-
-                instances.append(train.to_dict())
-                curriculum.append(
-                    CurriculumIndex(
-                        instance_id=instance_id,
-                        domain=task.domain,
-                        task_group=task.task_group,
-                        task=task.task_id,
-                        task_complexity=generated.complexity,
-                    ).to_dict()
-                )
-                evidence_format_map[task.task_id] = generated.evidence_gt.type
-                accepted += 1
+            instances.extend(task_instances)
+            curriculum.extend(task_curriculum)
+            if evidence_type is not None:
+                evidence_format_map[task.task_id] = evidence_type
 
             accepted_by_task[task_cfg.task_id] = accepted
             rejected_by_task[task_cfg.task_id] = rejected
-            rejected_reason_by_task[task_cfg.task_id] = dict(sorted(rejection_reasons.items()))
+            rejected_reason_by_task[task_cfg.task_id] = dict(rejection_reasons)
 
             if accepted < task_target:
                 warning_messages.append(

@@ -13,6 +13,7 @@ from typing import Any, Iterable, Literal, Mapping
 PromptVariantMode = Literal["active", "answer_only", "answer_and_evidence"]
 ImagePathMode = Literal["relative", "absolute", "dataset_relative"]
 OutputFormat = Literal["jsonl", "parquet"]
+_PARQUET_JSON_COLUMNS = ("answer_gt", "evidence_gt", "reward_contract", "trace_ref")
 
 
 @dataclass(frozen=True)
@@ -26,6 +27,19 @@ class RLVRExportResult:
     prompt_variant: PromptVariantMode
     image_path_mode: ImagePathMode
     row_count: int
+
+
+def _resolve_parquet_cpu_count(parquet_cpu_count: int | None) -> int | None:
+    """Normalize the requested parquet CPU count."""
+
+    if parquet_cpu_count is None:
+        return None
+    parsed = int(parquet_cpu_count)
+    if parsed < 0:
+        raise ValueError("parquet_cpu_count must be >= 0")
+    if parsed == 0:
+        return max(1, int(os.cpu_count() or 1))
+    return parsed
 
 
 def resolve_train_instances_source(path: str | Path) -> tuple[Path, Path]:
@@ -301,13 +315,39 @@ def _write_jsonl_rows(path: Path, rows: list[dict[str, Any]]) -> None:
             handle.write("\n")
 
 
-def _write_parquet_rows(path: Path, rows: list[dict[str, Any]]) -> None:
+def _write_parquet_rows(
+    path: Path,
+    rows: list[dict[str, Any]],
+    *,
+    parquet_cpu_count: int | None = None,
+) -> None:
     import pyarrow as pa
     import pyarrow.parquet as pq
 
     path.parent.mkdir(parents=True, exist_ok=True)
-    table = pa.Table.from_pylist(rows)
-    pq.write_table(table, path)
+    parquet_rows = []
+    for row in rows:
+        parquet_row = dict(row)
+        for key in _PARQUET_JSON_COLUMNS:
+            if key in parquet_row:
+                parquet_row[key] = json.dumps(parquet_row[key], ensure_ascii=False, allow_nan=False, sort_keys=True)
+        parquet_rows.append(parquet_row)
+    requested_cpu_count = _resolve_parquet_cpu_count(parquet_cpu_count)
+    if requested_cpu_count is None:
+        table = pa.Table.from_pylist(parquet_rows)
+        pq.write_table(table, path)
+        return
+
+    prior_cpu_count = pa.cpu_count()
+    prior_io_thread_count = pa.io_thread_count()
+    try:
+        pa.set_cpu_count(int(requested_cpu_count))
+        pa.set_io_thread_count(int(requested_cpu_count))
+        table = pa.Table.from_pylist(parquet_rows)
+        pq.write_table(table, path)
+    finally:
+        pa.set_cpu_count(int(prior_cpu_count))
+        pa.set_io_thread_count(int(prior_io_thread_count))
 
 
 def export_trace_dataset_to_rlvr(
@@ -317,6 +357,7 @@ def export_trace_dataset_to_rlvr(
     output_format: OutputFormat | None = None,
     prompt_variant: PromptVariantMode = "answer_and_evidence",
     image_path_mode: ImagePathMode = "relative",
+    parquet_cpu_count: int | None = None,
 ) -> RLVRExportResult:
     """Export one TRACE dataset to an RLVR-ready JSONL or parquet file."""
 
@@ -346,7 +387,7 @@ def export_trace_dataset_to_rlvr(
     ]
 
     if final_format == "parquet":
-        _write_parquet_rows(final_output_path, rows)
+        _write_parquet_rows(final_output_path, rows, parquet_cpu_count=parquet_cpu_count)
     else:
         _write_jsonl_rows(final_output_path, rows)
 

@@ -32,6 +32,8 @@ class BuildConfig:
     strict_repro: bool = False
     max_attempts_per_instance: int = 100
     sampling_seed: int = 0
+    workers: int = 1
+    max_in_flight: int = 0
 
 
 def load_build_config(path: str | Path) -> BuildConfig:
@@ -56,4 +58,6 @@ def load_build_config(path: str | Path) -> BuildConfig:
         strict_repro=bool(data.get("strict_repro", False)),
         max_attempts_per_instance=int(data.get("max_attempts_per_instance", 100)),
         sampling_seed=int(data.get("sampling_seed", 0)),
+        workers=int(data.get("workers", 1)),
+        max_in_flight=int(data.get("max_in_flight", 0)),
     )

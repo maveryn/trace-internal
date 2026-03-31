@@ -31,14 +31,16 @@ Every record must include:
 3. `images[]` with relative `path` + `image_hash`,
 4. `answer_gt: {type, value}`,
 5. `evidence_gt: {type, value}`,
-6. `task_complexity`,
-7. `trace_ref`,
-8. `versions`.
+6. `reward_contract`,
+7. `task_complexity`,
+8. `trace_ref`,
+9. `versions`.
 
 Constraints:
 1. `answer_gt.type` and `evidence_gt.type` must be registered type IDs.
 2. `images[*].path` is dataset-root-relative (never absolute).
 3. `trace_ref` is mandatory.
+4. `reward_contract` is mandatory and must match the resolved public answer/evidence reward mapping.
 
 ### 3.2 Sidecar trace (heavy)
 Trace payload is mandatory and referenced by `trace_ref`.
@@ -69,6 +71,12 @@ Required sections:
 3. `TrainInstance.evidence_gt` uses one resolved default evidence type.
 4. Evidence-order semantics are task-defined and deterministic.
 5. Unsupported evidence-type requests are hard validation errors.
+
+## 5.1 Reward contract
+1. `reward_contract` is builder-owned metadata derived from `answer_gt.type` and `evidence_gt.type`.
+2. The public reward contract must be stored on both the train record and sidecar trace.
+3. Reward-contract ids are versioned separately from answer/evidence types.
+4. If a public evidence type changes, update the reward-contract resolver and task-review mapping in the same patch.
 
 ## 6) Determinism and identity
 1. Single root seed per instance: `instance_seed`.

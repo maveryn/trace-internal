@@ -24,7 +24,8 @@ Operational policy for build lifecycle and pre-finalize validation.
 6. Prompt metadata/bundle/key validity.
 7. Required slot conformance and unresolved placeholder checks.
 8. Prompt variant-count/index consistency.
-9. Task-doc consistency: every registered task has `docs/tasks/<task_id>.md`, and `docs/tasks/README.md` links match active tasks.
+9. `reward_contract` schema validity plus train/trace reward-contract consistency.
+10. Task-doc consistency: every registered task has `docs/tasks/<task_id>.md`, and `docs/tasks/README.md` links match active tasks.
 
 ## 4) Task-review and distribution policy
 For new or distribution-changing task logic:

@@ -12,6 +12,8 @@ from trace.core.builder import BuildError, build_dataset
 from trace.core.canonical import CanonicalizationError, canonical_json_bytes
 from trace.core.config import BuildConfig, BuildTaskConfig
 from trace.core.identity import compute_instance_id
+from trace.core.reward_contracts import ANSWER_REWARD_CONTRACT_ID, resolve_reward_contract
+from trace.core.trace_store import read_trace_shard
 from trace.core.types import TaskComplexity, TypedValue
 from trace.tasks.base import TaskOutput
 from trace.tasks.registry import TASK_REGISTRY, register_task
@@ -172,6 +174,10 @@ def test_instance_id_ignores_image_path() -> None:
         "images": [{"image_id": "img0", "format": "png", "image_hash": "blake3:abc", "path": "a.png"}],
         "answer_gt": {"type": "integer", "value": 5},
         "evidence_gt": {"type": "grid_point_path", "value": [[1, 2], [1, 3]]},
+        "reward_contract": resolve_reward_contract(
+            answer_type="integer",
+            evidence_type="grid_point_path",
+        ).to_dict(),
         "versions": {"dsl_spec_version": "v1"},
     }
     variant = dict(base)
@@ -213,11 +219,20 @@ def test_build_dataset_end_to_end_and_strict_repro(tmp_path: Path) -> None:
         assert not Path(instance["images"][0]["path"]).is_absolute()
         assert instance["answer_gt"]["type"] == "integer"
         assert instance["evidence_gt"]["type"] == "grid_point_path"
+        assert instance["reward_contract"]["answer"]["id"] == ANSWER_REWARD_CONTRACT_ID
+        assert instance["reward_contract"]["answer"]["type"] == "integer"
+        assert instance["reward_contract"]["evidence"]["id"] == "sequence_exact_v1"
+        assert instance["reward_contract"]["evidence"]["type"] == "grid_point_path"
         assert sorted(instance["prompt_variants"].keys()) == ["answer_and_evidence", "answer_only"]
         assert instance["prompt"] == instance["prompt_variants"]["answer_and_evidence"]
 
     validation_report = json.loads((final_path / "validation_report.json").read_text(encoding="utf-8"))
     assert validation_report["total_errors"] == 0
+
+    trace_records = read_trace_shard(final_path / "traces" / "trace_shard_0001.jsonl.zst")
+    assert len(trace_records) == len(train_instances)
+    for instance, trace_record in zip(train_instances, trace_records):
+        assert trace_record["reward_contract"] == instance["reward_contract"]
 
     build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))
     assert build_report["dataset_id"].startswith("blake3:")

@@ -15,6 +15,7 @@ from .hash_utils import blake3_file, blake3_hex
 from .identity import compute_instance_id
 from .prompts import load_prompt_bundle
 from .prompts.schema import REQUIRED_PROMPT_VARIANTS
+from .reward_contracts import validate_reward_contract_payload
 from .trace_store import read_trace_shard
 
 
@@ -64,6 +65,7 @@ _REQUIRED_INSTANCE_FIELDS = [
     "images",
     "answer_gt",
     "evidence_gt",
+    "reward_contract",
     "task_complexity",
     "trace_ref",
     "versions",
@@ -645,6 +647,25 @@ def _validate_schema(instance: Mapping[str, Any]) -> List[_ValidationError]:
                 )
             )
 
+    if "reward_contract" in instance:
+        reward_contract = instance["reward_contract"]
+        reward_contract_error = validate_reward_contract_payload(
+            reward_contract,
+            answer_type=instance.get("answer_gt", {}).get("type") if isinstance(instance.get("answer_gt"), dict) else None,
+            evidence_type=(
+                instance.get("evidence_gt", {}).get("type") if isinstance(instance.get("evidence_gt"), dict) else None
+            ),
+        )
+        if reward_contract_error is not None:
+            errors.append(
+                _err(
+                    error_codes.SCHEMA_INVALID_VALUE,
+                    reward_contract_error,
+                    instance_id=iid,
+                    field_path="reward_contract",
+                )
+            )
+
     if "images" in instance and not isinstance(instance["images"], list):
         errors.append(
             _err(
@@ -791,6 +812,41 @@ def validate_dataset(
             )
 
         errors.extend(_validate_prompt_contract(inst, record))
+
+        trace_reward_contract = record.get("reward_contract")
+        if trace_reward_contract is None:
+            errors.append(
+                _err(
+                    error_codes.SCHEMA_MISSING_FIELD,
+                    "trace record is missing reward_contract",
+                    instance_id=iid,
+                    field_path="trace.reward_contract",
+                )
+            )
+        else:
+            reward_contract_error = validate_reward_contract_payload(
+                trace_reward_contract,
+                answer_type=inst.get("answer_gt", {}).get("type") if isinstance(inst.get("answer_gt"), dict) else None,
+                evidence_type=inst.get("evidence_gt", {}).get("type") if isinstance(inst.get("evidence_gt"), dict) else None,
+            )
+            if reward_contract_error is not None:
+                errors.append(
+                    _err(
+                        error_codes.SCHEMA_INVALID_VALUE,
+                        reward_contract_error,
+                        instance_id=iid,
+                        field_path="trace.reward_contract",
+                    )
+                )
+            elif trace_reward_contract != inst.get("reward_contract"):
+                errors.append(
+                    _err(
+                        error_codes.SCHEMA_INVALID_VALUE,
+                        "trace reward_contract must match the training record reward_contract",
+                        instance_id=iid,
+                        field_path="trace.reward_contract",
+                    )
+                )
 
         for i, image in enumerate(inst.get("images", [])):
             rel_path = image.get("path")

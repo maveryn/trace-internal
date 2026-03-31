@@ -20,6 +20,7 @@ Implementation map for the contracts in `docs/core/BLUEPRINT.md`.
    - task-level parameter injection (including deterministic `_sampling_index` for balance-aware variant samplers),
    - prompt rendering,
    - image rendering + visual variation,
+   - reward-contract resolution from public answer/evidence types,
    - trace write,
    - train-record write with `trace_ref`.
 4. Optional strict-repro second pass + compare.
@@ -37,10 +38,11 @@ Implementation map for the contracts in `docs/core/BLUEPRINT.md`.
 6. `trace/core/trace_store.py` — sidecar trace shard I/O.
 7. `trace/core/validation.py` — pre-finalize dataset validation.
 8. `trace/core/builder.py` — build orchestration.
-9. `trace/core/strict_repro.py` — strict reproducibility comparisons.
-10. `trace/core/task_group_config.py` — merged domain/task-group defaults and section resolution (`shared` + `task_overrides`).
-11. `trace/core/sampling.py` — shared sampling primitives.
-12. `trace/core/json_io.py` — deterministic JSON writing.
+9. `trace/core/reward_contracts.py` — public RLVR reward-contract schema + resolver.
+10. `trace/core/strict_repro.py` — strict reproducibility comparisons.
+11. `trace/core/task_group_config.py` — merged domain/task-group defaults and section resolution (`shared` + `task_overrides`).
+12. `trace/core/sampling.py` — shared sampling primitives.
+13. `trace/core/json_io.py` — deterministic JSON writing.
 
 ### Prompt + visual
 1. `trace/core/prompts/assets.py` — bundle loading/cache.

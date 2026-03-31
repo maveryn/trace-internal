@@ -5,6 +5,8 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass, field
 from typing import Any, Dict, List
 
+from .reward_contracts import RewardContract
+
 
 @dataclass(frozen=True)
 class TypedValue:
@@ -70,6 +72,7 @@ class TrainInstance:
     images: List[ImageRecord]
     answer_gt: TypedValue
     evidence_gt: TypedValue
+    reward_contract: RewardContract
     task_complexity: TaskComplexity
     trace_ref: TraceRef
     versions: Dict[str, str]
@@ -88,6 +91,7 @@ class TrainInstance:
             "images": [image.to_dict() for image in self.images],
             "answer_gt": self.answer_gt.to_dict(),
             "evidence_gt": self.evidence_gt.to_dict(),
+            "reward_contract": self.reward_contract.to_dict(),
             "task_complexity": self.task_complexity.to_dict(),
             "trace_ref": self.trace_ref.to_dict(),
             "versions": dict(self.versions),
@@ -109,6 +113,7 @@ class TraceInstance:
     seed_map: Dict[str, int] | None = None
     answer_gt: TypedValue | None = None
     evidence_gt: TypedValue | None = None
+    reward_contract: RewardContract | None = None
 
     def to_dict(self) -> Dict[str, Any]:
         data: Dict[str, Any] = {
@@ -127,6 +132,8 @@ class TraceInstance:
             data["answer_gt"] = self.answer_gt.to_dict()
         if self.evidence_gt is not None:
             data["evidence_gt"] = self.evidence_gt.to_dict()
+        if self.reward_contract is not None:
+            data["reward_contract"] = self.reward_contract.to_dict()
         return data
 
 

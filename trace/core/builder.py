@@ -18,6 +18,7 @@ from .config import BuildConfig, BuildTaskConfig
 from .hash_utils import blake3_file, blake3_hex
 from .identity import compute_instance_id
 from .json_io import write_json_file
+from .reward_contracts import resolve_reward_contract
 from .sampling import normalize_positive_weights, weighted_choice
 from .seed import SEED_DERIVATION_VERSION, hash64
 from .strict_repro import compare_staging_dirs
@@ -242,6 +243,13 @@ def _build_staging(
                     raise BuildError(f"unregistered answer type: {generated.answer_gt.type}")
                 if not type_registry.validate_evidence_type(generated.evidence_gt.type):
                     raise BuildError(f"unregistered evidence type: {generated.evidence_gt.type}")
+                try:
+                    reward_contract = resolve_reward_contract(
+                        answer_type=generated.answer_gt.type,
+                        evidence_type=generated.evidence_gt.type,
+                    )
+                except ValueError as exc:
+                    raise BuildError(str(exc)) from exc
 
                 image_rel_path = Path("images") / task.domain / task.task_id / f"{accepted:06d}.{config.image_format}"
                 image_abs_path = stage_root / image_rel_path
@@ -266,6 +274,7 @@ def _build_staging(
                     "images": [image_record.to_dict()],
                     "answer_gt": generated.answer_gt.to_dict(),
                     "evidence_gt": generated.evidence_gt.to_dict(),
+                    "reward_contract": reward_contract.to_dict(),
                     "versions": {
                         "seed_derivation_version": SEED_DERIVATION_VERSION,
                         **generated.task_versions,
@@ -290,6 +299,7 @@ def _build_staging(
                     projected_evidence=trace_payload["projected_evidence"],
                     answer_gt=generated.answer_gt,
                     evidence_gt=generated.evidence_gt,
+                    reward_contract=reward_contract,
                 )
                 trace_ref = trace_writer.append(trace_instance.to_dict())
 
@@ -305,6 +315,7 @@ def _build_staging(
                     images=[image_record],
                     answer_gt=generated.answer_gt,
                     evidence_gt=generated.evidence_gt,
+                    reward_contract=reward_contract,
                     task_complexity=generated.complexity,
                     trace_ref=trace_ref,
                     versions={

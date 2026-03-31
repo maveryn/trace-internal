@@ -232,11 +232,50 @@ def build_games_dots_and_boxes_capture_complexity(
     )
 
 
+def build_games_nine_mens_morris_pieces_in_mill_complexity(
+    *,
+    task_group_defaults: Mapping[str, Any],
+    task_id: str,
+    query_variant: str,
+    total_piece_count: int,
+    target_answer: int,
+    overlapping_piece_count: int,
+    evidence_count: int,
+) -> TaskComplexity:
+    """Build normalized complexity for nine-men's-morris mill-piece counting scenes."""
+
+    weights = resolve_games_complexity_weights(task_group_defaults, task_id=task_id)
+    visual_scan = clamp_unit_interval(
+        (0.34 * normalize_linear(float(total_piece_count), min_value=6.0, max_value=18.0))
+        + 0.18
+    )
+    state_reasoning = clamp_unit_interval(
+        (0.36 if str(query_variant) != "all_pieces_in_mill_count" else 0.50)
+        + (0.18 * normalize_linear(float(target_answer), min_value=0.0, max_value=18.0))
+        + (0.12 * normalize_linear(float(overlapping_piece_count), min_value=0.0, max_value=4.0))
+    )
+    ambiguity = clamp_unit_interval(
+        (0.12 * normalize_linear(float(overlapping_piece_count), min_value=0.0, max_value=4.0))
+        + (0.08 if str(query_variant) == "all_pieces_in_mill_count" and int(target_answer) == 0 else 0.0)
+    )
+    output_burden = normalize_linear(float(evidence_count), min_value=0.0, max_value=18.0)
+    return build_games_complexity(
+        weights=weights,
+        components={
+            "visual_scan": float(visual_scan),
+            "state_reasoning": float(state_reasoning),
+            "ambiguity": float(ambiguity),
+            "output_burden": float(output_burden),
+        },
+    )
+
+
 __all__ = [
     "build_games_bingo_completed_line_complexity",
     "build_games_cards_hand_complexity",
     "build_games_dots_and_boxes_capture_complexity",
     "build_games_dominoes_chain_complexity",
+    "build_games_nine_mens_morris_pieces_in_mill_complexity",
     "build_games_complexity",
     "clamp_unit_interval",
     "normalize_linear",

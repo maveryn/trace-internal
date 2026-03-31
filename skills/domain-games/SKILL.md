@@ -30,6 +30,8 @@ Use this whenever the task lives under `domain=games`.
   - `task_games_cards_hand_count`
 - `dominoes`
   - `task_games_dominoes_chain_count`
+- `nine_mens_morris`
+  - `task_games_nine_mens_morris_pieces_in_mill_count`
 
 ## Shared helpers to prefer
 - `trace/tasks/shared/support_sampling.py`
@@ -41,6 +43,8 @@ Use this whenever the task lives under `domain=games`.
 - `trace/tasks/games/shared/bingo_scene.py`
 - `trace/tasks/games/shared/card_scene.py`
 - `trace/tasks/games/shared/domino_scene.py`
+- `trace/tasks/games/shared/morris_common.py`
+- `trace/tasks/games/shared/morris_scene.py`
 - `trace/tasks/games/shared/style.py`
 - `trace/tasks/games/shared/visual_defaults.py`
 - `trace/tasks/games/shared/complexity.py`

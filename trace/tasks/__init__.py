@@ -85,6 +85,7 @@ from .games.bingo import completed_line_count as _task_games_bingo_completed_lin
 from .games.cards import hand_count as _task_games_cards_hand_count
 from .games.dominoes import chain_count as _task_games_dominoes_chain_count
 from .games.dots_and_boxes import capture_count as _task_games_dots_and_boxes_capture_count
+from .games.nine_mens_morris import pieces_in_mill_count as _task_games_nine_mens_morris_pieces_in_mill_count
 from .tile import count_color_components as _task_tile_count_color_components
 from .tile import count_color_count as _task_tile_count_color_count
 from .tile import count_largest_component_size as _task_tile_count_largest_component_size

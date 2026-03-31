@@ -87,6 +87,26 @@ class DotsAndBoxesTheme:
     guide_rgb: Tuple[int, int, int]
 
 
+@dataclass(frozen=True)
+class NineMensMorrisTheme:
+    """Resolved nine-men's-morris palette for one style variant."""
+
+    board_fill_rgb: Tuple[int, int, int]
+    board_border_rgb: Tuple[int, int, int]
+    board_border_width_px: int
+    shadow_rgb: Tuple[int, int, int]
+    shadow_alpha: int
+    shadow_offset_px: Tuple[int, int]
+    title_rgb: Tuple[int, int, int]
+    line_rgb: Tuple[int, int, int]
+    line_width_px: int
+    node_rgb: Tuple[int, int, int]
+    white_piece_fill_rgb: Tuple[int, int, int]
+    white_piece_outline_rgb: Tuple[int, int, int]
+    black_piece_fill_rgb: Tuple[int, int, int]
+    black_piece_outline_rgb: Tuple[int, int, int]
+
+
 def build_games_card_theme(*, style_variant: str) -> CardTheme:
     """Return one resolved card-scene theme for the active style variant."""
 
@@ -293,6 +313,62 @@ def build_games_dots_and_boxes_theme(*, style_variant: str) -> DotsAndBoxesTheme
     )
 
 
+def build_games_nine_mens_morris_theme(*, style_variant: str) -> NineMensMorrisTheme:
+    """Return one resolved nine-men's-morris theme for the active style variant."""
+
+    variant = str(style_variant)
+    if variant == "soft":
+        return NineMensMorrisTheme(
+            board_fill_rgb=(248, 242, 230),
+            board_border_rgb=(102, 112, 124),
+            board_border_width_px=3,
+            shadow_rgb=(18, 24, 20),
+            shadow_alpha=56,
+            shadow_offset_px=(5, 6),
+            title_rgb=(48, 76, 134),
+            line_rgb=(86, 94, 106),
+            line_width_px=6,
+            node_rgb=(72, 80, 92),
+            white_piece_fill_rgb=(252, 250, 244),
+            white_piece_outline_rgb=(112, 118, 126),
+            black_piece_fill_rgb=(58, 64, 72),
+            black_piece_outline_rgb=(24, 28, 34),
+        )
+    if variant == "outlined":
+        return NineMensMorrisTheme(
+            board_fill_rgb=(255, 255, 255),
+            board_border_rgb=(62, 70, 80),
+            board_border_width_px=4,
+            shadow_rgb=(14, 18, 20),
+            shadow_alpha=40,
+            shadow_offset_px=(4, 5),
+            title_rgb=(44, 75, 168),
+            line_rgb=(58, 64, 72),
+            line_width_px=6,
+            node_rgb=(46, 52, 60),
+            white_piece_fill_rgb=(255, 255, 255),
+            white_piece_outline_rgb=(112, 118, 126),
+            black_piece_fill_rgb=(42, 48, 56),
+            black_piece_outline_rgb=(18, 22, 28),
+        )
+    return NineMensMorrisTheme(
+        board_fill_rgb=(255, 252, 244),
+        board_border_rgb=(74, 82, 92),
+        board_border_width_px=3,
+        shadow_rgb=(18, 22, 24),
+        shadow_alpha=48,
+        shadow_offset_px=(4, 5),
+        title_rgb=(45, 76, 160),
+        line_rgb=(66, 72, 82),
+        line_width_px=6,
+        node_rgb=(44, 50, 58),
+        white_piece_fill_rgb=(254, 252, 248),
+        white_piece_outline_rgb=(106, 112, 120),
+        black_piece_fill_rgb=(36, 42, 50),
+        black_piece_outline_rgb=(18, 22, 28),
+    )
+
+
 def suit_color(theme: CardTheme, *, suit_name: str) -> Tuple[int, int, int]:
     """Return the rendered suit/rank color for one suit under the active theme."""
 
@@ -315,11 +391,13 @@ __all__ = [
     "CardTheme",
     "DominoTheme",
     "DotsAndBoxesTheme",
+    "NineMensMorrisTheme",
     "SUPPORTED_GAMES_STYLE_VARIANTS",
     "build_games_bingo_theme",
     "build_games_card_theme",
     "build_games_domino_theme",
     "build_games_dots_and_boxes_theme",
+    "build_games_nine_mens_morris_theme",
     "style_probability_map",
     "suit_color",
 ]

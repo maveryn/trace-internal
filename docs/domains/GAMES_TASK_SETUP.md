@@ -63,6 +63,19 @@ Use this document for the active `games` domain contract.
    - explain connection, pip-sum, and double semantics directly in the prompt when the query depends on them,
    - keep the open-end cue visually strong when the query asks which loose tiles can extend the chain.
 
+### `nine_mens_morris`
+1. Active tasks:
+   - `task_games_nine_mens_morris_pieces_in_mill_count`
+2. `task_games_nine_mens_morris_pieces_in_mill_count` scene/query surface:
+   - `scene_variant`: `single_board`
+   - `query_variant`: `white_pieces_in_mill_count|black_pieces_in_mill_count|all_pieces_in_mill_count`
+3. `task_games_nine_mens_morris_pieces_in_mill_count` evidence contract:
+   - unordered piece `bbox_set` evidence over the counted pieces that belong to at least one mill
+4. `task_games_nine_mens_morris_pieces_in_mill_count` prompt policy:
+   - define a mill explicitly as three same-color pieces on one straight board line,
+   - state that overlapping mill pieces are counted once,
+   - keep the first version to one stable visible board scaffold with no move-generation wording.
+
 ## 3) V1 games-domain policy
 1. Prefer one stable visible game scaffold per task id; widen question diversity through `task_variant` before splitting into more task ids.
 2. Keep early tasks fully face-up and fully observable; do not require hidden cards or unstated game conventions.
@@ -78,6 +91,8 @@ Use this document for the active `games` domain contract.
    - `task_games_cards_hand_count`
 4. `dominoes`
    - `task_games_dominoes_chain_count`
+5. `nine_mens_morris`
+   - `task_games_nine_mens_morris_pieces_in_mill_count`
 
 ## 5) Shared helper placement
 1. Cross-domain integer-support balancing now lives in `trace/tasks/shared/support_sampling.py`.
@@ -89,4 +104,6 @@ Use this document for the active `games` domain contract.
 7. Games-domain bingo-card rendering helpers belong in `trace/tasks/games/shared/bingo_scene.py`.
 8. Games-domain card-hand rendering helpers belong in `trace/tasks/games/shared/card_scene.py`.
 9. Games-domain domino-chain rendering helpers belong in `trace/tasks/games/shared/domino_scene.py`.
-10. Games-domain normalized complexity helpers belong in `trace/tasks/games/shared/complexity.py`.
+10. Games-domain nine-men's-morris construction helpers belong in `trace/tasks/games/shared/morris_common.py`.
+11. Games-domain nine-men's-morris rendering helpers belong in `trace/tasks/games/shared/morris_scene.py`.
+12. Games-domain normalized complexity helpers belong in `trace/tasks/games/shared/complexity.py`.

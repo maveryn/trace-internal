@@ -210,7 +210,7 @@ Define how we split tasks into reusable families so each dataset slice stays com
 
 ## Games direction (current)
 1. Games should start with real game-state artifacts whose visible pieces are sufficient to answer the question; do not hide state or rely on unstated house rules in early tasks.
-2. The active games families are `dots_and_boxes`, `bingo`, `cards`, and `dominoes`.
+2. The active games families are `dots_and_boxes`, `bingo`, `cards`, `dominoes`, and `nine_mens_morris`.
 3. `task_games_dots_and_boxes_capture_count`
    - uses scene variant `single_board`
    - uses query variant `forced_turn_capture_count`
@@ -231,11 +231,17 @@ Define how we split tasks into reusable families so each dataset slice stays com
    - uses query variants `matching_end_count|higher_sum_than_reference_count|sum_to_target_count|double_count`
    - keeps integer answers with unordered `bbox_set` evidence over the matching loose dominoes below the top chain
    - uses one non-semantic `style_variant` axis `classic|soft|outlined` for domino chrome only
-7. Dots-and-boxes tasks should keep the highlighted starting move explicit in the image and state the bonus-turn / forced-continuation rule directly in the prompt so the task stays grounded in the visible board state instead of hidden strategy.
-8. Bingo-card tasks should keep the first scaffold to one visible `5 x 5` card and state exactly which line types count; do not imply diagonal or free-center rules unless the prompt says so directly.
-9. Card-hand tasks should keep visible card counts in the `7..14` range, with two-row layouts reserved for larger hands so cards stay readable.
-10. Domino-chain tasks should keep the top chain as reference/context and the loose dominoes below as the counted witness set, with explicit rule text whenever the query depends on open-end matching, pip sums, or doubles.
-11. When a card-hand task depends on display order across wrapped rows (for example longest-run questions), keep an explicit continuation cue in the image and state the reading order directly in the prompt.
+7. `task_games_nine_mens_morris_pieces_in_mill_count`
+   - uses scene variant `single_board`
+   - uses query variants `white_pieces_in_mill_count|black_pieces_in_mill_count|all_pieces_in_mill_count`
+   - keeps integer answers with unordered `bbox_set` evidence over the counted pieces that belong to at least one mill
+   - uses one non-semantic `style_variant` axis `classic|soft|outlined` for board and piece chrome only
+8. Dots-and-boxes tasks should keep the highlighted starting move explicit in the image and state the bonus-turn / forced-continuation rule directly in the prompt so the task stays grounded in the visible board state instead of hidden strategy.
+9. Bingo-card tasks should keep the first scaffold to one visible `5 x 5` card and state exactly which line types count; do not imply diagonal or free-center rules unless the prompt says so directly.
+10. Card-hand tasks should keep visible card counts in the `7..14` range, with two-row layouts reserved for larger hands so cards stay readable.
+11. Domino-chain tasks should keep the top chain as reference/context and the loose dominoes below as the counted witness set, with explicit rule text whenever the query depends on open-end matching, pip sums, or doubles.
+12. Nine-men's-morris tasks should define a mill explicitly and state that overlapping mill pieces are counted once so the count stays tied to visible piece membership rather than assumed board expertise.
+13. When a card-hand task depends on display order across wrapped rows (for example longest-run questions), keep an explicit continuation cue in the image and state the reading order directly in the prompt.
 
 ## Geometry direction (current)
 1. Geometry now exposes ten active task ids:

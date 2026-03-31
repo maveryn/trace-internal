@@ -168,6 +168,7 @@ Implementation map for the contracts in `docs/core/BLUEPRINT.md`.
    - `trace/tasks/games/bingo/completed_line_count.py`
    - `trace/tasks/games/cards/hand_count.py`
    - `trace/tasks/games/dominoes/chain_count.py`
+   - `trace/tasks/games/nine_mens_morris/pieces_in_mill_count.py`
 ## 5) Architecture invariants
 1. Determinism from config + seeds + versions.
 2. `TrainInstance` stays lightweight; heavy replay metadata stays in sidecar trace.

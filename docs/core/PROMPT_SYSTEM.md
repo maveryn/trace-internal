@@ -133,6 +133,7 @@ Active bundles:
    - `prompts/games/cards/games_cards_v1.json`
    - `prompts/games/dominoes/games_dominoes_v1.json`
    - `prompts/games/bingo/games_bingo_v1.json`
+   - `prompts/games/nine_mens_morris/games_nine_mens_morris_v1.json`
 12. Physics:
    - `prompts/physics/mechanics/physics_mechanics_v1.json`
    - `prompts/physics/circuits/physics_circuits_v1.json`
@@ -217,6 +218,7 @@ Active task-to-bundle mapping:
    - `task_games_bingo_completed_line_count` -> `games_bingo_v1`
    - `task_games_cards_hand_count` -> `games_cards_v1`
    - `task_games_dominoes_chain_count` -> `games_dominoes_v1`
+   - `task_games_nine_mens_morris_pieces_in_mill_count` -> `games_nine_mens_morris_v1`
 19. Physics:
    - `task_physics_mechanics_force_diagram|task_physics_mechanics_lever_balance|task_physics_mechanics_spring_extension` -> `physics_mechanics_v1`
    - `task_physics_circuits_equivalent_resistance` -> `physics_circuits_v1`

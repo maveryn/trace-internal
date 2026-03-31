@@ -102,3 +102,4 @@ Current task docs:
 92. [task_games_bingo_completed_line_count.md](task_games_bingo_completed_line_count.md)
 93. [task_games_cards_hand_count.md](task_games_cards_hand_count.md)
 94. [task_games_dominoes_chain_count.md](task_games_dominoes_chain_count.md)
+95. [task_games_nine_mens_morris_pieces_in_mill_count.md](task_games_nine_mens_morris_pieces_in_mill_count.md)

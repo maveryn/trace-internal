@@ -49,3 +49,4 @@ Update this table after each review run.
 | task_games_bingo_completed_line_count | task_games_bingo_completed_line_count | alright_for_now | distribution pass (single-card `5 x 5` bingo boards with completed-row, completed-column, and completed-straight-line count variants) |
 | task_games_cards_hand_count | task_games_cards_hand_count | alright_for_now | distribution pass (single-row/two-row visible card hands with same-suit, higher-rank, exact-pair, and longest-run count variants) |
 | task_games_dominoes_chain_count | task_games_dominoes_chain_count | alright_for_now | distribution pass (top-chain plus loose-domino scenes with matching-end, higher-sum, target-sum, and double-count variants) |
+| task_games_nine_mens_morris_pieces_in_mill_count | task_games_nine_mens_morris_pieces_in_mill_count | alright_for_now | distribution pass (single-board Morris scenes with white / black / all pieces-in-mill counting and piece-level evidence over the counted witnesses) |

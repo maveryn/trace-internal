@@ -1,0 +1,580 @@
+{
+  "collection": {
+    "collected_variant_counts": {
+      "all_pieces_in_mill_count": 100,
+      "black_pieces_in_mill_count": 100,
+      "white_pieces_in_mill_count": 100
+    },
+    "expected_variants": [
+      "all_pieces_in_mill_count",
+      "black_pieces_in_mill_count",
+      "white_pieces_in_mill_count"
+    ],
+    "generated_variant_counts": {
+      "all_pieces_in_mill_count": 102,
+      "black_pieces_in_mill_count": 102,
+      "white_pieces_in_mill_count": 101
+    },
+    "generation_error_counts": {},
+    "target_count_per_variant": 100,
+    "total_generated": 305
+  },
+  "domain": "games",
+  "failed_variants": [],
+  "has_task_variants": true,
+  "incomplete_variants": [],
+  "mode": "per_variant",
+  "no_samples_collected": false,
+  "overall": {
+    "answer_type_counts": {
+      "integer": 300
+    },
+    "checks": {
+      "max_answer_frequency": {
+        "observed": 0.12333333333333334,
+        "pass": true,
+        "threshold": 0.25
+      },
+      "max_five_bin_frequency": {
+        "observed": 0.35,
+        "pass": null,
+        "status": "reported_not_gated_numeric_answers"
+      },
+      "min_unique_answers": {
+        "observed": 16,
+        "pass": true,
+        "threshold": 5
+      }
+    },
+    "five_bin_numeric": {
+      "bin_count": 5,
+      "bins": [
+        {
+          "bin_id": 0,
+          "count": 69,
+          "label": "[0, 3.6)"
+        },
+        {
+          "bin_id": 1,
+          "count": 105,
+          "label": "[3.6, 7.2)"
+        },
+        {
+          "bin_id": 2,
+          "count": 76,
+          "label": "[7.2, 10.8)"
+        },
+        {
+          "bin_id": 3,
+          "count": 24,
+          "label": "[10.8, 14.4)"
+        },
+        {
+          "bin_id": 4,
+          "count": 26,
+          "label": "[14.4, 18]"
+        }
+      ],
+      "max_bin_count": 105,
+      "max_bin_frequency": 0.35,
+      "range_max": 18.0,
+      "range_min": 0.0
+    },
+    "max_answer_count": 37,
+    "max_answer_frequency": 0.12333333333333334,
+    "pass": true,
+    "sample_count": 300,
+    "top_answers": [
+      {
+        "answer_label": "5",
+        "count": 37
+      },
+      {
+        "answer_label": "8",
+        "count": 36
+      },
+      {
+        "answer_label": "3",
+        "count": 35
+      },
+      {
+        "answer_label": "0",
+        "count": 34
+      },
+      {
+        "answer_label": "6",
+        "count": 34
+      },
+      {
+        "answer_label": "7",
+        "count": 34
+      },
+      {
+        "answer_label": "9",
+        "count": 34
+      },
+      {
+        "answer_label": "15",
+        "count": 7
+      },
+      {
+        "answer_label": "18",
+        "count": 7
+      },
+      {
+        "answer_label": "10",
+        "count": 6
+      },
+      {
+        "answer_label": "11",
+        "count": 6
+      },
+      {
+        "answer_label": "12",
+        "count": 6
+      },
+      {
+        "answer_label": "13",
+        "count": 6
+      },
+      {
+        "answer_label": "14",
+        "count": 6
+      },
+      {
+        "answer_label": "16",
+        "count": 6
+      },
+      {
+        "answer_label": "17",
+        "count": 6
+      }
+    ],
+    "unique_answers": 16
+  },
+  "pass": true,
+  "per_task_variant": {
+    "all_pieces_in_mill_count": {
+      "answer_type_counts": {
+        "integer": 100
+      },
+      "checks": {
+        "max_answer_frequency": {
+          "observed": 0.07,
+          "pass": true,
+          "threshold": 0.25
+        },
+        "max_five_bin_frequency": {
+          "observed": 0.26,
+          "pass": null,
+          "status": "reported_not_gated_numeric_answers"
+        },
+        "min_unique_answers": {
+          "observed": 16,
+          "pass": true,
+          "threshold": 5
+        }
+      },
+      "five_bin_numeric": {
+        "bin_count": 5,
+        "bins": [
+          {
+            "bin_id": 0,
+            "count": 12,
+            "label": "[0, 3.6)"
+          },
+          {
+            "bin_id": 1,
+            "count": 19,
+            "label": "[3.6, 7.2)"
+          },
+          {
+            "bin_id": 2,
+            "count": 19,
+            "label": "[7.2, 10.8)"
+          },
+          {
+            "bin_id": 3,
+            "count": 24,
+            "label": "[10.8, 14.4)"
+          },
+          {
+            "bin_id": 4,
+            "count": 26,
+            "label": "[14.4, 18]"
+          }
+        ],
+        "max_bin_count": 26,
+        "max_bin_frequency": 0.26,
+        "range_max": 18.0,
+        "range_min": 0.0
+      },
+      "max_answer_count": 7,
+      "max_answer_frequency": 0.07,
+      "pass": true,
+      "sample_count": 100,
+      "top_answers": [
+        {
+          "answer_label": "15",
+          "count": 7
+        },
+        {
+          "answer_label": "18",
+          "count": 7
+        },
+        {
+          "answer_label": "5",
+          "count": 7
+        },
+        {
+          "answer_label": "8",
+          "count": 7
+        },
+        {
+          "answer_label": "0",
+          "count": 6
+        },
+        {
+          "answer_label": "10",
+          "count": 6
+        },
+        {
+          "answer_label": "11",
+          "count": 6
+        },
+        {
+          "answer_label": "12",
+          "count": 6
+        },
+        {
+          "answer_label": "13",
+          "count": 6
+        },
+        {
+          "answer_label": "14",
+          "count": 6
+        },
+        {
+          "answer_label": "16",
+          "count": 6
+        },
+        {
+          "answer_label": "17",
+          "count": 6
+        },
+        {
+          "answer_label": "3",
+          "count": 6
+        },
+        {
+          "answer_label": "6",
+          "count": 6
+        },
+        {
+          "answer_label": "7",
+          "count": 6
+        },
+        {
+          "answer_label": "9",
+          "count": 6
+        }
+      ],
+      "unique_answers": 16
+    },
+    "black_pieces_in_mill_count": {
+      "answer_type_counts": {
+        "integer": 100
+      },
+      "checks": {
+        "max_answer_frequency": {
+          "observed": 0.15,
+          "pass": true,
+          "threshold": 0.25
+        },
+        "max_five_bin_frequency": {
+          "observed": 0.28,
+          "pass": null,
+          "status": "reported_not_gated_numeric_answers"
+        },
+        "min_unique_answers": {
+          "observed": 7,
+          "pass": true,
+          "threshold": 5
+        }
+      },
+      "five_bin_numeric": {
+        "bin_count": 5,
+        "bins": [
+          {
+            "bin_id": 0,
+            "count": 14,
+            "label": "[0, 1.8)"
+          },
+          {
+            "bin_id": 1,
+            "count": 15,
+            "label": "[1.8, 3.6)"
+          },
+          {
+            "bin_id": 2,
+            "count": 15,
+            "label": "[3.6, 5.4)"
+          },
+          {
+            "bin_id": 3,
+            "count": 28,
+            "label": "[5.4, 7.2)"
+          },
+          {
+            "bin_id": 4,
+            "count": 28,
+            "label": "[7.2, 9]"
+          }
+        ],
+        "max_bin_count": 28,
+        "max_bin_frequency": 0.28,
+        "range_max": 9.0,
+        "range_min": 0.0
+      },
+      "max_answer_count": 15,
+      "max_answer_frequency": 0.15,
+      "pass": true,
+      "sample_count": 100,
+      "top_answers": [
+        {
+          "answer_label": "3",
+          "count": 15
+        },
+        {
+          "answer_label": "5",
+          "count": 15
+        },
+        {
+          "answer_label": "0",
+          "count": 14
+        },
+        {
+          "answer_label": "6",
+          "count": 14
+        },
+        {
+          "answer_label": "7",
+          "count": 14
+        },
+        {
+          "answer_label": "8",
+          "count": 14
+        },
+        {
+          "answer_label": "9",
+          "count": 14
+        }
+      ],
+      "unique_answers": 7
+    },
+    "white_pieces_in_mill_count": {
+      "answer_type_counts": {
+        "integer": 100
+      },
+      "checks": {
+        "max_answer_frequency": {
+          "observed": 0.15,
+          "pass": true,
+          "threshold": 0.25
+        },
+        "max_five_bin_frequency": {
+          "observed": 0.29,
+          "pass": null,
+          "status": "reported_not_gated_numeric_answers"
+        },
+        "min_unique_answers": {
+          "observed": 7,
+          "pass": true,
+          "threshold": 5
+        }
+      },
+      "five_bin_numeric": {
+        "bin_count": 5,
+        "bins": [
+          {
+            "bin_id": 0,
+            "count": 14,
+            "label": "[0, 1.8)"
+          },
+          {
+            "bin_id": 1,
+            "count": 14,
+            "label": "[1.8, 3.6)"
+          },
+          {
+            "bin_id": 2,
+            "count": 15,
+            "label": "[3.6, 5.4)"
+          },
+          {
+            "bin_id": 3,
+            "count": 28,
+            "label": "[5.4, 7.2)"
+          },
+          {
+            "bin_id": 4,
+            "count": 29,
+            "label": "[7.2, 9]"
+          }
+        ],
+        "max_bin_count": 29,
+        "max_bin_frequency": 0.29,
+        "range_max": 9.0,
+        "range_min": 0.0
+      },
+      "max_answer_count": 15,
+      "max_answer_frequency": 0.15,
+      "pass": true,
+      "sample_count": 100,
+      "top_answers": [
+        {
+          "answer_label": "5",
+          "count": 15
+        },
+        {
+          "answer_label": "8",
+          "count": 15
+        },
+        {
+          "answer_label": "0",
+          "count": 14
+        },
+        {
+          "answer_label": "3",
+          "count": 14
+        },
+        {
+          "answer_label": "6",
+          "count": 14
+        },
+        {
+          "answer_label": "7",
+          "count": 14
+        },
+        {
+          "answer_label": "9",
+          "count": 14
+        }
+      ],
+      "unique_answers": 7
+    }
+  },
+  "sampling_axes": {
+    "query_variant": {
+      "expected_conflict": false,
+      "expected_probabilities": {
+        "all_pieces_in_mill_count": 0.3333333333333333,
+        "black_pieces_in_mill_count": 0.3333333333333333,
+        "white_pieces_in_mill_count": 0.3333333333333333
+      },
+      "expected_source": "query_params",
+      "max_observed_frequency": 0.38,
+      "observed_counts": {
+        "all_pieces_in_mill_count": 38,
+        "black_pieces_in_mill_count": 35,
+        "white_pieces_in_mill_count": 27
+      },
+      "sample_count": 100
+    },
+    "scene_variant": {
+      "expected_conflict": false,
+      "expected_probabilities": {
+        "single_board": 1.0
+      },
+      "expected_source": "query_params",
+      "max_observed_frequency": 1.0,
+      "observed_counts": {
+        "single_board": 100
+      },
+      "sample_count": 100
+    },
+    "style_variant": {
+      "expected_conflict": false,
+      "expected_probabilities": {
+        "classic": 0.3333333333333333,
+        "outlined": 0.3333333333333333,
+        "soft": 0.3333333333333333
+      },
+      "expected_source": "query_params",
+      "max_observed_frequency": 0.37,
+      "observed_counts": {
+        "classic": 33,
+        "outlined": 37,
+        "soft": 30
+      },
+      "sample_count": 100
+    },
+    "target_answer": {
+      "expected_conflict": true,
+      "expected_probabilities": {
+        "0": 0.14285714285714285,
+        "3": 0.14285714285714285,
+        "5": 0.14285714285714285,
+        "6": 0.14285714285714285,
+        "7": 0.14285714285714285,
+        "8": 0.14285714285714285,
+        "9": 0.14285714285714285
+      },
+      "expected_source": "query_params",
+      "max_observed_frequency": 0.15,
+      "observed_counts": {
+        "0": 8,
+        "10": 2,
+        "11": 3,
+        "12": 2,
+        "13": 4,
+        "14": 2,
+        "15": 3,
+        "16": 1,
+        "17": 3,
+        "18": 3,
+        "3": 9,
+        "5": 15,
+        "6": 7,
+        "7": 14,
+        "8": 11,
+        "9": 13
+      },
+      "sample_count": 100
+    },
+    "task_variant": {
+      "expected_conflict": false,
+      "expected_probabilities": {
+        "all_pieces_in_mill_count": 0.3333333333333333,
+        "black_pieces_in_mill_count": 0.3333333333333333,
+        "white_pieces_in_mill_count": 0.3333333333333333
+      },
+      "expected_source": "query_params",
+      "max_observed_frequency": 0.38,
+      "observed_counts": {
+        "all_pieces_in_mill_count": 38,
+        "black_pieces_in_mill_count": 35,
+        "white_pieces_in_mill_count": 27
+      },
+      "sample_count": 100
+    }
+  },
+  "task_group": "nine_mens_morris",
+  "task_id": "task_games_nine_mens_morris_pieces_in_mill_count",
+  "task_variant_distribution": {
+    "expected_conflict": false,
+    "expected_probabilities": {
+      "all_pieces_in_mill_count": 0.3333333333333333,
+      "black_pieces_in_mill_count": 0.3333333333333333,
+      "white_pieces_in_mill_count": 0.3333333333333333
+    },
+    "expected_source": "query_params",
+    "has_variants": true,
+    "observed_counts": {
+      "all_pieces_in_mill_count": 38,
+      "black_pieces_in_mill_count": 35,
+      "white_pieces_in_mill_count": 27
+    },
+    "status": "reported"
+  }
+}

@@ -64,7 +64,7 @@ The ablation wrappers keep these fixed by default:
 
 1. model: `Qwen/Qwen2.5-VL-3B-Instruct`
 2. GPUs: `4`
-3. `max_steps=500`
+3. `max_steps=250`
 4. `val_freq=20`
 5. `save_freq=20`
 6. same rollout/data/optimizer settings via `trace-scripts/config_trace.yaml`

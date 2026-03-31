@@ -4,7 +4,7 @@ set -euo pipefail
 set -x
 
 export PYTHONUNBUFFERED=1
-export WANDB_MODE="${WANDB_MODE:-offline}"
+export WANDB_MODE="${WANDB_MODE:-online}"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 RLVR_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"

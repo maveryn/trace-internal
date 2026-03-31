@@ -17,7 +17,7 @@ Use `qwen2_5-3b-vl-trace-4gpu.sh` to train against the exported TRACE parquet wi
 - `NUM_GPUS=4`
 - `MAX_STEPS=10`
 - `GPU_MEMORY_UTILIZATION=0.8`
-- `WANDB_MODE=offline`
+- `WANDB_MODE=online`
 
 The script runs a preflight check before launching training. It verifies:
 
@@ -31,6 +31,8 @@ If `TRAIN_FILE` points to a local parquet path and that file is missing, the lau
 - `${HF_TRAIN_REPO}@${HF_TRAIN_SPLIT}`
 
 For a private HF dataset repo, export `HF_TOKEN` or `HUGGINGFACE_TOKEN` before launching.
+
+If you want local-only logging for a run, override with `WANDB_MODE=offline`.
 
 Example:
 

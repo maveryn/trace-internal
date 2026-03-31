@@ -11,6 +11,7 @@ Date: 2026-03-30
 6. Deterministic background/noise visual variation helpers.
 7. Domain + task-group default config loading with section-level `shared` + `task_overrides` composition.
 8. Repo docs are now organized into `docs/core`, `docs/workflows`, `docs/domains`, `docs/project`, and `docs/tasks`, with repo-local workflow/domain skills under `skills/` acting as thin execution overlays on top of those source-of-truth docs.
+9. Local RLVR support now lives inside `rlvr/`, and TRACE can export built datasets directly into RLVR-ready JSONL/parquet rows via `scripts/export_trace_to_rlvr.py`.
 9. Shared geometry single-object scene helpers (`graph_paper`, `graph_rendering`, `single_object_scene`, `angle_geometry`, `polygon_geometry`).
 10. Geometry value-style coverage is now intentionally consolidated into five active task ids — `task_geometry_measurement_value`, `task_geometry_comparison_value`, `task_geometry_counting_value`, `task_geometry_analytical_2d_value`, and `task_geometry_analytical_3d_value` — instead of keeping one task id per quantity/predicate.
 11. Geometry graph-paper backgrounds now render center-origin cues by default: axis arrows + signed integer scale labels across the full visible axis range (no origin text label).

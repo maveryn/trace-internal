@@ -20,6 +20,27 @@ Set `data.prism_mode` to choose dataset-column behavior:
 - `trace`: uses TRACE `prompt` + `answer_gt`, preserves `evidence_gt` and `reward_contract`, and resolves TRACE image records from `images[*].path`
 - `none`: non-Prism behavior
 
+### Exporting TRACE builds for RLVR
+
+TRACE build roots are not used directly as RLVR training directories. From the repo root, export them first:
+
+```bash
+PYTHONPATH=. python scripts/export_trace_to_rlvr.py \
+  --source builds/<trace_dataset> \
+  --output rlvr/mydata/<trace_dataset>.parquet \
+  --format parquet
+```
+
+Use `rlvr/examples/config_trace.yaml` as the starter config for exported TRACE data.
+
+Recommended TRACE settings:
+
+- `data.prism_mode=trace`
+- `data.format_prompt=null`
+- `data.train_files=<exported jsonl/parquet path>`
+
+The exporter defaults to TRACE `answer_and_evidence` prompts so evidence reward remains trainable.
+
 ## Custom Rewards
 
 Implemented in `examples/reward_function/reward_tesserae.py`.

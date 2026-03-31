@@ -39,10 +39,11 @@ Implementation map for the contracts in `docs/core/BLUEPRINT.md`.
 7. `trace/core/validation.py` — pre-finalize dataset validation.
 8. `trace/core/builder.py` — build orchestration.
 9. `trace/core/reward_contracts.py` — public RLVR reward-contract schema + resolver.
-10. `trace/core/strict_repro.py` — strict reproducibility comparisons.
-11. `trace/core/task_group_config.py` — merged domain/task-group defaults and section resolution (`shared` + `task_overrides`).
-12. `trace/core/sampling.py` — shared sampling primitives.
-13. `trace/core/json_io.py` — deterministic JSON writing.
+10. `trace/core/rlvr_export.py` — TRACE-to-RLVR row export helpers.
+11. `trace/core/strict_repro.py` — strict reproducibility comparisons.
+12. `trace/core/task_group_config.py` — merged domain/task-group defaults and section resolution (`shared` + `task_overrides`).
+13. `trace/core/sampling.py` — shared sampling primitives.
+14. `trace/core/json_io.py` — deterministic JSON writing.
 
 ### Prompt + visual
 1. `trace/core/prompts/assets.py` — bundle loading/cache.

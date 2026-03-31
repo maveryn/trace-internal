@@ -1,0 +1,120 @@
+data:
+  train_files: rlvr/mydata/trace_train.parquet
+  prism_mode: trace
+  curriculum_mode: none
+  curriculum_backend: prebuilt
+  curriculum_bucket_order_path: null
+  curriculum_mu_init_path: null
+  curriculum_alpha0: 0.995
+  curriculum_eps_floor: null
+  curriculum_beta: 2.0
+  curriculum_log_interval: 10
+  val_files: []
+  prompt_key: prompt
+  answer_key: answer_gt
+  image_key: images
+  video_key: videos
+  image_dir: null
+  video_fps: 2.0
+  max_prompt_length: 1024
+  max_response_length: 1024
+  rollout_batch_size: 128
+  mini_rollout_batch_size: null
+  val_batch_size: 256
+  format_prompt: null
+  format_prompt_variant: boxed_only
+  override_chat_template: null
+  shuffle: true
+  seed: 1
+  min_pixels: 262144
+  max_pixels: 4194304
+  filter_overlong_prompts: true
+  log_dataset_download_status: true
+
+algorithm:
+  adv_estimator: grpo
+  disable_kl: false
+  use_kl_loss: true
+  kl_penalty: low_var_kl
+  kl_coef: 1.0e-2
+  online_filtering: false
+  filter_key: overall
+  filter_low: 0.01
+  filter_high: 0.99
+
+worker:
+  actor:
+    global_batch_size: 128
+    micro_batch_size_per_device_for_update: 16
+    micro_batch_size_per_device_for_experience: 32
+    max_grad_norm: 1.0
+    padding_free: true
+    dynamic_batching: true
+    ulysses_size: 1
+    model:
+      model_path: Qwen/Qwen2.5-7B-Instruct
+      enable_gradient_checkpointing: true
+      trust_remote_code: false
+      freeze_vision_tower: false
+    optim:
+      lr: 1.0e-6
+      weight_decay: 1.0e-2
+      strategy: adamw_bf16
+      lr_warmup_ratio: 0.0
+    fsdp:
+      enable_full_shard: true
+      enable_cpu_offload: false
+      enable_rank0_init: true
+      torch_dtype: bf16
+    offload:
+      offload_params: false
+      offload_optimizer: false
+
+  rollout:
+    n: 8
+    temperature: 1.0
+    top_p: 1.0
+    limit_images: 1
+    gpu_memory_utilization: 0.9
+    enforce_eager: false
+    enable_chunked_prefill: false
+    tensor_parallel_size: 1
+    disable_tqdm: false
+    val_override_config:
+      temperature: 0.0
+      top_p: 1.0
+      n: 1
+
+  ref:
+    fsdp:
+      enable_full_shard: true
+      enable_cpu_offload: false
+      enable_rank0_init: true
+    offload:
+      offload_params: false
+
+  reward:
+    reward_type: batch
+    reward_function: ./examples/reward_function/reward_tesserae.py:compute_score
+    reward_function_kwargs:
+      list_reward_mode: exact
+
+trainer:
+  total_epochs: 10
+  max_steps: 500
+  project_name: trace_rlvr
+  experiment_name: qwen2_5_7b_trace
+  logger: ["console", "wandb"]
+  nnodes: 1
+  n_gpus_per_node: 1
+  max_try_make_batch: 20
+  val_freq: 10
+  val_before_train: true
+  val_only: false
+  val_generations_to_log: 3
+  save_freq: 20
+  save_limit: 1
+  save_model_only: false
+  save_checkpoint_path: null
+  load_checkpoint_path: null
+  find_last_checkpoint: true

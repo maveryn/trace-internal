@@ -13,6 +13,7 @@ Paired repo-local skills:
 - `TASK_AUTHORING.md` — task creation checklist and contract guidance.
 - `SHARED_UTILITIES.md` — helper placement and anti-duplication rules.
 - `BUILD_VALIDATION.md` — build/test/review workflow.
+- `RLVR_EXPORT.md` — TRACE dataset export workflow for the local RLVR stack.
 - `DOMAIN_AUDIT_REVIEW.md` — domain-by-domain sanitation and audit workflow.
 - `VALIDATION_ERROR_CODES.md` — validation error taxonomy.
 - `CODE_DOCUMENTATION.md` — documentation standards and update triggers.

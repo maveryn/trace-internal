@@ -18,11 +18,11 @@
     "format": "png",
     "path": "documents/task_documents_layout_section_membership_label/images/section_of_field_label/0009.png"
   },
-  "instance_seed": 2210674104380342,
-  "prompt": "You are given a receipt-style document with visible section headers and labeled totals rows. Use the visible section headers and labeled fields to answer: Which section contains the field labeled Tax? Return the exact section title shown. Respond with the exact section title from the document.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly one bounding box for the matching section header.\nAnswer requirement: set \"answer\" to the exact section title shown in the document.\nExample JSON:\n{\"evidence\":[[132,182,260,214]],\"answer\":\"Billing Summary\"}",
+  "instance_seed": 6248633109884819,
+  "prompt": "You are given a receipt-style document with visible section headers and labeled totals rows. Locate the relevant section before answering: Which section contains the field labeled Items Total? Return the exact section title shown. Answer using the exact section heading.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing exactly one bounding box for the matching section header.\nAnswer rule: set \"answer\" to the exact section title shown in the document.\nExample JSON:\n{\"evidence\":[[132,182,260,214]],\"answer\":\"Billing Summary\"}",
   "prompt_variants": {
-    "answer_and_evidence": "You are given a receipt-style document with visible section headers and labeled totals rows. Use the visible section headers and labeled fields to answer: Which section contains the field labeled Tax? Return the exact section title shown. Respond with the exact section title from the document.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly one bounding box for the matching section header.\nAnswer requirement: set \"answer\" to the exact section title shown in the document.\nExample JSON:\n{\"evidence\":[[132,182,260,214]],\"answer\":\"Billing Summary\"}",
-    "answer_only": "You are given a receipt-style document with visible section headers and labeled totals rows. Use the visible section headers and labeled fields to answer: Which section contains the field labeled Tax? Return the exact section title shown. Respond with the exact section title from the document.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the exact section title shown in the document.\nExample JSON:\n{\"answer\":\"Billing Summary\"}"
+    "answer_and_evidence": "You are given a receipt-style document with visible section headers and labeled totals rows. Locate the relevant section before answering: Which section contains the field labeled Items Total? Return the exact section title shown. Answer using the exact section heading.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing exactly one bounding box for the matching section header.\nAnswer rule: set \"answer\" to the exact section title shown in the document.\nExample JSON:\n{\"evidence\":[[132,182,260,214]],\"answer\":\"Billing Summary\"}",
+    "answer_only": "You are given a receipt-style document with visible section headers and labeled totals rows. Locate the relevant section before answering: Which section contains the field labeled Items Total? Return the exact section title shown. Answer using the exact section heading.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the exact section title shown in the document.\nExample JSON:\n{\"answer\":\"Billing Summary\"}"
   },
   "task": "task_documents_layout_section_membership_label",
   "task_variant": "section_of_field_label",
@@ -64,7 +64,7 @@
           "comparison_kind": "other",
           "field_id": "store_name",
           "field_label": "Store Name",
-          "field_value": "Aster Office",
+          "field_value": "Cedar Office",
           "label_bbox_id": "store_name:label",
           "section_id": "store_details",
           "section_label": "Store Details",
@@ -74,7 +74,7 @@
           "comparison_kind": "other",
           "field_id": "receipt_number",
           "field_label": "Receipt No.",
-          "field_value": "R-39300",
+          "field_value": "R-97509",
           "label_bbox_id": "receipt_number:label",
           "section_id": "store_details",
           "section_label": "Store Details",
@@ -84,7 +84,7 @@
           "comparison_kind": "other",
           "field_id": "cashier_name",
           "field_label": "Cashier",
-          "field_value": "Maya Carter",
+          "field_value": "Nora Foster",
           "label_bbox_id": "cashier_name:label",
           "section_id": "store_details",
           "section_label": "Store Details",
@@ -104,7 +104,7 @@
           "comparison_kind": "other",
           "field_id": "member_id",
           "field_label": "Member ID",
-          "field_value": "M-8861",
+          "field_value": "M-5104",
           "label_bbox_id": "member_id:label",
           "section_id": "purchase_info",
           "section_label": "Purchase Info",
@@ -114,7 +114,7 @@
           "comparison_kind": "other",
           "field_id": "register_id",
           "field_label": "Register ID",
-          "field_value": "REG-989",
+          "field_value": "REG-478",
           "label_bbox_id": "register_id:label",
           "section_id": "purchase_info",
           "section_label": "Purchase Info",
@@ -124,7 +124,7 @@
           "comparison_kind": "amount",
           "field_id": "items_total",
           "field_label": "Items Total",
-          "field_value": "$53.88",
+          "field_value": "$93.91",
           "label_bbox_id": "items_total:label",
           "section_id": "totals",
           "section_label": "Totals",
@@ -134,7 +134,7 @@
           "comparison_kind": "amount",
           "field_id": "tax_amount",
           "field_label": "Tax",
-          "field_value": "$8.16",
+          "field_value": "$3.19",
           "label_bbox_id": "tax_amount:label",
           "section_id": "totals",
           "section_label": "Totals",
@@ -144,21 +144,21 @@
           "comparison_kind": "amount",
           "field_id": "discount_amount",
           "field_label": "Discount",
-          "field_value": "$8.06",
+          "field_value": "$3.60",
           "label_bbox_id": "discount_amount:label",
           "section_id": "totals",
           "section_label": "Totals",
           "value_bbox_id": "discount_amount:value"
         }
       ],
-      "query_field_id": "tax_amount",
-      "query_field_label": "Tax",
-      "query_field_value": "$8.16",
+      "query_field_id": "items_total",
+      "query_field_label": "Items Total",
+      "query_field_value": "$93.91",
       "query_section_id": "totals",
       "query_section_label": "Totals",
       "query_section_label_bbox_id": "totals",
       "question_format": "document_section_membership_label",
-      "question_text": "Which section contains the field labeled Tax? Return the exact section title shown.",
+      "question_text": "Which section contains the field labeled Items Total? Return the exact section title shown.",
       "scene_title": "Receipt",
       "scene_variant": "receipt_sheet",
       "section_specs": [
@@ -242,7 +242,7 @@
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 2,
+        "answer_or_evidence_variant_index": 4,
         "prompt_bundle_id": "documents_layout_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -253,14 +253,14 @@
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
           "object_description": "a receipt-style document with visible section headers and labeled totals rows",
-          "question_text": "Which section contains the field labeled Tax? Return the exact section title shown."
+          "question_text": "Which section contains the field labeled Items Total? Return the exact section title shown."
         },
         "task_family_key": "structured_document_sections",
         "task_family_variant_index": 2,
         "task_key": "section_membership_query",
-        "task_variant_index": 3,
+        "task_variant_index": 4,
         "task_variant_key": "section_of_field_label",
-        "task_variant_template_index": 2,
+        "task_variant_template_index": 4,
         "template_paths": [
           "documents/layout/documents_layout_v1.json"
         ],
@@ -276,7 +276,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 2,
+            "answer_or_evidence_variant_index": 4,
             "prompt_bundle_id": "documents_layout_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -287,14 +287,14 @@
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a receipt-style document with visible section headers and labeled totals rows",
-              "question_text": "Which section contains the field labeled Tax? Return the exact section title shown."
+              "question_text": "Which section contains the field labeled Items Total? Return the exact section title shown."
             },
             "task_family_key": "structured_document_sections",
             "task_family_variant_index": 2,
             "task_key": "section_membership_query",
-            "task_variant_index": 3,
+            "task_variant_index": 4,
             "task_variant_key": "section_of_field_label",
-            "task_variant_template_index": 2,
+            "task_variant_template_index": 4,
             "template_paths": [
               "documents/layout/documents_layout_v1.json"
             ],
@@ -305,12 +305,12 @@
               "task_variant:section_of_field_label": 5
             }
           },
-          "prompt": "You are given a receipt-style document with visible section headers and labeled totals rows. Use the visible section headers and labeled fields to answer: Which section contains the field labeled Tax? Return the exact section title shown. Respond with the exact section title from the document.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly one bounding box for the matching section header.\nAnswer requirement: set \"answer\" to the exact section title shown in the document.\nExample JSON:\n{\"evidence\":[[132,182,260,214]],\"answer\":\"Billing Summary\"}"
+          "prompt": "You are given a receipt-style document with visible section headers and labeled totals rows. Locate the relevant section before answering: Which section contains the field labeled Items Total? Return the exact section title shown. Answer using the exact section heading.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing exactly one bounding box for the matching section header.\nAnswer rule: set \"answer\" to the exact section title shown in the document.\nExample JSON:\n{\"evidence\":[[132,182,260,214]],\"answer\":\"Billing Summary\"}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 2,
+            "answer_or_evidence_variant_index": 0,
             "prompt_bundle_id": "documents_layout_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -321,14 +321,14 @@
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a receipt-style document with visible section headers and labeled totals rows",
-              "question_text": "Which section contains the field labeled Tax? Return the exact section title shown."
+              "question_text": "Which section contains the field labeled Items Total? Return the exact section title shown."
             },
             "task_family_key": "structured_document_sections",
             "task_family_variant_index": 2,
             "task_key": "section_membership_query",
-            "task_variant_index": 3,
+            "task_variant_index": 4,
             "task_variant_key": "section_of_field_label",
-            "task_variant_template_index": 2,
+            "task_variant_template_index": 4,
             "template_paths": [
               "documents/layout/documents_layout_v1.json"
             ],
@@ -339,7 +339,7 @@
               "task_variant:section_of_field_label": 5
             }
           },
-          "prompt": "You are given a receipt-style document with visible section headers and labeled totals rows. Use the visible section headers and labeled fields to answer: Which section contains the field labeled Tax? Return the exact section title shown. Respond with the exact section title from the document.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the exact section title shown in the document.\nExample JSON:\n{\"answer\":\"Billing Summary\"}"
+          "prompt": "You are given a receipt-style document with visible section headers and labeled totals rows. Locate the relevant section before answering: Which section contains the field labeled Items Total? Return the exact section title shown. Answer using the exact section heading.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the exact section title shown in the document.\nExample JSON:\n{\"answer\":\"Billing Summary\"}"
         }
       },
       "task_variant": "section_of_field_label",
@@ -460,10 +460,10 @@
       },
       "field_value_bboxes_px": {
         "cashier_name:value": [
-          689.0,
-          348.0,
+          698.0,
+          351.0,
           864.0,
-          376.0
+          373.0
         ],
         "discount_amount:value": [
           781.0,
@@ -502,7 +502,7 @@
           583.0
         ],
         "store_name:value": [
-          697.0,
+          687.0,
           210.5,
           864.0,
           233.5
@@ -570,7 +570,7 @@
     "render_spec": {
       "canvas_height": 920,
       "canvas_width": 1280,
-      "geometry_seed": 2210674104380342,
+      "geometry_seed": 6248633109884819,
       "page_shadow_offset_px": 14,
       "receipt_page_height_px": 760,
       "receipt_page_width_px": 520,
@@ -682,7 +682,7 @@
         {
           "bbox_id": "store_name:value",
           "bbox_px": [
-            697.0,
+            687.0,
             210.5,
             864.0,
             233.5
@@ -690,7 +690,7 @@
           "entity_id": "store_name:value",
           "entity_type": "document_field_value",
           "field_id": "store_name",
-          "text": "Aster Office"
+          "text": "Cedar Office"
         },
         {
           "bbox_id": "receipt_number",
@@ -728,7 +728,7 @@
           "entity_id": "receipt_number:value",
           "entity_type": "document_field_value",
           "field_id": "receipt_number",
-          "text": "R-39300"
+          "text": "R-97509"
         },
         {
           "bbox_id": "cashier_name",
@@ -758,15 +758,15 @@
         {
           "bbox_id": "cashier_name:value",
           "bbox_px": [
-            689.0,
-            348.0,
+            698.0,
+            351.0,
             864.0,
-            376.0
+            373.0
           ],
           "entity_id": "cashier_name:value",
           "entity_type": "document_field_value",
           "field_id": "cashier_name",
-          "text": "Maya Carter"
+          "text": "Nora Foster"
         },
         {
           "bbox_id": "purchase_date",
@@ -842,7 +842,7 @@
           "entity_id": "member_id:value",
           "entity_type": "document_field_value",
           "field_id": "member_id",
-          "text": "M-8861"
+          "text": "M-5104"
         },
         {
           "bbox_id": "register_id",
@@ -880,7 +880,7 @@
           "entity_id": "register_id:value",
           "entity_type": "document_field_value",
           "field_id": "register_id",
-          "text": "REG-989"
+          "text": "REG-478"
         },
         {
           "bbox_id": "items_total",
@@ -918,7 +918,7 @@
           "entity_id": "items_total:value",
           "entity_type": "document_field_value",
           "field_id": "items_total",
-          "text": "$53.88"
+          "text": "$93.91"
         },
         {
           "bbox_id": "tax_amount",
@@ -956,7 +956,7 @@
           "entity_id": "tax_amount:value",
           "entity_type": "document_field_value",
           "field_id": "tax_amount",
-          "text": "$8.16"
+          "text": "$3.19"
         },
         {
           "bbox_id": "discount_amount",
@@ -994,7 +994,7 @@
           "entity_id": "discount_amount:value",
           "entity_type": "document_field_value",
           "field_id": "discount_amount",
-          "text": "$8.06"
+          "text": "$3.60"
         },
         {
           "bbox_id": "store_details:label",
@@ -1049,7 +1049,7 @@
       "bbox_id_sequence": [
         "totals"
       ],
-      "field_id": "tax_amount"
+      "field_id": "items_total"
     }
   },
   "versions": {

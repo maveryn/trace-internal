@@ -1,37 +1,37 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 15
+    "value": 0
   },
   "evidence_gt": {
     "type": "integer_list",
     "value": [
-      17,
-      2
+      19,
+      19
     ]
   },
   "image": {
     "format": "png",
     "path": "charts/task_charts_readout_subset_value/images/difference_two_abs/0011.png"
   },
-  "instance_seed": 7404451018812163,
-  "prompt": "Use the labeled chart in the image. It shows a labeled line chart with visible point markers. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Read the requested values directly from the chart and answer the question. What absolute difference do you get from the values of labels C and H?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question.\nAnswer format: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[14,9],\"answer\":5}",
+  "instance_seed": 2575906865891284,
+  "prompt": "Work from the labeled chart shown in the image: a labeled radar chart with one spoke per label. Each label marks one plotted point on the radar polygon, and the relevant values are the printed values near those points. Use the chart values for the specified labels and answer the question. Find the absolute value of the difference between labels V and B.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question.\nAnswer format: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[14,9],\"answer\":5}",
   "prompt_variants": {
-    "answer_and_evidence": "Use the labeled chart in the image. It shows a labeled line chart with visible point markers. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Read the requested values directly from the chart and answer the question. What absolute difference do you get from the values of labels C and H?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question.\nAnswer format: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[14,9],\"answer\":5}",
-    "answer_only": "Use the labeled chart in the image. It shows a labeled line chart with visible point markers. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Read the requested values directly from the chart and answer the question. What absolute difference do you get from the values of labels C and H?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":5}"
+    "answer_and_evidence": "Work from the labeled chart shown in the image: a labeled radar chart with one spoke per label. Each label marks one plotted point on the radar polygon, and the relevant values are the printed values near those points. Use the chart values for the specified labels and answer the question. Find the absolute value of the difference between labels V and B.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question.\nAnswer format: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[14,9],\"answer\":5}",
+    "answer_only": "Work from the labeled chart shown in the image: a labeled radar chart with one spoke per label. Each label marks one plotted point on the radar polygon, and the relevant values are the printed values near those points. Use the chart values for the specified labels and answer the question. Find the absolute value of the difference between labels V and B.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":5}"
   },
   "task": "task_charts_readout_subset_value",
   "task_variant": "difference_two_abs",
   "trace_payload": {
     "execution_trace": {
-      "answer_value": 15,
+      "answer_value": 0,
       "labels": [
-        "Z",
-        "P",
-        "S",
+        "B",
+        "F",
+        "Q",
+        "R",
         "V",
-        "C",
-        "H"
+        "G"
       ],
       "mark_color_distance_space": "lab",
       "mark_color_min_distance": 40.0,
@@ -39,28 +39,28 @@
       "mark_count": 6,
       "mark_count_range": [
         5,
-        10
+        7
       ],
       "mark_fill_rgb": [
-        78,
-        189,
-        71
+        131,
+        36,
+        188
       ],
       "mark_outline_rgb": [
-        43,
-        104,
-        39
+        72,
+        20,
+        103
       ],
       "query_labels": [
-        "C",
-        "H"
+        "V",
+        "B"
       ],
       "query_values": [
-        17,
-        2
+        19,
+        19
       ],
       "question_format": "numeric_open",
-      "scene_variant": "line",
+      "scene_variant": "radar",
       "scene_variant_probabilities": {
         "area": 0.1,
         "bar": 0.1,
@@ -73,75 +73,75 @@
         "radar": 0.1,
         "scatter": 0.1
       },
-      "target_answer": 15,
+      "target_answer": 0,
       "target_answer_range": [
         0,
         19
       ],
       "task_variant": "difference_two_abs",
       "task_variant_probabilities": {
-        "difference_two_abs": 0.2,
-        "max_two": 0.2,
-        "mean_two": 0.2,
-        "min_two": 0.2,
-        "sum_two": 0.2
+        "difference_two_abs": 1.0,
+        "max_two": 0.0,
+        "mean_two": 0.0,
+        "min_two": 0.0,
+        "sum_two": 0.0
       },
       "value_max": 20,
       "value_min": 1,
       "values": [
-        10,
-        4,
-        9,
-        16,
-        17,
-        2
+        19,
+        20,
+        1,
+        11,
+        19,
+        20
       ],
       "values_by_label": {
-        "C": 17,
-        "H": 2,
-        "P": 4,
-        "S": 9,
-        "V": 16,
-        "Z": 10
+        "B": 19,
+        "F": 20,
+        "G": 20,
+        "Q": 1,
+        "R": 11,
+        "V": 19
       }
     },
     "projected_evidence": {
       "bbox_set": [
         [
-          580.5,
-          61.778,
-          596.5,
-          77.778
+          289.633,
+          340.381,
+          305.633,
+          356.381
         ],
         [
-          690.833,
-          448.444,
-          706.833,
-          464.444
+          415.0,
+          123.238,
+          431.0,
+          139.238
         ]
       ],
       "integer_list": [
-        17,
-        2
+        19,
+        19
       ],
       "pixel_point_map": {
-        "C": [
-          588.5,
-          69.778
+        "B": [
+          423.0,
+          131.238
         ],
-        "H": [
-          698.833,
-          456.444
+        "V": [
+          297.633,
+          348.381
         ]
       },
       "pixel_point_set": [
         [
-          588.5,
-          69.778
+          297.633,
+          348.381
         ],
         [
-          698.833,
-          456.444
+          423.0,
+          131.238
         ]
       ]
     },
@@ -149,10 +149,10 @@
       "params": {
         "mark_count": 6,
         "query_labels": [
-          "C",
-          "H"
+          "V",
+          "B"
         ],
-        "scene_variant": "line",
+        "scene_variant": "radar",
         "scene_variant_probabilities": {
           "area": 0.1,
           "bar": 0.1,
@@ -165,18 +165,18 @@
           "radar": 0.1,
           "scatter": 0.1
         },
-        "target_answer": 15,
+        "target_answer": 0,
         "target_answer_range": [
           0,
           19
         ],
         "task_variant": "difference_two_abs",
         "task_variant_probabilities": {
-          "difference_two_abs": 0.2,
-          "max_two": 0.2,
-          "mean_two": 0.2,
-          "min_two": 0.2,
-          "sum_two": 0.2
+          "difference_two_abs": 1.0,
+          "max_two": 0.0,
+          "mean_two": 0.0,
+          "min_two": 0.0,
+          "sum_two": 0.0
         }
       },
       "prompt_variant": {
@@ -191,16 +191,16 @@
           "json_example_answer_only": "{\"answer\":5}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "object_description": "a labeled line chart with visible point markers. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis",
-          "query_label_a": "C",
-          "query_label_b": "H"
+          "object_description": "a labeled radar chart with one spoke per label. Each label marks one plotted point on the radar polygon, and the relevant values are the printed values near those points",
+          "query_label_a": "V",
+          "query_label_b": "B"
         },
         "task_family_key": "labeled_chart_readout",
-        "task_family_variant_index": 1,
+        "task_family_variant_index": 2,
         "task_key": "subset_value_query",
-        "task_variant_index": 0,
+        "task_variant_index": 1,
         "task_variant_key": "difference_two_abs",
-        "task_variant_template_index": 4,
+        "task_variant_template_index": 2,
         "template_paths": [
           "charts/readout/charts_readout_v1.json"
         ],
@@ -226,16 +226,16 @@
               "json_example_answer_only": "{\"answer\":5}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a labeled line chart with visible point markers. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis",
-              "query_label_a": "C",
-              "query_label_b": "H"
+              "object_description": "a labeled radar chart with one spoke per label. Each label marks one plotted point on the radar polygon, and the relevant values are the printed values near those points",
+              "query_label_a": "V",
+              "query_label_b": "B"
             },
             "task_family_key": "labeled_chart_readout",
-            "task_family_variant_index": 1,
+            "task_family_variant_index": 2,
             "task_key": "subset_value_query",
-            "task_variant_index": 0,
+            "task_variant_index": 1,
             "task_variant_key": "difference_two_abs",
-            "task_variant_template_index": 4,
+            "task_variant_template_index": 2,
             "template_paths": [
               "charts/readout/charts_readout_v1.json"
             ],
@@ -246,12 +246,12 @@
               "task_variant:difference_two_abs": 5
             }
           },
-          "prompt": "Use the labeled chart in the image. It shows a labeled line chart with visible point markers. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Read the requested values directly from the chart and answer the question. What absolute difference do you get from the values of labels C and H?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question.\nAnswer format: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[14,9],\"answer\":5}"
+          "prompt": "Work from the labeled chart shown in the image: a labeled radar chart with one spoke per label. Each label marks one plotted point on the radar polygon, and the relevant values are the printed values near those points. Use the chart values for the specified labels and answer the question. Find the absolute value of the difference between labels V and B.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question.\nAnswer format: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[14,9],\"answer\":5}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 0,
+            "answer_or_evidence_variant_index": 2,
             "prompt_bundle_id": "charts_readout_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -261,16 +261,16 @@
               "json_example_answer_only": "{\"answer\":5}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a labeled line chart with visible point markers. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis",
-              "query_label_a": "C",
-              "query_label_b": "H"
+              "object_description": "a labeled radar chart with one spoke per label. Each label marks one plotted point on the radar polygon, and the relevant values are the printed values near those points",
+              "query_label_a": "V",
+              "query_label_b": "B"
             },
             "task_family_key": "labeled_chart_readout",
-            "task_family_variant_index": 1,
+            "task_family_variant_index": 2,
             "task_key": "subset_value_query",
-            "task_variant_index": 0,
+            "task_variant_index": 1,
             "task_variant_key": "difference_two_abs",
-            "task_variant_template_index": 4,
+            "task_variant_template_index": 2,
             "template_paths": [
               "charts/readout/charts_readout_v1.json"
             ],
@@ -281,7 +281,7 @@
               "task_variant:difference_two_abs": 5
             }
           },
-          "prompt": "Use the labeled chart in the image. It shows a labeled line chart with visible point markers. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Read the requested values directly from the chart and answer the question. What absolute difference do you get from the values of labels C and H?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":5}"
+          "prompt": "Work from the labeled chart shown in the image: a labeled radar chart with one spoke per label. Each label marks one plotted point on the radar polygon, and the relevant values are the printed values near those points. Use the chart values for the specified labels and answer the question. Find the absolute value of the difference between labels V and B.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":5}"
         }
       },
       "task_variant": "difference_two_abs",
@@ -290,29 +290,29 @@
     "render_map": {
       "image_id": "img0",
       "label_centers_px": {
-        "C": [
-          588.5,
-          47.778
+        "B": [
+          423.0,
+          86.0
         ],
-        "H": [
-          698.833,
-          434.444
+        "F": [
+          587.545,
+          181.0
         ],
-        "P": [
-          257.5,
-          382.889
+        "G": [
+          258.455,
+          181.0
         ],
-        "S": [
-          367.833,
-          254.0
+        "Q": [
+          587.545,
+          371.0
+        ],
+        "R": [
+          423.0,
+          466.0
         ],
         "V": [
-          478.167,
-          73.556
-        ],
-        "Z": [
-          147.167,
-          228.222
+          258.455,
+          371.0
         ]
       },
       "plot_bbox_px": [
@@ -350,14 +350,14 @@
         "mark_color_distance_space": "lab",
         "mark_color_min_distance": 40.0,
         "mark_fill_rgb": [
-          78,
-          189,
-          71
+          131,
+          36,
+          188
         ],
         "mark_outline_rgb": [
-          43,
-          104,
-          39
+          72,
+          20,
+          103
         ],
         "sampling_policy": "random_rgb"
       },
@@ -383,13 +383,13 @@
         "edits": [],
         "enabled": false
       },
-      "scene_variant": "line",
+      "scene_variant": "radar",
       "text_style": {
         "label_font_size_px": 22,
         "label_stroke_width_px": 2,
         "tick_font_size_px": 18
       },
-      "y_axis_max": 18,
+      "y_axis_max": 21,
       "y_ticks": [
         0,
         1,
@@ -409,240 +409,267 @@
         15,
         16,
         17,
-        18
+        18,
+        19,
+        20,
+        21
       ]
     },
     "scene_ir": {
       "entities": [
         {
           "attrs": {
-            "label": "Z",
+            "label": "B",
             "label_center_px": [
-              147.167,
-              228.222
+              423.0,
+              86.0
             ],
             "mark_bbox_px": [
-              139.167,
-              242.222,
-              155.167,
-              258.222
+              415.0,
+              123.238,
+              431.0,
+              139.238
             ],
             "mark_center_px": [
-              147.167,
-              250.222
+              423.0,
+              131.238
             ],
             "mark_fill_rgb": [
-              78,
-              189,
-              71
+              131,
+              36,
+              188
             ],
             "mark_outline_rgb": [
-              43,
-              104,
-              39
+              72,
+              20,
+              103
             ],
-            "scene_variant": "line",
-            "value": 10,
+            "scene_variant": "radar",
+            "value": 19,
+            "value_center_px": [
+              423.0,
+              149.238
+            ],
             "x_rank": 0
           },
-          "entity_id": "mark_Z",
+          "entity_id": "mark_B",
           "entity_type": "point"
         },
         {
           "attrs": {
-            "label": "P",
+            "label": "F",
             "label_center_px": [
-              257.5,
-              382.889
+              587.545,
+              181.0
             ],
             "mark_bbox_px": [
-              249.5,
-              396.889,
-              265.5,
-              412.889
+              546.966,
+              191.81,
+              562.966,
+              207.81
             ],
             "mark_center_px": [
-              257.5,
-              404.889
+              554.966,
+              199.81
             ],
             "mark_fill_rgb": [
-              78,
-              189,
-              71
+              131,
+              36,
+              188
             ],
             "mark_outline_rgb": [
-              43,
-              104,
-              39
+              72,
+              20,
+              103
             ],
-            "scene_variant": "line",
-            "value": 4,
+            "scene_variant": "radar",
+            "value": 20,
+            "value_center_px": [
+              539.377,
+              208.81
+            ],
             "x_rank": 1
           },
-          "entity_id": "mark_P",
+          "entity_id": "mark_F",
           "entity_type": "point"
         },
         {
           "attrs": {
-            "label": "S",
+            "label": "Q",
             "label_center_px": [
-              367.833,
-              254.0
+              587.545,
+              371.0
             ],
             "mark_bbox_px": [
-              359.833,
-              268.0,
-              375.833,
-              284.0
+              421.598,
+              271.81,
+              437.598,
+              287.81
             ],
             "mark_center_px": [
-              367.833,
-              276.0
+              429.598,
+              279.81
             ],
             "mark_fill_rgb": [
-              78,
-              189,
-              71
+              131,
+              36,
+              188
             ],
             "mark_outline_rgb": [
-              43,
-              104,
-              39
+              72,
+              20,
+              103
             ],
-            "scene_variant": "line",
-            "value": 9,
+            "scene_variant": "radar",
+            "value": 1,
+            "value_center_px": [
+              438.588,
+              285.0
+            ],
             "x_rank": 2
           },
-          "entity_id": "mark_S",
+          "entity_id": "mark_Q",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "R",
+            "label_center_px": [
+              423.0,
+              466.0
+            ],
+            "mark_bbox_px": [
+              415.0,
+              351.81,
+              431.0,
+              367.81
+            ],
+            "mark_center_px": [
+              423.0,
+              359.81
+            ],
+            "mark_fill_rgb": [
+              131,
+              36,
+              188
+            ],
+            "mark_outline_rgb": [
+              72,
+              20,
+              103
+            ],
+            "scene_variant": "radar",
+            "value": 11,
+            "value_center_px": [
+              423.0,
+              341.81
+            ],
+            "x_rank": 3
+          },
+          "entity_id": "mark_R",
           "entity_type": "point"
         },
         {
           "attrs": {
             "label": "V",
             "label_center_px": [
-              478.167,
-              73.556
+              258.455,
+              371.0
             ],
             "mark_bbox_px": [
-              470.167,
-              87.556,
-              486.167,
-              103.556
+              289.633,
+              340.381,
+              305.633,
+              356.381
             ],
             "mark_center_px": [
-              478.167,
-              95.556
+              297.633,
+              348.381
             ],
             "mark_fill_rgb": [
-              78,
-              189,
-              71
+              131,
+              36,
+              188
             ],
             "mark_outline_rgb": [
-              43,
-              104,
-              39
+              72,
+              20,
+              103
             ],
-            "scene_variant": "line",
-            "value": 16,
-            "x_rank": 3
+            "scene_variant": "radar",
+            "value": 19,
+            "value_center_px": [
+              313.221,
+              339.381
+            ],
+            "x_rank": 4
           },
           "entity_id": "mark_V",
           "entity_type": "point"
         },
         {
           "attrs": {
-            "label": "C",
+            "label": "G",
             "label_center_px": [
-              588.5,
-              47.778
+              258.455,
+              181.0
             ],
             "mark_bbox_px": [
-              580.5,
-              61.778,
-              596.5,
-              77.778
+              283.034,
+              191.81,
+              299.034,
+              207.81
             ],
             "mark_center_px": [
-              588.5,
-              69.778
+              291.034,
+              199.81
             ],
             "mark_fill_rgb": [
-              78,
-              189,
-              71
+              131,
+              36,
+              188
             ],
             "mark_outline_rgb": [
-              43,
-              104,
-              39
+              72,
+              20,
+              103
             ],
-            "scene_variant": "line",
-            "value": 17,
-            "x_rank": 4
-          },
-          "entity_id": "mark_C",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "label": "H",
-            "label_center_px": [
-              698.833,
-              434.444
+            "scene_variant": "radar",
+            "value": 20,
+            "value_center_px": [
+              306.623,
+              208.81
             ],
-            "mark_bbox_px": [
-              690.833,
-              448.444,
-              706.833,
-              464.444
-            ],
-            "mark_center_px": [
-              698.833,
-              456.444
-            ],
-            "mark_fill_rgb": [
-              78,
-              189,
-              71
-            ],
-            "mark_outline_rgb": [
-              43,
-              104,
-              39
-            ],
-            "scene_variant": "line",
-            "value": 2,
             "x_rank": 5
           },
-          "entity_id": "mark_H",
+          "entity_id": "mark_G",
           "entity_type": "point"
         }
       ],
       "relations": {
-        "answer_value": 15,
+        "answer_value": 0,
         "query_labels": [
-          "C",
-          "H"
+          "V",
+          "B"
         ],
         "query_values": [
-          17,
-          2
+          19,
+          19
         ],
-        "scene_variant": "line",
+        "scene_variant": "radar",
         "task_variant": "difference_two_abs"
       },
-      "scene_kind": "chart_line_readout"
+      "scene_kind": "chart_radar_readout"
     },
     "witness_symbolic": {
       "query_labels": [
-        "C",
-        "H"
+        "V",
+        "B"
       ],
       "type": "integer_list",
       "values": [
-        17,
-        2
+        19,
+        19
       ]
     }
   },

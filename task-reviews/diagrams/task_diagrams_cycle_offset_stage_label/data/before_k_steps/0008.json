@@ -1,16 +1,16 @@
 {
   "answer_gt": {
     "type": "string",
-    "value": "Kala"
+    "value": "Hull"
   },
   "evidence_gt": {
     "type": "bbox_set",
     "value": [
       [
-        227.231,
-        614.0,
-        349.231,
-        672.0
+        539.0,
+        739.0,
+        661.0,
+        797.0
       ]
     ]
   },
@@ -18,11 +18,11 @@
     "format": "png",
     "path": "diagrams/task_diagrams_cycle_offset_stage_label/images/before_k_steps/0008.png"
   },
-  "instance_seed": 8036839965726897,
-  "prompt": "You are given a clockwise cycle diagram with labeled stages connected by arrows. Read the directed cycle diagram and answer: Moving clockwise around the cycle, what stage is 3 steps before Arte? Return the exact label shown. Give the full label exactly as shown.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct stage box.\nAnswer requirement: set \"answer\" to the exact visible stage label.\nExample JSON:\n{\"evidence\":[[329,641,451,699]],\"answer\":\"Davi\"}",
+  "instance_seed": 3426210012476887,
+  "prompt": "You are given a clockwise cycle diagram with labeled stages connected by arrows. Determine the requested stage from the cycle: Moving clockwise around the cycle, what stage is 2 steps before Er? Return the exact label shown. Give the full label exactly as shown.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct stage box.\nAnswer format: set \"answer\" to the exact visible stage label.\nExample JSON:\n{\"evidence\":[[329,641,451,699]],\"answer\":\"Davi\"}",
   "prompt_variants": {
-    "answer_and_evidence": "You are given a clockwise cycle diagram with labeled stages connected by arrows. Read the directed cycle diagram and answer: Moving clockwise around the cycle, what stage is 3 steps before Arte? Return the exact label shown. Give the full label exactly as shown.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct stage box.\nAnswer requirement: set \"answer\" to the exact visible stage label.\nExample JSON:\n{\"evidence\":[[329,641,451,699]],\"answer\":\"Davi\"}",
-    "answer_only": "You are given a clockwise cycle diagram with labeled stages connected by arrows. Read the directed cycle diagram and answer: Moving clockwise around the cycle, what stage is 3 steps before Arte? Return the exact label shown. Give the full label exactly as shown.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the exact visible stage label.\nExample JSON:\n{\"answer\":\"Davi\"}"
+    "answer_and_evidence": "You are given a clockwise cycle diagram with labeled stages connected by arrows. Determine the requested stage from the cycle: Moving clockwise around the cycle, what stage is 2 steps before Er? Return the exact label shown. Give the full label exactly as shown.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct stage box.\nAnswer format: set \"answer\" to the exact visible stage label.\nExample JSON:\n{\"evidence\":[[329,641,451,699]],\"answer\":\"Davi\"}",
+    "answer_only": "You are given a clockwise cycle diagram with labeled stages connected by arrows. Determine the requested stage from the cycle: Moving clockwise around the cycle, what stage is 2 steps before Er? Return the exact label shown. Give the full label exactly as shown.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the exact visible stage label.\nExample JSON:\n{\"answer\":\"Davi\"}"
   },
   "task": "task_diagrams_cycle_offset_stage_label",
   "task_variant": "before_k_steps",
@@ -43,10 +43,10 @@
       }
     },
     "execution_trace": {
-      "answer_stage_bbox_id": "stage_bbox_4",
-      "answer_stage_id": "stage_4",
-      "answer_stage_index": 4,
-      "answer_stage_label": "Kala",
+      "answer_stage_bbox_id": "stage_bbox_5",
+      "answer_stage_id": "stage_5",
+      "answer_stage_index": 5,
+      "answer_stage_label": "Hull",
       "direction": "clockwise",
       "edge_specs": [
         {
@@ -77,65 +77,113 @@
         {
           "edge_id": "edge_5",
           "source_stage_id": "stage_5",
+          "target_stage_id": "stage_6"
+        },
+        {
+          "edge_id": "edge_6",
+          "source_stage_id": "stage_6",
+          "target_stage_id": "stage_7"
+        },
+        {
+          "edge_id": "edge_7",
+          "source_stage_id": "stage_7",
+          "target_stage_id": "stage_8"
+        },
+        {
+          "edge_id": "edge_8",
+          "source_stage_id": "stage_8",
+          "target_stage_id": "stage_9"
+        },
+        {
+          "edge_id": "edge_9",
+          "source_stage_id": "stage_9",
           "target_stage_id": "stage_0"
         }
       ],
       "query_relationship": "before",
-      "query_stage_id": "stage_1",
-      "query_stage_index": 1,
-      "query_stage_label": "Arte",
+      "query_stage_id": "stage_7",
+      "query_stage_index": 7,
+      "query_stage_label": "Er",
       "question_format": "cycle_offset_stage_label",
-      "question_text": "Moving clockwise around the cycle, what stage is 3 steps before Arte? Return the exact label shown.",
+      "question_text": "Moving clockwise around the cycle, what stage is 2 steps before Er? Return the exact label shown.",
       "scene_title": "Loop Stages",
       "scene_variant": "cycle_ring",
-      "stage_count": 6,
+      "stage_count": 10,
       "stage_specs": [
         {
           "order_index": 0,
           "stage_bbox_id": "stage_bbox_0",
           "stage_id": "stage_0",
-          "stage_label": "Nela",
+          "stage_label": "Abeu",
           "stage_label_bbox_id": "stage_label_bbox_0"
         },
         {
           "order_index": 1,
           "stage_bbox_id": "stage_bbox_1",
           "stage_id": "stage_1",
-          "stage_label": "Arte",
+          "stage_label": "Gib",
           "stage_label_bbox_id": "stage_label_bbox_1"
         },
         {
           "order_index": 2,
           "stage_bbox_id": "stage_bbox_2",
           "stage_id": "stage_2",
-          "stage_label": "Orva",
+          "stage_label": "Waki",
           "stage_label_bbox_id": "stage_label_bbox_2"
         },
         {
           "order_index": 3,
           "stage_bbox_id": "stage_bbox_3",
           "stage_id": "stage_3",
-          "stage_label": "Noby",
+          "stage_label": "Roxy",
           "stage_label_bbox_id": "stage_label_bbox_3"
         },
         {
           "order_index": 4,
           "stage_bbox_id": "stage_bbox_4",
           "stage_id": "stage_4",
-          "stage_label": "Kala",
+          "stage_label": "Izzy",
           "stage_label_bbox_id": "stage_label_bbox_4"
         },
         {
           "order_index": 5,
           "stage_bbox_id": "stage_bbox_5",
           "stage_id": "stage_5",
-          "stage_label": "Lat",
+          "stage_label": "Hull",
           "stage_label_bbox_id": "stage_label_bbox_5"
+        },
+        {
+          "order_index": 6,
+          "stage_bbox_id": "stage_bbox_6",
+          "stage_id": "stage_6",
+          "stage_label": "Evyn",
+          "stage_label_bbox_id": "stage_label_bbox_6"
+        },
+        {
+          "order_index": 7,
+          "stage_bbox_id": "stage_bbox_7",
+          "stage_id": "stage_7",
+          "stage_label": "Er",
+          "stage_label_bbox_id": "stage_label_bbox_7"
+        },
+        {
+          "order_index": 8,
+          "stage_bbox_id": "stage_bbox_8",
+          "stage_id": "stage_8",
+          "stage_label": "Adda",
+          "stage_label_bbox_id": "stage_label_bbox_8"
+        },
+        {
+          "order_index": 9,
+          "stage_bbox_id": "stage_bbox_9",
+          "stage_id": "stage_9",
+          "stage_label": "Haag",
+          "stage_label_bbox_id": "stage_label_bbox_9"
         }
       ],
-      "step_count": 3,
+      "step_count": 2,
       "supporting_stage_bbox_ids": [
-        "stage_bbox_4"
+        "stage_bbox_5"
       ],
       "task_variant": "before_k_steps",
       "view_family": "cycle_diagram"
@@ -159,10 +207,10 @@
     "projected_evidence": {
       "bbox_set": [
         [
-          227.231,
-          614.0,
-          349.231,
-          672.0
+          539.0,
+          739.0,
+          661.0,
+          797.0
         ]
       ]
     },
@@ -173,8 +221,8 @@
         "scene_variant_probabilities": {
           "cycle_ring": 1.0
         },
-        "stage_count": 6,
-        "step_count": 3,
+        "stage_count": 10,
+        "step_count": 2,
         "task_variant": "before_k_steps",
         "task_variant_probabilities": {
           "after_k_steps": 0.0,
@@ -183,7 +231,7 @@
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 2,
+        "answer_or_evidence_variant_index": 1,
         "prompt_bundle_id": "diagrams_cycle_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -194,12 +242,12 @@
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
           "object_description": "a clockwise cycle diagram with labeled stages connected by arrows",
-          "question_text": "Moving clockwise around the cycle, what stage is 3 steps before Arte? Return the exact label shown."
+          "question_text": "Moving clockwise around the cycle, what stage is 2 steps before Er? Return the exact label shown."
         },
         "task_family_key": "cycle_diagram",
         "task_family_variant_index": 2,
         "task_key": "offset_stage_query",
-        "task_variant_index": 2,
+        "task_variant_index": 4,
         "task_variant_key": "before_k_steps",
         "task_variant_template_index": 3,
         "template_paths": [
@@ -217,7 +265,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 2,
+            "answer_or_evidence_variant_index": 1,
             "prompt_bundle_id": "diagrams_cycle_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -228,12 +276,12 @@
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a clockwise cycle diagram with labeled stages connected by arrows",
-              "question_text": "Moving clockwise around the cycle, what stage is 3 steps before Arte? Return the exact label shown."
+              "question_text": "Moving clockwise around the cycle, what stage is 2 steps before Er? Return the exact label shown."
             },
             "task_family_key": "cycle_diagram",
             "task_family_variant_index": 2,
             "task_key": "offset_stage_query",
-            "task_variant_index": 2,
+            "task_variant_index": 4,
             "task_variant_key": "before_k_steps",
             "task_variant_template_index": 3,
             "template_paths": [
@@ -246,12 +294,12 @@
               "task_variant:before_k_steps": 5
             }
           },
-          "prompt": "You are given a clockwise cycle diagram with labeled stages connected by arrows. Read the directed cycle diagram and answer: Moving clockwise around the cycle, what stage is 3 steps before Arte? Return the exact label shown. Give the full label exactly as shown.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct stage box.\nAnswer requirement: set \"answer\" to the exact visible stage label.\nExample JSON:\n{\"evidence\":[[329,641,451,699]],\"answer\":\"Davi\"}"
+          "prompt": "You are given a clockwise cycle diagram with labeled stages connected by arrows. Determine the requested stage from the cycle: Moving clockwise around the cycle, what stage is 2 steps before Er? Return the exact label shown. Give the full label exactly as shown.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct stage box.\nAnswer format: set \"answer\" to the exact visible stage label.\nExample JSON:\n{\"evidence\":[[329,641,451,699]],\"answer\":\"Davi\"}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 1,
+            "answer_or_evidence_variant_index": 4,
             "prompt_bundle_id": "diagrams_cycle_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -262,12 +310,12 @@
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a clockwise cycle diagram with labeled stages connected by arrows",
-              "question_text": "Moving clockwise around the cycle, what stage is 3 steps before Arte? Return the exact label shown."
+              "question_text": "Moving clockwise around the cycle, what stage is 2 steps before Er? Return the exact label shown."
             },
             "task_family_key": "cycle_diagram",
             "task_family_variant_index": 2,
             "task_key": "offset_stage_query",
-            "task_variant_index": 2,
+            "task_variant_index": 4,
             "task_variant_key": "before_k_steps",
             "task_variant_template_index": 3,
             "template_paths": [
@@ -280,7 +328,7 @@
               "task_variant:before_k_steps": 5
             }
           },
-          "prompt": "You are given a clockwise cycle diagram with labeled stages connected by arrows. Read the directed cycle diagram and answer: Moving clockwise around the cycle, what stage is 3 steps before Arte? Return the exact label shown. Give the full label exactly as shown.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the exact visible stage label.\nExample JSON:\n{\"answer\":\"Davi\"}"
+          "prompt": "You are given a clockwise cycle diagram with labeled stages connected by arrows. Determine the requested stage from the cycle: Moving clockwise around the cycle, what stage is 2 steps before Er? Return the exact label shown. Give the full label exactly as shown.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the exact visible stage label.\nExample JSON:\n{\"answer\":\"Davi\"}"
         }
       },
       "task_variant": "before_k_steps",
@@ -296,39 +344,63 @@
       "edge_bboxes_px": {
         "edge_0": [
           661.0,
-          292.457,
-          850.769,
-          368.543
+          281.764,
+          750.603,
+          301.982
         ],
         "edge_1": [
-          911.769,
-          422.0,
-          911.769,
-          614.0
+          841.943,
+          344.746,
+          912.04,
+          411.746
         ],
         "edge_2": [
-          661.0,
-          667.457,
-          850.769,
-          743.543
+          942.38,
+          469.746,
+          942.38,
+          566.254
         ],
         "edge_3": [
-          349.231,
-          667.457,
-          539.0,
-          743.543
+          841.943,
+          624.254,
+          912.04,
+          691.254
         ],
         "edge_4": [
-          288.231,
-          422.0,
-          288.231,
-          614.0
+          661.0,
+          734.018,
+          750.603,
+          754.236
         ],
         "edge_5": [
-          349.231,
-          292.457,
+          449.397,
+          734.018,
           539.0,
-          368.543
+          754.236
+        ],
+        "edge_6": [
+          287.96,
+          624.254,
+          358.057,
+          691.254
+        ],
+        "edge_7": [
+          257.62,
+          469.746,
+          257.62,
+          566.254
+        ],
+        "edge_8": [
+          287.96,
+          344.746,
+          358.057,
+          411.746
+        ],
+        "edge_9": [
+          449.397,
+          281.764,
+          539.0,
+          301.982
         ]
       },
       "panel_bbox_px": [
@@ -345,72 +417,120 @@
           297.0
         ],
         "stage_bbox_1": [
-          850.769,
-          364.0,
-          972.769,
-          422.0
+          750.603,
+          286.746,
+          872.603,
+          344.746
         ],
         "stage_bbox_2": [
-          850.769,
-          614.0,
-          972.769,
-          672.0
+          881.38,
+          411.746,
+          1003.38,
+          469.746
         ],
         "stage_bbox_3": [
+          881.38,
+          566.254,
+          1003.38,
+          624.254
+        ],
+        "stage_bbox_4": [
+          750.603,
+          691.254,
+          872.603,
+          749.254
+        ],
+        "stage_bbox_5": [
           539.0,
           739.0,
           661.0,
           797.0
         ],
-        "stage_bbox_4": [
-          227.231,
-          614.0,
-          349.231,
-          672.0
+        "stage_bbox_6": [
+          327.397,
+          691.254,
+          449.397,
+          749.254
         ],
-        "stage_bbox_5": [
-          227.231,
-          364.0,
-          349.231,
-          422.0
+        "stage_bbox_7": [
+          196.62,
+          566.254,
+          318.62,
+          624.254
+        ],
+        "stage_bbox_8": [
+          196.62,
+          411.746,
+          318.62,
+          469.746
+        ],
+        "stage_bbox_9": [
+          327.397,
+          286.746,
+          449.397,
+          344.746
         ]
       },
       "stage_label_bboxes_px": {
         "stage_label_bbox_0": [
-          571.0,
+          567.0,
           258.5,
-          629.0,
+          633.0,
           277.5
         ],
         "stage_label_bbox_1": [
-          883.769,
-          384.0,
-          939.769,
-          402.0
+          789.603,
+          306.246,
+          833.603,
+          325.246
         ],
         "stage_label_bbox_2": [
-          881.269,
-          634.0,
-          942.269,
-          652.0
+          910.38,
+          431.246,
+          974.38,
+          450.246
         ],
         "stage_label_bbox_3": [
-          567.5,
-          756.0,
-          632.5,
-          780.0
+          911.38,
+          583.754,
+          973.38,
+          606.754
         ],
         "stage_label_bbox_4": [
-          259.731,
-          633.5,
-          316.731,
-          652.5
+          786.603,
+          708.754,
+          836.603,
+          731.754
         ],
         "stage_label_bbox_5": [
-          267.231,
-          384.0,
-          309.231,
-          402.0
+          574.0,
+          758.5,
+          626.0,
+          777.5
+        ],
+        "stage_label_bbox_6": [
+          357.897,
+          708.754,
+          418.897,
+          731.754
+        ],
+        "stage_label_bbox_7": [
+          243.62,
+          586.254,
+          271.62,
+          604.254
+        ],
+        "stage_label_bbox_8": [
+          224.62,
+          431.246,
+          290.62,
+          450.246
+        ],
+        "stage_label_bbox_9": [
+          355.397,
+          304.246,
+          421.397,
+          327.246
         ]
       },
       "title_bbox_px": [
@@ -424,7 +544,7 @@
       "canvas_height": 900,
       "canvas_width": 1200,
       "edge_width_px": 5,
-      "geometry_seed": 8036839965726897,
+      "geometry_seed": 3426210012476887,
       "node_height_px": 58,
       "node_width_px": 122,
       "ring_radius_x_px": 360,
@@ -479,9 +599,9 @@
         {
           "bbox_xyxy": [
             661.0,
-            292.457,
-            850.769,
-            368.543
+            281.764,
+            750.603,
+            301.982
           ],
           "direction": "clockwise",
           "entity_id": "edge_0",
@@ -491,10 +611,10 @@
         },
         {
           "bbox_xyxy": [
-            911.769,
-            422.0,
-            911.769,
-            614.0
+            841.943,
+            344.746,
+            912.04,
+            411.746
           ],
           "direction": "clockwise",
           "entity_id": "edge_1",
@@ -504,10 +624,10 @@
         },
         {
           "bbox_xyxy": [
-            661.0,
-            667.457,
-            850.769,
-            743.543
+            942.38,
+            469.746,
+            942.38,
+            566.254
           ],
           "direction": "clockwise",
           "entity_id": "edge_2",
@@ -517,10 +637,10 @@
         },
         {
           "bbox_xyxy": [
-            349.231,
-            667.457,
-            539.0,
-            743.543
+            841.943,
+            624.254,
+            912.04,
+            691.254
           ],
           "direction": "clockwise",
           "entity_id": "edge_3",
@@ -530,10 +650,10 @@
         },
         {
           "bbox_xyxy": [
-            288.231,
-            422.0,
-            288.231,
-            614.0
+            661.0,
+            734.018,
+            750.603,
+            754.236
           ],
           "direction": "clockwise",
           "entity_id": "edge_4",
@@ -543,15 +663,67 @@
         },
         {
           "bbox_xyxy": [
-            349.231,
-            292.457,
+            449.397,
+            734.018,
             539.0,
-            368.543
+            754.236
           ],
           "direction": "clockwise",
           "entity_id": "edge_5",
           "entity_type": "diagram_edge",
           "source_stage_id": "stage_5",
+          "target_stage_id": "stage_6"
+        },
+        {
+          "bbox_xyxy": [
+            287.96,
+            624.254,
+            358.057,
+            691.254
+          ],
+          "direction": "clockwise",
+          "entity_id": "edge_6",
+          "entity_type": "diagram_edge",
+          "source_stage_id": "stage_6",
+          "target_stage_id": "stage_7"
+        },
+        {
+          "bbox_xyxy": [
+            257.62,
+            469.746,
+            257.62,
+            566.254
+          ],
+          "direction": "clockwise",
+          "entity_id": "edge_7",
+          "entity_type": "diagram_edge",
+          "source_stage_id": "stage_7",
+          "target_stage_id": "stage_8"
+        },
+        {
+          "bbox_xyxy": [
+            287.96,
+            344.746,
+            358.057,
+            411.746
+          ],
+          "direction": "clockwise",
+          "entity_id": "edge_8",
+          "entity_type": "diagram_edge",
+          "source_stage_id": "stage_8",
+          "target_stage_id": "stage_9"
+        },
+        {
+          "bbox_xyxy": [
+            449.397,
+            281.764,
+            539.0,
+            301.982
+          ],
+          "direction": "clockwise",
+          "entity_id": "edge_9",
+          "entity_type": "diagram_edge",
+          "source_stage_id": "stage_9",
           "target_stage_id": "stage_0"
         },
         {
@@ -565,69 +737,119 @@
           "entity_type": "diagram_stage",
           "order_index": 0,
           "stage_id": "stage_0",
-          "text": "Nela"
+          "text": "Abeu"
         },
         {
           "bbox_xyxy": [
-            571.0,
+            567.0,
             258.5,
-            629.0,
+            633.0,
             277.5
           ],
           "entity_id": "stage_label_bbox_0",
           "entity_type": "diagram_stage_label",
           "stage_id": "stage_0",
-          "text": "Nela"
+          "text": "Abeu"
         },
         {
           "bbox_xyxy": [
-            850.769,
-            364.0,
-            972.769,
-            422.0
+            750.603,
+            286.746,
+            872.603,
+            344.746
           ],
           "entity_id": "stage_bbox_1",
           "entity_type": "diagram_stage",
           "order_index": 1,
           "stage_id": "stage_1",
-          "text": "Arte"
+          "text": "Gib"
         },
         {
           "bbox_xyxy": [
-            883.769,
-            384.0,
-            939.769,
-            402.0
+            789.603,
+            306.246,
+            833.603,
+            325.246
           ],
           "entity_id": "stage_label_bbox_1",
           "entity_type": "diagram_stage_label",
           "stage_id": "stage_1",
-          "text": "Arte"
+          "text": "Gib"
         },
         {
           "bbox_xyxy": [
-            850.769,
-            614.0,
-            972.769,
-            672.0
+            881.38,
+            411.746,
+            1003.38,
+            469.746
           ],
           "entity_id": "stage_bbox_2",
           "entity_type": "diagram_stage",
           "order_index": 2,
           "stage_id": "stage_2",
-          "text": "Orva"
+          "text": "Waki"
         },
         {
           "bbox_xyxy": [
-            881.269,
-            634.0,
-            942.269,
-            652.0
+            910.38,
+            431.246,
+            974.38,
+            450.246
           ],
           "entity_id": "stage_label_bbox_2",
           "entity_type": "diagram_stage_label",
           "stage_id": "stage_2",
-          "text": "Orva"
+          "text": "Waki"
+        },
+        {
+          "bbox_xyxy": [
+            881.38,
+            566.254,
+            1003.38,
+            624.254
+          ],
+          "entity_id": "stage_bbox_3",
+          "entity_type": "diagram_stage",
+          "order_index": 3,
+          "stage_id": "stage_3",
+          "text": "Roxy"
+        },
+        {
+          "bbox_xyxy": [
+            911.38,
+            583.754,
+            973.38,
+            606.754
+          ],
+          "entity_id": "stage_label_bbox_3",
+          "entity_type": "diagram_stage_label",
+          "stage_id": "stage_3",
+          "text": "Roxy"
+        },
+        {
+          "bbox_xyxy": [
+            750.603,
+            691.254,
+            872.603,
+            749.254
+          ],
+          "entity_id": "stage_bbox_4",
+          "entity_type": "diagram_stage",
+          "order_index": 4,
+          "stage_id": "stage_4",
+          "text": "Izzy"
+        },
+        {
+          "bbox_xyxy": [
+            786.603,
+            708.754,
+            836.603,
+            731.754
+          ],
+          "entity_id": "stage_label_bbox_4",
+          "entity_type": "diagram_stage_label",
+          "stage_id": "stage_4",
+          "text": "Izzy"
         },
         {
           "bbox_xyxy": [
@@ -636,78 +858,128 @@
             661.0,
             797.0
           ],
-          "entity_id": "stage_bbox_3",
-          "entity_type": "diagram_stage",
-          "order_index": 3,
-          "stage_id": "stage_3",
-          "text": "Noby"
-        },
-        {
-          "bbox_xyxy": [
-            567.5,
-            756.0,
-            632.5,
-            780.0
-          ],
-          "entity_id": "stage_label_bbox_3",
-          "entity_type": "diagram_stage_label",
-          "stage_id": "stage_3",
-          "text": "Noby"
-        },
-        {
-          "bbox_xyxy": [
-            227.231,
-            614.0,
-            349.231,
-            672.0
-          ],
-          "entity_id": "stage_bbox_4",
-          "entity_type": "diagram_stage",
-          "order_index": 4,
-          "stage_id": "stage_4",
-          "text": "Kala"
-        },
-        {
-          "bbox_xyxy": [
-            259.731,
-            633.5,
-            316.731,
-            652.5
-          ],
-          "entity_id": "stage_label_bbox_4",
-          "entity_type": "diagram_stage_label",
-          "stage_id": "stage_4",
-          "text": "Kala"
-        },
-        {
-          "bbox_xyxy": [
-            227.231,
-            364.0,
-            349.231,
-            422.0
-          ],
           "entity_id": "stage_bbox_5",
           "entity_type": "diagram_stage",
           "order_index": 5,
           "stage_id": "stage_5",
-          "text": "Lat"
+          "text": "Hull"
         },
         {
           "bbox_xyxy": [
-            267.231,
-            384.0,
-            309.231,
-            402.0
+            574.0,
+            758.5,
+            626.0,
+            777.5
           ],
           "entity_id": "stage_label_bbox_5",
           "entity_type": "diagram_stage_label",
           "stage_id": "stage_5",
-          "text": "Lat"
+          "text": "Hull"
+        },
+        {
+          "bbox_xyxy": [
+            327.397,
+            691.254,
+            449.397,
+            749.254
+          ],
+          "entity_id": "stage_bbox_6",
+          "entity_type": "diagram_stage",
+          "order_index": 6,
+          "stage_id": "stage_6",
+          "text": "Evyn"
+        },
+        {
+          "bbox_xyxy": [
+            357.897,
+            708.754,
+            418.897,
+            731.754
+          ],
+          "entity_id": "stage_label_bbox_6",
+          "entity_type": "diagram_stage_label",
+          "stage_id": "stage_6",
+          "text": "Evyn"
+        },
+        {
+          "bbox_xyxy": [
+            196.62,
+            566.254,
+            318.62,
+            624.254
+          ],
+          "entity_id": "stage_bbox_7",
+          "entity_type": "diagram_stage",
+          "order_index": 7,
+          "stage_id": "stage_7",
+          "text": "Er"
+        },
+        {
+          "bbox_xyxy": [
+            243.62,
+            586.254,
+            271.62,
+            604.254
+          ],
+          "entity_id": "stage_label_bbox_7",
+          "entity_type": "diagram_stage_label",
+          "stage_id": "stage_7",
+          "text": "Er"
+        },
+        {
+          "bbox_xyxy": [
+            196.62,
+            411.746,
+            318.62,
+            469.746
+          ],
+          "entity_id": "stage_bbox_8",
+          "entity_type": "diagram_stage",
+          "order_index": 8,
+          "stage_id": "stage_8",
+          "text": "Adda"
+        },
+        {
+          "bbox_xyxy": [
+            224.62,
+            431.246,
+            290.62,
+            450.246
+          ],
+          "entity_id": "stage_label_bbox_8",
+          "entity_type": "diagram_stage_label",
+          "stage_id": "stage_8",
+          "text": "Adda"
+        },
+        {
+          "bbox_xyxy": [
+            327.397,
+            286.746,
+            449.397,
+            344.746
+          ],
+          "entity_id": "stage_bbox_9",
+          "entity_type": "diagram_stage",
+          "order_index": 9,
+          "stage_id": "stage_9",
+          "text": "Haag"
+        },
+        {
+          "bbox_xyxy": [
+            355.397,
+            304.246,
+            421.397,
+            327.246
+          ],
+          "entity_id": "stage_label_bbox_9",
+          "entity_type": "diagram_stage_label",
+          "stage_id": "stage_9",
+          "text": "Haag"
         }
       ],
       "relations": {
-        "answer_stage_bbox_id": "stage_bbox_4",
-        "answer_stage_id": "stage_4",
+        "answer_stage_bbox_id": "stage_bbox_5",
+        "answer_stage_id": "stage_5",
         "direction": "clockwise",
         "scene_variant": "cycle_ring",
         "task_variant": "before_k_steps",
@@ -717,7 +989,7 @@
     },
     "witness_symbolic": {
       "ids": [
-        "stage_4"
+        "stage_5"
       ],
       "type": "id_set"
     }

@@ -1,58 +1,59 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 2
+    "value": 1
   },
   "evidence_gt": {
     "type": "label_set",
     "value": [
-      "D",
-      "J"
+      "L"
     ]
   },
   "image": {
     "format": "png",
     "path": "charts/task_charts_multiseries_pairwise_comparison_count/images/series_a_lt_b_count/0008.png"
   },
-  "instance_seed": 1717946153706570,
-  "prompt": "You are given a multiseries chart: a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Compare the two queried series category by category. Count the category labels where Kare is below Myra.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer field: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+  "instance_seed": 6034779994597560,
+  "prompt": "You are given a multiseries chart: a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Use the chart to compare the queried pair of series across the category labels. Across the labeled categories, in how many categories is Mic lower than Arlo?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
   "prompt_variants": {
-    "answer_and_evidence": "You are given a multiseries chart: a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Compare the two queried series category by category. Count the category labels where Kare is below Myra.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer field: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
-    "answer_only": "You are given a multiseries chart: a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Compare the two queried series category by category. Count the category labels where Kare is below Myra.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
+    "answer_and_evidence": "You are given a multiseries chart: a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Use the chart to compare the queried pair of series across the category labels. Across the labeled categories, in how many categories is Mic lower than Arlo?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+    "answer_only": "You are given a multiseries chart: a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Use the chart to compare the queried pair of series across the category labels. Across the labeled categories, in how many categories is Mic lower than Arlo?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
   },
   "task": "task_charts_multiseries_pairwise_comparison_count",
   "task_variant": "series_a_lt_b_count",
   "trace_payload": {
     "execution_trace": {
-      "answer_value": 2,
-      "category_count": 6,
+      "answer_value": 1,
+      "category_count": 9,
       "category_count_range": [
         5,
         10
       ],
       "category_labels": [
-        "D",
-        "H",
-        "W",
-        "N",
-        "T",
-        "J"
+        "P",
+        "E",
+        "V",
+        "L",
+        "R",
+        "S",
+        "Q",
+        "F",
+        "A"
       ],
       "comparison": "less_than",
       "evidence_labels": [
-        "D",
-        "J"
+        "L"
       ],
-      "left_series_label": "Kare",
+      "left_series_label": "Mic",
       "mark_color_distance_space": "lab",
       "mark_color_min_distance": 40.0,
       "mark_color_sampling_policy": "random_rgb_palette",
       "queried_series_labels": [
-        "Kare",
-        "Myra"
+        "Mic",
+        "Arlo"
       ],
       "question_format": "numeric_open",
-      "right_series_label": "Myra",
+      "right_series_label": "Arlo",
       "scene_variant": "grouped_bar",
       "scene_variant_probabilities": {
         "grouped_bar": 0.25,
@@ -60,127 +61,144 @@
         "grouped_lollipop": 0.25,
         "multi_line": 0.25
       },
-      "series_count": 2,
+      "series_count": 3,
       "series_count_range": [
         2,
         3
       ],
       "series_fill_palette_rgb": [
         [
-          13,
-          217,
-          64
+          25,
+          212,
+          189
         ],
         [
-          186,
-          128,
-          136
+          146,
+          15,
+          145
+        ],
+        [
+          82,
+          120,
+          32
         ]
       ],
       "series_labels": [
-        "Kare",
-        "Myra"
+        "Mic",
+        "Diba",
+        "Arlo"
       ],
       "series_outline_palette_rgb": [
         [
-          7,
-          119,
-          35
+          14,
+          117,
+          104
         ],
         [
-          102,
-          70,
-          75
+          80,
+          8,
+          80
+        ],
+        [
+          45,
+          66,
+          18
         ]
       ],
-      "target_answer": 2,
+      "target_answer": 1,
       "target_answer_range": [
         0,
         8
       ],
       "task_variant": "series_a_lt_b_count",
       "task_variant_probabilities": {
-        "series_a_gt_b_count": 0.5,
-        "series_a_lt_b_count": 0.5
+        "series_a_gt_b_count": 0.0,
+        "series_a_lt_b_count": 1.0
       },
       "values_by_category": {
-        "D": {
-          "Kare": 10,
-          "Myra": 13
+        "A": {
+          "Arlo": 8,
+          "Diba": 17,
+          "Mic": 20
         },
-        "H": {
-          "Kare": 17,
-          "Myra": 4
+        "E": {
+          "Arlo": 4,
+          "Diba": 5,
+          "Mic": 12
         },
-        "J": {
-          "Kare": 13,
-          "Myra": 14
+        "F": {
+          "Arlo": 1,
+          "Diba": 17,
+          "Mic": 18
         },
-        "N": {
-          "Kare": 17,
-          "Myra": 9
+        "L": {
+          "Arlo": 18,
+          "Diba": 16,
+          "Mic": 5
         },
-        "T": {
-          "Kare": 5,
-          "Myra": 2
+        "P": {
+          "Arlo": 9,
+          "Diba": 11,
+          "Mic": 19
         },
-        "W": {
-          "Kare": 20,
-          "Myra": 3
+        "Q": {
+          "Arlo": 1,
+          "Diba": 12,
+          "Mic": 19
+        },
+        "R": {
+          "Arlo": 6,
+          "Diba": 12,
+          "Mic": 16
+        },
+        "S": {
+          "Arlo": 8,
+          "Diba": 10,
+          "Mic": 12
+        },
+        "V": {
+          "Arlo": 5,
+          "Diba": 17,
+          "Mic": 18
         }
       }
     },
     "projected_evidence": {
       "bbox_set": [
         [
-          122.734,
-          228.381,
-          188.266,
+          365.304,
+          113.143,
+          411.363,
           562.0
-        ],
-        [
-          757.734,
-          205.333,
-          823.266,
-          564.0
         ]
       ],
       "label_set": [
-        "D",
-        "J"
+        "L"
       ],
       "pixel_point_map": {
-        "D": [
-          155.5,
-          554.0
-        ],
-        "J": [
-          790.5,
+        "L": [
+          388.333,
           554.0
         ]
       },
       "pixel_point_set": [
         [
-          155.5,
-          554.0
-        ],
-        [
-          790.5,
+          388.333,
           554.0
         ]
       ]
     },
     "query_spec": {
       "params": {
-        "category_count": 6,
+        "category_count": 9,
         "category_count_range": [
           5,
           10
         ],
         "comparison": "less_than",
         "queried_series_labels": [
-          "Kare",
-          "Myra"
+          "Mic",
+          "Arlo"
         ],
         "scene_variant": "grouped_bar",
         "scene_variant_probabilities": {
@@ -189,25 +207,25 @@
           "grouped_lollipop": 0.25,
           "multi_line": 0.25
         },
-        "series_count": 2,
+        "series_count": 3,
         "series_count_range": [
           2,
           3
         ],
-        "target_answer": 2,
+        "target_answer": 1,
         "target_answer_range": [
           0,
           8
         ],
         "task_variant": "series_a_lt_b_count",
         "task_variant_probabilities": {
-          "series_a_gt_b_count": 0.5,
-          "series_a_lt_b_count": 0.5
+          "series_a_gt_b_count": 0.0,
+          "series_a_lt_b_count": 1.0
         }
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 3,
+        "answer_or_evidence_variant_index": 4,
         "prompt_bundle_id": "charts_multiseries_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -217,16 +235,16 @@
           "json_example_answer_only": "{\"answer\":2}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "left_series": "Kare",
+          "left_series": "Mic",
           "object_description": "a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category",
-          "right_series": "Myra"
+          "right_series": "Arlo"
         },
         "task_family_key": "multiseries_chart_comparison",
         "task_family_variant_index": 4,
         "task_key": "pairwise_comparison_count_query",
-        "task_variant_index": 0,
+        "task_variant_index": 1,
         "task_variant_key": "series_a_lt_b_count",
-        "task_variant_template_index": 1,
+        "task_variant_template_index": 0,
         "template_paths": [
           "charts/multiseries/charts_multiseries_v1.json"
         ],
@@ -242,7 +260,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 3,
+            "answer_or_evidence_variant_index": 4,
             "prompt_bundle_id": "charts_multiseries_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -252,16 +270,16 @@
               "json_example_answer_only": "{\"answer\":2}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "left_series": "Kare",
+              "left_series": "Mic",
               "object_description": "a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category",
-              "right_series": "Myra"
+              "right_series": "Arlo"
             },
             "task_family_key": "multiseries_chart_comparison",
             "task_family_variant_index": 4,
             "task_key": "pairwise_comparison_count_query",
-            "task_variant_index": 0,
+            "task_variant_index": 1,
             "task_variant_key": "series_a_lt_b_count",
-            "task_variant_template_index": 1,
+            "task_variant_template_index": 0,
             "template_paths": [
               "charts/multiseries/charts_multiseries_v1.json"
             ],
@@ -272,12 +290,12 @@
               "task_variant:series_a_lt_b_count": 5
             }
           },
-          "prompt": "You are given a multiseries chart: a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Compare the two queried series category by category. Count the category labels where Kare is below Myra.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer field: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}"
+          "prompt": "You are given a multiseries chart: a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Use the chart to compare the queried pair of series across the category labels. Across the labeled categories, in how many categories is Mic lower than Arlo?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 0,
+            "answer_or_evidence_variant_index": 4,
             "prompt_bundle_id": "charts_multiseries_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -287,16 +305,16 @@
               "json_example_answer_only": "{\"answer\":2}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "left_series": "Kare",
+              "left_series": "Mic",
               "object_description": "a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category",
-              "right_series": "Myra"
+              "right_series": "Arlo"
             },
             "task_family_key": "multiseries_chart_comparison",
             "task_family_variant_index": 4,
             "task_key": "pairwise_comparison_count_query",
-            "task_variant_index": 0,
+            "task_variant_index": 1,
             "task_variant_key": "series_a_lt_b_count",
-            "task_variant_template_index": 1,
+            "task_variant_template_index": 0,
             "template_paths": [
               "charts/multiseries/charts_multiseries_v1.json"
             ],
@@ -307,7 +325,7 @@
               "task_variant:series_a_lt_b_count": 5
             }
           },
-          "prompt": "You are given a multiseries chart: a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Compare the two queried series category by category. Count the category labels where Kare is below Myra.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
+          "prompt": "You are given a multiseries chart: a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Use the chart to compare the queried pair of series across the category labels. Across the labeled categories, in how many categories is Mic lower than Arlo?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
         }
       },
       "task_variant": "series_a_lt_b_count",
@@ -315,28 +333,40 @@
     },
     "render_map": {
       "category_label_centers_px": {
-        "D": [
-          155.5,
+        "A": [
+          811.667,
           554.0
         ],
-        "H": [
-          282.5,
+        "E": [
+          219.0,
           554.0
         ],
-        "J": [
-          790.5,
+        "F": [
+          727.0,
           554.0
         ],
-        "N": [
-          536.5,
+        "L": [
+          388.333,
           554.0
         ],
-        "T": [
-          663.5,
+        "P": [
+          134.333,
           554.0
         ],
-        "W": [
-          409.5,
+        "Q": [
+          642.333,
+          554.0
+        ],
+        "R": [
+          473.0,
+          554.0
+        ],
+        "S": [
+          557.667,
+          554.0
+        ],
+        "V": [
+          303.667,
           554.0
         ]
       },
@@ -378,26 +408,36 @@
         "sampling_policy": "random_rgb_palette",
         "series_fill_palette_rgb": [
           [
-            13,
-            217,
-            64
+            25,
+            212,
+            189
           ],
           [
-            186,
-            128,
-            136
+            146,
+            15,
+            145
+          ],
+          [
+            82,
+            120,
+            32
           ]
         ],
         "series_outline_palette_rgb": [
           [
-            7,
-            119,
-            35
+            14,
+            117,
+            104
           ],
           [
-            102,
-            70,
-            75
+            80,
+            8,
+            80
+          ],
+          [
+            45,
+            66,
+            18
           ]
         ]
       },
@@ -460,517 +500,1146 @@
         {
           "attrs": {
             "category_group_bbox_px": [
-              122.734,
-              228.381,
-              188.266,
+              111.304,
+              90.095,
+              157.363,
               562.0
             ],
-            "category_label": "D",
+            "category_label": "P",
             "category_label_center_px": [
-              155.5,
+              134.333,
               554.0
             ],
             "category_rank": 0,
             "mark_bbox_px": [
-              122.734,
-              297.524,
-              150.166,
+              111.304,
+              90.095,
+              123.496,
               528.0
             ],
             "mark_center_px": [
-              136.45,
-              297.524
+              117.4,
+              90.095
             ],
             "mark_fill_rgb": [
-              13,
-              217,
-              64
+              25,
+              212,
+              189
             ],
             "mark_outline_rgb": [
-              7,
-              119,
-              35
+              14,
+              117,
+              104
             ],
             "scene_variant": "grouped_bar",
-            "series_label": "Kare",
+            "series_label": "Mic",
             "series_rank": 0,
-            "value": 10
+            "value": 19
           },
-          "entity_id": "mark_D_Kare",
+          "entity_id": "mark_P_Mic",
           "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              122.734,
-              228.381,
-              188.266,
+              111.304,
+              90.095,
+              157.363,
               562.0
             ],
-            "category_label": "D",
+            "category_label": "P",
             "category_label_center_px": [
-              155.5,
+              134.333,
               554.0
             ],
             "category_rank": 0,
             "mark_bbox_px": [
-              160.834,
-              228.381,
-              188.266,
+              128.237,
+              274.476,
+              140.429,
               528.0
             ],
             "mark_center_px": [
-              174.55,
-              228.381
+              134.333,
+              274.476
             ],
             "mark_fill_rgb": [
-              186,
-              128,
-              136
+              146,
+              15,
+              145
             ],
             "mark_outline_rgb": [
-              102,
-              70,
-              75
+              80,
+              8,
+              80
             ],
             "scene_variant": "grouped_bar",
-            "series_label": "Myra",
+            "series_label": "Diba",
             "series_rank": 1,
-            "value": 13
+            "value": 11
           },
-          "entity_id": "mark_D_Myra",
+          "entity_id": "mark_P_Diba",
           "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              249.734,
-              136.19,
-              315.266,
+              111.304,
+              90.095,
+              157.363,
               562.0
             ],
-            "category_label": "H",
+            "category_label": "P",
             "category_label_center_px": [
-              282.5,
+              134.333,
               554.0
             ],
-            "category_rank": 1,
+            "category_rank": 0,
             "mark_bbox_px": [
-              249.734,
-              136.19,
-              277.166,
-              528.0
-            ],
-            "mark_center_px": [
-              263.45,
-              136.19
-            ],
-            "mark_fill_rgb": [
-              13,
-              217,
-              64
-            ],
-            "mark_outline_rgb": [
-              7,
-              119,
-              35
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Kare",
-            "series_rank": 0,
-            "value": 17
-          },
-          "entity_id": "mark_H_Kare",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              249.734,
-              136.19,
-              315.266,
-              562.0
-            ],
-            "category_label": "H",
-            "category_label_center_px": [
-              282.5,
-              554.0
-            ],
-            "category_rank": 1,
-            "mark_bbox_px": [
-              287.834,
-              435.81,
-              315.266,
-              528.0
-            ],
-            "mark_center_px": [
-              301.55,
-              435.81
-            ],
-            "mark_fill_rgb": [
-              186,
-              128,
-              136
-            ],
-            "mark_outline_rgb": [
-              102,
-              70,
-              75
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Myra",
-            "series_rank": 1,
-            "value": 4
-          },
-          "entity_id": "mark_H_Myra",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              376.734,
-              67.048,
-              442.266,
-              562.0
-            ],
-            "category_label": "W",
-            "category_label_center_px": [
-              409.5,
-              554.0
-            ],
-            "category_rank": 2,
-            "mark_bbox_px": [
-              376.734,
-              67.048,
-              404.166,
-              528.0
-            ],
-            "mark_center_px": [
-              390.45,
-              67.048
-            ],
-            "mark_fill_rgb": [
-              13,
-              217,
-              64
-            ],
-            "mark_outline_rgb": [
-              7,
-              119,
-              35
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Kare",
-            "series_rank": 0,
-            "value": 20
-          },
-          "entity_id": "mark_W_Kare",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              376.734,
-              67.048,
-              442.266,
-              562.0
-            ],
-            "category_label": "W",
-            "category_label_center_px": [
-              409.5,
-              554.0
-            ],
-            "category_rank": 2,
-            "mark_bbox_px": [
-              414.834,
-              458.857,
-              442.266,
-              528.0
-            ],
-            "mark_center_px": [
-              428.55,
-              458.857
-            ],
-            "mark_fill_rgb": [
-              186,
-              128,
-              136
-            ],
-            "mark_outline_rgb": [
-              102,
-              70,
-              75
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Myra",
-            "series_rank": 1,
-            "value": 3
-          },
-          "entity_id": "mark_W_Myra",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              503.734,
-              136.19,
-              569.266,
-              562.0
-            ],
-            "category_label": "N",
-            "category_label_center_px": [
-              536.5,
-              554.0
-            ],
-            "category_rank": 3,
-            "mark_bbox_px": [
-              503.734,
-              136.19,
-              531.166,
-              528.0
-            ],
-            "mark_center_px": [
-              517.45,
-              136.19
-            ],
-            "mark_fill_rgb": [
-              13,
-              217,
-              64
-            ],
-            "mark_outline_rgb": [
-              7,
-              119,
-              35
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Kare",
-            "series_rank": 0,
-            "value": 17
-          },
-          "entity_id": "mark_N_Kare",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              503.734,
-              136.19,
-              569.266,
-              562.0
-            ],
-            "category_label": "N",
-            "category_label_center_px": [
-              536.5,
-              554.0
-            ],
-            "category_rank": 3,
-            "mark_bbox_px": [
-              541.834,
+              145.171,
               320.571,
-              569.266,
+              157.363,
               528.0
             ],
             "mark_center_px": [
-              555.55,
+              151.267,
               320.571
             ],
             "mark_fill_rgb": [
-              186,
-              128,
-              136
+              82,
+              120,
+              32
             ],
             "mark_outline_rgb": [
-              102,
-              70,
-              75
+              45,
+              66,
+              18
             ],
             "scene_variant": "grouped_bar",
-            "series_label": "Myra",
-            "series_rank": 1,
+            "series_label": "Arlo",
+            "series_rank": 2,
             "value": 9
           },
-          "entity_id": "mark_N_Myra",
+          "entity_id": "mark_P_Arlo",
           "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              630.734,
-              412.762,
-              696.266,
+              195.971,
+              251.429,
+              242.029,
               562.0
             ],
-            "category_label": "T",
+            "category_label": "E",
             "category_label_center_px": [
-              663.5,
+              219.0,
               554.0
             ],
-            "category_rank": 4,
+            "category_rank": 1,
             "mark_bbox_px": [
-              630.734,
-              412.762,
-              658.166,
+              195.971,
+              251.429,
+              208.163,
               528.0
             ],
             "mark_center_px": [
-              644.45,
+              202.067,
+              251.429
+            ],
+            "mark_fill_rgb": [
+              25,
+              212,
+              189
+            ],
+            "mark_outline_rgb": [
+              14,
+              117,
+              104
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Mic",
+            "series_rank": 0,
+            "value": 12
+          },
+          "entity_id": "mark_E_Mic",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              195.971,
+              251.429,
+              242.029,
+              562.0
+            ],
+            "category_label": "E",
+            "category_label_center_px": [
+              219.0,
+              554.0
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              212.904,
+              412.762,
+              225.096,
+              528.0
+            ],
+            "mark_center_px": [
+              219.0,
               412.762
             ],
             "mark_fill_rgb": [
-              13,
-              217,
-              64
+              146,
+              15,
+              145
             ],
             "mark_outline_rgb": [
-              7,
-              119,
-              35
+              80,
+              8,
+              80
             ],
             "scene_variant": "grouped_bar",
-            "series_label": "Kare",
-            "series_rank": 0,
+            "series_label": "Diba",
+            "series_rank": 1,
             "value": 5
           },
-          "entity_id": "mark_T_Kare",
+          "entity_id": "mark_E_Diba",
           "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              630.734,
-              412.762,
-              696.266,
+              195.971,
+              251.429,
+              242.029,
               562.0
             ],
-            "category_label": "T",
+            "category_label": "E",
             "category_label_center_px": [
-              663.5,
+              219.0,
+              554.0
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              229.837,
+              435.81,
+              242.029,
+              528.0
+            ],
+            "mark_center_px": [
+              235.933,
+              435.81
+            ],
+            "mark_fill_rgb": [
+              82,
+              120,
+              32
+            ],
+            "mark_outline_rgb": [
+              45,
+              66,
+              18
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Arlo",
+            "series_rank": 2,
+            "value": 4
+          },
+          "entity_id": "mark_E_Arlo",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              280.637,
+              113.143,
+              326.696,
+              562.0
+            ],
+            "category_label": "V",
+            "category_label_center_px": [
+              303.667,
+              554.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              280.637,
+              113.143,
+              292.829,
+              528.0
+            ],
+            "mark_center_px": [
+              286.733,
+              113.143
+            ],
+            "mark_fill_rgb": [
+              25,
+              212,
+              189
+            ],
+            "mark_outline_rgb": [
+              14,
+              117,
+              104
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Mic",
+            "series_rank": 0,
+            "value": 18
+          },
+          "entity_id": "mark_V_Mic",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              280.637,
+              113.143,
+              326.696,
+              562.0
+            ],
+            "category_label": "V",
+            "category_label_center_px": [
+              303.667,
+              554.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              297.571,
+              136.19,
+              309.763,
+              528.0
+            ],
+            "mark_center_px": [
+              303.667,
+              136.19
+            ],
+            "mark_fill_rgb": [
+              146,
+              15,
+              145
+            ],
+            "mark_outline_rgb": [
+              80,
+              8,
+              80
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Diba",
+            "series_rank": 1,
+            "value": 17
+          },
+          "entity_id": "mark_V_Diba",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              280.637,
+              113.143,
+              326.696,
+              562.0
+            ],
+            "category_label": "V",
+            "category_label_center_px": [
+              303.667,
+              554.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              314.504,
+              412.762,
+              326.696,
+              528.0
+            ],
+            "mark_center_px": [
+              320.6,
+              412.762
+            ],
+            "mark_fill_rgb": [
+              82,
+              120,
+              32
+            ],
+            "mark_outline_rgb": [
+              45,
+              66,
+              18
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Arlo",
+            "series_rank": 2,
+            "value": 5
+          },
+          "entity_id": "mark_V_Arlo",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              365.304,
+              113.143,
+              411.363,
+              562.0
+            ],
+            "category_label": "L",
+            "category_label_center_px": [
+              388.333,
+              554.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              365.304,
+              412.762,
+              377.496,
+              528.0
+            ],
+            "mark_center_px": [
+              371.4,
+              412.762
+            ],
+            "mark_fill_rgb": [
+              25,
+              212,
+              189
+            ],
+            "mark_outline_rgb": [
+              14,
+              117,
+              104
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Mic",
+            "series_rank": 0,
+            "value": 5
+          },
+          "entity_id": "mark_L_Mic",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              365.304,
+              113.143,
+              411.363,
+              562.0
+            ],
+            "category_label": "L",
+            "category_label_center_px": [
+              388.333,
+              554.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              382.237,
+              159.238,
+              394.429,
+              528.0
+            ],
+            "mark_center_px": [
+              388.333,
+              159.238
+            ],
+            "mark_fill_rgb": [
+              146,
+              15,
+              145
+            ],
+            "mark_outline_rgb": [
+              80,
+              8,
+              80
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Diba",
+            "series_rank": 1,
+            "value": 16
+          },
+          "entity_id": "mark_L_Diba",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              365.304,
+              113.143,
+              411.363,
+              562.0
+            ],
+            "category_label": "L",
+            "category_label_center_px": [
+              388.333,
+              554.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              399.171,
+              113.143,
+              411.363,
+              528.0
+            ],
+            "mark_center_px": [
+              405.267,
+              113.143
+            ],
+            "mark_fill_rgb": [
+              82,
+              120,
+              32
+            ],
+            "mark_outline_rgb": [
+              45,
+              66,
+              18
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Arlo",
+            "series_rank": 2,
+            "value": 18
+          },
+          "entity_id": "mark_L_Arlo",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              449.971,
+              159.238,
+              496.029,
+              562.0
+            ],
+            "category_label": "R",
+            "category_label_center_px": [
+              473.0,
               554.0
             ],
             "category_rank": 4,
             "mark_bbox_px": [
-              668.834,
-              481.905,
-              696.266,
+              449.971,
+              159.238,
+              462.163,
               528.0
             ],
             "mark_center_px": [
-              682.55,
-              481.905
+              456.067,
+              159.238
             ],
             "mark_fill_rgb": [
-              186,
-              128,
-              136
+              25,
+              212,
+              189
             ],
             "mark_outline_rgb": [
-              102,
-              70,
-              75
+              14,
+              117,
+              104
             ],
             "scene_variant": "grouped_bar",
-            "series_label": "Myra",
-            "series_rank": 1,
-            "value": 2
-          },
-          "entity_id": "mark_T_Myra",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              757.734,
-              205.333,
-              823.266,
-              564.0
-            ],
-            "category_label": "J",
-            "category_label_center_px": [
-              790.5,
-              554.0
-            ],
-            "category_rank": 5,
-            "mark_bbox_px": [
-              757.734,
-              228.381,
-              785.166,
-              528.0
-            ],
-            "mark_center_px": [
-              771.45,
-              228.381
-            ],
-            "mark_fill_rgb": [
-              13,
-              217,
-              64
-            ],
-            "mark_outline_rgb": [
-              7,
-              119,
-              35
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Kare",
+            "series_label": "Mic",
             "series_rank": 0,
-            "value": 13
+            "value": 16
           },
-          "entity_id": "mark_J_Kare",
+          "entity_id": "mark_R_Mic",
           "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              757.734,
-              205.333,
-              823.266,
-              564.0
+              449.971,
+              159.238,
+              496.029,
+              562.0
             ],
-            "category_label": "J",
+            "category_label": "R",
             "category_label_center_px": [
-              790.5,
+              473.0,
+              554.0
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              466.904,
+              251.429,
+              479.096,
+              528.0
+            ],
+            "mark_center_px": [
+              473.0,
+              251.429
+            ],
+            "mark_fill_rgb": [
+              146,
+              15,
+              145
+            ],
+            "mark_outline_rgb": [
+              80,
+              8,
+              80
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Diba",
+            "series_rank": 1,
+            "value": 12
+          },
+          "entity_id": "mark_R_Diba",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              449.971,
+              159.238,
+              496.029,
+              562.0
+            ],
+            "category_label": "R",
+            "category_label_center_px": [
+              473.0,
+              554.0
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              483.837,
+              389.714,
+              496.029,
+              528.0
+            ],
+            "mark_center_px": [
+              489.933,
+              389.714
+            ],
+            "mark_fill_rgb": [
+              82,
+              120,
+              32
+            ],
+            "mark_outline_rgb": [
+              45,
+              66,
+              18
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Arlo",
+            "series_rank": 2,
+            "value": 6
+          },
+          "entity_id": "mark_R_Arlo",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              534.637,
+              251.429,
+              580.696,
+              562.0
+            ],
+            "category_label": "S",
+            "category_label_center_px": [
+              557.667,
               554.0
             ],
             "category_rank": 5,
             "mark_bbox_px": [
-              795.834,
-              205.333,
-              823.266,
+              534.637,
+              251.429,
+              546.829,
               528.0
             ],
             "mark_center_px": [
-              809.55,
-              205.333
+              540.733,
+              251.429
             ],
             "mark_fill_rgb": [
-              186,
-              128,
-              136
+              25,
+              212,
+              189
             ],
             "mark_outline_rgb": [
-              102,
-              70,
-              75
+              14,
+              117,
+              104
             ],
             "scene_variant": "grouped_bar",
-            "series_label": "Myra",
-            "series_rank": 1,
-            "value": 14
+            "series_label": "Mic",
+            "series_rank": 0,
+            "value": 12
           },
-          "entity_id": "mark_J_Myra",
+          "entity_id": "mark_S_Mic",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              534.637,
+              251.429,
+              580.696,
+              562.0
+            ],
+            "category_label": "S",
+            "category_label_center_px": [
+              557.667,
+              554.0
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              551.571,
+              297.524,
+              563.763,
+              528.0
+            ],
+            "mark_center_px": [
+              557.667,
+              297.524
+            ],
+            "mark_fill_rgb": [
+              146,
+              15,
+              145
+            ],
+            "mark_outline_rgb": [
+              80,
+              8,
+              80
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Diba",
+            "series_rank": 1,
+            "value": 10
+          },
+          "entity_id": "mark_S_Diba",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              534.637,
+              251.429,
+              580.696,
+              562.0
+            ],
+            "category_label": "S",
+            "category_label_center_px": [
+              557.667,
+              554.0
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              568.504,
+              343.619,
+              580.696,
+              528.0
+            ],
+            "mark_center_px": [
+              574.6,
+              343.619
+            ],
+            "mark_fill_rgb": [
+              82,
+              120,
+              32
+            ],
+            "mark_outline_rgb": [
+              45,
+              66,
+              18
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Arlo",
+            "series_rank": 2,
+            "value": 8
+          },
+          "entity_id": "mark_S_Arlo",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              619.304,
+              90.095,
+              665.363,
+              563.5
+            ],
+            "category_label": "Q",
+            "category_label_center_px": [
+              642.333,
+              554.0
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              619.304,
+              90.095,
+              631.496,
+              528.0
+            ],
+            "mark_center_px": [
+              625.4,
+              90.095
+            ],
+            "mark_fill_rgb": [
+              25,
+              212,
+              189
+            ],
+            "mark_outline_rgb": [
+              14,
+              117,
+              104
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Mic",
+            "series_rank": 0,
+            "value": 19
+          },
+          "entity_id": "mark_Q_Mic",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              619.304,
+              90.095,
+              665.363,
+              563.5
+            ],
+            "category_label": "Q",
+            "category_label_center_px": [
+              642.333,
+              554.0
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              636.237,
+              251.429,
+              648.429,
+              528.0
+            ],
+            "mark_center_px": [
+              642.333,
+              251.429
+            ],
+            "mark_fill_rgb": [
+              146,
+              15,
+              145
+            ],
+            "mark_outline_rgb": [
+              80,
+              8,
+              80
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Diba",
+            "series_rank": 1,
+            "value": 12
+          },
+          "entity_id": "mark_Q_Diba",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              619.304,
+              90.095,
+              665.363,
+              563.5
+            ],
+            "category_label": "Q",
+            "category_label_center_px": [
+              642.333,
+              554.0
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              653.171,
+              504.952,
+              665.363,
+              528.0
+            ],
+            "mark_center_px": [
+              659.267,
+              504.952
+            ],
+            "mark_fill_rgb": [
+              82,
+              120,
+              32
+            ],
+            "mark_outline_rgb": [
+              45,
+              66,
+              18
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Arlo",
+            "series_rank": 2,
+            "value": 1
+          },
+          "entity_id": "mark_Q_Arlo",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              703.971,
+              113.143,
+              750.029,
+              562.0
+            ],
+            "category_label": "F",
+            "category_label_center_px": [
+              727.0,
+              554.0
+            ],
+            "category_rank": 7,
+            "mark_bbox_px": [
+              703.971,
+              113.143,
+              716.163,
+              528.0
+            ],
+            "mark_center_px": [
+              710.067,
+              113.143
+            ],
+            "mark_fill_rgb": [
+              25,
+              212,
+              189
+            ],
+            "mark_outline_rgb": [
+              14,
+              117,
+              104
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Mic",
+            "series_rank": 0,
+            "value": 18
+          },
+          "entity_id": "mark_F_Mic",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              703.971,
+              113.143,
+              750.029,
+              562.0
+            ],
+            "category_label": "F",
+            "category_label_center_px": [
+              727.0,
+              554.0
+            ],
+            "category_rank": 7,
+            "mark_bbox_px": [
+              720.904,
+              136.19,
+              733.096,
+              528.0
+            ],
+            "mark_center_px": [
+              727.0,
+              136.19
+            ],
+            "mark_fill_rgb": [
+              146,
+              15,
+              145
+            ],
+            "mark_outline_rgb": [
+              80,
+              8,
+              80
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Diba",
+            "series_rank": 1,
+            "value": 17
+          },
+          "entity_id": "mark_F_Diba",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              703.971,
+              113.143,
+              750.029,
+              562.0
+            ],
+            "category_label": "F",
+            "category_label_center_px": [
+              727.0,
+              554.0
+            ],
+            "category_rank": 7,
+            "mark_bbox_px": [
+              737.837,
+              504.952,
+              750.029,
+              528.0
+            ],
+            "mark_center_px": [
+              743.933,
+              504.952
+            ],
+            "mark_fill_rgb": [
+              82,
+              120,
+              32
+            ],
+            "mark_outline_rgb": [
+              45,
+              66,
+              18
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Arlo",
+            "series_rank": 2,
+            "value": 1
+          },
+          "entity_id": "mark_F_Arlo",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              788.637,
+              67.048,
+              834.696,
+              562.0
+            ],
+            "category_label": "A",
+            "category_label_center_px": [
+              811.667,
+              554.0
+            ],
+            "category_rank": 8,
+            "mark_bbox_px": [
+              788.637,
+              67.048,
+              800.829,
+              528.0
+            ],
+            "mark_center_px": [
+              794.733,
+              67.048
+            ],
+            "mark_fill_rgb": [
+              25,
+              212,
+              189
+            ],
+            "mark_outline_rgb": [
+              14,
+              117,
+              104
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Mic",
+            "series_rank": 0,
+            "value": 20
+          },
+          "entity_id": "mark_A_Mic",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              788.637,
+              67.048,
+              834.696,
+              562.0
+            ],
+            "category_label": "A",
+            "category_label_center_px": [
+              811.667,
+              554.0
+            ],
+            "category_rank": 8,
+            "mark_bbox_px": [
+              805.571,
+              136.19,
+              817.763,
+              528.0
+            ],
+            "mark_center_px": [
+              811.667,
+              136.19
+            ],
+            "mark_fill_rgb": [
+              146,
+              15,
+              145
+            ],
+            "mark_outline_rgb": [
+              80,
+              8,
+              80
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Diba",
+            "series_rank": 1,
+            "value": 17
+          },
+          "entity_id": "mark_A_Diba",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              788.637,
+              67.048,
+              834.696,
+              562.0
+            ],
+            "category_label": "A",
+            "category_label_center_px": [
+              811.667,
+              554.0
+            ],
+            "category_rank": 8,
+            "mark_bbox_px": [
+              822.504,
+              343.619,
+              834.696,
+              528.0
+            ],
+            "mark_center_px": [
+              828.6,
+              343.619
+            ],
+            "mark_fill_rgb": [
+              82,
+              120,
+              32
+            ],
+            "mark_outline_rgb": [
+              45,
+              66,
+              18
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Arlo",
+            "series_rank": 2,
+            "value": 8
+          },
+          "entity_id": "mark_A_Arlo",
           "entity_type": "bar"
         }
       ],
       "relations": {
         "comparison": "less_than",
         "evidence_labels": [
-          "D",
-          "J"
+          "L"
         ],
         "queried_series_labels": [
-          "Kare",
-          "Myra"
+          "Mic",
+          "Arlo"
         ],
         "scene_variant": "grouped_bar",
         "task_variant": "series_a_lt_b_count"
@@ -979,8 +1648,7 @@
     },
     "witness_symbolic": {
       "labels": [
-        "D",
-        "J"
+        "L"
       ],
       "type": "label_set"
     }

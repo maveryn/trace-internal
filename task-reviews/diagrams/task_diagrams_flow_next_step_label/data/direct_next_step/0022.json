@@ -1,16 +1,16 @@
 {
   "answer_gt": {
     "type": "string",
-    "value": "Verify File"
+    "value": "Create Packet"
   },
   "evidence_gt": {
     "type": "bbox_set",
     "value": [
       [
-        872.2,
-        609.64,
-        1086.2,
-        693.64
+        805.0,
+        477.2,
+        1019.0,
+        561.2
       ]
     ]
   },
@@ -18,11 +18,11 @@
     "format": "png",
     "path": "diagrams/task_diagrams_flow_next_step_label/images/direct_next_step/0022.png"
   },
-  "instance_seed": 4142928270288771,
-  "prompt": "The image shows a swimlane process diagram with labeled steps and arrows. Determine the correct next step from the diagram: What is the next step after Record Ticket? Return the exact step label shown. Respond with the exact step label from the diagram.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct next-step box.\nAnswer requirement: set \"answer\" to the exact visible next-step label.\nExample JSON:\n{\"evidence\":[[624,228,838,312]],\"answer\":\"Approve Order\"}",
+  "instance_seed": 1751542819258854,
+  "prompt": "Use the process diagram in the image: a flowchart with labeled process boxes and arrows. Determine the correct next step from the diagram: What is the next step after Inspect File? Return the exact step label shown. Answer with the exact step label shown.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct next-step box.\nAnswer rule: set \"answer\" to the exact visible next-step label.\nExample JSON:\n{\"evidence\":[[624,228,838,312]],\"answer\":\"Approve Order\"}",
   "prompt_variants": {
-    "answer_and_evidence": "The image shows a swimlane process diagram with labeled steps and arrows. Determine the correct next step from the diagram: What is the next step after Record Ticket? Return the exact step label shown. Respond with the exact step label from the diagram.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct next-step box.\nAnswer requirement: set \"answer\" to the exact visible next-step label.\nExample JSON:\n{\"evidence\":[[624,228,838,312]],\"answer\":\"Approve Order\"}",
-    "answer_only": "The image shows a swimlane process diagram with labeled steps and arrows. Determine the correct next step from the diagram: What is the next step after Record Ticket? Return the exact step label shown. Respond with the exact step label from the diagram.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the exact visible next-step label.\nExample JSON:\n{\"answer\":\"Approve Order\"}"
+    "answer_and_evidence": "Use the process diagram in the image: a flowchart with labeled process boxes and arrows. Determine the correct next step from the diagram: What is the next step after Inspect File? Return the exact step label shown. Answer with the exact step label shown.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct next-step box.\nAnswer rule: set \"answer\" to the exact visible next-step label.\nExample JSON:\n{\"evidence\":[[624,228,838,312]],\"answer\":\"Approve Order\"}",
+    "answer_only": "Use the process diagram in the image: a flowchart with labeled process boxes and arrows. Determine the correct next step from the diagram: What is the next step after Inspect File? Return the exact step label shown. Answer with the exact step label shown.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the exact visible next-step label.\nExample JSON:\n{\"answer\":\"Approve Order\"}"
   },
   "task": "task_diagrams_flow_next_step_label",
   "task_variant": "direct_next_step",
@@ -45,7 +45,7 @@
     "execution_trace": {
       "answer_node_bbox_id": "node_bbox_3",
       "answer_node_id": "node_3",
-      "answer_node_label": "Verify File",
+      "answer_node_label": "Create Packet",
       "edge_specs": [
         {
           "edge_id": "edge_0",
@@ -53,12 +53,7 @@
           "edge_label_bbox_id": null,
           "source_node_id": "node_0",
           "target_node_id": "node_1",
-          "waypoints_rel": [
-            [
-              0.16,
-              0.5
-            ]
-          ]
+          "waypoints_rel": []
         },
         {
           "edge_id": "edge_1",
@@ -93,108 +88,89 @@
           "waypoints_rel": []
         }
       ],
-      "lane_count": 3,
-      "lane_specs": [
-        {
-          "lane_bbox_id": "lane_bbox_0",
-          "lane_id": "lane_0",
-          "lane_label": "Draft",
-          "lane_label_bbox_id": "lane_label_bbox_0"
-        },
-        {
-          "lane_bbox_id": "lane_bbox_1",
-          "lane_id": "lane_1",
-          "lane_label": "Approval",
-          "lane_label_bbox_id": "lane_label_bbox_1"
-        },
-        {
-          "lane_bbox_id": "lane_bbox_2",
-          "lane_id": "lane_2",
-          "lane_label": "Delivery",
-          "lane_label_bbox_id": "lane_label_bbox_2"
-        }
-      ],
+      "lane_count": 0,
+      "lane_specs": [],
       "node_specs": [
         {
           "center_rel": [
             0.16,
-            0.18
+            0.24
           ],
-          "lane_id": "lane_0",
+          "lane_id": null,
           "node_bbox_id": "node_bbox_0",
           "node_id": "node_0",
           "node_kind": "process",
-          "node_label": "Record Packet",
+          "node_label": "Schedule Approval",
           "node_label_bbox_id": "node_label_bbox_0"
         },
         {
           "center_rel": [
-            0.5,
-            0.5
+            0.48,
+            0.24
           ],
-          "lane_id": "lane_1",
+          "lane_id": null,
           "node_bbox_id": "node_bbox_1",
           "node_id": "node_1",
           "node_kind": "process",
-          "node_label": "Check Request",
+          "node_label": "Release Shipment",
           "node_label_bbox_id": "node_label_bbox_1"
         },
         {
           "center_rel": [
-            0.84,
-            0.5
+            0.8,
+            0.24
           ],
-          "lane_id": "lane_1",
+          "lane_id": null,
           "node_bbox_id": "node_bbox_2",
           "node_id": "node_2",
           "node_kind": "process",
-          "node_label": "Record Ticket",
+          "node_label": "Inspect File",
           "node_label_bbox_id": "node_label_bbox_2"
         },
         {
           "center_rel": [
-            0.84,
-            0.82
+            0.8,
+            0.6
           ],
-          "lane_id": "lane_2",
+          "lane_id": null,
           "node_bbox_id": "node_bbox_3",
           "node_id": "node_3",
           "node_kind": "process",
-          "node_label": "Verify File",
+          "node_label": "Create Packet",
           "node_label_bbox_id": "node_label_bbox_3"
         },
         {
           "center_rel": [
-            0.5,
-            0.82
+            0.48,
+            0.6
           ],
-          "lane_id": "lane_2",
+          "lane_id": null,
           "node_bbox_id": "node_bbox_4",
           "node_id": "node_4",
           "node_kind": "process",
-          "node_label": "Route Packet",
+          "node_label": "Check Summary",
           "node_label_bbox_id": "node_label_bbox_4"
         },
         {
           "center_rel": [
             0.16,
-            0.82
+            0.6
           ],
-          "lane_id": "lane_2",
+          "lane_id": null,
           "node_bbox_id": "node_bbox_5",
           "node_id": "node_5",
           "node_kind": "process",
-          "node_label": "Confirm Payment",
+          "node_label": "Verify Plan",
           "node_label_bbox_id": "node_label_bbox_5"
         }
       ],
       "query_branch_label": null,
       "query_node_id": "node_2",
-      "query_node_label": "Record Ticket",
+      "query_node_label": "Inspect File",
       "question_format": "flow_next_step_label",
-      "question_text": "What is the next step after Record Ticket? Return the exact step label shown.",
-      "scene_title": "Approval Flow",
-      "scene_variant": "swimlane",
+      "question_text": "What is the next step after Inspect File? Return the exact step label shown.",
+      "scene_title": "Request Flow",
+      "scene_variant": "flowchart",
       "supporting_node_bbox_ids": [
         "node_bbox_3"
       ],
@@ -221,18 +197,18 @@
     "projected_evidence": {
       "bbox_set": [
         [
-          872.2,
-          609.64,
-          1086.2,
-          693.64
+          805.0,
+          477.2,
+          1019.0,
+          561.2
         ]
       ]
     },
     "query_spec": {
       "params": {
-        "lane_count": 3,
+        "lane_count": 0,
         "query_branch_label": null,
-        "scene_variant": "swimlane",
+        "scene_variant": "flowchart",
         "scene_variant_probabilities": {
           "flowchart": 0.5,
           "swimlane": 0.5
@@ -246,7 +222,7 @@
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 2,
+        "answer_or_evidence_variant_index": 4,
         "prompt_bundle_id": "diagrams_flow_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -256,15 +232,15 @@
           "json_example_answer_only": "{\"answer\":\"Approve Order\"}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "object_description": "a swimlane process diagram with labeled steps and arrows",
-          "question_text": "What is the next step after Record Ticket? Return the exact step label shown."
+          "object_description": "a flowchart with labeled process boxes and arrows",
+          "question_text": "What is the next step after Inspect File? Return the exact step label shown."
         },
         "task_family_key": "process_flow_diagram",
-        "task_family_variant_index": 0,
+        "task_family_variant_index": 4,
         "task_key": "next_step_query",
         "task_variant_index": 3,
         "task_variant_key": "direct_next_step",
-        "task_variant_template_index": 2,
+        "task_variant_template_index": 0,
         "template_paths": [
           "diagrams/flow/diagrams_flow_v1.json"
         ],
@@ -280,7 +256,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 2,
+            "answer_or_evidence_variant_index": 4,
             "prompt_bundle_id": "diagrams_flow_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -290,15 +266,15 @@
               "json_example_answer_only": "{\"answer\":\"Approve Order\"}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a swimlane process diagram with labeled steps and arrows",
-              "question_text": "What is the next step after Record Ticket? Return the exact step label shown."
+              "object_description": "a flowchart with labeled process boxes and arrows",
+              "question_text": "What is the next step after Inspect File? Return the exact step label shown."
             },
             "task_family_key": "process_flow_diagram",
-            "task_family_variant_index": 0,
+            "task_family_variant_index": 4,
             "task_key": "next_step_query",
             "task_variant_index": 3,
             "task_variant_key": "direct_next_step",
-            "task_variant_template_index": 2,
+            "task_variant_template_index": 0,
             "template_paths": [
               "diagrams/flow/diagrams_flow_v1.json"
             ],
@@ -309,12 +285,12 @@
               "task_variant:direct_next_step": 5
             }
           },
-          "prompt": "The image shows a swimlane process diagram with labeled steps and arrows. Determine the correct next step from the diagram: What is the next step after Record Ticket? Return the exact step label shown. Respond with the exact step label from the diagram.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct next-step box.\nAnswer requirement: set \"answer\" to the exact visible next-step label.\nExample JSON:\n{\"evidence\":[[624,228,838,312]],\"answer\":\"Approve Order\"}"
+          "prompt": "Use the process diagram in the image: a flowchart with labeled process boxes and arrows. Determine the correct next step from the diagram: What is the next step after Inspect File? Return the exact step label shown. Answer with the exact step label shown.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct next-step box.\nAnswer rule: set \"answer\" to the exact visible next-step label.\nExample JSON:\n{\"evidence\":[[624,228,838,312]],\"answer\":\"Approve Order\"}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 0,
+            "answer_or_evidence_variant_index": 1,
             "prompt_bundle_id": "diagrams_flow_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -324,15 +300,15 @@
               "json_example_answer_only": "{\"answer\":\"Approve Order\"}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a swimlane process diagram with labeled steps and arrows",
-              "question_text": "What is the next step after Record Ticket? Return the exact step label shown."
+              "object_description": "a flowchart with labeled process boxes and arrows",
+              "question_text": "What is the next step after Inspect File? Return the exact step label shown."
             },
             "task_family_key": "process_flow_diagram",
-            "task_family_variant_index": 0,
+            "task_family_variant_index": 4,
             "task_key": "next_step_query",
             "task_variant_index": 3,
             "task_variant_key": "direct_next_step",
-            "task_variant_template_index": 2,
+            "task_variant_template_index": 0,
             "template_paths": [
               "diagrams/flow/diagrams_flow_v1.json"
             ],
@@ -343,7 +319,7 @@
               "task_variant:direct_next_step": 5
             }
           },
-          "prompt": "The image shows a swimlane process diagram with labeled steps and arrows. Determine the correct next step from the diagram: What is the next step after Record Ticket? Return the exact step label shown. Respond with the exact step label from the diagram.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the exact visible next-step label.\nExample JSON:\n{\"answer\":\"Approve Order\"}"
+          "prompt": "Use the process diagram in the image: a flowchart with labeled process boxes and arrows. Determine the correct next step from the diagram: What is the next step after Inspect File? Return the exact step label shown. Answer with the exact step label shown.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the exact visible next-step label.\nExample JSON:\n{\"answer\":\"Approve Order\"}"
         }
       },
       "task_variant": "direct_next_step",
@@ -351,120 +327,82 @@
     },
     "render_map": {
       "edge_label_bboxes_px": {},
-      "lane_bboxes_px": {
-        "lane_0": [
-          80.0,
-          158.0,
-          1120.0,
-          358.667
-        ],
-        "lane_1": [
-          80.0,
-          358.667,
-          1120.0,
-          559.333
-        ],
-        "lane_2": [
-          80.0,
-          559.333,
-          1120.0,
-          760.0
-        ]
-      },
-      "lane_label_bboxes_px": {
-        "lane_0": [
-          124.5,
-          248.333,
-          195.5,
-          268.333
-        ],
-        "lane_1": [
-          98.5,
-          446.5,
-          221.5,
-          471.5
-        ],
-        "lane_2": [
-          103.0,
-          647.167,
-          217.0,
-          672.167
-        ]
-      },
+      "lane_bboxes_px": {},
+      "lane_label_bboxes_px": {},
       "node_bboxes_px": {
         "node_bbox_0": [
-          273.8,
-          224.36,
-          487.8,
-          308.36
+          139.4,
+          260.48,
+          353.4,
+          344.48
         ],
         "node_bbox_1": [
-          573.0,
-          417.0,
-          787.0,
-          501.0
+          472.2,
+          260.48,
+          686.2,
+          344.48
         ],
         "node_bbox_2": [
-          872.2,
-          417.0,
-          1086.2,
-          501.0
+          805.0,
+          260.48,
+          1019.0,
+          344.48
         ],
         "node_bbox_3": [
-          872.2,
-          609.64,
-          1086.2,
-          693.64
+          805.0,
+          477.2,
+          1019.0,
+          561.2
         ],
         "node_bbox_4": [
-          573.0,
-          609.64,
-          787.0,
-          693.64
+          472.2,
+          477.2,
+          686.2,
+          561.2
         ],
         "node_bbox_5": [
-          273.8,
-          609.64,
-          487.8,
-          693.64
+          139.4,
+          477.2,
+          353.4,
+          561.2
         ]
       },
       "node_label_bboxes_px": {
         "node_label_bbox_0": [
-          285.8,
-          256.86,
-          475.8,
-          275.86
+          150.4,
+          292.48,
+          342.4,
+          312.48
         ],
         "node_label_bbox_1": [
-          586.0,
-          447.0,
-          774.0,
-          471.0
+          486.7,
+          292.48,
+          671.7,
+          312.48
         ],
         "node_label_bbox_2": [
-          887.2,
-          449.0,
-          1071.2,
-          469.0
+          819.0,
+          287.98,
+          1005.0,
+          316.98
         ],
         "node_label_bbox_3": [
-          896.7,
-          637.14,
-          1061.7,
-          666.14
+          817.0,
+          509.2,
+          1007.0,
+          529.2
         ],
         "node_label_bbox_4": [
-          585.0,
-          641.14,
-          775.0,
-          662.14
+          483.7,
+          508.2,
+          674.7,
+          530.2
         ],
         "node_label_bbox_5": [
-          286.3,
-          641.64,
-          475.3,
-          661.64
+          157.9,
+          504.7,
+          334.9,
+          533.7
         ]
       },
       "panel_bbox_px": [
@@ -474,9 +412,9 @@
         788.0
       ],
       "title_bbox_px": [
-        469.5,
+        476.5,
         74.5,
-        730.5,
+        723.5,
         107.5
       ]
     },
@@ -485,11 +423,11 @@
       "canvas_width": 1200,
       "decision_diameter_px": 132,
       "edge_width_px": 5,
-      "geometry_seed": 4142928270288771,
+      "geometry_seed": 1751542819258854,
       "lane_gutter_width_px": 160,
       "node_height_px": 84,
       "node_width_px": 214,
-      "scene_variant": "swimlane"
+      "scene_variant": "flowchart"
     },
     "scene_ir": {
       "entities": [
@@ -505,86 +443,14 @@
         },
         {
           "bbox_xyxy": [
-            469.5,
+            476.5,
             74.5,
-            730.5,
+            723.5,
             107.5
           ],
           "entity_id": "diagram_title",
           "entity_type": "diagram_title",
-          "text": "Approval Flow"
-        },
-        {
-          "bbox_xyxy": [
-            80.0,
-            158.0,
-            1120.0,
-            358.667
-          ],
-          "entity_id": "lane_bbox_0",
-          "entity_type": "diagram_lane",
-          "lane_id": "lane_0",
-          "text": "Draft"
-        },
-        {
-          "bbox_xyxy": [
-            124.5,
-            248.333,
-            195.5,
-            268.333
-          ],
-          "entity_id": "lane_label_bbox_0",
-          "entity_type": "diagram_lane_label",
-          "lane_id": "lane_0",
-          "text": "Draft"
-        },
-        {
-          "bbox_xyxy": [
-            80.0,
-            358.667,
-            1120.0,
-            559.333
-          ],
-          "entity_id": "lane_bbox_1",
-          "entity_type": "diagram_lane",
-          "lane_id": "lane_1",
-          "text": "Approval"
-        },
-        {
-          "bbox_xyxy": [
-            98.5,
-            446.5,
-            221.5,
-            471.5
-          ],
-          "entity_id": "lane_label_bbox_1",
-          "entity_type": "diagram_lane_label",
-          "lane_id": "lane_1",
-          "text": "Approval"
-        },
-        {
-          "bbox_xyxy": [
-            80.0,
-            559.333,
-            1120.0,
-            760.0
-          ],
-          "entity_id": "lane_bbox_2",
-          "entity_type": "diagram_lane",
-          "lane_id": "lane_2",
-          "text": "Delivery"
-        },
-        {
-          "bbox_xyxy": [
-            103.0,
-            647.167,
-            217.0,
-            672.167
-          ],
-          "entity_id": "lane_label_bbox_2",
-          "entity_type": "diagram_lane_label",
-          "lane_id": "lane_2",
-          "text": "Delivery"
+          "text": "Request Flow"
         },
         {
           "edge_label": null,
@@ -623,169 +489,169 @@
         },
         {
           "bbox_xyxy": [
-            273.8,
-            224.36,
-            487.8,
-            308.36
+            139.4,
+            260.48,
+            353.4,
+            344.48
           ],
           "entity_id": "node_bbox_0",
           "entity_type": "diagram_node",
-          "lane_id": "lane_0",
+          "lane_id": null,
           "node_id": "node_0",
           "node_kind": "process",
-          "text": "Record Packet"
+          "text": "Schedule Approval"
         },
         {
           "bbox_xyxy": [
-            285.8,
-            256.86,
-            475.8,
-            275.86
+            150.4,
+            292.48,
+            342.4,
+            312.48
           ],
           "entity_id": "node_label_bbox_0",
           "entity_type": "diagram_node_label",
           "node_id": "node_0",
-          "text": "Record Packet"
+          "text": "Schedule Approval"
         },
         {
           "bbox_xyxy": [
-            573.0,
-            417.0,
-            787.0,
-            501.0
+            472.2,
+            260.48,
+            686.2,
+            344.48
           ],
           "entity_id": "node_bbox_1",
           "entity_type": "diagram_node",
-          "lane_id": "lane_1",
+          "lane_id": null,
           "node_id": "node_1",
           "node_kind": "process",
-          "text": "Check Request"
+          "text": "Release Shipment"
         },
         {
           "bbox_xyxy": [
-            586.0,
-            447.0,
-            774.0,
-            471.0
+            486.7,
+            292.48,
+            671.7,
+            312.48
           ],
           "entity_id": "node_label_bbox_1",
           "entity_type": "diagram_node_label",
           "node_id": "node_1",
-          "text": "Check Request"
+          "text": "Release Shipment"
         },
         {
           "bbox_xyxy": [
-            872.2,
-            417.0,
-            1086.2,
-            501.0
+            805.0,
+            260.48,
+            1019.0,
+            344.48
           ],
           "entity_id": "node_bbox_2",
           "entity_type": "diagram_node",
-          "lane_id": "lane_1",
+          "lane_id": null,
           "node_id": "node_2",
           "node_kind": "process",
-          "text": "Record Ticket"
+          "text": "Inspect File"
         },
         {
           "bbox_xyxy": [
-            887.2,
-            449.0,
-            1071.2,
-            469.0
+            819.0,
+            287.98,
+            1005.0,
+            316.98
           ],
           "entity_id": "node_label_bbox_2",
           "entity_type": "diagram_node_label",
           "node_id": "node_2",
-          "text": "Record Ticket"
+          "text": "Inspect File"
         },
         {
           "bbox_xyxy": [
-            872.2,
-            609.64,
-            1086.2,
-            693.64
+            805.0,
+            477.2,
+            1019.0,
+            561.2
           ],
           "entity_id": "node_bbox_3",
           "entity_type": "diagram_node",
-          "lane_id": "lane_2",
+          "lane_id": null,
           "node_id": "node_3",
           "node_kind": "process",
-          "text": "Verify File"
+          "text": "Create Packet"
         },
         {
           "bbox_xyxy": [
-            896.7,
-            637.14,
-            1061.7,
-            666.14
+            817.0,
+            509.2,
+            1007.0,
+            529.2
           ],
           "entity_id": "node_label_bbox_3",
           "entity_type": "diagram_node_label",
           "node_id": "node_3",
-          "text": "Verify File"
+          "text": "Create Packet"
         },
         {
           "bbox_xyxy": [
-            573.0,
-            609.64,
-            787.0,
-            693.64
+            472.2,
+            477.2,
+            686.2,
+            561.2
           ],
           "entity_id": "node_bbox_4",
           "entity_type": "diagram_node",
-          "lane_id": "lane_2",
+          "lane_id": null,
           "node_id": "node_4",
           "node_kind": "process",
-          "text": "Route Packet"
+          "text": "Check Summary"
         },
         {
           "bbox_xyxy": [
-            585.0,
-            641.14,
-            775.0,
-            662.14
+            483.7,
+            508.2,
+            674.7,
+            530.2
           ],
           "entity_id": "node_label_bbox_4",
           "entity_type": "diagram_node_label",
           "node_id": "node_4",
-          "text": "Route Packet"
+          "text": "Check Summary"
         },
         {
           "bbox_xyxy": [
-            273.8,
-            609.64,
-            487.8,
-            693.64
+            139.4,
+            477.2,
+            353.4,
+            561.2
           ],
           "entity_id": "node_bbox_5",
           "entity_type": "diagram_node",
-          "lane_id": "lane_2",
+          "lane_id": null,
           "node_id": "node_5",
           "node_kind": "process",
-          "text": "Confirm Payment"
+          "text": "Verify Plan"
         },
         {
           "bbox_xyxy": [
-            286.3,
-            641.64,
-            475.3,
-            661.64
+            157.9,
+            504.7,
+            334.9,
+            533.7
           ],
           "entity_id": "node_label_bbox_5",
           "entity_type": "diagram_node_label",
           "node_id": "node_5",
-          "text": "Confirm Payment"
+          "text": "Verify Plan"
         }
       ],
       "relations": {
         "answer_node_bbox_id": "node_bbox_3",
         "answer_node_id": "node_3",
-        "scene_variant": "swimlane",
+        "scene_variant": "flowchart",
         "task_variant": "direct_next_step",
         "view_family": "process_flow_diagram"
       },
-      "scene_kind": "diagram_flow_swimlane"
+      "scene_kind": "diagram_flow_flowchart"
     },
     "witness_symbolic": {
       "ids": [

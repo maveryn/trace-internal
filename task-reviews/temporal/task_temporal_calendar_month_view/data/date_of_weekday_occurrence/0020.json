@@ -1,15 +1,15 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 26
+    "value": 25
   },
   "evidence_gt": {
     "type": "bbox_set",
     "value": [
       [
-        378.0,
+        154.0,
         536.0,
-        482.0,
+        258.0,
         623.0
       ]
     ]
@@ -18,17 +18,17 @@
     "format": "png",
     "path": "temporal/task_temporal_calendar_month_view/images/date_of_weekday_occurrence/0020.png"
   },
-  "instance_seed": 2813695989324003,
-  "prompt": "The image shows one month-view calendar for August 2027 with weekday headers and date cells. Work from the full calendar grid to answer the question. What date is the 4th Thursday of this month?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the target date cell.\nAnswer rule: set \"answer\" to the integer date number.\nExample JSON:\n{\"evidence\":[[354,256,456,352]],\"answer\":18}",
+  "instance_seed": 120396173366572,
+  "prompt": "The image shows one month-view calendar for July 2028 with weekday headers and date cells. Answer the question using the calendar. Which date number is the 4th Tuesday of this month?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the target date cell.\nAnswer format: set \"answer\" to the integer date number.\nExample JSON:\n{\"evidence\":[[354,256,456,352]],\"answer\":18}",
   "prompt_variants": {
-    "answer_and_evidence": "The image shows one month-view calendar for August 2027 with weekday headers and date cells. Work from the full calendar grid to answer the question. What date is the 4th Thursday of this month?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the target date cell.\nAnswer rule: set \"answer\" to the integer date number.\nExample JSON:\n{\"evidence\":[[354,256,456,352]],\"answer\":18}",
-    "answer_only": "The image shows one month-view calendar for August 2027 with weekday headers and date cells. Work from the full calendar grid to answer the question. What date is the 4th Thursday of this month?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the integer date number.\nExample JSON:\n{\"answer\":18}"
+    "answer_and_evidence": "The image shows one month-view calendar for July 2028 with weekday headers and date cells. Answer the question using the calendar. Which date number is the 4th Tuesday of this month?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the target date cell.\nAnswer format: set \"answer\" to the integer date number.\nExample JSON:\n{\"evidence\":[[354,256,456,352]],\"answer\":18}",
+    "answer_only": "The image shows one month-view calendar for July 2028 with weekday headers and date cells. Answer the question using the calendar. Which date number is the 4th Tuesday of this month?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the integer date number.\nExample JSON:\n{\"answer\":18}"
   },
   "task": "task_temporal_calendar_month_view",
   "task_variant": "date_of_weekday_occurrence",
   "trace_payload": {
     "execution_trace": {
-      "accent_color_name": "maroon",
+      "accent_color_name": "magenta",
       "accent_color_name_probabilities": {
         "blue": 0.1,
         "brown": 0.1,
@@ -41,16 +41,16 @@
         "red": 0.1,
         "yellow": 0.1
       },
-      "answer_value": 26,
+      "answer_value": 25,
       "days_in_month": 31,
       "evidence_dates": [
-        26
+        25
       ],
       "marked_dates": [],
-      "month": 8,
-      "month_name": "August",
+      "month": 7,
+      "month_name": "July",
       "query_occurrence": 4,
-      "query_weekday_index": 3,
+      "query_weekday_index": 1,
       "row_count": 6,
       "scene_variant": "outline",
       "scene_variant_probabilities": {
@@ -58,8 +58,8 @@
         "minimal": 0.3333333333333333,
         "outline": 0.3333333333333333
       },
-      "start_weekday_index": 6,
-      "style_variant": "accented",
+      "start_weekday_index": 5,
+      "style_variant": "studio",
       "style_variant_probabilities": {
         "accented": 0.3333333333333333,
         "marker": 0.3333333333333333,
@@ -76,21 +76,21 @@
         5,
         6
       ],
-      "year": 2027
+      "year": 2028
     },
     "projected_evidence": {
       "bbox_set": [
         [
-          378.0,
+          154.0,
           536.0,
-          482.0,
+          258.0,
           623.0
         ]
       ]
     },
     "query_spec": {
       "params": {
-        "accent_color_name": "maroon",
+        "accent_color_name": "magenta",
         "accent_color_name_probabilities": {
           "blue": 0.1,
           "brown": 0.1,
@@ -146,12 +146,12 @@
           3,
           4
         ],
-        "month": 8,
-        "month_name": "August",
+        "month": 7,
+        "month_name": "July",
         "query_occurrence": 4,
         "query_occurrence_label": "4th",
-        "query_weekday_index": 3,
-        "query_weekday_name": "Thursday",
+        "query_weekday_index": 1,
+        "query_weekday_name": "Tuesday",
         "row_count": 6,
         "scene_variant": "outline",
         "scene_variant_probabilities": {
@@ -159,8 +159,8 @@
           "minimal": 0.3333333333333333,
           "outline": 0.3333333333333333
         },
-        "start_weekday_index": 6,
-        "style_variant": "accented",
+        "start_weekday_index": 5,
+        "style_variant": "studio",
         "style_variant_probabilities": {
           "accented": 0.3333333333333333,
           "marker": 0.3333333333333333,
@@ -176,11 +176,11 @@
           5,
           6
         ],
-        "year": 2027
+        "year": 2028
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 4,
+        "answer_or_evidence_variant_index": 1,
         "prompt_bundle_id": "temporal_calendar_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -190,16 +190,16 @@
           "json_example_answer_only": "{\"answer\":18}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "object_description": "one month-view calendar for August 2027 with weekday headers and date cells",
+          "object_description": "one month-view calendar for July 2028 with weekday headers and date cells",
           "ordinal": "4th",
-          "weekday_name": "Thursday"
+          "weekday_name": "Tuesday"
         },
         "task_family_key": "month_calendar",
         "task_family_variant_index": 0,
         "task_key": "calendar_month_query",
-        "task_variant_index": 3,
+        "task_variant_index": 0,
         "task_variant_key": "date_of_weekday_occurrence",
-        "task_variant_template_index": 0,
+        "task_variant_template_index": 2,
         "template_paths": [
           "temporal/calendar/temporal_calendar_v1.json"
         ],
@@ -215,7 +215,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 4,
+            "answer_or_evidence_variant_index": 1,
             "prompt_bundle_id": "temporal_calendar_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -225,16 +225,16 @@
               "json_example_answer_only": "{\"answer\":18}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "one month-view calendar for August 2027 with weekday headers and date cells",
+              "object_description": "one month-view calendar for July 2028 with weekday headers and date cells",
               "ordinal": "4th",
-              "weekday_name": "Thursday"
+              "weekday_name": "Tuesday"
             },
             "task_family_key": "month_calendar",
             "task_family_variant_index": 0,
             "task_key": "calendar_month_query",
-            "task_variant_index": 3,
+            "task_variant_index": 0,
             "task_variant_key": "date_of_weekday_occurrence",
-            "task_variant_template_index": 0,
+            "task_variant_template_index": 2,
             "template_paths": [
               "temporal/calendar/temporal_calendar_v1.json"
             ],
@@ -245,7 +245,7 @@
               "task_variant:date_of_weekday_occurrence": 5
             }
           },
-          "prompt": "The image shows one month-view calendar for August 2027 with weekday headers and date cells. Work from the full calendar grid to answer the question. What date is the 4th Thursday of this month?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the target date cell.\nAnswer rule: set \"answer\" to the integer date number.\nExample JSON:\n{\"evidence\":[[354,256,456,352]],\"answer\":18}"
+          "prompt": "The image shows one month-view calendar for July 2028 with weekday headers and date cells. Answer the question using the calendar. Which date number is the 4th Tuesday of this month?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the target date cell.\nAnswer format: set \"answer\" to the integer date number.\nExample JSON:\n{\"evidence\":[[354,256,456,352]],\"answer\":18}"
         },
         "answer_only": {
           "metadata": {
@@ -260,16 +260,16 @@
               "json_example_answer_only": "{\"answer\":18}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "one month-view calendar for August 2027 with weekday headers and date cells",
+              "object_description": "one month-view calendar for July 2028 with weekday headers and date cells",
               "ordinal": "4th",
-              "weekday_name": "Thursday"
+              "weekday_name": "Tuesday"
             },
             "task_family_key": "month_calendar",
             "task_family_variant_index": 0,
             "task_key": "calendar_month_query",
-            "task_variant_index": 3,
+            "task_variant_index": 0,
             "task_variant_key": "date_of_weekday_occurrence",
-            "task_variant_template_index": 0,
+            "task_variant_template_index": 2,
             "template_paths": [
               "temporal/calendar/temporal_calendar_v1.json"
             ],
@@ -280,204 +280,204 @@
               "task_variant:date_of_weekday_occurrence": 5
             }
           },
-          "prompt": "The image shows one month-view calendar for August 2027 with weekday headers and date cells. Work from the full calendar grid to answer the question. What date is the 4th Thursday of this month?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the integer date number.\nExample JSON:\n{\"answer\":18}"
+          "prompt": "The image shows one month-view calendar for July 2028 with weekday headers and date cells. Answer the question using the calendar. Which date number is the 4th Tuesday of this month?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the integer date number.\nExample JSON:\n{\"answer\":18}"
         }
       },
       "task_variant": "date_of_weekday_occurrence",
       "template_id": "temporal_calendar_v1"
     },
     "render_map": {
-      "calendar_title_text": "August 2027",
+      "calendar_title_text": "July 2028",
       "date_cells_by_day": {
         "1": [
+          602.0,
+          156.0,
+          706.0,
+          243.0
+        ],
+        "10": [
+          42.0,
+          346.0,
+          146.0,
+          433.0
+        ],
+        "11": [
+          154.0,
+          346.0,
+          258.0,
+          433.0
+        ],
+        "12": [
+          266.0,
+          346.0,
+          370.0,
+          433.0
+        ],
+        "13": [
+          378.0,
+          346.0,
+          482.0,
+          433.0
+        ],
+        "14": [
+          490.0,
+          346.0,
+          594.0,
+          433.0
+        ],
+        "15": [
+          602.0,
+          346.0,
+          706.0,
+          433.0
+        ],
+        "16": [
+          714.0,
+          346.0,
+          818.0,
+          433.0
+        ],
+        "17": [
+          42.0,
+          441.0,
+          146.0,
+          528.0
+        ],
+        "18": [
+          154.0,
+          441.0,
+          258.0,
+          528.0
+        ],
+        "19": [
+          266.0,
+          441.0,
+          370.0,
+          528.0
+        ],
+        "2": [
           714.0,
           156.0,
           818.0,
           243.0
         ],
-        "10": [
-          154.0,
-          346.0,
-          258.0,
-          433.0
-        ],
-        "11": [
-          266.0,
-          346.0,
-          370.0,
-          433.0
-        ],
-        "12": [
-          378.0,
-          346.0,
-          482.0,
-          433.0
-        ],
-        "13": [
-          490.0,
-          346.0,
-          594.0,
-          433.0
-        ],
-        "14": [
-          602.0,
-          346.0,
-          706.0,
-          433.0
-        ],
-        "15": [
-          714.0,
-          346.0,
-          818.0,
-          433.0
-        ],
-        "16": [
-          42.0,
-          441.0,
-          146.0,
-          528.0
-        ],
-        "17": [
-          154.0,
-          441.0,
-          258.0,
-          528.0
-        ],
-        "18": [
-          266.0,
-          441.0,
-          370.0,
-          528.0
-        ],
-        "19": [
-          378.0,
-          441.0,
-          482.0,
-          528.0
-        ],
-        "2": [
-          42.0,
-          251.0,
-          146.0,
-          338.0
-        ],
         "20": [
-          490.0,
+          378.0,
           441.0,
-          594.0,
+          482.0,
           528.0
         ],
         "21": [
-          602.0,
+          490.0,
           441.0,
-          706.0,
+          594.0,
           528.0
         ],
         "22": [
+          602.0,
+          441.0,
+          706.0,
+          528.0
+        ],
+        "23": [
           714.0,
           441.0,
           818.0,
           528.0
         ],
-        "23": [
+        "24": [
           42.0,
           536.0,
           146.0,
-          623.0
-        ],
-        "24": [
-          154.0,
-          536.0,
-          258.0,
           623.0
         ],
         "25": [
-          266.0,
+          154.0,
           536.0,
-          370.0,
+          258.0,
           623.0
         ],
         "26": [
+          266.0,
+          536.0,
+          370.0,
+          623.0
+        ],
+        "27": [
           378.0,
           536.0,
           482.0,
           623.0
         ],
-        "27": [
+        "28": [
           490.0,
           536.0,
           594.0,
           623.0
         ],
-        "28": [
+        "29": [
           602.0,
           536.0,
           706.0,
           623.0
         ],
-        "29": [
+        "3": [
+          42.0,
+          251.0,
+          146.0,
+          338.0
+        ],
+        "30": [
           714.0,
           536.0,
           818.0,
           623.0
         ],
-        "3": [
-          154.0,
-          251.0,
-          258.0,
-          338.0
-        ],
-        "30": [
+        "31": [
           42.0,
           631.0,
           146.0,
           718.0
         ],
-        "31": [
-          154.0,
-          631.0,
-          258.0,
-          718.0
-        ],
         "4": [
+          154.0,
+          251.0,
+          258.0,
+          338.0
+        ],
+        "5": [
           266.0,
           251.0,
           370.0,
           338.0
         ],
-        "5": [
+        "6": [
           378.0,
           251.0,
           482.0,
           338.0
         ],
-        "6": [
+        "7": [
           490.0,
           251.0,
           594.0,
           338.0
         ],
-        "7": [
+        "8": [
           602.0,
           251.0,
           706.0,
           338.0
         ],
-        "8": [
+        "9": [
           714.0,
           251.0,
           818.0,
           338.0
-        ],
-        "9": [
-          42.0,
-          346.0,
-          146.0,
-          433.0
         ]
       },
       "evidence_dates": [
-        26
+        25
       ],
       "image_id": "img0",
       "marked_dates": [],
@@ -505,7 +505,7 @@
         }
       },
       "calendar_style": {
-        "accent_color_name": "maroon",
+        "accent_color_name": "magenta",
         "marker_kind": "fill",
         "resolved_colors_rgb": {
           "date_text": [
@@ -514,49 +514,49 @@
             62
           ],
           "grid_line": [
-            215,
-            201,
-            203
+            225,
+            212,
+            220
           ],
           "marker_fill": [
-            209,
-            167,
-            173
+            242,
+            196,
+            224
           ],
           "marker_outline": [
-            87,
-            31,
-            39
+            121,
+            26,
+            84
           ],
           "panel_fill": [
-            249,
-            243,
-            244
+            255,
+            255,
+            255
           ],
           "panel_outline": [
-            87,
-            31,
-            39
+            205,
+            184,
+            197
           ],
           "title_text": [
-            63,
-            23,
-            29
+            87,
+            18,
+            61
           ],
           "weekday_fill": [
-            232,
-            211,
-            214
+            248,
+            225,
+            240
           ],
           "weekday_text": [
-            63,
-            23,
-            29
+            87,
+            18,
+            61
           ]
         },
         "row_count": 6,
-        "style_variant": "accented",
-        "title_text": "August 2027"
+        "style_variant": "studio",
+        "title_text": "July 2028"
       },
       "canvas_height": 760,
       "canvas_width": 860,
@@ -591,16 +591,16 @@
           "attrs": {
             "date_number": 1,
             "is_marked": false,
-            "month": 8,
-            "month_name": "August",
+            "month": 7,
+            "month_name": "July",
             "week_row_index": 0,
-            "weekday_index": 6,
-            "year": 2027
+            "weekday_index": 5,
+            "year": 2028
           },
           "bbox_px": [
-            714.0,
+            602.0,
             156.0,
-            818.0,
+            706.0,
             243.0
           ],
           "entity_id": "date_1",
@@ -610,17 +610,17 @@
           "attrs": {
             "date_number": 2,
             "is_marked": false,
-            "month": 8,
-            "month_name": "August",
-            "week_row_index": 1,
-            "weekday_index": 0,
-            "year": 2027
+            "month": 7,
+            "month_name": "July",
+            "week_row_index": 0,
+            "weekday_index": 6,
+            "year": 2028
           },
           "bbox_px": [
-            42.0,
-            251.0,
-            146.0,
-            338.0
+            714.0,
+            156.0,
+            818.0,
+            243.0
           ],
           "entity_id": "date_2",
           "entity_type": "calendar_date_cell"
@@ -629,16 +629,16 @@
           "attrs": {
             "date_number": 3,
             "is_marked": false,
-            "month": 8,
-            "month_name": "August",
+            "month": 7,
+            "month_name": "July",
             "week_row_index": 1,
-            "weekday_index": 1,
-            "year": 2027
+            "weekday_index": 0,
+            "year": 2028
           },
           "bbox_px": [
-            154.0,
+            42.0,
             251.0,
-            258.0,
+            146.0,
             338.0
           ],
           "entity_id": "date_3",
@@ -648,16 +648,16 @@
           "attrs": {
             "date_number": 4,
             "is_marked": false,
-            "month": 8,
-            "month_name": "August",
+            "month": 7,
+            "month_name": "July",
             "week_row_index": 1,
-            "weekday_index": 2,
-            "year": 2027
+            "weekday_index": 1,
+            "year": 2028
           },
           "bbox_px": [
-            266.0,
+            154.0,
             251.0,
-            370.0,
+            258.0,
             338.0
           ],
           "entity_id": "date_4",
@@ -667,16 +667,16 @@
           "attrs": {
             "date_number": 5,
             "is_marked": false,
-            "month": 8,
-            "month_name": "August",
+            "month": 7,
+            "month_name": "July",
             "week_row_index": 1,
-            "weekday_index": 3,
-            "year": 2027
+            "weekday_index": 2,
+            "year": 2028
           },
           "bbox_px": [
-            378.0,
+            266.0,
             251.0,
-            482.0,
+            370.0,
             338.0
           ],
           "entity_id": "date_5",
@@ -686,16 +686,16 @@
           "attrs": {
             "date_number": 6,
             "is_marked": false,
-            "month": 8,
-            "month_name": "August",
+            "month": 7,
+            "month_name": "July",
             "week_row_index": 1,
-            "weekday_index": 4,
-            "year": 2027
+            "weekday_index": 3,
+            "year": 2028
           },
           "bbox_px": [
-            490.0,
+            378.0,
             251.0,
-            594.0,
+            482.0,
             338.0
           ],
           "entity_id": "date_6",
@@ -705,16 +705,16 @@
           "attrs": {
             "date_number": 7,
             "is_marked": false,
-            "month": 8,
-            "month_name": "August",
+            "month": 7,
+            "month_name": "July",
             "week_row_index": 1,
-            "weekday_index": 5,
-            "year": 2027
+            "weekday_index": 4,
+            "year": 2028
           },
           "bbox_px": [
-            602.0,
+            490.0,
             251.0,
-            706.0,
+            594.0,
             338.0
           ],
           "entity_id": "date_7",
@@ -724,16 +724,16 @@
           "attrs": {
             "date_number": 8,
             "is_marked": false,
-            "month": 8,
-            "month_name": "August",
+            "month": 7,
+            "month_name": "July",
             "week_row_index": 1,
-            "weekday_index": 6,
-            "year": 2027
+            "weekday_index": 5,
+            "year": 2028
           },
           "bbox_px": [
-            714.0,
+            602.0,
             251.0,
-            818.0,
+            706.0,
             338.0
           ],
           "entity_id": "date_8",
@@ -743,17 +743,17 @@
           "attrs": {
             "date_number": 9,
             "is_marked": false,
-            "month": 8,
-            "month_name": "August",
-            "week_row_index": 2,
-            "weekday_index": 0,
-            "year": 2027
+            "month": 7,
+            "month_name": "July",
+            "week_row_index": 1,
+            "weekday_index": 6,
+            "year": 2028
           },
           "bbox_px": [
-            42.0,
-            346.0,
-            146.0,
-            433.0
+            714.0,
+            251.0,
+            818.0,
+            338.0
           ],
           "entity_id": "date_9",
           "entity_type": "calendar_date_cell"
@@ -762,16 +762,16 @@
           "attrs": {
             "date_number": 10,
             "is_marked": false,
-            "month": 8,
-            "month_name": "August",
+            "month": 7,
+            "month_name": "July",
             "week_row_index": 2,
-            "weekday_index": 1,
-            "year": 2027
+            "weekday_index": 0,
+            "year": 2028
           },
           "bbox_px": [
-            154.0,
+            42.0,
             346.0,
-            258.0,
+            146.0,
             433.0
           ],
           "entity_id": "date_10",
@@ -781,16 +781,16 @@
           "attrs": {
             "date_number": 11,
             "is_marked": false,
-            "month": 8,
-            "month_name": "August",
+            "month": 7,
+            "month_name": "July",
             "week_row_index": 2,
-            "weekday_index": 2,
-            "year": 2027
+            "weekday_index": 1,
+            "year": 2028
           },
           "bbox_px": [
-            266.0,
+            154.0,
             346.0,
-            370.0,
+            258.0,
             433.0
           ],
           "entity_id": "date_11",
@@ -800,16 +800,16 @@
           "attrs": {
             "date_number": 12,
             "is_marked": false,
-            "month": 8,
-            "month_name": "August",
+            "month": 7,
+            "month_name": "July",
             "week_row_index": 2,
-            "weekday_index": 3,
-            "year": 2027
+            "weekday_index": 2,
+            "year": 2028
           },
           "bbox_px": [
-            378.0,
+            266.0,
             346.0,
-            482.0,
+            370.0,
             433.0
           ],
           "entity_id": "date_12",
@@ -819,16 +819,16 @@
           "attrs": {
             "date_number": 13,
             "is_marked": false,
-            "month": 8,
-            "month_name": "August",
+            "month": 7,
+            "month_name": "July",
             "week_row_index": 2,
-            "weekday_index": 4,
-            "year": 2027
+            "weekday_index": 3,
+            "year": 2028
           },
           "bbox_px": [
-            490.0,
+            378.0,
             346.0,
-            594.0,
+            482.0,
             433.0
           ],
           "entity_id": "date_13",
@@ -838,16 +838,16 @@
           "attrs": {
             "date_number": 14,
             "is_marked": false,
-            "month": 8,
-            "month_name": "August",
+            "month": 7,
+            "month_name": "July",
             "week_row_index": 2,
-            "weekday_index": 5,
-            "year": 2027
+            "weekday_index": 4,
+            "year": 2028
           },
           "bbox_px": [
-            602.0,
+            490.0,
             346.0,
-            706.0,
+            594.0,
             433.0
           ],
           "entity_id": "date_14",
@@ -857,16 +857,16 @@
           "attrs": {
             "date_number": 15,
             "is_marked": false,
-            "month": 8,
-            "month_name": "August",
+            "month": 7,
+            "month_name": "July",
             "week_row_index": 2,
-            "weekday_index": 6,
-            "year": 2027
+            "weekday_index": 5,
+            "year": 2028
           },
           "bbox_px": [
-            714.0,
+            602.0,
             346.0,
-            818.0,
+            706.0,
             433.0
           ],
           "entity_id": "date_15",
@@ -876,17 +876,17 @@
           "attrs": {
             "date_number": 16,
             "is_marked": false,
-            "month": 8,
-            "month_name": "August",
-            "week_row_index": 3,
-            "weekday_index": 0,
-            "year": 2027
+            "month": 7,
+            "month_name": "July",
+            "week_row_index": 2,
+            "weekday_index": 6,
+            "year": 2028
           },
           "bbox_px": [
-            42.0,
-            441.0,
-            146.0,
-            528.0
+            714.0,
+            346.0,
+            818.0,
+            433.0
           ],
           "entity_id": "date_16",
           "entity_type": "calendar_date_cell"
@@ -895,16 +895,16 @@
           "attrs": {
             "date_number": 17,
             "is_marked": false,
-            "month": 8,
-            "month_name": "August",
+            "month": 7,
+            "month_name": "July",
             "week_row_index": 3,
-            "weekday_index": 1,
-            "year": 2027
+            "weekday_index": 0,
+            "year": 2028
           },
           "bbox_px": [
-            154.0,
+            42.0,
             441.0,
-            258.0,
+            146.0,
             528.0
           ],
           "entity_id": "date_17",
@@ -914,16 +914,16 @@
           "attrs": {
             "date_number": 18,
             "is_marked": false,
-            "month": 8,
-            "month_name": "August",
+            "month": 7,
+            "month_name": "July",
             "week_row_index": 3,
-            "weekday_index": 2,
-            "year": 2027
+            "weekday_index": 1,
+            "year": 2028
           },
           "bbox_px": [
-            266.0,
+            154.0,
             441.0,
-            370.0,
+            258.0,
             528.0
           ],
           "entity_id": "date_18",
@@ -933,16 +933,16 @@
           "attrs": {
             "date_number": 19,
             "is_marked": false,
-            "month": 8,
-            "month_name": "August",
+            "month": 7,
+            "month_name": "July",
             "week_row_index": 3,
-            "weekday_index": 3,
-            "year": 2027
+            "weekday_index": 2,
+            "year": 2028
           },
           "bbox_px": [
-            378.0,
+            266.0,
             441.0,
-            482.0,
+            370.0,
             528.0
           ],
           "entity_id": "date_19",
@@ -952,16 +952,16 @@
           "attrs": {
             "date_number": 20,
             "is_marked": false,
-            "month": 8,
-            "month_name": "August",
+            "month": 7,
+            "month_name": "July",
             "week_row_index": 3,
-            "weekday_index": 4,
-            "year": 2027
+            "weekday_index": 3,
+            "year": 2028
           },
           "bbox_px": [
-            490.0,
+            378.0,
             441.0,
-            594.0,
+            482.0,
             528.0
           ],
           "entity_id": "date_20",
@@ -971,16 +971,16 @@
           "attrs": {
             "date_number": 21,
             "is_marked": false,
-            "month": 8,
-            "month_name": "August",
+            "month": 7,
+            "month_name": "July",
             "week_row_index": 3,
-            "weekday_index": 5,
-            "year": 2027
+            "weekday_index": 4,
+            "year": 2028
           },
           "bbox_px": [
-            602.0,
+            490.0,
             441.0,
-            706.0,
+            594.0,
             528.0
           ],
           "entity_id": "date_21",
@@ -990,16 +990,16 @@
           "attrs": {
             "date_number": 22,
             "is_marked": false,
-            "month": 8,
-            "month_name": "August",
+            "month": 7,
+            "month_name": "July",
             "week_row_index": 3,
-            "weekday_index": 6,
-            "year": 2027
+            "weekday_index": 5,
+            "year": 2028
           },
           "bbox_px": [
-            714.0,
+            602.0,
             441.0,
-            818.0,
+            706.0,
             528.0
           ],
           "entity_id": "date_22",
@@ -1009,17 +1009,17 @@
           "attrs": {
             "date_number": 23,
             "is_marked": false,
-            "month": 8,
-            "month_name": "August",
-            "week_row_index": 4,
-            "weekday_index": 0,
-            "year": 2027
+            "month": 7,
+            "month_name": "July",
+            "week_row_index": 3,
+            "weekday_index": 6,
+            "year": 2028
           },
           "bbox_px": [
-            42.0,
-            536.0,
-            146.0,
-            623.0
+            714.0,
+            441.0,
+            818.0,
+            528.0
           ],
           "entity_id": "date_23",
           "entity_type": "calendar_date_cell"
@@ -1028,16 +1028,16 @@
           "attrs": {
             "date_number": 24,
             "is_marked": false,
-            "month": 8,
-            "month_name": "August",
+            "month": 7,
+            "month_name": "July",
             "week_row_index": 4,
-            "weekday_index": 1,
-            "year": 2027
+            "weekday_index": 0,
+            "year": 2028
           },
           "bbox_px": [
-            154.0,
+            42.0,
             536.0,
-            258.0,
+            146.0,
             623.0
           ],
           "entity_id": "date_24",
@@ -1047,16 +1047,16 @@
           "attrs": {
             "date_number": 25,
             "is_marked": false,
-            "month": 8,
-            "month_name": "August",
+            "month": 7,
+            "month_name": "July",
             "week_row_index": 4,
-            "weekday_index": 2,
-            "year": 2027
+            "weekday_index": 1,
+            "year": 2028
           },
           "bbox_px": [
-            266.0,
+            154.0,
             536.0,
-            370.0,
+            258.0,
             623.0
           ],
           "entity_id": "date_25",
@@ -1066,16 +1066,16 @@
           "attrs": {
             "date_number": 26,
             "is_marked": false,
-            "month": 8,
-            "month_name": "August",
+            "month": 7,
+            "month_name": "July",
             "week_row_index": 4,
-            "weekday_index": 3,
-            "year": 2027
+            "weekday_index": 2,
+            "year": 2028
           },
           "bbox_px": [
-            378.0,
+            266.0,
             536.0,
-            482.0,
+            370.0,
             623.0
           ],
           "entity_id": "date_26",
@@ -1085,16 +1085,16 @@
           "attrs": {
             "date_number": 27,
             "is_marked": false,
-            "month": 8,
-            "month_name": "August",
+            "month": 7,
+            "month_name": "July",
             "week_row_index": 4,
-            "weekday_index": 4,
-            "year": 2027
+            "weekday_index": 3,
+            "year": 2028
           },
           "bbox_px": [
-            490.0,
+            378.0,
             536.0,
-            594.0,
+            482.0,
             623.0
           ],
           "entity_id": "date_27",
@@ -1104,16 +1104,16 @@
           "attrs": {
             "date_number": 28,
             "is_marked": false,
-            "month": 8,
-            "month_name": "August",
+            "month": 7,
+            "month_name": "July",
             "week_row_index": 4,
-            "weekday_index": 5,
-            "year": 2027
+            "weekday_index": 4,
+            "year": 2028
           },
           "bbox_px": [
-            602.0,
+            490.0,
             536.0,
-            706.0,
+            594.0,
             623.0
           ],
           "entity_id": "date_28",
@@ -1123,16 +1123,16 @@
           "attrs": {
             "date_number": 29,
             "is_marked": false,
-            "month": 8,
-            "month_name": "August",
+            "month": 7,
+            "month_name": "July",
             "week_row_index": 4,
-            "weekday_index": 6,
-            "year": 2027
+            "weekday_index": 5,
+            "year": 2028
           },
           "bbox_px": [
-            714.0,
+            602.0,
             536.0,
-            818.0,
+            706.0,
             623.0
           ],
           "entity_id": "date_29",
@@ -1142,17 +1142,17 @@
           "attrs": {
             "date_number": 30,
             "is_marked": false,
-            "month": 8,
-            "month_name": "August",
-            "week_row_index": 5,
-            "weekday_index": 0,
-            "year": 2027
+            "month": 7,
+            "month_name": "July",
+            "week_row_index": 4,
+            "weekday_index": 6,
+            "year": 2028
           },
           "bbox_px": [
-            42.0,
-            631.0,
-            146.0,
-            718.0
+            714.0,
+            536.0,
+            818.0,
+            623.0
           ],
           "entity_id": "date_30",
           "entity_type": "calendar_date_cell"
@@ -1161,16 +1161,16 @@
           "attrs": {
             "date_number": 31,
             "is_marked": false,
-            "month": 8,
-            "month_name": "August",
+            "month": 7,
+            "month_name": "July",
             "week_row_index": 5,
-            "weekday_index": 1,
-            "year": 2027
+            "weekday_index": 0,
+            "year": 2028
           },
           "bbox_px": [
-            154.0,
+            42.0,
             631.0,
-            258.0,
+            146.0,
             718.0
           ],
           "entity_id": "date_31",
@@ -1178,14 +1178,14 @@
         }
       ],
       "relations": {
-        "accent_color_name": "maroon",
+        "accent_color_name": "magenta",
         "marked_dates": [],
-        "month": 8,
-        "month_name": "August",
+        "month": 7,
+        "month_name": "July",
         "scene_variant": "outline",
-        "style_variant": "accented",
+        "style_variant": "studio",
         "task_variant": "date_of_weekday_occurrence",
-        "year": 2027
+        "year": 2028
       },
       "scene_kind": "temporal_month_calendar"
     },
@@ -1193,9 +1193,9 @@
       "type": "bbox_set",
       "value": [
         [
-          378.0,
+          154.0,
           536.0,
-          482.0,
+          258.0,
           623.0
         ]
       ]

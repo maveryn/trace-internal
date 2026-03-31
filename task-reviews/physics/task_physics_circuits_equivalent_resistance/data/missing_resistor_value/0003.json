@@ -7,10 +7,10 @@
     "type": "bbox_set",
     "value": [
       [
-        85.0,
-        257.0,
-        181.0,
-        303.0
+        176.0,
+        353.0,
+        272.0,
+        399.0
       ]
     ]
   },
@@ -18,11 +18,11 @@
     "format": "png",
     "path": "physics/task_physics_circuits_equivalent_resistance/images/missing_resistor_value/0003.png"
   },
-  "instance_seed": 7098362396424255,
-  "prompt": "Look at the resistor-network diagram in the image. It shows two side-by-side resistor networks between labeled terminals A and B that have the same total resistance, where the left circuit has one red `?` resistor in the series part of the network. Read the resistor values and determine the requested equivalent resistance. One resistor in the left circuit is marked with a red `?`. If both circuits have equal total resistance between A and B, what value must replace it? Answer with an integer.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array with the single bounding box [x1, y1, x2, y2] of the red `?` resistor in the left circuit.\nAnswer: set \"answer\" to the integer resistor value that should replace the red `?` resistor.\nExample JSON:\n{\"evidence\":[[2,3,4,5]],\"answer\":8}",
+  "instance_seed": 5530123808821540,
+  "prompt": "Work from the resistor-network diagram shown in the image: two side-by-side resistor networks between labeled terminals A and B that have the same total resistance, where the left circuit has one red `?` resistor inside a parallel branch. Determine the requested equivalent resistance from the diagram. The two shown resistor networks are equal in total resistance between A and B. What integer resistor value belongs in the red `?` box on the left?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array with the single bounding box [x1, y1, x2, y2] of the red `?` resistor in the left circuit.\nAnswer: set \"answer\" to the integer resistor value that should replace the red `?` resistor.\nExample JSON:\n{\"evidence\":[[2,3,4,5]],\"answer\":8}",
   "prompt_variants": {
-    "answer_and_evidence": "Look at the resistor-network diagram in the image. It shows two side-by-side resistor networks between labeled terminals A and B that have the same total resistance, where the left circuit has one red `?` resistor in the series part of the network. Read the resistor values and determine the requested equivalent resistance. One resistor in the left circuit is marked with a red `?`. If both circuits have equal total resistance between A and B, what value must replace it? Answer with an integer.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array with the single bounding box [x1, y1, x2, y2] of the red `?` resistor in the left circuit.\nAnswer: set \"answer\" to the integer resistor value that should replace the red `?` resistor.\nExample JSON:\n{\"evidence\":[[2,3,4,5]],\"answer\":8}",
-    "answer_only": "Look at the resistor-network diagram in the image. It shows two side-by-side resistor networks between labeled terminals A and B that have the same total resistance, where the left circuit has one red `?` resistor in the series part of the network. Read the resistor values and determine the requested equivalent resistance. One resistor in the left circuit is marked with a red `?`. If both circuits have equal total resistance between A and B, what value must replace it? Answer with an integer.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the integer resistor value that should replace the red `?` resistor.\nExample JSON:\n{\"answer\":8}"
+    "answer_and_evidence": "Work from the resistor-network diagram shown in the image: two side-by-side resistor networks between labeled terminals A and B that have the same total resistance, where the left circuit has one red `?` resistor inside a parallel branch. Determine the requested equivalent resistance from the diagram. The two shown resistor networks are equal in total resistance between A and B. What integer resistor value belongs in the red `?` box on the left?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array with the single bounding box [x1, y1, x2, y2] of the red `?` resistor in the left circuit.\nAnswer: set \"answer\" to the integer resistor value that should replace the red `?` resistor.\nExample JSON:\n{\"evidence\":[[2,3,4,5]],\"answer\":8}",
+    "answer_only": "Work from the resistor-network diagram shown in the image: two side-by-side resistor networks between labeled terminals A and B that have the same total resistance, where the left circuit has one red `?` resistor inside a parallel branch. Determine the requested equivalent resistance from the diagram. The two shown resistor networks are equal in total resistance between A and B. What integer resistor value belongs in the red `?` box on the left?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the integer resistor value that should replace the red `?` resistor.\nExample JSON:\n{\"answer\":8}"
   },
   "task": "task_physics_circuits_equivalent_resistance",
   "task_variant": "missing_resistor_value",
@@ -43,79 +43,68 @@
       }
     },
     "execution_trace": {
-      "accent_color_name": "green",
+      "accent_color_name": "purple",
       "evidence_entity_ids": [
-        "left_resistor_1"
+        "left_resistor_3"
       ],
-      "left_orientation": "series_then_parallel",
+      "left_orientation": null,
       "left_parallel_values": [
         8,
+        4,
         8
       ],
-      "left_series_values": [
-        8
-      ],
-      "missing_component_group": "series",
-      "missing_resistor_index": 1,
-      "paired_total_resistance": 12,
+      "left_series_values": [],
+      "missing_component_group": "parallel",
+      "missing_resistor_index": 3,
+      "paired_total_resistance": 2,
       "parallel_values": [],
       "query_variant": "missing_resistor_value",
       "resistor_specs": [
         {
-          "missing": true,
+          "missing": false,
           "resistor_id": "left_resistor_1",
-          "value": null
+          "value": 8
         },
         {
           "missing": false,
           "resistor_id": "left_resistor_2",
-          "value": 8
+          "value": 4
         },
         {
-          "missing": false,
+          "missing": true,
           "resistor_id": "left_resistor_3",
-          "value": 8
+          "value": null
         },
         {
           "missing": false,
           "resistor_id": "right_resistor_1",
-          "value": 9
+          "value": 6
         },
         {
           "missing": false,
           "resistor_id": "right_resistor_2",
-          "value": 12
-        },
-        {
-          "missing": false,
-          "resistor_id": "right_resistor_3",
-          "value": 4
+          "value": 3
         }
       ],
-      "right_orientation": "parallel_then_series",
+      "right_orientation": null,
       "right_parallel_values": [
-        12,
-        4
+        6,
+        3
       ],
-      "right_series_values": [
-        9
-      ],
-      "scene_variant": "simple_series_parallel",
+      "right_series_values": [],
+      "scene_variant": "parallel",
       "series_parallel_orientation": null,
       "series_values": [],
       "target_answer": 8,
       "target_answer_support": [
-        1,
         2,
         3,
         4,
         5,
         6,
-        7,
         8,
         9,
         10,
-        11,
         12
       ],
       "task_variant": "missing_resistor_value"
@@ -139,16 +128,16 @@
     "projected_evidence": {
       "bbox_set": [
         [
-          85.0,
-          257.0,
-          181.0,
-          303.0
+          176.0,
+          353.0,
+          272.0,
+          399.0
         ]
       ]
     },
     "query_spec": {
       "params": {
-        "accent_color_name": "green",
+        "accent_color_name": "purple",
         "accent_color_name_probabilities": {
           "blue": 0.1,
           "brown": 0.1,
@@ -163,47 +152,41 @@
         },
         "query_variant": "missing_resistor_value",
         "query_variant_probabilities": {
-          "missing_resistor_value": 1.0,
-          "total_resistance": 0.0
+          "missing_resistor_value": 0.5,
+          "total_resistance": 0.5
         },
-        "scene_variant": "simple_series_parallel",
+        "scene_variant": "parallel",
         "scene_variant_probabilities": {
           "parallel": 0.5,
           "simple_series_parallel": 0.5
         },
         "target_answer": 8,
         "target_answer_probabilities": {
-          "1": 0.08333333333333333,
-          "10": 0.08333333333333333,
-          "11": 0.08333333333333333,
-          "12": 0.08333333333333333,
-          "2": 0.08333333333333333,
-          "3": 0.08333333333333333,
-          "4": 0.08333333333333333,
-          "5": 0.08333333333333333,
-          "6": 0.08333333333333333,
-          "7": 0.08333333333333333,
-          "8": 0.08333333333333333,
-          "9": 0.08333333333333333
+          "10": 0.1111111111111111,
+          "12": 0.1111111111111111,
+          "2": 0.1111111111111111,
+          "3": 0.1111111111111111,
+          "4": 0.1111111111111111,
+          "5": 0.1111111111111111,
+          "6": 0.1111111111111111,
+          "8": 0.1111111111111111,
+          "9": 0.1111111111111111
         },
         "target_answer_support": [
-          1,
           2,
           3,
           4,
           5,
           6,
-          7,
           8,
           9,
           10,
-          11,
           12
         ],
         "task_variant": "missing_resistor_value",
         "task_variant_probabilities": {
-          "missing_resistor_value": 1.0,
-          "total_resistance": 0.0
+          "missing_resistor_value": 0.5,
+          "total_resistance": 0.5
         }
       },
       "prompt_variant": {
@@ -218,14 +201,14 @@
           "json_example_answer_only": "{\"answer\":8}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "object_description": "two side-by-side resistor networks between labeled terminals A and B that have the same total resistance, where the left circuit has one red `?` resistor in the series part of the network"
+          "object_description": "two side-by-side resistor networks between labeled terminals A and B that have the same total resistance, where the left circuit has one red `?` resistor inside a parallel branch"
         },
         "task_family_key": "resistor_network_diagram",
-        "task_family_variant_index": 1,
+        "task_family_variant_index": 3,
         "task_key": "equivalent_resistance_query",
-        "task_variant_index": 1,
+        "task_variant_index": 4,
         "task_variant_key": "missing_resistor_value",
-        "task_variant_template_index": 1,
+        "task_variant_template_index": 2,
         "template_paths": [
           "physics/circuits/physics_circuits_v1.json"
         ],
@@ -251,14 +234,14 @@
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "two side-by-side resistor networks between labeled terminals A and B that have the same total resistance, where the left circuit has one red `?` resistor in the series part of the network"
+              "object_description": "two side-by-side resistor networks between labeled terminals A and B that have the same total resistance, where the left circuit has one red `?` resistor inside a parallel branch"
             },
             "task_family_key": "resistor_network_diagram",
-            "task_family_variant_index": 1,
+            "task_family_variant_index": 3,
             "task_key": "equivalent_resistance_query",
-            "task_variant_index": 1,
+            "task_variant_index": 4,
             "task_variant_key": "missing_resistor_value",
-            "task_variant_template_index": 1,
+            "task_variant_template_index": 2,
             "template_paths": [
               "physics/circuits/physics_circuits_v1.json"
             ],
@@ -269,12 +252,12 @@
               "task_variant:missing_resistor_value": 5
             }
           },
-          "prompt": "Look at the resistor-network diagram in the image. It shows two side-by-side resistor networks between labeled terminals A and B that have the same total resistance, where the left circuit has one red `?` resistor in the series part of the network. Read the resistor values and determine the requested equivalent resistance. One resistor in the left circuit is marked with a red `?`. If both circuits have equal total resistance between A and B, what value must replace it? Answer with an integer.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array with the single bounding box [x1, y1, x2, y2] of the red `?` resistor in the left circuit.\nAnswer: set \"answer\" to the integer resistor value that should replace the red `?` resistor.\nExample JSON:\n{\"evidence\":[[2,3,4,5]],\"answer\":8}"
+          "prompt": "Work from the resistor-network diagram shown in the image: two side-by-side resistor networks between labeled terminals A and B that have the same total resistance, where the left circuit has one red `?` resistor inside a parallel branch. Determine the requested equivalent resistance from the diagram. The two shown resistor networks are equal in total resistance between A and B. What integer resistor value belongs in the red `?` box on the left?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array with the single bounding box [x1, y1, x2, y2] of the red `?` resistor in the left circuit.\nAnswer: set \"answer\" to the integer resistor value that should replace the red `?` resistor.\nExample JSON:\n{\"evidence\":[[2,3,4,5]],\"answer\":8}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 0,
+            "answer_or_evidence_variant_index": 1,
             "prompt_bundle_id": "physics_circuits_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -284,14 +267,14 @@
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "two side-by-side resistor networks between labeled terminals A and B that have the same total resistance, where the left circuit has one red `?` resistor in the series part of the network"
+              "object_description": "two side-by-side resistor networks between labeled terminals A and B that have the same total resistance, where the left circuit has one red `?` resistor inside a parallel branch"
             },
             "task_family_key": "resistor_network_diagram",
-            "task_family_variant_index": 1,
+            "task_family_variant_index": 3,
             "task_key": "equivalent_resistance_query",
-            "task_variant_index": 1,
+            "task_variant_index": 4,
             "task_variant_key": "missing_resistor_value",
-            "task_variant_template_index": 1,
+            "task_variant_template_index": 2,
             "template_paths": [
               "physics/circuits/physics_circuits_v1.json"
             ],
@@ -302,14 +285,14 @@
               "task_variant:missing_resistor_value": 5
             }
           },
-          "prompt": "Look at the resistor-network diagram in the image. It shows two side-by-side resistor networks between labeled terminals A and B that have the same total resistance, where the left circuit has one red `?` resistor in the series part of the network. Read the resistor values and determine the requested equivalent resistance. One resistor in the left circuit is marked with a red `?`. If both circuits have equal total resistance between A and B, what value must replace it? Answer with an integer.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the integer resistor value that should replace the red `?` resistor.\nExample JSON:\n{\"answer\":8}"
+          "prompt": "Work from the resistor-network diagram shown in the image: two side-by-side resistor networks between labeled terminals A and B that have the same total resistance, where the left circuit has one red `?` resistor inside a parallel branch. Determine the requested equivalent resistance from the diagram. The two shown resistor networks are equal in total resistance between A and B. What integer resistor value belongs in the red `?` box on the left?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the integer resistor value that should replace the red `?` resistor.\nExample JSON:\n{\"answer\":8}"
         }
       },
       "task_variant": "missing_resistor_value",
       "template_id": "physics_circuits_v1"
     },
     "render_map": {
-      "accent_color_name": "green",
+      "accent_color_name": "purple",
       "equals_sign_bbox_px": [
         447.0,
         265.5,
@@ -317,30 +300,30 @@
         294.5
       ],
       "evidence_entity_ids": [
-        "left_resistor_1"
+        "left_resistor_3"
       ],
       "left_scene": {
-        "accent_color_name": "green",
+        "accent_color_name": "purple",
         "evidence_entity_ids": [
           "left_resistor_1",
           "left_resistor_2",
           "left_resistor_3"
         ],
         "missing_resistor_entity_ids": [
-          "left_resistor_1"
+          "left_resistor_3"
         ],
         "resistor_bboxes_px": {
           "left_resistor_1": [
-            85.0,
-            257.0,
-            181.0,
-            303.0
-          ],
-          "left_resistor_2": [
             176.0,
             193.0,
             272.0,
             239.0
+          ],
+          "left_resistor_2": [
+            176.0,
+            273.0,
+            272.0,
+            319.0
           ],
           "left_resistor_3": [
             176.0,
@@ -384,23 +367,13 @@
               280.0
             ],
             [
-              85.0,
+              156.0,
               280.0
             ]
           ],
           [
             [
-              181.0,
-              280.0
-            ],
-            [
-              176.0,
-              280.0
-            ]
-          ],
-          [
-            [
-              272.0,
+              292.0,
               280.0
             ],
             [
@@ -410,8 +383,68 @@
           ],
           [
             [
+              156.0,
+              216.0
+            ],
+            [
+              156.0,
+              376.0
+            ]
+          ],
+          [
+            [
+              292.0,
+              216.0
+            ],
+            [
+              292.0,
+              376.0
+            ]
+          ],
+          [
+            [
+              156.0,
+              216.0
+            ],
+            [
               176.0,
               216.0
+            ]
+          ],
+          [
+            [
+              272.0,
+              216.0
+            ],
+            [
+              292.0,
+              216.0
+            ]
+          ],
+          [
+            [
+              156.0,
+              296.0
+            ],
+            [
+              176.0,
+              296.0
+            ]
+          ],
+          [
+            [
+              272.0,
+              296.0
+            ],
+            [
+              292.0,
+              296.0
+            ]
+          ],
+          [
+            [
+              156.0,
+              376.0
             ],
             [
               176.0,
@@ -421,70 +454,30 @@
           [
             [
               272.0,
-              216.0
-            ],
-            [
-              272.0,
-              376.0
-            ]
-          ],
-          [
-            [
-              176.0,
-              216.0
-            ],
-            [
-              176.0,
-              216.0
-            ]
-          ],
-          [
-            [
-              272.0,
-              216.0
-            ],
-            [
-              272.0,
-              216.0
-            ]
-          ],
-          [
-            [
-              176.0,
               376.0
             ],
             [
-              176.0,
-              376.0
-            ]
-          ],
-          [
-            [
-              272.0,
-              376.0
-            ],
-            [
-              272.0,
+              292.0,
               376.0
             ]
           ]
         ]
       },
       "missing_resistor_entity_ids": [
-        "left_resistor_1"
+        "left_resistor_3"
       ],
       "resistor_bboxes_px": {
         "left_resistor_1": [
-          85.0,
-          257.0,
-          181.0,
-          303.0
-        ],
-        "left_resistor_2": [
           176.0,
           193.0,
           272.0,
           239.0
+        ],
+        "left_resistor_2": [
+          176.0,
+          273.0,
+          272.0,
+          319.0
         ],
         "left_resistor_3": [
           176.0,
@@ -493,18 +486,12 @@
           399.0
         ],
         "right_resistor_1": [
-          759.0,
-          257.0,
-          855.0,
-          303.0
-        ],
-        "right_resistor_2": [
           668.0,
           193.0,
           764.0,
           239.0
         ],
-        "right_resistor_3": [
+        "right_resistor_2": [
           668.0,
           353.0,
           764.0,
@@ -512,27 +499,20 @@
         ]
       },
       "right_scene": {
-        "accent_color_name": "green",
+        "accent_color_name": "purple",
         "evidence_entity_ids": [
           "right_resistor_1",
-          "right_resistor_2",
-          "right_resistor_3"
+          "right_resistor_2"
         ],
         "missing_resistor_entity_ids": [],
         "resistor_bboxes_px": {
           "right_resistor_1": [
-            759.0,
-            257.0,
-            855.0,
-            303.0
-          ],
-          "right_resistor_2": [
             668.0,
             193.0,
             764.0,
             239.0
           ],
-          "right_resistor_3": [
+          "right_resistor_2": [
             668.0,
             353.0,
             764.0,
@@ -574,23 +554,13 @@
               280.0
             ],
             [
-              668.0,
+              648.0,
               280.0
             ]
           ],
           [
             [
-              764.0,
-              280.0
-            ],
-            [
-              759.0,
-              280.0
-            ]
-          ],
-          [
-            [
-              855.0,
+              784.0,
               280.0
             ],
             [
@@ -600,8 +570,48 @@
           ],
           [
             [
+              648.0,
+              216.0
+            ],
+            [
+              648.0,
+              376.0
+            ]
+          ],
+          [
+            [
+              784.0,
+              216.0
+            ],
+            [
+              784.0,
+              376.0
+            ]
+          ],
+          [
+            [
+              648.0,
+              216.0
+            ],
+            [
               668.0,
               216.0
+            ]
+          ],
+          [
+            [
+              764.0,
+              216.0
+            ],
+            [
+              784.0,
+              216.0
+            ]
+          ],
+          [
+            [
+              648.0,
+              376.0
             ],
             [
               668.0,
@@ -611,50 +621,10 @@
           [
             [
               764.0,
-              216.0
-            ],
-            [
-              764.0,
-              376.0
-            ]
-          ],
-          [
-            [
-              668.0,
-              216.0
-            ],
-            [
-              668.0,
-              216.0
-            ]
-          ],
-          [
-            [
-              764.0,
-              216.0
-            ],
-            [
-              764.0,
-              216.0
-            ]
-          ],
-          [
-            [
-              668.0,
               376.0
             ],
             [
-              668.0,
-              376.0
-            ]
-          ],
-          [
-            [
-              764.0,
-              376.0
-            ],
-            [
-              764.0,
+              784.0,
               376.0
             ]
           ]
@@ -719,23 +689,13 @@
             280.0
           ],
           [
-            85.0,
+            156.0,
             280.0
           ]
         ],
         [
           [
-            181.0,
-            280.0
-          ],
-          [
-            176.0,
-            280.0
-          ]
-        ],
-        [
-          [
-            272.0,
+            292.0,
             280.0
           ],
           [
@@ -745,8 +705,68 @@
         ],
         [
           [
+            156.0,
+            216.0
+          ],
+          [
+            156.0,
+            376.0
+          ]
+        ],
+        [
+          [
+            292.0,
+            216.0
+          ],
+          [
+            292.0,
+            376.0
+          ]
+        ],
+        [
+          [
+            156.0,
+            216.0
+          ],
+          [
             176.0,
             216.0
+          ]
+        ],
+        [
+          [
+            272.0,
+            216.0
+          ],
+          [
+            292.0,
+            216.0
+          ]
+        ],
+        [
+          [
+            156.0,
+            296.0
+          ],
+          [
+            176.0,
+            296.0
+          ]
+        ],
+        [
+          [
+            272.0,
+            296.0
+          ],
+          [
+            292.0,
+            296.0
+          ]
+        ],
+        [
+          [
+            156.0,
+            376.0
           ],
           [
             176.0,
@@ -756,50 +776,10 @@
         [
           [
             272.0,
-            216.0
-          ],
-          [
-            272.0,
-            376.0
-          ]
-        ],
-        [
-          [
-            176.0,
-            216.0
-          ],
-          [
-            176.0,
-            216.0
-          ]
-        ],
-        [
-          [
-            272.0,
-            216.0
-          ],
-          [
-            272.0,
-            216.0
-          ]
-        ],
-        [
-          [
-            176.0,
             376.0
           ],
           [
-            176.0,
-            376.0
-          ]
-        ],
-        [
-          [
-            272.0,
-            376.0
-          ],
-          [
-            272.0,
+            292.0,
             376.0
           ]
         ],
@@ -809,23 +789,13 @@
             280.0
           ],
           [
-            668.0,
+            648.0,
             280.0
           ]
         ],
         [
           [
-            764.0,
-            280.0
-          ],
-          [
-            759.0,
-            280.0
-          ]
-        ],
-        [
-          [
-            855.0,
+            784.0,
             280.0
           ],
           [
@@ -835,8 +805,48 @@
         ],
         [
           [
+            648.0,
+            216.0
+          ],
+          [
+            648.0,
+            376.0
+          ]
+        ],
+        [
+          [
+            784.0,
+            216.0
+          ],
+          [
+            784.0,
+            376.0
+          ]
+        ],
+        [
+          [
+            648.0,
+            216.0
+          ],
+          [
             668.0,
             216.0
+          ]
+        ],
+        [
+          [
+            764.0,
+            216.0
+          ],
+          [
+            784.0,
+            216.0
+          ]
+        ],
+        [
+          [
+            648.0,
+            376.0
           ],
           [
             668.0,
@@ -846,60 +856,20 @@
         [
           [
             764.0,
-            216.0
-          ],
-          [
-            764.0,
-            376.0
-          ]
-        ],
-        [
-          [
-            668.0,
-            216.0
-          ],
-          [
-            668.0,
-            216.0
-          ]
-        ],
-        [
-          [
-            764.0,
-            216.0
-          ],
-          [
-            764.0,
-            216.0
-          ]
-        ],
-        [
-          [
-            668.0,
             376.0
           ],
           [
-            668.0,
-            376.0
-          ]
-        ],
-        [
-          [
-            764.0,
-            376.0
-          ],
-          [
-            764.0,
+            784.0,
             376.0
           ]
         ]
       ]
     },
     "render_spec": {
-      "accent_color_name": "green",
+      "accent_color_name": "purple",
       "canvas_height": 560,
       "canvas_width": 940,
-      "scene_variant": "simple_series_parallel"
+      "scene_variant": "parallel"
     },
     "scene_ir": {
       "entities": [
@@ -931,30 +901,30 @@
         },
         {
           "bbox_px": [
-            85.0,
-            257.0,
-            181.0,
-            303.0
-          ],
-          "entity_id": "left_resistor_1",
-          "entity_type": "physics_resistor",
-          "meta": {
-            "missing": true,
-            "value": null
-          }
-        },
-        {
-          "bbox_px": [
             176.0,
             193.0,
             272.0,
             239.0
           ],
-          "entity_id": "left_resistor_2",
+          "entity_id": "left_resistor_1",
           "entity_type": "physics_resistor",
           "meta": {
             "missing": false,
             "value": 8
+          }
+        },
+        {
+          "bbox_px": [
+            176.0,
+            273.0,
+            272.0,
+            319.0
+          ],
+          "entity_id": "left_resistor_2",
+          "entity_type": "physics_resistor",
+          "meta": {
+            "missing": false,
+            "value": 4
           }
         },
         {
@@ -967,8 +937,8 @@
           "entity_id": "left_resistor_3",
           "entity_type": "physics_resistor",
           "meta": {
-            "missing": false,
-            "value": 8
+            "missing": true,
+            "value": null
           }
         },
         {
@@ -999,30 +969,16 @@
         },
         {
           "bbox_px": [
-            759.0,
-            257.0,
-            855.0,
-            303.0
-          ],
-          "entity_id": "right_resistor_1",
-          "entity_type": "physics_resistor",
-          "meta": {
-            "missing": false,
-            "value": 9
-          }
-        },
-        {
-          "bbox_px": [
             668.0,
             193.0,
             764.0,
             239.0
           ],
-          "entity_id": "right_resistor_2",
+          "entity_id": "right_resistor_1",
           "entity_type": "physics_resistor",
           "meta": {
             "missing": false,
-            "value": 12
+            "value": 6
           }
         },
         {
@@ -1032,30 +988,30 @@
             764.0,
             399.0
           ],
-          "entity_id": "right_resistor_3",
+          "entity_id": "right_resistor_2",
           "entity_type": "physics_resistor",
           "meta": {
             "missing": false,
-            "value": 4
+            "value": 3
           }
         }
       ],
       "relations": {
-        "accent_color_name": "green",
+        "accent_color_name": "purple",
         "evidence_entity_ids": [
-          "left_resistor_1"
+          "left_resistor_3"
         ],
-        "paired_total_resistance": 12,
+        "paired_total_resistance": 2,
         "query_variant": "missing_resistor_value",
-        "scene_variant": "simple_series_parallel",
+        "scene_variant": "parallel",
         "target_answer": 8,
         "task_variant": "missing_resistor_value"
       },
-      "scene_kind": "physics_resistor_network_pair_simple_series_parallel"
+      "scene_kind": "physics_resistor_network_pair_parallel"
     },
     "witness_symbolic": {
       "ids": [
-        "left_resistor_1"
+        "left_resistor_3"
       ],
       "type": "id_set"
     }

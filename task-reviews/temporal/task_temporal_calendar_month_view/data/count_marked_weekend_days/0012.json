@@ -1,27 +1,15 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 3
+    "value": 1
   },
   "evidence_gt": {
     "type": "bbox_set",
     "value": [
       [
         714.0,
-        270.0,
-        818.0,
-        376.0
-      ],
-      [
-        602.0,
-        384.0,
-        706.0,
-        490.0
-      ],
-      [
-        602.0,
         498.0,
-        706.0,
+        818.0,
         604.0
       ]
     ]
@@ -30,17 +18,17 @@
     "format": "png",
     "path": "temporal/task_temporal_calendar_month_view/images/count_marked_weekend_days/0012.png"
   },
-  "instance_seed": 3664857220468924,
-  "prompt": "You are given an image with one month-view calendar for September 2026 with weekday headers, date cells, and several marked dates. Determine the answer from the shown calendar. Among the marked dates, how many are on the weekend?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for all marked weekend date cells.\nAnswer rule: set \"answer\" to the integer count of marked weekend dates.\nExample JSON:\n{\"evidence\":[[148,352,250,448],[560,352,662,448]],\"answer\":2}",
+  "instance_seed": 6108298300061056,
+  "prompt": "Work from the month-view calendar shown in the image: one month-view calendar for July 2025 with weekday headers, date cells, and several marked dates. Determine the answer from the shown calendar. Among the marked dates, how many are on the weekend?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for all marked weekend date cells.\nAnswer rule: set \"answer\" to the integer count of marked weekend dates.\nExample JSON:\n{\"evidence\":[[148,352,250,448],[560,352,662,448]],\"answer\":2}",
   "prompt_variants": {
-    "answer_and_evidence": "You are given an image with one month-view calendar for September 2026 with weekday headers, date cells, and several marked dates. Determine the answer from the shown calendar. Among the marked dates, how many are on the weekend?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for all marked weekend date cells.\nAnswer rule: set \"answer\" to the integer count of marked weekend dates.\nExample JSON:\n{\"evidence\":[[148,352,250,448],[560,352,662,448]],\"answer\":2}",
-    "answer_only": "You are given an image with one month-view calendar for September 2026 with weekday headers, date cells, and several marked dates. Determine the answer from the shown calendar. Among the marked dates, how many are on the weekend?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the integer count of marked weekend dates.\nExample JSON:\n{\"answer\":2}"
+    "answer_and_evidence": "Work from the month-view calendar shown in the image: one month-view calendar for July 2025 with weekday headers, date cells, and several marked dates. Determine the answer from the shown calendar. Among the marked dates, how many are on the weekend?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for all marked weekend date cells.\nAnswer rule: set \"answer\" to the integer count of marked weekend dates.\nExample JSON:\n{\"evidence\":[[148,352,250,448],[560,352,662,448]],\"answer\":2}",
+    "answer_only": "Work from the month-view calendar shown in the image: one month-view calendar for July 2025 with weekday headers, date cells, and several marked dates. Determine the answer from the shown calendar. Among the marked dates, how many are on the weekend?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the integer count of marked weekend dates.\nExample JSON:\n{\"answer\":2}"
   },
   "task": "task_temporal_calendar_month_view",
   "task_variant": "count_marked_weekend_days",
   "trace_payload": {
     "execution_trace": {
-      "accent_color_name": "orange",
+      "accent_color_name": "yellow",
       "accent_color_name_probabilities": {
         "blue": 0.1,
         "brown": 0.1,
@@ -53,21 +41,17 @@
         "red": 0.1,
         "yellow": 0.1
       },
-      "answer_value": 3,
-      "days_in_month": 30,
+      "answer_value": 1,
+      "days_in_month": 31,
       "evidence_dates": [
-        13,
-        19,
-        26
+        27
       ],
       "marked_dates": [
-        13,
-        19,
-        21,
-        26
+        4,
+        27
       ],
-      "month": 9,
-      "month_name": "September",
+      "month": 7,
+      "month_name": "July",
       "query_occurrence": null,
       "query_weekday_index": null,
       "row_count": 5,
@@ -78,7 +62,7 @@
         "outline": 0.3333333333333333
       },
       "start_weekday_index": 1,
-      "style_variant": "marker",
+      "style_variant": "accented",
       "style_variant_probabilities": {
         "accented": 0.3333333333333333,
         "marker": 0.3333333333333333,
@@ -95,33 +79,21 @@
         5,
         6
       ],
-      "year": 2026
+      "year": 2025
     },
     "projected_evidence": {
       "bbox_set": [
         [
           714.0,
-          270.0,
-          818.0,
-          376.0
-        ],
-        [
-          602.0,
-          384.0,
-          706.0,
-          490.0
-        ],
-        [
-          602.0,
           498.0,
-          706.0,
+          818.0,
           604.0
         ]
       ]
     },
     "query_spec": {
       "params": {
-        "accent_color_name": "orange",
+        "accent_color_name": "yellow",
         "accent_color_name_probabilities": {
           "blue": 0.1,
           "brown": 0.1,
@@ -163,7 +135,7 @@
           19,
           20
         ],
-        "days_in_month": 30,
+        "days_in_month": 31,
         "marked_weekday_distractor_support": [
           1,
           2,
@@ -177,8 +149,8 @@
           3,
           4
         ],
-        "month": 9,
-        "month_name": "September",
+        "month": 7,
+        "month_name": "July",
         "row_count": 5,
         "scene_variant": "outline",
         "scene_variant_probabilities": {
@@ -187,7 +159,7 @@
           "outline": 0.3333333333333333
         },
         "start_weekday_index": 1,
-        "style_variant": "marker",
+        "style_variant": "accented",
         "style_variant_probabilities": {
           "accented": 0.3333333333333333,
           "marker": 0.3333333333333333,
@@ -203,7 +175,7 @@
           5,
           6
         ],
-        "year": 2026
+        "year": 2025
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
@@ -217,10 +189,10 @@
           "json_example_answer_only": "{\"answer\":2}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "object_description": "one month-view calendar for September 2026 with weekday headers, date cells, and several marked dates"
+          "object_description": "one month-view calendar for July 2025 with weekday headers, date cells, and several marked dates"
         },
         "task_family_key": "month_calendar",
-        "task_family_variant_index": 2,
+        "task_family_variant_index": 3,
         "task_key": "calendar_month_query",
         "task_variant_index": 4,
         "task_variant_key": "count_marked_weekend_days",
@@ -250,10 +222,10 @@
               "json_example_answer_only": "{\"answer\":2}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "one month-view calendar for September 2026 with weekday headers, date cells, and several marked dates"
+              "object_description": "one month-view calendar for July 2025 with weekday headers, date cells, and several marked dates"
             },
             "task_family_key": "month_calendar",
-            "task_family_variant_index": 2,
+            "task_family_variant_index": 3,
             "task_key": "calendar_month_query",
             "task_variant_index": 4,
             "task_variant_key": "count_marked_weekend_days",
@@ -268,12 +240,12 @@
               "task_variant:count_marked_weekend_days": 5
             }
           },
-          "prompt": "You are given an image with one month-view calendar for September 2026 with weekday headers, date cells, and several marked dates. Determine the answer from the shown calendar. Among the marked dates, how many are on the weekend?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for all marked weekend date cells.\nAnswer rule: set \"answer\" to the integer count of marked weekend dates.\nExample JSON:\n{\"evidence\":[[148,352,250,448],[560,352,662,448]],\"answer\":2}"
+          "prompt": "Work from the month-view calendar shown in the image: one month-view calendar for July 2025 with weekday headers, date cells, and several marked dates. Determine the answer from the shown calendar. Among the marked dates, how many are on the weekend?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for all marked weekend date cells.\nAnswer rule: set \"answer\" to the integer count of marked weekend dates.\nExample JSON:\n{\"evidence\":[[148,352,250,448],[560,352,662,448]],\"answer\":2}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 4,
+            "answer_or_evidence_variant_index": 1,
             "prompt_bundle_id": "temporal_calendar_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -283,10 +255,10 @@
               "json_example_answer_only": "{\"answer\":2}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "one month-view calendar for September 2026 with weekday headers, date cells, and several marked dates"
+              "object_description": "one month-view calendar for July 2025 with weekday headers, date cells, and several marked dates"
             },
             "task_family_key": "month_calendar",
-            "task_family_variant_index": 2,
+            "task_family_variant_index": 3,
             "task_key": "calendar_month_query",
             "task_variant_index": 4,
             "task_variant_key": "count_marked_weekend_days",
@@ -301,14 +273,14 @@
               "task_variant:count_marked_weekend_days": 5
             }
           },
-          "prompt": "You are given an image with one month-view calendar for September 2026 with weekday headers, date cells, and several marked dates. Determine the answer from the shown calendar. Among the marked dates, how many are on the weekend?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the integer count of marked weekend dates.\nExample JSON:\n{\"answer\":2}"
+          "prompt": "Work from the month-view calendar shown in the image: one month-view calendar for July 2025 with weekday headers, date cells, and several marked dates. Determine the answer from the shown calendar. Among the marked dates, how many are on the weekend?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the integer count of marked weekend dates.\nExample JSON:\n{\"answer\":2}"
         }
       },
       "task_variant": "count_marked_weekend_days",
       "template_id": "temporal_calendar_v1"
     },
     "render_map": {
-      "calendar_title_text": "September 2026",
+      "calendar_title_text": "July 2025",
       "date_cells_by_day": {
         "1": [
           154.0,
@@ -454,6 +426,12 @@
           370.0,
           718.0
         ],
+        "31": [
+          378.0,
+          612.0,
+          482.0,
+          718.0
+        ],
         "4": [
           490.0,
           156.0,
@@ -492,16 +470,12 @@
         ]
       },
       "evidence_dates": [
-        13,
-        19,
-        26
+        27
       ],
       "image_id": "img0",
       "marked_dates": [
-        13,
-        19,
-        21,
-        26
+        4,
+        27
       ],
       "scene_bbox_px": [
         34.0,
@@ -527,8 +501,8 @@
         }
       },
       "calendar_style": {
-        "accent_color_name": "orange",
-        "marker_kind": "ring",
+        "accent_color_name": "yellow",
+        "marker_kind": "fill",
         "resolved_colors_rgb": {
           "date_text": [
             46,
@@ -536,49 +510,49 @@
             62
           ],
           "grid_line": [
-            222,
-            206,
-            188
+            223,
+            221,
+            198
           ],
           "marker_fill": [
-            255,
-            255,
-            255
+            236,
+            228,
+            156
           ],
           "marker_outline": [
-            238,
-            136,
-            26
+            123,
+            113,
+            17
           ],
           "panel_fill": [
-            255,
-            255,
-            255
+            252,
+            251,
+            242
           ],
           "panel_outline": [
-            100,
-            57,
-            11
+            123,
+            113,
+            17
           ],
           "title_text": [
-            138,
-            79,
-            15
+            89,
+            81,
+            13
           ],
           "weekday_fill": [
-            255,
-            255,
-            255
+            246,
+            242,
+            206
           ],
           "weekday_text": [
-            138,
-            79,
-            15
+            89,
+            81,
+            13
           ]
         },
         "row_count": 5,
-        "style_variant": "marker",
-        "title_text": "September 2026"
+        "style_variant": "accented",
+        "title_text": "July 2025"
       },
       "canvas_height": 760,
       "canvas_width": 860,
@@ -613,11 +587,11 @@
           "attrs": {
             "date_number": 1,
             "is_marked": false,
-            "month": 9,
-            "month_name": "September",
+            "month": 7,
+            "month_name": "July",
             "week_row_index": 0,
             "weekday_index": 1,
-            "year": 2026
+            "year": 2025
           },
           "bbox_px": [
             154.0,
@@ -632,11 +606,11 @@
           "attrs": {
             "date_number": 2,
             "is_marked": false,
-            "month": 9,
-            "month_name": "September",
+            "month": 7,
+            "month_name": "July",
             "week_row_index": 0,
             "weekday_index": 2,
-            "year": 2026
+            "year": 2025
           },
           "bbox_px": [
             266.0,
@@ -651,11 +625,11 @@
           "attrs": {
             "date_number": 3,
             "is_marked": false,
-            "month": 9,
-            "month_name": "September",
+            "month": 7,
+            "month_name": "July",
             "week_row_index": 0,
             "weekday_index": 3,
-            "year": 2026
+            "year": 2025
           },
           "bbox_px": [
             378.0,
@@ -669,12 +643,12 @@
         {
           "attrs": {
             "date_number": 4,
-            "is_marked": false,
-            "month": 9,
-            "month_name": "September",
+            "is_marked": true,
+            "month": 7,
+            "month_name": "July",
             "week_row_index": 0,
             "weekday_index": 4,
-            "year": 2026
+            "year": 2025
           },
           "bbox_px": [
             490.0,
@@ -689,11 +663,11 @@
           "attrs": {
             "date_number": 5,
             "is_marked": false,
-            "month": 9,
-            "month_name": "September",
+            "month": 7,
+            "month_name": "July",
             "week_row_index": 0,
             "weekday_index": 5,
-            "year": 2026
+            "year": 2025
           },
           "bbox_px": [
             602.0,
@@ -708,11 +682,11 @@
           "attrs": {
             "date_number": 6,
             "is_marked": false,
-            "month": 9,
-            "month_name": "September",
+            "month": 7,
+            "month_name": "July",
             "week_row_index": 0,
             "weekday_index": 6,
-            "year": 2026
+            "year": 2025
           },
           "bbox_px": [
             714.0,
@@ -727,11 +701,11 @@
           "attrs": {
             "date_number": 7,
             "is_marked": false,
-            "month": 9,
-            "month_name": "September",
+            "month": 7,
+            "month_name": "July",
             "week_row_index": 1,
             "weekday_index": 0,
-            "year": 2026
+            "year": 2025
           },
           "bbox_px": [
             42.0,
@@ -746,11 +720,11 @@
           "attrs": {
             "date_number": 8,
             "is_marked": false,
-            "month": 9,
-            "month_name": "September",
+            "month": 7,
+            "month_name": "July",
             "week_row_index": 1,
             "weekday_index": 1,
-            "year": 2026
+            "year": 2025
           },
           "bbox_px": [
             154.0,
@@ -765,11 +739,11 @@
           "attrs": {
             "date_number": 9,
             "is_marked": false,
-            "month": 9,
-            "month_name": "September",
+            "month": 7,
+            "month_name": "July",
             "week_row_index": 1,
             "weekday_index": 2,
-            "year": 2026
+            "year": 2025
           },
           "bbox_px": [
             266.0,
@@ -784,11 +758,11 @@
           "attrs": {
             "date_number": 10,
             "is_marked": false,
-            "month": 9,
-            "month_name": "September",
+            "month": 7,
+            "month_name": "July",
             "week_row_index": 1,
             "weekday_index": 3,
-            "year": 2026
+            "year": 2025
           },
           "bbox_px": [
             378.0,
@@ -803,11 +777,11 @@
           "attrs": {
             "date_number": 11,
             "is_marked": false,
-            "month": 9,
-            "month_name": "September",
+            "month": 7,
+            "month_name": "July",
             "week_row_index": 1,
             "weekday_index": 4,
-            "year": 2026
+            "year": 2025
           },
           "bbox_px": [
             490.0,
@@ -822,11 +796,11 @@
           "attrs": {
             "date_number": 12,
             "is_marked": false,
-            "month": 9,
-            "month_name": "September",
+            "month": 7,
+            "month_name": "July",
             "week_row_index": 1,
             "weekday_index": 5,
-            "year": 2026
+            "year": 2025
           },
           "bbox_px": [
             602.0,
@@ -840,12 +814,12 @@
         {
           "attrs": {
             "date_number": 13,
-            "is_marked": true,
-            "month": 9,
-            "month_name": "September",
+            "is_marked": false,
+            "month": 7,
+            "month_name": "July",
             "week_row_index": 1,
             "weekday_index": 6,
-            "year": 2026
+            "year": 2025
           },
           "bbox_px": [
             714.0,
@@ -860,11 +834,11 @@
           "attrs": {
             "date_number": 14,
             "is_marked": false,
-            "month": 9,
-            "month_name": "September",
+            "month": 7,
+            "month_name": "July",
             "week_row_index": 2,
             "weekday_index": 0,
-            "year": 2026
+            "year": 2025
           },
           "bbox_px": [
             42.0,
@@ -879,11 +853,11 @@
           "attrs": {
             "date_number": 15,
             "is_marked": false,
-            "month": 9,
-            "month_name": "September",
+            "month": 7,
+            "month_name": "July",
             "week_row_index": 2,
             "weekday_index": 1,
-            "year": 2026
+            "year": 2025
           },
           "bbox_px": [
             154.0,
@@ -898,11 +872,11 @@
           "attrs": {
             "date_number": 16,
             "is_marked": false,
-            "month": 9,
-            "month_name": "September",
+            "month": 7,
+            "month_name": "July",
             "week_row_index": 2,
             "weekday_index": 2,
-            "year": 2026
+            "year": 2025
           },
           "bbox_px": [
             266.0,
@@ -917,11 +891,11 @@
           "attrs": {
             "date_number": 17,
             "is_marked": false,
-            "month": 9,
-            "month_name": "September",
+            "month": 7,
+            "month_name": "July",
             "week_row_index": 2,
             "weekday_index": 3,
-            "year": 2026
+            "year": 2025
           },
           "bbox_px": [
             378.0,
@@ -936,11 +910,11 @@
           "attrs": {
             "date_number": 18,
             "is_marked": false,
-            "month": 9,
-            "month_name": "September",
+            "month": 7,
+            "month_name": "July",
             "week_row_index": 2,
             "weekday_index": 4,
-            "year": 2026
+            "year": 2025
           },
           "bbox_px": [
             490.0,
@@ -954,12 +928,12 @@
         {
           "attrs": {
             "date_number": 19,
-            "is_marked": true,
-            "month": 9,
-            "month_name": "September",
+            "is_marked": false,
+            "month": 7,
+            "month_name": "July",
             "week_row_index": 2,
             "weekday_index": 5,
-            "year": 2026
+            "year": 2025
           },
           "bbox_px": [
             602.0,
@@ -974,11 +948,11 @@
           "attrs": {
             "date_number": 20,
             "is_marked": false,
-            "month": 9,
-            "month_name": "September",
+            "month": 7,
+            "month_name": "July",
             "week_row_index": 2,
             "weekday_index": 6,
-            "year": 2026
+            "year": 2025
           },
           "bbox_px": [
             714.0,
@@ -992,12 +966,12 @@
         {
           "attrs": {
             "date_number": 21,
-            "is_marked": true,
-            "month": 9,
-            "month_name": "September",
+            "is_marked": false,
+            "month": 7,
+            "month_name": "July",
             "week_row_index": 3,
             "weekday_index": 0,
-            "year": 2026
+            "year": 2025
           },
           "bbox_px": [
             42.0,
@@ -1012,11 +986,11 @@
           "attrs": {
             "date_number": 22,
             "is_marked": false,
-            "month": 9,
-            "month_name": "September",
+            "month": 7,
+            "month_name": "July",
             "week_row_index": 3,
             "weekday_index": 1,
-            "year": 2026
+            "year": 2025
           },
           "bbox_px": [
             154.0,
@@ -1031,11 +1005,11 @@
           "attrs": {
             "date_number": 23,
             "is_marked": false,
-            "month": 9,
-            "month_name": "September",
+            "month": 7,
+            "month_name": "July",
             "week_row_index": 3,
             "weekday_index": 2,
-            "year": 2026
+            "year": 2025
           },
           "bbox_px": [
             266.0,
@@ -1050,11 +1024,11 @@
           "attrs": {
             "date_number": 24,
             "is_marked": false,
-            "month": 9,
-            "month_name": "September",
+            "month": 7,
+            "month_name": "July",
             "week_row_index": 3,
             "weekday_index": 3,
-            "year": 2026
+            "year": 2025
           },
           "bbox_px": [
             378.0,
@@ -1069,11 +1043,11 @@
           "attrs": {
             "date_number": 25,
             "is_marked": false,
-            "month": 9,
-            "month_name": "September",
+            "month": 7,
+            "month_name": "July",
             "week_row_index": 3,
             "weekday_index": 4,
-            "year": 2026
+            "year": 2025
           },
           "bbox_px": [
             490.0,
@@ -1087,12 +1061,12 @@
         {
           "attrs": {
             "date_number": 26,
-            "is_marked": true,
-            "month": 9,
-            "month_name": "September",
+            "is_marked": false,
+            "month": 7,
+            "month_name": "July",
             "week_row_index": 3,
             "weekday_index": 5,
-            "year": 2026
+            "year": 2025
           },
           "bbox_px": [
             602.0,
@@ -1106,12 +1080,12 @@
         {
           "attrs": {
             "date_number": 27,
-            "is_marked": false,
-            "month": 9,
-            "month_name": "September",
+            "is_marked": true,
+            "month": 7,
+            "month_name": "July",
             "week_row_index": 3,
             "weekday_index": 6,
-            "year": 2026
+            "year": 2025
           },
           "bbox_px": [
             714.0,
@@ -1126,11 +1100,11 @@
           "attrs": {
             "date_number": 28,
             "is_marked": false,
-            "month": 9,
-            "month_name": "September",
+            "month": 7,
+            "month_name": "July",
             "week_row_index": 4,
             "weekday_index": 0,
-            "year": 2026
+            "year": 2025
           },
           "bbox_px": [
             42.0,
@@ -1145,11 +1119,11 @@
           "attrs": {
             "date_number": 29,
             "is_marked": false,
-            "month": 9,
-            "month_name": "September",
+            "month": 7,
+            "month_name": "July",
             "week_row_index": 4,
             "weekday_index": 1,
-            "year": 2026
+            "year": 2025
           },
           "bbox_px": [
             154.0,
@@ -1164,11 +1138,11 @@
           "attrs": {
             "date_number": 30,
             "is_marked": false,
-            "month": 9,
-            "month_name": "September",
+            "month": 7,
+            "month_name": "July",
             "week_row_index": 4,
             "weekday_index": 2,
-            "year": 2026
+            "year": 2025
           },
           "bbox_px": [
             266.0,
@@ -1178,22 +1152,39 @@
           ],
           "entity_id": "date_30",
           "entity_type": "calendar_date_cell"
+        },
+        {
+          "attrs": {
+            "date_number": 31,
+            "is_marked": false,
+            "month": 7,
+            "month_name": "July",
+            "week_row_index": 4,
+            "weekday_index": 3,
+            "year": 2025
+          },
+          "bbox_px": [
+            378.0,
+            612.0,
+            482.0,
+            718.0
+          ],
+          "entity_id": "date_31",
+          "entity_type": "calendar_date_cell"
         }
       ],
       "relations": {
-        "accent_color_name": "orange",
+        "accent_color_name": "yellow",
         "marked_dates": [
-          13,
-          19,
-          21,
-          26
+          4,
+          27
         ],
-        "month": 9,
-        "month_name": "September",
+        "month": 7,
+        "month_name": "July",
         "scene_variant": "outline",
-        "style_variant": "marker",
+        "style_variant": "accented",
         "task_variant": "count_marked_weekend_days",
-        "year": 2026
+        "year": 2025
       },
       "scene_kind": "temporal_month_calendar"
     },
@@ -1202,20 +1193,8 @@
       "value": [
         [
           714.0,
-          270.0,
-          818.0,
-          376.0
-        ],
-        [
-          602.0,
-          384.0,
-          706.0,
-          490.0
-        ],
-        [
-          602.0,
           498.0,
-          706.0,
+          818.0,
           604.0
         ]
       ]

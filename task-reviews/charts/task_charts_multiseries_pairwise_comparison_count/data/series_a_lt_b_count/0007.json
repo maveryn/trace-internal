@@ -1,344 +1,301 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 8
+    "value": 6
   },
   "evidence_gt": {
     "type": "label_set",
     "value": [
-      "C",
-      "E",
-      "F",
+      "B",
+      "D",
+      "K",
       "L",
-      "P",
-      "S",
-      "T",
-      "X"
+      "W",
+      "Y"
     ]
   },
   "image": {
     "format": "png",
     "path": "charts/task_charts_multiseries_pairwise_comparison_count/images/series_a_lt_b_count/0007.png"
   },
-  "instance_seed": 6774006250875454,
-  "prompt": "The image shows a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Compare the two queried series category by category. Determine the number of categories where Mair is less than Ivor.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+  "instance_seed": 2262503250760774,
+  "prompt": "Look at the multiseries chart in the image. It shows a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Determine how many category labels satisfy the requested pairwise series comparison. How many labeled categories have Aman under Riba?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer field: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
   "prompt_variants": {
-    "answer_and_evidence": "The image shows a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Compare the two queried series category by category. Determine the number of categories where Mair is less than Ivor.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
-    "answer_only": "The image shows a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Compare the two queried series category by category. Determine the number of categories where Mair is less than Ivor.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
+    "answer_and_evidence": "Look at the multiseries chart in the image. It shows a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Determine how many category labels satisfy the requested pairwise series comparison. How many labeled categories have Aman under Riba?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer field: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+    "answer_only": "Look at the multiseries chart in the image. It shows a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Determine how many category labels satisfy the requested pairwise series comparison. How many labeled categories have Aman under Riba?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
   },
   "task": "task_charts_multiseries_pairwise_comparison_count",
   "task_variant": "series_a_lt_b_count",
   "trace_payload": {
     "execution_trace": {
-      "answer_value": 8,
-      "category_count": 8,
+      "answer_value": 6,
+      "category_count": 10,
       "category_count_range": [
         5,
         10
       ],
       "category_labels": [
-        "P",
-        "L",
+        "K",
+        "R",
+        "W",
         "S",
-        "X",
-        "E",
+        "D",
+        "L",
+        "Q",
+        "B",
         "F",
-        "C",
-        "T"
+        "Y"
       ],
       "comparison": "less_than",
       "evidence_labels": [
-        "C",
-        "E",
-        "F",
+        "B",
+        "D",
+        "K",
         "L",
-        "P",
-        "S",
-        "T",
-        "X"
+        "W",
+        "Y"
       ],
-      "left_series_label": "Mair",
+      "left_series_label": "Aman",
       "mark_color_distance_space": "lab",
       "mark_color_min_distance": 40.0,
       "mark_color_sampling_policy": "random_rgb_palette",
       "queried_series_labels": [
-        "Mair",
-        "Ivor"
+        "Aman",
+        "Riba"
       ],
       "question_format": "numeric_open",
-      "right_series_label": "Ivor",
-      "scene_variant": "grouped_bar",
+      "right_series_label": "Riba",
+      "scene_variant": "grouped_lollipop",
       "scene_variant_probabilities": {
         "grouped_bar": 0.25,
         "grouped_horizontal_bar": 0.25,
         "grouped_lollipop": 0.25,
         "multi_line": 0.25
       },
-      "series_count": 3,
+      "series_count": 2,
       "series_count_range": [
         2,
         3
       ],
       "series_fill_palette_rgb": [
         [
-          73,
-          204,
-          214
+          198,
+          190,
+          116
         ],
         [
-          26,
-          28,
-          85
-        ],
-        [
-          30,
-          16,
-          14
+          46,
+          203,
+          194
         ]
       ],
       "series_labels": [
-        "Him",
-        "Mair",
-        "Ivor"
+        "Aman",
+        "Riba"
       ],
       "series_outline_palette_rgb": [
         [
-          40,
+          109,
+          105,
+          64
+        ],
+        [
+          25,
           112,
-          118
-        ],
-        [
-          14,
-          15,
-          47
-        ],
-        [
-          16,
-          9,
-          8
+          107
         ]
       ],
-      "target_answer": 8,
+      "target_answer": 6,
       "target_answer_range": [
         0,
         8
       ],
       "task_variant": "series_a_lt_b_count",
       "task_variant_probabilities": {
-        "series_a_gt_b_count": 0.5,
-        "series_a_lt_b_count": 0.5
+        "series_a_gt_b_count": 0.0,
+        "series_a_lt_b_count": 1.0
       },
       "values_by_category": {
-        "C": {
-          "Him": 12,
-          "Ivor": 17,
-          "Mair": 3
+        "B": {
+          "Aman": 5,
+          "Riba": 16
         },
-        "E": {
-          "Him": 8,
-          "Ivor": 14,
-          "Mair": 4
+        "D": {
+          "Aman": 1,
+          "Riba": 11
         },
         "F": {
-          "Him": 14,
-          "Ivor": 17,
-          "Mair": 12
+          "Aman": 20,
+          "Riba": 2
+        },
+        "K": {
+          "Aman": 4,
+          "Riba": 19
         },
         "L": {
-          "Him": 12,
-          "Ivor": 16,
-          "Mair": 9
+          "Aman": 12,
+          "Riba": 15
         },
-        "P": {
-          "Him": 12,
-          "Ivor": 16,
-          "Mair": 5
+        "Q": {
+          "Aman": 15,
+          "Riba": 12
+        },
+        "R": {
+          "Aman": 17,
+          "Riba": 2
         },
         "S": {
-          "Him": 4,
-          "Ivor": 19,
-          "Mair": 3
+          "Aman": 18,
+          "Riba": 7
         },
-        "T": {
-          "Him": 13,
-          "Ivor": 17,
-          "Mair": 7
+        "W": {
+          "Aman": 14,
+          "Riba": 15
         },
-        "X": {
-          "Him": 7,
-          "Ivor": 16,
-          "Mair": 3
+        "Y": {
+          "Aman": 6,
+          "Riba": 9
         }
       }
     },
     "projected_evidence": {
       "bbox_set": [
         [
-          685.217,
-          116.6,
-          737.033,
+          644.07,
+          151.238,
+          682.93,
           562.0
         ],
         [
-          494.717,
-          189.2,
-          546.533,
+          415.47,
+          266.476,
+          454.33,
           562.0
         ],
         [
-          589.967,
-          116.6,
-          641.783,
+          110.67,
+          82.095,
+          149.53,
           562.0
         ],
         [
-          208.967,
-          140.8,
-          260.783,
+          491.67,
+          174.286,
+          530.53,
           562.0
         ],
         [
-          113.717,
-          140.8,
-          165.533,
+          263.07,
+          174.286,
+          301.93,
           562.0
         ],
         [
-          304.217,
-          68.2,
-          356.033,
-          562.0
-        ],
-        [
-          780.467,
-          116.6,
-          832.283,
-          562.0
-        ],
-        [
-          399.467,
-          140.8,
-          451.283,
+          796.47,
+          312.571,
+          835.33,
           562.0
         ]
       ],
       "label_set": [
-        "C",
-        "E",
-        "F",
+        "B",
+        "D",
+        "K",
         "L",
-        "P",
-        "S",
-        "T",
-        "X"
+        "W",
+        "Y"
       ],
       "pixel_point_map": {
-        "C": [
-          711.125,
+        "B": [
+          663.5,
           554.0
         ],
-        "E": [
-          520.625,
+        "D": [
+          434.9,
           554.0
         ],
-        "F": [
-          615.875,
+        "K": [
+          130.1,
           554.0
         ],
         "L": [
-          234.875,
+          511.1,
           554.0
         ],
-        "P": [
-          139.625,
+        "W": [
+          282.5,
           554.0
         ],
-        "S": [
-          330.125,
-          554.0
-        ],
-        "T": [
-          806.375,
-          554.0
-        ],
-        "X": [
-          425.375,
+        "Y": [
+          815.9,
           554.0
         ]
       },
       "pixel_point_set": [
         [
-          711.125,
+          663.5,
           554.0
         ],
         [
-          520.625,
+          434.9,
           554.0
         ],
         [
-          615.875,
+          130.1,
           554.0
         ],
         [
-          234.875,
+          511.1,
           554.0
         ],
         [
-          139.625,
+          282.5,
           554.0
         ],
         [
-          330.125,
-          554.0
-        ],
-        [
-          806.375,
-          554.0
-        ],
-        [
-          425.375,
+          815.9,
           554.0
         ]
       ]
     },
     "query_spec": {
       "params": {
-        "category_count": 8,
+        "category_count": 10,
         "category_count_range": [
           5,
           10
         ],
         "comparison": "less_than",
         "queried_series_labels": [
-          "Mair",
-          "Ivor"
+          "Aman",
+          "Riba"
         ],
-        "scene_variant": "grouped_bar",
+        "scene_variant": "grouped_lollipop",
         "scene_variant_probabilities": {
           "grouped_bar": 0.25,
           "grouped_horizontal_bar": 0.25,
           "grouped_lollipop": 0.25,
           "multi_line": 0.25
         },
-        "series_count": 3,
+        "series_count": 2,
         "series_count_range": [
           2,
           3
         ],
-        "target_answer": 8,
+        "target_answer": 6,
         "target_answer_range": [
           0,
           8
         ],
         "task_variant": "series_a_lt_b_count",
         "task_variant_probabilities": {
-          "series_a_gt_b_count": 0.5,
-          "series_a_lt_b_count": 0.5
+          "series_a_gt_b_count": 0.0,
+          "series_a_lt_b_count": 1.0
         }
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 0,
+        "answer_or_evidence_variant_index": 3,
         "prompt_bundle_id": "charts_multiseries_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -348,16 +305,16 @@
           "json_example_answer_only": "{\"answer\":2}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "left_series": "Mair",
-          "object_description": "a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category",
-          "right_series": "Ivor"
+          "left_series": "Aman",
+          "object_description": "a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis",
+          "right_series": "Riba"
         },
         "task_family_key": "multiseries_chart_comparison",
-        "task_family_variant_index": 0,
+        "task_family_variant_index": 3,
         "task_key": "pairwise_comparison_count_query",
-        "task_variant_index": 0,
+        "task_variant_index": 2,
         "task_variant_key": "series_a_lt_b_count",
-        "task_variant_template_index": 3,
+        "task_variant_template_index": 2,
         "template_paths": [
           "charts/multiseries/charts_multiseries_v1.json"
         ],
@@ -373,41 +330,6 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 0,
-            "prompt_bundle_id": "charts_multiseries_v1",
-            "schema_version": "v1",
-            "slot_values": {
-              "answer_hint": "set \"answer\" to the number of category labels satisfying the requested series comparison as an integer",
-              "evidence_hint": "set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series",
-              "json_example": "{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
-              "json_example_answer_only": "{\"answer\":2}",
-              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
-              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "left_series": "Mair",
-              "object_description": "a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category",
-              "right_series": "Ivor"
-            },
-            "task_family_key": "multiseries_chart_comparison",
-            "task_family_variant_index": 0,
-            "task_key": "pairwise_comparison_count_query",
-            "task_variant_index": 0,
-            "task_variant_key": "series_a_lt_b_count",
-            "task_variant_template_index": 3,
-            "template_paths": [
-              "charts/multiseries/charts_multiseries_v1.json"
-            ],
-            "variant_count_by_key": {
-              "answer_or_evidence:answer_and_evidence": 5,
-              "task:pairwise_comparison_count_query": 5,
-              "task_family:multiseries_chart_comparison": 5,
-              "task_variant:series_a_lt_b_count": 5
-            }
-          },
-          "prompt": "The image shows a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Compare the two queried series category by category. Determine the number of categories where Mair is less than Ivor.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}"
-        },
-        "answer_only": {
-          "metadata": {
-            "answer_or_evidence_key": "answer_only",
             "answer_or_evidence_variant_index": 3,
             "prompt_bundle_id": "charts_multiseries_v1",
             "schema_version": "v1",
@@ -418,16 +340,51 @@
               "json_example_answer_only": "{\"answer\":2}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "left_series": "Mair",
-              "object_description": "a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category",
-              "right_series": "Ivor"
+              "left_series": "Aman",
+              "object_description": "a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis",
+              "right_series": "Riba"
             },
             "task_family_key": "multiseries_chart_comparison",
-            "task_family_variant_index": 0,
+            "task_family_variant_index": 3,
             "task_key": "pairwise_comparison_count_query",
-            "task_variant_index": 0,
+            "task_variant_index": 2,
             "task_variant_key": "series_a_lt_b_count",
-            "task_variant_template_index": 3,
+            "task_variant_template_index": 2,
+            "template_paths": [
+              "charts/multiseries/charts_multiseries_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:pairwise_comparison_count_query": 5,
+              "task_family:multiseries_chart_comparison": 5,
+              "task_variant:series_a_lt_b_count": 5
+            }
+          },
+          "prompt": "Look at the multiseries chart in the image. It shows a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Determine how many category labels satisfy the requested pairwise series comparison. How many labeled categories have Aman under Riba?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer field: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "charts_multiseries_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the number of category labels satisfying the requested series comparison as an integer",
+              "evidence_hint": "set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series",
+              "json_example": "{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "left_series": "Aman",
+              "object_description": "a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis",
+              "right_series": "Riba"
+            },
+            "task_family_key": "multiseries_chart_comparison",
+            "task_family_variant_index": 3,
+            "task_key": "pairwise_comparison_count_query",
+            "task_variant_index": 2,
+            "task_variant_key": "series_a_lt_b_count",
+            "task_variant_template_index": 2,
             "template_paths": [
               "charts/multiseries/charts_multiseries_v1.json"
             ],
@@ -438,7 +395,7 @@
               "task_variant:series_a_lt_b_count": 5
             }
           },
-          "prompt": "The image shows a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Compare the two queried series category by category. Determine the number of categories where Mair is less than Ivor.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
+          "prompt": "Look at the multiseries chart in the image. It shows a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Determine how many category labels satisfy the requested pairwise series comparison. How many labeled categories have Aman under Riba?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
         }
       },
       "task_variant": "series_a_lt_b_count",
@@ -446,36 +403,44 @@
     },
     "render_map": {
       "category_label_centers_px": {
-        "C": [
-          711.125,
+        "B": [
+          663.5,
           554.0
         ],
-        "E": [
-          520.625,
+        "D": [
+          434.9,
           554.0
         ],
         "F": [
-          615.875,
+          739.7,
+          554.0
+        ],
+        "K": [
+          130.1,
           554.0
         ],
         "L": [
-          234.875,
+          511.1,
           554.0
         ],
-        "P": [
-          139.625,
+        "Q": [
+          587.3,
+          554.0
+        ],
+        "R": [
+          206.3,
           554.0
         ],
         "S": [
-          330.125,
+          358.7,
           554.0
         ],
-        "T": [
-          806.375,
+        "W": [
+          282.5,
           554.0
         ],
-        "X": [
-          425.375,
+        "Y": [
+          815.9,
           554.0
         ]
       },
@@ -517,36 +482,26 @@
         "sampling_policy": "random_rgb_palette",
         "series_fill_palette_rgb": [
           [
-            73,
-            204,
-            214
+            198,
+            190,
+            116
           ],
           [
-            26,
-            28,
-            85
-          ],
-          [
-            30,
-            16,
-            14
+            46,
+            203,
+            194
           ]
         ],
         "series_outline_palette_rgb": [
           [
-            40,
+            109,
+            105,
+            64
+          ],
+          [
+            25,
             112,
-            118
-          ],
-          [
-            14,
-            15,
-            47
-          ],
-          [
-            16,
-            9,
-            8
+            107
           ]
         ]
       },
@@ -572,13 +527,13 @@
         "edits": [],
         "enabled": false
       },
-      "scene_variant": "grouped_bar",
+      "scene_variant": "grouped_lollipop",
       "text_style": {
         "label_font_size_px": 22,
         "label_stroke_width_px": 2,
         "tick_font_size_px": 18
       },
-      "y_axis_max": 20,
+      "y_axis_max": 21,
       "y_ticks": [
         0,
         1,
@@ -600,7 +555,8 @@
         17,
         18,
         19,
-        20
+        20,
+        21
       ]
     },
     "scene_ir": {
@@ -608,1043 +564,871 @@
         {
           "attrs": {
             "category_group_bbox_px": [
-              113.717,
-              140.8,
-              165.533,
+              110.67,
+              82.095,
+              149.53,
               562.0
             ],
-            "category_label": "P",
+            "category_label": "K",
             "category_label_center_px": [
-              139.625,
+              130.1,
               554.0
             ],
             "category_rank": 0,
             "mark_bbox_px": [
-              113.717,
-              237.6,
-              127.433,
-              528.0
+              110.67,
+              427.81,
+              126.67,
+              443.81
             ],
             "mark_center_px": [
-              120.575,
-              237.6
+              118.67,
+              435.81
             ],
             "mark_fill_rgb": [
-              73,
-              204,
-              214
+              198,
+              190,
+              116
             ],
             "mark_outline_rgb": [
-              40,
-              112,
-              118
+              109,
+              105,
+              64
             ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Him",
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Aman",
             "series_rank": 0,
-            "value": 12
+            "value": 4
           },
-          "entity_id": "mark_P_Him",
-          "entity_type": "bar"
+          "entity_id": "mark_K_Aman",
+          "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              113.717,
-              140.8,
-              165.533,
+              110.67,
+              82.095,
+              149.53,
               562.0
             ],
-            "category_label": "P",
+            "category_label": "K",
             "category_label_center_px": [
-              139.625,
+              130.1,
               554.0
             ],
             "category_rank": 0,
             "mark_bbox_px": [
-              132.767,
-              407.0,
-              146.483,
-              528.0
+              133.53,
+              82.095,
+              149.53,
+              98.095
             ],
             "mark_center_px": [
-              139.625,
-              407.0
+              141.53,
+              90.095
             ],
             "mark_fill_rgb": [
-              26,
-              28,
-              85
+              46,
+              203,
+              194
             ],
             "mark_outline_rgb": [
-              14,
-              15,
-              47
+              25,
+              112,
+              107
             ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Mair",
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Riba",
             "series_rank": 1,
+            "value": 19
+          },
+          "entity_id": "mark_K_Riba",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              186.87,
+              128.19,
+              225.73,
+              562.0
+            ],
+            "category_label": "R",
+            "category_label_center_px": [
+              206.3,
+              554.0
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              186.87,
+              128.19,
+              202.87,
+              144.19
+            ],
+            "mark_center_px": [
+              194.87,
+              136.19
+            ],
+            "mark_fill_rgb": [
+              198,
+              190,
+              116
+            ],
+            "mark_outline_rgb": [
+              109,
+              105,
+              64
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Aman",
+            "series_rank": 0,
+            "value": 17
+          },
+          "entity_id": "mark_R_Aman",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              186.87,
+              128.19,
+              225.73,
+              562.0
+            ],
+            "category_label": "R",
+            "category_label_center_px": [
+              206.3,
+              554.0
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              209.73,
+              473.905,
+              225.73,
+              489.905
+            ],
+            "mark_center_px": [
+              217.73,
+              481.905
+            ],
+            "mark_fill_rgb": [
+              46,
+              203,
+              194
+            ],
+            "mark_outline_rgb": [
+              25,
+              112,
+              107
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Riba",
+            "series_rank": 1,
+            "value": 2
+          },
+          "entity_id": "mark_R_Riba",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              263.07,
+              174.286,
+              301.93,
+              562.0
+            ],
+            "category_label": "W",
+            "category_label_center_px": [
+              282.5,
+              554.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              263.07,
+              197.333,
+              279.07,
+              213.333
+            ],
+            "mark_center_px": [
+              271.07,
+              205.333
+            ],
+            "mark_fill_rgb": [
+              198,
+              190,
+              116
+            ],
+            "mark_outline_rgb": [
+              109,
+              105,
+              64
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Aman",
+            "series_rank": 0,
+            "value": 14
+          },
+          "entity_id": "mark_W_Aman",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              263.07,
+              174.286,
+              301.93,
+              562.0
+            ],
+            "category_label": "W",
+            "category_label_center_px": [
+              282.5,
+              554.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              285.93,
+              174.286,
+              301.93,
+              190.286
+            ],
+            "mark_center_px": [
+              293.93,
+              182.286
+            ],
+            "mark_fill_rgb": [
+              46,
+              203,
+              194
+            ],
+            "mark_outline_rgb": [
+              25,
+              112,
+              107
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Riba",
+            "series_rank": 1,
+            "value": 15
+          },
+          "entity_id": "mark_W_Riba",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              339.27,
+              105.143,
+              378.13,
+              562.0
+            ],
+            "category_label": "S",
+            "category_label_center_px": [
+              358.7,
+              554.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              339.27,
+              105.143,
+              355.27,
+              121.143
+            ],
+            "mark_center_px": [
+              347.27,
+              113.143
+            ],
+            "mark_fill_rgb": [
+              198,
+              190,
+              116
+            ],
+            "mark_outline_rgb": [
+              109,
+              105,
+              64
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Aman",
+            "series_rank": 0,
+            "value": 18
+          },
+          "entity_id": "mark_S_Aman",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              339.27,
+              105.143,
+              378.13,
+              562.0
+            ],
+            "category_label": "S",
+            "category_label_center_px": [
+              358.7,
+              554.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              362.13,
+              358.667,
+              378.13,
+              374.667
+            ],
+            "mark_center_px": [
+              370.13,
+              366.667
+            ],
+            "mark_fill_rgb": [
+              46,
+              203,
+              194
+            ],
+            "mark_outline_rgb": [
+              25,
+              112,
+              107
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Riba",
+            "series_rank": 1,
+            "value": 7
+          },
+          "entity_id": "mark_S_Riba",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              415.47,
+              266.476,
+              454.33,
+              562.0
+            ],
+            "category_label": "D",
+            "category_label_center_px": [
+              434.9,
+              554.0
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              415.47,
+              496.952,
+              431.47,
+              512.952
+            ],
+            "mark_center_px": [
+              423.47,
+              504.952
+            ],
+            "mark_fill_rgb": [
+              198,
+              190,
+              116
+            ],
+            "mark_outline_rgb": [
+              109,
+              105,
+              64
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Aman",
+            "series_rank": 0,
+            "value": 1
+          },
+          "entity_id": "mark_D_Aman",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              415.47,
+              266.476,
+              454.33,
+              562.0
+            ],
+            "category_label": "D",
+            "category_label_center_px": [
+              434.9,
+              554.0
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              438.33,
+              266.476,
+              454.33,
+              282.476
+            ],
+            "mark_center_px": [
+              446.33,
+              274.476
+            ],
+            "mark_fill_rgb": [
+              46,
+              203,
+              194
+            ],
+            "mark_outline_rgb": [
+              25,
+              112,
+              107
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Riba",
+            "series_rank": 1,
+            "value": 11
+          },
+          "entity_id": "mark_D_Riba",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              491.67,
+              174.286,
+              530.53,
+              562.0
+            ],
+            "category_label": "L",
+            "category_label_center_px": [
+              511.1,
+              554.0
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              491.67,
+              243.429,
+              507.67,
+              259.429
+            ],
+            "mark_center_px": [
+              499.67,
+              251.429
+            ],
+            "mark_fill_rgb": [
+              198,
+              190,
+              116
+            ],
+            "mark_outline_rgb": [
+              109,
+              105,
+              64
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Aman",
+            "series_rank": 0,
+            "value": 12
+          },
+          "entity_id": "mark_L_Aman",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              491.67,
+              174.286,
+              530.53,
+              562.0
+            ],
+            "category_label": "L",
+            "category_label_center_px": [
+              511.1,
+              554.0
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              514.53,
+              174.286,
+              530.53,
+              190.286
+            ],
+            "mark_center_px": [
+              522.53,
+              182.286
+            ],
+            "mark_fill_rgb": [
+              46,
+              203,
+              194
+            ],
+            "mark_outline_rgb": [
+              25,
+              112,
+              107
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Riba",
+            "series_rank": 1,
+            "value": 15
+          },
+          "entity_id": "mark_L_Riba",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              567.87,
+              174.286,
+              606.73,
+              563.5
+            ],
+            "category_label": "Q",
+            "category_label_center_px": [
+              587.3,
+              554.0
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              567.87,
+              174.286,
+              583.87,
+              190.286
+            ],
+            "mark_center_px": [
+              575.87,
+              182.286
+            ],
+            "mark_fill_rgb": [
+              198,
+              190,
+              116
+            ],
+            "mark_outline_rgb": [
+              109,
+              105,
+              64
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Aman",
+            "series_rank": 0,
+            "value": 15
+          },
+          "entity_id": "mark_Q_Aman",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              567.87,
+              174.286,
+              606.73,
+              563.5
+            ],
+            "category_label": "Q",
+            "category_label_center_px": [
+              587.3,
+              554.0
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              590.73,
+              243.429,
+              606.73,
+              259.429
+            ],
+            "mark_center_px": [
+              598.73,
+              251.429
+            ],
+            "mark_fill_rgb": [
+              46,
+              203,
+              194
+            ],
+            "mark_outline_rgb": [
+              25,
+              112,
+              107
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Riba",
+            "series_rank": 1,
+            "value": 12
+          },
+          "entity_id": "mark_Q_Riba",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              644.07,
+              151.238,
+              682.93,
+              562.0
+            ],
+            "category_label": "B",
+            "category_label_center_px": [
+              663.5,
+              554.0
+            ],
+            "category_rank": 7,
+            "mark_bbox_px": [
+              644.07,
+              404.762,
+              660.07,
+              420.762
+            ],
+            "mark_center_px": [
+              652.07,
+              412.762
+            ],
+            "mark_fill_rgb": [
+              198,
+              190,
+              116
+            ],
+            "mark_outline_rgb": [
+              109,
+              105,
+              64
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Aman",
+            "series_rank": 0,
             "value": 5
           },
-          "entity_id": "mark_P_Mair",
-          "entity_type": "bar"
+          "entity_id": "mark_B_Aman",
+          "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              113.717,
-              140.8,
-              165.533,
+              644.07,
+              151.238,
+              682.93,
               562.0
             ],
-            "category_label": "P",
+            "category_label": "B",
             "category_label_center_px": [
-              139.625,
+              663.5,
               554.0
             ],
-            "category_rank": 0,
+            "category_rank": 7,
             "mark_bbox_px": [
-              151.817,
-              140.8,
-              165.533,
-              528.0
+              666.93,
+              151.238,
+              682.93,
+              167.238
             ],
             "mark_center_px": [
-              158.675,
-              140.8
+              674.93,
+              159.238
             ],
             "mark_fill_rgb": [
-              30,
-              16,
-              14
+              46,
+              203,
+              194
             ],
             "mark_outline_rgb": [
-              16,
-              9,
-              8
+              25,
+              112,
+              107
             ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Ivor",
-            "series_rank": 2,
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Riba",
+            "series_rank": 1,
             "value": 16
           },
-          "entity_id": "mark_P_Ivor",
-          "entity_type": "bar"
+          "entity_id": "mark_B_Riba",
+          "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              208.967,
-              140.8,
-              260.783,
+              720.27,
+              59.048,
+              759.13,
               562.0
             ],
-            "category_label": "L",
+            "category_label": "F",
             "category_label_center_px": [
-              234.875,
+              739.7,
               554.0
             ],
-            "category_rank": 1,
+            "category_rank": 8,
             "mark_bbox_px": [
-              208.967,
-              237.6,
-              222.683,
-              528.0
+              720.27,
+              59.048,
+              736.27,
+              75.048
             ],
             "mark_center_px": [
-              215.825,
-              237.6
+              728.27,
+              67.048
             ],
             "mark_fill_rgb": [
-              73,
-              204,
-              214
+              198,
+              190,
+              116
             ],
             "mark_outline_rgb": [
-              40,
-              112,
-              118
+              109,
+              105,
+              64
             ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Him",
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Aman",
             "series_rank": 0,
-            "value": 12
+            "value": 20
           },
-          "entity_id": "mark_L_Him",
-          "entity_type": "bar"
+          "entity_id": "mark_F_Aman",
+          "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              208.967,
-              140.8,
-              260.783,
+              720.27,
+              59.048,
+              759.13,
               562.0
             ],
-            "category_label": "L",
+            "category_label": "F",
             "category_label_center_px": [
-              234.875,
+              739.7,
               554.0
             ],
-            "category_rank": 1,
+            "category_rank": 8,
             "mark_bbox_px": [
-              228.017,
-              310.2,
-              241.733,
-              528.0
+              743.13,
+              473.905,
+              759.13,
+              489.905
             ],
             "mark_center_px": [
-              234.875,
-              310.2
+              751.13,
+              481.905
             ],
             "mark_fill_rgb": [
-              26,
-              28,
-              85
+              46,
+              203,
+              194
             ],
             "mark_outline_rgb": [
-              14,
-              15,
-              47
+              25,
+              112,
+              107
             ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Mair",
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Riba",
+            "series_rank": 1,
+            "value": 2
+          },
+          "entity_id": "mark_F_Riba",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              796.47,
+              312.571,
+              835.33,
+              562.0
+            ],
+            "category_label": "Y",
+            "category_label_center_px": [
+              815.9,
+              554.0
+            ],
+            "category_rank": 9,
+            "mark_bbox_px": [
+              796.47,
+              381.714,
+              812.47,
+              397.714
+            ],
+            "mark_center_px": [
+              804.47,
+              389.714
+            ],
+            "mark_fill_rgb": [
+              198,
+              190,
+              116
+            ],
+            "mark_outline_rgb": [
+              109,
+              105,
+              64
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Aman",
+            "series_rank": 0,
+            "value": 6
+          },
+          "entity_id": "mark_Y_Aman",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              796.47,
+              312.571,
+              835.33,
+              562.0
+            ],
+            "category_label": "Y",
+            "category_label_center_px": [
+              815.9,
+              554.0
+            ],
+            "category_rank": 9,
+            "mark_bbox_px": [
+              819.33,
+              312.571,
+              835.33,
+              328.571
+            ],
+            "mark_center_px": [
+              827.33,
+              320.571
+            ],
+            "mark_fill_rgb": [
+              46,
+              203,
+              194
+            ],
+            "mark_outline_rgb": [
+              25,
+              112,
+              107
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Riba",
             "series_rank": 1,
             "value": 9
           },
-          "entity_id": "mark_L_Mair",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              208.967,
-              140.8,
-              260.783,
-              562.0
-            ],
-            "category_label": "L",
-            "category_label_center_px": [
-              234.875,
-              554.0
-            ],
-            "category_rank": 1,
-            "mark_bbox_px": [
-              247.067,
-              140.8,
-              260.783,
-              528.0
-            ],
-            "mark_center_px": [
-              253.925,
-              140.8
-            ],
-            "mark_fill_rgb": [
-              30,
-              16,
-              14
-            ],
-            "mark_outline_rgb": [
-              16,
-              9,
-              8
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Ivor",
-            "series_rank": 2,
-            "value": 16
-          },
-          "entity_id": "mark_L_Ivor",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              304.217,
-              68.2,
-              356.033,
-              562.0
-            ],
-            "category_label": "S",
-            "category_label_center_px": [
-              330.125,
-              554.0
-            ],
-            "category_rank": 2,
-            "mark_bbox_px": [
-              304.217,
-              431.2,
-              317.933,
-              528.0
-            ],
-            "mark_center_px": [
-              311.075,
-              431.2
-            ],
-            "mark_fill_rgb": [
-              73,
-              204,
-              214
-            ],
-            "mark_outline_rgb": [
-              40,
-              112,
-              118
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Him",
-            "series_rank": 0,
-            "value": 4
-          },
-          "entity_id": "mark_S_Him",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              304.217,
-              68.2,
-              356.033,
-              562.0
-            ],
-            "category_label": "S",
-            "category_label_center_px": [
-              330.125,
-              554.0
-            ],
-            "category_rank": 2,
-            "mark_bbox_px": [
-              323.267,
-              455.4,
-              336.983,
-              528.0
-            ],
-            "mark_center_px": [
-              330.125,
-              455.4
-            ],
-            "mark_fill_rgb": [
-              26,
-              28,
-              85
-            ],
-            "mark_outline_rgb": [
-              14,
-              15,
-              47
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Mair",
-            "series_rank": 1,
-            "value": 3
-          },
-          "entity_id": "mark_S_Mair",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              304.217,
-              68.2,
-              356.033,
-              562.0
-            ],
-            "category_label": "S",
-            "category_label_center_px": [
-              330.125,
-              554.0
-            ],
-            "category_rank": 2,
-            "mark_bbox_px": [
-              342.317,
-              68.2,
-              356.033,
-              528.0
-            ],
-            "mark_center_px": [
-              349.175,
-              68.2
-            ],
-            "mark_fill_rgb": [
-              30,
-              16,
-              14
-            ],
-            "mark_outline_rgb": [
-              16,
-              9,
-              8
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Ivor",
-            "series_rank": 2,
-            "value": 19
-          },
-          "entity_id": "mark_S_Ivor",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              399.467,
-              140.8,
-              451.283,
-              562.0
-            ],
-            "category_label": "X",
-            "category_label_center_px": [
-              425.375,
-              554.0
-            ],
-            "category_rank": 3,
-            "mark_bbox_px": [
-              399.467,
-              358.6,
-              413.183,
-              528.0
-            ],
-            "mark_center_px": [
-              406.325,
-              358.6
-            ],
-            "mark_fill_rgb": [
-              73,
-              204,
-              214
-            ],
-            "mark_outline_rgb": [
-              40,
-              112,
-              118
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Him",
-            "series_rank": 0,
-            "value": 7
-          },
-          "entity_id": "mark_X_Him",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              399.467,
-              140.8,
-              451.283,
-              562.0
-            ],
-            "category_label": "X",
-            "category_label_center_px": [
-              425.375,
-              554.0
-            ],
-            "category_rank": 3,
-            "mark_bbox_px": [
-              418.517,
-              455.4,
-              432.233,
-              528.0
-            ],
-            "mark_center_px": [
-              425.375,
-              455.4
-            ],
-            "mark_fill_rgb": [
-              26,
-              28,
-              85
-            ],
-            "mark_outline_rgb": [
-              14,
-              15,
-              47
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Mair",
-            "series_rank": 1,
-            "value": 3
-          },
-          "entity_id": "mark_X_Mair",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              399.467,
-              140.8,
-              451.283,
-              562.0
-            ],
-            "category_label": "X",
-            "category_label_center_px": [
-              425.375,
-              554.0
-            ],
-            "category_rank": 3,
-            "mark_bbox_px": [
-              437.567,
-              140.8,
-              451.283,
-              528.0
-            ],
-            "mark_center_px": [
-              444.425,
-              140.8
-            ],
-            "mark_fill_rgb": [
-              30,
-              16,
-              14
-            ],
-            "mark_outline_rgb": [
-              16,
-              9,
-              8
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Ivor",
-            "series_rank": 2,
-            "value": 16
-          },
-          "entity_id": "mark_X_Ivor",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              494.717,
-              189.2,
-              546.533,
-              562.0
-            ],
-            "category_label": "E",
-            "category_label_center_px": [
-              520.625,
-              554.0
-            ],
-            "category_rank": 4,
-            "mark_bbox_px": [
-              494.717,
-              334.4,
-              508.433,
-              528.0
-            ],
-            "mark_center_px": [
-              501.575,
-              334.4
-            ],
-            "mark_fill_rgb": [
-              73,
-              204,
-              214
-            ],
-            "mark_outline_rgb": [
-              40,
-              112,
-              118
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Him",
-            "series_rank": 0,
-            "value": 8
-          },
-          "entity_id": "mark_E_Him",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              494.717,
-              189.2,
-              546.533,
-              562.0
-            ],
-            "category_label": "E",
-            "category_label_center_px": [
-              520.625,
-              554.0
-            ],
-            "category_rank": 4,
-            "mark_bbox_px": [
-              513.767,
-              431.2,
-              527.483,
-              528.0
-            ],
-            "mark_center_px": [
-              520.625,
-              431.2
-            ],
-            "mark_fill_rgb": [
-              26,
-              28,
-              85
-            ],
-            "mark_outline_rgb": [
-              14,
-              15,
-              47
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Mair",
-            "series_rank": 1,
-            "value": 4
-          },
-          "entity_id": "mark_E_Mair",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              494.717,
-              189.2,
-              546.533,
-              562.0
-            ],
-            "category_label": "E",
-            "category_label_center_px": [
-              520.625,
-              554.0
-            ],
-            "category_rank": 4,
-            "mark_bbox_px": [
-              532.817,
-              189.2,
-              546.533,
-              528.0
-            ],
-            "mark_center_px": [
-              539.675,
-              189.2
-            ],
-            "mark_fill_rgb": [
-              30,
-              16,
-              14
-            ],
-            "mark_outline_rgb": [
-              16,
-              9,
-              8
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Ivor",
-            "series_rank": 2,
-            "value": 14
-          },
-          "entity_id": "mark_E_Ivor",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              589.967,
-              116.6,
-              641.783,
-              562.0
-            ],
-            "category_label": "F",
-            "category_label_center_px": [
-              615.875,
-              554.0
-            ],
-            "category_rank": 5,
-            "mark_bbox_px": [
-              589.967,
-              189.2,
-              603.683,
-              528.0
-            ],
-            "mark_center_px": [
-              596.825,
-              189.2
-            ],
-            "mark_fill_rgb": [
-              73,
-              204,
-              214
-            ],
-            "mark_outline_rgb": [
-              40,
-              112,
-              118
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Him",
-            "series_rank": 0,
-            "value": 14
-          },
-          "entity_id": "mark_F_Him",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              589.967,
-              116.6,
-              641.783,
-              562.0
-            ],
-            "category_label": "F",
-            "category_label_center_px": [
-              615.875,
-              554.0
-            ],
-            "category_rank": 5,
-            "mark_bbox_px": [
-              609.017,
-              237.6,
-              622.733,
-              528.0
-            ],
-            "mark_center_px": [
-              615.875,
-              237.6
-            ],
-            "mark_fill_rgb": [
-              26,
-              28,
-              85
-            ],
-            "mark_outline_rgb": [
-              14,
-              15,
-              47
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Mair",
-            "series_rank": 1,
-            "value": 12
-          },
-          "entity_id": "mark_F_Mair",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              589.967,
-              116.6,
-              641.783,
-              562.0
-            ],
-            "category_label": "F",
-            "category_label_center_px": [
-              615.875,
-              554.0
-            ],
-            "category_rank": 5,
-            "mark_bbox_px": [
-              628.067,
-              116.6,
-              641.783,
-              528.0
-            ],
-            "mark_center_px": [
-              634.925,
-              116.6
-            ],
-            "mark_fill_rgb": [
-              30,
-              16,
-              14
-            ],
-            "mark_outline_rgb": [
-              16,
-              9,
-              8
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Ivor",
-            "series_rank": 2,
-            "value": 17
-          },
-          "entity_id": "mark_F_Ivor",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              685.217,
-              116.6,
-              737.033,
-              562.0
-            ],
-            "category_label": "C",
-            "category_label_center_px": [
-              711.125,
-              554.0
-            ],
-            "category_rank": 6,
-            "mark_bbox_px": [
-              685.217,
-              237.6,
-              698.933,
-              528.0
-            ],
-            "mark_center_px": [
-              692.075,
-              237.6
-            ],
-            "mark_fill_rgb": [
-              73,
-              204,
-              214
-            ],
-            "mark_outline_rgb": [
-              40,
-              112,
-              118
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Him",
-            "series_rank": 0,
-            "value": 12
-          },
-          "entity_id": "mark_C_Him",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              685.217,
-              116.6,
-              737.033,
-              562.0
-            ],
-            "category_label": "C",
-            "category_label_center_px": [
-              711.125,
-              554.0
-            ],
-            "category_rank": 6,
-            "mark_bbox_px": [
-              704.267,
-              455.4,
-              717.983,
-              528.0
-            ],
-            "mark_center_px": [
-              711.125,
-              455.4
-            ],
-            "mark_fill_rgb": [
-              26,
-              28,
-              85
-            ],
-            "mark_outline_rgb": [
-              14,
-              15,
-              47
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Mair",
-            "series_rank": 1,
-            "value": 3
-          },
-          "entity_id": "mark_C_Mair",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              685.217,
-              116.6,
-              737.033,
-              562.0
-            ],
-            "category_label": "C",
-            "category_label_center_px": [
-              711.125,
-              554.0
-            ],
-            "category_rank": 6,
-            "mark_bbox_px": [
-              723.317,
-              116.6,
-              737.033,
-              528.0
-            ],
-            "mark_center_px": [
-              730.175,
-              116.6
-            ],
-            "mark_fill_rgb": [
-              30,
-              16,
-              14
-            ],
-            "mark_outline_rgb": [
-              16,
-              9,
-              8
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Ivor",
-            "series_rank": 2,
-            "value": 17
-          },
-          "entity_id": "mark_C_Ivor",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              780.467,
-              116.6,
-              832.283,
-              562.0
-            ],
-            "category_label": "T",
-            "category_label_center_px": [
-              806.375,
-              554.0
-            ],
-            "category_rank": 7,
-            "mark_bbox_px": [
-              780.467,
-              213.4,
-              794.183,
-              528.0
-            ],
-            "mark_center_px": [
-              787.325,
-              213.4
-            ],
-            "mark_fill_rgb": [
-              73,
-              204,
-              214
-            ],
-            "mark_outline_rgb": [
-              40,
-              112,
-              118
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Him",
-            "series_rank": 0,
-            "value": 13
-          },
-          "entity_id": "mark_T_Him",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              780.467,
-              116.6,
-              832.283,
-              562.0
-            ],
-            "category_label": "T",
-            "category_label_center_px": [
-              806.375,
-              554.0
-            ],
-            "category_rank": 7,
-            "mark_bbox_px": [
-              799.517,
-              358.6,
-              813.233,
-              528.0
-            ],
-            "mark_center_px": [
-              806.375,
-              358.6
-            ],
-            "mark_fill_rgb": [
-              26,
-              28,
-              85
-            ],
-            "mark_outline_rgb": [
-              14,
-              15,
-              47
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Mair",
-            "series_rank": 1,
-            "value": 7
-          },
-          "entity_id": "mark_T_Mair",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              780.467,
-              116.6,
-              832.283,
-              562.0
-            ],
-            "category_label": "T",
-            "category_label_center_px": [
-              806.375,
-              554.0
-            ],
-            "category_rank": 7,
-            "mark_bbox_px": [
-              818.567,
-              116.6,
-              832.283,
-              528.0
-            ],
-            "mark_center_px": [
-              825.425,
-              116.6
-            ],
-            "mark_fill_rgb": [
-              30,
-              16,
-              14
-            ],
-            "mark_outline_rgb": [
-              16,
-              9,
-              8
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Ivor",
-            "series_rank": 2,
-            "value": 17
-          },
-          "entity_id": "mark_T_Ivor",
-          "entity_type": "bar"
+          "entity_id": "mark_Y_Riba",
+          "entity_type": "point"
         }
       ],
       "relations": {
         "comparison": "less_than",
         "evidence_labels": [
-          "C",
-          "E",
-          "F",
+          "B",
+          "D",
+          "K",
           "L",
-          "P",
-          "S",
-          "T",
-          "X"
+          "W",
+          "Y"
         ],
         "queried_series_labels": [
-          "Mair",
-          "Ivor"
+          "Aman",
+          "Riba"
         ],
-        "scene_variant": "grouped_bar",
+        "scene_variant": "grouped_lollipop",
         "task_variant": "series_a_lt_b_count"
       },
-      "scene_kind": "chart_grouped_bar_multiseries"
+      "scene_kind": "chart_grouped_lollipop_multiseries"
     },
     "witness_symbolic": {
       "labels": [
-        "C",
-        "E",
-        "F",
+        "B",
+        "D",
+        "K",
         "L",
-        "P",
-        "S",
-        "T",
-        "X"
+        "W",
+        "Y"
       ],
       "type": "label_set"
     }

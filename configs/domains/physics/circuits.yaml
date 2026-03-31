@@ -23,6 +23,7 @@ generation:
       balanced_scene_variant_sampling: true
       balanced_query_variant_sampling: true
       balanced_target_answer_sampling: true
+      total_resistance_target_answer_support: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]
       parallel_target_answer_support: [1, 2, 3, 4, 5, 6]
       simple_series_parallel_target_answer_support: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]
       missing_resistor_value_support: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]

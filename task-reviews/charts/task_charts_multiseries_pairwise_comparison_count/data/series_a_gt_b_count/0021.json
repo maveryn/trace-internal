@@ -1,56 +1,74 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 1
+    "value": 8
   },
   "evidence_gt": {
     "type": "label_set",
     "value": [
-      "K"
+      "A",
+      "J",
+      "K",
+      "M",
+      "N",
+      "R",
+      "V",
+      "Y"
     ]
   },
   "image": {
     "format": "png",
     "path": "charts/task_charts_multiseries_pairwise_comparison_count/images/series_a_gt_b_count/0021.png"
   },
-  "instance_seed": 3102406440316946,
-  "prompt": "Work from the multiseries chart shown in the image: a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Work category by category and count the labels where the requested series comparison is true. Count the category labels where Seta exceeds Zebe.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer format: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
+  "instance_seed": 8224816528062442,
+  "prompt": "You are given a multiseries chart: a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Determine how many category labels satisfy the requested pairwise series comparison. Determine the number of categories where Fein is greater than Jehu.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer field: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
   "prompt_variants": {
-    "answer_and_evidence": "Work from the multiseries chart shown in the image: a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Work category by category and count the labels where the requested series comparison is true. Count the category labels where Seta exceeds Zebe.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer format: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
-    "answer_only": "Work from the multiseries chart shown in the image: a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Work category by category and count the labels where the requested series comparison is true. Count the category labels where Seta exceeds Zebe.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":3}"
+    "answer_and_evidence": "You are given a multiseries chart: a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Determine how many category labels satisfy the requested pairwise series comparison. Determine the number of categories where Fein is greater than Jehu.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer field: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
+    "answer_only": "You are given a multiseries chart: a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Determine how many category labels satisfy the requested pairwise series comparison. Determine the number of categories where Fein is greater than Jehu.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":3}"
   },
   "task": "task_charts_multiseries_pairwise_comparison_count",
   "task_variant": "series_a_gt_b_count",
   "trace_payload": {
     "execution_trace": {
-      "answer_value": 1,
-      "category_count": 5,
+      "answer_value": 8,
+      "category_count": 9,
       "category_count_range": [
         5,
         10
       ],
       "category_labels": [
-        "A",
-        "N",
         "J",
+        "V",
+        "A",
+        "M",
+        "Y",
         "K",
-        "U"
+        "R",
+        "N",
+        "Z"
       ],
       "comparison": "greater_than",
       "evidence_labels": [
-        "K"
+        "A",
+        "J",
+        "K",
+        "M",
+        "N",
+        "R",
+        "V",
+        "Y"
       ],
-      "left_series_label": "Seta",
+      "left_series_label": "Fein",
       "mark_color_distance_space": "lab",
       "mark_color_min_distance": 40.0,
       "mark_color_sampling_policy": "random_rgb_palette",
       "queried_series_labels": [
-        "Seta",
-        "Zebe"
+        "Fein",
+        "Jehu"
       ],
       "question_format": "numeric_open",
-      "right_series_label": "Zebe",
-      "scene_variant": "grouped_horizontal_bar",
+      "right_series_label": "Jehu",
+      "scene_variant": "multi_line",
       "scene_variant_probabilities": {
         "grouped_bar": 0.25,
         "grouped_horizontal_bar": 0.25,
@@ -64,119 +82,244 @@
       ],
       "series_fill_palette_rgb": [
         [
-          148,
-          208,
-          101
+          45,
+          91,
+          158
         ],
         [
-          198,
-          65,
-          81
-        ],
-        [
-          189,
-          81,
-          188
-        ]
-      ],
-      "series_labels": [
-        "Seta",
-        "Alic",
-        "Zebe"
-      ],
-      "series_outline_palette_rgb": [
-        [
-          81,
-          114,
-          56
-        ],
-        [
-          109,
-          36,
-          45
+          123,
+          136,
+          141
         ],
         [
           104,
-          45,
-          103
+          166,
+          64
         ]
       ],
-      "target_answer": 1,
+      "series_labels": [
+        "Ten",
+        "Fein",
+        "Jehu"
+      ],
+      "series_outline_palette_rgb": [
+        [
+          25,
+          50,
+          87
+        ],
+        [
+          68,
+          75,
+          78
+        ],
+        [
+          57,
+          91,
+          35
+        ]
+      ],
+      "target_answer": 8,
       "target_answer_range": [
         0,
         8
       ],
       "task_variant": "series_a_gt_b_count",
       "task_variant_probabilities": {
-        "series_a_gt_b_count": 0.5,
-        "series_a_lt_b_count": 0.5
+        "series_a_gt_b_count": 1.0,
+        "series_a_lt_b_count": 0.0
       },
       "values_by_category": {
         "A": {
-          "Alic": 13,
-          "Seta": 4,
-          "Zebe": 18
+          "Fein": 13,
+          "Jehu": 3,
+          "Ten": 12
         },
         "J": {
-          "Alic": 15,
-          "Seta": 1,
-          "Zebe": 19
+          "Fein": 9,
+          "Jehu": 1,
+          "Ten": 6
         },
         "K": {
-          "Alic": 7,
-          "Seta": 8,
-          "Zebe": 5
+          "Fein": 17,
+          "Jehu": 5,
+          "Ten": 10
+        },
+        "M": {
+          "Fein": 17,
+          "Jehu": 13,
+          "Ten": 14
         },
         "N": {
-          "Alic": 16,
-          "Seta": 5,
-          "Zebe": 20
+          "Fein": 20,
+          "Jehu": 4,
+          "Ten": 11
         },
-        "U": {
-          "Alic": 6,
-          "Seta": 3,
-          "Zebe": 17
+        "R": {
+          "Fein": 12,
+          "Jehu": 4,
+          "Ten": 9
+        },
+        "V": {
+          "Fein": 15,
+          "Jehu": 2,
+          "Ten": 11
+        },
+        "Y": {
+          "Fein": 19,
+          "Jehu": 11,
+          "Ten": 17
+        },
+        "Z": {
+          "Fein": 3,
+          "Jehu": 20,
+          "Ten": 16
         }
       }
     },
     "projected_evidence": {
       "bbox_set": [
         [
-          53.0,
-          356.47,
-          382.286,
-          409.13
+          295.167,
+          220.381,
+          312.167,
+          562.0
+        ],
+        [
+          126.333,
+          312.571,
+          142.333,
+          564.0
+        ],
+        [
+          548.667,
+          128.19,
+          566.667,
+          562.0
+        ],
+        [
+          377.333,
+          128.19,
+          399.333,
+          562.0
+        ],
+        [
+          718.0,
+          59.048,
+          736.0,
+          562.0
+        ],
+        [
+          633.833,
+          243.429,
+          650.833,
+          562.0
+        ],
+        [
+          210.5,
+          174.286,
+          227.5,
+          562.0
+        ],
+        [
+          464.0,
+          82.095,
+          482.0,
+          562.0
         ]
       ],
       "label_set": [
-        "K"
+        "A",
+        "J",
+        "K",
+        "M",
+        "N",
+        "R",
+        "V",
+        "Y"
       ],
       "pixel_point_map": {
+        "A": [
+          303.667,
+          554.0
+        ],
+        "J": [
+          134.333,
+          554.0
+        ],
         "K": [
-          62.0,
-          382.8
+          557.667,
+          554.0
+        ],
+        "M": [
+          388.333,
+          554.0
+        ],
+        "N": [
+          727.0,
+          554.0
+        ],
+        "R": [
+          642.333,
+          554.0
+        ],
+        "V": [
+          219.0,
+          554.0
+        ],
+        "Y": [
+          473.0,
+          554.0
         ]
       },
       "pixel_point_set": [
         [
-          62.0,
-          382.8
+          303.667,
+          554.0
+        ],
+        [
+          134.333,
+          554.0
+        ],
+        [
+          557.667,
+          554.0
+        ],
+        [
+          388.333,
+          554.0
+        ],
+        [
+          727.0,
+          554.0
+        ],
+        [
+          642.333,
+          554.0
+        ],
+        [
+          219.0,
+          554.0
+        ],
+        [
+          473.0,
+          554.0
         ]
       ]
     },
     "query_spec": {
       "params": {
-        "category_count": 5,
+        "category_count": 9,
         "category_count_range": [
           5,
           10
         ],
         "comparison": "greater_than",
         "queried_series_labels": [
-          "Seta",
-          "Zebe"
+          "Fein",
+          "Jehu"
         ],
-        "scene_variant": "grouped_horizontal_bar",
+        "scene_variant": "multi_line",
         "scene_variant_probabilities": {
           "grouped_bar": 0.25,
           "grouped_horizontal_bar": 0.25,
@@ -188,20 +331,20 @@
           2,
           3
         ],
-        "target_answer": 1,
+        "target_answer": 8,
         "target_answer_range": [
           0,
           8
         ],
         "task_variant": "series_a_gt_b_count",
         "task_variant_probabilities": {
-          "series_a_gt_b_count": 0.5,
-          "series_a_lt_b_count": 0.5
+          "series_a_gt_b_count": 1.0,
+          "series_a_lt_b_count": 0.0
         }
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 1,
+        "answer_or_evidence_variant_index": 3,
         "prompt_bundle_id": "charts_multiseries_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -211,16 +354,16 @@
           "json_example_answer_only": "{\"answer\":3}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "left_series": "Seta",
-          "object_description": "a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category",
-          "right_series": "Zebe"
+          "left_series": "Fein",
+          "object_description": "a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis",
+          "right_series": "Jehu"
         },
         "task_family_key": "multiseries_chart_comparison",
-        "task_family_variant_index": 2,
+        "task_family_variant_index": 4,
         "task_key": "pairwise_comparison_count_query",
-        "task_variant_index": 4,
+        "task_variant_index": 2,
         "task_variant_key": "series_a_gt_b_count",
-        "task_variant_template_index": 1,
+        "task_variant_template_index": 3,
         "template_paths": [
           "charts/multiseries/charts_multiseries_v1.json"
         ],
@@ -236,7 +379,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 1,
+            "answer_or_evidence_variant_index": 3,
             "prompt_bundle_id": "charts_multiseries_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -246,16 +389,16 @@
               "json_example_answer_only": "{\"answer\":3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "left_series": "Seta",
-              "object_description": "a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category",
-              "right_series": "Zebe"
+              "left_series": "Fein",
+              "object_description": "a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis",
+              "right_series": "Jehu"
             },
             "task_family_key": "multiseries_chart_comparison",
-            "task_family_variant_index": 2,
+            "task_family_variant_index": 4,
             "task_key": "pairwise_comparison_count_query",
-            "task_variant_index": 4,
+            "task_variant_index": 2,
             "task_variant_key": "series_a_gt_b_count",
-            "task_variant_template_index": 1,
+            "task_variant_template_index": 3,
             "template_paths": [
               "charts/multiseries/charts_multiseries_v1.json"
             ],
@@ -266,7 +409,7 @@
               "task_variant:series_a_gt_b_count": 5
             }
           },
-          "prompt": "Work from the multiseries chart shown in the image: a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Work category by category and count the labels where the requested series comparison is true. Count the category labels where Seta exceeds Zebe.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer format: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}"
+          "prompt": "You are given a multiseries chart: a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Determine how many category labels satisfy the requested pairwise series comparison. Determine the number of categories where Fein is greater than Jehu.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer field: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}"
         },
         "answer_only": {
           "metadata": {
@@ -281,16 +424,16 @@
               "json_example_answer_only": "{\"answer\":3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "left_series": "Seta",
-              "object_description": "a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category",
-              "right_series": "Zebe"
+              "left_series": "Fein",
+              "object_description": "a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis",
+              "right_series": "Jehu"
             },
             "task_family_key": "multiseries_chart_comparison",
-            "task_family_variant_index": 2,
+            "task_family_variant_index": 4,
             "task_key": "pairwise_comparison_count_query",
-            "task_variant_index": 4,
+            "task_variant_index": 2,
             "task_variant_key": "series_a_gt_b_count",
-            "task_variant_template_index": 1,
+            "task_variant_template_index": 3,
             "template_paths": [
               "charts/multiseries/charts_multiseries_v1.json"
             ],
@@ -301,7 +444,7 @@
               "task_variant:series_a_gt_b_count": 5
             }
           },
-          "prompt": "Work from the multiseries chart shown in the image: a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Work category by category and count the labels where the requested series comparison is true. Count the category labels where Seta exceeds Zebe.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":3}"
+          "prompt": "You are given a multiseries chart: a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Determine how many category labels satisfy the requested pairwise series comparison. Determine the number of categories where Fein is greater than Jehu.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":3}"
         }
       },
       "task_variant": "series_a_gt_b_count",
@@ -310,24 +453,40 @@
     "render_map": {
       "category_label_centers_px": {
         "A": [
-          62.0,
-          92.4
+          303.667,
+          554.0
         ],
         "J": [
-          62.0,
-          286.0
+          134.333,
+          554.0
         ],
         "K": [
-          62.0,
-          382.8
+          557.667,
+          554.0
+        ],
+        "M": [
+          388.333,
+          554.0
         ],
         "N": [
-          62.0,
-          189.2
+          727.0,
+          554.0
         ],
-        "U": [
-          62.0,
-          479.6
+        "R": [
+          642.333,
+          554.0
+        ],
+        "V": [
+          219.0,
+          554.0
+        ],
+        "Y": [
+          473.0,
+          554.0
+        ],
+        "Z": [
+          811.667,
+          554.0
         ]
       },
       "image_id": "img0",
@@ -368,36 +527,36 @@
         "sampling_policy": "random_rgb_palette",
         "series_fill_palette_rgb": [
           [
-            148,
-            208,
-            101
+            45,
+            91,
+            158
           ],
           [
-            198,
-            65,
-            81
+            123,
+            136,
+            141
           ],
           [
-            189,
-            81,
-            188
+            104,
+            166,
+            64
           ]
         ],
         "series_outline_palette_rgb": [
           [
-            81,
-            114,
-            56
+            25,
+            50,
+            87
           ],
           [
-            109,
-            36,
-            45
+            68,
+            75,
+            78
           ],
           [
-            104,
-            45,
-            103
+            57,
+            91,
+            35
           ]
         ]
       },
@@ -423,7 +582,7 @@
         "edits": [],
         "enabled": false
       },
-      "scene_variant": "grouped_horizontal_bar",
+      "scene_variant": "multi_line",
       "text_style": {
         "label_font_size_px": 22,
         "label_stroke_width_px": 2,
@@ -460,651 +619,1169 @@
         {
           "attrs": {
             "category_group_bbox_px": [
-              53.5,
-              66.07,
-              745.143,
-              118.73
-            ],
-            "category_label": "A",
-            "category_label_center_px": [
-              62.0,
-              92.4
-            ],
-            "category_rank": 0,
-            "mark_bbox_px": [
-              92.0,
-              66.07,
-              237.143,
-              80.01
-            ],
-            "mark_center_px": [
-              164.571,
-              73.04
-            ],
-            "mark_fill_rgb": [
-              148,
-              208,
-              101
-            ],
-            "mark_outline_rgb": [
-              81,
-              114,
-              56
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Seta",
-            "series_rank": 0,
-            "value": 4
-          },
-          "entity_id": "mark_A_Seta",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              53.5,
-              66.07,
-              745.143,
-              118.73
-            ],
-            "category_label": "A",
-            "category_label_center_px": [
-              62.0,
-              92.4
-            ],
-            "category_rank": 0,
-            "mark_bbox_px": [
-              92.0,
-              85.43,
-              563.714,
-              99.37
-            ],
-            "mark_center_px": [
-              327.857,
-              92.4
-            ],
-            "mark_fill_rgb": [
-              198,
-              65,
-              81
-            ],
-            "mark_outline_rgb": [
-              109,
-              36,
-              45
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Alic",
-            "series_rank": 1,
-            "value": 13
-          },
-          "entity_id": "mark_A_Alic",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              53.5,
-              66.07,
-              745.143,
-              118.73
-            ],
-            "category_label": "A",
-            "category_label_center_px": [
-              62.0,
-              92.4
-            ],
-            "category_rank": 0,
-            "mark_bbox_px": [
-              92.0,
-              104.79,
-              745.143,
-              118.73
-            ],
-            "mark_center_px": [
-              418.571,
-              111.76
-            ],
-            "mark_fill_rgb": [
-              189,
-              81,
-              188
-            ],
-            "mark_outline_rgb": [
-              104,
-              45,
-              103
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Zebe",
-            "series_rank": 2,
-            "value": 18
-          },
-          "entity_id": "mark_A_Zebe",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              53.0,
-              162.87,
-              817.714,
-              215.53
-            ],
-            "category_label": "N",
-            "category_label_center_px": [
-              62.0,
-              189.2
-            ],
-            "category_rank": 1,
-            "mark_bbox_px": [
-              92.0,
-              162.87,
-              273.429,
-              176.81
-            ],
-            "mark_center_px": [
-              182.714,
-              169.84
-            ],
-            "mark_fill_rgb": [
-              148,
-              208,
-              101
-            ],
-            "mark_outline_rgb": [
-              81,
-              114,
-              56
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Seta",
-            "series_rank": 0,
-            "value": 5
-          },
-          "entity_id": "mark_N_Seta",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              53.0,
-              162.87,
-              817.714,
-              215.53
-            ],
-            "category_label": "N",
-            "category_label_center_px": [
-              62.0,
-              189.2
-            ],
-            "category_rank": 1,
-            "mark_bbox_px": [
-              92.0,
-              182.23,
-              672.571,
-              196.17
-            ],
-            "mark_center_px": [
-              382.286,
-              189.2
-            ],
-            "mark_fill_rgb": [
-              198,
-              65,
-              81
-            ],
-            "mark_outline_rgb": [
-              109,
-              36,
-              45
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Alic",
-            "series_rank": 1,
-            "value": 16
-          },
-          "entity_id": "mark_N_Alic",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              53.0,
-              162.87,
-              817.714,
-              215.53
-            ],
-            "category_label": "N",
-            "category_label_center_px": [
-              62.0,
-              189.2
-            ],
-            "category_rank": 1,
-            "mark_bbox_px": [
-              92.0,
-              201.59,
-              817.714,
-              215.53
-            ],
-            "mark_center_px": [
-              454.857,
-              208.56
-            ],
-            "mark_fill_rgb": [
-              189,
-              81,
-              188
-            ],
-            "mark_outline_rgb": [
-              104,
-              45,
-              103
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Zebe",
-            "series_rank": 2,
-            "value": 20
-          },
-          "entity_id": "mark_N_Zebe",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              57.0,
-              259.67,
-              781.429,
-              312.33
+              126.333,
+              312.571,
+              142.333,
+              564.0
             ],
             "category_label": "J",
             "category_label_center_px": [
-              62.0,
-              286.0
+              134.333,
+              554.0
             ],
-            "category_rank": 2,
+            "category_rank": 0,
             "mark_bbox_px": [
-              92.0,
-              259.67,
-              128.286,
-              273.61
+              126.333,
+              381.714,
+              142.333,
+              397.714
             ],
             "mark_center_px": [
-              110.143,
-              266.64
+              134.333,
+              389.714
             ],
             "mark_fill_rgb": [
-              148,
-              208,
-              101
+              45,
+              91,
+              158
             ],
             "mark_outline_rgb": [
-              81,
-              114,
-              56
+              25,
+              50,
+              87
             ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Seta",
+            "scene_variant": "multi_line",
+            "series_label": "Ten",
             "series_rank": 0,
+            "value": 6
+          },
+          "entity_id": "mark_J_Ten",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              126.333,
+              312.571,
+              142.333,
+              564.0
+            ],
+            "category_label": "J",
+            "category_label_center_px": [
+              134.333,
+              554.0
+            ],
+            "category_rank": 0,
+            "mark_bbox_px": [
+              126.333,
+              312.571,
+              142.333,
+              328.571
+            ],
+            "mark_center_px": [
+              134.333,
+              320.571
+            ],
+            "mark_fill_rgb": [
+              123,
+              136,
+              141
+            ],
+            "mark_outline_rgb": [
+              68,
+              75,
+              78
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Fein",
+            "series_rank": 1,
+            "value": 9
+          },
+          "entity_id": "mark_J_Fein",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              126.333,
+              312.571,
+              142.333,
+              564.0
+            ],
+            "category_label": "J",
+            "category_label_center_px": [
+              134.333,
+              554.0
+            ],
+            "category_rank": 0,
+            "mark_bbox_px": [
+              126.333,
+              496.952,
+              142.333,
+              512.952
+            ],
+            "mark_center_px": [
+              134.333,
+              504.952
+            ],
+            "mark_fill_rgb": [
+              104,
+              166,
+              64
+            ],
+            "mark_outline_rgb": [
+              57,
+              91,
+              35
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Jehu",
+            "series_rank": 2,
             "value": 1
           },
-          "entity_id": "mark_J_Seta",
-          "entity_type": "bar"
+          "entity_id": "mark_J_Jehu",
+          "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              57.0,
-              259.67,
-              781.429,
-              312.33
+              210.5,
+              174.286,
+              227.5,
+              562.0
             ],
-            "category_label": "J",
+            "category_label": "V",
             "category_label_center_px": [
-              62.0,
-              286.0
+              219.0,
+              554.0
             ],
-            "category_rank": 2,
+            "category_rank": 1,
             "mark_bbox_px": [
-              92.0,
-              279.03,
-              636.286,
-              292.97
-            ],
-            "mark_center_px": [
-              364.143,
-              286.0
-            ],
-            "mark_fill_rgb": [
-              198,
-              65,
-              81
-            ],
-            "mark_outline_rgb": [
-              109,
-              36,
-              45
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Alic",
-            "series_rank": 1,
-            "value": 15
-          },
-          "entity_id": "mark_J_Alic",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              57.0,
-              259.67,
-              781.429,
-              312.33
-            ],
-            "category_label": "J",
-            "category_label_center_px": [
-              62.0,
-              286.0
-            ],
-            "category_rank": 2,
-            "mark_bbox_px": [
-              92.0,
-              298.39,
-              781.429,
-              312.33
-            ],
-            "mark_center_px": [
-              436.714,
-              305.36
-            ],
-            "mark_fill_rgb": [
-              189,
-              81,
-              188
-            ],
-            "mark_outline_rgb": [
-              104,
-              45,
-              103
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Zebe",
-            "series_rank": 2,
-            "value": 19
-          },
-          "entity_id": "mark_J_Zebe",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              53.0,
-              356.47,
-              382.286,
-              409.13
-            ],
-            "category_label": "K",
-            "category_label_center_px": [
-              62.0,
-              382.8
-            ],
-            "category_rank": 3,
-            "mark_bbox_px": [
-              92.0,
-              356.47,
-              382.286,
-              370.41
-            ],
-            "mark_center_px": [
-              237.143,
-              363.44
-            ],
-            "mark_fill_rgb": [
-              148,
-              208,
-              101
-            ],
-            "mark_outline_rgb": [
-              81,
-              114,
-              56
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Seta",
-            "series_rank": 0,
-            "value": 8
-          },
-          "entity_id": "mark_K_Seta",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              53.0,
-              356.47,
-              382.286,
-              409.13
-            ],
-            "category_label": "K",
-            "category_label_center_px": [
-              62.0,
-              382.8
-            ],
-            "category_rank": 3,
-            "mark_bbox_px": [
-              92.0,
-              375.83,
-              346.0,
-              389.77
+              211.0,
+              266.476,
+              227.0,
+              282.476
             ],
             "mark_center_px": [
               219.0,
-              382.8
+              274.476
             ],
             "mark_fill_rgb": [
-              198,
-              65,
-              81
+              45,
+              91,
+              158
             ],
             "mark_outline_rgb": [
-              109,
-              36,
-              45
+              25,
+              50,
+              87
             ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Alic",
-            "series_rank": 1,
-            "value": 7
+            "scene_variant": "multi_line",
+            "series_label": "Ten",
+            "series_rank": 0,
+            "value": 11
           },
-          "entity_id": "mark_K_Alic",
-          "entity_type": "bar"
+          "entity_id": "mark_V_Ten",
+          "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              53.0,
-              356.47,
-              382.286,
-              409.13
+              210.5,
+              174.286,
+              227.5,
+              562.0
             ],
-            "category_label": "K",
+            "category_label": "V",
             "category_label_center_px": [
-              62.0,
-              382.8
+              219.0,
+              554.0
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              211.0,
+              174.286,
+              227.0,
+              190.286
+            ],
+            "mark_center_px": [
+              219.0,
+              182.286
+            ],
+            "mark_fill_rgb": [
+              123,
+              136,
+              141
+            ],
+            "mark_outline_rgb": [
+              68,
+              75,
+              78
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Fein",
+            "series_rank": 1,
+            "value": 15
+          },
+          "entity_id": "mark_V_Fein",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              210.5,
+              174.286,
+              227.5,
+              562.0
+            ],
+            "category_label": "V",
+            "category_label_center_px": [
+              219.0,
+              554.0
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              211.0,
+              473.905,
+              227.0,
+              489.905
+            ],
+            "mark_center_px": [
+              219.0,
+              481.905
+            ],
+            "mark_fill_rgb": [
+              104,
+              166,
+              64
+            ],
+            "mark_outline_rgb": [
+              57,
+              91,
+              35
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Jehu",
+            "series_rank": 2,
+            "value": 2
+          },
+          "entity_id": "mark_V_Jehu",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              295.167,
+              220.381,
+              312.167,
+              562.0
+            ],
+            "category_label": "A",
+            "category_label_center_px": [
+              303.667,
+              554.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              295.667,
+              243.429,
+              311.667,
+              259.429
+            ],
+            "mark_center_px": [
+              303.667,
+              251.429
+            ],
+            "mark_fill_rgb": [
+              45,
+              91,
+              158
+            ],
+            "mark_outline_rgb": [
+              25,
+              50,
+              87
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Ten",
+            "series_rank": 0,
+            "value": 12
+          },
+          "entity_id": "mark_A_Ten",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              295.167,
+              220.381,
+              312.167,
+              562.0
+            ],
+            "category_label": "A",
+            "category_label_center_px": [
+              303.667,
+              554.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              295.667,
+              220.381,
+              311.667,
+              236.381
+            ],
+            "mark_center_px": [
+              303.667,
+              228.381
+            ],
+            "mark_fill_rgb": [
+              123,
+              136,
+              141
+            ],
+            "mark_outline_rgb": [
+              68,
+              75,
+              78
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Fein",
+            "series_rank": 1,
+            "value": 13
+          },
+          "entity_id": "mark_A_Fein",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              295.167,
+              220.381,
+              312.167,
+              562.0
+            ],
+            "category_label": "A",
+            "category_label_center_px": [
+              303.667,
+              554.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              295.667,
+              450.857,
+              311.667,
+              466.857
+            ],
+            "mark_center_px": [
+              303.667,
+              458.857
+            ],
+            "mark_fill_rgb": [
+              104,
+              166,
+              64
+            ],
+            "mark_outline_rgb": [
+              57,
+              91,
+              35
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Jehu",
+            "series_rank": 2,
+            "value": 3
+          },
+          "entity_id": "mark_A_Jehu",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              377.333,
+              128.19,
+              399.333,
+              562.0
+            ],
+            "category_label": "M",
+            "category_label_center_px": [
+              388.333,
+              554.0
             ],
             "category_rank": 3,
             "mark_bbox_px": [
-              92.0,
-              395.19,
-              273.429,
-              409.13
+              380.333,
+              197.333,
+              396.333,
+              213.333
             ],
             "mark_center_px": [
-              182.714,
-              402.16
+              388.333,
+              205.333
             ],
             "mark_fill_rgb": [
-              189,
-              81,
-              188
+              45,
+              91,
+              158
             ],
             "mark_outline_rgb": [
-              104,
-              45,
-              103
+              25,
+              50,
+              87
             ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Zebe",
+            "scene_variant": "multi_line",
+            "series_label": "Ten",
+            "series_rank": 0,
+            "value": 14
+          },
+          "entity_id": "mark_M_Ten",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              377.333,
+              128.19,
+              399.333,
+              562.0
+            ],
+            "category_label": "M",
+            "category_label_center_px": [
+              388.333,
+              554.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              380.333,
+              128.19,
+              396.333,
+              144.19
+            ],
+            "mark_center_px": [
+              388.333,
+              136.19
+            ],
+            "mark_fill_rgb": [
+              123,
+              136,
+              141
+            ],
+            "mark_outline_rgb": [
+              68,
+              75,
+              78
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Fein",
+            "series_rank": 1,
+            "value": 17
+          },
+          "entity_id": "mark_M_Fein",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              377.333,
+              128.19,
+              399.333,
+              562.0
+            ],
+            "category_label": "M",
+            "category_label_center_px": [
+              388.333,
+              554.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              380.333,
+              220.381,
+              396.333,
+              236.381
+            ],
+            "mark_center_px": [
+              388.333,
+              228.381
+            ],
+            "mark_fill_rgb": [
+              104,
+              166,
+              64
+            ],
+            "mark_outline_rgb": [
+              57,
+              91,
+              35
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Jehu",
+            "series_rank": 2,
+            "value": 13
+          },
+          "entity_id": "mark_M_Jehu",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              464.0,
+              82.095,
+              482.0,
+              562.0
+            ],
+            "category_label": "Y",
+            "category_label_center_px": [
+              473.0,
+              554.0
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              465.0,
+              128.19,
+              481.0,
+              144.19
+            ],
+            "mark_center_px": [
+              473.0,
+              136.19
+            ],
+            "mark_fill_rgb": [
+              45,
+              91,
+              158
+            ],
+            "mark_outline_rgb": [
+              25,
+              50,
+              87
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Ten",
+            "series_rank": 0,
+            "value": 17
+          },
+          "entity_id": "mark_Y_Ten",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              464.0,
+              82.095,
+              482.0,
+              562.0
+            ],
+            "category_label": "Y",
+            "category_label_center_px": [
+              473.0,
+              554.0
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              465.0,
+              82.095,
+              481.0,
+              98.095
+            ],
+            "mark_center_px": [
+              473.0,
+              90.095
+            ],
+            "mark_fill_rgb": [
+              123,
+              136,
+              141
+            ],
+            "mark_outline_rgb": [
+              68,
+              75,
+              78
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Fein",
+            "series_rank": 1,
+            "value": 19
+          },
+          "entity_id": "mark_Y_Fein",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              464.0,
+              82.095,
+              482.0,
+              562.0
+            ],
+            "category_label": "Y",
+            "category_label_center_px": [
+              473.0,
+              554.0
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              465.0,
+              266.476,
+              481.0,
+              282.476
+            ],
+            "mark_center_px": [
+              473.0,
+              274.476
+            ],
+            "mark_fill_rgb": [
+              104,
+              166,
+              64
+            ],
+            "mark_outline_rgb": [
+              57,
+              91,
+              35
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Jehu",
+            "series_rank": 2,
+            "value": 11
+          },
+          "entity_id": "mark_Y_Jehu",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              548.667,
+              128.19,
+              566.667,
+              562.0
+            ],
+            "category_label": "K",
+            "category_label_center_px": [
+              557.667,
+              554.0
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              549.667,
+              289.524,
+              565.667,
+              305.524
+            ],
+            "mark_center_px": [
+              557.667,
+              297.524
+            ],
+            "mark_fill_rgb": [
+              45,
+              91,
+              158
+            ],
+            "mark_outline_rgb": [
+              25,
+              50,
+              87
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Ten",
+            "series_rank": 0,
+            "value": 10
+          },
+          "entity_id": "mark_K_Ten",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              548.667,
+              128.19,
+              566.667,
+              562.0
+            ],
+            "category_label": "K",
+            "category_label_center_px": [
+              557.667,
+              554.0
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              549.667,
+              128.19,
+              565.667,
+              144.19
+            ],
+            "mark_center_px": [
+              557.667,
+              136.19
+            ],
+            "mark_fill_rgb": [
+              123,
+              136,
+              141
+            ],
+            "mark_outline_rgb": [
+              68,
+              75,
+              78
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Fein",
+            "series_rank": 1,
+            "value": 17
+          },
+          "entity_id": "mark_K_Fein",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              548.667,
+              128.19,
+              566.667,
+              562.0
+            ],
+            "category_label": "K",
+            "category_label_center_px": [
+              557.667,
+              554.0
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              549.667,
+              404.762,
+              565.667,
+              420.762
+            ],
+            "mark_center_px": [
+              557.667,
+              412.762
+            ],
+            "mark_fill_rgb": [
+              104,
+              166,
+              64
+            ],
+            "mark_outline_rgb": [
+              57,
+              91,
+              35
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Jehu",
             "series_rank": 2,
             "value": 5
           },
-          "entity_id": "mark_K_Zebe",
-          "entity_type": "bar"
+          "entity_id": "mark_K_Jehu",
+          "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              53.0,
-              453.27,
-              708.857,
-              505.93
+              633.833,
+              243.429,
+              650.833,
+              562.0
             ],
-            "category_label": "U",
+            "category_label": "R",
             "category_label_center_px": [
-              62.0,
-              479.6
+              642.333,
+              554.0
             ],
-            "category_rank": 4,
+            "category_rank": 6,
             "mark_bbox_px": [
-              92.0,
-              453.27,
-              200.857,
-              467.21
+              634.333,
+              312.571,
+              650.333,
+              328.571
             ],
             "mark_center_px": [
-              146.429,
-              460.24
+              642.333,
+              320.571
             ],
             "mark_fill_rgb": [
-              148,
-              208,
-              101
+              45,
+              91,
+              158
             ],
             "mark_outline_rgb": [
-              81,
-              114,
-              56
+              25,
+              50,
+              87
             ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Seta",
+            "scene_variant": "multi_line",
+            "series_label": "Ten",
             "series_rank": 0,
+            "value": 9
+          },
+          "entity_id": "mark_R_Ten",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              633.833,
+              243.429,
+              650.833,
+              562.0
+            ],
+            "category_label": "R",
+            "category_label_center_px": [
+              642.333,
+              554.0
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              634.333,
+              243.429,
+              650.333,
+              259.429
+            ],
+            "mark_center_px": [
+              642.333,
+              251.429
+            ],
+            "mark_fill_rgb": [
+              123,
+              136,
+              141
+            ],
+            "mark_outline_rgb": [
+              68,
+              75,
+              78
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Fein",
+            "series_rank": 1,
+            "value": 12
+          },
+          "entity_id": "mark_R_Fein",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              633.833,
+              243.429,
+              650.833,
+              562.0
+            ],
+            "category_label": "R",
+            "category_label_center_px": [
+              642.333,
+              554.0
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              634.333,
+              427.81,
+              650.333,
+              443.81
+            ],
+            "mark_center_px": [
+              642.333,
+              435.81
+            ],
+            "mark_fill_rgb": [
+              104,
+              166,
+              64
+            ],
+            "mark_outline_rgb": [
+              57,
+              91,
+              35
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Jehu",
+            "series_rank": 2,
+            "value": 4
+          },
+          "entity_id": "mark_R_Jehu",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              718.0,
+              59.048,
+              736.0,
+              562.0
+            ],
+            "category_label": "N",
+            "category_label_center_px": [
+              727.0,
+              554.0
+            ],
+            "category_rank": 7,
+            "mark_bbox_px": [
+              719.0,
+              266.476,
+              735.0,
+              282.476
+            ],
+            "mark_center_px": [
+              727.0,
+              274.476
+            ],
+            "mark_fill_rgb": [
+              45,
+              91,
+              158
+            ],
+            "mark_outline_rgb": [
+              25,
+              50,
+              87
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Ten",
+            "series_rank": 0,
+            "value": 11
+          },
+          "entity_id": "mark_N_Ten",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              718.0,
+              59.048,
+              736.0,
+              562.0
+            ],
+            "category_label": "N",
+            "category_label_center_px": [
+              727.0,
+              554.0
+            ],
+            "category_rank": 7,
+            "mark_bbox_px": [
+              719.0,
+              59.048,
+              735.0,
+              75.048
+            ],
+            "mark_center_px": [
+              727.0,
+              67.048
+            ],
+            "mark_fill_rgb": [
+              123,
+              136,
+              141
+            ],
+            "mark_outline_rgb": [
+              68,
+              75,
+              78
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Fein",
+            "series_rank": 1,
+            "value": 20
+          },
+          "entity_id": "mark_N_Fein",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              718.0,
+              59.048,
+              736.0,
+              562.0
+            ],
+            "category_label": "N",
+            "category_label_center_px": [
+              727.0,
+              554.0
+            ],
+            "category_rank": 7,
+            "mark_bbox_px": [
+              719.0,
+              427.81,
+              735.0,
+              443.81
+            ],
+            "mark_center_px": [
+              727.0,
+              435.81
+            ],
+            "mark_fill_rgb": [
+              104,
+              166,
+              64
+            ],
+            "mark_outline_rgb": [
+              57,
+              91,
+              35
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Jehu",
+            "series_rank": 2,
+            "value": 4
+          },
+          "entity_id": "mark_N_Jehu",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              803.667,
+              59.048,
+              819.667,
+              562.0
+            ],
+            "category_label": "Z",
+            "category_label_center_px": [
+              811.667,
+              554.0
+            ],
+            "category_rank": 8,
+            "mark_bbox_px": [
+              803.667,
+              151.238,
+              819.667,
+              167.238
+            ],
+            "mark_center_px": [
+              811.667,
+              159.238
+            ],
+            "mark_fill_rgb": [
+              45,
+              91,
+              158
+            ],
+            "mark_outline_rgb": [
+              25,
+              50,
+              87
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Ten",
+            "series_rank": 0,
+            "value": 16
+          },
+          "entity_id": "mark_Z_Ten",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              803.667,
+              59.048,
+              819.667,
+              562.0
+            ],
+            "category_label": "Z",
+            "category_label_center_px": [
+              811.667,
+              554.0
+            ],
+            "category_rank": 8,
+            "mark_bbox_px": [
+              803.667,
+              450.857,
+              819.667,
+              466.857
+            ],
+            "mark_center_px": [
+              811.667,
+              458.857
+            ],
+            "mark_fill_rgb": [
+              123,
+              136,
+              141
+            ],
+            "mark_outline_rgb": [
+              68,
+              75,
+              78
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Fein",
+            "series_rank": 1,
             "value": 3
           },
-          "entity_id": "mark_U_Seta",
-          "entity_type": "bar"
+          "entity_id": "mark_Z_Fein",
+          "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              53.0,
-              453.27,
-              708.857,
-              505.93
+              803.667,
+              59.048,
+              819.667,
+              562.0
             ],
-            "category_label": "U",
+            "category_label": "Z",
             "category_label_center_px": [
-              62.0,
-              479.6
+              811.667,
+              554.0
             ],
-            "category_rank": 4,
+            "category_rank": 8,
             "mark_bbox_px": [
-              92.0,
-              472.63,
-              309.714,
-              486.57
+              803.667,
+              59.048,
+              819.667,
+              75.048
             ],
             "mark_center_px": [
-              200.857,
-              479.6
+              811.667,
+              67.048
             ],
             "mark_fill_rgb": [
-              198,
-              65,
-              81
-            ],
-            "mark_outline_rgb": [
-              109,
-              36,
-              45
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Alic",
-            "series_rank": 1,
-            "value": 6
-          },
-          "entity_id": "mark_U_Alic",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              53.0,
-              453.27,
-              708.857,
-              505.93
-            ],
-            "category_label": "U",
-            "category_label_center_px": [
-              62.0,
-              479.6
-            ],
-            "category_rank": 4,
-            "mark_bbox_px": [
-              92.0,
-              491.99,
-              708.857,
-              505.93
-            ],
-            "mark_center_px": [
-              400.429,
-              498.96
-            ],
-            "mark_fill_rgb": [
-              189,
-              81,
-              188
-            ],
-            "mark_outline_rgb": [
               104,
-              45,
-              103
+              166,
+              64
             ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Zebe",
+            "mark_outline_rgb": [
+              57,
+              91,
+              35
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Jehu",
             "series_rank": 2,
-            "value": 17
+            "value": 20
           },
-          "entity_id": "mark_U_Zebe",
-          "entity_type": "bar"
+          "entity_id": "mark_Z_Jehu",
+          "entity_type": "point"
         }
       ],
       "relations": {
         "comparison": "greater_than",
         "evidence_labels": [
-          "K"
+          "A",
+          "J",
+          "K",
+          "M",
+          "N",
+          "R",
+          "V",
+          "Y"
         ],
         "queried_series_labels": [
-          "Seta",
-          "Zebe"
+          "Fein",
+          "Jehu"
         ],
-        "scene_variant": "grouped_horizontal_bar",
+        "scene_variant": "multi_line",
         "task_variant": "series_a_gt_b_count"
       },
-      "scene_kind": "chart_grouped_horizontal_bar_multiseries"
+      "scene_kind": "chart_multi_line_multiseries"
     },
     "witness_symbolic": {
       "labels": [
-        "K"
+        "A",
+        "J",
+        "K",
+        "M",
+        "N",
+        "R",
+        "V",
+        "Y"
       ],
       "type": "label_set"
     }

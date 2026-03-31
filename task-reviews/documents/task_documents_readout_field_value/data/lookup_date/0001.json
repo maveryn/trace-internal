@@ -1,22 +1,22 @@
 {
   "answer_gt": {
     "type": "string",
-    "value": "05/28/2026"
+    "value": "2026-02-22"
   },
   "evidence_gt": {
     "type": "bbox_set",
     "value": [
       [
-        218.0,
-        347.5,
-        431.0,
-        366.5
+        811.333,
+        336.0,
+        945.333,
+        354.0
       ],
       [
-        218.0,
-        387.5,
-        382.0,
-        412.5
+        811.333,
+        372.0,
+        977.333,
+        394.0
       ]
     ]
   },
@@ -24,18 +24,18 @@
     "format": "png",
     "path": "documents/task_documents_readout_field_value/images/lookup_date/0001.png"
   },
-  "instance_seed": 2359801827754889,
-  "prompt": "Look at the document in the image: a structured application form with labeled fields and boxed sections. Locate the field and then answer: What is the submission date? Answer using the exact field value.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value.\nAnswer format: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"2026-03-18\"}",
+  "instance_seed": 2873070726982598,
+  "prompt": "Read the labeled fields in this document: an invoice-style document with labeled header blocks and summary fields. Use the labeled fields to answer: What is the issue date? Answer with the exact text shown.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value.\nAnswer format: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"2026-03-18\"}",
   "prompt_variants": {
-    "answer_and_evidence": "Look at the document in the image: a structured application form with labeled fields and boxed sections. Locate the field and then answer: What is the submission date? Answer using the exact field value.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value.\nAnswer format: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"2026-03-18\"}",
-    "answer_only": "Look at the document in the image: a structured application form with labeled fields and boxed sections. Locate the field and then answer: What is the submission date? Answer using the exact field value.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"answer\":\"2026-03-18\"}"
+    "answer_and_evidence": "Read the labeled fields in this document: an invoice-style document with labeled header blocks and summary fields. Use the labeled fields to answer: What is the issue date? Answer with the exact text shown.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value.\nAnswer format: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"2026-03-18\"}",
+    "answer_only": "Read the labeled fields in this document: an invoice-style document with labeled header blocks and summary fields. Use the labeled fields to answer: What is the issue date? Answer with the exact text shown.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"answer\":\"2026-03-18\"}"
   },
   "task": "task_documents_readout_field_value",
   "task_variant": "lookup_date",
   "trace_payload": {
     "answer_gt": {
       "type": "string",
-      "value": "05/28/2026"
+      "value": "2026-02-22"
     },
     "background": {
       "available_styles": [
@@ -56,114 +56,132 @@
       "type": "bbox_set",
       "value": [
         [
-          218.0,
-          347.5,
-          431.0,
-          366.5
+          811.333,
+          336.0,
+          945.333,
+          354.0
         ],
         [
-          218.0,
-          387.5,
-          382.0,
-          412.5
+          811.333,
+          372.0,
+          977.333,
+          394.0
         ]
       ]
     },
     "execution_trace": {
-      "field_count": 9,
+      "field_count": 11,
       "field_specs": [
         {
           "field_category": "lookup_name",
-          "field_id": "applicant_name",
-          "field_label": "Applicant Name",
-          "field_value": "Theo Foster",
-          "label_bbox_id": "applicant_name:label",
-          "question_name": "applicant name",
-          "value_bbox_id": "applicant_name:value"
+          "field_id": "vendor_name",
+          "field_label": "Vendor",
+          "field_value": "Pinecrest Office",
+          "label_bbox_id": "vendor_name:label",
+          "question_name": "vendor name",
+          "value_bbox_id": "vendor_name:value"
+        },
+        {
+          "field_category": "lookup_name",
+          "field_id": "customer_name",
+          "field_label": "Customer",
+          "field_value": "Rhea Nguyen",
+          "label_bbox_id": "customer_name:label",
+          "question_name": "customer name",
+          "value_bbox_id": "customer_name:value"
         },
         {
           "field_category": "lookup_identifier",
-          "field_id": "reference_id",
-          "field_label": "Reference ID",
-          "field_value": "REF-81622",
-          "label_bbox_id": "reference_id:label",
-          "question_name": "reference ID",
-          "value_bbox_id": "reference_id:value"
+          "field_id": "invoice_number",
+          "field_label": "Invoice Number",
+          "field_value": "INV-40183",
+          "label_bbox_id": "invoice_number:label",
+          "question_name": "invoice number",
+          "value_bbox_id": "invoice_number:value"
+        },
+        {
+          "field_category": "lookup_identifier",
+          "field_id": "account_id",
+          "field_label": "Account ID",
+          "field_value": "ACC-1459",
+          "label_bbox_id": "account_id:label",
+          "question_name": "account ID",
+          "value_bbox_id": "account_id:value"
         },
         {
           "field_category": "lookup_date",
-          "field_id": "submission_date",
-          "field_label": "Submission Date",
-          "field_value": "05/28/2026",
-          "label_bbox_id": "submission_date:label",
-          "question_name": "submission date",
-          "value_bbox_id": "submission_date:value"
+          "field_id": "issue_date",
+          "field_label": "Issue Date",
+          "field_value": "2026-02-22",
+          "label_bbox_id": "issue_date:label",
+          "question_name": "issue date",
+          "value_bbox_id": "issue_date:value"
+        },
+        {
+          "field_category": "lookup_date",
+          "field_id": "due_date",
+          "field_label": "Due Date",
+          "field_value": "2026-03-17",
+          "label_bbox_id": "due_date:label",
+          "question_name": "due date",
+          "value_bbox_id": "due_date:value"
+        },
+        {
+          "field_category": "lookup_contact",
+          "field_id": "contact_email",
+          "field_label": "Contact Email",
+          "field_value": "pinecrestoffic@northpost.co",
+          "label_bbox_id": "contact_email:label",
+          "question_name": "contact email",
+          "value_bbox_id": "contact_email:value"
         },
         {
           "field_category": "lookup_contact",
           "field_id": "contact_phone",
           "field_label": "Phone",
-          "field_value": "(704) 405-2774",
+          "field_value": "(704) 751-4242",
           "label_bbox_id": "contact_phone:label",
           "question_name": "phone number",
           "value_bbox_id": "contact_phone:value"
         },
         {
-          "field_category": "lookup_contact",
-          "field_id": "contact_email",
-          "field_label": "Email",
-          "field_value": "theofoster@northpost.co",
-          "label_bbox_id": "contact_email:label",
-          "question_name": "email address",
-          "value_bbox_id": "contact_email:value"
-        },
-        {
-          "field_category": "lookup_name",
-          "field_id": "department",
-          "field_label": "Department",
-          "field_value": "Facilities",
-          "label_bbox_id": "department:label",
-          "question_name": "department",
-          "value_bbox_id": "department:value"
-        },
-        {
           "field_category": "lookup_name",
           "field_id": "city",
           "field_label": "City",
-          "field_value": "Arbor",
+          "field_value": "Mapleton",
           "label_bbox_id": "city:label",
           "question_name": "city",
           "value_bbox_id": "city:value"
         },
         {
           "field_category": "lookup_amount",
-          "field_id": "fee_amount",
-          "field_label": "Fee Amount",
-          "field_value": "$47.17",
-          "label_bbox_id": "fee_amount:label",
-          "question_name": "fee amount",
-          "value_bbox_id": "fee_amount:value"
+          "field_id": "tax_amount",
+          "field_label": "Tax",
+          "field_value": "$20.89",
+          "label_bbox_id": "tax_amount:label",
+          "question_name": "tax amount",
+          "value_bbox_id": "tax_amount:value"
         },
         {
-          "field_category": "lookup_name",
-          "field_id": "reviewer_name",
-          "field_label": "Reviewer",
-          "field_value": "Ada Chen",
-          "label_bbox_id": "reviewer_name:label",
-          "question_name": "reviewer name",
-          "value_bbox_id": "reviewer_name:value"
+          "field_category": "lookup_amount",
+          "field_id": "total_due",
+          "field_label": "Total Due",
+          "field_value": "$278.21",
+          "label_bbox_id": "total_due:label",
+          "question_name": "total due",
+          "value_bbox_id": "total_due:value"
         }
       ],
       "query_field_category": "lookup_date",
-      "query_field_id": "submission_date",
-      "query_field_label": "Submission Date",
-      "query_field_value": "05/28/2026",
-      "query_label_bbox_id": "submission_date:label",
-      "query_value_bbox_id": "submission_date:value",
+      "query_field_id": "issue_date",
+      "query_field_label": "Issue Date",
+      "query_field_value": "2026-02-22",
+      "query_label_bbox_id": "issue_date:label",
+      "query_value_bbox_id": "issue_date:value",
       "question_format": "document_field_lookup",
-      "question_text": "What is the submission date?",
-      "scene_title": "Application Form",
-      "scene_variant": "form_sheet",
+      "question_text": "What is the issue date?",
+      "scene_title": "Invoice",
+      "scene_variant": "invoice_sheet",
       "task_variant": "lookup_date",
       "view_family": "structured_document"
     },
@@ -186,27 +204,27 @@
     "projected_evidence": {
       "bbox_set": [
         [
-          218.0,
-          347.5,
-          431.0,
-          366.5
+          811.333,
+          336.0,
+          945.333,
+          354.0
         ],
         [
-          218.0,
-          387.5,
-          382.0,
-          412.5
+          811.333,
+          372.0,
+          977.333,
+          394.0
         ]
       ]
     },
     "query_spec": {
       "params": {
-        "field_count": 9,
+        "field_count": 11,
         "field_count_range": [
           8,
           11
         ],
-        "scene_variant": "form_sheet",
+        "scene_variant": "invoice_sheet",
         "scene_variant_probabilities": {
           "form_sheet": 0.3333333333333333,
           "invoice_sheet": 0.3333333333333333,
@@ -233,15 +251,15 @@
           "json_example_answer_only": "{\"answer\":\"2026-03-18\"}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "object_description": "a structured application form with labeled fields and boxed sections",
-          "question_text": "What is the submission date?"
+          "object_description": "an invoice-style document with labeled header blocks and summary fields",
+          "question_text": "What is the issue date?"
         },
         "task_family_key": "structured_document",
-        "task_family_variant_index": 1,
+        "task_family_variant_index": 4,
         "task_key": "field_lookup_query",
-        "task_variant_index": 4,
+        "task_variant_index": 3,
         "task_variant_key": "lookup_date",
-        "task_variant_template_index": 4,
+        "task_variant_template_index": 0,
         "template_paths": [
           "documents/readout/documents_readout_v1.json"
         ],
@@ -267,15 +285,15 @@
               "json_example_answer_only": "{\"answer\":\"2026-03-18\"}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a structured application form with labeled fields and boxed sections",
-              "question_text": "What is the submission date?"
+              "object_description": "an invoice-style document with labeled header blocks and summary fields",
+              "question_text": "What is the issue date?"
             },
             "task_family_key": "structured_document",
-            "task_family_variant_index": 1,
+            "task_family_variant_index": 4,
             "task_key": "field_lookup_query",
-            "task_variant_index": 4,
+            "task_variant_index": 3,
             "task_variant_key": "lookup_date",
-            "task_variant_template_index": 4,
+            "task_variant_template_index": 0,
             "template_paths": [
               "documents/readout/documents_readout_v1.json"
             ],
@@ -286,12 +304,12 @@
               "task_variant:lookup_date": 5
             }
           },
-          "prompt": "Look at the document in the image: a structured application form with labeled fields and boxed sections. Locate the field and then answer: What is the submission date? Answer using the exact field value.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value.\nAnswer format: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"2026-03-18\"}"
+          "prompt": "Read the labeled fields in this document: an invoice-style document with labeled header blocks and summary fields. Use the labeled fields to answer: What is the issue date? Answer with the exact text shown.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value.\nAnswer format: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"2026-03-18\"}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 0,
+            "answer_or_evidence_variant_index": 3,
             "prompt_bundle_id": "documents_readout_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -301,15 +319,15 @@
               "json_example_answer_only": "{\"answer\":\"2026-03-18\"}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a structured application form with labeled fields and boxed sections",
-              "question_text": "What is the submission date?"
+              "object_description": "an invoice-style document with labeled header blocks and summary fields",
+              "question_text": "What is the issue date?"
             },
             "task_family_key": "structured_document",
-            "task_family_variant_index": 1,
+            "task_family_variant_index": 4,
             "task_key": "field_lookup_query",
-            "task_variant_index": 4,
+            "task_variant_index": 3,
             "task_variant_key": "lookup_date",
-            "task_variant_template_index": 4,
+            "task_variant_template_index": 0,
             "template_paths": [
               "documents/readout/documents_readout_v1.json"
             ],
@@ -320,7 +338,7 @@
               "task_variant:lookup_date": 5
             }
           },
-          "prompt": "Look at the document in the image: a structured application form with labeled fields and boxed sections. Locate the field and then answer: What is the submission date? Answer using the exact field value.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"answer\":\"2026-03-18\"}"
+          "prompt": "Read the labeled fields in this document: an invoice-style document with labeled header blocks and summary fields. Use the labeled fields to answer: What is the issue date? Answer with the exact text shown.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"answer\":\"2026-03-18\"}"
         }
       },
       "task_variant": "lookup_date",
@@ -328,171 +346,207 @@
     },
     "render_map": {
       "field_box_bboxes_px": {
-        "applicant_name": [
-          204.0,
-          208.0,
-          628.0,
-          316.0
+        "account_id": [
+          498.667,
+          322.0,
+          781.333,
+          420.0
         ],
         "city": [
-          204.0,
-          586.0,
-          628.0,
-          694.0
+          651.0,
+          554.0,
+          1080.0,
+          652.0
         ],
         "contact_email": [
-          204.0,
-          460.0,
-          628.0,
-          568.0
+          651.0,
+          438.0,
+          1080.0,
+          536.0
         ],
         "contact_phone": [
-          652.0,
-          334.0,
-          1076.0,
-          442.0
+          200.0,
+          554.0,
+          629.0,
+          652.0
         ],
-        "department": [
-          652.0,
-          460.0,
-          1076.0,
-          568.0
+        "customer_name": [
+          651.0,
+          206.0,
+          1080.0,
+          304.0
         ],
-        "fee_amount": [
-          652.0,
-          586.0,
-          1076.0,
-          694.0
+        "due_date": [
+          200.0,
+          438.0,
+          629.0,
+          536.0
         ],
-        "reference_id": [
-          652.0,
-          208.0,
-          1076.0,
-          316.0
+        "invoice_number": [
+          200.0,
+          322.0,
+          482.667,
+          420.0
         ],
-        "reviewer_name": [
-          204.0,
-          712.0,
-          1076.0,
-          820.0
+        "issue_date": [
+          797.333,
+          322.0,
+          1080.0,
+          420.0
         ],
-        "submission_date": [
-          204.0,
-          334.0,
-          628.0,
-          442.0
+        "tax_amount": [
+          200.0,
+          672.0,
+          629.0,
+          776.0
+        ],
+        "total_due": [
+          651.0,
+          672.0,
+          1080.0,
+          776.0
+        ],
+        "vendor_name": [
+          200.0,
+          206.0,
+          629.0,
+          304.0
         ]
       },
       "field_label_bboxes_px": {
-        "applicant_name:label": [
-          218.0,
-          219.0,
-          419.0,
-          243.0
+        "account_id:label": [
+          512.667,
+          336.0,
+          649.667,
+          354.0
         ],
         "city:label": [
-          218.0,
-          597.0,
-          269.0,
-          621.0
+          665.0,
+          565.0,
+          716.0,
+          589.0
         ],
         "contact_email:label": [
-          218.0,
-          473.5,
-          289.0,
-          492.5
+          665.0,
+          451.5,
+          841.0,
+          470.5
         ],
         "contact_phone:label": [
-          666.0,
-          347.5,
-          746.0,
-          366.5
+          214.0,
+          567.5,
+          294.0,
+          586.5
         ],
-        "department:label": [
-          666.0,
-          471.5,
-          819.0,
-          494.5
+        "customer_name:label": [
+          665.0,
+          220.0,
+          787.0,
+          238.0
         ],
-        "fee_amount:label": [
-          666.0,
-          600.0,
-          819.0,
-          618.0
+        "due_date:label": [
+          214.0,
+          452.0,
+          332.0,
+          470.0
         ],
-        "reference_id:label": [
-          666.0,
-          221.5,
-          829.0,
-          240.5
+        "invoice_number:label": [
+          214.0,
+          335.5,
+          412.0,
+          354.5
         ],
-        "reviewer_name:label": [
-          218.0,
-          725.5,
-          335.0,
-          744.5
+        "issue_date:label": [
+          811.333,
+          336.0,
+          945.333,
+          354.0
         ],
-        "submission_date:label": [
-          218.0,
-          347.5,
-          431.0,
-          366.5
+        "tax_amount:label": [
+          214.0,
+          686.0,
+          260.0,
+          704.0
+        ],
+        "total_due:label": [
+          665.0,
+          685.5,
+          788.0,
+          704.5
+        ],
+        "vendor_name:label": [
+          214.0,
+          219.5,
+          306.0,
+          238.5
         ]
       },
       "field_value_bboxes_px": {
-        "applicant_name:value": [
-          218.0,
-          262.5,
-          387.0,
-          285.5
+        "account_id:value": [
+          512.667,
+          372.0,
+          655.667,
+          394.0
         ],
         "city:value": [
-          218.0,
-          640.5,
-          298.0,
-          663.5
+          665.0,
+          600.5,
+          797.0,
+          629.5
         ],
         "contact_email:value": [
-          218.0,
-          511.5,
-          571.0,
-          540.5
+          665.0,
+          484.5,
+          1054.0,
+          513.5
         ],
         "contact_phone:value": [
-          666.0,
-          386.5,
-          889.0,
-          413.5
+          214.0,
+          601.5,
+          437.0,
+          628.5
         ],
-        "department:value": [
-          666.0,
-          514.5,
-          791.0,
-          537.5
+        "customer_name:value": [
+          665.0,
+          252.5,
+          856.0,
+          281.5
         ],
-        "fee_amount:value": [
-          666.0,
-          638.5,
-          767.0,
-          665.5
+        "due_date:value": [
+          214.0,
+          488.0,
+          380.0,
+          510.0
         ],
-        "reference_id:value": [
-          666.0,
-          263.0,
-          821.0,
-          285.0
+        "invoice_number:value": [
+          214.0,
+          372.0,
+          364.0,
+          394.0
         ],
-        "reviewer_name:value": [
-          218.0,
-          766.5,
-          356.0,
-          789.5
+        "issue_date:value": [
+          811.333,
+          372.0,
+          977.333,
+          394.0
         ],
-        "submission_date:value": [
-          218.0,
-          387.5,
-          382.0,
-          412.5
+        "tax_amount:value": [
+          214.0,
+          722.5,
+          315.0,
+          749.5
+        ],
+        "total_due:value": [
+          665.0,
+          722.5,
+          784.0,
+          749.5
+        ],
+        "vendor_name:value": [
+          214.0,
+          255.5,
+          437.0,
+          278.5
         ]
       },
       "page_bbox_px": [
@@ -503,19 +557,19 @@
       ],
       "title_bbox_px": [
         191.0,
-        100.5,
-        598.0,
-        143.5
+        105.0,
+        362.0,
+        139.0
       ]
     },
     "render_spec": {
       "canvas_height": 920,
       "canvas_width": 1280,
-      "geometry_seed": 2359801827754889,
+      "geometry_seed": 2873070726982598,
       "page_shadow_offset_px": 14,
       "receipt_page_height_px": 760,
       "receipt_page_width_px": 520,
-      "scene_variant": "form_sheet",
+      "scene_variant": "invoice_sheet",
       "sheet_page_height_px": 760,
       "sheet_page_width_px": 960
     },
@@ -536,135 +590,287 @@
           "bbox_id": "title",
           "bbox_px": [
             191.0,
-            100.5,
-            598.0,
-            143.5
+            105.0,
+            362.0,
+            139.0
           ],
           "entity_id": "title",
           "entity_type": "document_title",
-          "text": "Application Form"
+          "text": "Invoice"
         },
         {
-          "bbox_id": "applicant_name",
+          "bbox_id": "vendor_name",
           "bbox_px": [
-            204.0,
-            208.0,
-            628.0,
-            316.0
+            200.0,
+            206.0,
+            629.0,
+            304.0
           ],
-          "entity_id": "applicant_name:field",
+          "entity_id": "vendor_name:field",
           "entity_type": "document_field_box",
-          "field_id": "applicant_name"
+          "field_id": "vendor_name"
         },
         {
-          "bbox_id": "applicant_name:label",
+          "bbox_id": "vendor_name:label",
           "bbox_px": [
-            218.0,
-            219.0,
-            419.0,
-            243.0
+            214.0,
+            219.5,
+            306.0,
+            238.5
           ],
-          "entity_id": "applicant_name:label",
+          "entity_id": "vendor_name:label",
           "entity_type": "document_field_label",
-          "field_id": "applicant_name",
-          "text": "Applicant Name"
+          "field_id": "vendor_name",
+          "text": "Vendor"
         },
         {
-          "bbox_id": "applicant_name:value",
+          "bbox_id": "vendor_name:value",
           "bbox_px": [
-            218.0,
-            262.5,
-            387.0,
-            285.5
+            214.0,
+            255.5,
+            437.0,
+            278.5
           ],
-          "entity_id": "applicant_name:value",
+          "entity_id": "vendor_name:value",
           "entity_type": "document_field_value",
-          "field_id": "applicant_name",
-          "text": "Theo Foster"
+          "field_id": "vendor_name",
+          "text": "Pinecrest Office"
         },
         {
-          "bbox_id": "reference_id",
+          "bbox_id": "customer_name",
           "bbox_px": [
-            652.0,
-            208.0,
-            1076.0,
-            316.0
+            651.0,
+            206.0,
+            1080.0,
+            304.0
           ],
-          "entity_id": "reference_id:field",
+          "entity_id": "customer_name:field",
           "entity_type": "document_field_box",
-          "field_id": "reference_id"
+          "field_id": "customer_name"
         },
         {
-          "bbox_id": "reference_id:label",
+          "bbox_id": "customer_name:label",
           "bbox_px": [
-            666.0,
-            221.5,
-            829.0,
-            240.5
+            665.0,
+            220.0,
+            787.0,
+            238.0
           ],
-          "entity_id": "reference_id:label",
+          "entity_id": "customer_name:label",
           "entity_type": "document_field_label",
-          "field_id": "reference_id",
-          "text": "Reference ID"
+          "field_id": "customer_name",
+          "text": "Customer"
         },
         {
-          "bbox_id": "reference_id:value",
+          "bbox_id": "customer_name:value",
           "bbox_px": [
-            666.0,
-            263.0,
-            821.0,
-            285.0
+            665.0,
+            252.5,
+            856.0,
+            281.5
           ],
-          "entity_id": "reference_id:value",
+          "entity_id": "customer_name:value",
           "entity_type": "document_field_value",
-          "field_id": "reference_id",
-          "text": "REF-81622"
+          "field_id": "customer_name",
+          "text": "Rhea Nguyen"
         },
         {
-          "bbox_id": "submission_date",
+          "bbox_id": "invoice_number",
           "bbox_px": [
-            204.0,
-            334.0,
-            628.0,
-            442.0
+            200.0,
+            322.0,
+            482.667,
+            420.0
           ],
-          "entity_id": "submission_date:field",
+          "entity_id": "invoice_number:field",
           "entity_type": "document_field_box",
-          "field_id": "submission_date"
+          "field_id": "invoice_number"
         },
         {
-          "bbox_id": "submission_date:label",
+          "bbox_id": "invoice_number:label",
           "bbox_px": [
-            218.0,
-            347.5,
-            431.0,
-            366.5
+            214.0,
+            335.5,
+            412.0,
+            354.5
           ],
-          "entity_id": "submission_date:label",
+          "entity_id": "invoice_number:label",
           "entity_type": "document_field_label",
-          "field_id": "submission_date",
-          "text": "Submission Date"
+          "field_id": "invoice_number",
+          "text": "Invoice Number"
         },
         {
-          "bbox_id": "submission_date:value",
+          "bbox_id": "invoice_number:value",
           "bbox_px": [
-            218.0,
-            387.5,
-            382.0,
-            412.5
+            214.0,
+            372.0,
+            364.0,
+            394.0
           ],
-          "entity_id": "submission_date:value",
+          "entity_id": "invoice_number:value",
           "entity_type": "document_field_value",
-          "field_id": "submission_date",
-          "text": "05/28/2026"
+          "field_id": "invoice_number",
+          "text": "INV-40183"
+        },
+        {
+          "bbox_id": "account_id",
+          "bbox_px": [
+            498.667,
+            322.0,
+            781.333,
+            420.0
+          ],
+          "entity_id": "account_id:field",
+          "entity_type": "document_field_box",
+          "field_id": "account_id"
+        },
+        {
+          "bbox_id": "account_id:label",
+          "bbox_px": [
+            512.667,
+            336.0,
+            649.667,
+            354.0
+          ],
+          "entity_id": "account_id:label",
+          "entity_type": "document_field_label",
+          "field_id": "account_id",
+          "text": "Account ID"
+        },
+        {
+          "bbox_id": "account_id:value",
+          "bbox_px": [
+            512.667,
+            372.0,
+            655.667,
+            394.0
+          ],
+          "entity_id": "account_id:value",
+          "entity_type": "document_field_value",
+          "field_id": "account_id",
+          "text": "ACC-1459"
+        },
+        {
+          "bbox_id": "issue_date",
+          "bbox_px": [
+            797.333,
+            322.0,
+            1080.0,
+            420.0
+          ],
+          "entity_id": "issue_date:field",
+          "entity_type": "document_field_box",
+          "field_id": "issue_date"
+        },
+        {
+          "bbox_id": "issue_date:label",
+          "bbox_px": [
+            811.333,
+            336.0,
+            945.333,
+            354.0
+          ],
+          "entity_id": "issue_date:label",
+          "entity_type": "document_field_label",
+          "field_id": "issue_date",
+          "text": "Issue Date"
+        },
+        {
+          "bbox_id": "issue_date:value",
+          "bbox_px": [
+            811.333,
+            372.0,
+            977.333,
+            394.0
+          ],
+          "entity_id": "issue_date:value",
+          "entity_type": "document_field_value",
+          "field_id": "issue_date",
+          "text": "2026-02-22"
+        },
+        {
+          "bbox_id": "due_date",
+          "bbox_px": [
+            200.0,
+            438.0,
+            629.0,
+            536.0
+          ],
+          "entity_id": "due_date:field",
+          "entity_type": "document_field_box",
+          "field_id": "due_date"
+        },
+        {
+          "bbox_id": "due_date:label",
+          "bbox_px": [
+            214.0,
+            452.0,
+            332.0,
+            470.0
+          ],
+          "entity_id": "due_date:label",
+          "entity_type": "document_field_label",
+          "field_id": "due_date",
+          "text": "Due Date"
+        },
+        {
+          "bbox_id": "due_date:value",
+          "bbox_px": [
+            214.0,
+            488.0,
+            380.0,
+            510.0
+          ],
+          "entity_id": "due_date:value",
+          "entity_type": "document_field_value",
+          "field_id": "due_date",
+          "text": "2026-03-17"
+        },
+        {
+          "bbox_id": "contact_email",
+          "bbox_px": [
+            651.0,
+            438.0,
+            1080.0,
+            536.0
+          ],
+          "entity_id": "contact_email:field",
+          "entity_type": "document_field_box",
+          "field_id": "contact_email"
+        },
+        {
+          "bbox_id": "contact_email:label",
+          "bbox_px": [
+            665.0,
+            451.5,
+            841.0,
+            470.5
+          ],
+          "entity_id": "contact_email:label",
+          "entity_type": "document_field_label",
+          "field_id": "contact_email",
+          "text": "Contact Email"
+        },
+        {
+          "bbox_id": "contact_email:value",
+          "bbox_px": [
+            665.0,
+            484.5,
+            1054.0,
+            513.5
+          ],
+          "entity_id": "contact_email:value",
+          "entity_type": "document_field_value",
+          "field_id": "contact_email",
+          "text": "pinecrestoffic@northpost.co"
         },
         {
           "bbox_id": "contact_phone",
           "bbox_px": [
-            652.0,
-            334.0,
-            1076.0,
-            442.0
+            200.0,
+            554.0,
+            629.0,
+            652.0
           ],
           "entity_id": "contact_phone:field",
           "entity_type": "document_field_box",
@@ -673,10 +879,10 @@
         {
           "bbox_id": "contact_phone:label",
           "bbox_px": [
-            666.0,
-            347.5,
-            746.0,
-            366.5
+            214.0,
+            567.5,
+            294.0,
+            586.5
           ],
           "entity_id": "contact_phone:label",
           "entity_type": "document_field_label",
@@ -686,99 +892,23 @@
         {
           "bbox_id": "contact_phone:value",
           "bbox_px": [
-            666.0,
-            386.5,
-            889.0,
-            413.5
+            214.0,
+            601.5,
+            437.0,
+            628.5
           ],
           "entity_id": "contact_phone:value",
           "entity_type": "document_field_value",
           "field_id": "contact_phone",
-          "text": "(704) 405-2774"
-        },
-        {
-          "bbox_id": "contact_email",
-          "bbox_px": [
-            204.0,
-            460.0,
-            628.0,
-            568.0
-          ],
-          "entity_id": "contact_email:field",
-          "entity_type": "document_field_box",
-          "field_id": "contact_email"
-        },
-        {
-          "bbox_id": "contact_email:label",
-          "bbox_px": [
-            218.0,
-            473.5,
-            289.0,
-            492.5
-          ],
-          "entity_id": "contact_email:label",
-          "entity_type": "document_field_label",
-          "field_id": "contact_email",
-          "text": "Email"
-        },
-        {
-          "bbox_id": "contact_email:value",
-          "bbox_px": [
-            218.0,
-            511.5,
-            571.0,
-            540.5
-          ],
-          "entity_id": "contact_email:value",
-          "entity_type": "document_field_value",
-          "field_id": "contact_email",
-          "text": "theofoster@northpost.co"
-        },
-        {
-          "bbox_id": "department",
-          "bbox_px": [
-            652.0,
-            460.0,
-            1076.0,
-            568.0
-          ],
-          "entity_id": "department:field",
-          "entity_type": "document_field_box",
-          "field_id": "department"
-        },
-        {
-          "bbox_id": "department:label",
-          "bbox_px": [
-            666.0,
-            471.5,
-            819.0,
-            494.5
-          ],
-          "entity_id": "department:label",
-          "entity_type": "document_field_label",
-          "field_id": "department",
-          "text": "Department"
-        },
-        {
-          "bbox_id": "department:value",
-          "bbox_px": [
-            666.0,
-            514.5,
-            791.0,
-            537.5
-          ],
-          "entity_id": "department:value",
-          "entity_type": "document_field_value",
-          "field_id": "department",
-          "text": "Facilities"
+          "text": "(704) 751-4242"
         },
         {
           "bbox_id": "city",
           "bbox_px": [
-            204.0,
-            586.0,
-            628.0,
-            694.0
+            651.0,
+            554.0,
+            1080.0,
+            652.0
           ],
           "entity_id": "city:field",
           "entity_type": "document_field_box",
@@ -787,10 +917,10 @@
         {
           "bbox_id": "city:label",
           "bbox_px": [
-            218.0,
-            597.0,
-            269.0,
-            621.0
+            665.0,
+            565.0,
+            716.0,
+            589.0
           ],
           "entity_id": "city:label",
           "entity_type": "document_field_label",
@@ -800,108 +930,108 @@
         {
           "bbox_id": "city:value",
           "bbox_px": [
-            218.0,
-            640.5,
-            298.0,
-            663.5
+            665.0,
+            600.5,
+            797.0,
+            629.5
           ],
           "entity_id": "city:value",
           "entity_type": "document_field_value",
           "field_id": "city",
-          "text": "Arbor"
+          "text": "Mapleton"
         },
         {
-          "bbox_id": "fee_amount",
+          "bbox_id": "tax_amount",
           "bbox_px": [
-            652.0,
-            586.0,
-            1076.0,
-            694.0
+            200.0,
+            672.0,
+            629.0,
+            776.0
           ],
-          "entity_id": "fee_amount:field",
+          "entity_id": "tax_amount:field",
           "entity_type": "document_field_box",
-          "field_id": "fee_amount"
+          "field_id": "tax_amount"
         },
         {
-          "bbox_id": "fee_amount:label",
+          "bbox_id": "tax_amount:label",
           "bbox_px": [
-            666.0,
-            600.0,
-            819.0,
-            618.0
+            214.0,
+            686.0,
+            260.0,
+            704.0
           ],
-          "entity_id": "fee_amount:label",
+          "entity_id": "tax_amount:label",
           "entity_type": "document_field_label",
-          "field_id": "fee_amount",
-          "text": "Fee Amount"
+          "field_id": "tax_amount",
+          "text": "Tax"
         },
         {
-          "bbox_id": "fee_amount:value",
+          "bbox_id": "tax_amount:value",
           "bbox_px": [
-            666.0,
-            638.5,
-            767.0,
-            665.5
+            214.0,
+            722.5,
+            315.0,
+            749.5
           ],
-          "entity_id": "fee_amount:value",
+          "entity_id": "tax_amount:value",
           "entity_type": "document_field_value",
-          "field_id": "fee_amount",
-          "text": "$47.17"
+          "field_id": "tax_amount",
+          "text": "$20.89"
         },
         {
-          "bbox_id": "reviewer_name",
+          "bbox_id": "total_due",
           "bbox_px": [
-            204.0,
-            712.0,
-            1076.0,
-            820.0
+            651.0,
+            672.0,
+            1080.0,
+            776.0
           ],
-          "entity_id": "reviewer_name:field",
+          "entity_id": "total_due:field",
           "entity_type": "document_field_box",
-          "field_id": "reviewer_name"
+          "field_id": "total_due"
         },
         {
-          "bbox_id": "reviewer_name:label",
+          "bbox_id": "total_due:label",
           "bbox_px": [
-            218.0,
-            725.5,
-            335.0,
-            744.5
+            665.0,
+            685.5,
+            788.0,
+            704.5
           ],
-          "entity_id": "reviewer_name:label",
+          "entity_id": "total_due:label",
           "entity_type": "document_field_label",
-          "field_id": "reviewer_name",
-          "text": "Reviewer"
+          "field_id": "total_due",
+          "text": "Total Due"
         },
         {
-          "bbox_id": "reviewer_name:value",
+          "bbox_id": "total_due:value",
           "bbox_px": [
-            218.0,
-            766.5,
-            356.0,
-            789.5
+            665.0,
+            722.5,
+            784.0,
+            749.5
           ],
-          "entity_id": "reviewer_name:value",
+          "entity_id": "total_due:value",
           "entity_type": "document_field_value",
-          "field_id": "reviewer_name",
-          "text": "Ada Chen"
+          "field_id": "total_due",
+          "text": "$278.21"
         }
       ],
       "relations": {
-        "query_field_id": "submission_date",
-        "query_field_label": "Submission Date",
-        "scene_variant": "form_sheet",
+        "query_field_id": "issue_date",
+        "query_field_label": "Issue Date",
+        "scene_variant": "invoice_sheet",
         "task_variant": "lookup_date",
         "view_family": "structured_document"
       },
-      "scene_kind": "document_form_sheet"
+      "scene_kind": "document_invoice_sheet"
     },
     "witness_symbolic": {
       "bbox_id_sequence": [
-        "submission_date:label",
-        "submission_date:value"
+        "issue_date:label",
+        "issue_date:value"
       ],
-      "field_id": "submission_date"
+      "field_id": "issue_date"
     }
   },
   "versions": {

@@ -6,10 +6,10 @@
   "evidence_gt": {
     "type": "label_set",
     "value": [
-      "G",
+      "F",
       "J",
-      "M",
-      "X",
+      "K",
+      "N",
       "Y"
     ]
   },
@@ -17,11 +17,11 @@
     "format": "png",
     "path": "charts/task_charts_counting_value_count/images/above_threshold/0003.png"
   },
-  "instance_seed": 8878090650335808,
-  "prompt": "The image shows a labeled bar chart. Each bar's numeric height can be read from the vertical axis. Determine how many labeled marks meet the stated value condition. Determine how many marks show values strictly greater than 5.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing the labels of all marks with values greater than the threshold.\nAnswer format: set \"answer\" to the number of matching marks as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"K\",\"T\"],\"answer\":3}",
+  "instance_seed": 1022472862598886,
+  "prompt": "Work from the labeled chart shown in the image: a labeled dot plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Determine how many labeled marks meet the stated value condition. How many labeled marks have value greater than 13?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing the labels of all marks with values greater than the threshold.\nAnswer: set \"answer\" to the number of matching marks as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"K\",\"T\"],\"answer\":3}",
   "prompt_variants": {
-    "answer_and_evidence": "The image shows a labeled bar chart. Each bar's numeric height can be read from the vertical axis. Determine how many labeled marks meet the stated value condition. Determine how many marks show values strictly greater than 5.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing the labels of all marks with values greater than the threshold.\nAnswer format: set \"answer\" to the number of matching marks as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"K\",\"T\"],\"answer\":3}",
-    "answer_only": "The image shows a labeled bar chart. Each bar's numeric height can be read from the vertical axis. Determine how many labeled marks meet the stated value condition. Determine how many marks show values strictly greater than 5.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the number of matching marks as an integer.\nExample JSON:\n{\"answer\":3}"
+    "answer_and_evidence": "Work from the labeled chart shown in the image: a labeled dot plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Determine how many labeled marks meet the stated value condition. How many labeled marks have value greater than 13?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing the labels of all marks with values greater than the threshold.\nAnswer: set \"answer\" to the number of matching marks as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"K\",\"T\"],\"answer\":3}",
+    "answer_only": "Work from the labeled chart shown in the image: a labeled dot plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Determine how many labeled marks meet the stated value condition. How many labeled marks have value greater than 13?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the number of matching marks as an integer.\nExample JSON:\n{\"answer\":3}"
   },
   "task": "task_charts_counting_value_count",
   "task_variant": "above_threshold",
@@ -30,40 +30,42 @@
       "answer_value": 5,
       "comparison": "greater_than",
       "evidence_labels": [
-        "G",
+        "F",
         "J",
-        "M",
-        "X",
+        "K",
+        "N",
         "Y"
       ],
       "labels": [
-        "U",
-        "G",
+        "N",
+        "J",
+        "F",
         "Y",
         "X",
-        "J",
-        "M"
+        "W",
+        "P",
+        "K"
       ],
       "mark_color_distance_space": "lab",
       "mark_color_min_distance": 40.0,
       "mark_color_sampling_policy": "random_rgb",
-      "mark_count": 6,
+      "mark_count": 8,
       "mark_count_range": [
         5,
         10
       ],
       "mark_fill_rgb": [
-        212,
-        148,
-        185
+        62,
+        24,
+        46
       ],
       "mark_outline_rgb": [
-        117,
-        81,
-        102
+        34,
+        13,
+        25
       ],
       "question_format": "numeric_open",
-      "scene_variant": "bar",
+      "scene_variant": "dot_plot",
       "scene_variant_probabilities": {
         "area": 0.1,
         "bar": 0.1,
@@ -83,120 +85,124 @@
       ],
       "task_variant": "above_threshold",
       "task_variant_probabilities": {
-        "above_threshold": 0.3333333333333333,
-        "below_threshold": 0.3333333333333333,
-        "in_interval": 0.3333333333333333
+        "above_threshold": 1.0,
+        "below_threshold": 0.0,
+        "in_interval": 0.0
       },
-      "threshold": 5,
+      "threshold": 13,
       "value_max": 20,
       "value_min": 1,
       "values": [
-        2,
-        14,
-        16,
         15,
-        12,
-        18
+        16,
+        19,
+        16,
+        1,
+        8,
+        13,
+        14
       ],
       "values_by_label": {
-        "G": 14,
-        "J": 12,
-        "M": 18,
-        "U": 2,
-        "X": 15,
+        "F": 19,
+        "J": 16,
+        "K": 14,
+        "N": 15,
+        "P": 13,
+        "W": 8,
+        "X": 1,
         "Y": 16
       }
     },
     "projected_evidence": {
       "bbox_set": [
         [
-          225.503,
-          166.105,
-          289.497,
-          508.0
+          290.875,
+          59.2,
+          306.875,
+          75.2
         ],
         [
-          556.503,
-          214.947,
-          620.497,
-          508.0
+          208.125,
+          128.8,
+          224.125,
+          144.8
         ],
         [
-          666.837,
-          68.421,
-          730.83,
-          508.0
+          704.625,
+          175.2,
+          720.625,
+          191.2
         ],
         [
-          446.17,
-          141.684,
-          510.163,
-          508.0
+          125.375,
+          152.0,
+          141.375,
+          168.0
         ],
         [
-          335.837,
-          117.263,
-          399.83,
-          508.0
+          373.625,
+          128.8,
+          389.625,
+          144.8
         ]
       ],
       "label_set": [
-        "G",
+        "F",
         "J",
-        "M",
-        "X",
+        "K",
+        "N",
         "Y"
       ],
       "pixel_point_map": {
-        "G": [
-          257.5,
-          166.105
+        "F": [
+          298.875,
+          67.2
         ],
         "J": [
-          588.5,
-          214.947
+          216.125,
+          136.8
         ],
-        "M": [
-          698.833,
-          68.421
+        "K": [
+          712.625,
+          183.2
         ],
-        "X": [
-          478.167,
-          141.684
+        "N": [
+          133.375,
+          160.0
         ],
         "Y": [
-          367.833,
-          117.263
+          381.625,
+          136.8
         ]
       },
       "pixel_point_set": [
         [
-          257.5,
-          166.105
+          298.875,
+          67.2
         ],
         [
-          588.5,
-          214.947
+          216.125,
+          136.8
         ],
         [
-          698.833,
-          68.421
+          712.625,
+          183.2
         ],
         [
-          478.167,
-          141.684
+          133.375,
+          160.0
         ],
         [
-          367.833,
-          117.263
+          381.625,
+          136.8
         ]
       ]
     },
     "query_spec": {
       "params": {
         "comparison": "greater_than",
-        "mark_count": 6,
-        "scene_variant": "bar",
+        "mark_count": 8,
+        "scene_variant": "dot_plot",
         "scene_variant_probabilities": {
           "area": 0.1,
           "bar": 0.1,
@@ -216,15 +222,15 @@
         ],
         "task_variant": "above_threshold",
         "task_variant_probabilities": {
-          "above_threshold": 0.3333333333333333,
-          "below_threshold": 0.3333333333333333,
-          "in_interval": 0.3333333333333333
+          "above_threshold": 1.0,
+          "below_threshold": 0.0,
+          "in_interval": 0.0
         },
-        "threshold": 5
+        "threshold": 13
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 1,
+        "answer_or_evidence_variant_index": 0,
         "prompt_bundle_id": "charts_counting_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -236,15 +242,15 @@
           "json_example_answer_only": "{\"answer\":3}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "object_description": "a labeled bar chart. Each bar's numeric height can be read from the vertical axis",
-          "threshold": "5"
+          "object_description": "a labeled dot plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis",
+          "threshold": "13"
         },
         "task_family_key": "labeled_chart_counting",
-        "task_family_variant_index": 0,
+        "task_family_variant_index": 2,
         "task_key": "value_count_query",
         "task_variant_index": 3,
         "task_variant_key": "above_threshold",
-        "task_variant_template_index": 2,
+        "task_variant_template_index": 0,
         "template_paths": [
           "charts/counting/charts_counting_v1.json"
         ],
@@ -260,7 +266,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 1,
+            "answer_or_evidence_variant_index": 0,
             "prompt_bundle_id": "charts_counting_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -272,15 +278,15 @@
               "json_example_answer_only": "{\"answer\":3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a labeled bar chart. Each bar's numeric height can be read from the vertical axis",
-              "threshold": "5"
+              "object_description": "a labeled dot plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis",
+              "threshold": "13"
             },
             "task_family_key": "labeled_chart_counting",
-            "task_family_variant_index": 0,
+            "task_family_variant_index": 2,
             "task_key": "value_count_query",
             "task_variant_index": 3,
             "task_variant_key": "above_threshold",
-            "task_variant_template_index": 2,
+            "task_variant_template_index": 0,
             "template_paths": [
               "charts/counting/charts_counting_v1.json"
             ],
@@ -291,12 +297,12 @@
               "task_variant:above_threshold": 5
             }
           },
-          "prompt": "The image shows a labeled bar chart. Each bar's numeric height can be read from the vertical axis. Determine how many labeled marks meet the stated value condition. Determine how many marks show values strictly greater than 5.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing the labels of all marks with values greater than the threshold.\nAnswer format: set \"answer\" to the number of matching marks as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"K\",\"T\"],\"answer\":3}"
+          "prompt": "Work from the labeled chart shown in the image: a labeled dot plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Determine how many labeled marks meet the stated value condition. How many labeled marks have value greater than 13?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing the labels of all marks with values greater than the threshold.\nAnswer: set \"answer\" to the number of matching marks as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"K\",\"T\"],\"answer\":3}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 2,
+            "answer_or_evidence_variant_index": 0,
             "prompt_bundle_id": "charts_counting_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -308,15 +314,15 @@
               "json_example_answer_only": "{\"answer\":3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a labeled bar chart. Each bar's numeric height can be read from the vertical axis",
-              "threshold": "5"
+              "object_description": "a labeled dot plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis",
+              "threshold": "13"
             },
             "task_family_key": "labeled_chart_counting",
-            "task_family_variant_index": 0,
+            "task_family_variant_index": 2,
             "task_key": "value_count_query",
             "task_variant_index": 3,
             "task_variant_key": "above_threshold",
-            "task_variant_template_index": 2,
+            "task_variant_template_index": 0,
             "template_paths": [
               "charts/counting/charts_counting_v1.json"
             ],
@@ -327,7 +333,7 @@
               "task_variant:above_threshold": 5
             }
           },
-          "prompt": "The image shows a labeled bar chart. Each bar's numeric height can be read from the vertical axis. Determine how many labeled marks meet the stated value condition. Determine how many marks show values strictly greater than 5.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the number of matching marks as an integer.\nExample JSON:\n{\"answer\":3}"
+          "prompt": "Work from the labeled chart shown in the image: a labeled dot plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Determine how many labeled marks meet the stated value condition. How many labeled marks have value greater than 13?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the number of matching marks as an integer.\nExample JSON:\n{\"answer\":3}"
         }
       },
       "task_variant": "above_threshold",
@@ -336,29 +342,37 @@
     "render_map": {
       "image_id": "img0",
       "label_centers_px": {
-        "G": [
-          257.5,
-          534.0
+        "F": [
+          298.875,
+          45.2
         ],
         "J": [
-          588.5,
-          534.0
+          216.125,
+          114.8
         ],
-        "M": [
-          698.833,
-          534.0
+        "K": [
+          712.625,
+          161.2
         ],
-        "U": [
-          147.167,
-          534.0
+        "N": [
+          133.375,
+          138.0
+        ],
+        "P": [
+          629.875,
+          184.4
+        ],
+        "W": [
+          547.125,
+          300.4
         ],
         "X": [
-          478.167,
-          534.0
+          464.375,
+          462.8
         ],
         "Y": [
-          367.833,
-          534.0
+          381.625,
+          114.8
         ]
       },
       "plot_bbox_px": [
@@ -396,14 +410,14 @@
         "mark_color_distance_space": "lab",
         "mark_color_min_distance": 40.0,
         "mark_fill_rgb": [
-          212,
-          148,
-          185
+          62,
+          24,
+          46
         ],
         "mark_outline_rgb": [
-          117,
-          81,
-          102
+          34,
+          13,
+          25
         ],
         "sampling_policy": "random_rgb"
       },
@@ -429,13 +443,13 @@
         "edits": [],
         "enabled": false
       },
-      "scene_variant": "bar",
+      "scene_variant": "dot_plot",
       "text_style": {
         "label_font_size_px": 22,
         "label_stroke_width_px": 2,
         "tick_font_size_px": 18
       },
-      "y_axis_max": 19,
+      "y_axis_max": 20,
       "y_ticks": [
         0,
         1,
@@ -456,237 +470,306 @@
         16,
         17,
         18,
-        19
+        19,
+        20
       ]
     },
     "scene_ir": {
       "entities": [
         {
           "attrs": {
-            "label": "U",
+            "label": "N",
             "label_center_px": [
-              147.167,
-              534.0
+              133.375,
+              138.0
             ],
             "mark_bbox_px": [
-              115.17,
-              459.158,
-              179.163,
-              508.0
+              125.375,
+              152.0,
+              141.375,
+              168.0
             ],
             "mark_center_px": [
-              147.167,
-              459.158
+              133.375,
+              160.0
             ],
             "mark_fill_rgb": [
-              212,
-              148,
-              185
+              62,
+              24,
+              46
             ],
             "mark_outline_rgb": [
-              117,
-              81,
-              102
+              34,
+              13,
+              25
             ],
-            "scene_variant": "bar",
-            "value": 2,
+            "scene_variant": "dot_plot",
+            "value": 15,
             "x_rank": 0
           },
-          "entity_id": "mark_U",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "label": "G",
-            "label_center_px": [
-              257.5,
-              534.0
-            ],
-            "mark_bbox_px": [
-              225.503,
-              166.105,
-              289.497,
-              508.0
-            ],
-            "mark_center_px": [
-              257.5,
-              166.105
-            ],
-            "mark_fill_rgb": [
-              212,
-              148,
-              185
-            ],
-            "mark_outline_rgb": [
-              117,
-              81,
-              102
-            ],
-            "scene_variant": "bar",
-            "value": 14,
-            "x_rank": 1
-          },
-          "entity_id": "mark_G",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "label": "Y",
-            "label_center_px": [
-              367.833,
-              534.0
-            ],
-            "mark_bbox_px": [
-              335.837,
-              117.263,
-              399.83,
-              508.0
-            ],
-            "mark_center_px": [
-              367.833,
-              117.263
-            ],
-            "mark_fill_rgb": [
-              212,
-              148,
-              185
-            ],
-            "mark_outline_rgb": [
-              117,
-              81,
-              102
-            ],
-            "scene_variant": "bar",
-            "value": 16,
-            "x_rank": 2
-          },
-          "entity_id": "mark_Y",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "label": "X",
-            "label_center_px": [
-              478.167,
-              534.0
-            ],
-            "mark_bbox_px": [
-              446.17,
-              141.684,
-              510.163,
-              508.0
-            ],
-            "mark_center_px": [
-              478.167,
-              141.684
-            ],
-            "mark_fill_rgb": [
-              212,
-              148,
-              185
-            ],
-            "mark_outline_rgb": [
-              117,
-              81,
-              102
-            ],
-            "scene_variant": "bar",
-            "value": 15,
-            "x_rank": 3
-          },
-          "entity_id": "mark_X",
-          "entity_type": "bar"
+          "entity_id": "mark_N",
+          "entity_type": "point"
         },
         {
           "attrs": {
             "label": "J",
             "label_center_px": [
-              588.5,
-              534.0
+              216.125,
+              114.8
             ],
             "mark_bbox_px": [
-              556.503,
-              214.947,
-              620.497,
-              508.0
+              208.125,
+              128.8,
+              224.125,
+              144.8
             ],
             "mark_center_px": [
-              588.5,
-              214.947
+              216.125,
+              136.8
             ],
             "mark_fill_rgb": [
-              212,
-              148,
-              185
+              62,
+              24,
+              46
             ],
             "mark_outline_rgb": [
-              117,
-              81,
-              102
+              34,
+              13,
+              25
             ],
-            "scene_variant": "bar",
-            "value": 12,
-            "x_rank": 4
+            "scene_variant": "dot_plot",
+            "value": 16,
+            "x_rank": 1
           },
           "entity_id": "mark_J",
-          "entity_type": "bar"
+          "entity_type": "point"
         },
         {
           "attrs": {
-            "label": "M",
+            "label": "F",
             "label_center_px": [
-              698.833,
-              534.0
+              298.875,
+              45.2
             ],
             "mark_bbox_px": [
-              666.837,
-              68.421,
-              730.83,
-              508.0
+              290.875,
+              59.2,
+              306.875,
+              75.2
             ],
             "mark_center_px": [
-              698.833,
-              68.421
+              298.875,
+              67.2
             ],
             "mark_fill_rgb": [
-              212,
-              148,
-              185
+              62,
+              24,
+              46
             ],
             "mark_outline_rgb": [
-              117,
-              81,
-              102
+              34,
+              13,
+              25
             ],
-            "scene_variant": "bar",
-            "value": 18,
+            "scene_variant": "dot_plot",
+            "value": 19,
+            "x_rank": 2
+          },
+          "entity_id": "mark_F",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "Y",
+            "label_center_px": [
+              381.625,
+              114.8
+            ],
+            "mark_bbox_px": [
+              373.625,
+              128.8,
+              389.625,
+              144.8
+            ],
+            "mark_center_px": [
+              381.625,
+              136.8
+            ],
+            "mark_fill_rgb": [
+              62,
+              24,
+              46
+            ],
+            "mark_outline_rgb": [
+              34,
+              13,
+              25
+            ],
+            "scene_variant": "dot_plot",
+            "value": 16,
+            "x_rank": 3
+          },
+          "entity_id": "mark_Y",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "X",
+            "label_center_px": [
+              464.375,
+              462.8
+            ],
+            "mark_bbox_px": [
+              456.375,
+              476.8,
+              472.375,
+              492.8
+            ],
+            "mark_center_px": [
+              464.375,
+              484.8
+            ],
+            "mark_fill_rgb": [
+              62,
+              24,
+              46
+            ],
+            "mark_outline_rgb": [
+              34,
+              13,
+              25
+            ],
+            "scene_variant": "dot_plot",
+            "value": 1,
+            "x_rank": 4
+          },
+          "entity_id": "mark_X",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "W",
+            "label_center_px": [
+              547.125,
+              300.4
+            ],
+            "mark_bbox_px": [
+              539.125,
+              314.4,
+              555.125,
+              330.4
+            ],
+            "mark_center_px": [
+              547.125,
+              322.4
+            ],
+            "mark_fill_rgb": [
+              62,
+              24,
+              46
+            ],
+            "mark_outline_rgb": [
+              34,
+              13,
+              25
+            ],
+            "scene_variant": "dot_plot",
+            "value": 8,
             "x_rank": 5
           },
-          "entity_id": "mark_M",
-          "entity_type": "bar"
+          "entity_id": "mark_W",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "P",
+            "label_center_px": [
+              629.875,
+              184.4
+            ],
+            "mark_bbox_px": [
+              621.875,
+              198.4,
+              637.875,
+              214.4
+            ],
+            "mark_center_px": [
+              629.875,
+              206.4
+            ],
+            "mark_fill_rgb": [
+              62,
+              24,
+              46
+            ],
+            "mark_outline_rgb": [
+              34,
+              13,
+              25
+            ],
+            "scene_variant": "dot_plot",
+            "value": 13,
+            "x_rank": 6
+          },
+          "entity_id": "mark_P",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "K",
+            "label_center_px": [
+              712.625,
+              161.2
+            ],
+            "mark_bbox_px": [
+              704.625,
+              175.2,
+              720.625,
+              191.2
+            ],
+            "mark_center_px": [
+              712.625,
+              183.2
+            ],
+            "mark_fill_rgb": [
+              62,
+              24,
+              46
+            ],
+            "mark_outline_rgb": [
+              34,
+              13,
+              25
+            ],
+            "scene_variant": "dot_plot",
+            "value": 14,
+            "x_rank": 7
+          },
+          "entity_id": "mark_K",
+          "entity_type": "point"
         }
       ],
       "relations": {
         "comparison": "greater_than",
         "evidence_labels": [
-          "G",
+          "F",
           "J",
-          "M",
-          "X",
+          "K",
+          "N",
           "Y"
         ],
-        "scene_variant": "bar",
+        "scene_variant": "dot_plot",
         "task_variant": "above_threshold",
-        "threshold": 5
+        "threshold": 13
       },
-      "scene_kind": "chart_bar_counting"
+      "scene_kind": "chart_dot_plot_counting"
     },
     "witness_symbolic": {
       "labels": [
-        "G",
+        "F",
         "J",
-        "M",
-        "X",
+        "K",
+        "N",
         "Y"
       ],
       "type": "label_set"

@@ -1,33 +1,33 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 36
+    "value": 19
   },
   "evidence_gt": {
     "type": "integer_list",
     "value": [
-      33,
-      6,
-      49,
-      3,
-      9
+      14,
+      14,
+      12,
+      55,
+      5
     ]
   },
   "image": {
     "format": "png",
     "path": "charts/task_charts_composition_subset_value/images/combined_share_subset/0024.png"
   },
-  "instance_seed": 6335153095821417,
-  "prompt": "Look at the chart in the image. It shows a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Answer the question using the printed values shown in the composition chart. Add the chart percentages for labels Ana and Bray. What total percentage do they contribute?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array [v1, v2, ...] listing the slice percentages in legend order for the whole chart.\nAnswer: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[18,27,22,33],\"answer\":45}",
+  "instance_seed": 6639331453877262,
+  "prompt": "Use the composition chart in the image. It shows a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Read the composition values shown in the chart and answer the question. Add the chart percentages for labels Toy and Old. What total percentage do they contribute?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array [v1, v2, ...] listing the slice percentages in legend order for the whole chart.\nAnswer requirement: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[18,27,22,33],\"answer\":45}",
   "prompt_variants": {
-    "answer_and_evidence": "Look at the chart in the image. It shows a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Answer the question using the printed values shown in the composition chart. Add the chart percentages for labels Ana and Bray. What total percentage do they contribute?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array [v1, v2, ...] listing the slice percentages in legend order for the whole chart.\nAnswer: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[18,27,22,33],\"answer\":45}",
-    "answer_only": "Look at the chart in the image. It shows a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Answer the question using the printed values shown in the composition chart. Add the chart percentages for labels Ana and Bray. What total percentage do they contribute?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":45}"
+    "answer_and_evidence": "Use the composition chart in the image. It shows a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Read the composition values shown in the chart and answer the question. Add the chart percentages for labels Toy and Old. What total percentage do they contribute?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array [v1, v2, ...] listing the slice percentages in legend order for the whole chart.\nAnswer requirement: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[18,27,22,33],\"answer\":45}",
+    "answer_only": "Use the composition chart in the image. It shows a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Read the composition values shown in the chart and answer the question. Add the chart percentages for labels Toy and Old. What total percentage do they contribute?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":45}"
   },
   "task": "task_charts_composition_subset_value",
   "task_variant": "combined_share_subset",
   "trace_payload": {
     "execution_trace": {
-      "answer_value": 36,
+      "answer_value": 19,
       "category_count": 0,
       "category_count_range": [
         0,
@@ -37,42 +37,42 @@
       "composition_scope": "chart",
       "composition_total": 100,
       "evidence_labels": [
-        "Ana",
-        "Demb",
-        "Cran",
-        "Bray",
-        "Urba"
+        "Cos",
+        "Toy",
+        "Thad",
+        "Deni",
+        "Old"
       ],
       "evidence_values": [
-        33,
-        6,
-        49,
-        3,
-        9
+        14,
+        14,
+        12,
+        55,
+        5
       ],
       "mark_color_distance_space": "lab",
       "mark_color_min_distance": 58.0,
       "mark_color_sampling_policy": "random_rgb_palette",
       "mark_fill_rgb": [
-        166,
-        81,
-        8
+        190,
+        82,
+        62
       ],
       "mark_outline_rgb": [
-        91,
+        105,
         45,
-        4
+        34
       ],
       "pie_like_mark_color_channel_max": 200,
       "query_category_label": "",
       "query_series_label": "",
       "query_subset_labels": [
-        "Ana",
-        "Bray"
+        "Toy",
+        "Old"
       ],
       "question_format": "numeric_open",
       "scene_mode": "pie_like",
-      "scene_variant": "donut",
+      "scene_variant": "pie",
       "scene_variant_probabilities": {
         "donut": 0.5,
         "pie": 0.5
@@ -83,91 +83,91 @@
         5
       ],
       "series_labels": [
-        "Ana",
-        "Demb",
-        "Cran",
-        "Bray",
-        "Urba"
+        "Cos",
+        "Toy",
+        "Thad",
+        "Deni",
+        "Old"
       ],
       "slice_fill_palette_rgb": [
         [
-          166,
-          81,
+          190,
+          82,
+          62
+        ],
+        [
+          2,
+          102,
+          160
+        ],
+        [
+          29,
+          158,
+          105
+        ],
+        [
+          94,
+          13,
+          177
+        ],
+        [
+          165,
+          181,
           8
-        ],
-        [
-          92,
-          182,
-          101
-        ],
-        [
-          189,
-          96,
-          155
-        ],
-        [
-          15,
-          24,
-          139
-        ],
-        [
-          6,
-          77,
-          75
         ]
       ],
       "slice_outline_palette_rgb": [
         [
-          91,
+          105,
           45,
-          4
+          34
         ],
         [
-          51,
+          1,
+          56,
+          88
+        ],
+        [
+          16,
+          87,
+          58
+        ],
+        [
+          52,
+          7,
+          97
+        ],
+        [
+          91,
           100,
-          56
-        ],
-        [
-          104,
-          53,
-          85
-        ],
-        [
-          8,
-          13,
-          76
-        ],
-        [
-          3,
-          42,
-          41
+          4
         ]
       ],
-      "target_answer": 36,
+      "target_answer": 19,
       "target_answer_range": [
         5,
         95
       ],
       "task_variant": "combined_share_subset",
       "task_variant_probabilities": {
-        "combined_share_subset": 0.3333333333333333,
-        "stack_segment_value": 0.3333333333333333,
-        "stack_total_at_label": 0.3333333333333333
+        "combined_share_subset": 1.0,
+        "stack_segment_value": 0.0,
+        "stack_total_at_label": 0.0
       },
       "value_semantics": "percentage",
       "values": [
-        33,
-        6,
-        49,
-        3,
-        9
+        14,
+        14,
+        12,
+        55,
+        5
       ],
       "values_by_label": {
-        "Ana": 33,
-        "Bray": 3,
-        "Cran": 49,
-        "Demb": 6,
-        "Urba": 9
+        "Cos": 14,
+        "Deni": 55,
+        "Old": 5,
+        "Thad": 12,
+        "Toy": 14
       }
     },
     "projected_evidence": {
@@ -175,83 +175,83 @@
         [
           442.08,
           65.6,
-          701.432,
-          451.449
+          642.722,
+          326.0
+        ],
+        [
+          442.08,
+          160.015,
+          701.054,
+          374.794
         ],
         [
           442.08,
           326.0,
-          670.27,
-          526.642
+          697.868,
+          536.668
         ],
         [
-          183.164,
-          136.177,
-          608.065,
-          585.66
+          183.106,
+          78.345,
+          595.139,
+          586.043
         ],
         [
-          263.824,
-          106.137,
-          442.08,
-          326.0
-        ],
-        [
-          302.551,
+          361.612,
           65.6,
           442.08,
           326.0
         ]
       ],
       "integer_list": [
-        33,
-        6,
-        49,
-        3,
-        9
+        14,
+        14,
+        12,
+        55,
+        5
       ],
       "pixel_point_map": {
-        "Ana": [
-          601.217,
-          231.886
+        "Cos": [
+          508.604,
+          184.63
         ],
-        "Bray": [
-          328.763,
-          179.913
+        "Deni": [
+          302.869,
+          396.931
         ],
-        "Cran": [
-          303.396,
-          448.266
+        "Old": [
+          417.639,
+          171.684
         ],
-        "Demb": [
-          584.536,
-          443.849
+        "Thad": [
+          573.998,
+          409.718
         ],
-        "Urba": [
-          390.499,
-          148.457
+        "Toy": [
+          593.411,
+          287.145
         ]
       },
       "pixel_point_set": [
         [
-          601.217,
-          231.886
+          508.604,
+          184.63
         ],
         [
-          584.536,
-          443.849
+          593.411,
+          287.145
         ],
         [
-          303.396,
-          448.266
+          573.998,
+          409.718
         ],
         [
-          328.763,
-          179.913
+          302.869,
+          396.931
         ],
         [
-          390.499,
-          148.457
+          417.639,
+          171.684
         ]
       ]
     },
@@ -265,10 +265,10 @@
         "query_category_label": "",
         "query_series_label": "",
         "query_subset_labels": [
-          "Ana",
-          "Bray"
+          "Toy",
+          "Old"
         ],
-        "scene_variant": "donut",
+        "scene_variant": "pie",
         "scene_variant_probabilities": {
           "donut": 0.5,
           "pie": 0.5
@@ -278,21 +278,21 @@
           3,
           5
         ],
-        "target_answer": 36,
+        "target_answer": 19,
         "target_answer_range": [
           5,
           95
         ],
         "task_variant": "combined_share_subset",
         "task_variant_probabilities": {
-          "combined_share_subset": 0.3333333333333333,
-          "stack_segment_value": 0.3333333333333333,
-          "stack_total_at_label": 0.3333333333333333
+          "combined_share_subset": 1.0,
+          "stack_segment_value": 0.0,
+          "stack_total_at_label": 0.0
         }
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 0,
+        "answer_or_evidence_variant_index": 2,
         "prompt_bundle_id": "charts_composition_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -302,16 +302,16 @@
           "json_example_answer_only": "{\"answer\":45}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "object_description": "a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices",
+          "object_description": "a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices",
           "query_category_label": "",
-          "query_label_a": "Ana",
-          "query_label_b": "Bray",
+          "query_label_a": "Toy",
+          "query_label_b": "Old",
           "query_series_label": ""
         },
         "task_family_key": "composition_chart_value",
-        "task_family_variant_index": 3,
+        "task_family_variant_index": 1,
         "task_key": "subset_value_query",
-        "task_variant_index": 4,
+        "task_variant_index": 1,
         "task_variant_key": "combined_share_subset",
         "task_variant_template_index": 1,
         "template_paths": [
@@ -329,7 +329,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 0,
+            "answer_or_evidence_variant_index": 2,
             "prompt_bundle_id": "charts_composition_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -339,16 +339,16 @@
               "json_example_answer_only": "{\"answer\":45}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices",
+              "object_description": "a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices",
               "query_category_label": "",
-              "query_label_a": "Ana",
-              "query_label_b": "Bray",
+              "query_label_a": "Toy",
+              "query_label_b": "Old",
               "query_series_label": ""
             },
             "task_family_key": "composition_chart_value",
-            "task_family_variant_index": 3,
+            "task_family_variant_index": 1,
             "task_key": "subset_value_query",
-            "task_variant_index": 4,
+            "task_variant_index": 1,
             "task_variant_key": "combined_share_subset",
             "task_variant_template_index": 1,
             "template_paths": [
@@ -361,12 +361,12 @@
               "task_variant:combined_share_subset": 5
             }
           },
-          "prompt": "Look at the chart in the image. It shows a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Answer the question using the printed values shown in the composition chart. Add the chart percentages for labels Ana and Bray. What total percentage do they contribute?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array [v1, v2, ...] listing the slice percentages in legend order for the whole chart.\nAnswer: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[18,27,22,33],\"answer\":45}"
+          "prompt": "Use the composition chart in the image. It shows a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Read the composition values shown in the chart and answer the question. Add the chart percentages for labels Toy and Old. What total percentage do they contribute?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array [v1, v2, ...] listing the slice percentages in legend order for the whole chart.\nAnswer requirement: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[18,27,22,33],\"answer\":45}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 0,
+            "answer_or_evidence_variant_index": 1,
             "prompt_bundle_id": "charts_composition_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -376,16 +376,16 @@
               "json_example_answer_only": "{\"answer\":45}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices",
+              "object_description": "a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices",
               "query_category_label": "",
-              "query_label_a": "Ana",
-              "query_label_b": "Bray",
+              "query_label_a": "Toy",
+              "query_label_b": "Old",
               "query_series_label": ""
             },
             "task_family_key": "composition_chart_value",
-            "task_family_variant_index": 3,
+            "task_family_variant_index": 1,
             "task_key": "subset_value_query",
-            "task_variant_index": 4,
+            "task_variant_index": 1,
             "task_variant_key": "combined_share_subset",
             "task_variant_template_index": 1,
             "template_paths": [
@@ -398,7 +398,7 @@
               "task_variant:combined_share_subset": 5
             }
           },
-          "prompt": "Look at the chart in the image. It shows a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Answer the question using the printed values shown in the composition chart. Add the chart percentages for labels Ana and Bray. What total percentage do they contribute?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":45}"
+          "prompt": "Use the composition chart in the image. It shows a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Read the composition values shown in the chart and answer the question. Add the chart percentages for labels Toy and Old. What total percentage do they contribute?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":45}"
         }
       },
       "task_variant": "combined_share_subset",
@@ -407,25 +407,25 @@
     "render_map": {
       "image_id": "img0",
       "label_centers_px": {
-        "Ana": [
-          864.16,
+        "Cos": [
+          862.16,
           235.0
         ],
-        "Bray": [
-          869.16,
+        "Deni": [
+          868.66,
           361.0
         ],
-        "Cran": [
-          869.66,
+        "Old": [
+          860.66,
+          403.0
+        ],
+        "Thad": [
+          871.16,
           319.0
         ],
-        "Demb": [
-          877.16,
+        "Toy": [
+          862.16,
           277.0
-        ],
-        "Urba": [
-          870.16,
-          403.0
         ]
       },
       "plot_bbox_px": [
@@ -463,69 +463,69 @@
         "mark_color_distance_space": "lab",
         "mark_color_min_distance": 58.0,
         "mark_fill_rgb": [
-          166,
-          81,
-          8
+          190,
+          82,
+          62
         ],
         "mark_outline_rgb": [
-          91,
+          105,
           45,
-          4
+          34
         ],
         "pie_like_mark_color_channel_max": 200,
         "sampling_policy": "random_rgb_palette",
         "slice_fill_palette_rgb": [
           [
-            166,
-            81,
+            190,
+            82,
+            62
+          ],
+          [
+            2,
+            102,
+            160
+          ],
+          [
+            29,
+            158,
+            105
+          ],
+          [
+            94,
+            13,
+            177
+          ],
+          [
+            165,
+            181,
             8
-          ],
-          [
-            92,
-            182,
-            101
-          ],
-          [
-            189,
-            96,
-            155
-          ],
-          [
-            15,
-            24,
-            139
-          ],
-          [
-            6,
-            77,
-            75
           ]
         ],
         "slice_outline_palette_rgb": [
           [
-            91,
+            105,
             45,
-            4
+            34
           ],
           [
-            51,
+            1,
+            56,
+            88
+          ],
+          [
+            16,
+            87,
+            58
+          ],
+          [
+            52,
+            7,
+            97
+          ],
+          [
+            91,
             100,
-            56
-          ],
-          [
-            104,
-            53,
-            85
-          ],
-          [
-            8,
-            13,
-            76
-          ],
-          [
-            3,
-            42,
-            41
+            4
           ]
         ]
       },
@@ -551,13 +551,13 @@
         "edits": [],
         "enabled": false
       },
-      "scene_variant": "donut",
+      "scene_variant": "pie",
       "text_style": {
         "label_font_size_px": 24,
         "label_stroke_width_px": 2,
         "tick_font_size_px": 20
       },
-      "y_axis_max": 50,
+      "y_axis_max": 56,
       "y_ticks": [
         0,
         1,
@@ -609,23 +609,29 @@
         47,
         48,
         49,
-        50
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56
       ]
     },
     "scene_ir": {
       "entities": [
         {
           "attrs": {
-            "end_angle_deg": 28.8,
-            "label": "Ana",
+            "end_angle_deg": -39.6,
+            "label": "Cos",
             "label_bbox_px": [
               838.16,
               226.0,
-              890.16,
+              886.16,
               244.0
             ],
             "label_center_px": [
-              864.16,
+              862.16,
               235.0
             ],
             "legend_swatch_bbox_px": [
@@ -637,53 +643,53 @@
             "mark_bbox_px": [
               442.08,
               65.6,
-              701.432,
-              451.449
+              642.722,
+              326.0
             ],
             "mark_center_px": [
-              601.217,
-              231.886
+              508.604,
+              184.63
             ],
             "mark_fill_rgb": [
-              166,
-              81,
-              8
+              190,
+              82,
+              62
             ],
             "mark_outline_rgb": [
-              91,
+              105,
               45,
-              4
+              34
             ],
             "percentage_bbox_px": [
-              572.217,
-              222.886,
-              630.217,
-              240.886
+              479.604,
+              175.63,
+              537.604,
+              193.63
             ],
             "percentage_center_px": [
-              601.217,
-              231.886
+              508.604,
+              184.63
             ],
-            "scene_variant": "donut",
+            "scene_variant": "pie",
             "start_angle_deg": -90.0,
-            "value": 33,
+            "value": 14,
             "x_rank": 0
           },
-          "entity_id": "mark_Ana",
+          "entity_id": "mark_Cos",
           "entity_type": "slice"
         },
         {
           "attrs": {
-            "end_angle_deg": 50.4,
-            "label": "Demb",
+            "end_angle_deg": 10.8,
+            "label": "Toy",
             "label_bbox_px": [
               838.16,
-              268.0,
-              916.16,
-              286.0
+              265.5,
+              886.16,
+              288.5
             ],
             "label_center_px": [
-              877.16,
+              862.16,
               277.0
             ],
             "legend_swatch_bbox_px": [
@@ -694,54 +700,54 @@
             ],
             "mark_bbox_px": [
               442.08,
-              326.0,
-              670.27,
-              526.642
+              160.015,
+              701.054,
+              374.794
             ],
             "mark_center_px": [
-              584.536,
-              443.849
+              593.411,
+              287.145
             ],
             "mark_fill_rgb": [
-              92,
-              182,
-              101
+              2,
+              102,
+              160
             ],
             "mark_outline_rgb": [
-              51,
-              100,
-              56
+              1,
+              56,
+              88
             ],
             "percentage_bbox_px": [
-              564.036,
-              434.849,
-              605.036,
-              452.849
+              564.411,
+              278.145,
+              622.411,
+              296.145
             ],
             "percentage_center_px": [
-              584.536,
-              443.849
+              593.411,
+              287.145
             ],
-            "scene_variant": "donut",
-            "start_angle_deg": 28.8,
-            "value": 6,
+            "scene_variant": "pie",
+            "start_angle_deg": -39.6,
+            "value": 14,
             "x_rank": 1
           },
-          "entity_id": "mark_Demb",
+          "entity_id": "mark_Toy",
           "entity_type": "slice"
         },
         {
           "attrs": {
-            "end_angle_deg": 226.8,
-            "label": "Cran",
+            "end_angle_deg": 54.0,
+            "label": "Thad",
             "label_bbox_px": [
               838.16,
               310.0,
-              901.16,
+              904.16,
               328.0
             ],
             "label_center_px": [
-              869.66,
+              871.16,
               319.0
             ],
             "legend_swatch_bbox_px": [
@@ -751,55 +757,55 @@
               333.0
             ],
             "mark_bbox_px": [
-              183.164,
-              136.177,
-              608.065,
-              585.66
+              442.08,
+              326.0,
+              697.868,
+              536.668
             ],
             "mark_center_px": [
-              303.396,
-              448.266
+              573.998,
+              409.718
             ],
             "mark_fill_rgb": [
-              189,
-              96,
-              155
+              29,
+              158,
+              105
             ],
             "mark_outline_rgb": [
-              104,
-              53,
-              85
+              16,
+              87,
+              58
             ],
             "percentage_bbox_px": [
-              274.396,
-              439.266,
-              332.396,
-              457.266
+              544.998,
+              400.718,
+              602.998,
+              418.718
             ],
             "percentage_center_px": [
-              303.396,
-              448.266
+              573.998,
+              409.718
             ],
-            "scene_variant": "donut",
-            "start_angle_deg": 50.4,
-            "value": 49,
+            "scene_variant": "pie",
+            "start_angle_deg": 10.8,
+            "value": 12,
             "x_rank": 2
           },
-          "entity_id": "mark_Cran",
+          "entity_id": "mark_Thad",
           "entity_type": "slice"
         },
         {
           "attrs": {
-            "end_angle_deg": 237.6,
-            "label": "Bray",
+            "end_angle_deg": 252.0,
+            "label": "Deni",
             "label_bbox_px": [
               838.16,
-              349.5,
-              900.16,
-              372.5
+              352.0,
+              899.16,
+              370.0
             ],
             "label_center_px": [
-              869.16,
+              868.66,
               361.0
             ],
             "legend_swatch_bbox_px": [
@@ -809,55 +815,55 @@
               375.0
             ],
             "mark_bbox_px": [
-              263.824,
-              106.137,
-              442.08,
-              326.0
+              183.106,
+              78.345,
+              595.139,
+              586.043
             ],
             "mark_center_px": [
-              328.763,
-              179.913
+              302.869,
+              396.931
             ],
             "mark_fill_rgb": [
-              15,
-              24,
-              139
+              94,
+              13,
+              177
             ],
             "mark_outline_rgb": [
-              8,
-              13,
-              76
+              52,
+              7,
+              97
             ],
             "percentage_bbox_px": [
-              252.172,
-              98.601,
-              293.172,
-              116.601
+              273.869,
+              387.931,
+              331.869,
+              405.931
             ],
             "percentage_center_px": [
-              272.672,
-              107.601
+              302.869,
+              396.931
             ],
-            "scene_variant": "donut",
-            "start_angle_deg": 226.8,
-            "value": 3,
+            "scene_variant": "pie",
+            "start_angle_deg": 54.0,
+            "value": 55,
             "x_rank": 3
           },
-          "entity_id": "mark_Bray",
+          "entity_id": "mark_Deni",
           "entity_type": "slice"
         },
         {
           "attrs": {
             "end_angle_deg": 270.0,
-            "label": "Urba",
+            "label": "Old",
             "label_bbox_px": [
               838.16,
               394.0,
-              902.16,
+              883.16,
               412.0
             ],
             "label_center_px": [
-              870.16,
+              860.66,
               403.0
             ],
             "legend_swatch_bbox_px": [
@@ -867,79 +873,79 @@
               417.0
             ],
             "mark_bbox_px": [
-              302.551,
+              361.612,
               65.6,
               442.08,
               326.0
             ],
             "mark_center_px": [
-              390.499,
-              148.457
+              417.639,
+              171.684
             ],
             "mark_fill_rgb": [
-              6,
-              77,
-              75
+              165,
+              181,
+              8
             ],
             "mark_outline_rgb": [
-              3,
-              42,
-              41
+              91,
+              100,
+              4
             ],
             "percentage_bbox_px": [
-              369.999,
-              139.457,
-              410.999,
-              157.457
+              397.139,
+              162.684,
+              438.139,
+              180.684
             ],
             "percentage_center_px": [
-              390.499,
-              148.457
+              417.639,
+              171.684
             ],
-            "scene_variant": "donut",
-            "start_angle_deg": 237.6,
-            "value": 9,
+            "scene_variant": "pie",
+            "start_angle_deg": 252.0,
+            "value": 5,
             "x_rank": 4
           },
-          "entity_id": "mark_Urba",
+          "entity_id": "mark_Old",
           "entity_type": "slice"
         }
       ],
       "relations": {
-        "answer_value": 36,
+        "answer_value": 19,
         "evidence_labels": [
-          "Ana",
-          "Demb",
-          "Cran",
-          "Bray",
-          "Urba"
+          "Cos",
+          "Toy",
+          "Thad",
+          "Deni",
+          "Old"
         ],
         "query_category_label": "",
         "query_series_label": "",
         "query_subset_labels": [
-          "Ana",
-          "Bray"
+          "Toy",
+          "Old"
         ],
-        "scene_variant": "donut",
+        "scene_variant": "pie",
         "task_variant": "combined_share_subset"
       },
-      "scene_kind": "chart_donut_composition"
+      "scene_kind": "chart_pie_composition"
     },
     "witness_symbolic": {
       "labels": [
-        "Ana",
-        "Demb",
-        "Cran",
-        "Bray",
-        "Urba"
+        "Cos",
+        "Toy",
+        "Thad",
+        "Deni",
+        "Old"
       ],
       "type": "integer_list",
       "values": [
-        33,
-        6,
-        49,
-        3,
-        9
+        14,
+        14,
+        12,
+        55,
+        5
       ]
     }
   },

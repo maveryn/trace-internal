@@ -1,15 +1,15 @@
 {
   "answer_gt": {
     "type": "string",
-    "value": "Nath"
+    "value": "Dahl"
   },
   "evidence_gt": {
     "type": "bbox_set",
     "value": [
       [
-        282.0,
+        788.0,
         352.0,
-        446.0,
+        952.0,
         424.0
       ]
     ]
@@ -18,11 +18,11 @@
     "format": "png",
     "path": "diagrams/task_diagrams_hierarchy_ancestor_label/images/parent_of_node/0013.png"
   },
-  "instance_seed": 1860420609506854,
-  "prompt": "Use the hierarchical diagram in the image: a hierarchical org chart with labeled boxes and parent-child connector lines. Use the hierarchy to answer: What is the parent of Pia? Return the exact label shown. Give the full label exactly as shown.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct parent box.\nAnswer: set \"answer\" to the exact visible ancestor label.\nExample JSON:\n{\"evidence\":[[926,352,1090,424]],\"answer\":\"Walt\"}",
+  "instance_seed": 6216325838607184,
+  "prompt": "Look at the hierarchy diagram in the image: a hierarchical org chart with labeled boxes and parent-child connector lines. Determine the requested ancestor from the hierarchy: What is the parent of Veno? Return the exact label shown. Give the full label exactly as shown.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct parent box.\nAnswer format: set \"answer\" to the exact visible ancestor label.\nExample JSON:\n{\"evidence\":[[926,352,1090,424]],\"answer\":\"Walt\"}",
   "prompt_variants": {
-    "answer_and_evidence": "Use the hierarchical diagram in the image: a hierarchical org chart with labeled boxes and parent-child connector lines. Use the hierarchy to answer: What is the parent of Pia? Return the exact label shown. Give the full label exactly as shown.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct parent box.\nAnswer: set \"answer\" to the exact visible ancestor label.\nExample JSON:\n{\"evidence\":[[926,352,1090,424]],\"answer\":\"Walt\"}",
-    "answer_only": "Use the hierarchical diagram in the image: a hierarchical org chart with labeled boxes and parent-child connector lines. Use the hierarchy to answer: What is the parent of Pia? Return the exact label shown. Give the full label exactly as shown.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the exact visible ancestor label.\nExample JSON:\n{\"answer\":\"Walt\"}"
+    "answer_and_evidence": "Look at the hierarchy diagram in the image: a hierarchical org chart with labeled boxes and parent-child connector lines. Determine the requested ancestor from the hierarchy: What is the parent of Veno? Return the exact label shown. Give the full label exactly as shown.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct parent box.\nAnswer format: set \"answer\" to the exact visible ancestor label.\nExample JSON:\n{\"evidence\":[[926,352,1090,424]],\"answer\":\"Walt\"}",
+    "answer_only": "Look at the hierarchy diagram in the image: a hierarchical org chart with labeled boxes and parent-child connector lines. Determine the requested ancestor from the hierarchy: What is the parent of Veno? Return the exact label shown. Give the full label exactly as shown.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the exact visible ancestor label.\nExample JSON:\n{\"answer\":\"Walt\"}"
   },
   "task": "task_diagrams_hierarchy_ancestor_label",
   "task_variant": "parent_of_node",
@@ -43,10 +43,10 @@
       }
     },
     "execution_trace": {
-      "answer_node_bbox_id": "node_bbox_1",
+      "answer_node_bbox_id": "node_bbox_2",
       "answer_node_depth": 1,
-      "answer_node_id": "node_1",
-      "answer_node_label": "Nath",
+      "answer_node_id": "node_2",
+      "answer_node_label": "Dahl",
       "edge_specs": [
         {
           "edge_id": "edge_0",
@@ -102,7 +102,7 @@
           "is_leaf": false,
           "node_bbox_id": "node_bbox_0",
           "node_id": "node_0",
-          "node_label": "Bone",
+          "node_label": "Oz",
           "node_label_bbox_id": "node_label_bbox_0",
           "parent_node_id": null
         },
@@ -111,7 +111,7 @@
           "is_leaf": false,
           "node_bbox_id": "node_bbox_1",
           "node_id": "node_1",
-          "node_label": "Nath",
+          "node_label": "Othe",
           "node_label_bbox_id": "node_label_bbox_1",
           "parent_node_id": "node_0"
         },
@@ -120,7 +120,7 @@
           "is_leaf": false,
           "node_bbox_id": "node_bbox_2",
           "node_id": "node_2",
-          "node_label": "Wye",
+          "node_label": "Dahl",
           "node_label_bbox_id": "node_label_bbox_2",
           "parent_node_id": "node_0"
         },
@@ -129,7 +129,7 @@
           "is_leaf": true,
           "node_bbox_id": "node_bbox_3",
           "node_id": "node_3",
-          "node_label": "Pia",
+          "node_label": "Burd",
           "node_label_bbox_id": "node_label_bbox_3",
           "parent_node_id": "node_1"
         },
@@ -138,7 +138,7 @@
           "is_leaf": true,
           "node_bbox_id": "node_bbox_4",
           "node_id": "node_4",
-          "node_label": "Gere",
+          "node_label": "Deck",
           "node_label_bbox_id": "node_label_bbox_4",
           "parent_node_id": "node_1"
         },
@@ -147,7 +147,7 @@
           "is_leaf": true,
           "node_bbox_id": "node_bbox_5",
           "node_id": "node_5",
-          "node_label": "Lau",
+          "node_label": "Chip",
           "node_label_bbox_id": "node_label_bbox_5",
           "parent_node_id": "node_1"
         },
@@ -156,7 +156,7 @@
           "is_leaf": true,
           "node_bbox_id": "node_bbox_6",
           "node_id": "node_6",
-          "node_label": "Miko",
+          "node_label": "Stig",
           "node_label_bbox_id": "node_label_bbox_6",
           "parent_node_id": "node_2"
         },
@@ -165,7 +165,7 @@
           "is_leaf": false,
           "node_bbox_id": "node_bbox_7",
           "node_id": "node_7",
-          "node_label": "Hawk",
+          "node_label": "Veno",
           "node_label_bbox_id": "node_label_bbox_7",
           "parent_node_id": "node_2"
         },
@@ -174,7 +174,7 @@
           "is_leaf": true,
           "node_bbox_id": "node_bbox_8",
           "node_id": "node_8",
-          "node_label": "Ming",
+          "node_label": "Glyn",
           "node_label_bbox_id": "node_label_bbox_8",
           "parent_node_id": "node_7"
         },
@@ -183,7 +183,7 @@
           "is_leaf": true,
           "node_bbox_id": "node_bbox_9",
           "node_id": "node_9",
-          "node_label": "Rick",
+          "node_label": "Ahab",
           "node_label_bbox_id": "node_label_bbox_9",
           "parent_node_id": "node_7"
         }
@@ -192,19 +192,19 @@
         2
       ],
       "query_node_ids": [
-        "node_3"
+        "node_7"
       ],
       "query_node_labels": [
-        "Pia"
+        "Veno"
       ],
       "query_relationship": "parent",
       "question_format": "hierarchy_ancestor_label",
-      "question_text": "What is the parent of Pia? Return the exact label shown.",
+      "question_text": "What is the parent of Veno? Return the exact label shown.",
       "root_node_id": "node_0",
-      "scene_title": "Org Overview",
+      "scene_title": "Department Hierarchy",
       "scene_variant": "org_chart",
       "supporting_node_bbox_ids": [
-        "node_bbox_1"
+        "node_bbox_2"
       ],
       "task_variant": "parent_of_node",
       "template_id": "dual_pillars",
@@ -231,9 +231,9 @@
     "projected_evidence": {
       "bbox_set": [
         [
-          282.0,
+          788.0,
           352.0,
-          446.0,
+          952.0,
           424.0
         ]
       ]
@@ -256,7 +256,7 @@
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 0,
+        "answer_or_evidence_variant_index": 1,
         "prompt_bundle_id": "diagrams_hierarchy_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -267,12 +267,12 @@
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
           "object_description": "a hierarchical org chart with labeled boxes and parent-child connector lines",
-          "question_text": "What is the parent of Pia? Return the exact label shown."
+          "question_text": "What is the parent of Veno? Return the exact label shown."
         },
         "task_family_key": "hierarchy_diagram",
-        "task_family_variant_index": 3,
+        "task_family_variant_index": 1,
         "task_key": "ancestor_query",
-        "task_variant_index": 1,
+        "task_variant_index": 4,
         "task_variant_key": "parent_of_node",
         "task_variant_template_index": 3,
         "template_paths": [
@@ -290,7 +290,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 0,
+            "answer_or_evidence_variant_index": 1,
             "prompt_bundle_id": "diagrams_hierarchy_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -301,12 +301,12 @@
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a hierarchical org chart with labeled boxes and parent-child connector lines",
-              "question_text": "What is the parent of Pia? Return the exact label shown."
+              "question_text": "What is the parent of Veno? Return the exact label shown."
             },
             "task_family_key": "hierarchy_diagram",
-            "task_family_variant_index": 3,
+            "task_family_variant_index": 1,
             "task_key": "ancestor_query",
-            "task_variant_index": 1,
+            "task_variant_index": 4,
             "task_variant_key": "parent_of_node",
             "task_variant_template_index": 3,
             "template_paths": [
@@ -319,12 +319,12 @@
               "task_variant:parent_of_node": 5
             }
           },
-          "prompt": "Use the hierarchical diagram in the image: a hierarchical org chart with labeled boxes and parent-child connector lines. Use the hierarchy to answer: What is the parent of Pia? Return the exact label shown. Give the full label exactly as shown.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct parent box.\nAnswer: set \"answer\" to the exact visible ancestor label.\nExample JSON:\n{\"evidence\":[[926,352,1090,424]],\"answer\":\"Walt\"}"
+          "prompt": "Look at the hierarchy diagram in the image: a hierarchical org chart with labeled boxes and parent-child connector lines. Determine the requested ancestor from the hierarchy: What is the parent of Veno? Return the exact label shown. Give the full label exactly as shown.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct parent box.\nAnswer format: set \"answer\" to the exact visible ancestor label.\nExample JSON:\n{\"evidence\":[[926,352,1090,424]],\"answer\":\"Walt\"}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 0,
+            "answer_or_evidence_variant_index": 1,
             "prompt_bundle_id": "diagrams_hierarchy_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -335,12 +335,12 @@
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a hierarchical org chart with labeled boxes and parent-child connector lines",
-              "question_text": "What is the parent of Pia? Return the exact label shown."
+              "question_text": "What is the parent of Veno? Return the exact label shown."
             },
             "task_family_key": "hierarchy_diagram",
-            "task_family_variant_index": 3,
+            "task_family_variant_index": 1,
             "task_key": "ancestor_query",
-            "task_variant_index": 1,
+            "task_variant_index": 4,
             "task_variant_key": "parent_of_node",
             "task_variant_template_index": 3,
             "template_paths": [
@@ -353,7 +353,7 @@
               "task_variant:parent_of_node": 5
             }
           },
-          "prompt": "Use the hierarchical diagram in the image: a hierarchical org chart with labeled boxes and parent-child connector lines. Use the hierarchy to answer: What is the parent of Pia? Return the exact label shown. Give the full label exactly as shown.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the exact visible ancestor label.\nExample JSON:\n{\"answer\":\"Walt\"}"
+          "prompt": "Look at the hierarchy diagram in the image: a hierarchical org chart with labeled boxes and parent-child connector lines. Determine the requested ancestor from the hierarchy: What is the parent of Veno? Return the exact label shown. Give the full label exactly as shown.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the exact visible ancestor label.\nExample JSON:\n{\"answer\":\"Walt\"}"
         }
       },
       "task_variant": "parent_of_node",
@@ -480,9 +480,9 @@
       },
       "node_label_bboxes_px": {
         "node_label_bbox_0": [
-          582.5,
+          599.0,
           200.0,
-          651.5,
+          635.0,
           220.0
         ],
         "node_label_bbox_1": [
@@ -492,51 +492,51 @@
           398.0
         ],
         "node_label_bbox_2": [
-          840.0,
-          375.5,
-          900.0,
-          400.5
+          838.5,
+          378.0,
+          901.5,
+          398.0
         ],
         "node_label_bbox_3": [
-          158.0,
+          147.0,
           556.0,
-          202.0,
+          213.0,
           576.0
         ],
         "node_label_bbox_4": [
-          331.0,
+          329.5,
           556.0,
-          397.0,
+          398.5,
           576.0
         ],
         "node_label_bbox_5": [
-          523.0,
-          556.0,
-          573.0,
-          576.0
+          517.0,
+          553.5,
+          579.0,
+          578.5
         ],
         "node_label_bbox_6": [
-          699.0,
-          556.0,
-          765.0,
-          576.0
+          704.5,
+          553.5,
+          759.5,
+          578.5
         ],
         "node_label_bbox_7": [
-          969.5,
+          973.0,
           556.0,
-          1046.5,
+          1043.0,
           576.0
         ],
         "node_label_bbox_8": [
-          882.0,
+          884.5,
           731.5,
-          950.0,
+          947.5,
           756.5
         ],
         "node_label_bbox_9": [
-          1070.5,
+          1064.5,
           734.0,
-          1129.5,
+          1135.5,
           754.0
         ]
       },
@@ -547,9 +547,9 @@
         828.0
       ],
       "title_bbox_px": [
-        515.5,
+        436.0,
         74.5,
-        764.5,
+        844.0,
         107.5
       ]
     },
@@ -557,7 +557,7 @@
       "canvas_height": 880,
       "canvas_width": 1280,
       "connector_width_px": 5,
-      "geometry_seed": 1860420609506854,
+      "geometry_seed": 6216325838607184,
       "node_height_px": 72,
       "node_width_px": 164,
       "scene_variant": "org_chart"
@@ -576,14 +576,14 @@
         },
         {
           "bbox_xyxy": [
-            515.5,
+            436.0,
             74.5,
-            764.5,
+            844.0,
             107.5
           ],
           "entity_id": "diagram_title",
           "entity_type": "diagram_title",
-          "text": "Org Overview"
+          "text": "Department Hierarchy"
         },
         {
           "bbox_xyxy": [
@@ -704,19 +704,19 @@
           "entity_id": "node_bbox_0",
           "entity_type": "diagram_node",
           "node_id": "node_0",
-          "text": "Bone"
+          "text": "Oz"
         },
         {
           "bbox_xyxy": [
-            582.5,
+            599.0,
             200.0,
-            651.5,
+            635.0,
             220.0
           ],
           "entity_id": "node_label_bbox_0",
           "entity_type": "diagram_node_label",
           "node_id": "node_0",
-          "text": "Bone"
+          "text": "Oz"
         },
         {
           "bbox_xyxy": [
@@ -729,7 +729,7 @@
           "entity_id": "node_bbox_1",
           "entity_type": "diagram_node",
           "node_id": "node_1",
-          "text": "Nath"
+          "text": "Othe"
         },
         {
           "bbox_xyxy": [
@@ -741,7 +741,7 @@
           "entity_id": "node_label_bbox_1",
           "entity_type": "diagram_node_label",
           "node_id": "node_1",
-          "text": "Nath"
+          "text": "Othe"
         },
         {
           "bbox_xyxy": [
@@ -754,19 +754,19 @@
           "entity_id": "node_bbox_2",
           "entity_type": "diagram_node",
           "node_id": "node_2",
-          "text": "Wye"
+          "text": "Dahl"
         },
         {
           "bbox_xyxy": [
-            840.0,
-            375.5,
-            900.0,
-            400.5
+            838.5,
+            378.0,
+            901.5,
+            398.0
           ],
           "entity_id": "node_label_bbox_2",
           "entity_type": "diagram_node_label",
           "node_id": "node_2",
-          "text": "Wye"
+          "text": "Dahl"
         },
         {
           "bbox_xyxy": [
@@ -779,19 +779,19 @@
           "entity_id": "node_bbox_3",
           "entity_type": "diagram_node",
           "node_id": "node_3",
-          "text": "Pia"
+          "text": "Burd"
         },
         {
           "bbox_xyxy": [
-            158.0,
+            147.0,
             556.0,
-            202.0,
+            213.0,
             576.0
           ],
           "entity_id": "node_label_bbox_3",
           "entity_type": "diagram_node_label",
           "node_id": "node_3",
-          "text": "Pia"
+          "text": "Burd"
         },
         {
           "bbox_xyxy": [
@@ -804,19 +804,19 @@
           "entity_id": "node_bbox_4",
           "entity_type": "diagram_node",
           "node_id": "node_4",
-          "text": "Gere"
+          "text": "Deck"
         },
         {
           "bbox_xyxy": [
-            331.0,
+            329.5,
             556.0,
-            397.0,
+            398.5,
             576.0
           ],
           "entity_id": "node_label_bbox_4",
           "entity_type": "diagram_node_label",
           "node_id": "node_4",
-          "text": "Gere"
+          "text": "Deck"
         },
         {
           "bbox_xyxy": [
@@ -829,19 +829,19 @@
           "entity_id": "node_bbox_5",
           "entity_type": "diagram_node",
           "node_id": "node_5",
-          "text": "Lau"
+          "text": "Chip"
         },
         {
           "bbox_xyxy": [
-            523.0,
-            556.0,
-            573.0,
-            576.0
+            517.0,
+            553.5,
+            579.0,
+            578.5
           ],
           "entity_id": "node_label_bbox_5",
           "entity_type": "diagram_node_label",
           "node_id": "node_5",
-          "text": "Lau"
+          "text": "Chip"
         },
         {
           "bbox_xyxy": [
@@ -854,19 +854,19 @@
           "entity_id": "node_bbox_6",
           "entity_type": "diagram_node",
           "node_id": "node_6",
-          "text": "Miko"
+          "text": "Stig"
         },
         {
           "bbox_xyxy": [
-            699.0,
-            556.0,
-            765.0,
-            576.0
+            704.5,
+            553.5,
+            759.5,
+            578.5
           ],
           "entity_id": "node_label_bbox_6",
           "entity_type": "diagram_node_label",
           "node_id": "node_6",
-          "text": "Miko"
+          "text": "Stig"
         },
         {
           "bbox_xyxy": [
@@ -879,19 +879,19 @@
           "entity_id": "node_bbox_7",
           "entity_type": "diagram_node",
           "node_id": "node_7",
-          "text": "Hawk"
+          "text": "Veno"
         },
         {
           "bbox_xyxy": [
-            969.5,
+            973.0,
             556.0,
-            1046.5,
+            1043.0,
             576.0
           ],
           "entity_id": "node_label_bbox_7",
           "entity_type": "diagram_node_label",
           "node_id": "node_7",
-          "text": "Hawk"
+          "text": "Veno"
         },
         {
           "bbox_xyxy": [
@@ -904,19 +904,19 @@
           "entity_id": "node_bbox_8",
           "entity_type": "diagram_node",
           "node_id": "node_8",
-          "text": "Ming"
+          "text": "Glyn"
         },
         {
           "bbox_xyxy": [
-            882.0,
+            884.5,
             731.5,
-            950.0,
+            947.5,
             756.5
           ],
           "entity_id": "node_label_bbox_8",
           "entity_type": "diagram_node_label",
           "node_id": "node_8",
-          "text": "Ming"
+          "text": "Glyn"
         },
         {
           "bbox_xyxy": [
@@ -929,24 +929,24 @@
           "entity_id": "node_bbox_9",
           "entity_type": "diagram_node",
           "node_id": "node_9",
-          "text": "Rick"
+          "text": "Ahab"
         },
         {
           "bbox_xyxy": [
-            1070.5,
+            1064.5,
             734.0,
-            1129.5,
+            1135.5,
             754.0
           ],
           "entity_id": "node_label_bbox_9",
           "entity_type": "diagram_node_label",
           "node_id": "node_9",
-          "text": "Rick"
+          "text": "Ahab"
         }
       ],
       "relations": {
-        "answer_node_bbox_id": "node_bbox_1",
-        "answer_node_id": "node_1",
+        "answer_node_bbox_id": "node_bbox_2",
+        "answer_node_id": "node_2",
         "root_node_id": "node_0",
         "scene_variant": "org_chart",
         "task_variant": "parent_of_node",
@@ -956,7 +956,7 @@
     },
     "witness_symbolic": {
       "ids": [
-        "node_1"
+        "node_2"
       ],
       "type": "id_set"
     }

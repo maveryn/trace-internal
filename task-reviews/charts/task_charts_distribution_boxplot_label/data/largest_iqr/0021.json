@@ -1,111 +1,111 @@
 {
   "answer_gt": {
     "type": "option_letter",
-    "value": "P"
+    "value": "H"
   },
   "evidence_gt": {
     "type": "integer",
-    "value": 9
+    "value": 8
   },
   "image": {
     "format": "png",
     "path": "charts/task_charts_distribution_boxplot_label/images/largest_iqr/0021.png"
   },
-  "instance_seed": 4032699011600618,
-  "prompt": "Work from the chart shown in the image: a set of labeled boxplots. Each box spans the interquartile range, the line inside the box marks the median, and the whiskers show the minimum and maximum shown. Use the boxplots to identify the correct label. Find the label of the boxplot with the widest interquartile range.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to the largest interquartile range as an integer.\nAnswer: set \"answer\" to the single uppercase label of the requested boxplot.\nExample JSON:\n{\"evidence\":6,\"answer\":\"Q\"}",
+  "instance_seed": 105432216620667,
+  "prompt": "Look at the chart in the image. It shows a set of labeled boxplots. Each box spans the interquartile range, the line inside the box marks the median, and the whiskers show the minimum and maximum shown. Read the boxplot summaries and name the matching label. What label corresponds to the largest interquartile range?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to the largest interquartile range as an integer.\nAnswer format: set \"answer\" to the single uppercase label of the requested boxplot.\nExample JSON:\n{\"evidence\":6,\"answer\":\"Q\"}",
   "prompt_variants": {
-    "answer_and_evidence": "Work from the chart shown in the image: a set of labeled boxplots. Each box spans the interquartile range, the line inside the box marks the median, and the whiskers show the minimum and maximum shown. Use the boxplots to identify the correct label. Find the label of the boxplot with the widest interquartile range.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to the largest interquartile range as an integer.\nAnswer: set \"answer\" to the single uppercase label of the requested boxplot.\nExample JSON:\n{\"evidence\":6,\"answer\":\"Q\"}",
-    "answer_only": "Work from the chart shown in the image: a set of labeled boxplots. Each box spans the interquartile range, the line inside the box marks the median, and the whiskers show the minimum and maximum shown. Use the boxplots to identify the correct label. Find the label of the boxplot with the widest interquartile range.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the single uppercase label of the requested boxplot.\nExample JSON:\n{\"answer\":\"Q\"}"
+    "answer_and_evidence": "Look at the chart in the image. It shows a set of labeled boxplots. Each box spans the interquartile range, the line inside the box marks the median, and the whiskers show the minimum and maximum shown. Read the boxplot summaries and name the matching label. What label corresponds to the largest interquartile range?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to the largest interquartile range as an integer.\nAnswer format: set \"answer\" to the single uppercase label of the requested boxplot.\nExample JSON:\n{\"evidence\":6,\"answer\":\"Q\"}",
+    "answer_only": "Look at the chart in the image. It shows a set of labeled boxplots. Each box spans the interquartile range, the line inside the box marks the median, and the whiskers show the minimum and maximum shown. Read the boxplot summaries and name the matching label. What label corresponds to the largest interquartile range?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the single uppercase label of the requested boxplot.\nExample JSON:\n{\"answer\":\"Q\"}"
   },
   "task": "task_charts_distribution_boxplot_label",
   "task_variant": "largest_iqr",
   "trace_payload": {
     "execution_trace": {
-      "answer_label": "P",
+      "answer_label": "H",
       "category_count": 6,
       "category_count_range": [
         4,
         7
       ],
-      "evidence_value": 9,
+      "evidence_value": 8,
       "labels": [
-        "T",
-        "L",
-        "G",
+        "H",
+        "X",
         "P",
-        "K",
-        "H"
+        "Y",
+        "W",
+        "R"
       ],
       "mark_color_distance_space": "lab",
       "mark_color_min_distance": 40.0,
       "mark_color_sampling_policy": "random_rgb",
       "mark_fill_rgb": [
-        180,
-        98,
-        171
+        53,
+        154,
+        130
       ],
       "mark_outline_rgb": [
-        99,
-        54,
-        94
+        29,
+        85,
+        72
       ],
       "quartiles_by_label": {
-        "G": {
-          "iqr": 8,
-          "median": 10,
-          "q1": 4,
-          "q3": 12,
-          "whisker_max": 12,
-          "whisker_min": 3
-        },
         "H": {
-          "iqr": 4,
-          "median": 10,
-          "q1": 9,
-          "q3": 13,
-          "whisker_max": 13,
-          "whisker_min": 9
+          "iqr": 8,
+          "median": 7,
+          "q1": 2,
+          "q3": 10,
+          "whisker_max": 12,
+          "whisker_min": 2
         },
-        "K": {
-          "iqr": 6,
-          "median": 14,
-          "q1": 11,
+        "P": {
+          "iqr": 4,
+          "median": 6,
+          "q1": 4,
+          "q3": 8,
+          "whisker_max": 8,
+          "whisker_min": 2
+        },
+        "R": {
+          "iqr": 3,
+          "median": 13,
+          "q1": 12,
+          "q3": 15,
+          "whisker_max": 16,
+          "whisker_min": 10
+        },
+        "W": {
+          "iqr": 2,
+          "median": 3,
+          "q1": 2,
+          "q3": 4,
+          "whisker_max": 5,
+          "whisker_min": 1
+        },
+        "X": {
+          "iqr": 5,
+          "median": 13,
+          "q1": 12,
           "q3": 17,
           "whisker_max": 17,
           "whisker_min": 10
         },
-        "L": {
-          "iqr": 3,
-          "median": 7,
-          "q1": 6,
-          "q3": 9,
-          "whisker_max": 10,
-          "whisker_min": 4
-        },
-        "P": {
-          "iqr": 9,
-          "median": 11,
-          "q1": 9,
-          "q3": 18,
-          "whisker_max": 18,
-          "whisker_min": 7
-        },
-        "T": {
+        "Y": {
           "iqr": 7,
-          "median": 11,
+          "median": 16,
           "q1": 10,
           "q3": 17,
           "whisker_max": 18,
-          "whisker_min": 10
+          "whisker_min": 9
         }
       },
       "question_format": "label_open",
       "scene_variant": "boxplot",
       "task_variant": "largest_iqr",
       "task_variant_probabilities": {
-        "highest_median": 0.3333333333333333,
-        "largest_iqr": 0.3333333333333333,
-        "smallest_iqr": 0.3333333333333333
+        "highest_median": 0.0,
+        "largest_iqr": 1.0,
+        "smallest_iqr": 0.0
       },
       "value_range": [
         1,
@@ -115,23 +115,23 @@
     "projected_evidence": {
       "bbox_set": [
         [
-          479.57,
-          68.526,
-          547.43,
-          338.316
+          128.57,
+          215.684,
+          196.43,
+          460.947
         ]
       ],
-      "integer": 9,
+      "integer": 8,
       "pixel_point_map": {
-        "P": [
-          513.5,
-          178.895
+        "H": [
+          162.5,
+          362.842
         ]
       },
       "pixel_point_set": [
         [
-          513.5,
-          178.895
+          162.5,
+          362.842
         ]
       ]
     },
@@ -145,9 +145,9 @@
         "scene_variant": "boxplot",
         "task_variant": "largest_iqr",
         "task_variant_probabilities": {
-          "highest_median": 0.3333333333333333,
-          "largest_iqr": 0.3333333333333333,
-          "smallest_iqr": 0.3333333333333333
+          "highest_median": 0.0,
+          "largest_iqr": 1.0,
+          "smallest_iqr": 0.0
         },
         "value_range": [
           1,
@@ -156,7 +156,7 @@
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 0,
+        "answer_or_evidence_variant_index": 1,
         "prompt_bundle_id": "charts_distribution_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -169,11 +169,11 @@
           "object_description": "a set of labeled boxplots. Each box spans the interquartile range, the line inside the box marks the median, and the whiskers show the minimum and maximum shown"
         },
         "task_family_key": "distribution_chart",
-        "task_family_variant_index": 2,
+        "task_family_variant_index": 3,
         "task_key": "boxplot_label_query",
-        "task_variant_index": 2,
+        "task_variant_index": 3,
         "task_variant_key": "largest_iqr",
-        "task_variant_template_index": 1,
+        "task_variant_template_index": 3,
         "template_paths": [
           "charts/distribution/charts_distribution_v1.json"
         ],
@@ -189,39 +189,6 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 0,
-            "prompt_bundle_id": "charts_distribution_v1",
-            "schema_version": "v1",
-            "slot_values": {
-              "answer_hint": "set \"answer\" to the single uppercase label of the requested boxplot",
-              "evidence_hint": "set \"evidence\" to the largest interquartile range as an integer",
-              "json_example": "{\"evidence\":6,\"answer\":\"Q\"}",
-              "json_example_answer_only": "{\"answer\":\"Q\"}",
-              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
-              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a set of labeled boxplots. Each box spans the interquartile range, the line inside the box marks the median, and the whiskers show the minimum and maximum shown"
-            },
-            "task_family_key": "distribution_chart",
-            "task_family_variant_index": 2,
-            "task_key": "boxplot_label_query",
-            "task_variant_index": 2,
-            "task_variant_key": "largest_iqr",
-            "task_variant_template_index": 1,
-            "template_paths": [
-              "charts/distribution/charts_distribution_v1.json"
-            ],
-            "variant_count_by_key": {
-              "answer_or_evidence:answer_and_evidence": 5,
-              "task:boxplot_label_query": 5,
-              "task_family:distribution_chart": 5,
-              "task_variant:largest_iqr": 5
-            }
-          },
-          "prompt": "Work from the chart shown in the image: a set of labeled boxplots. Each box spans the interquartile range, the line inside the box marks the median, and the whiskers show the minimum and maximum shown. Use the boxplots to identify the correct label. Find the label of the boxplot with the widest interquartile range.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to the largest interquartile range as an integer.\nAnswer: set \"answer\" to the single uppercase label of the requested boxplot.\nExample JSON:\n{\"evidence\":6,\"answer\":\"Q\"}"
-        },
-        "answer_only": {
-          "metadata": {
-            "answer_or_evidence_key": "answer_only",
             "answer_or_evidence_variant_index": 1,
             "prompt_bundle_id": "charts_distribution_v1",
             "schema_version": "v1",
@@ -235,11 +202,44 @@
               "object_description": "a set of labeled boxplots. Each box spans the interquartile range, the line inside the box marks the median, and the whiskers show the minimum and maximum shown"
             },
             "task_family_key": "distribution_chart",
-            "task_family_variant_index": 2,
+            "task_family_variant_index": 3,
             "task_key": "boxplot_label_query",
-            "task_variant_index": 2,
+            "task_variant_index": 3,
             "task_variant_key": "largest_iqr",
-            "task_variant_template_index": 1,
+            "task_variant_template_index": 3,
+            "template_paths": [
+              "charts/distribution/charts_distribution_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:boxplot_label_query": 5,
+              "task_family:distribution_chart": 5,
+              "task_variant:largest_iqr": 5
+            }
+          },
+          "prompt": "Look at the chart in the image. It shows a set of labeled boxplots. Each box spans the interquartile range, the line inside the box marks the median, and the whiskers show the minimum and maximum shown. Read the boxplot summaries and name the matching label. What label corresponds to the largest interquartile range?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to the largest interquartile range as an integer.\nAnswer format: set \"answer\" to the single uppercase label of the requested boxplot.\nExample JSON:\n{\"evidence\":6,\"answer\":\"Q\"}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "charts_distribution_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the single uppercase label of the requested boxplot",
+              "evidence_hint": "set \"evidence\" to the largest interquartile range as an integer",
+              "json_example": "{\"evidence\":6,\"answer\":\"Q\"}",
+              "json_example_answer_only": "{\"answer\":\"Q\"}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a set of labeled boxplots. Each box spans the interquartile range, the line inside the box marks the median, and the whiskers show the minimum and maximum shown"
+            },
+            "task_family_key": "distribution_chart",
+            "task_family_variant_index": 3,
+            "task_key": "boxplot_label_query",
+            "task_variant_index": 3,
+            "task_variant_key": "largest_iqr",
+            "task_variant_template_index": 3,
             "template_paths": [
               "charts/distribution/charts_distribution_v1.json"
             ],
@@ -250,7 +250,7 @@
               "task_variant:largest_iqr": 5
             }
           },
-          "prompt": "Work from the chart shown in the image: a set of labeled boxplots. Each box spans the interquartile range, the line inside the box marks the median, and the whiskers show the minimum and maximum shown. Use the boxplots to identify the correct label. Find the label of the boxplot with the widest interquartile range.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the single uppercase label of the requested boxplot.\nExample JSON:\n{\"answer\":\"Q\"}"
+          "prompt": "Look at the chart in the image. It shows a set of labeled boxplots. Each box spans the interquartile range, the line inside the box marks the median, and the whiskers show the minimum and maximum shown. Read the boxplot summaries and name the matching label. What label corresponds to the largest interquartile range?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the single uppercase label of the requested boxplot.\nExample JSON:\n{\"answer\":\"Q\"}"
         }
       },
       "task_variant": "largest_iqr",
@@ -259,28 +259,28 @@
     "render_map": {
       "image_id": "img0",
       "label_centers_px": {
-        "G": [
-          396.5,
-          538.0
-        ],
         "H": [
-          747.5,
-          538.0
-        ],
-        "K": [
-          630.5,
-          538.0
-        ],
-        "L": [
-          279.5,
+          162.5,
           538.0
         ],
         "P": [
-          513.5,
+          396.5,
           538.0
         ],
-        "T": [
-          162.5,
+        "R": [
+          747.5,
+          538.0
+        ],
+        "W": [
+          630.5,
+          538.0
+        ],
+        "X": [
+          279.5,
+          538.0
+        ],
+        "Y": [
+          513.5,
           538.0
         ]
       },
@@ -319,14 +319,14 @@
         "mark_color_distance_space": "lab",
         "mark_color_min_distance": 40.0,
         "mark_fill_rgb": [
-          180,
-          98,
-          171
+          53,
+          154,
+          130
         ],
         "mark_outline_rgb": [
-          99,
-          54,
-          94
+          29,
+          85,
+          72
         ],
         "sampling_policy": "random_rgb"
       },
@@ -386,121 +386,121 @@
       "entities": [
         {
           "attrs": {
-            "label": "T",
+            "label": "H",
             "label_center_px": [
               162.5,
               538.0
             ],
             "mark_bbox_px": [
               128.57,
-              68.526,
+              215.684,
               196.43,
-              264.737
+              460.947
             ],
             "mark_center_px": [
               162.5,
-              178.895
+              362.842
             ],
             "mark_fill_rgb": [
-              180,
-              98,
-              171
+              53,
+              154,
+              130
             ],
             "mark_outline_rgb": [
-              99,
-              54,
-              94
+              29,
+              85,
+              72
             ],
-            "median": 11,
-            "q1": 10,
-            "q3": 17,
+            "median": 7,
+            "q1": 2,
+            "q3": 10,
             "scene_variant": "boxplot",
-            "whisker_max": 18,
-            "whisker_min": 10,
+            "whisker_max": 12,
+            "whisker_min": 2,
             "x_rank": 0
           },
-          "entity_id": "boxplot_T",
+          "entity_id": "boxplot_H",
           "entity_type": "boxplot"
         },
         {
           "attrs": {
-            "label": "L",
+            "label": "X",
             "label_center_px": [
               279.5,
               538.0
             ],
             "mark_bbox_px": [
               245.57,
-              264.737,
+              93.053,
               313.43,
-              411.895
+              264.737
             ],
             "mark_center_px": [
               279.5,
-              326.053
+              154.368
             ],
             "mark_fill_rgb": [
-              180,
-              98,
-              171
+              53,
+              154,
+              130
             ],
             "mark_outline_rgb": [
-              99,
-              54,
-              94
+              29,
+              85,
+              72
             ],
-            "median": 7,
-            "q1": 6,
-            "q3": 9,
+            "median": 13,
+            "q1": 12,
+            "q3": 17,
             "scene_variant": "boxplot",
-            "whisker_max": 10,
-            "whisker_min": 4,
+            "whisker_max": 17,
+            "whisker_min": 10,
             "x_rank": 1
           },
-          "entity_id": "boxplot_L",
+          "entity_id": "boxplot_X",
           "entity_type": "boxplot"
         },
         {
           "attrs": {
-            "label": "G",
+            "label": "P",
             "label_center_px": [
               396.5,
               538.0
             ],
             "mark_bbox_px": [
               362.57,
-              215.684,
+              313.789,
               430.43,
-              436.421
+              460.947
             ],
             "mark_center_px": [
               396.5,
-              313.789
+              362.842
             ],
             "mark_fill_rgb": [
-              180,
-              98,
-              171
+              53,
+              154,
+              130
             ],
             "mark_outline_rgb": [
-              99,
-              54,
-              94
+              29,
+              85,
+              72
             ],
-            "median": 10,
+            "median": 6,
             "q1": 4,
-            "q3": 12,
+            "q3": 8,
             "scene_variant": "boxplot",
-            "whisker_max": 12,
-            "whisker_min": 3,
+            "whisker_max": 8,
+            "whisker_min": 2,
             "x_rank": 2
           },
-          "entity_id": "boxplot_G",
+          "entity_id": "boxplot_P",
           "entity_type": "boxplot"
         },
         {
           "attrs": {
-            "label": "P",
+            "label": "Y",
             "label_center_px": [
               513.5,
               538.0
@@ -509,113 +509,113 @@
               479.57,
               68.526,
               547.43,
-              338.316
+              289.263
             ],
             "mark_center_px": [
               513.5,
               178.895
             ],
             "mark_fill_rgb": [
-              180,
-              98,
-              171
+              53,
+              154,
+              130
             ],
             "mark_outline_rgb": [
-              99,
-              54,
-              94
+              29,
+              85,
+              72
             ],
-            "median": 11,
-            "q1": 9,
-            "q3": 18,
+            "median": 16,
+            "q1": 10,
+            "q3": 17,
             "scene_variant": "boxplot",
             "whisker_max": 18,
-            "whisker_min": 7,
+            "whisker_min": 9,
             "x_rank": 3
           },
-          "entity_id": "boxplot_P",
+          "entity_id": "boxplot_Y",
           "entity_type": "boxplot"
         },
         {
           "attrs": {
-            "label": "K",
+            "label": "W",
             "label_center_px": [
               630.5,
               538.0
             ],
             "mark_bbox_px": [
               596.57,
-              93.053,
+              387.368,
               664.43,
-              264.737
+              485.474
             ],
             "mark_center_px": [
               630.5,
-              166.632
+              436.421
             ],
             "mark_fill_rgb": [
-              180,
-              98,
-              171
+              53,
+              154,
+              130
             ],
             "mark_outline_rgb": [
-              99,
-              54,
-              94
+              29,
+              85,
+              72
             ],
-            "median": 14,
-            "q1": 11,
-            "q3": 17,
+            "median": 3,
+            "q1": 2,
+            "q3": 4,
             "scene_variant": "boxplot",
-            "whisker_max": 17,
-            "whisker_min": 10,
+            "whisker_max": 5,
+            "whisker_min": 1,
             "x_rank": 4
           },
-          "entity_id": "boxplot_K",
+          "entity_id": "boxplot_W",
           "entity_type": "boxplot"
         },
         {
           "attrs": {
-            "label": "H",
+            "label": "R",
             "label_center_px": [
               747.5,
               538.0
             ],
             "mark_bbox_px": [
               713.57,
-              191.158,
+              117.579,
               781.43,
-              289.263
+              264.737
             ],
             "mark_center_px": [
               747.5,
-              240.211
+              178.895
             ],
             "mark_fill_rgb": [
-              180,
-              98,
-              171
+              53,
+              154,
+              130
             ],
             "mark_outline_rgb": [
-              99,
-              54,
-              94
+              29,
+              85,
+              72
             ],
-            "median": 10,
-            "q1": 9,
-            "q3": 13,
+            "median": 13,
+            "q1": 12,
+            "q3": 15,
             "scene_variant": "boxplot",
-            "whisker_max": 13,
-            "whisker_min": 9,
+            "whisker_max": 16,
+            "whisker_min": 10,
             "x_rank": 5
           },
-          "entity_id": "boxplot_H",
+          "entity_id": "boxplot_R",
           "entity_type": "boxplot"
         }
       ],
       "relations": {
-        "answer_label": "P",
-        "evidence_value": 9,
+        "answer_label": "H",
+        "evidence_value": 8,
         "scene_variant": "boxplot",
         "task_variant": "largest_iqr"
       },
@@ -623,7 +623,7 @@
     },
     "witness_symbolic": {
       "type": "integer",
-      "value": 9
+      "value": 8
     }
   },
   "versions": {

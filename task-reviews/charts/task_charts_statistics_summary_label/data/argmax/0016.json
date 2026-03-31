@@ -1,55 +1,56 @@
 {
   "answer_gt": {
     "type": "option_letter",
-    "value": "V"
+    "value": "W"
   },
   "evidence_gt": {
     "type": "integer",
-    "value": 8
+    "value": 5
   },
   "image": {
     "format": "png",
     "path": "charts/task_charts_statistics_summary_label/images/argmax/0016.png"
   },
-  "instance_seed": 4519538029977111,
-  "prompt": "Use the chart in the image. It shows a labeled radar chart with one spoke per label. Each label marks one plotted point on the radar polygon, and the relevant values are the printed values near those points. Read the chart values and name the matching label. Identify the label of the highest-value mark.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to the maximum value as an integer.\nAnswer rule: set \"answer\" to the single uppercase label of the requested mark.\nExample JSON:\n{\"evidence\":8,\"answer\":\"D\"}",
+  "instance_seed": 3566461651011571,
+  "prompt": "The image shows a labeled line chart with visible point markers. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Read the chart values and name the matching label. What label corresponds to the maximum value in the chart?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to the maximum value as an integer.\nAnswer rule: set \"answer\" to the single uppercase label of the requested mark.\nExample JSON:\n{\"evidence\":8,\"answer\":\"D\"}",
   "prompt_variants": {
-    "answer_and_evidence": "Use the chart in the image. It shows a labeled radar chart with one spoke per label. Each label marks one plotted point on the radar polygon, and the relevant values are the printed values near those points. Read the chart values and name the matching label. Identify the label of the highest-value mark.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to the maximum value as an integer.\nAnswer rule: set \"answer\" to the single uppercase label of the requested mark.\nExample JSON:\n{\"evidence\":8,\"answer\":\"D\"}",
-    "answer_only": "Use the chart in the image. It shows a labeled radar chart with one spoke per label. Each label marks one plotted point on the radar polygon, and the relevant values are the printed values near those points. Read the chart values and name the matching label. Identify the label of the highest-value mark.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the single uppercase label of the requested mark.\nExample JSON:\n{\"answer\":\"D\"}"
+    "answer_and_evidence": "The image shows a labeled line chart with visible point markers. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Read the chart values and name the matching label. What label corresponds to the maximum value in the chart?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to the maximum value as an integer.\nAnswer rule: set \"answer\" to the single uppercase label of the requested mark.\nExample JSON:\n{\"evidence\":8,\"answer\":\"D\"}",
+    "answer_only": "The image shows a labeled line chart with visible point markers. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Read the chart values and name the matching label. What label corresponds to the maximum value in the chart?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the single uppercase label of the requested mark.\nExample JSON:\n{\"answer\":\"D\"}"
   },
   "task": "task_charts_statistics_summary_label",
   "task_variant": "argmax",
   "trace_payload": {
     "execution_trace": {
-      "answer_label": "V",
-      "evidence_value": 8,
+      "answer_label": "W",
+      "evidence_value": 5,
       "labels": [
-        "V",
-        "J",
+        "Y",
+        "P",
+        "N",
+        "W",
         "C",
-        "X",
-        "G"
+        "D"
       ],
       "mark_color_distance_space": "lab",
       "mark_color_min_distance": 40.0,
       "mark_color_sampling_policy": "random_rgb",
-      "mark_count": 5,
+      "mark_count": 6,
       "mark_count_range": [
         5,
-        7
+        10
       ],
       "mark_fill_rgb": [
-        35,
-        113,
-        174
+        162,
+        134,
+        146
       ],
       "mark_outline_rgb": [
-        19,
-        62,
-        96
+        89,
+        74,
+        80
       ],
       "question_format": "label_open",
-      "scene_variant": "radar",
+      "scene_variant": "line",
       "scene_variant_probabilities": {
         "area": 0.1,
         "bar": 0.1,
@@ -63,62 +64,64 @@
         "scatter": 0.1
       },
       "statistic_kind": "max",
-      "target_answer": 8,
+      "target_answer": 5,
       "target_answer_range": [
         4,
         12
       ],
       "task_variant": "argmax",
       "task_variant_probabilities": {
-        "argmax": 0.3333333333333333,
-        "argmin": 0.3333333333333333,
-        "median_label": 0.3333333333333333
+        "argmax": 1.0,
+        "argmin": 0.0,
+        "median_label": 0.0
       },
       "value_max": 20,
       "value_min": 1,
       "values": [
-        8,
-        2,
+        1,
+        1,
         3,
-        6,
-        1
+        5,
+        1,
+        3
       ],
       "values_by_label": {
-        "C": 3,
-        "G": 1,
-        "J": 2,
-        "V": 8,
-        "X": 6
+        "C": 1,
+        "D": 3,
+        "N": 3,
+        "P": 1,
+        "W": 5,
+        "Y": 1
       },
-      "winning_label": "V"
+      "winning_label": "W"
     },
     "projected_evidence": {
       "bbox_set": [
         [
-          415.0,
-          125.778,
-          431.0,
-          141.778
+          470.167,
+          113.333,
+          486.167,
+          129.333
         ]
       ],
-      "integer": 8,
+      "integer": 5,
       "pixel_point_map": {
-        "V": [
-          423.0,
-          133.778
+        "W": [
+          478.167,
+          121.333
         ]
       },
       "pixel_point_set": [
         [
-          423.0,
-          133.778
+          478.167,
+          121.333
         ]
       ]
     },
     "query_spec": {
       "params": {
-        "mark_count": 5,
-        "scene_variant": "radar",
+        "mark_count": 6,
+        "scene_variant": "line",
         "scene_variant_probabilities": {
           "area": 0.1,
           "bar": 0.1,
@@ -132,16 +135,16 @@
           "scatter": 0.1
         },
         "statistic_kind": "max",
-        "target_answer": 8,
+        "target_answer": 5,
         "target_answer_range": [
           4,
           12
         ],
         "task_variant": "argmax",
         "task_variant_probabilities": {
-          "argmax": 0.3333333333333333,
-          "argmin": 0.3333333333333333,
-          "median_label": 0.3333333333333333
+          "argmax": 1.0,
+          "argmin": 0.0,
+          "median_label": 0.0
         }
       },
       "prompt_variant": {
@@ -156,14 +159,14 @@
           "json_example_answer_only": "{\"answer\":\"D\"}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "object_description": "a labeled radar chart with one spoke per label. Each label marks one plotted point on the radar polygon, and the relevant values are the printed values near those points"
+          "object_description": "a labeled line chart with visible point markers. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis"
         },
         "task_family_key": "labeled_chart_statistics",
-        "task_family_variant_index": 1,
+        "task_family_variant_index": 0,
         "task_key": "summary_label_query",
         "task_variant_index": 4,
         "task_variant_key": "argmax",
-        "task_variant_template_index": 4,
+        "task_variant_template_index": 3,
         "template_paths": [
           "charts/statistics/charts_statistics_v1.json"
         ],
@@ -189,14 +192,14 @@
               "json_example_answer_only": "{\"answer\":\"D\"}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a labeled radar chart with one spoke per label. Each label marks one plotted point on the radar polygon, and the relevant values are the printed values near those points"
+              "object_description": "a labeled line chart with visible point markers. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis"
             },
             "task_family_key": "labeled_chart_statistics",
-            "task_family_variant_index": 1,
+            "task_family_variant_index": 0,
             "task_key": "summary_label_query",
             "task_variant_index": 4,
             "task_variant_key": "argmax",
-            "task_variant_template_index": 4,
+            "task_variant_template_index": 3,
             "template_paths": [
               "charts/statistics/charts_statistics_v1.json"
             ],
@@ -207,12 +210,12 @@
               "task_variant:argmax": 5
             }
           },
-          "prompt": "Use the chart in the image. It shows a labeled radar chart with one spoke per label. Each label marks one plotted point on the radar polygon, and the relevant values are the printed values near those points. Read the chart values and name the matching label. Identify the label of the highest-value mark.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to the maximum value as an integer.\nAnswer rule: set \"answer\" to the single uppercase label of the requested mark.\nExample JSON:\n{\"evidence\":8,\"answer\":\"D\"}"
+          "prompt": "The image shows a labeled line chart with visible point markers. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Read the chart values and name the matching label. What label corresponds to the maximum value in the chart?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to the maximum value as an integer.\nAnswer rule: set \"answer\" to the single uppercase label of the requested mark.\nExample JSON:\n{\"evidence\":8,\"answer\":\"D\"}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 3,
+            "answer_or_evidence_variant_index": 1,
             "prompt_bundle_id": "charts_statistics_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -222,14 +225,14 @@
               "json_example_answer_only": "{\"answer\":\"D\"}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a labeled radar chart with one spoke per label. Each label marks one plotted point on the radar polygon, and the relevant values are the printed values near those points"
+              "object_description": "a labeled line chart with visible point markers. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis"
             },
             "task_family_key": "labeled_chart_statistics",
-            "task_family_variant_index": 1,
+            "task_family_variant_index": 0,
             "task_key": "summary_label_query",
             "task_variant_index": 4,
             "task_variant_key": "argmax",
-            "task_variant_template_index": 4,
+            "task_variant_template_index": 3,
             "template_paths": [
               "charts/statistics/charts_statistics_v1.json"
             ],
@@ -240,7 +243,7 @@
               "task_variant:argmax": 5
             }
           },
-          "prompt": "Use the chart in the image. It shows a labeled radar chart with one spoke per label. Each label marks one plotted point on the radar polygon, and the relevant values are the printed values near those points. Read the chart values and name the matching label. Identify the label of the highest-value mark.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the single uppercase label of the requested mark.\nExample JSON:\n{\"answer\":\"D\"}"
+          "prompt": "The image shows a labeled line chart with visible point markers. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Read the chart values and name the matching label. What label corresponds to the maximum value in the chart?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the single uppercase label of the requested mark.\nExample JSON:\n{\"answer\":\"D\"}"
         }
       },
       "task_variant": "argmax",
@@ -250,24 +253,28 @@
       "image_id": "img0",
       "label_centers_px": {
         "C": [
-          534.679,
-          429.713
+          588.5,
+          408.667
         ],
-        "G": [
-          242.299,
-          217.287
+        "D": [
+          698.833,
+          254.0
         ],
-        "J": [
-          603.701,
-          217.287
+        "N": [
+          367.833,
+          254.0
         ],
-        "V": [
-          423.0,
-          86.0
+        "P": [
+          257.5,
+          408.667
         ],
-        "X": [
-          311.321,
-          429.713
+        "W": [
+          478.167,
+          99.333
+        ],
+        "Y": [
+          147.167,
+          408.667
         ]
       },
       "plot_bbox_px": [
@@ -305,14 +312,14 @@
         "mark_color_distance_space": "lab",
         "mark_color_min_distance": 40.0,
         "mark_fill_rgb": [
-          35,
-          113,
-          174
+          162,
+          134,
+          146
         ],
         "mark_outline_rgb": [
-          19,
-          62,
-          96
+          89,
+          74,
+          80
         ],
         "sampling_policy": "random_rgb"
       },
@@ -338,13 +345,13 @@
         "edits": [],
         "enabled": false
       },
-      "scene_variant": "radar",
+      "scene_variant": "line",
       "text_style": {
         "label_font_size_px": 22,
         "label_stroke_width_px": 2,
         "tick_font_size_px": 18
       },
-      "y_axis_max": 9,
+      "y_axis_max": 6,
       "y_ticks": [
         0,
         1,
@@ -352,217 +359,228 @@
         3,
         4,
         5,
-        6,
-        7,
-        8,
-        9
+        6
       ]
     },
     "scene_ir": {
       "entities": [
         {
           "attrs": {
-            "label": "V",
+            "label": "Y",
             "label_center_px": [
-              423.0,
-              86.0
+              147.167,
+              408.667
             ],
             "mark_bbox_px": [
-              415.0,
-              125.778,
-              431.0,
-              141.778
+              139.167,
+              422.667,
+              155.167,
+              438.667
             ],
             "mark_center_px": [
-              423.0,
-              133.778
+              147.167,
+              430.667
             ],
             "mark_fill_rgb": [
-              35,
-              113,
-              174
+              162,
+              134,
+              146
             ],
             "mark_outline_rgb": [
-              19,
-              62,
-              96
+              89,
+              74,
+              80
             ],
-            "scene_variant": "radar",
-            "value": 8,
-            "value_center_px": [
-              423.0,
-              151.778
-            ],
+            "scene_variant": "line",
+            "value": 1,
             "x_rank": 0
           },
-          "entity_id": "mark_V",
+          "entity_id": "mark_Y",
           "entity_type": "point"
         },
         {
           "attrs": {
-            "label": "J",
+            "label": "P",
             "label_center_px": [
-              603.701,
-              217.287
+              257.5,
+              408.667
             ],
             "mark_bbox_px": [
-              448.815,
-              257.013,
-              464.815,
-              273.013
+              249.5,
+              422.667,
+              265.5,
+              438.667
             ],
             "mark_center_px": [
-              456.815,
-              265.013
+              257.5,
+              430.667
             ],
             "mark_fill_rgb": [
-              35,
-              113,
-              174
+              162,
+              134,
+              146
             ],
             "mark_outline_rgb": [
-              19,
-              62,
-              96
+              89,
+              74,
+              80
             ],
-            "scene_variant": "radar",
-            "value": 2,
-            "value_center_px": [
-              440.119,
-              270.438
-            ],
+            "scene_variant": "line",
+            "value": 1,
             "x_rank": 1
           },
-          "entity_id": "mark_J",
+          "entity_id": "mark_P",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "N",
+            "label_center_px": [
+              367.833,
+              254.0
+            ],
+            "mark_bbox_px": [
+              359.833,
+              268.0,
+              375.833,
+              284.0
+            ],
+            "mark_center_px": [
+              367.833,
+              276.0
+            ],
+            "mark_fill_rgb": [
+              162,
+              134,
+              146
+            ],
+            "mark_outline_rgb": [
+              89,
+              74,
+              80
+            ],
+            "scene_variant": "line",
+            "value": 3,
+            "x_rank": 2
+          },
+          "entity_id": "mark_N",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "W",
+            "label_center_px": [
+              478.167,
+              99.333
+            ],
+            "mark_bbox_px": [
+              470.167,
+              113.333,
+              486.167,
+              129.333
+            ],
+            "mark_center_px": [
+              478.167,
+              121.333
+            ],
+            "mark_fill_rgb": [
+              162,
+              134,
+              146
+            ],
+            "mark_outline_rgb": [
+              89,
+              74,
+              80
+            ],
+            "scene_variant": "line",
+            "value": 5,
+            "x_rank": 3
+          },
+          "entity_id": "mark_W",
           "entity_type": "point"
         },
         {
           "attrs": {
             "label": "C",
             "label_center_px": [
-              534.679,
-              429.713
+              588.5,
+              408.667
             ],
             "mark_bbox_px": [
-              446.349,
-              311.148,
-              462.349,
-              327.148
+              580.5,
+              422.667,
+              596.5,
+              438.667
             ],
             "mark_center_px": [
-              454.349,
-              319.148
+              588.5,
+              430.667
             ],
             "mark_fill_rgb": [
-              35,
-              113,
-              174
+              162,
+              134,
+              146
             ],
             "mark_outline_rgb": [
-              19,
-              62,
-              96
+              89,
+              74,
+              80
             ],
-            "scene_variant": "radar",
-            "value": 3,
-            "value_center_px": [
-              443.768,
-              304.585
-            ],
-            "x_rank": 2
+            "scene_variant": "line",
+            "value": 1,
+            "x_rank": 4
           },
           "entity_id": "mark_C",
           "entity_type": "point"
         },
         {
           "attrs": {
-            "label": "X",
+            "label": "D",
             "label_center_px": [
-              311.321,
-              429.713
+              698.833,
+              254.0
             ],
             "mark_bbox_px": [
-              352.303,
-              354.295,
-              368.303,
-              370.295
+              690.833,
+              268.0,
+              706.833,
+              284.0
             ],
             "mark_center_px": [
-              360.303,
-              362.295
+              698.833,
+              276.0
             ],
             "mark_fill_rgb": [
-              35,
-              113,
-              174
+              162,
+              134,
+              146
             ],
             "mark_outline_rgb": [
-              19,
-              62,
-              96
+              89,
+              74,
+              80
             ],
-            "scene_variant": "radar",
-            "value": 6,
-            "value_center_px": [
-              370.883,
-              347.733
-            ],
-            "x_rank": 3
+            "scene_variant": "line",
+            "value": 3,
+            "x_rank": 5
           },
-          "entity_id": "mark_X",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "label": "G",
-            "label_center_px": [
-              242.299,
-              217.287
-            ],
-            "mark_bbox_px": [
-              398.092,
-              262.506,
-              414.092,
-              278.506
-            ],
-            "mark_center_px": [
-              406.092,
-              270.506
-            ],
-            "mark_fill_rgb": [
-              35,
-              113,
-              174
-            ],
-            "mark_outline_rgb": [
-              19,
-              62,
-              96
-            ],
-            "scene_variant": "radar",
-            "value": 1,
-            "value_center_px": [
-              405.881,
-              270.438
-            ],
-            "x_rank": 4
-          },
-          "entity_id": "mark_G",
+          "entity_id": "mark_D",
           "entity_type": "point"
         }
       ],
       "relations": {
-        "answer_label": "V",
-        "evidence_value": 8,
-        "scene_variant": "radar",
+        "answer_label": "W",
+        "evidence_value": 5,
+        "scene_variant": "line",
         "statistic_kind": "max",
         "task_variant": "argmax"
       },
-      "scene_kind": "chart_radar_statistics"
+      "scene_kind": "chart_line_statistics"
     },
     "witness_symbolic": {
       "type": "integer",
-      "value": 8
+      "value": 5
     }
   },
   "versions": {

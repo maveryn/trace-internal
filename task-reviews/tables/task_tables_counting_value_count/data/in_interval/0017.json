@@ -1,28 +1,34 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 3
+    "value": 4
   },
   "evidence_gt": {
     "type": "bbox_set",
     "value": [
       [
         486.72,
-        189.0,
+        208.0,
         687.36,
-        255.5
+        284.0
       ],
       [
         486.72,
-        322.0,
+        284.0,
         687.36,
-        388.5
+        360.0
       ],
       [
         486.72,
-        388.5,
+        436.0,
         687.36,
-        455.0
+        512.0
+      ],
+      [
+        486.72,
+        512.0,
+        687.36,
+        588.0
       ]
     ]
   },
@@ -30,57 +36,58 @@
     "format": "png",
     "path": "tables/task_tables_counting_value_count/images/in_interval/0017.png"
   },
-  "instance_seed": 3807076781521890,
-  "prompt": "Use the table in the image. It shows a spreadsheet-style table with one Name column, several numeric columns, full grid lines, and a shaded header row. Find the number of rows whose queried values satisfy the condition. Find the number of rows with Wins values in [12, 25], inclusive.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every matching value cell in top-to-bottom row order, or [] if none match.\nAnswer: set \"answer\" to the exact integer count of matching rows.\nExample JSON:\n{\"evidence\":[[260,180,372,236],[260,236,372,292],[260,292,372,348]],\"answer\":3}",
+  "instance_seed": 1507892098537331,
+  "prompt": "Work from the styled table shown in the image: a card-style table with one Name column, several numeric columns, a rounded outer frame, and a shaded header row. Answer this question. How many rows have a value in the inclusive interval [5, 24] in the Temp column?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every matching value cell in top-to-bottom row order, or [] if none match.\nAnswer rule: set \"answer\" to the exact integer count of matching rows.\nExample JSON:\n{\"evidence\":[[260,180,372,236],[260,236,372,292],[260,292,372,348]],\"answer\":3}",
   "prompt_variants": {
-    "answer_and_evidence": "Use the table in the image. It shows a spreadsheet-style table with one Name column, several numeric columns, full grid lines, and a shaded header row. Find the number of rows whose queried values satisfy the condition. Find the number of rows with Wins values in [12, 25], inclusive.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every matching value cell in top-to-bottom row order, or [] if none match.\nAnswer: set \"answer\" to the exact integer count of matching rows.\nExample JSON:\n{\"evidence\":[[260,180,372,236],[260,236,372,292],[260,292,372,348]],\"answer\":3}",
-    "answer_only": "Use the table in the image. It shows a spreadsheet-style table with one Name column, several numeric columns, full grid lines, and a shaded header row. Find the number of rows whose queried values satisfy the condition. Find the number of rows with Wins values in [12, 25], inclusive.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the exact integer count of matching rows.\nExample JSON:\n{\"answer\":3}"
+    "answer_and_evidence": "Work from the styled table shown in the image: a card-style table with one Name column, several numeric columns, a rounded outer frame, and a shaded header row. Answer this question. How many rows have a value in the inclusive interval [5, 24] in the Temp column?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every matching value cell in top-to-bottom row order, or [] if none match.\nAnswer rule: set \"answer\" to the exact integer count of matching rows.\nExample JSON:\n{\"evidence\":[[260,180,372,236],[260,236,372,292],[260,292,372,348]],\"answer\":3}",
+    "answer_only": "Work from the styled table shown in the image: a card-style table with one Name column, several numeric columns, a rounded outer frame, and a shaded header row. Answer this question. How many rows have a value in the inclusive interval [5, 24] in the Temp column?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the exact integer count of matching rows.\nExample JSON:\n{\"answer\":3}"
   },
   "task": "task_tables_counting_value_count",
   "task_variant": "in_interval",
   "trace_payload": {
     "execution_trace": {
-      "answer_value": 3,
+      "answer_value": 4,
       "column_headers": [
-        "Pts",
-        "Wins",
-        "Rank"
+        "Age",
+        "Temp",
+        "Dist"
       ],
-      "interval_max": 25,
-      "interval_min": 12,
+      "interval_max": 24,
+      "interval_min": 5,
       "matching_row_indices": [
         1,
-        3,
-        4
+        2,
+        4,
+        5
       ],
       "matching_row_labels": [
-        "Hagi",
-        "Nary",
-        "Lari"
+        "Abba",
+        "Grey",
+        "Kotz",
+        "Calv"
       ],
       "numeric_column_count": 3,
       "numeric_column_count_range": [
         3,
         5
       ],
-      "query_column": "Wins",
+      "query_column": "Temp",
       "query_column_index": 1,
       "question_format": "column_filter_count",
-      "row_count": 7,
+      "row_count": 6,
       "row_count_range": [
         5,
         10
       ],
       "row_labels": [
-        "Otis",
-        "Hagi",
-        "Zebe",
-        "Nary",
-        "Lari",
-        "Pich",
-        "Levy"
+        "Ker",
+        "Abba",
+        "Grey",
+        "Dale",
+        "Kotz",
+        "Calv"
       ],
-      "scene_variant": "spreadsheet",
+      "scene_variant": "card_table",
       "scene_variant_probabilities": {
         "card_table": 0.25,
         "ledger": 0.25,
@@ -89,8 +96,9 @@
       },
       "supporting_cell_ids": [
         "cell_r2_c2",
-        "cell_r4_c2",
-        "cell_r5_c2"
+        "cell_r3_c2",
+        "cell_r5_c2",
+        "cell_r6_c2"
       ],
       "task_variant": "in_interval",
       "task_variant_probabilities": {
@@ -105,40 +113,35 @@
         32
       ],
       "values_by_row": {
-        "Hagi": {
-          "Pts": 31,
-          "Rank": 1,
-          "Wins": 14
+        "Abba": {
+          "Age": 21,
+          "Dist": 15,
+          "Temp": 18
         },
-        "Lari": {
-          "Pts": 2,
-          "Rank": 8,
-          "Wins": 18
+        "Calv": {
+          "Age": 2,
+          "Dist": 26,
+          "Temp": 23
         },
-        "Levy": {
-          "Pts": 19,
-          "Rank": 6,
-          "Wins": 10
+        "Dale": {
+          "Age": 6,
+          "Dist": 13,
+          "Temp": 1
         },
-        "Nary": {
-          "Pts": 3,
-          "Rank": 13,
-          "Wins": 23
+        "Grey": {
+          "Age": 24,
+          "Dist": 19,
+          "Temp": 7
         },
-        "Otis": {
-          "Pts": 6,
-          "Rank": 9,
-          "Wins": 6
+        "Ker": {
+          "Age": 8,
+          "Dist": 3,
+          "Temp": 32
         },
-        "Pich": {
-          "Pts": 14,
-          "Rank": 15,
-          "Wins": 30
-        },
-        "Zebe": {
-          "Pts": 30,
-          "Rank": 4,
-          "Wins": 1
+        "Kotz": {
+          "Age": 20,
+          "Dist": 19,
+          "Temp": 17
         }
       }
     },
@@ -146,32 +149,38 @@
       "bbox_set": [
         [
           486.72,
-          189.0,
+          208.0,
           687.36,
-          255.5
+          284.0
         ],
         [
           486.72,
-          322.0,
+          284.0,
           687.36,
-          388.5
+          360.0
         ],
         [
           486.72,
-          388.5,
+          436.0,
           687.36,
-          455.0
+          512.0
+        ],
+        [
+          486.72,
+          512.0,
+          687.36,
+          588.0
         ]
       ]
     },
     "query_spec": {
       "params": {
-        "interval_max": 25,
-        "interval_min": 12,
+        "interval_max": 24,
+        "interval_min": 5,
         "numeric_column_count": 3,
-        "query_column": "Wins",
-        "row_count": 7,
-        "scene_variant": "spreadsheet",
+        "query_column": "Temp",
+        "row_count": 6,
+        "scene_variant": "card_table",
         "scene_variant_probabilities": {
           "card_table": 0.25,
           "ledger": 0.25,
@@ -189,27 +198,27 @@
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 0,
+        "answer_or_evidence_variant_index": 4,
         "prompt_bundle_id": "tables_counting_v1",
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the exact integer count of matching rows",
           "evidence_hint": "set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every matching value cell in top-to-bottom row order, or [] if none match",
-          "interval_max": 25,
-          "interval_min": 12,
+          "interval_max": 24,
+          "interval_min": 5,
           "json_example": "{\"evidence\":[[260,180,372,236],[260,236,372,292],[260,292,372,348]],\"answer\":3}",
           "json_example_answer_only": "{\"answer\":3}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "object_description": "a spreadsheet-style table with one Name column, several numeric columns, full grid lines, and a shaded header row",
-          "query_column": "Wins"
+          "object_description": "a card-style table with one Name column, several numeric columns, a rounded outer frame, and a shaded header row",
+          "query_column": "Temp"
         },
         "task_family_key": "styled_table_counting",
-        "task_family_variant_index": 1,
+        "task_family_variant_index": 2,
         "task_key": "value_count_query",
-        "task_variant_index": 3,
+        "task_variant_index": 0,
         "task_variant_key": "in_interval",
-        "task_variant_template_index": 4,
+        "task_variant_template_index": 0,
         "template_paths": [
           "tables/counting/tables_counting_v1.json"
         ],
@@ -225,27 +234,27 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 0,
+            "answer_or_evidence_variant_index": 4,
             "prompt_bundle_id": "tables_counting_v1",
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the exact integer count of matching rows",
               "evidence_hint": "set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every matching value cell in top-to-bottom row order, or [] if none match",
-              "interval_max": 25,
-              "interval_min": 12,
+              "interval_max": 24,
+              "interval_min": 5,
               "json_example": "{\"evidence\":[[260,180,372,236],[260,236,372,292],[260,292,372,348]],\"answer\":3}",
               "json_example_answer_only": "{\"answer\":3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a spreadsheet-style table with one Name column, several numeric columns, full grid lines, and a shaded header row",
-              "query_column": "Wins"
+              "object_description": "a card-style table with one Name column, several numeric columns, a rounded outer frame, and a shaded header row",
+              "query_column": "Temp"
             },
             "task_family_key": "styled_table_counting",
-            "task_family_variant_index": 1,
+            "task_family_variant_index": 2,
             "task_key": "value_count_query",
-            "task_variant_index": 3,
+            "task_variant_index": 0,
             "task_variant_key": "in_interval",
-            "task_variant_template_index": 4,
+            "task_variant_template_index": 0,
             "template_paths": [
               "tables/counting/tables_counting_v1.json"
             ],
@@ -256,7 +265,7 @@
               "task_variant:in_interval": 5
             }
           },
-          "prompt": "Use the table in the image. It shows a spreadsheet-style table with one Name column, several numeric columns, full grid lines, and a shaded header row. Find the number of rows whose queried values satisfy the condition. Find the number of rows with Wins values in [12, 25], inclusive.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every matching value cell in top-to-bottom row order, or [] if none match.\nAnswer: set \"answer\" to the exact integer count of matching rows.\nExample JSON:\n{\"evidence\":[[260,180,372,236],[260,236,372,292],[260,292,372,348]],\"answer\":3}"
+          "prompt": "Work from the styled table shown in the image: a card-style table with one Name column, several numeric columns, a rounded outer frame, and a shaded header row. Answer this question. How many rows have a value in the inclusive interval [5, 24] in the Temp column?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every matching value cell in top-to-bottom row order, or [] if none match.\nAnswer rule: set \"answer\" to the exact integer count of matching rows.\nExample JSON:\n{\"evidence\":[[260,180,372,236],[260,236,372,292],[260,292,372,348]],\"answer\":3}"
         },
         "answer_only": {
           "metadata": {
@@ -267,21 +276,21 @@
             "slot_values": {
               "answer_hint": "set \"answer\" to the exact integer count of matching rows",
               "evidence_hint": "set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every matching value cell in top-to-bottom row order, or [] if none match",
-              "interval_max": 25,
-              "interval_min": 12,
+              "interval_max": 24,
+              "interval_min": 5,
               "json_example": "{\"evidence\":[[260,180,372,236],[260,236,372,292],[260,292,372,348]],\"answer\":3}",
               "json_example_answer_only": "{\"answer\":3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a spreadsheet-style table with one Name column, several numeric columns, full grid lines, and a shaded header row",
-              "query_column": "Wins"
+              "object_description": "a card-style table with one Name column, several numeric columns, a rounded outer frame, and a shaded header row",
+              "query_column": "Temp"
             },
             "task_family_key": "styled_table_counting",
-            "task_family_variant_index": 1,
+            "task_family_variant_index": 2,
             "task_key": "value_count_query",
-            "task_variant_index": 3,
+            "task_variant_index": 0,
             "task_variant_key": "in_interval",
-            "task_variant_template_index": 4,
+            "task_variant_template_index": 0,
             "template_paths": [
               "tables/counting/tables_counting_v1.json"
             ],
@@ -292,7 +301,7 @@
               "task_variant:in_interval": 5
             }
           },
-          "prompt": "Use the table in the image. It shows a spreadsheet-style table with one Name column, several numeric columns, full grid lines, and a shaded header row. Find the number of rows whose queried values satisfy the condition. Find the number of rows with Wins values in [12, 25], inclusive.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the exact integer count of matching rows.\nExample JSON:\n{\"answer\":3}"
+          "prompt": "Work from the styled table shown in the image: a card-style table with one Name column, several numeric columns, a rounded outer frame, and a shaded header row. Answer this question. How many rows have a value in the inclusive interval [5, 24] in the Temp column?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the exact integer count of matching rows.\nExample JSON:\n{\"answer\":3}"
         }
       },
       "task_variant": "in_interval",
@@ -304,322 +313,286 @@
           52.0,
           56.0,
           286.08,
-          122.5
+          132.0
         ],
         "cell_r0_c1": [
           286.08,
           56.0,
           486.72,
-          122.5
+          132.0
         ],
         "cell_r0_c2": [
           486.72,
           56.0,
           687.36,
-          122.5
+          132.0
         ],
         "cell_r0_c3": [
           687.36,
           56.0,
           888.0,
-          122.5
+          132.0
         ],
         "cell_r1_c0": [
           52.0,
-          122.5,
+          132.0,
           286.08,
-          189.0
+          208.0
         ],
         "cell_r1_c1": [
           286.08,
-          122.5,
+          132.0,
           486.72,
-          189.0
+          208.0
         ],
         "cell_r1_c2": [
           486.72,
-          122.5,
+          132.0,
           687.36,
-          189.0
+          208.0
         ],
         "cell_r1_c3": [
           687.36,
-          122.5,
+          132.0,
           888.0,
-          189.0
+          208.0
         ],
         "cell_r2_c0": [
           52.0,
-          189.0,
+          208.0,
           286.08,
-          255.5
+          284.0
         ],
         "cell_r2_c1": [
           286.08,
-          189.0,
+          208.0,
           486.72,
-          255.5
+          284.0
         ],
         "cell_r2_c2": [
           486.72,
-          189.0,
+          208.0,
           687.36,
-          255.5
+          284.0
         ],
         "cell_r2_c3": [
           687.36,
-          189.0,
+          208.0,
           888.0,
-          255.5
+          284.0
         ],
         "cell_r3_c0": [
           52.0,
-          255.5,
+          284.0,
           286.08,
-          322.0
+          360.0
         ],
         "cell_r3_c1": [
           286.08,
-          255.5,
+          284.0,
           486.72,
-          322.0
+          360.0
         ],
         "cell_r3_c2": [
           486.72,
-          255.5,
+          284.0,
           687.36,
-          322.0
+          360.0
         ],
         "cell_r3_c3": [
           687.36,
-          255.5,
+          284.0,
           888.0,
-          322.0
+          360.0
         ],
         "cell_r4_c0": [
           52.0,
-          322.0,
+          360.0,
           286.08,
-          388.5
+          436.0
         ],
         "cell_r4_c1": [
           286.08,
-          322.0,
+          360.0,
           486.72,
-          388.5
+          436.0
         ],
         "cell_r4_c2": [
           486.72,
-          322.0,
+          360.0,
           687.36,
-          388.5
+          436.0
         ],
         "cell_r4_c3": [
           687.36,
-          322.0,
+          360.0,
           888.0,
-          388.5
+          436.0
         ],
         "cell_r5_c0": [
           52.0,
-          388.5,
+          436.0,
           286.08,
-          455.0
+          512.0
         ],
         "cell_r5_c1": [
           286.08,
-          388.5,
+          436.0,
           486.72,
-          455.0
+          512.0
         ],
         "cell_r5_c2": [
           486.72,
-          388.5,
+          436.0,
           687.36,
-          455.0
+          512.0
         ],
         "cell_r5_c3": [
           687.36,
-          388.5,
+          436.0,
           888.0,
-          455.0
+          512.0
         ],
         "cell_r6_c0": [
           52.0,
-          455.0,
+          512.0,
           286.08,
-          521.5
+          588.0
         ],
         "cell_r6_c1": [
           286.08,
-          455.0,
+          512.0,
           486.72,
-          521.5
+          588.0
         ],
         "cell_r6_c2": [
           486.72,
-          455.0,
+          512.0,
           687.36,
-          521.5
+          588.0
         ],
         "cell_r6_c3": [
           687.36,
-          455.0,
-          888.0,
-          521.5
-        ],
-        "cell_r7_c0": [
-          52.0,
-          521.5,
-          286.08,
-          588.0
-        ],
-        "cell_r7_c1": [
-          286.08,
-          521.5,
-          486.72,
-          588.0
-        ],
-        "cell_r7_c2": [
-          486.72,
-          521.5,
-          687.36,
-          588.0
-        ],
-        "cell_r7_c3": [
-          687.36,
-          521.5,
+          512.0,
           888.0,
           588.0
         ]
       },
       "column_region_bboxes_px": {
-        "Pts": [
+        "Age": [
           286.08,
-          122.5,
+          132.0,
           486.72,
           588.0
         ],
-        "Rank": [
+        "Dist": [
           687.36,
-          122.5,
+          132.0,
           888.0,
           588.0
         ],
-        "Wins": [
+        "Temp": [
           486.72,
-          122.5,
+          132.0,
           687.36,
           588.0
         ]
       },
       "header_bboxes_px": {
-        "Pts": [
+        "Age": [
           286.08,
           56.0,
           486.72,
-          122.5
+          132.0
         ],
-        "Rank": [
+        "Dist": [
           687.36,
           56.0,
           888.0,
-          122.5
+          132.0
         ],
-        "Wins": [
+        "Temp": [
           486.72,
           56.0,
           687.36,
-          122.5
+          132.0
         ]
       },
       "image_id": "img0",
       "row_label_bboxes_px": {
-        "Hagi": [
+        "Abba": [
           52.0,
-          189.0,
+          208.0,
           286.08,
-          255.5
+          284.0
         ],
-        "Lari": [
+        "Calv": [
           52.0,
-          388.5,
-          286.08,
-          455.0
-        ],
-        "Levy": [
-          52.0,
-          521.5,
+          512.0,
           286.08,
           588.0
         ],
-        "Nary": [
+        "Dale": [
           52.0,
-          322.0,
+          360.0,
           286.08,
-          388.5
+          436.0
         ],
-        "Otis": [
+        "Grey": [
           52.0,
-          122.5,
+          284.0,
           286.08,
-          189.0
+          360.0
         ],
-        "Pich": [
+        "Ker": [
           52.0,
-          455.0,
+          132.0,
           286.08,
-          521.5
+          208.0
         ],
-        "Zebe": [
+        "Kotz": [
           52.0,
-          255.5,
+          436.0,
           286.08,
-          322.0
+          512.0
         ]
       },
       "row_region_bboxes_px": {
-        "Hagi": [
+        "Abba": [
           286.08,
-          189.0,
+          208.0,
           888.0,
-          255.5
+          284.0
         ],
-        "Lari": [
+        "Calv": [
           286.08,
-          388.5,
-          888.0,
-          455.0
-        ],
-        "Levy": [
-          286.08,
-          521.5,
+          512.0,
           888.0,
           588.0
         ],
-        "Nary": [
+        "Dale": [
           286.08,
-          322.0,
+          360.0,
           888.0,
-          388.5
+          436.0
         ],
-        "Otis": [
+        "Grey": [
           286.08,
-          122.5,
+          284.0,
           888.0,
-          189.0
+          360.0
         ],
-        "Pich": [
+        "Ker": [
           286.08,
-          455.0,
+          132.0,
           888.0,
-          521.5
+          208.0
         ],
-        "Zebe": [
+        "Kotz": [
           286.08,
-          255.5,
+          436.0,
           888.0,
-          322.0
+          512.0
         ]
       },
       "table_bbox_px": [
@@ -668,7 +641,7 @@
         "edits": [],
         "enabled": false
       },
-      "scene_variant": "spreadsheet",
+      "scene_variant": "card_table",
       "table_bbox_px": [
         52.0,
         56.0,
@@ -692,9 +665,9 @@
             "text": "Name",
             "text_bbox_px": [
               130.54,
-              80.25,
+              85.0,
               207.54,
-              98.25
+              103.0
             ],
             "value": null
           },
@@ -702,7 +675,7 @@
             52.0,
             56.0,
             286.08,
-            122.5
+            132.0
           ],
           "entity_id": "cell_r0_c0",
           "entity_type": "table_cell"
@@ -710,16 +683,16 @@
         {
           "attrs": {
             "cell_role": "header",
-            "column_header": "Pts",
+            "column_header": "Age",
             "column_index": 1,
             "row_index": 0,
             "row_label": null,
-            "text": "Pts",
+            "text": "Age",
             "text_bbox_px": [
-              364.9,
-              80.25,
-              407.9,
-              98.25
+              360.4,
+              82.5,
+              412.4,
+              105.5
             ],
             "value": null
           },
@@ -727,7 +700,7 @@
             286.08,
             56.0,
             486.72,
-            122.5
+            132.0
           ],
           "entity_id": "cell_r0_c1",
           "entity_type": "table_cell"
@@ -735,16 +708,16 @@
         {
           "attrs": {
             "cell_role": "header",
-            "column_header": "Wins",
+            "column_header": "Temp",
             "column_index": 2,
             "row_index": 0,
             "row_label": null,
-            "text": "Wins",
+            "text": "Temp",
             "text_bbox_px": [
-              554.54,
-              80.25,
-              619.54,
-              98.25
+              550.04,
+              82.5,
+              624.04,
+              105.5
             ],
             "value": null
           },
@@ -752,7 +725,7 @@
             486.72,
             56.0,
             687.36,
-            122.5
+            132.0
           ],
           "entity_id": "cell_r0_c2",
           "entity_type": "table_cell"
@@ -760,16 +733,16 @@
         {
           "attrs": {
             "cell_role": "header",
-            "column_header": "Rank",
+            "column_header": "Dist",
             "column_index": 3,
             "row_index": 0,
             "row_label": null,
-            "text": "Rank",
+            "text": "Dist",
             "text_bbox_px": [
-              753.68,
-              80.25,
-              821.68,
-              98.25
+              761.18,
+              85.0,
+              814.18,
+              103.0
             ],
             "value": null
           },
@@ -777,7 +750,7 @@
             687.36,
             56.0,
             888.0,
-            122.5
+            132.0
           ],
           "entity_id": "cell_r0_c3",
           "entity_type": "table_cell"
@@ -788,21 +761,21 @@
             "column_header": "Name",
             "column_index": 0,
             "row_index": 1,
-            "row_label": "Otis",
-            "text": "Otis",
+            "row_label": "Ker",
+            "text": "Ker",
             "text_bbox_px": [
               66.0,
-              146.75,
-              119.0,
-              164.75
+              161.0,
+              113.0,
+              179.0
             ],
             "value": null
           },
           "bbox_px": [
             52.0,
-            122.5,
+            132.0,
             286.08,
-            189.0
+            208.0
           ],
           "entity_id": "cell_r1_c0",
           "entity_type": "table_cell"
@@ -810,24 +783,24 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Pts",
+            "column_header": "Age",
             "column_index": 1,
             "row_index": 1,
-            "row_label": "Otis",
-            "text": "6",
+            "row_label": "Ker",
+            "text": "8",
             "text_bbox_px": [
               379.4,
-              147.75,
+              162.0,
               393.4,
-              163.75
+              178.0
             ],
-            "value": 6
+            "value": 8
           },
           "bbox_px": [
             286.08,
-            122.5,
+            132.0,
             486.72,
-            189.0
+            208.0
           ],
           "entity_id": "cell_r1_c1",
           "entity_type": "table_cell"
@@ -835,24 +808,24 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Wins",
+            "column_header": "Temp",
             "column_index": 2,
             "row_index": 1,
-            "row_label": "Otis",
-            "text": "6",
+            "row_label": "Ker",
+            "text": "32",
             "text_bbox_px": [
-              580.04,
-              147.75,
-              594.04,
-              163.75
+              573.04,
+              162.0,
+              601.04,
+              178.0
             ],
-            "value": 6
+            "value": 32
           },
           "bbox_px": [
             486.72,
-            122.5,
+            132.0,
             687.36,
-            189.0
+            208.0
           ],
           "entity_id": "cell_r1_c2",
           "entity_type": "table_cell"
@@ -860,24 +833,24 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Rank",
+            "column_header": "Dist",
             "column_index": 3,
             "row_index": 1,
-            "row_label": "Otis",
-            "text": "9",
+            "row_label": "Ker",
+            "text": "3",
             "text_bbox_px": [
               780.68,
-              147.75,
+              162.0,
               794.68,
-              163.75
+              178.0
             ],
-            "value": 9
+            "value": 3
           },
           "bbox_px": [
             687.36,
-            122.5,
+            132.0,
             888.0,
-            189.0
+            208.0
           ],
           "entity_id": "cell_r1_c3",
           "entity_type": "table_cell"
@@ -888,21 +861,21 @@
             "column_header": "Name",
             "column_index": 0,
             "row_index": 2,
-            "row_label": "Hagi",
-            "text": "Hagi",
+            "row_label": "Abba",
+            "text": "Abba",
             "text_bbox_px": [
               66.0,
-              210.75,
-              127.0,
-              233.75
+              237.0,
+              135.0,
+              255.0
             ],
             "value": null
           },
           "bbox_px": [
             52.0,
-            189.0,
+            208.0,
             286.08,
-            255.5
+            284.0
           ],
           "entity_id": "cell_r2_c0",
           "entity_type": "table_cell"
@@ -910,24 +883,24 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Pts",
+            "column_header": "Age",
             "column_index": 1,
             "row_index": 2,
-            "row_label": "Hagi",
-            "text": "31",
+            "row_label": "Abba",
+            "text": "21",
             "text_bbox_px": [
               372.4,
-              214.25,
+              238.0,
               400.4,
-              230.25
+              254.0
             ],
-            "value": 31
+            "value": 21
           },
           "bbox_px": [
             286.08,
-            189.0,
+            208.0,
             486.72,
-            255.5
+            284.0
           ],
           "entity_id": "cell_r2_c1",
           "entity_type": "table_cell"
@@ -935,24 +908,24 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Wins",
+            "column_header": "Temp",
             "column_index": 2,
             "row_index": 2,
-            "row_label": "Hagi",
-            "text": "14",
+            "row_label": "Abba",
+            "text": "18",
             "text_bbox_px": [
               573.04,
-              214.25,
+              238.0,
               601.04,
-              230.25
+              254.0
             ],
-            "value": 14
+            "value": 18
           },
           "bbox_px": [
             486.72,
-            189.0,
+            208.0,
             687.36,
-            255.5
+            284.0
           ],
           "entity_id": "cell_r2_c2",
           "entity_type": "table_cell"
@@ -960,24 +933,24 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Rank",
+            "column_header": "Dist",
             "column_index": 3,
             "row_index": 2,
-            "row_label": "Hagi",
-            "text": "1",
+            "row_label": "Abba",
+            "text": "15",
             "text_bbox_px": [
-              780.68,
-              214.25,
-              794.68,
-              230.25
+              773.68,
+              238.0,
+              801.68,
+              254.0
             ],
-            "value": 1
+            "value": 15
           },
           "bbox_px": [
             687.36,
-            189.0,
+            208.0,
             888.0,
-            255.5
+            284.0
           ],
           "entity_id": "cell_r2_c3",
           "entity_type": "table_cell"
@@ -988,21 +961,21 @@
             "column_header": "Name",
             "column_index": 0,
             "row_index": 3,
-            "row_label": "Zebe",
-            "text": "Zebe",
+            "row_label": "Grey",
+            "text": "Grey",
             "text_bbox_px": [
               66.0,
-              279.75,
-              132.0,
-              297.75
+              310.5,
+              130.0,
+              333.5
             ],
             "value": null
           },
           "bbox_px": [
             52.0,
-            255.5,
+            284.0,
             286.08,
-            322.0
+            360.0
           ],
           "entity_id": "cell_r3_c0",
           "entity_type": "table_cell"
@@ -1010,24 +983,24 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Pts",
+            "column_header": "Age",
             "column_index": 1,
             "row_index": 3,
-            "row_label": "Zebe",
-            "text": "30",
+            "row_label": "Grey",
+            "text": "24",
             "text_bbox_px": [
               372.4,
-              280.75,
+              314.0,
               400.4,
-              296.75
+              330.0
             ],
-            "value": 30
+            "value": 24
           },
           "bbox_px": [
             286.08,
-            255.5,
+            284.0,
             486.72,
-            322.0
+            360.0
           ],
           "entity_id": "cell_r3_c1",
           "entity_type": "table_cell"
@@ -1035,24 +1008,24 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Wins",
+            "column_header": "Temp",
             "column_index": 2,
             "row_index": 3,
-            "row_label": "Zebe",
-            "text": "1",
+            "row_label": "Grey",
+            "text": "7",
             "text_bbox_px": [
               580.04,
-              280.75,
+              314.0,
               594.04,
-              296.75
+              330.0
             ],
-            "value": 1
+            "value": 7
           },
           "bbox_px": [
             486.72,
-            255.5,
+            284.0,
             687.36,
-            322.0
+            360.0
           ],
           "entity_id": "cell_r3_c2",
           "entity_type": "table_cell"
@@ -1060,24 +1033,24 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Rank",
+            "column_header": "Dist",
             "column_index": 3,
             "row_index": 3,
-            "row_label": "Zebe",
-            "text": "4",
+            "row_label": "Grey",
+            "text": "19",
             "text_bbox_px": [
-              780.68,
-              280.75,
-              794.68,
-              296.75
+              773.68,
+              314.0,
+              801.68,
+              330.0
             ],
-            "value": 4
+            "value": 19
           },
           "bbox_px": [
             687.36,
-            255.5,
+            284.0,
             888.0,
-            322.0
+            360.0
           ],
           "entity_id": "cell_r3_c3",
           "entity_type": "table_cell"
@@ -1088,21 +1061,21 @@
             "column_header": "Name",
             "column_index": 0,
             "row_index": 4,
-            "row_label": "Nary",
-            "text": "Nary",
+            "row_label": "Dale",
+            "text": "Dale",
             "text_bbox_px": [
               66.0,
-              343.75,
-              130.0,
-              366.75
+              389.0,
+              126.0,
+              407.0
             ],
             "value": null
           },
           "bbox_px": [
             52.0,
-            322.0,
+            360.0,
             286.08,
-            388.5
+            436.0
           ],
           "entity_id": "cell_r4_c0",
           "entity_type": "table_cell"
@@ -1110,24 +1083,24 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Pts",
+            "column_header": "Age",
             "column_index": 1,
             "row_index": 4,
-            "row_label": "Nary",
-            "text": "3",
+            "row_label": "Dale",
+            "text": "6",
             "text_bbox_px": [
               379.4,
-              347.25,
+              390.0,
               393.4,
-              363.25
+              406.0
             ],
-            "value": 3
+            "value": 6
           },
           "bbox_px": [
             286.08,
-            322.0,
+            360.0,
             486.72,
-            388.5
+            436.0
           ],
           "entity_id": "cell_r4_c1",
           "entity_type": "table_cell"
@@ -1135,24 +1108,24 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Wins",
+            "column_header": "Temp",
             "column_index": 2,
             "row_index": 4,
-            "row_label": "Nary",
-            "text": "23",
+            "row_label": "Dale",
+            "text": "1",
             "text_bbox_px": [
-              573.04,
-              347.25,
-              601.04,
-              363.25
+              580.04,
+              390.0,
+              594.04,
+              406.0
             ],
-            "value": 23
+            "value": 1
           },
           "bbox_px": [
             486.72,
-            322.0,
+            360.0,
             687.36,
-            388.5
+            436.0
           ],
           "entity_id": "cell_r4_c2",
           "entity_type": "table_cell"
@@ -1160,24 +1133,24 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Rank",
+            "column_header": "Dist",
             "column_index": 3,
             "row_index": 4,
-            "row_label": "Nary",
+            "row_label": "Dale",
             "text": "13",
             "text_bbox_px": [
               773.68,
-              347.25,
+              390.0,
               801.68,
-              363.25
+              406.0
             ],
             "value": 13
           },
           "bbox_px": [
             687.36,
-            322.0,
+            360.0,
             888.0,
-            388.5
+            436.0
           ],
           "entity_id": "cell_r4_c3",
           "entity_type": "table_cell"
@@ -1188,21 +1161,21 @@
             "column_header": "Name",
             "column_index": 0,
             "row_index": 5,
-            "row_label": "Lari",
-            "text": "Lari",
+            "row_label": "Kotz",
+            "text": "Kotz",
             "text_bbox_px": [
               66.0,
-              412.75,
-              117.0,
-              430.75
+              465.0,
+              126.0,
+              483.0
             ],
             "value": null
           },
           "bbox_px": [
             52.0,
-            388.5,
+            436.0,
             286.08,
-            455.0
+            512.0
           ],
           "entity_id": "cell_r5_c0",
           "entity_type": "table_cell"
@@ -1210,24 +1183,24 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Pts",
+            "column_header": "Age",
             "column_index": 1,
             "row_index": 5,
-            "row_label": "Lari",
-            "text": "2",
+            "row_label": "Kotz",
+            "text": "20",
             "text_bbox_px": [
-              379.4,
-              413.75,
-              393.4,
-              429.75
+              372.4,
+              466.0,
+              400.4,
+              482.0
             ],
-            "value": 2
+            "value": 20
           },
           "bbox_px": [
             286.08,
-            388.5,
+            436.0,
             486.72,
-            455.0
+            512.0
           ],
           "entity_id": "cell_r5_c1",
           "entity_type": "table_cell"
@@ -1235,24 +1208,24 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Wins",
+            "column_header": "Temp",
             "column_index": 2,
             "row_index": 5,
-            "row_label": "Lari",
-            "text": "18",
+            "row_label": "Kotz",
+            "text": "17",
             "text_bbox_px": [
               573.04,
-              413.75,
+              466.0,
               601.04,
-              429.75
+              482.0
             ],
-            "value": 18
+            "value": 17
           },
           "bbox_px": [
             486.72,
-            388.5,
+            436.0,
             687.36,
-            455.0
+            512.0
           ],
           "entity_id": "cell_r5_c2",
           "entity_type": "table_cell"
@@ -1260,24 +1233,24 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Rank",
+            "column_header": "Dist",
             "column_index": 3,
             "row_index": 5,
-            "row_label": "Lari",
-            "text": "8",
+            "row_label": "Kotz",
+            "text": "19",
             "text_bbox_px": [
-              780.68,
-              413.75,
-              794.68,
-              429.75
+              773.68,
+              466.0,
+              801.68,
+              482.0
             ],
-            "value": 8
+            "value": 19
           },
           "bbox_px": [
             687.36,
-            388.5,
+            436.0,
             888.0,
-            455.0
+            512.0
           ],
           "entity_id": "cell_r5_c3",
           "entity_type": "table_cell"
@@ -1288,21 +1261,21 @@
             "column_header": "Name",
             "column_index": 0,
             "row_index": 6,
-            "row_label": "Pich",
-            "text": "Pich",
+            "row_label": "Calv",
+            "text": "Calv",
             "text_bbox_px": [
               66.0,
-              479.25,
-              123.0,
-              497.25
+              541.0,
+              124.0,
+              559.0
             ],
             "value": null
           },
           "bbox_px": [
             52.0,
-            455.0,
+            512.0,
             286.08,
-            521.5
+            588.0
           ],
           "entity_id": "cell_r6_c0",
           "entity_type": "table_cell"
@@ -1310,24 +1283,24 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Pts",
+            "column_header": "Age",
             "column_index": 1,
             "row_index": 6,
-            "row_label": "Pich",
-            "text": "14",
+            "row_label": "Calv",
+            "text": "2",
             "text_bbox_px": [
-              372.4,
-              480.25,
-              400.4,
-              496.25
+              379.4,
+              542.0,
+              393.4,
+              558.0
             ],
-            "value": 14
+            "value": 2
           },
           "bbox_px": [
             286.08,
-            455.0,
+            512.0,
             486.72,
-            521.5
+            588.0
           ],
           "entity_id": "cell_r6_c1",
           "entity_type": "table_cell"
@@ -1335,24 +1308,24 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Wins",
+            "column_header": "Temp",
             "column_index": 2,
             "row_index": 6,
-            "row_label": "Pich",
-            "text": "30",
+            "row_label": "Calv",
+            "text": "23",
             "text_bbox_px": [
               573.04,
-              480.25,
+              542.0,
               601.04,
-              496.25
+              558.0
             ],
-            "value": 30
+            "value": 23
           },
           "bbox_px": [
             486.72,
-            455.0,
+            512.0,
             687.36,
-            521.5
+            588.0
           ],
           "entity_id": "cell_r6_c2",
           "entity_type": "table_cell"
@@ -1360,164 +1333,71 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Rank",
+            "column_header": "Dist",
             "column_index": 3,
             "row_index": 6,
-            "row_label": "Pich",
-            "text": "15",
+            "row_label": "Calv",
+            "text": "26",
             "text_bbox_px": [
               773.68,
-              480.25,
+              542.0,
               801.68,
-              496.25
+              558.0
             ],
-            "value": 15
+            "value": 26
           },
           "bbox_px": [
             687.36,
-            455.0,
+            512.0,
             888.0,
-            521.5
+            588.0
           ],
           "entity_id": "cell_r6_c3",
-          "entity_type": "table_cell"
-        },
-        {
-          "attrs": {
-            "cell_role": "row_label",
-            "column_header": "Name",
-            "column_index": 0,
-            "row_index": 7,
-            "row_label": "Levy",
-            "text": "Levy",
-            "text_bbox_px": [
-              66.0,
-              543.25,
-              129.0,
-              566.25
-            ],
-            "value": null
-          },
-          "bbox_px": [
-            52.0,
-            521.5,
-            286.08,
-            588.0
-          ],
-          "entity_id": "cell_r7_c0",
-          "entity_type": "table_cell"
-        },
-        {
-          "attrs": {
-            "cell_role": "value",
-            "column_header": "Pts",
-            "column_index": 1,
-            "row_index": 7,
-            "row_label": "Levy",
-            "text": "19",
-            "text_bbox_px": [
-              372.4,
-              546.75,
-              400.4,
-              562.75
-            ],
-            "value": 19
-          },
-          "bbox_px": [
-            286.08,
-            521.5,
-            486.72,
-            588.0
-          ],
-          "entity_id": "cell_r7_c1",
-          "entity_type": "table_cell"
-        },
-        {
-          "attrs": {
-            "cell_role": "value",
-            "column_header": "Wins",
-            "column_index": 2,
-            "row_index": 7,
-            "row_label": "Levy",
-            "text": "10",
-            "text_bbox_px": [
-              573.04,
-              546.75,
-              601.04,
-              562.75
-            ],
-            "value": 10
-          },
-          "bbox_px": [
-            486.72,
-            521.5,
-            687.36,
-            588.0
-          ],
-          "entity_id": "cell_r7_c2",
-          "entity_type": "table_cell"
-        },
-        {
-          "attrs": {
-            "cell_role": "value",
-            "column_header": "Rank",
-            "column_index": 3,
-            "row_index": 7,
-            "row_label": "Levy",
-            "text": "6",
-            "text_bbox_px": [
-              780.68,
-              546.75,
-              794.68,
-              562.75
-            ],
-            "value": 6
-          },
-          "bbox_px": [
-            687.36,
-            521.5,
-            888.0,
-            588.0
-          ],
-          "entity_id": "cell_r7_c3",
           "entity_type": "table_cell"
         }
       ],
       "relations": {
-        "answer_value": 3,
-        "interval_max": 25,
-        "interval_min": 12,
-        "query_column": "Wins",
-        "scene_variant": "spreadsheet",
+        "answer_value": 4,
+        "interval_max": 24,
+        "interval_min": 5,
+        "query_column": "Temp",
+        "scene_variant": "card_table",
         "supporting_cell_ids": [
           "cell_r2_c2",
-          "cell_r4_c2",
-          "cell_r5_c2"
+          "cell_r3_c2",
+          "cell_r5_c2",
+          "cell_r6_c2"
         ],
         "task_variant": "in_interval"
       },
-      "scene_kind": "table_spreadsheet_counting"
+      "scene_kind": "table_card_table_counting"
     },
     "witness_symbolic": {
       "type": "bbox_set",
       "value": [
         [
           486.72,
-          189.0,
+          208.0,
           687.36,
-          255.5
+          284.0
         ],
         [
           486.72,
-          322.0,
+          284.0,
           687.36,
-          388.5
+          360.0
         ],
         [
           486.72,
-          388.5,
+          436.0,
           687.36,
-          455.0
+          512.0
+        ],
+        [
+          486.72,
+          512.0,
+          687.36,
+          588.0
         ]
       ]
     }

@@ -1,24 +1,24 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 600
+    "value": 1176
   },
   "evidence_gt": {
     "type": "measurement_ref_map",
     "value": {
-      "GH": 25,
-      "GI": 30
+      "DE": 35,
+      "DF": 42
     }
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_2d_value/images/area/0024.png"
   },
-  "instance_seed": 1423089059471409,
-  "prompt": "Use the image showing a geometric shape with measurement annotations. One side length and one diagonal of the rhombus are annotated. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: GH, GI.\nAnswer field: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"GH\":2,\"GI\":3},\"answer\":8}",
+  "instance_seed": 3293840853164001,
+  "prompt": "Work from the annotated figure showing a geometric shape with measurement annotations. Based on the shown values, answer this question: One side length and one diagonal of the rhombus are annotated. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: DE, DF.\nAnswer requirement: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"DE\":2,\"DF\":3},\"answer\":8}",
   "prompt_variants": {
-    "answer_and_evidence": "Use the image showing a geometric shape with measurement annotations. One side length and one diagonal of the rhombus are annotated. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: GH, GI.\nAnswer field: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"GH\":2,\"GI\":3},\"answer\":8}",
-    "answer_only": "Use the image showing a geometric shape with measurement annotations. One side length and one diagonal of the rhombus are annotated. What is its area in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"answer\":8}"
+    "answer_and_evidence": "Work from the annotated figure showing a geometric shape with measurement annotations. Based on the shown values, answer this question: One side length and one diagonal of the rhombus are annotated. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: DE, DF.\nAnswer requirement: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"DE\":2,\"DF\":3},\"answer\":8}",
+    "answer_only": "Work from the annotated figure showing a geometric shape with measurement annotations. Based on the shown values, answer this question: One side length and one diagonal of the rhombus are annotated. What is its area in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"answer\":8}"
   },
   "task": "task_geometry_analytical_2d_value",
   "task_variant": "area",
@@ -26,25 +26,25 @@
     "execution_trace": {
       "answer_max": 2500,
       "answer_min": 8,
-      "answer_scalar": 600,
+      "answer_scalar": 1176,
       "answer_type": "integer",
-      "answer_value": 600,
+      "answer_value": 1176,
       "case_id": "rhombus_derived",
       "evidence_annotations": {
-        "d1": "GI",
-        "s": "GH"
+        "d1": "DF",
+        "s": "DE"
       },
       "evidence_ids": [
-        "GH",
-        "GI"
+        "DE",
+        "DF"
       ],
       "evidence_label_values": {
-        "d1": 30,
-        "s": 25
+        "d1": 42,
+        "s": 35
       },
       "evidence_map": {
-        "GH": 25,
-        "GI": 30
+        "DE": 35,
+        "DF": 42
       },
       "evidence_roles": [
         "s",
@@ -67,8 +67,8 @@
       },
       "reasoning_mode": "derived",
       "required_annotations": [
-        "GH",
-        "GI"
+        "DE",
+        "DF"
       ],
       "scene_variant": "rhombus",
       "scene_variant_probabilities": {
@@ -101,35 +101,35 @@
     },
     "projected_evidence": {
       "annotation_labels": {
-        "d1": "GI",
-        "s": "GH"
+        "d1": "DF",
+        "s": "DE"
       },
       "id_set": [
-        "GH",
-        "GI"
+        "DE",
+        "DF"
       ],
       "measurement_ref_map": {
-        "GH": 25,
-        "GI": 30
+        "DE": 35,
+        "DF": 42
       },
       "pixel_annotation_centers": {
-        "GH": [
-          278.59999999999997,
-          542.8000000000001
+        "DE": [
+          177.6,
+          471.8
         ],
-        "GI": [
-          376.0,
-          398.0
+        "DF": [
+          305.0,
+          287.0
         ]
       },
       "pixel_point_set": [
         [
-          278.59999999999997,
-          542.8000000000001
+          177.6,
+          471.8
         ],
         [
-          376.0,
-          398.0
+          305.0,
+          287.0
         ]
       ]
     },
@@ -182,13 +182,13 @@
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 3,
+        "answer_or_evidence_variant_index": 2,
         "prompt_bundle_id": "geometry_analytical_area_v1",
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the area value as an integer",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: GH, GI",
-          "json_example": "{\"evidence\":{\"GH\":2,\"GI\":3},\"answer\":8}",
+          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: DE, DF",
+          "json_example": "{\"evidence\":{\"DE\":2,\"DF\":3},\"answer\":8}",
           "json_example_answer_only": "{\"answer\":8}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -196,9 +196,9 @@
           "question_text": "One side length and one diagonal of the rhombus are annotated. What is its area in square units?"
         },
         "task_family_key": "analytical_single_shape",
-        "task_family_variant_index": 3,
+        "task_family_variant_index": 4,
         "task_key": "analytical_area_query",
-        "task_variant_index": 0,
+        "task_variant_index": 4,
         "task_variant_key": null,
         "task_variant_template_index": null,
         "template_paths": [
@@ -215,13 +215,13 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 3,
+            "answer_or_evidence_variant_index": 2,
             "prompt_bundle_id": "geometry_analytical_area_v1",
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the area value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: GH, GI",
-              "json_example": "{\"evidence\":{\"GH\":2,\"GI\":3},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: DE, DF",
+              "json_example": "{\"evidence\":{\"DE\":2,\"DF\":3},\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -229,9 +229,9 @@
               "question_text": "One side length and one diagonal of the rhombus are annotated. What is its area in square units?"
             },
             "task_family_key": "analytical_single_shape",
-            "task_family_variant_index": 3,
+            "task_family_variant_index": 4,
             "task_key": "analytical_area_query",
-            "task_variant_index": 0,
+            "task_variant_index": 4,
             "task_variant_key": null,
             "task_variant_template_index": null,
             "template_paths": [
@@ -243,18 +243,18 @@
               "task_family:analytical_single_shape": 5
             }
           },
-          "prompt": "Use the image showing a geometric shape with measurement annotations. One side length and one diagonal of the rhombus are annotated. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: GH, GI.\nAnswer field: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"GH\":2,\"GI\":3},\"answer\":8}"
+          "prompt": "Work from the annotated figure showing a geometric shape with measurement annotations. Based on the shown values, answer this question: One side length and one diagonal of the rhombus are annotated. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: DE, DF.\nAnswer requirement: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"DE\":2,\"DF\":3},\"answer\":8}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 3,
+            "answer_or_evidence_variant_index": 2,
             "prompt_bundle_id": "geometry_analytical_area_v1",
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the area value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: GH, GI",
-              "json_example": "{\"evidence\":{\"GH\":2,\"GI\":3},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: DE, DF",
+              "json_example": "{\"evidence\":{\"DE\":2,\"DF\":3},\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -262,9 +262,9 @@
               "question_text": "One side length and one diagonal of the rhombus are annotated. What is its area in square units?"
             },
             "task_family_key": "analytical_single_shape",
-            "task_family_variant_index": 3,
+            "task_family_variant_index": 4,
             "task_key": "analytical_area_query",
-            "task_variant_index": 0,
+            "task_variant_index": 4,
             "task_variant_key": null,
             "task_variant_template_index": null,
             "template_paths": [
@@ -276,7 +276,7 @@
               "task_family:analytical_single_shape": 5
             }
           },
-          "prompt": "Use the image showing a geometric shape with measurement annotations. One side length and one diagonal of the rhombus are annotated. What is its area in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"answer\":8}"
+          "prompt": "Work from the annotated figure showing a geometric shape with measurement annotations. Based on the shown values, answer this question: One side length and one diagonal of the rhombus are annotated. What is its area in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"answer\":8}"
         }
       },
       "task_variant": "area",
@@ -284,47 +284,47 @@
     },
     "render_map": {
       "annotation_centers": {
-        "GH": [
-          278.59999999999997,
-          542.8000000000001
+        "DE": [
+          177.6,
+          471.8
         ],
-        "GI": [
-          376.0,
-          398.0
+        "DF": [
+          305.0,
+          287.0
         ]
       },
       "annotation_labels": {
-        "d1": "GI",
-        "s": "GH"
+        "d1": "DF",
+        "s": "DE"
       },
       "coord_space": "pixel",
       "entity_id": "shape_1",
       "instance_anchor": {
         "coord_space": "pixel",
         "point": [
-          226.0,
-          426.0
+          95.0,
+          315.0
         ],
         "polyline": [
           [
-            226.0,
-            426.0
+            95.0,
+            315.0
           ],
           [
-            376.0,
-            626.0
+            305.0,
+            595.0
           ],
           [
-            526.0,
-            426.0
+            515.0,
+            315.0
           ],
           [
-            376.0,
-            226.0
+            305.0,
+            35.0
           ],
           [
-            226.0,
-            426.0
+            95.0,
+            315.0
           ]
         ]
       }
@@ -339,41 +339,43 @@
         ],
         "enabled": true,
         "render_scale": 3,
-        "selected_style": "solid_offwhite",
+        "selected_style": "solid_cool",
         "style_spec": {
           "color": [
-            252,
-            252,
+            246,
+            248,
             252
           ],
           "kind": "solid"
         }
       },
-      "canvas_size": 693,
+      "canvas_size": 731,
       "coord_space": "pixel",
       "graph_coordinate_frame": {
         "coord_space": "graph_unit",
-        "full_cells_x": 6,
-        "full_cells_y": 6,
+        "full_cells_x": 4,
+        "full_cells_y": 4,
+        "origin_fraction_x": 0.5,
+        "origin_fraction_y": 0.5,
         "origin_pixel": [
-          346,
-          346
+          365,
+          365
         ],
         "outer_margin_px": 16,
         "partial_edge_cells": true,
-        "spacing_px": 99,
-        "target_cells_x": 7,
-        "target_cells_y": 7,
+        "spacing_px": 122,
+        "target_cells_x": 6,
+        "target_cells_y": 6,
         "x_positive": "right",
         "y_positive": "up"
       },
       "graph_paper_grid": {
-        "full_cells_x": 6,
-        "full_cells_y": 6,
+        "full_cells_x": 4,
+        "full_cells_y": 4,
         "partial_edge_cells": true,
-        "spacing_px": 99,
-        "target_cells_x": 7,
-        "target_cells_y": 7
+        "spacing_px": 122,
+        "target_cells_x": 6,
+        "target_cells_y": 6
       },
       "legacy_scene_variant": "rhombus",
       "post_image_noise": {
@@ -396,19 +398,19 @@
       "scene_variant": "rhombus",
       "shape_style": {
         "label_color": [
-          123,
-          38,
-          155
+          12,
+          58,
+          102
         ],
         "label_stroke_color": [
-          248,
-          252,
-          251
+          254,
+          249,
+          249
         ],
         "line_color": [
-          123,
-          38,
-          155
+          12,
+          58,
+          102
         ]
       }
     },
@@ -416,28 +418,28 @@
       "entities": [
         {
           "attrs": {
-            "area_square_units": 600,
-            "diagonal1_units": 30,
-            "inferred_diagonal2_units": 40,
+            "area_square_units": 1176,
+            "diagonal1_units": 42,
+            "inferred_diagonal2_units": 56,
             "reasoning_mode": "derived",
             "shape_variant": "rhombus",
-            "side_units": 25,
+            "side_units": 35,
             "vertices": [
               [
-                226.0,
-                426.0
+                95.0,
+                315.0
               ],
               [
-                376.0,
-                626.0
+                305.0,
+                595.0
               ],
               [
-                526.0,
-                426.0
+                515.0,
+                315.0
               ],
               [
-                376.0,
-                226.0
+                305.0,
+                35.0
               ]
             ]
           },
@@ -448,10 +450,10 @@
       "frames": {
         "graph_unit": {
           "origin_pixel": [
-            346,
-            346
+            365,
+            365
           ],
-          "spacing_px": 99,
+          "spacing_px": 122,
           "x_positive": "right",
           "y_positive": "up"
         },
@@ -475,22 +477,22 @@
     },
     "witness_symbolic": {
       "annotation_ids": [
-        "GH",
-        "GI"
+        "DE",
+        "DF"
       ],
       "annotation_labels": {
-        "d1": "GI",
-        "s": "GH"
+        "d1": "DF",
+        "s": "DE"
       },
       "annotation_values": {
-        "GH": 25,
-        "GI": 30
+        "DE": 35,
+        "DF": 42
       },
       "case_id": "rhombus_derived",
       "formula_expression": "A = (d1 * sqrt(4*s^2 - d1^2)) / 2",
       "measurement_ref_map": {
-        "GH": 25,
-        "GI": 30
+        "DE": 35,
+        "DF": 42
       },
       "reasoning_mode": "derived",
       "shape_variant": "rhombus",

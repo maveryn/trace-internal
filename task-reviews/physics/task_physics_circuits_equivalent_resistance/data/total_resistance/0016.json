@@ -1,11 +1,23 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 4
+    "value": 7
   },
   "evidence_gt": {
     "type": "bbox_set",
     "value": [
+      [
+        593.0,
+        257.0,
+        689.0,
+        303.0
+      ],
+      [
+        715.0,
+        257.0,
+        811.0,
+        303.0
+      ],
       [
         422.0,
         167.0,
@@ -30,11 +42,11 @@
     "format": "png",
     "path": "physics/task_physics_circuits_equivalent_resistance/images/total_resistance/0016.png"
   },
-  "instance_seed": 1926147751723478,
-  "prompt": "You are given an image with one resistor network between terminals A and B with three or four parallel labeled resistor branches. Read the resistor values and determine the requested equivalent resistance. Using the resistor values shown, what equivalent resistance is seen between terminals A and B? Answer with an integer number of ohms.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for all resistor boxes that belong to the network between terminals A and B.\nAnswer rule: set \"answer\" to the total equivalent resistance between terminals A and B as an integer number of ohms.\nExample JSON:\n{\"evidence\":[[2,3,4,5],[3,4,5,6],[4,5,6,7]],\"answer\":8}",
+  "instance_seed": 6753696303575526,
+  "prompt": "You are given an image with one resistor network between terminals A and B that combines a short series chain with a parallel resistor bank. Use the resistor values shown in the boxes to answer the question. Determine the network's total resistance between A and B. Answer with an integer number of ohms.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for all resistor boxes that belong to the network between terminals A and B.\nAnswer format: set \"answer\" to the total equivalent resistance between terminals A and B as an integer number of ohms.\nExample JSON:\n{\"evidence\":[[2,3,4,5],[3,4,5,6],[4,5,6,7]],\"answer\":8}",
   "prompt_variants": {
-    "answer_and_evidence": "You are given an image with one resistor network between terminals A and B with three or four parallel labeled resistor branches. Read the resistor values and determine the requested equivalent resistance. Using the resistor values shown, what equivalent resistance is seen between terminals A and B? Answer with an integer number of ohms.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for all resistor boxes that belong to the network between terminals A and B.\nAnswer rule: set \"answer\" to the total equivalent resistance between terminals A and B as an integer number of ohms.\nExample JSON:\n{\"evidence\":[[2,3,4,5],[3,4,5,6],[4,5,6,7]],\"answer\":8}",
-    "answer_only": "You are given an image with one resistor network between terminals A and B with three or four parallel labeled resistor branches. Read the resistor values and determine the requested equivalent resistance. Using the resistor values shown, what equivalent resistance is seen between terminals A and B? Answer with an integer number of ohms.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the total equivalent resistance between terminals A and B as an integer number of ohms.\nExample JSON:\n{\"answer\":8}"
+    "answer_and_evidence": "You are given an image with one resistor network between terminals A and B that combines a short series chain with a parallel resistor bank. Use the resistor values shown in the boxes to answer the question. Determine the network's total resistance between A and B. Answer with an integer number of ohms.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for all resistor boxes that belong to the network between terminals A and B.\nAnswer format: set \"answer\" to the total equivalent resistance between terminals A and B as an integer number of ohms.\nExample JSON:\n{\"evidence\":[[2,3,4,5],[3,4,5,6],[4,5,6,7]],\"answer\":8}",
+    "answer_only": "You are given an image with one resistor network between terminals A and B that combines a short series chain with a parallel resistor bank. Use the resistor values shown in the boxes to answer the question. Determine the network's total resistance between A and B. Answer with an integer number of ohms.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the total equivalent resistance between terminals A and B as an integer number of ohms.\nExample JSON:\n{\"answer\":8}"
   },
   "task": "task_physics_circuits_equivalent_resistance",
   "task_variant": "total_resistance",
@@ -55,11 +67,13 @@
       }
     },
     "execution_trace": {
-      "accent_color_name": "maroon",
+      "accent_color_name": "magenta",
       "evidence_entity_ids": [
         "resistor_1",
         "resistor_2",
-        "resistor_3"
+        "resistor_3",
+        "resistor_4",
+        "resistor_5"
       ],
       "left_orientation": null,
       "left_parallel_values": [],
@@ -68,40 +82,67 @@
       "missing_resistor_index": null,
       "paired_total_resistance": null,
       "parallel_values": [
-        12,
-        12,
-        12
+        2,
+        3,
+        6
       ],
       "query_variant": "total_resistance",
       "resistor_specs": [
         {
           "missing": false,
           "resistor_id": "resistor_1",
-          "value": 12
+          "value": 4
         },
         {
           "missing": false,
           "resistor_id": "resistor_2",
-          "value": 12
+          "value": 2
         },
         {
           "missing": false,
           "resistor_id": "resistor_3",
-          "value": 12
+          "value": 2
+        },
+        {
+          "missing": false,
+          "resistor_id": "resistor_4",
+          "value": 3
+        },
+        {
+          "missing": false,
+          "resistor_id": "resistor_5",
+          "value": 6
         }
       ],
       "right_orientation": null,
       "right_parallel_values": [],
       "right_series_values": [],
-      "scene_variant": "parallel",
-      "series_parallel_orientation": null,
-      "series_values": [],
-      "target_answer": 4,
+      "scene_variant": "simple_series_parallel",
+      "series_parallel_orientation": "parallel_then_series",
+      "series_values": [
+        4,
+        2
+      ],
+      "target_answer": 7,
       "target_answer_support": [
         1,
         2,
         3,
-        4
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18
       ],
       "task_variant": "total_resistance"
     },
@@ -124,6 +165,18 @@
     "projected_evidence": {
       "bbox_set": [
         [
+          593.0,
+          257.0,
+          689.0,
+          303.0
+        ],
+        [
+          715.0,
+          257.0,
+          811.0,
+          303.0
+        ],
+        [
           422.0,
           167.0,
           518.0,
@@ -145,7 +198,7 @@
     },
     "query_spec": {
       "params": {
-        "accent_color_name": "maroon",
+        "accent_color_name": "magenta",
         "accent_color_name_probabilities": {
           "blue": 0.1,
           "brown": 0.1,
@@ -160,36 +213,64 @@
         },
         "query_variant": "total_resistance",
         "query_variant_probabilities": {
-          "missing_resistor_value": 0.0,
-          "total_resistance": 1.0
+          "missing_resistor_value": 0.5,
+          "total_resistance": 0.5
         },
-        "scene_variant": "parallel",
+        "scene_variant": "simple_series_parallel",
         "scene_variant_probabilities": {
-          "parallel": 0.5,
-          "simple_series_parallel": 0.5
+          "parallel": 0.0,
+          "simple_series_parallel": 1.0
         },
-        "target_answer": 4,
+        "target_answer": 7,
         "target_answer_probabilities": {
-          "1": 0.25,
-          "2": 0.25,
-          "3": 0.25,
-          "4": 0.25
+          "1": 0.05555555555555555,
+          "10": 0.05555555555555555,
+          "11": 0.05555555555555555,
+          "12": 0.05555555555555555,
+          "13": 0.05555555555555555,
+          "14": 0.05555555555555555,
+          "15": 0.05555555555555555,
+          "16": 0.05555555555555555,
+          "17": 0.05555555555555555,
+          "18": 0.05555555555555555,
+          "2": 0.05555555555555555,
+          "3": 0.05555555555555555,
+          "4": 0.05555555555555555,
+          "5": 0.05555555555555555,
+          "6": 0.05555555555555555,
+          "7": 0.05555555555555555,
+          "8": 0.05555555555555555,
+          "9": 0.05555555555555555
         },
         "target_answer_support": [
           1,
           2,
           3,
-          4
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18
         ],
         "task_variant": "total_resistance",
         "task_variant_probabilities": {
-          "missing_resistor_value": 0.0,
-          "total_resistance": 1.0
+          "missing_resistor_value": 0.5,
+          "total_resistance": 0.5
         }
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 4,
+        "answer_or_evidence_variant_index": 1,
         "prompt_bundle_id": "physics_circuits_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -199,14 +280,14 @@
           "json_example_answer_only": "{\"answer\":8}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "object_description": "one resistor network between terminals A and B with three or four parallel labeled resistor branches"
+          "object_description": "one resistor network between terminals A and B that combines a short series chain with a parallel resistor bank"
         },
         "task_family_key": "resistor_network_diagram",
         "task_family_variant_index": 2,
         "task_key": "equivalent_resistance_query",
-        "task_variant_index": 1,
+        "task_variant_index": 0,
         "task_variant_key": "total_resistance",
-        "task_variant_template_index": 1,
+        "task_variant_template_index": 2,
         "template_paths": [
           "physics/circuits/physics_circuits_v1.json"
         ],
@@ -222,7 +303,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 4,
+            "answer_or_evidence_variant_index": 1,
             "prompt_bundle_id": "physics_circuits_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -232,14 +313,14 @@
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "one resistor network between terminals A and B with three or four parallel labeled resistor branches"
+              "object_description": "one resistor network between terminals A and B that combines a short series chain with a parallel resistor bank"
             },
             "task_family_key": "resistor_network_diagram",
             "task_family_variant_index": 2,
             "task_key": "equivalent_resistance_query",
-            "task_variant_index": 1,
+            "task_variant_index": 0,
             "task_variant_key": "total_resistance",
-            "task_variant_template_index": 1,
+            "task_variant_template_index": 2,
             "template_paths": [
               "physics/circuits/physics_circuits_v1.json"
             ],
@@ -250,12 +331,12 @@
               "task_variant:total_resistance": 5
             }
           },
-          "prompt": "You are given an image with one resistor network between terminals A and B with three or four parallel labeled resistor branches. Read the resistor values and determine the requested equivalent resistance. Using the resistor values shown, what equivalent resistance is seen between terminals A and B? Answer with an integer number of ohms.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for all resistor boxes that belong to the network between terminals A and B.\nAnswer rule: set \"answer\" to the total equivalent resistance between terminals A and B as an integer number of ohms.\nExample JSON:\n{\"evidence\":[[2,3,4,5],[3,4,5,6],[4,5,6,7]],\"answer\":8}"
+          "prompt": "You are given an image with one resistor network between terminals A and B that combines a short series chain with a parallel resistor bank. Use the resistor values shown in the boxes to answer the question. Determine the network's total resistance between A and B. Answer with an integer number of ohms.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for all resistor boxes that belong to the network between terminals A and B.\nAnswer format: set \"answer\" to the total equivalent resistance between terminals A and B as an integer number of ohms.\nExample JSON:\n{\"evidence\":[[2,3,4,5],[3,4,5,6],[4,5,6,7]],\"answer\":8}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 2,
+            "answer_or_evidence_variant_index": 0,
             "prompt_bundle_id": "physics_circuits_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -265,14 +346,14 @@
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "one resistor network between terminals A and B with three or four parallel labeled resistor branches"
+              "object_description": "one resistor network between terminals A and B that combines a short series chain with a parallel resistor bank"
             },
             "task_family_key": "resistor_network_diagram",
             "task_family_variant_index": 2,
             "task_key": "equivalent_resistance_query",
-            "task_variant_index": 1,
+            "task_variant_index": 0,
             "task_variant_key": "total_resistance",
-            "task_variant_template_index": 1,
+            "task_variant_template_index": 2,
             "template_paths": [
               "physics/circuits/physics_circuits_v1.json"
             ],
@@ -283,34 +364,48 @@
               "task_variant:total_resistance": 5
             }
           },
-          "prompt": "You are given an image with one resistor network between terminals A and B with three or four parallel labeled resistor branches. Read the resistor values and determine the requested equivalent resistance. Using the resistor values shown, what equivalent resistance is seen between terminals A and B? Answer with an integer number of ohms.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the total equivalent resistance between terminals A and B as an integer number of ohms.\nExample JSON:\n{\"answer\":8}"
+          "prompt": "You are given an image with one resistor network between terminals A and B that combines a short series chain with a parallel resistor bank. Use the resistor values shown in the boxes to answer the question. Determine the network's total resistance between A and B. Answer with an integer number of ohms.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the total equivalent resistance between terminals A and B as an integer number of ohms.\nExample JSON:\n{\"answer\":8}"
         }
       },
       "task_variant": "total_resistance",
       "template_id": "physics_circuits_v1"
     },
     "render_map": {
-      "accent_color_name": "maroon",
+      "accent_color_name": "magenta",
       "evidence_entity_ids": [
         "resistor_1",
         "resistor_2",
-        "resistor_3"
+        "resistor_3",
+        "resistor_4",
+        "resistor_5"
       ],
       "missing_resistor_entity_ids": [],
       "resistor_bboxes_px": {
         "resistor_1": [
+          593.0,
+          257.0,
+          689.0,
+          303.0
+        ],
+        "resistor_2": [
+          715.0,
+          257.0,
+          811.0,
+          303.0
+        ],
+        "resistor_3": [
           422.0,
           167.0,
           518.0,
           213.0
         ],
-        "resistor_2": [
+        "resistor_4": [
           422.0,
           287.0,
           518.0,
           333.0
         ],
-        "resistor_3": [
+        "resistor_5": [
           422.0,
           407.0,
           518.0,
@@ -352,13 +447,33 @@
             280.0
           ],
           [
-            268.0,
+            360.0,
             280.0
           ]
         ],
         [
           [
-            672.0,
+            580.0,
+            280.0
+          ],
+          [
+            593.0,
+            280.0
+          ]
+        ],
+        [
+          [
+            689.0,
+            280.0
+          ],
+          [
+            715.0,
+            280.0
+          ]
+        ],
+        [
+          [
+            811.0,
             280.0
           ],
           [
@@ -368,27 +483,27 @@
         ],
         [
           [
-            268.0,
+            360.0,
             190.0
           ],
           [
-            268.0,
+            360.0,
             430.0
           ]
         ],
         [
           [
-            672.0,
+            580.0,
             190.0
           ],
           [
-            672.0,
+            580.0,
             430.0
           ]
         ],
         [
           [
-            268.0,
+            360.0,
             190.0
           ],
           [
@@ -402,13 +517,13 @@
             190.0
           ],
           [
-            672.0,
+            580.0,
             190.0
           ]
         ],
         [
           [
-            268.0,
+            360.0,
             310.0
           ],
           [
@@ -422,13 +537,13 @@
             310.0
           ],
           [
-            672.0,
+            580.0,
             310.0
           ]
         ],
         [
           [
-            268.0,
+            360.0,
             430.0
           ],
           [
@@ -442,17 +557,17 @@
             430.0
           ],
           [
-            672.0,
+            580.0,
             430.0
           ]
         ]
       ]
     },
     "render_spec": {
-      "accent_color_name": "maroon",
+      "accent_color_name": "magenta",
       "canvas_height": 560,
       "canvas_width": 940,
-      "scene_variant": "parallel"
+      "scene_variant": "simple_series_parallel"
     },
     "scene_ir": {
       "entities": [
@@ -484,16 +599,44 @@
         },
         {
           "bbox_px": [
-            422.0,
-            167.0,
-            518.0,
-            213.0
+            593.0,
+            257.0,
+            689.0,
+            303.0
           ],
           "entity_id": "resistor_1",
           "entity_type": "physics_resistor",
           "meta": {
             "missing": false,
-            "value": 12
+            "value": 4
+          }
+        },
+        {
+          "bbox_px": [
+            715.0,
+            257.0,
+            811.0,
+            303.0
+          ],
+          "entity_id": "resistor_2",
+          "entity_type": "physics_resistor",
+          "meta": {
+            "missing": false,
+            "value": 2
+          }
+        },
+        {
+          "bbox_px": [
+            422.0,
+            167.0,
+            518.0,
+            213.0
+          ],
+          "entity_id": "resistor_3",
+          "entity_type": "physics_resistor",
+          "meta": {
+            "missing": false,
+            "value": 2
           }
         },
         {
@@ -503,11 +646,11 @@
             518.0,
             333.0
           ],
-          "entity_id": "resistor_2",
+          "entity_id": "resistor_4",
           "entity_type": "physics_resistor",
           "meta": {
             "missing": false,
-            "value": 12
+            "value": 3
           }
         },
         {
@@ -517,34 +660,38 @@
             518.0,
             453.0
           ],
-          "entity_id": "resistor_3",
+          "entity_id": "resistor_5",
           "entity_type": "physics_resistor",
           "meta": {
             "missing": false,
-            "value": 12
+            "value": 6
           }
         }
       ],
       "relations": {
-        "accent_color_name": "maroon",
+        "accent_color_name": "magenta",
         "evidence_entity_ids": [
           "resistor_1",
           "resistor_2",
-          "resistor_3"
+          "resistor_3",
+          "resistor_4",
+          "resistor_5"
         ],
         "paired_total_resistance": null,
         "query_variant": "total_resistance",
-        "scene_variant": "parallel",
-        "target_answer": 4,
+        "scene_variant": "simple_series_parallel",
+        "target_answer": 7,
         "task_variant": "total_resistance"
       },
-      "scene_kind": "physics_resistor_network_parallel"
+      "scene_kind": "physics_resistor_network_simple_series_parallel"
     },
     "witness_symbolic": {
       "ids": [
         "resistor_1",
         "resistor_2",
-        "resistor_3"
+        "resistor_3",
+        "resistor_4",
+        "resistor_5"
       ],
       "type": "id_set"
     }

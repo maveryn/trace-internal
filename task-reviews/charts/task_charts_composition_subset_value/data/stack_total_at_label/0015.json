@@ -1,71 +1,70 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 48
+    "value": 58
   },
   "evidence_gt": {
     "type": "integer_list",
     "value": [
-      14,
-      9,
-      6,
-      5,
-      14
+      7,
+      18,
+      16,
+      17
     ]
   },
   "image": {
     "format": "png",
     "path": "charts/task_charts_composition_subset_value/images/stack_total_at_label/0015.png"
   },
-  "instance_seed": 5195601931348505,
-  "prompt": "Look at the chart in the image. It shows a stacked horizontal bar chart. Each category has one horizontal bar divided into differently colored segments, a legend on the right maps segment colors to segment labels, and the integer segment values are printed inside the segments. Read the relevant composition values directly from the chart and answer the question. Add the segment values in the stack at category N. What total do you get?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array [v1, v2, ...] listing the segment values in legend order for the queried stack.\nAnswer requirement: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[6,9,5],\"answer\":20}",
+  "instance_seed": 1842736231098878,
+  "prompt": "Work from the chart shown in the image: a stacked horizontal bar chart. Each category has one horizontal bar divided into differently colored segments, a legend on the right maps segment colors to segment labels, and the integer segment values are printed inside the segments. Answer the question using the printed values shown in the composition chart. Add the segment values in the stack at category N. What total do you get?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array [v1, v2, ...] listing the segment values in legend order for the queried stack.\nAnswer rule: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[6,9,5],\"answer\":20}",
   "prompt_variants": {
-    "answer_and_evidence": "Look at the chart in the image. It shows a stacked horizontal bar chart. Each category has one horizontal bar divided into differently colored segments, a legend on the right maps segment colors to segment labels, and the integer segment values are printed inside the segments. Read the relevant composition values directly from the chart and answer the question. Add the segment values in the stack at category N. What total do you get?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array [v1, v2, ...] listing the segment values in legend order for the queried stack.\nAnswer requirement: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[6,9,5],\"answer\":20}",
-    "answer_only": "Look at the chart in the image. It shows a stacked horizontal bar chart. Each category has one horizontal bar divided into differently colored segments, a legend on the right maps segment colors to segment labels, and the integer segment values are printed inside the segments. Read the relevant composition values directly from the chart and answer the question. Add the segment values in the stack at category N. What total do you get?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":20}"
+    "answer_and_evidence": "Work from the chart shown in the image: a stacked horizontal bar chart. Each category has one horizontal bar divided into differently colored segments, a legend on the right maps segment colors to segment labels, and the integer segment values are printed inside the segments. Answer the question using the printed values shown in the composition chart. Add the segment values in the stack at category N. What total do you get?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array [v1, v2, ...] listing the segment values in legend order for the queried stack.\nAnswer rule: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[6,9,5],\"answer\":20}",
+    "answer_only": "Work from the chart shown in the image: a stacked horizontal bar chart. Each category has one horizontal bar divided into differently colored segments, a legend on the right maps segment colors to segment labels, and the integer segment values are printed inside the segments. Answer the question using the printed values shown in the composition chart. Add the segment values in the stack at category N. What total do you get?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":20}"
   },
   "task": "task_charts_composition_subset_value",
   "task_variant": "stack_total_at_label",
   "trace_payload": {
     "execution_trace": {
-      "answer_value": 48,
-      "category_count": 4,
+      "answer_value": 58,
+      "category_count": 6,
       "category_count_range": [
         4,
         7
       ],
       "category_labels": [
-        "H",
+        "A",
+        "T",
         "N",
-        "Z",
-        "E"
+        "X",
+        "G",
+        "B"
       ],
       "composition_scope": "stack",
       "evidence_labels": [
-        "Ayn",
-        "Lean",
-        "Mide",
-        "Jeuz",
-        "Ley"
+        "Yaya",
+        "Wyly",
+        "Yasu",
+        "Orva"
       ],
       "evidence_values": [
-        14,
-        9,
-        6,
-        5,
-        14
+        7,
+        18,
+        16,
+        17
       ],
       "mark_color_distance_space": "lab",
       "mark_color_min_distance": 40.0,
       "mark_color_sampling_policy": "random_rgb_palette",
       "mark_fill_rgb": [
-        36,
-        136,
-        128
+        19,
+        102,
+        132
       ],
       "mark_outline_rgb": [
-        20,
-        75,
-        70
+        10,
+        56,
+        73
       ],
       "query_category_label": "N",
       "query_series_label": "",
@@ -77,210 +76,191 @@
         "stacked_bar": 0.5,
         "stacked_horizontal_bar": 0.5
       },
-      "series_count": 5,
+      "series_count": 4,
       "series_count_range": [
         3,
         5
       ],
       "series_fill_palette_rgb": [
         [
-          36,
-          136,
-          128
+          19,
+          102,
+          132
         ],
         [
-          120,
-          162,
-          74
+          195,
+          20,
+          3
+        ],
+        [
+          55,
+          157,
+          59
         ],
         [
           115,
-          49,
-          150
-        ],
-        [
-          81,
-          65,
-          74
-        ],
-        [
-          202,
-          20,
-          3
+          108,
+          30
         ]
       ],
       "series_labels": [
-        "Ayn",
-        "Lean",
-        "Mide",
-        "Jeuz",
-        "Ley"
+        "Yaya",
+        "Wyly",
+        "Yasu",
+        "Orva"
       ],
       "series_outline_palette_rgb": [
         [
-          20,
-          75,
-          70
+          10,
+          56,
+          73
         ],
         [
-          66,
-          89,
-          41
+          107,
+          11,
+          2
+        ],
+        [
+          30,
+          86,
+          32
         ],
         [
           63,
-          27,
-          82
-        ],
-        [
-          45,
-          36,
-          41
-        ],
-        [
-          111,
-          11,
-          2
+          59,
+          16
         ]
       ],
-      "target_answer": 48,
+      "target_answer": 58,
       "target_answer_range": [
         12,
         90
       ],
       "task_variant": "stack_total_at_label",
       "task_variant_probabilities": {
-        "combined_share_subset": 0.3333333333333333,
-        "stack_segment_value": 0.3333333333333333,
-        "stack_total_at_label": 0.3333333333333333
+        "combined_share_subset": 0.0,
+        "stack_segment_value": 0.0,
+        "stack_total_at_label": 1.0
       },
       "value_semantics": "integer",
       "values_by_category": {
-        "E": {
-          "Ayn": 6,
-          "Jeuz": 9,
-          "Lean": 14,
-          "Ley": 12,
-          "Mide": 8
+        "A": {
+          "Orva": 6,
+          "Wyly": 7,
+          "Yasu": 9,
+          "Yaya": 10
         },
-        "H": {
-          "Ayn": 5,
-          "Jeuz": 10,
-          "Lean": 17,
-          "Ley": 6,
-          "Mide": 7
+        "B": {
+          "Orva": 5,
+          "Wyly": 13,
+          "Yasu": 11,
+          "Yaya": 11
+        },
+        "G": {
+          "Orva": 16,
+          "Wyly": 17,
+          "Yasu": 13,
+          "Yaya": 16
         },
         "N": {
-          "Ayn": 14,
-          "Jeuz": 5,
-          "Lean": 9,
-          "Ley": 14,
-          "Mide": 6
+          "Orva": 17,
+          "Wyly": 18,
+          "Yasu": 16,
+          "Yaya": 7
         },
-        "Z": {
-          "Ayn": 5,
-          "Jeuz": 18,
-          "Lean": 16,
-          "Ley": 4,
-          "Mide": 17
+        "T": {
+          "Orva": 5,
+          "Wyly": 5,
+          "Yasu": 5,
+          "Yaya": 12
+        },
+        "X": {
+          "Orva": 10,
+          "Wyly": 10,
+          "Yasu": 14,
+          "Yaya": 9
         }
       },
       "values_by_label": {
-        "Ayn": 14,
-        "Jeuz": 5,
-        "Lean": 9,
-        "Ley": 14,
-        "Mide": 6
+        "Orva": 17,
+        "Wyly": 18,
+        "Yasu": 16,
+        "Yaya": 7
       }
     },
     "projected_evidence": {
       "bbox_set": [
         [
           120.0,
-          211.79,
-          289.148,
-          299.21
+          249.86,
+          201.889,
+          308.14
         ],
         [
-          289.148,
-          211.79,
-          397.885,
-          299.21
+          201.889,
+          249.86,
+          412.46,
+          308.14
         ],
         [
-          397.885,
-          211.79,
-          470.377,
-          299.21
+          412.46,
+          249.86,
+          599.635,
+          308.14
         ],
         [
-          470.377,
-          211.79,
-          530.787,
-          299.21
-        ],
-        [
-          530.787,
-          211.79,
-          699.934,
-          299.21
+          599.635,
+          249.86,
+          798.508,
+          308.14
         ]
       ],
       "integer_list": [
-        14,
-        9,
-        6,
-        5,
-        14
+        7,
+        18,
+        16,
+        17
       ],
       "pixel_point_map": {
-        "Ayn": [
-          204.574,
-          255.5
+        "Orva": [
+          699.071,
+          279.0
         ],
-        "Jeuz": [
-          500.582,
-          255.5
+        "Wyly": [
+          307.175,
+          279.0
         ],
-        "Lean": [
-          343.516,
-          255.5
+        "Yasu": [
+          506.048,
+          279.0
         ],
-        "Ley": [
-          615.361,
-          255.5
-        ],
-        "Mide": [
-          434.131,
-          255.5
+        "Yaya": [
+          160.944,
+          279.0
         ]
       },
       "pixel_point_set": [
         [
-          204.574,
-          255.5
+          160.944,
+          279.0
         ],
         [
-          343.516,
-          255.5
+          307.175,
+          279.0
         ],
         [
-          434.131,
-          255.5
+          506.048,
+          279.0
         ],
         [
-          500.582,
-          255.5
-        ],
-        [
-          615.361,
-          255.5
+          699.071,
+          279.0
         ]
       ]
     },
     "query_spec": {
       "params": {
-        "category_count": 4,
+        "category_count": 6,
         "category_count_range": [
           4,
           7
@@ -293,26 +273,26 @@
           "stacked_bar": 0.5,
           "stacked_horizontal_bar": 0.5
         },
-        "series_count": 5,
+        "series_count": 4,
         "series_count_range": [
           3,
           5
         ],
-        "target_answer": 48,
+        "target_answer": 58,
         "target_answer_range": [
           12,
           90
         ],
         "task_variant": "stack_total_at_label",
         "task_variant_probabilities": {
-          "combined_share_subset": 0.3333333333333333,
-          "stack_segment_value": 0.3333333333333333,
-          "stack_total_at_label": 0.3333333333333333
+          "combined_share_subset": 0.0,
+          "stack_segment_value": 0.0,
+          "stack_total_at_label": 1.0
         }
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 2,
+        "answer_or_evidence_variant_index": 4,
         "prompt_bundle_id": "charts_composition_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -329,9 +309,9 @@
           "query_series_label": ""
         },
         "task_family_key": "composition_chart_value",
-        "task_family_variant_index": 3,
+        "task_family_variant_index": 2,
         "task_key": "subset_value_query",
-        "task_variant_index": 3,
+        "task_variant_index": 4,
         "task_variant_key": "stack_total_at_label",
         "task_variant_template_index": 4,
         "template_paths": [
@@ -349,7 +329,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 2,
+            "answer_or_evidence_variant_index": 4,
             "prompt_bundle_id": "charts_composition_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -366,9 +346,9 @@
               "query_series_label": ""
             },
             "task_family_key": "composition_chart_value",
-            "task_family_variant_index": 3,
+            "task_family_variant_index": 2,
             "task_key": "subset_value_query",
-            "task_variant_index": 3,
+            "task_variant_index": 4,
             "task_variant_key": "stack_total_at_label",
             "task_variant_template_index": 4,
             "template_paths": [
@@ -381,12 +361,12 @@
               "task_variant:stack_total_at_label": 5
             }
           },
-          "prompt": "Look at the chart in the image. It shows a stacked horizontal bar chart. Each category has one horizontal bar divided into differently colored segments, a legend on the right maps segment colors to segment labels, and the integer segment values are printed inside the segments. Read the relevant composition values directly from the chart and answer the question. Add the segment values in the stack at category N. What total do you get?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array [v1, v2, ...] listing the segment values in legend order for the queried stack.\nAnswer requirement: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[6,9,5],\"answer\":20}"
+          "prompt": "Work from the chart shown in the image: a stacked horizontal bar chart. Each category has one horizontal bar divided into differently colored segments, a legend on the right maps segment colors to segment labels, and the integer segment values are printed inside the segments. Answer the question using the printed values shown in the composition chart. Add the segment values in the stack at category N. What total do you get?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array [v1, v2, ...] listing the segment values in legend order for the queried stack.\nAnswer rule: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[6,9,5],\"answer\":20}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 3,
+            "answer_or_evidence_variant_index": 0,
             "prompt_bundle_id": "charts_composition_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -403,9 +383,9 @@
               "query_series_label": ""
             },
             "task_family_key": "composition_chart_value",
-            "task_family_variant_index": 3,
+            "task_family_variant_index": 2,
             "task_key": "subset_value_query",
-            "task_variant_index": 3,
+            "task_variant_index": 4,
             "task_variant_key": "stack_total_at_label",
             "task_variant_template_index": 4,
             "template_paths": [
@@ -418,7 +398,7 @@
               "task_variant:stack_total_at_label": 5
             }
           },
-          "prompt": "Look at the chart in the image. It shows a stacked horizontal bar chart. Each category has one horizontal bar divided into differently colored segments, a legend on the right maps segment colors to segment labels, and the integer segment values are printed inside the segments. Read the relevant composition values directly from the chart and answer the question. Add the segment values in the stack at category N. What total do you get?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":20}"
+          "prompt": "Work from the chart shown in the image: a stacked horizontal bar chart. Each category has one horizontal bar divided into differently colored segments, a legend on the right maps segment colors to segment labels, and the integer segment values are printed inside the segments. Answer the question using the printed values shown in the composition chart. Add the segment values in the stack at category N. What total do you get?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":20}"
         }
       },
       "task_variant": "stack_total_at_label",
@@ -427,21 +407,29 @@
     "render_map": {
       "image_id": "img0",
       "label_centers_px": {
-        "E": [
+        "A": [
           86.0,
-          537.5
+          91.0
         ],
-        "H": [
+        "B": [
           86.0,
-          114.5
+          561.0
+        ],
+        "G": [
+          86.0,
+          467.0
         ],
         "N": [
           86.0,
-          255.5
+          279.0
         ],
-        "Z": [
+        "T": [
           86.0,
-          396.5
+          185.0
+        ],
+        "X": [
+          86.0,
+          373.0
         ]
       },
       "plot_bbox_px": [
@@ -479,68 +467,58 @@
         "mark_color_distance_space": "lab",
         "mark_color_min_distance": 40.0,
         "mark_fill_rgb": [
-          36,
-          136,
-          128
+          19,
+          102,
+          132
         ],
         "mark_outline_rgb": [
-          20,
-          75,
-          70
+          10,
+          56,
+          73
         ],
         "sampling_policy": "random_rgb_palette",
         "series_fill_palette_rgb": [
           [
-            36,
-            136,
-            128
+            19,
+            102,
+            132
           ],
           [
-            120,
-            162,
-            74
+            195,
+            20,
+            3
+          ],
+          [
+            55,
+            157,
+            59
           ],
           [
             115,
-            49,
-            150
-          ],
-          [
-            81,
-            65,
-            74
-          ],
-          [
-            202,
-            20,
-            3
+            108,
+            30
           ]
         ],
         "series_outline_palette_rgb": [
           [
-            20,
-            75,
-            70
+            10,
+            56,
+            73
           ],
           [
-            66,
-            89,
-            41
+            107,
+            11,
+            2
+          ],
+          [
+            30,
+            86,
+            32
           ],
           [
             63,
-            27,
-            82
-          ],
-          [
-            45,
-            36,
-            41
-          ],
-          [
-            111,
-            11,
-            2
+            59,
+            16
           ]
         ]
       },
@@ -572,7 +550,7 @@
         "label_stroke_width_px": 2,
         "tick_font_size_px": 20
       },
-      "y_axis_max": 61,
+      "y_axis_max": 63,
       "y_ticks": [
         0,
         1,
@@ -635,7 +613,9 @@
         58,
         59,
         60,
-        61
+        61,
+        62,
+        63
       ]
     },
     "scene_ir": {
@@ -643,17 +623,17 @@
         {
           "attrs": {
             "category_group_bbox_px": [
-              76.0,
-              70.79,
-              663.689,
-              158.21
+              76.5,
+              61.86,
+              494.349,
+              120.14
             ],
-            "category_label": "H",
+            "category_label": "A",
             "category_rank": 0,
             "legend_label_bbox_px": [
               931.0,
               62.5,
-              983.0,
+              997.0,
               85.5
             ],
             "legend_swatch_bbox_px": [
@@ -664,51 +644,51 @@
             ],
             "mark_bbox_px": [
               120.0,
-              70.79,
-              180.41,
-              158.21
+              61.86,
+              236.984,
+              120.14
             ],
             "mark_center_px": [
-              150.205,
-              114.5
+              178.492,
+              91.0
             ],
             "mark_fill_rgb": [
-              36,
-              136,
-              128
+              19,
+              102,
+              132
             ],
             "mark_outline_rgb": [
-              20,
-              75,
-              70
+              10,
+              56,
+              73
             ],
             "scene_variant": "stacked_horizontal_bar",
-            "series_label": "Ayn",
+            "series_label": "Yaya",
             "series_rank": 0,
-            "value": 5,
+            "value": 10,
             "value_center_px": [
-              150.205,
-              114.5
+              178.492,
+              91.0
             ]
           },
-          "entity_id": "segment_H_Ayn",
+          "entity_id": "segment_A_Yaya",
           "entity_type": "segment"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              76.0,
-              70.79,
-              663.689,
-              158.21
+              76.5,
+              61.86,
+              494.349,
+              120.14
             ],
-            "category_label": "H",
+            "category_label": "A",
             "category_rank": 0,
             "legend_label_bbox_px": [
               931.0,
-              107.0,
-              995.0,
-              125.0
+              104.5,
+              997.0,
+              127.5
             ],
             "legend_swatch_bbox_px": [
               881.0,
@@ -717,46 +697,46 @@
               130.0
             ],
             "mark_bbox_px": [
-              180.41,
-              70.79,
-              385.803,
-              158.21
+              236.984,
+              61.86,
+              318.873,
+              120.14
             ],
             "mark_center_px": [
-              283.107,
-              114.5
+              277.929,
+              91.0
             ],
             "mark_fill_rgb": [
-              120,
-              162,
-              74
+              195,
+              20,
+              3
             ],
             "mark_outline_rgb": [
-              66,
-              89,
-              41
+              107,
+              11,
+              2
             ],
             "scene_variant": "stacked_horizontal_bar",
-            "series_label": "Lean",
+            "series_label": "Wyly",
             "series_rank": 1,
-            "value": 17,
+            "value": 7,
             "value_center_px": [
-              283.107,
-              114.5
+              277.929,
+              91.0
             ]
           },
-          "entity_id": "segment_H_Lean",
+          "entity_id": "segment_A_Wyly",
           "entity_type": "segment"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              76.0,
-              70.79,
-              663.689,
-              158.21
+              76.5,
+              61.86,
+              494.349,
+              120.14
             ],
-            "category_label": "H",
+            "category_label": "A",
             "category_rank": 0,
             "legend_label_bbox_px": [
               931.0,
@@ -771,52 +751,52 @@
               172.0
             ],
             "mark_bbox_px": [
-              385.803,
-              70.79,
-              470.377,
-              158.21
+              318.873,
+              61.86,
+              424.159,
+              120.14
             ],
             "mark_center_px": [
-              428.09,
-              114.5
+              371.516,
+              91.0
             ],
             "mark_fill_rgb": [
-              115,
-              49,
-              150
+              55,
+              157,
+              59
             ],
             "mark_outline_rgb": [
-              63,
-              27,
-              82
+              30,
+              86,
+              32
             ],
             "scene_variant": "stacked_horizontal_bar",
-            "series_label": "Mide",
+            "series_label": "Yasu",
             "series_rank": 2,
-            "value": 7,
+            "value": 9,
             "value_center_px": [
-              428.09,
-              114.5
+              371.516,
+              91.0
             ]
           },
-          "entity_id": "segment_H_Mide",
+          "entity_id": "segment_A_Yasu",
           "entity_type": "segment"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              76.0,
-              70.79,
-              663.689,
-              158.21
+              76.5,
+              61.86,
+              494.349,
+              120.14
             ],
-            "category_label": "H",
+            "category_label": "A",
             "category_rank": 0,
             "legend_label_bbox_px": [
               931.0,
-              188.5,
-              989.0,
-              211.5
+              191.0,
+              995.0,
+              209.0
             ],
             "legend_swatch_bbox_px": [
               881.0,
@@ -825,105 +805,699 @@
               214.0
             ],
             "mark_bbox_px": [
-              470.377,
-              70.79,
-              591.197,
-              158.21
+              424.159,
+              61.86,
+              494.349,
+              120.14
             ],
             "mark_center_px": [
-              530.787,
-              114.5
+              459.254,
+              91.0
             ],
             "mark_fill_rgb": [
-              81,
-              65,
-              74
+              115,
+              108,
+              30
             ],
             "mark_outline_rgb": [
-              45,
-              36,
-              41
+              63,
+              59,
+              16
             ],
             "scene_variant": "stacked_horizontal_bar",
-            "series_label": "Jeuz",
+            "series_label": "Orva",
+            "series_rank": 3,
+            "value": 6,
+            "value_center_px": [
+              459.254,
+              91.0
+            ]
+          },
+          "entity_id": "segment_A_Orva",
+          "entity_type": "segment"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              77.5,
+              155.86,
+              435.857,
+              214.14
+            ],
+            "category_label": "T",
+            "category_rank": 1,
+            "legend_label_bbox_px": [
+              931.0,
+              62.5,
+              997.0,
+              85.5
+            ],
+            "legend_swatch_bbox_px": [
+              881.0,
+              60.0,
+              909.0,
+              88.0
+            ],
+            "mark_bbox_px": [
+              120.0,
+              155.86,
+              260.381,
+              214.14
+            ],
+            "mark_center_px": [
+              190.19,
+              185.0
+            ],
+            "mark_fill_rgb": [
+              19,
+              102,
+              132
+            ],
+            "mark_outline_rgb": [
+              10,
+              56,
+              73
+            ],
+            "scene_variant": "stacked_horizontal_bar",
+            "series_label": "Yaya",
+            "series_rank": 0,
+            "value": 12,
+            "value_center_px": [
+              190.19,
+              185.0
+            ]
+          },
+          "entity_id": "segment_T_Yaya",
+          "entity_type": "segment"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              77.5,
+              155.86,
+              435.857,
+              214.14
+            ],
+            "category_label": "T",
+            "category_rank": 1,
+            "legend_label_bbox_px": [
+              931.0,
+              104.5,
+              997.0,
+              127.5
+            ],
+            "legend_swatch_bbox_px": [
+              881.0,
+              102.0,
+              909.0,
+              130.0
+            ],
+            "mark_bbox_px": [
+              260.381,
+              155.86,
+              318.873,
+              214.14
+            ],
+            "mark_center_px": [
+              289.627,
+              185.0
+            ],
+            "mark_fill_rgb": [
+              195,
+              20,
+              3
+            ],
+            "mark_outline_rgb": [
+              107,
+              11,
+              2
+            ],
+            "scene_variant": "stacked_horizontal_bar",
+            "series_label": "Wyly",
+            "series_rank": 1,
+            "value": 5,
+            "value_center_px": [
+              289.627,
+              185.0
+            ]
+          },
+          "entity_id": "segment_T_Wyly",
+          "entity_type": "segment"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              77.5,
+              155.86,
+              435.857,
+              214.14
+            ],
+            "category_label": "T",
+            "category_rank": 1,
+            "legend_label_bbox_px": [
+              931.0,
+              149.0,
+              996.0,
+              167.0
+            ],
+            "legend_swatch_bbox_px": [
+              881.0,
+              144.0,
+              909.0,
+              172.0
+            ],
+            "mark_bbox_px": [
+              318.873,
+              155.86,
+              377.365,
+              214.14
+            ],
+            "mark_center_px": [
+              348.119,
+              185.0
+            ],
+            "mark_fill_rgb": [
+              55,
+              157,
+              59
+            ],
+            "mark_outline_rgb": [
+              30,
+              86,
+              32
+            ],
+            "scene_variant": "stacked_horizontal_bar",
+            "series_label": "Yasu",
+            "series_rank": 2,
+            "value": 5,
+            "value_center_px": [
+              348.119,
+              185.0
+            ]
+          },
+          "entity_id": "segment_T_Yasu",
+          "entity_type": "segment"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              77.5,
+              155.86,
+              435.857,
+              214.14
+            ],
+            "category_label": "T",
+            "category_rank": 1,
+            "legend_label_bbox_px": [
+              931.0,
+              191.0,
+              995.0,
+              209.0
+            ],
+            "legend_swatch_bbox_px": [
+              881.0,
+              186.0,
+              909.0,
+              214.0
+            ],
+            "mark_bbox_px": [
+              377.365,
+              155.86,
+              435.857,
+              214.14
+            ],
+            "mark_center_px": [
+              406.611,
+              185.0
+            ],
+            "mark_fill_rgb": [
+              115,
+              108,
+              30
+            ],
+            "mark_outline_rgb": [
+              63,
+              59,
+              16
+            ],
+            "scene_variant": "stacked_horizontal_bar",
+            "series_label": "Orva",
+            "series_rank": 3,
+            "value": 5,
+            "value_center_px": [
+              406.611,
+              185.0
+            ]
+          },
+          "entity_id": "segment_T_Orva",
+          "entity_type": "segment"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              76.0,
+              249.86,
+              798.508,
+              308.14
+            ],
+            "category_label": "N",
+            "category_rank": 2,
+            "legend_label_bbox_px": [
+              931.0,
+              62.5,
+              997.0,
+              85.5
+            ],
+            "legend_swatch_bbox_px": [
+              881.0,
+              60.0,
+              909.0,
+              88.0
+            ],
+            "mark_bbox_px": [
+              120.0,
+              249.86,
+              201.889,
+              308.14
+            ],
+            "mark_center_px": [
+              160.944,
+              279.0
+            ],
+            "mark_fill_rgb": [
+              19,
+              102,
+              132
+            ],
+            "mark_outline_rgb": [
+              10,
+              56,
+              73
+            ],
+            "scene_variant": "stacked_horizontal_bar",
+            "series_label": "Yaya",
+            "series_rank": 0,
+            "value": 7,
+            "value_center_px": [
+              160.944,
+              279.0
+            ]
+          },
+          "entity_id": "segment_N_Yaya",
+          "entity_type": "segment"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              76.0,
+              249.86,
+              798.508,
+              308.14
+            ],
+            "category_label": "N",
+            "category_rank": 2,
+            "legend_label_bbox_px": [
+              931.0,
+              104.5,
+              997.0,
+              127.5
+            ],
+            "legend_swatch_bbox_px": [
+              881.0,
+              102.0,
+              909.0,
+              130.0
+            ],
+            "mark_bbox_px": [
+              201.889,
+              249.86,
+              412.46,
+              308.14
+            ],
+            "mark_center_px": [
+              307.175,
+              279.0
+            ],
+            "mark_fill_rgb": [
+              195,
+              20,
+              3
+            ],
+            "mark_outline_rgb": [
+              107,
+              11,
+              2
+            ],
+            "scene_variant": "stacked_horizontal_bar",
+            "series_label": "Wyly",
+            "series_rank": 1,
+            "value": 18,
+            "value_center_px": [
+              307.175,
+              279.0
+            ]
+          },
+          "entity_id": "segment_N_Wyly",
+          "entity_type": "segment"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              76.0,
+              249.86,
+              798.508,
+              308.14
+            ],
+            "category_label": "N",
+            "category_rank": 2,
+            "legend_label_bbox_px": [
+              931.0,
+              149.0,
+              996.0,
+              167.0
+            ],
+            "legend_swatch_bbox_px": [
+              881.0,
+              144.0,
+              909.0,
+              172.0
+            ],
+            "mark_bbox_px": [
+              412.46,
+              249.86,
+              599.635,
+              308.14
+            ],
+            "mark_center_px": [
+              506.048,
+              279.0
+            ],
+            "mark_fill_rgb": [
+              55,
+              157,
+              59
+            ],
+            "mark_outline_rgb": [
+              30,
+              86,
+              32
+            ],
+            "scene_variant": "stacked_horizontal_bar",
+            "series_label": "Yasu",
+            "series_rank": 2,
+            "value": 16,
+            "value_center_px": [
+              506.048,
+              279.0
+            ]
+          },
+          "entity_id": "segment_N_Yasu",
+          "entity_type": "segment"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              76.0,
+              249.86,
+              798.508,
+              308.14
+            ],
+            "category_label": "N",
+            "category_rank": 2,
+            "legend_label_bbox_px": [
+              931.0,
+              191.0,
+              995.0,
+              209.0
+            ],
+            "legend_swatch_bbox_px": [
+              881.0,
+              186.0,
+              909.0,
+              214.0
+            ],
+            "mark_bbox_px": [
+              599.635,
+              249.86,
+              798.508,
+              308.14
+            ],
+            "mark_center_px": [
+              699.071,
+              279.0
+            ],
+            "mark_fill_rgb": [
+              115,
+              108,
+              30
+            ],
+            "mark_outline_rgb": [
+              63,
+              59,
+              16
+            ],
+            "scene_variant": "stacked_horizontal_bar",
+            "series_label": "Orva",
+            "series_rank": 3,
+            "value": 17,
+            "value_center_px": [
+              699.071,
+              279.0
+            ]
+          },
+          "entity_id": "segment_N_Orva",
+          "entity_type": "segment"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              76.5,
+              343.86,
+              623.032,
+              402.14
+            ],
+            "category_label": "X",
+            "category_rank": 3,
+            "legend_label_bbox_px": [
+              931.0,
+              62.5,
+              997.0,
+              85.5
+            ],
+            "legend_swatch_bbox_px": [
+              881.0,
+              60.0,
+              909.0,
+              88.0
+            ],
+            "mark_bbox_px": [
+              120.0,
+              343.86,
+              225.286,
+              402.14
+            ],
+            "mark_center_px": [
+              172.643,
+              373.0
+            ],
+            "mark_fill_rgb": [
+              19,
+              102,
+              132
+            ],
+            "mark_outline_rgb": [
+              10,
+              56,
+              73
+            ],
+            "scene_variant": "stacked_horizontal_bar",
+            "series_label": "Yaya",
+            "series_rank": 0,
+            "value": 9,
+            "value_center_px": [
+              172.643,
+              373.0
+            ]
+          },
+          "entity_id": "segment_X_Yaya",
+          "entity_type": "segment"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              76.5,
+              343.86,
+              623.032,
+              402.14
+            ],
+            "category_label": "X",
+            "category_rank": 3,
+            "legend_label_bbox_px": [
+              931.0,
+              104.5,
+              997.0,
+              127.5
+            ],
+            "legend_swatch_bbox_px": [
+              881.0,
+              102.0,
+              909.0,
+              130.0
+            ],
+            "mark_bbox_px": [
+              225.286,
+              343.86,
+              342.27,
+              402.14
+            ],
+            "mark_center_px": [
+              283.778,
+              373.0
+            ],
+            "mark_fill_rgb": [
+              195,
+              20,
+              3
+            ],
+            "mark_outline_rgb": [
+              107,
+              11,
+              2
+            ],
+            "scene_variant": "stacked_horizontal_bar",
+            "series_label": "Wyly",
+            "series_rank": 1,
+            "value": 10,
+            "value_center_px": [
+              283.778,
+              373.0
+            ]
+          },
+          "entity_id": "segment_X_Wyly",
+          "entity_type": "segment"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              76.5,
+              343.86,
+              623.032,
+              402.14
+            ],
+            "category_label": "X",
+            "category_rank": 3,
+            "legend_label_bbox_px": [
+              931.0,
+              149.0,
+              996.0,
+              167.0
+            ],
+            "legend_swatch_bbox_px": [
+              881.0,
+              144.0,
+              909.0,
+              172.0
+            ],
+            "mark_bbox_px": [
+              342.27,
+              343.86,
+              506.048,
+              402.14
+            ],
+            "mark_center_px": [
+              424.159,
+              373.0
+            ],
+            "mark_fill_rgb": [
+              55,
+              157,
+              59
+            ],
+            "mark_outline_rgb": [
+              30,
+              86,
+              32
+            ],
+            "scene_variant": "stacked_horizontal_bar",
+            "series_label": "Yasu",
+            "series_rank": 2,
+            "value": 14,
+            "value_center_px": [
+              424.159,
+              373.0
+            ]
+          },
+          "entity_id": "segment_X_Yasu",
+          "entity_type": "segment"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              76.5,
+              343.86,
+              623.032,
+              402.14
+            ],
+            "category_label": "X",
+            "category_rank": 3,
+            "legend_label_bbox_px": [
+              931.0,
+              191.0,
+              995.0,
+              209.0
+            ],
+            "legend_swatch_bbox_px": [
+              881.0,
+              186.0,
+              909.0,
+              214.0
+            ],
+            "mark_bbox_px": [
+              506.048,
+              343.86,
+              623.032,
+              402.14
+            ],
+            "mark_center_px": [
+              564.54,
+              373.0
+            ],
+            "mark_fill_rgb": [
+              115,
+              108,
+              30
+            ],
+            "mark_outline_rgb": [
+              63,
+              59,
+              16
+            ],
+            "scene_variant": "stacked_horizontal_bar",
+            "series_label": "Orva",
             "series_rank": 3,
             "value": 10,
             "value_center_px": [
-              530.787,
-              114.5
+              564.54,
+              373.0
             ]
           },
-          "entity_id": "segment_H_Jeuz",
+          "entity_id": "segment_X_Orva",
           "entity_type": "segment"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
               76.0,
-              70.79,
-              663.689,
-              158.21
+              437.86,
+              845.302,
+              496.14
             ],
-            "category_label": "H",
-            "category_rank": 0,
-            "legend_label_bbox_px": [
-              931.0,
-              230.5,
-              978.0,
-              253.5
-            ],
-            "legend_swatch_bbox_px": [
-              881.0,
-              228.0,
-              909.0,
-              256.0
-            ],
-            "mark_bbox_px": [
-              591.197,
-              70.79,
-              663.689,
-              158.21
-            ],
-            "mark_center_px": [
-              627.443,
-              114.5
-            ],
-            "mark_fill_rgb": [
-              202,
-              20,
-              3
-            ],
-            "mark_outline_rgb": [
-              111,
-              11,
-              2
-            ],
-            "scene_variant": "stacked_horizontal_bar",
-            "series_label": "Ley",
-            "series_rank": 4,
-            "value": 6,
-            "value_center_px": [
-              627.443,
-              114.5
-            ]
-          },
-          "entity_id": "segment_H_Ley",
-          "entity_type": "segment"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              76.0,
-              211.79,
-              699.934,
-              299.21
-            ],
-            "category_label": "N",
-            "category_rank": 1,
+            "category_label": "G",
+            "category_rank": 4,
             "legend_label_bbox_px": [
               931.0,
               62.5,
-              983.0,
+              997.0,
               85.5
             ],
             "legend_swatch_bbox_px": [
@@ -934,370 +1508,100 @@
             ],
             "mark_bbox_px": [
               120.0,
-              211.79,
-              289.148,
-              299.21
+              437.86,
+              307.175,
+              496.14
             ],
             "mark_center_px": [
-              204.574,
-              255.5
+              213.587,
+              467.0
             ],
             "mark_fill_rgb": [
-              36,
-              136,
-              128
+              19,
+              102,
+              132
             ],
             "mark_outline_rgb": [
-              20,
-              75,
-              70
+              10,
+              56,
+              73
             ],
             "scene_variant": "stacked_horizontal_bar",
-            "series_label": "Ayn",
+            "series_label": "Yaya",
             "series_rank": 0,
-            "value": 14,
-            "value_center_px": [
-              204.574,
-              255.5
-            ]
-          },
-          "entity_id": "segment_N_Ayn",
-          "entity_type": "segment"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              76.0,
-              211.79,
-              699.934,
-              299.21
-            ],
-            "category_label": "N",
-            "category_rank": 1,
-            "legend_label_bbox_px": [
-              931.0,
-              107.0,
-              995.0,
-              125.0
-            ],
-            "legend_swatch_bbox_px": [
-              881.0,
-              102.0,
-              909.0,
-              130.0
-            ],
-            "mark_bbox_px": [
-              289.148,
-              211.79,
-              397.885,
-              299.21
-            ],
-            "mark_center_px": [
-              343.516,
-              255.5
-            ],
-            "mark_fill_rgb": [
-              120,
-              162,
-              74
-            ],
-            "mark_outline_rgb": [
-              66,
-              89,
-              41
-            ],
-            "scene_variant": "stacked_horizontal_bar",
-            "series_label": "Lean",
-            "series_rank": 1,
-            "value": 9,
-            "value_center_px": [
-              343.516,
-              255.5
-            ]
-          },
-          "entity_id": "segment_N_Lean",
-          "entity_type": "segment"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              76.0,
-              211.79,
-              699.934,
-              299.21
-            ],
-            "category_label": "N",
-            "category_rank": 1,
-            "legend_label_bbox_px": [
-              931.0,
-              149.0,
-              996.0,
-              167.0
-            ],
-            "legend_swatch_bbox_px": [
-              881.0,
-              144.0,
-              909.0,
-              172.0
-            ],
-            "mark_bbox_px": [
-              397.885,
-              211.79,
-              470.377,
-              299.21
-            ],
-            "mark_center_px": [
-              434.131,
-              255.5
-            ],
-            "mark_fill_rgb": [
-              115,
-              49,
-              150
-            ],
-            "mark_outline_rgb": [
-              63,
-              27,
-              82
-            ],
-            "scene_variant": "stacked_horizontal_bar",
-            "series_label": "Mide",
-            "series_rank": 2,
-            "value": 6,
-            "value_center_px": [
-              434.131,
-              255.5
-            ]
-          },
-          "entity_id": "segment_N_Mide",
-          "entity_type": "segment"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              76.0,
-              211.79,
-              699.934,
-              299.21
-            ],
-            "category_label": "N",
-            "category_rank": 1,
-            "legend_label_bbox_px": [
-              931.0,
-              188.5,
-              989.0,
-              211.5
-            ],
-            "legend_swatch_bbox_px": [
-              881.0,
-              186.0,
-              909.0,
-              214.0
-            ],
-            "mark_bbox_px": [
-              470.377,
-              211.79,
-              530.787,
-              299.21
-            ],
-            "mark_center_px": [
-              500.582,
-              255.5
-            ],
-            "mark_fill_rgb": [
-              81,
-              65,
-              74
-            ],
-            "mark_outline_rgb": [
-              45,
-              36,
-              41
-            ],
-            "scene_variant": "stacked_horizontal_bar",
-            "series_label": "Jeuz",
-            "series_rank": 3,
-            "value": 5,
-            "value_center_px": [
-              500.582,
-              255.5
-            ]
-          },
-          "entity_id": "segment_N_Jeuz",
-          "entity_type": "segment"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              76.0,
-              211.79,
-              699.934,
-              299.21
-            ],
-            "category_label": "N",
-            "category_rank": 1,
-            "legend_label_bbox_px": [
-              931.0,
-              230.5,
-              978.0,
-              253.5
-            ],
-            "legend_swatch_bbox_px": [
-              881.0,
-              228.0,
-              909.0,
-              256.0
-            ],
-            "mark_bbox_px": [
-              530.787,
-              211.79,
-              699.934,
-              299.21
-            ],
-            "mark_center_px": [
-              615.361,
-              255.5
-            ],
-            "mark_fill_rgb": [
-              202,
-              20,
-              3
-            ],
-            "mark_outline_rgb": [
-              111,
-              11,
-              2
-            ],
-            "scene_variant": "stacked_horizontal_bar",
-            "series_label": "Ley",
-            "series_rank": 4,
-            "value": 14,
-            "value_center_px": [
-              615.361,
-              255.5
-            ]
-          },
-          "entity_id": "segment_N_Ley",
-          "entity_type": "segment"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              77.5,
-              352.79,
-              844.918,
-              440.21
-            ],
-            "category_label": "Z",
-            "category_rank": 2,
-            "legend_label_bbox_px": [
-              931.0,
-              62.5,
-              983.0,
-              85.5
-            ],
-            "legend_swatch_bbox_px": [
-              881.0,
-              60.0,
-              909.0,
-              88.0
-            ],
-            "mark_bbox_px": [
-              120.0,
-              352.79,
-              180.41,
-              440.21
-            ],
-            "mark_center_px": [
-              150.205,
-              396.5
-            ],
-            "mark_fill_rgb": [
-              36,
-              136,
-              128
-            ],
-            "mark_outline_rgb": [
-              20,
-              75,
-              70
-            ],
-            "scene_variant": "stacked_horizontal_bar",
-            "series_label": "Ayn",
-            "series_rank": 0,
-            "value": 5,
-            "value_center_px": [
-              150.205,
-              396.5
-            ]
-          },
-          "entity_id": "segment_Z_Ayn",
-          "entity_type": "segment"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              77.5,
-              352.79,
-              844.918,
-              440.21
-            ],
-            "category_label": "Z",
-            "category_rank": 2,
-            "legend_label_bbox_px": [
-              931.0,
-              107.0,
-              995.0,
-              125.0
-            ],
-            "legend_swatch_bbox_px": [
-              881.0,
-              102.0,
-              909.0,
-              130.0
-            ],
-            "mark_bbox_px": [
-              180.41,
-              352.79,
-              373.721,
-              440.21
-            ],
-            "mark_center_px": [
-              277.066,
-              396.5
-            ],
-            "mark_fill_rgb": [
-              120,
-              162,
-              74
-            ],
-            "mark_outline_rgb": [
-              66,
-              89,
-              41
-            ],
-            "scene_variant": "stacked_horizontal_bar",
-            "series_label": "Lean",
-            "series_rank": 1,
             "value": 16,
             "value_center_px": [
-              277.066,
-              396.5
+              213.587,
+              467.0
             ]
           },
-          "entity_id": "segment_Z_Lean",
+          "entity_id": "segment_G_Yaya",
           "entity_type": "segment"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              77.5,
-              352.79,
-              844.918,
-              440.21
+              76.0,
+              437.86,
+              845.302,
+              496.14
             ],
-            "category_label": "Z",
-            "category_rank": 2,
+            "category_label": "G",
+            "category_rank": 4,
+            "legend_label_bbox_px": [
+              931.0,
+              104.5,
+              997.0,
+              127.5
+            ],
+            "legend_swatch_bbox_px": [
+              881.0,
+              102.0,
+              909.0,
+              130.0
+            ],
+            "mark_bbox_px": [
+              307.175,
+              437.86,
+              506.048,
+              496.14
+            ],
+            "mark_center_px": [
+              406.611,
+              467.0
+            ],
+            "mark_fill_rgb": [
+              195,
+              20,
+              3
+            ],
+            "mark_outline_rgb": [
+              107,
+              11,
+              2
+            ],
+            "scene_variant": "stacked_horizontal_bar",
+            "series_label": "Wyly",
+            "series_rank": 1,
+            "value": 17,
+            "value_center_px": [
+              406.611,
+              467.0
+            ]
+          },
+          "entity_id": "segment_G_Wyly",
+          "entity_type": "segment"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              76.0,
+              437.86,
+              845.302,
+              496.14
+            ],
+            "category_label": "G",
+            "category_rank": 4,
             "legend_label_bbox_px": [
               931.0,
               149.0,
@@ -1311,52 +1615,52 @@
               172.0
             ],
             "mark_bbox_px": [
-              373.721,
-              352.79,
-              579.115,
-              440.21
+              506.048,
+              437.86,
+              658.127,
+              496.14
             ],
             "mark_center_px": [
-              476.418,
-              396.5
+              582.087,
+              467.0
             ],
             "mark_fill_rgb": [
-              115,
-              49,
-              150
+              55,
+              157,
+              59
             ],
             "mark_outline_rgb": [
-              63,
-              27,
-              82
+              30,
+              86,
+              32
             ],
             "scene_variant": "stacked_horizontal_bar",
-            "series_label": "Mide",
+            "series_label": "Yasu",
             "series_rank": 2,
-            "value": 17,
+            "value": 13,
             "value_center_px": [
-              476.418,
-              396.5
+              582.087,
+              467.0
             ]
           },
-          "entity_id": "segment_Z_Mide",
+          "entity_id": "segment_G_Yasu",
           "entity_type": "segment"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              77.5,
-              352.79,
-              844.918,
-              440.21
+              76.0,
+              437.86,
+              845.302,
+              496.14
             ],
-            "category_label": "Z",
-            "category_rank": 2,
+            "category_label": "G",
+            "category_rank": 4,
             "legend_label_bbox_px": [
               931.0,
-              188.5,
-              989.0,
-              211.5
+              191.0,
+              995.0,
+              209.0
             ],
             "legend_swatch_bbox_px": [
               881.0,
@@ -1365,105 +1669,51 @@
               214.0
             ],
             "mark_bbox_px": [
-              579.115,
-              352.79,
-              796.59,
-              440.21
+              658.127,
+              437.86,
+              845.302,
+              496.14
             ],
             "mark_center_px": [
-              687.852,
-              396.5
+              751.714,
+              467.0
             ],
             "mark_fill_rgb": [
-              81,
-              65,
-              74
+              115,
+              108,
+              30
             ],
             "mark_outline_rgb": [
-              45,
-              36,
-              41
+              63,
+              59,
+              16
             ],
             "scene_variant": "stacked_horizontal_bar",
-            "series_label": "Jeuz",
+            "series_label": "Orva",
             "series_rank": 3,
-            "value": 18,
+            "value": 16,
             "value_center_px": [
-              687.852,
-              396.5
+              751.714,
+              467.0
             ]
           },
-          "entity_id": "segment_Z_Jeuz",
+          "entity_id": "segment_G_Orva",
           "entity_type": "segment"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              77.5,
-              352.79,
-              844.918,
-              440.21
+              77.0,
+              531.86,
+              587.937,
+              590.14
             ],
-            "category_label": "Z",
-            "category_rank": 2,
-            "legend_label_bbox_px": [
-              931.0,
-              230.5,
-              978.0,
-              253.5
-            ],
-            "legend_swatch_bbox_px": [
-              881.0,
-              228.0,
-              909.0,
-              256.0
-            ],
-            "mark_bbox_px": [
-              796.59,
-              352.79,
-              844.918,
-              440.21
-            ],
-            "mark_center_px": [
-              820.754,
-              396.5
-            ],
-            "mark_fill_rgb": [
-              202,
-              20,
-              3
-            ],
-            "mark_outline_rgb": [
-              111,
-              11,
-              2
-            ],
-            "scene_variant": "stacked_horizontal_bar",
-            "series_label": "Ley",
-            "series_rank": 4,
-            "value": 4,
-            "value_center_px": [
-              820.754,
-              396.5
-            ]
-          },
-          "entity_id": "segment_Z_Ley",
-          "entity_type": "segment"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              78.0,
-              493.79,
-              712.016,
-              581.21
-            ],
-            "category_label": "E",
-            "category_rank": 3,
+            "category_label": "B",
+            "category_rank": 5,
             "legend_label_bbox_px": [
               931.0,
               62.5,
-              983.0,
+              997.0,
               85.5
             ],
             "legend_swatch_bbox_px": [
@@ -1474,51 +1724,51 @@
             ],
             "mark_bbox_px": [
               120.0,
-              493.79,
-              192.492,
-              581.21
+              531.86,
+              248.683,
+              590.14
             ],
             "mark_center_px": [
-              156.246,
-              537.5
+              184.341,
+              561.0
             ],
             "mark_fill_rgb": [
-              36,
-              136,
-              128
+              19,
+              102,
+              132
             ],
             "mark_outline_rgb": [
-              20,
-              75,
-              70
+              10,
+              56,
+              73
             ],
             "scene_variant": "stacked_horizontal_bar",
-            "series_label": "Ayn",
+            "series_label": "Yaya",
             "series_rank": 0,
-            "value": 6,
+            "value": 11,
             "value_center_px": [
-              156.246,
-              537.5
+              184.341,
+              561.0
             ]
           },
-          "entity_id": "segment_E_Ayn",
+          "entity_id": "segment_B_Yaya",
           "entity_type": "segment"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              78.0,
-              493.79,
-              712.016,
-              581.21
+              77.0,
+              531.86,
+              587.937,
+              590.14
             ],
-            "category_label": "E",
-            "category_rank": 3,
+            "category_label": "B",
+            "category_rank": 5,
             "legend_label_bbox_px": [
               931.0,
-              107.0,
-              995.0,
-              125.0
+              104.5,
+              997.0,
+              127.5
             ],
             "legend_swatch_bbox_px": [
               881.0,
@@ -1527,47 +1777,47 @@
               130.0
             ],
             "mark_bbox_px": [
-              192.492,
-              493.79,
-              361.639,
-              581.21
+              248.683,
+              531.86,
+              400.762,
+              590.14
             ],
             "mark_center_px": [
-              277.066,
-              537.5
+              324.722,
+              561.0
             ],
             "mark_fill_rgb": [
-              120,
-              162,
-              74
+              195,
+              20,
+              3
             ],
             "mark_outline_rgb": [
-              66,
-              89,
-              41
+              107,
+              11,
+              2
             ],
             "scene_variant": "stacked_horizontal_bar",
-            "series_label": "Lean",
+            "series_label": "Wyly",
             "series_rank": 1,
-            "value": 14,
+            "value": 13,
             "value_center_px": [
-              277.066,
-              537.5
+              324.722,
+              561.0
             ]
           },
-          "entity_id": "segment_E_Lean",
+          "entity_id": "segment_B_Wyly",
           "entity_type": "segment"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              78.0,
-              493.79,
-              712.016,
-              581.21
+              77.0,
+              531.86,
+              587.937,
+              590.14
             ],
-            "category_label": "E",
-            "category_rank": 3,
+            "category_label": "B",
+            "category_rank": 5,
             "legend_label_bbox_px": [
               931.0,
               149.0,
@@ -1581,52 +1831,52 @@
               172.0
             ],
             "mark_bbox_px": [
-              361.639,
-              493.79,
-              458.295,
-              581.21
+              400.762,
+              531.86,
+              529.444,
+              590.14
             ],
             "mark_center_px": [
-              409.967,
-              537.5
+              465.103,
+              561.0
             ],
             "mark_fill_rgb": [
-              115,
-              49,
-              150
+              55,
+              157,
+              59
             ],
             "mark_outline_rgb": [
-              63,
-              27,
-              82
+              30,
+              86,
+              32
             ],
             "scene_variant": "stacked_horizontal_bar",
-            "series_label": "Mide",
+            "series_label": "Yasu",
             "series_rank": 2,
-            "value": 8,
+            "value": 11,
             "value_center_px": [
-              409.967,
-              537.5
+              465.103,
+              561.0
             ]
           },
-          "entity_id": "segment_E_Mide",
+          "entity_id": "segment_B_Yasu",
           "entity_type": "segment"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              78.0,
-              493.79,
-              712.016,
-              581.21
+              77.0,
+              531.86,
+              587.937,
+              590.14
             ],
-            "category_label": "E",
-            "category_rank": 3,
+            "category_label": "B",
+            "category_rank": 5,
             "legend_label_bbox_px": [
               931.0,
-              188.5,
-              989.0,
-              211.5
+              191.0,
+              995.0,
+              209.0
             ],
             "legend_swatch_bbox_px": [
               881.0,
@@ -1635,100 +1885,45 @@
               214.0
             ],
             "mark_bbox_px": [
-              458.295,
-              493.79,
-              567.033,
-              581.21
+              529.444,
+              531.86,
+              587.937,
+              590.14
             ],
             "mark_center_px": [
-              512.664,
-              537.5
+              558.69,
+              561.0
             ],
             "mark_fill_rgb": [
-              81,
-              65,
-              74
+              115,
+              108,
+              30
             ],
             "mark_outline_rgb": [
-              45,
-              36,
-              41
+              63,
+              59,
+              16
             ],
             "scene_variant": "stacked_horizontal_bar",
-            "series_label": "Jeuz",
+            "series_label": "Orva",
             "series_rank": 3,
-            "value": 9,
+            "value": 5,
             "value_center_px": [
-              512.664,
-              537.5
+              558.69,
+              561.0
             ]
           },
-          "entity_id": "segment_E_Jeuz",
-          "entity_type": "segment"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              78.0,
-              493.79,
-              712.016,
-              581.21
-            ],
-            "category_label": "E",
-            "category_rank": 3,
-            "legend_label_bbox_px": [
-              931.0,
-              230.5,
-              978.0,
-              253.5
-            ],
-            "legend_swatch_bbox_px": [
-              881.0,
-              228.0,
-              909.0,
-              256.0
-            ],
-            "mark_bbox_px": [
-              567.033,
-              493.79,
-              712.016,
-              581.21
-            ],
-            "mark_center_px": [
-              639.525,
-              537.5
-            ],
-            "mark_fill_rgb": [
-              202,
-              20,
-              3
-            ],
-            "mark_outline_rgb": [
-              111,
-              11,
-              2
-            ],
-            "scene_variant": "stacked_horizontal_bar",
-            "series_label": "Ley",
-            "series_rank": 4,
-            "value": 12,
-            "value_center_px": [
-              639.525,
-              537.5
-            ]
-          },
-          "entity_id": "segment_E_Ley",
+          "entity_id": "segment_B_Orva",
           "entity_type": "segment"
         }
       ],
       "relations": {
-        "answer_value": 48,
+        "answer_value": 58,
         "evidence_labels": [
-          "Ayn",
-          "Lean",
-          "Mide",
-          "Jeuz",
-          "Ley"
+          "Yaya",
+          "Wyly",
+          "Yasu",
+          "Orva"
         ],
         "query_category_label": "N",
         "query_series_label": "",
@@ -1740,19 +1935,17 @@
     },
     "witness_symbolic": {
       "labels": [
-        "Ayn",
-        "Lean",
-        "Mide",
-        "Jeuz",
-        "Ley"
+        "Yaya",
+        "Wyly",
+        "Yasu",
+        "Orva"
       ],
       "type": "integer_list",
       "values": [
-        14,
-        9,
-        6,
-        5,
-        14
+        7,
+        18,
+        16,
+        17
       ]
     }
   },

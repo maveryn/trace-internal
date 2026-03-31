@@ -1,32 +1,32 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 84
+    "value": 74
   },
   "evidence_gt": {
     "type": "integer_list",
     "value": [
-      14,
-      2,
-      75,
-      9
+      36,
+      22,
+      38,
+      4
     ]
   },
   "image": {
     "format": "png",
     "path": "charts/task_charts_composition_subset_value/images/combined_share_subset/0019.png"
   },
-  "instance_seed": 6635973217502069,
-  "prompt": "You are given a composition chart: a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Read the composition values shown in the chart and answer the question. What total percentage do labels Sato and Bowe contribute together?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array [v1, v2, ...] listing the slice percentages in legend order for the whole chart.\nAnswer format: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[18,27,22,33],\"answer\":45}",
+  "instance_seed": 6430099085126045,
+  "prompt": "You are given a composition chart: a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Read the relevant composition values directly from the chart and answer the question. What combined percentage of the chart is contributed by labels Erna and Ji?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array [v1, v2, ...] listing the slice percentages in legend order for the whole chart.\nAnswer requirement: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[18,27,22,33],\"answer\":45}",
   "prompt_variants": {
-    "answer_and_evidence": "You are given a composition chart: a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Read the composition values shown in the chart and answer the question. What total percentage do labels Sato and Bowe contribute together?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array [v1, v2, ...] listing the slice percentages in legend order for the whole chart.\nAnswer format: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[18,27,22,33],\"answer\":45}",
-    "answer_only": "You are given a composition chart: a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Read the composition values shown in the chart and answer the question. What total percentage do labels Sato and Bowe contribute together?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":45}"
+    "answer_and_evidence": "You are given a composition chart: a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Read the relevant composition values directly from the chart and answer the question. What combined percentage of the chart is contributed by labels Erna and Ji?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array [v1, v2, ...] listing the slice percentages in legend order for the whole chart.\nAnswer requirement: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[18,27,22,33],\"answer\":45}",
+    "answer_only": "You are given a composition chart: a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Read the relevant composition values directly from the chart and answer the question. What combined percentage of the chart is contributed by labels Erna and Ji?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":45}"
   },
   "task": "task_charts_composition_subset_value",
   "task_variant": "combined_share_subset",
   "trace_payload": {
     "execution_trace": {
-      "answer_value": 84,
+      "answer_value": 74,
       "category_count": 0,
       "category_count_range": [
         0,
@@ -36,40 +36,40 @@
       "composition_scope": "chart",
       "composition_total": 100,
       "evidence_labels": [
-        "Lea",
-        "Kado",
-        "Sato",
-        "Bowe"
+        "Erna",
+        "Nada",
+        "Ji",
+        "Echo"
       ],
       "evidence_values": [
-        14,
-        2,
-        75,
-        9
+        36,
+        22,
+        38,
+        4
       ],
       "mark_color_distance_space": "lab",
       "mark_color_min_distance": 58.0,
       "mark_color_sampling_policy": "random_rgb_palette",
       "mark_fill_rgb": [
-        107,
-        157,
-        42
+        120,
+        2,
+        159
       ],
       "mark_outline_rgb": [
-        59,
-        86,
-        23
+        66,
+        1,
+        87
       ],
       "pie_like_mark_color_channel_max": 200,
       "query_category_label": "",
       "query_series_label": "",
       "query_subset_labels": [
-        "Sato",
-        "Bowe"
+        "Erna",
+        "Ji"
       ],
       "question_format": "numeric_open",
       "scene_mode": "pie_like",
-      "scene_variant": "pie",
+      "scene_variant": "donut",
       "scene_variant_probabilities": {
         "donut": 0.5,
         "pie": 0.5
@@ -80,78 +80,78 @@
         5
       ],
       "series_labels": [
-        "Lea",
-        "Kado",
-        "Sato",
-        "Bowe"
+        "Erna",
+        "Nada",
+        "Ji",
+        "Echo"
       ],
       "slice_fill_palette_rgb": [
         [
-          107,
-          157,
-          42
-        ],
-        [
-          151,
-          13,
-          94
-        ],
-        [
-          200,
-          42,
-          6
-        ],
-        [
-          13,
+          120,
           2,
-          4
+          159
+        ],
+        [
+          175,
+          95,
+          44
+        ],
+        [
+          193,
+          195,
+          5
+        ],
+        [
+          19,
+          167,
+          93
         ]
       ],
       "slice_outline_palette_rgb": [
         [
-          59,
-          86,
-          23
+          66,
+          1,
+          87
         ],
         [
-          83,
-          7,
-          52
+          96,
+          52,
+          24
         ],
         [
-          110,
-          23,
+          106,
+          107,
           3
         ],
         [
-          7,
-          1,
-          2
+          10,
+          92,
+          51
         ]
       ],
-      "target_answer": 84,
+      "target_answer": 74,
       "target_answer_range": [
         5,
         95
       ],
       "task_variant": "combined_share_subset",
       "task_variant_probabilities": {
-        "combined_share_subset": 0.3333333333333333,
-        "stack_segment_value": 0.3333333333333333,
-        "stack_total_at_label": 0.3333333333333333
+        "combined_share_subset": 1.0,
+        "stack_segment_value": 0.0,
+        "stack_total_at_label": 0.0
       },
       "value_semantics": "percentage",
       "values": [
-        14,
-        2,
-        75,
-        9
+        36,
+        22,
+        38,
+        4
       ],
       "values_by_label": {
-        "Bowe": 9,
-        "Kado": 2,
-        "Lea": 14,
-        "Sato": 75
+        "Echo": 4,
+        "Erna": 36,
+        "Ji": 38,
+        "Nada": 22
       }
     },
     "projected_evidence": {
@@ -159,68 +159,68 @@
         [
           442.08,
           65.6,
+          700.427,
+          491.985
+        ],
+        [
+          316.631,
+          326.0,
           642.722,
-          326.0
+          586.071
         ],
         [
+          183.733,
+          73.781,
           442.08,
-          160.015,
-          661.943,
-          326.0
+          554.19
         ],
         [
-          182.194,
-          106.137,
-          701.966,
-          585.886
-        ],
-        [
-          302.551,
+          377.321,
           65.6,
           442.08,
           326.0
         ]
       ],
       "integer_list": [
-        14,
-        2,
-        75,
-        9
+        36,
+        22,
+        38,
+        4
       ],
       "pixel_point_map": {
-        "Bowe": [
-          398.49,
-          175.964
+        "Echo": [
+          418.908,
+          142.574
         ],
-        "Kado": [
-          568.481,
-          234.164
+        "Erna": [
+          609.368,
+          247.28
         ],
-        "Lea": [
-          508.604,
-          184.63
+        "Ji": [
+          258.654,
+          302.828
         ],
-        "Sato": [
-          407.997,
-          478.477
+        "Nada": [
+          476.724,
+          507.609
         ]
       },
       "pixel_point_set": [
         [
-          508.604,
-          184.63
+          609.368,
+          247.28
         ],
         [
-          568.481,
-          234.164
+          476.724,
+          507.609
         ],
         [
-          407.997,
-          478.477
+          258.654,
+          302.828
         ],
         [
-          398.49,
-          175.964
+          418.908,
+          142.574
         ]
       ]
     },
@@ -234,10 +234,10 @@
         "query_category_label": "",
         "query_series_label": "",
         "query_subset_labels": [
-          "Sato",
-          "Bowe"
+          "Erna",
+          "Ji"
         ],
-        "scene_variant": "pie",
+        "scene_variant": "donut",
         "scene_variant_probabilities": {
           "donut": 0.5,
           "pie": 0.5
@@ -247,21 +247,21 @@
           3,
           5
         ],
-        "target_answer": 84,
+        "target_answer": 74,
         "target_answer_range": [
           5,
           95
         ],
         "task_variant": "combined_share_subset",
         "task_variant_probabilities": {
-          "combined_share_subset": 0.3333333333333333,
-          "stack_segment_value": 0.3333333333333333,
-          "stack_total_at_label": 0.3333333333333333
+          "combined_share_subset": 1.0,
+          "stack_segment_value": 0.0,
+          "stack_total_at_label": 0.0
         }
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 1,
+        "answer_or_evidence_variant_index": 2,
         "prompt_bundle_id": "charts_composition_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -271,18 +271,18 @@
           "json_example_answer_only": "{\"answer\":45}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "object_description": "a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices",
+          "object_description": "a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices",
           "query_category_label": "",
-          "query_label_a": "Sato",
-          "query_label_b": "Bowe",
+          "query_label_a": "Erna",
+          "query_label_b": "Ji",
           "query_series_label": ""
         },
         "task_family_key": "composition_chart_value",
         "task_family_variant_index": 4,
         "task_key": "subset_value_query",
-        "task_variant_index": 1,
+        "task_variant_index": 3,
         "task_variant_key": "combined_share_subset",
-        "task_variant_template_index": 4,
+        "task_variant_template_index": 0,
         "template_paths": [
           "charts/composition/charts_composition_v1.json"
         ],
@@ -298,7 +298,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 1,
+            "answer_or_evidence_variant_index": 2,
             "prompt_bundle_id": "charts_composition_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -308,18 +308,18 @@
               "json_example_answer_only": "{\"answer\":45}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices",
+              "object_description": "a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices",
               "query_category_label": "",
-              "query_label_a": "Sato",
-              "query_label_b": "Bowe",
+              "query_label_a": "Erna",
+              "query_label_b": "Ji",
               "query_series_label": ""
             },
             "task_family_key": "composition_chart_value",
             "task_family_variant_index": 4,
             "task_key": "subset_value_query",
-            "task_variant_index": 1,
+            "task_variant_index": 3,
             "task_variant_key": "combined_share_subset",
-            "task_variant_template_index": 4,
+            "task_variant_template_index": 0,
             "template_paths": [
               "charts/composition/charts_composition_v1.json"
             ],
@@ -330,12 +330,12 @@
               "task_variant:combined_share_subset": 5
             }
           },
-          "prompt": "You are given a composition chart: a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Read the composition values shown in the chart and answer the question. What total percentage do labels Sato and Bowe contribute together?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array [v1, v2, ...] listing the slice percentages in legend order for the whole chart.\nAnswer format: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[18,27,22,33],\"answer\":45}"
+          "prompt": "You are given a composition chart: a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Read the relevant composition values directly from the chart and answer the question. What combined percentage of the chart is contributed by labels Erna and Ji?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array [v1, v2, ...] listing the slice percentages in legend order for the whole chart.\nAnswer requirement: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[18,27,22,33],\"answer\":45}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 4,
+            "answer_or_evidence_variant_index": 3,
             "prompt_bundle_id": "charts_composition_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -345,18 +345,18 @@
               "json_example_answer_only": "{\"answer\":45}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices",
+              "object_description": "a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices",
               "query_category_label": "",
-              "query_label_a": "Sato",
-              "query_label_b": "Bowe",
+              "query_label_a": "Erna",
+              "query_label_b": "Ji",
               "query_series_label": ""
             },
             "task_family_key": "composition_chart_value",
             "task_family_variant_index": 4,
             "task_key": "subset_value_query",
-            "task_variant_index": 1,
+            "task_variant_index": 3,
             "task_variant_key": "combined_share_subset",
-            "task_variant_template_index": 4,
+            "task_variant_template_index": 0,
             "template_paths": [
               "charts/composition/charts_composition_v1.json"
             ],
@@ -367,7 +367,7 @@
               "task_variant:combined_share_subset": 5
             }
           },
-          "prompt": "You are given a composition chart: a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Read the composition values shown in the chart and answer the question. What total percentage do labels Sato and Bowe contribute together?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":45}"
+          "prompt": "You are given a composition chart: a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Read the relevant composition values directly from the chart and answer the question. What combined percentage of the chart is contributed by labels Erna and Ji?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":45}"
         }
       },
       "task_variant": "combined_share_subset",
@@ -376,21 +376,21 @@
     "render_map": {
       "image_id": "img0",
       "label_centers_px": {
-        "Bowe": [
-          874.16,
+        "Echo": [
+          869.66,
           382.0
         ],
-        "Kado": [
-          872.16,
-          298.0
-        ],
-        "Lea": [
-          861.66,
+        "Erna": [
+          868.66,
           256.0
         ],
-        "Sato": [
-          868.16,
+        "Ji": [
+          847.66,
           340.0
+        ],
+        "Nada": [
+          872.66,
+          298.0
         ]
       },
       "plot_bbox_px": [
@@ -428,59 +428,59 @@
         "mark_color_distance_space": "lab",
         "mark_color_min_distance": 58.0,
         "mark_fill_rgb": [
-          107,
-          157,
-          42
+          120,
+          2,
+          159
         ],
         "mark_outline_rgb": [
-          59,
-          86,
-          23
+          66,
+          1,
+          87
         ],
         "pie_like_mark_color_channel_max": 200,
         "sampling_policy": "random_rgb_palette",
         "slice_fill_palette_rgb": [
           [
-            107,
-            157,
-            42
-          ],
-          [
-            151,
-            13,
-            94
-          ],
-          [
-            200,
-            42,
-            6
-          ],
-          [
-            13,
+            120,
             2,
-            4
+            159
+          ],
+          [
+            175,
+            95,
+            44
+          ],
+          [
+            193,
+            195,
+            5
+          ],
+          [
+            19,
+            167,
+            93
           ]
         ],
         "slice_outline_palette_rgb": [
           [
-            59,
-            86,
-            23
+            66,
+            1,
+            87
           ],
           [
-            83,
-            7,
-            52
+            96,
+            52,
+            24
           ],
           [
-            110,
-            23,
+            106,
+            107,
             3
           ],
           [
-            7,
-            1,
-            2
+            10,
+            92,
+            51
           ]
         ]
       },
@@ -506,13 +506,13 @@
         "edits": [],
         "enabled": false
       },
-      "scene_variant": "pie",
+      "scene_variant": "donut",
       "text_style": {
         "label_font_size_px": 24,
         "label_stroke_width_px": 2,
         "tick_font_size_px": 20
       },
-      "y_axis_max": 76,
+      "y_axis_max": 39,
       "y_ticks": [
         0,
         1,
@@ -553,60 +553,23 @@
         36,
         37,
         38,
-        39,
-        40,
-        41,
-        42,
-        43,
-        44,
-        45,
-        46,
-        47,
-        48,
-        49,
-        50,
-        51,
-        52,
-        53,
-        54,
-        55,
-        56,
-        57,
-        58,
-        59,
-        60,
-        61,
-        62,
-        63,
-        64,
-        65,
-        66,
-        67,
-        68,
-        69,
-        70,
-        71,
-        72,
-        73,
-        74,
-        75,
-        76
+        39
       ]
     },
     "scene_ir": {
       "entities": [
         {
           "attrs": {
-            "end_angle_deg": -39.6,
-            "label": "Lea",
+            "end_angle_deg": 39.6,
+            "label": "Erna",
             "label_bbox_px": [
               838.16,
               247.0,
-              885.16,
+              899.16,
               265.0
             ],
             "label_center_px": [
-              861.66,
+              868.66,
               256.0
             ],
             "legend_swatch_bbox_px": [
@@ -618,53 +581,53 @@
             "mark_bbox_px": [
               442.08,
               65.6,
-              642.722,
-              326.0
+              700.427,
+              491.985
             ],
             "mark_center_px": [
-              508.604,
-              184.63
+              609.368,
+              247.28
             ],
             "mark_fill_rgb": [
-              107,
-              157,
-              42
+              120,
+              2,
+              159
             ],
             "mark_outline_rgb": [
-              59,
-              86,
-              23
+              66,
+              1,
+              87
             ],
             "percentage_bbox_px": [
-              479.604,
-              175.63,
-              537.604,
-              193.63
+              580.368,
+              238.28,
+              638.368,
+              256.28
             ],
             "percentage_center_px": [
-              508.604,
-              184.63
+              609.368,
+              247.28
             ],
-            "scene_variant": "pie",
+            "scene_variant": "donut",
             "start_angle_deg": -90.0,
-            "value": 14,
+            "value": 36,
             "x_rank": 0
           },
-          "entity_id": "mark_Lea",
+          "entity_id": "mark_Erna",
           "entity_type": "slice"
         },
         {
           "attrs": {
-            "end_angle_deg": -32.4,
-            "label": "Kado",
+            "end_angle_deg": 118.8,
+            "label": "Nada",
             "label_bbox_px": [
               838.16,
               289.0,
-              906.16,
+              907.16,
               307.0
             ],
             "label_center_px": [
-              872.16,
+              872.66,
               298.0
             ],
             "legend_swatch_bbox_px": [
@@ -674,55 +637,55 @@
               312.0
             ],
             "mark_bbox_px": [
-              442.08,
-              160.015,
-              661.943,
-              326.0
+              316.631,
+              326.0,
+              642.722,
+              586.071
             ],
             "mark_center_px": [
-              568.481,
-              234.164
+              476.724,
+              507.609
             ],
             "mark_fill_rgb": [
-              151,
-              13,
-              94
+              175,
+              95,
+              44
             ],
             "mark_outline_rgb": [
-              83,
-              7,
-              52
+              96,
+              52,
+              24
             ],
             "percentage_bbox_px": [
-              645.192,
-              154.536,
-              686.192,
-              172.536
+              447.724,
+              498.609,
+              505.724,
+              516.609
             ],
             "percentage_center_px": [
-              665.692,
-              163.536
+              476.724,
+              507.609
             ],
-            "scene_variant": "pie",
-            "start_angle_deg": -39.6,
-            "value": 2,
+            "scene_variant": "donut",
+            "start_angle_deg": 39.6,
+            "value": 22,
             "x_rank": 1
           },
-          "entity_id": "mark_Kado",
+          "entity_id": "mark_Nada",
           "entity_type": "slice"
         },
         {
           "attrs": {
-            "end_angle_deg": 237.6,
-            "label": "Sato",
+            "end_angle_deg": 255.6,
+            "label": "Ji",
             "label_bbox_px": [
               838.16,
-              331.0,
-              898.16,
-              349.0
+              328.5,
+              857.16,
+              351.5
             ],
             "label_center_px": [
-              868.16,
+              847.66,
               340.0
             ],
             "legend_swatch_bbox_px": [
@@ -732,55 +695,55 @@
               354.0
             ],
             "mark_bbox_px": [
-              182.194,
-              106.137,
-              701.966,
-              585.886
+              183.733,
+              73.781,
+              442.08,
+              554.19
             ],
             "mark_center_px": [
-              407.997,
-              478.477
+              258.654,
+              302.828
             ],
             "mark_fill_rgb": [
-              200,
-              42,
-              6
+              193,
+              195,
+              5
             ],
             "mark_outline_rgb": [
-              110,
-              23,
+              106,
+              107,
               3
             ],
             "percentage_bbox_px": [
-              378.997,
-              469.477,
-              436.997,
-              487.477
+              229.654,
+              293.828,
+              287.654,
+              311.828
             ],
             "percentage_center_px": [
-              407.997,
-              478.477
+              258.654,
+              302.828
             ],
-            "scene_variant": "pie",
-            "start_angle_deg": -32.4,
-            "value": 75,
+            "scene_variant": "donut",
+            "start_angle_deg": 118.8,
+            "value": 38,
             "x_rank": 2
           },
-          "entity_id": "mark_Sato",
+          "entity_id": "mark_Ji",
           "entity_type": "slice"
         },
         {
           "attrs": {
             "end_angle_deg": 270.0,
-            "label": "Bowe",
+            "label": "Echo",
             "label_bbox_px": [
               838.16,
               373.0,
-              910.16,
+              901.16,
               391.0
             ],
             "label_center_px": [
-              874.16,
+              869.66,
               382.0
             ],
             "legend_swatch_bbox_px": [
@@ -790,76 +753,76 @@
               396.0
             ],
             "mark_bbox_px": [
-              302.551,
+              377.321,
               65.6,
               442.08,
               326.0
             ],
             "mark_center_px": [
-              398.49,
-              175.964
+              418.908,
+              142.574
             ],
             "mark_fill_rgb": [
-              13,
-              2,
-              4
+              19,
+              167,
+              93
             ],
             "mark_outline_rgb": [
-              7,
-              1,
-              2
+              10,
+              92,
+              51
             ],
             "percentage_bbox_px": [
-              377.99,
-              166.964,
-              418.99,
-              184.964
+              386.938,
+              42.779,
+              427.938,
+              60.779
             ],
             "percentage_center_px": [
-              398.49,
-              175.964
+              407.438,
+              51.779
             ],
-            "scene_variant": "pie",
-            "start_angle_deg": 237.6,
-            "value": 9,
+            "scene_variant": "donut",
+            "start_angle_deg": 255.6,
+            "value": 4,
             "x_rank": 3
           },
-          "entity_id": "mark_Bowe",
+          "entity_id": "mark_Echo",
           "entity_type": "slice"
         }
       ],
       "relations": {
-        "answer_value": 84,
+        "answer_value": 74,
         "evidence_labels": [
-          "Lea",
-          "Kado",
-          "Sato",
-          "Bowe"
+          "Erna",
+          "Nada",
+          "Ji",
+          "Echo"
         ],
         "query_category_label": "",
         "query_series_label": "",
         "query_subset_labels": [
-          "Sato",
-          "Bowe"
+          "Erna",
+          "Ji"
         ],
-        "scene_variant": "pie",
+        "scene_variant": "donut",
         "task_variant": "combined_share_subset"
       },
-      "scene_kind": "chart_pie_composition"
+      "scene_kind": "chart_donut_composition"
     },
     "witness_symbolic": {
       "labels": [
-        "Lea",
-        "Kado",
-        "Sato",
-        "Bowe"
+        "Erna",
+        "Nada",
+        "Ji",
+        "Echo"
       ],
       "type": "integer_list",
       "values": [
-        14,
-        2,
-        75,
-        9
+        36,
+        22,
+        38,
+        4
       ]
     }
   },

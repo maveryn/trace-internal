@@ -9,12 +9,12 @@
       "callout_for_named_part"
     ],
     "generated_variant_counts": {
-      "callout_for_highlighted_part": 105,
-      "callout_for_named_part": 100
+      "callout_for_highlighted_part": 100,
+      "callout_for_named_part": 101
     },
     "generation_error_counts": {},
     "target_count_per_variant": 100,
-    "total_generated": 205
+    "total_generated": 201
   },
   "domain": "diagrams",
   "failed_variants": [],
@@ -28,7 +28,7 @@
     },
     "checks": {
       "max_answer_frequency": {
-        "observed": 0.195,
+        "observed": 0.16,
         "pass": true,
         "threshold": 0.25
       },
@@ -44,38 +44,38 @@
       }
     },
     "five_bin_numeric": null,
-    "max_answer_count": 39,
-    "max_answer_frequency": 0.195,
+    "max_answer_count": 32,
+    "max_answer_frequency": 0.16,
     "pass": true,
     "sample_count": 200,
     "top_answers": [
       {
-        "answer_label": "G",
-        "count": 39
+        "answer_label": "E",
+        "count": 32
       },
       {
         "answer_label": "C",
-        "count": 34
-      },
-      {
-        "answer_label": "F",
-        "count": 30
+        "count": 31
       },
       {
         "answer_label": "B",
-        "count": 27
+        "count": 30
       },
       {
-        "answer_label": "E",
-        "count": 26
+        "answer_label": "G",
+        "count": 30
       },
       {
         "answer_label": "D",
-        "count": 23
+        "count": 27
+      },
+      {
+        "answer_label": "F",
+        "count": 27
       },
       {
         "answer_label": "A",
-        "count": 21
+        "count": 23
       }
     ],
     "unique_answers": 7
@@ -88,7 +88,7 @@
       },
       "checks": {
         "max_answer_frequency": {
-          "observed": 0.22,
+          "observed": 0.18,
           "pass": true,
           "threshold": 0.25
         },
@@ -104,38 +104,38 @@
         }
       },
       "five_bin_numeric": null,
-      "max_answer_count": 22,
-      "max_answer_frequency": 0.22,
+      "max_answer_count": 18,
+      "max_answer_frequency": 0.18,
       "pass": true,
       "sample_count": 100,
       "top_answers": [
         {
-          "answer_label": "G",
-          "count": 22
-        },
-        {
           "answer_label": "C",
-          "count": 20
+          "count": 18
         },
         {
-          "answer_label": "E",
+          "answer_label": "G",
           "count": 17
         },
         {
-          "answer_label": "A",
-          "count": 12
-        },
-        {
-          "answer_label": "F",
-          "count": 11
+          "answer_label": "E",
+          "count": 15
         },
         {
           "answer_label": "B",
-          "count": 9
+          "count": 14
         },
         {
           "answer_label": "D",
-          "count": 9
+          "count": 14
+        },
+        {
+          "answer_label": "F",
+          "count": 12
+        },
+        {
+          "answer_label": "A",
+          "count": 10
         }
       ],
       "unique_answers": 7
@@ -146,7 +146,7 @@
       },
       "checks": {
         "max_answer_frequency": {
-          "observed": 0.19,
+          "observed": 0.17,
           "pass": true,
           "threshold": 0.25
         },
@@ -162,38 +162,38 @@
         }
       },
       "five_bin_numeric": null,
-      "max_answer_count": 19,
-      "max_answer_frequency": 0.19,
+      "max_answer_count": 17,
+      "max_answer_frequency": 0.17,
       "pass": true,
       "sample_count": 100,
       "top_answers": [
         {
-          "answer_label": "F",
-          "count": 19
-        },
-        {
-          "answer_label": "B",
-          "count": 18
-        },
-        {
-          "answer_label": "G",
+          "answer_label": "E",
           "count": 17
         },
         {
-          "answer_label": "C",
-          "count": 14
+          "answer_label": "B",
+          "count": 16
         },
         {
-          "answer_label": "D",
-          "count": 14
+          "answer_label": "F",
+          "count": 15
         },
         {
           "answer_label": "A",
-          "count": 9
+          "count": 13
         },
         {
-          "answer_label": "E",
-          "count": 9
+          "answer_label": "C",
+          "count": 13
+        },
+        {
+          "answer_label": "D",
+          "count": 13
+        },
+        {
+          "answer_label": "G",
+          "count": 13
         }
       ],
       "unique_answers": 7

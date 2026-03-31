@@ -1,14 +1,13 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 4
+    "value": 3
   },
   "evidence_gt": {
     "type": "label_set",
     "value": [
-      "G",
       "M",
-      "Q",
+      "N",
       "Y"
     ]
   },
@@ -16,46 +15,49 @@
     "format": "png",
     "path": "charts/task_charts_multiseries_pairwise_comparison_count/images/series_a_lt_b_count/0010.png"
   },
-  "instance_seed": 6157360950267367,
-  "prompt": "Use the chart in the image. It shows a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Compare the two queried series category by category. Determine the number of categories where Nada is less than Pass.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer requirement: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+  "instance_seed": 4900980660686660,
+  "prompt": "Work from the multiseries chart shown in the image: a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Compare the two queried series category by category. Determine the number of categories where Bow is less than Kuth.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
   "prompt_variants": {
-    "answer_and_evidence": "Use the chart in the image. It shows a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Compare the two queried series category by category. Determine the number of categories where Nada is less than Pass.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer requirement: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
-    "answer_only": "Use the chart in the image. It shows a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Compare the two queried series category by category. Determine the number of categories where Nada is less than Pass.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
+    "answer_and_evidence": "Work from the multiseries chart shown in the image: a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Compare the two queried series category by category. Determine the number of categories where Bow is less than Kuth.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+    "answer_only": "Work from the multiseries chart shown in the image: a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Compare the two queried series category by category. Determine the number of categories where Bow is less than Kuth.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
   },
   "task": "task_charts_multiseries_pairwise_comparison_count",
   "task_variant": "series_a_lt_b_count",
   "trace_payload": {
     "execution_trace": {
-      "answer_value": 4,
-      "category_count": 5,
+      "answer_value": 3,
+      "category_count": 9,
       "category_count_range": [
         5,
         10
       ],
       "category_labels": [
-        "Y",
+        "N",
+        "R",
         "H",
+        "A",
+        "V",
         "M",
-        "G",
-        "Q"
+        "F",
+        "X",
+        "Y"
       ],
       "comparison": "less_than",
       "evidence_labels": [
-        "G",
         "M",
-        "Q",
+        "N",
         "Y"
       ],
-      "left_series_label": "Nada",
+      "left_series_label": "Bow",
       "mark_color_distance_space": "lab",
       "mark_color_min_distance": 40.0,
       "mark_color_sampling_policy": "random_rgb_palette",
       "queried_series_labels": [
-        "Nada",
-        "Pass"
+        "Bow",
+        "Kuth"
       ],
       "question_format": "numeric_open",
-      "right_series_label": "Pass",
+      "right_series_label": "Kuth",
       "scene_variant": "grouped_lollipop",
       "scene_variant_probabilities": {
         "grouped_bar": 0.25,
@@ -63,153 +65,174 @@
         "grouped_lollipop": 0.25,
         "multi_line": 0.25
       },
-      "series_count": 2,
+      "series_count": 3,
       "series_count_range": [
         2,
         3
       ],
       "series_fill_palette_rgb": [
         [
-          190,
-          0,
-          219
+          140,
+          219,
+          27
         ],
         [
-          161,
-          206,
-          62
+          66,
+          88,
+          11
+        ],
+        [
+          75,
+          17,
+          29
         ]
       ],
       "series_labels": [
-        "Nada",
-        "Pass"
+        "Bow",
+        "Kuth",
+        "Twum"
       ],
       "series_outline_palette_rgb": [
         [
-          105,
-          0,
-          120
+          77,
+          120,
+          15
         ],
         [
-          89,
-          113,
-          34
+          36,
+          48,
+          6
+        ],
+        [
+          41,
+          9,
+          16
         ]
       ],
-      "target_answer": 4,
+      "target_answer": 3,
       "target_answer_range": [
         0,
         8
       ],
       "task_variant": "series_a_lt_b_count",
       "task_variant_probabilities": {
-        "series_a_gt_b_count": 0.5,
-        "series_a_lt_b_count": 0.5
+        "series_a_gt_b_count": 0.0,
+        "series_a_lt_b_count": 1.0
       },
       "values_by_category": {
-        "G": {
-          "Nada": 1,
-          "Pass": 6
+        "A": {
+          "Bow": 20,
+          "Kuth": 3,
+          "Twum": 18
+        },
+        "F": {
+          "Bow": 15,
+          "Kuth": 5,
+          "Twum": 14
         },
         "H": {
-          "Nada": 13,
-          "Pass": 11
+          "Bow": 15,
+          "Kuth": 5,
+          "Twum": 10
         },
         "M": {
-          "Nada": 6,
-          "Pass": 16
+          "Bow": 7,
+          "Kuth": 12,
+          "Twum": 10
         },
-        "Q": {
-          "Nada": 2,
-          "Pass": 5
+        "N": {
+          "Bow": 9,
+          "Kuth": 19,
+          "Twum": 10
+        },
+        "R": {
+          "Bow": 19,
+          "Kuth": 13,
+          "Twum": 16
+        },
+        "V": {
+          "Bow": 16,
+          "Kuth": 7,
+          "Twum": 9
+        },
+        "X": {
+          "Bow": 17,
+          "Kuth": 5,
+          "Twum": 11
         },
         "Y": {
-          "Nada": 3,
-          "Pass": 20
+          "Bow": 3,
+          "Kuth": 20,
+          "Twum": 17
         }
       }
     },
     "projected_evidence": {
       "bbox_set": [
         [
-          594.54,
-          381.714,
-          656.26,
+          532.733,
+          243.429,
+          582.6,
           562.0
         ],
         [
-          442.14,
-          151.238,
-          503.86,
+          109.4,
+          82.095,
+          159.267,
           562.0
         ],
         [
-          746.94,
-          404.762,
-          808.66,
-          563.5
-        ],
-        [
-          137.34,
+          786.733,
           59.048,
-          199.06,
+          836.6,
           562.0
         ]
       ],
       "label_set": [
-        "G",
         "M",
-        "Q",
+        "N",
         "Y"
       ],
       "pixel_point_map": {
-        "G": [
-          625.4,
-          554.0
-        ],
         "M": [
-          473.0,
+          557.667,
           554.0
         ],
-        "Q": [
-          777.8,
+        "N": [
+          134.333,
           554.0
         ],
         "Y": [
-          168.2,
+          811.667,
           554.0
         ]
       },
       "pixel_point_set": [
         [
-          625.4,
+          557.667,
           554.0
         ],
         [
-          473.0,
+          134.333,
           554.0
         ],
         [
-          777.8,
-          554.0
-        ],
-        [
-          168.2,
+          811.667,
           554.0
         ]
       ]
     },
     "query_spec": {
       "params": {
-        "category_count": 5,
+        "category_count": 9,
         "category_count_range": [
           5,
           10
         ],
         "comparison": "less_than",
         "queried_series_labels": [
-          "Nada",
-          "Pass"
+          "Bow",
+          "Kuth"
         ],
         "scene_variant": "grouped_lollipop",
         "scene_variant_probabilities": {
@@ -218,25 +241,25 @@
           "grouped_lollipop": 0.25,
           "multi_line": 0.25
         },
-        "series_count": 2,
+        "series_count": 3,
         "series_count_range": [
           2,
           3
         ],
-        "target_answer": 4,
+        "target_answer": 3,
         "target_answer_range": [
           0,
           8
         ],
         "task_variant": "series_a_lt_b_count",
         "task_variant_probabilities": {
-          "series_a_gt_b_count": 0.5,
-          "series_a_lt_b_count": 0.5
+          "series_a_gt_b_count": 0.0,
+          "series_a_lt_b_count": 1.0
         }
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 2,
+        "answer_or_evidence_variant_index": 0,
         "prompt_bundle_id": "charts_multiseries_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -246,12 +269,12 @@
           "json_example_answer_only": "{\"answer\":2}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "left_series": "Nada",
+          "left_series": "Bow",
           "object_description": "a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis",
-          "right_series": "Pass"
+          "right_series": "Kuth"
         },
         "task_family_key": "multiseries_chart_comparison",
-        "task_family_variant_index": 1,
+        "task_family_variant_index": 2,
         "task_key": "pairwise_comparison_count_query",
         "task_variant_index": 0,
         "task_variant_key": "series_a_lt_b_count",
@@ -271,7 +294,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 2,
+            "answer_or_evidence_variant_index": 0,
             "prompt_bundle_id": "charts_multiseries_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -281,12 +304,12 @@
               "json_example_answer_only": "{\"answer\":2}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "left_series": "Nada",
+              "left_series": "Bow",
               "object_description": "a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis",
-              "right_series": "Pass"
+              "right_series": "Kuth"
             },
             "task_family_key": "multiseries_chart_comparison",
-            "task_family_variant_index": 1,
+            "task_family_variant_index": 2,
             "task_key": "pairwise_comparison_count_query",
             "task_variant_index": 0,
             "task_variant_key": "series_a_lt_b_count",
@@ -301,12 +324,12 @@
               "task_variant:series_a_lt_b_count": 5
             }
           },
-          "prompt": "Use the chart in the image. It shows a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Compare the two queried series category by category. Determine the number of categories where Nada is less than Pass.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer requirement: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}"
+          "prompt": "Work from the multiseries chart shown in the image: a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Compare the two queried series category by category. Determine the number of categories where Bow is less than Kuth.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 2,
+            "answer_or_evidence_variant_index": 4,
             "prompt_bundle_id": "charts_multiseries_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -316,12 +339,12 @@
               "json_example_answer_only": "{\"answer\":2}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "left_series": "Nada",
+              "left_series": "Bow",
               "object_description": "a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis",
-              "right_series": "Pass"
+              "right_series": "Kuth"
             },
             "task_family_key": "multiseries_chart_comparison",
-            "task_family_variant_index": 1,
+            "task_family_variant_index": 2,
             "task_key": "pairwise_comparison_count_query",
             "task_variant_index": 0,
             "task_variant_key": "series_a_lt_b_count",
@@ -336,7 +359,7 @@
               "task_variant:series_a_lt_b_count": 5
             }
           },
-          "prompt": "Use the chart in the image. It shows a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Compare the two queried series category by category. Determine the number of categories where Nada is less than Pass.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
+          "prompt": "Work from the multiseries chart shown in the image: a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Compare the two queried series category by category. Determine the number of categories where Bow is less than Kuth.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
         }
       },
       "task_variant": "series_a_lt_b_count",
@@ -344,24 +367,40 @@
     },
     "render_map": {
       "category_label_centers_px": {
-        "G": [
-          625.4,
+        "A": [
+          388.333,
+          554.0
+        ],
+        "F": [
+          642.333,
           554.0
         ],
         "H": [
-          320.6,
+          303.667,
           554.0
         ],
         "M": [
+          557.667,
+          554.0
+        ],
+        "N": [
+          134.333,
+          554.0
+        ],
+        "R": [
+          219.0,
+          554.0
+        ],
+        "V": [
           473.0,
           554.0
         ],
-        "Q": [
-          777.8,
+        "X": [
+          727.0,
           554.0
         ],
         "Y": [
-          168.2,
+          811.667,
           554.0
         ]
       },
@@ -403,26 +442,36 @@
         "sampling_policy": "random_rgb_palette",
         "series_fill_palette_rgb": [
           [
-            190,
-            0,
-            219
+            140,
+            219,
+            27
           ],
           [
-            161,
-            206,
-            62
+            66,
+            88,
+            11
+          ],
+          [
+            75,
+            17,
+            29
           ]
         ],
         "series_outline_palette_rgb": [
           [
-            105,
-            0,
-            120
+            77,
+            120,
+            15
           ],
           [
-            89,
-            113,
-            34
+            36,
+            48,
+            6
+          ],
+          [
+            41,
+            9,
+            16
           ]
         ]
       },
@@ -485,435 +534,1148 @@
         {
           "attrs": {
             "category_group_bbox_px": [
-              137.34,
-              59.048,
-              199.06,
+              109.4,
+              82.095,
+              159.267,
               562.0
             ],
-            "category_label": "Y",
+            "category_label": "N",
             "category_label_center_px": [
-              168.2,
+              134.333,
               554.0
             ],
             "category_rank": 0,
             "mark_bbox_px": [
-              137.34,
-              450.857,
-              153.34,
-              466.857
+              109.4,
+              312.571,
+              125.4,
+              328.571
             ],
             "mark_center_px": [
-              145.34,
-              458.857
+              117.4,
+              320.571
             ],
             "mark_fill_rgb": [
-              190,
-              0,
-              219
+              140,
+              219,
+              27
             ],
             "mark_outline_rgb": [
-              105,
-              0,
-              120
+              77,
+              120,
+              15
             ],
             "scene_variant": "grouped_lollipop",
-            "series_label": "Nada",
+            "series_label": "Bow",
             "series_rank": 0,
-            "value": 3
+            "value": 9
           },
-          "entity_id": "mark_Y_Nada",
+          "entity_id": "mark_N_Bow",
           "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              137.34,
-              59.048,
-              199.06,
+              109.4,
+              82.095,
+              159.267,
               562.0
             ],
-            "category_label": "Y",
+            "category_label": "N",
             "category_label_center_px": [
-              168.2,
+              134.333,
               554.0
             ],
             "category_rank": 0,
             "mark_bbox_px": [
-              183.06,
-              59.048,
-              199.06,
-              75.048
+              126.333,
+              82.095,
+              142.333,
+              98.095
             ],
             "mark_center_px": [
-              191.06,
-              67.048
+              134.333,
+              90.095
             ],
             "mark_fill_rgb": [
-              161,
-              206,
-              62
+              66,
+              88,
+              11
             ],
             "mark_outline_rgb": [
-              89,
-              113,
-              34
+              36,
+              48,
+              6
             ],
             "scene_variant": "grouped_lollipop",
-            "series_label": "Pass",
+            "series_label": "Kuth",
             "series_rank": 1,
-            "value": 20
+            "value": 19
           },
-          "entity_id": "mark_Y_Pass",
+          "entity_id": "mark_N_Kuth",
           "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              289.74,
-              220.381,
-              351.46,
+              109.4,
+              82.095,
+              159.267,
               562.0
             ],
-            "category_label": "H",
+            "category_label": "N",
             "category_label_center_px": [
-              320.6,
+              134.333,
+              554.0
+            ],
+            "category_rank": 0,
+            "mark_bbox_px": [
+              143.267,
+              289.524,
+              159.267,
+              305.524
+            ],
+            "mark_center_px": [
+              151.267,
+              297.524
+            ],
+            "mark_fill_rgb": [
+              75,
+              17,
+              29
+            ],
+            "mark_outline_rgb": [
+              41,
+              9,
+              16
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Twum",
+            "series_rank": 2,
+            "value": 10
+          },
+          "entity_id": "mark_N_Twum",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              194.067,
+              82.095,
+              243.933,
+              562.0
+            ],
+            "category_label": "R",
+            "category_label_center_px": [
+              219.0,
               554.0
             ],
             "category_rank": 1,
             "mark_bbox_px": [
-              289.74,
+              194.067,
+              82.095,
+              210.067,
+              98.095
+            ],
+            "mark_center_px": [
+              202.067,
+              90.095
+            ],
+            "mark_fill_rgb": [
+              140,
+              219,
+              27
+            ],
+            "mark_outline_rgb": [
+              77,
+              120,
+              15
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Bow",
+            "series_rank": 0,
+            "value": 19
+          },
+          "entity_id": "mark_R_Bow",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              194.067,
+              82.095,
+              243.933,
+              562.0
+            ],
+            "category_label": "R",
+            "category_label_center_px": [
+              219.0,
+              554.0
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              211.0,
               220.381,
-              305.74,
+              227.0,
               236.381
             ],
             "mark_center_px": [
-              297.74,
+              219.0,
               228.381
             ],
             "mark_fill_rgb": [
-              190,
-              0,
-              219
+              66,
+              88,
+              11
             ],
             "mark_outline_rgb": [
-              105,
-              0,
-              120
+              36,
+              48,
+              6
             ],
             "scene_variant": "grouped_lollipop",
-            "series_label": "Nada",
-            "series_rank": 0,
+            "series_label": "Kuth",
+            "series_rank": 1,
             "value": 13
           },
-          "entity_id": "mark_H_Nada",
+          "entity_id": "mark_R_Kuth",
           "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              289.74,
-              220.381,
-              351.46,
+              194.067,
+              82.095,
+              243.933,
               562.0
             ],
-            "category_label": "H",
+            "category_label": "R",
             "category_label_center_px": [
-              320.6,
+              219.0,
               554.0
             ],
             "category_rank": 1,
             "mark_bbox_px": [
-              335.46,
-              266.476,
-              351.46,
-              282.476
-            ],
-            "mark_center_px": [
-              343.46,
-              274.476
-            ],
-            "mark_fill_rgb": [
-              161,
-              206,
-              62
-            ],
-            "mark_outline_rgb": [
-              89,
-              113,
-              34
-            ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Pass",
-            "series_rank": 1,
-            "value": 11
-          },
-          "entity_id": "mark_H_Pass",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              442.14,
+              227.933,
               151.238,
-              503.86,
-              562.0
-            ],
-            "category_label": "M",
-            "category_label_center_px": [
-              473.0,
-              554.0
-            ],
-            "category_rank": 2,
-            "mark_bbox_px": [
-              442.14,
-              381.714,
-              458.14,
-              397.714
-            ],
-            "mark_center_px": [
-              450.14,
-              389.714
-            ],
-            "mark_fill_rgb": [
-              190,
-              0,
-              219
-            ],
-            "mark_outline_rgb": [
-              105,
-              0,
-              120
-            ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Nada",
-            "series_rank": 0,
-            "value": 6
-          },
-          "entity_id": "mark_M_Nada",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              442.14,
-              151.238,
-              503.86,
-              562.0
-            ],
-            "category_label": "M",
-            "category_label_center_px": [
-              473.0,
-              554.0
-            ],
-            "category_rank": 2,
-            "mark_bbox_px": [
-              487.86,
-              151.238,
-              503.86,
+              243.933,
               167.238
             ],
             "mark_center_px": [
-              495.86,
+              235.933,
               159.238
             ],
             "mark_fill_rgb": [
-              161,
-              206,
-              62
+              75,
+              17,
+              29
             ],
             "mark_outline_rgb": [
-              89,
-              113,
-              34
+              41,
+              9,
+              16
             ],
             "scene_variant": "grouped_lollipop",
-            "series_label": "Pass",
-            "series_rank": 1,
+            "series_label": "Twum",
+            "series_rank": 2,
             "value": 16
           },
-          "entity_id": "mark_M_Pass",
+          "entity_id": "mark_R_Twum",
           "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              594.54,
-              381.714,
-              656.26,
+              278.733,
+              174.286,
+              328.6,
               562.0
             ],
-            "category_label": "G",
+            "category_label": "H",
             "category_label_center_px": [
-              625.4,
+              303.667,
               554.0
             ],
-            "category_rank": 3,
+            "category_rank": 2,
             "mark_bbox_px": [
-              594.54,
-              496.952,
-              610.54,
-              512.952
+              278.733,
+              174.286,
+              294.733,
+              190.286
             ],
             "mark_center_px": [
-              602.54,
-              504.952
+              286.733,
+              182.286
             ],
             "mark_fill_rgb": [
-              190,
-              0,
-              219
+              140,
+              219,
+              27
             ],
             "mark_outline_rgb": [
-              105,
-              0,
-              120
+              77,
+              120,
+              15
             ],
             "scene_variant": "grouped_lollipop",
-            "series_label": "Nada",
+            "series_label": "Bow",
             "series_rank": 0,
-            "value": 1
+            "value": 15
           },
-          "entity_id": "mark_G_Nada",
+          "entity_id": "mark_H_Bow",
           "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              594.54,
-              381.714,
-              656.26,
+              278.733,
+              174.286,
+              328.6,
               562.0
             ],
-            "category_label": "G",
+            "category_label": "H",
             "category_label_center_px": [
-              625.4,
+              303.667,
               554.0
             ],
-            "category_rank": 3,
+            "category_rank": 2,
             "mark_bbox_px": [
-              640.26,
-              381.714,
-              656.26,
-              397.714
-            ],
-            "mark_center_px": [
-              648.26,
-              389.714
-            ],
-            "mark_fill_rgb": [
-              161,
-              206,
-              62
-            ],
-            "mark_outline_rgb": [
-              89,
-              113,
-              34
-            ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Pass",
-            "series_rank": 1,
-            "value": 6
-          },
-          "entity_id": "mark_G_Pass",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              746.94,
+              295.667,
               404.762,
-              808.66,
-              563.5
-            ],
-            "category_label": "Q",
-            "category_label_center_px": [
-              777.8,
-              554.0
-            ],
-            "category_rank": 4,
-            "mark_bbox_px": [
-              746.94,
-              473.905,
-              762.94,
-              489.905
-            ],
-            "mark_center_px": [
-              754.94,
-              481.905
-            ],
-            "mark_fill_rgb": [
-              190,
-              0,
-              219
-            ],
-            "mark_outline_rgb": [
-              105,
-              0,
-              120
-            ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Nada",
-            "series_rank": 0,
-            "value": 2
-          },
-          "entity_id": "mark_Q_Nada",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              746.94,
-              404.762,
-              808.66,
-              563.5
-            ],
-            "category_label": "Q",
-            "category_label_center_px": [
-              777.8,
-              554.0
-            ],
-            "category_rank": 4,
-            "mark_bbox_px": [
-              792.66,
-              404.762,
-              808.66,
+              311.667,
               420.762
             ],
             "mark_center_px": [
-              800.66,
+              303.667,
               412.762
             ],
             "mark_fill_rgb": [
-              161,
-              206,
-              62
+              66,
+              88,
+              11
             ],
             "mark_outline_rgb": [
-              89,
-              113,
-              34
+              36,
+              48,
+              6
             ],
             "scene_variant": "grouped_lollipop",
-            "series_label": "Pass",
+            "series_label": "Kuth",
             "series_rank": 1,
             "value": 5
           },
-          "entity_id": "mark_Q_Pass",
+          "entity_id": "mark_H_Kuth",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              278.733,
+              174.286,
+              328.6,
+              562.0
+            ],
+            "category_label": "H",
+            "category_label_center_px": [
+              303.667,
+              554.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              312.6,
+              289.524,
+              328.6,
+              305.524
+            ],
+            "mark_center_px": [
+              320.6,
+              297.524
+            ],
+            "mark_fill_rgb": [
+              75,
+              17,
+              29
+            ],
+            "mark_outline_rgb": [
+              41,
+              9,
+              16
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Twum",
+            "series_rank": 2,
+            "value": 10
+          },
+          "entity_id": "mark_H_Twum",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              363.4,
+              59.048,
+              413.267,
+              562.0
+            ],
+            "category_label": "A",
+            "category_label_center_px": [
+              388.333,
+              554.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              363.4,
+              59.048,
+              379.4,
+              75.048
+            ],
+            "mark_center_px": [
+              371.4,
+              67.048
+            ],
+            "mark_fill_rgb": [
+              140,
+              219,
+              27
+            ],
+            "mark_outline_rgb": [
+              77,
+              120,
+              15
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Bow",
+            "series_rank": 0,
+            "value": 20
+          },
+          "entity_id": "mark_A_Bow",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              363.4,
+              59.048,
+              413.267,
+              562.0
+            ],
+            "category_label": "A",
+            "category_label_center_px": [
+              388.333,
+              554.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              380.333,
+              450.857,
+              396.333,
+              466.857
+            ],
+            "mark_center_px": [
+              388.333,
+              458.857
+            ],
+            "mark_fill_rgb": [
+              66,
+              88,
+              11
+            ],
+            "mark_outline_rgb": [
+              36,
+              48,
+              6
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Kuth",
+            "series_rank": 1,
+            "value": 3
+          },
+          "entity_id": "mark_A_Kuth",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              363.4,
+              59.048,
+              413.267,
+              562.0
+            ],
+            "category_label": "A",
+            "category_label_center_px": [
+              388.333,
+              554.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              397.267,
+              105.143,
+              413.267,
+              121.143
+            ],
+            "mark_center_px": [
+              405.267,
+              113.143
+            ],
+            "mark_fill_rgb": [
+              75,
+              17,
+              29
+            ],
+            "mark_outline_rgb": [
+              41,
+              9,
+              16
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Twum",
+            "series_rank": 2,
+            "value": 18
+          },
+          "entity_id": "mark_A_Twum",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              448.067,
+              151.238,
+              497.933,
+              562.0
+            ],
+            "category_label": "V",
+            "category_label_center_px": [
+              473.0,
+              554.0
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              448.067,
+              151.238,
+              464.067,
+              167.238
+            ],
+            "mark_center_px": [
+              456.067,
+              159.238
+            ],
+            "mark_fill_rgb": [
+              140,
+              219,
+              27
+            ],
+            "mark_outline_rgb": [
+              77,
+              120,
+              15
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Bow",
+            "series_rank": 0,
+            "value": 16
+          },
+          "entity_id": "mark_V_Bow",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              448.067,
+              151.238,
+              497.933,
+              562.0
+            ],
+            "category_label": "V",
+            "category_label_center_px": [
+              473.0,
+              554.0
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              465.0,
+              358.667,
+              481.0,
+              374.667
+            ],
+            "mark_center_px": [
+              473.0,
+              366.667
+            ],
+            "mark_fill_rgb": [
+              66,
+              88,
+              11
+            ],
+            "mark_outline_rgb": [
+              36,
+              48,
+              6
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Kuth",
+            "series_rank": 1,
+            "value": 7
+          },
+          "entity_id": "mark_V_Kuth",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              448.067,
+              151.238,
+              497.933,
+              562.0
+            ],
+            "category_label": "V",
+            "category_label_center_px": [
+              473.0,
+              554.0
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              481.933,
+              312.571,
+              497.933,
+              328.571
+            ],
+            "mark_center_px": [
+              489.933,
+              320.571
+            ],
+            "mark_fill_rgb": [
+              75,
+              17,
+              29
+            ],
+            "mark_outline_rgb": [
+              41,
+              9,
+              16
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Twum",
+            "series_rank": 2,
+            "value": 9
+          },
+          "entity_id": "mark_V_Twum",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              532.733,
+              243.429,
+              582.6,
+              562.0
+            ],
+            "category_label": "M",
+            "category_label_center_px": [
+              557.667,
+              554.0
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              532.733,
+              358.667,
+              548.733,
+              374.667
+            ],
+            "mark_center_px": [
+              540.733,
+              366.667
+            ],
+            "mark_fill_rgb": [
+              140,
+              219,
+              27
+            ],
+            "mark_outline_rgb": [
+              77,
+              120,
+              15
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Bow",
+            "series_rank": 0,
+            "value": 7
+          },
+          "entity_id": "mark_M_Bow",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              532.733,
+              243.429,
+              582.6,
+              562.0
+            ],
+            "category_label": "M",
+            "category_label_center_px": [
+              557.667,
+              554.0
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              549.667,
+              243.429,
+              565.667,
+              259.429
+            ],
+            "mark_center_px": [
+              557.667,
+              251.429
+            ],
+            "mark_fill_rgb": [
+              66,
+              88,
+              11
+            ],
+            "mark_outline_rgb": [
+              36,
+              48,
+              6
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Kuth",
+            "series_rank": 1,
+            "value": 12
+          },
+          "entity_id": "mark_M_Kuth",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              532.733,
+              243.429,
+              582.6,
+              562.0
+            ],
+            "category_label": "M",
+            "category_label_center_px": [
+              557.667,
+              554.0
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              566.6,
+              289.524,
+              582.6,
+              305.524
+            ],
+            "mark_center_px": [
+              574.6,
+              297.524
+            ],
+            "mark_fill_rgb": [
+              75,
+              17,
+              29
+            ],
+            "mark_outline_rgb": [
+              41,
+              9,
+              16
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Twum",
+            "series_rank": 2,
+            "value": 10
+          },
+          "entity_id": "mark_M_Twum",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              617.4,
+              174.286,
+              667.267,
+              562.0
+            ],
+            "category_label": "F",
+            "category_label_center_px": [
+              642.333,
+              554.0
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              617.4,
+              174.286,
+              633.4,
+              190.286
+            ],
+            "mark_center_px": [
+              625.4,
+              182.286
+            ],
+            "mark_fill_rgb": [
+              140,
+              219,
+              27
+            ],
+            "mark_outline_rgb": [
+              77,
+              120,
+              15
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Bow",
+            "series_rank": 0,
+            "value": 15
+          },
+          "entity_id": "mark_F_Bow",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              617.4,
+              174.286,
+              667.267,
+              562.0
+            ],
+            "category_label": "F",
+            "category_label_center_px": [
+              642.333,
+              554.0
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              634.333,
+              404.762,
+              650.333,
+              420.762
+            ],
+            "mark_center_px": [
+              642.333,
+              412.762
+            ],
+            "mark_fill_rgb": [
+              66,
+              88,
+              11
+            ],
+            "mark_outline_rgb": [
+              36,
+              48,
+              6
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Kuth",
+            "series_rank": 1,
+            "value": 5
+          },
+          "entity_id": "mark_F_Kuth",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              617.4,
+              174.286,
+              667.267,
+              562.0
+            ],
+            "category_label": "F",
+            "category_label_center_px": [
+              642.333,
+              554.0
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              651.267,
+              197.333,
+              667.267,
+              213.333
+            ],
+            "mark_center_px": [
+              659.267,
+              205.333
+            ],
+            "mark_fill_rgb": [
+              75,
+              17,
+              29
+            ],
+            "mark_outline_rgb": [
+              41,
+              9,
+              16
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Twum",
+            "series_rank": 2,
+            "value": 14
+          },
+          "entity_id": "mark_F_Twum",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              702.067,
+              128.19,
+              751.933,
+              562.0
+            ],
+            "category_label": "X",
+            "category_label_center_px": [
+              727.0,
+              554.0
+            ],
+            "category_rank": 7,
+            "mark_bbox_px": [
+              702.067,
+              128.19,
+              718.067,
+              144.19
+            ],
+            "mark_center_px": [
+              710.067,
+              136.19
+            ],
+            "mark_fill_rgb": [
+              140,
+              219,
+              27
+            ],
+            "mark_outline_rgb": [
+              77,
+              120,
+              15
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Bow",
+            "series_rank": 0,
+            "value": 17
+          },
+          "entity_id": "mark_X_Bow",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              702.067,
+              128.19,
+              751.933,
+              562.0
+            ],
+            "category_label": "X",
+            "category_label_center_px": [
+              727.0,
+              554.0
+            ],
+            "category_rank": 7,
+            "mark_bbox_px": [
+              719.0,
+              404.762,
+              735.0,
+              420.762
+            ],
+            "mark_center_px": [
+              727.0,
+              412.762
+            ],
+            "mark_fill_rgb": [
+              66,
+              88,
+              11
+            ],
+            "mark_outline_rgb": [
+              36,
+              48,
+              6
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Kuth",
+            "series_rank": 1,
+            "value": 5
+          },
+          "entity_id": "mark_X_Kuth",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              702.067,
+              128.19,
+              751.933,
+              562.0
+            ],
+            "category_label": "X",
+            "category_label_center_px": [
+              727.0,
+              554.0
+            ],
+            "category_rank": 7,
+            "mark_bbox_px": [
+              735.933,
+              266.476,
+              751.933,
+              282.476
+            ],
+            "mark_center_px": [
+              743.933,
+              274.476
+            ],
+            "mark_fill_rgb": [
+              75,
+              17,
+              29
+            ],
+            "mark_outline_rgb": [
+              41,
+              9,
+              16
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Twum",
+            "series_rank": 2,
+            "value": 11
+          },
+          "entity_id": "mark_X_Twum",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              786.733,
+              59.048,
+              836.6,
+              562.0
+            ],
+            "category_label": "Y",
+            "category_label_center_px": [
+              811.667,
+              554.0
+            ],
+            "category_rank": 8,
+            "mark_bbox_px": [
+              786.733,
+              450.857,
+              802.733,
+              466.857
+            ],
+            "mark_center_px": [
+              794.733,
+              458.857
+            ],
+            "mark_fill_rgb": [
+              140,
+              219,
+              27
+            ],
+            "mark_outline_rgb": [
+              77,
+              120,
+              15
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Bow",
+            "series_rank": 0,
+            "value": 3
+          },
+          "entity_id": "mark_Y_Bow",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              786.733,
+              59.048,
+              836.6,
+              562.0
+            ],
+            "category_label": "Y",
+            "category_label_center_px": [
+              811.667,
+              554.0
+            ],
+            "category_rank": 8,
+            "mark_bbox_px": [
+              803.667,
+              59.048,
+              819.667,
+              75.048
+            ],
+            "mark_center_px": [
+              811.667,
+              67.048
+            ],
+            "mark_fill_rgb": [
+              66,
+              88,
+              11
+            ],
+            "mark_outline_rgb": [
+              36,
+              48,
+              6
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Kuth",
+            "series_rank": 1,
+            "value": 20
+          },
+          "entity_id": "mark_Y_Kuth",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              786.733,
+              59.048,
+              836.6,
+              562.0
+            ],
+            "category_label": "Y",
+            "category_label_center_px": [
+              811.667,
+              554.0
+            ],
+            "category_rank": 8,
+            "mark_bbox_px": [
+              820.6,
+              128.19,
+              836.6,
+              144.19
+            ],
+            "mark_center_px": [
+              828.6,
+              136.19
+            ],
+            "mark_fill_rgb": [
+              75,
+              17,
+              29
+            ],
+            "mark_outline_rgb": [
+              41,
+              9,
+              16
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Twum",
+            "series_rank": 2,
+            "value": 17
+          },
+          "entity_id": "mark_Y_Twum",
           "entity_type": "point"
         }
       ],
       "relations": {
         "comparison": "less_than",
         "evidence_labels": [
-          "G",
           "M",
-          "Q",
+          "N",
           "Y"
         ],
         "queried_series_labels": [
-          "Nada",
-          "Pass"
+          "Bow",
+          "Kuth"
         ],
         "scene_variant": "grouped_lollipop",
         "task_variant": "series_a_lt_b_count"
@@ -922,9 +1684,8 @@
     },
     "witness_symbolic": {
       "labels": [
-        "G",
         "M",
-        "Q",
+        "N",
         "Y"
       ],
       "type": "label_set"

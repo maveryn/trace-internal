@@ -1,7 +1,7 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 7
+    "value": 3
   },
   "evidence_gt": {
     "type": "bbox_set",
@@ -9,43 +9,19 @@
       [
         52.0,
         304.16,
-        141.0,
+        153.0,
         374.16
       ],
       [
-        163.0,
+        173.786,
         494.16,
-        252.0,
+        274.786,
         564.16
       ],
       [
-        280.5,
+        308.071,
         304.16,
-        369.5,
-        374.16
-      ],
-      [
-        398.0,
-        494.16,
-        487.0,
-        564.16
-      ],
-      [
-        515.5,
-        304.16,
-        604.5,
-        374.16
-      ],
-      [
-        633.0,
-        494.16,
-        722.0,
-        564.16
-      ],
-      [
-        750.5,
-        304.16,
-        839.5,
+        409.071,
         374.16
       ]
     ]
@@ -54,11 +30,11 @@
     "format": "png",
     "path": "temporal/task_temporal_timeline_milestones/images/before_reference_count/0016.png"
   },
-  "instance_seed": 4683740287188606,
-  "prompt": "You are given an image with one labeled milestone timeline for February 2024 with dated event cards and one highlighted reference event. Read the timeline carefully and answer the question. Count the milestones that occur before the highlighted reference event.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for all event cards before the highlighted reference event.\nAnswer: set \"answer\" to the integer count of events before the highlighted reference event.\nExample JSON:\n{\"evidence\":[[160,158,264,228],[286,158,390,228]],\"answer\":2}",
+  "instance_seed": 4808972658481090,
+  "prompt": "The image shows one labeled milestone timeline for April 2027 with dated event cards and one highlighted reference event. Read the timeline carefully and answer the question. How many events happen before the highlighted reference event?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for all event cards before the highlighted reference event.\nAnswer format: set \"answer\" to the integer count of events before the highlighted reference event.\nExample JSON:\n{\"evidence\":[[160,158,264,228],[286,158,390,228]],\"answer\":2}",
   "prompt_variants": {
-    "answer_and_evidence": "You are given an image with one labeled milestone timeline for February 2024 with dated event cards and one highlighted reference event. Read the timeline carefully and answer the question. Count the milestones that occur before the highlighted reference event.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for all event cards before the highlighted reference event.\nAnswer: set \"answer\" to the integer count of events before the highlighted reference event.\nExample JSON:\n{\"evidence\":[[160,158,264,228],[286,158,390,228]],\"answer\":2}",
-    "answer_only": "You are given an image with one labeled milestone timeline for February 2024 with dated event cards and one highlighted reference event. Read the timeline carefully and answer the question. Count the milestones that occur before the highlighted reference event.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the integer count of events before the highlighted reference event.\nExample JSON:\n{\"answer\":2}"
+    "answer_and_evidence": "The image shows one labeled milestone timeline for April 2027 with dated event cards and one highlighted reference event. Read the timeline carefully and answer the question. How many events happen before the highlighted reference event?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for all event cards before the highlighted reference event.\nAnswer format: set \"answer\" to the integer count of events before the highlighted reference event.\nExample JSON:\n{\"evidence\":[[160,158,264,228],[286,158,390,228]],\"answer\":2}",
+    "answer_only": "The image shows one labeled milestone timeline for April 2027 with dated event cards and one highlighted reference event. Read the timeline carefully and answer the question. How many events happen before the highlighted reference event?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the integer count of events before the highlighted reference event.\nExample JSON:\n{\"answer\":2}"
   },
   "task": "task_temporal_timeline_milestones",
   "task_variant": "before_reference_count",
@@ -80,18 +56,14 @@
       "answer_event_ids": [
         "event_a",
         "event_b",
-        "event_c",
-        "event_d",
-        "event_e",
-        "event_f",
-        "event_g"
+        "event_c"
       ],
-      "answer_value": 7,
-      "event_count": 9,
+      "answer_value": 3,
+      "event_count": 8,
       "events": [
         {
           "card_side": "above",
-          "date_text": "Feb 02",
+          "date_text": "Apr 02",
           "day_of_month": 2,
           "event_id": "event_a",
           "label": "A",
@@ -100,7 +72,7 @@
         },
         {
           "card_side": "below",
-          "date_text": "Feb 03",
+          "date_text": "Apr 03",
           "day_of_month": 3,
           "event_id": "event_b",
           "label": "B",
@@ -109,35 +81,35 @@
         },
         {
           "card_side": "above",
-          "date_text": "Feb 07",
-          "day_of_month": 7,
+          "date_text": "Apr 08",
+          "day_of_month": 8,
           "event_id": "event_c",
           "label": "C",
           "order_index": 2,
           "reference_kind": "none"
         },
         {
-          "card_side": "below",
-          "date_text": "Feb 08",
-          "day_of_month": 8,
+          "card_side": "above",
+          "date_text": "Apr 12",
+          "day_of_month": 12,
           "event_id": "event_d",
           "label": "D",
           "order_index": 3,
-          "reference_kind": "none"
+          "reference_kind": "primary"
         },
         {
-          "card_side": "above",
-          "date_text": "Feb 15",
-          "day_of_month": 15,
+          "card_side": "below",
+          "date_text": "Apr 18",
+          "day_of_month": 18,
           "event_id": "event_e",
           "label": "E",
           "order_index": 4,
           "reference_kind": "none"
         },
         {
-          "card_side": "below",
-          "date_text": "Feb 17",
-          "day_of_month": 17,
+          "card_side": "above",
+          "date_text": "Apr 28",
+          "day_of_month": 28,
           "event_id": "event_f",
           "label": "F",
           "order_index": 5,
@@ -145,8 +117,8 @@
         },
         {
           "card_side": "above",
-          "date_text": "Feb 18",
-          "day_of_month": 18,
+          "date_text": "Apr 29",
+          "day_of_month": 29,
           "event_id": "event_g",
           "label": "G",
           "order_index": 6,
@@ -154,35 +126,26 @@
         },
         {
           "card_side": "below",
-          "date_text": "Feb 21",
-          "day_of_month": 21,
+          "date_text": "Apr 30",
+          "day_of_month": 30,
           "event_id": "event_h",
           "label": "H",
           "order_index": 7,
-          "reference_kind": "primary"
-        },
-        {
-          "card_side": "above",
-          "date_text": "Feb 29",
-          "day_of_month": 29,
-          "event_id": "event_i",
-          "label": "I",
-          "order_index": 8,
           "reference_kind": "none"
         }
       ],
-      "month": 2,
-      "month_name": "February",
+      "month": 4,
+      "month_name": "April",
       "reference_event_ids": [
-        "event_h"
+        "event_d"
       ],
-      "scene_variant": "classic",
+      "scene_variant": "roadmap",
       "scene_variant_probabilities": {
         "classic": 0.3333333333333333,
         "minimal": 0.3333333333333333,
         "roadmap": 0.3333333333333333
       },
-      "style_variant": "studio",
+      "style_variant": "marker",
       "style_variant_probabilities": {
         "accented": 0.3333333333333333,
         "marker": 0.3333333333333333,
@@ -194,50 +157,26 @@
         "between_reference_events_count": 0.0,
         "position_of_reference": 0.0
       },
-      "year": 2024
+      "year": 2027
     },
     "projected_evidence": {
       "bbox_set": [
         [
           52.0,
           304.16,
-          141.0,
+          153.0,
           374.16
         ],
         [
-          163.0,
+          173.786,
           494.16,
-          252.0,
+          274.786,
           564.16
         ],
         [
-          280.5,
+          308.071,
           304.16,
-          369.5,
-          374.16
-        ],
-        [
-          398.0,
-          494.16,
-          487.0,
-          564.16
-        ],
-        [
-          515.5,
-          304.16,
-          604.5,
-          374.16
-        ],
-        [
-          633.0,
-          494.16,
-          722.0,
-          564.16
-        ],
-        [
-          750.5,
-          304.16,
-          839.5,
+          409.071,
           374.16
         ]
       ]
@@ -281,8 +220,8 @@
           8,
           9
         ],
-        "month": 2,
-        "month_name": "February",
+        "month": 4,
+        "month_name": "April",
         "position_support": [
           1,
           2,
@@ -293,13 +232,13 @@
           7,
           8
         ],
-        "scene_variant": "classic",
+        "scene_variant": "roadmap",
         "scene_variant_probabilities": {
           "classic": 0.3333333333333333,
           "minimal": 0.3333333333333333,
           "roadmap": 0.3333333333333333
         },
-        "style_variant": "studio",
+        "style_variant": "marker",
         "style_variant_probabilities": {
           "accented": 0.3333333333333333,
           "marker": 0.3333333333333333,
@@ -311,11 +250,11 @@
           "between_reference_events_count": 0.0,
           "position_of_reference": 0.0
         },
-        "year": 2024
+        "year": 2027
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 0,
+        "answer_or_evidence_variant_index": 1,
         "prompt_bundle_id": "temporal_timeline_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -325,14 +264,14 @@
           "json_example_answer_only": "{\"answer\":2}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "object_description": "one labeled milestone timeline for February 2024 with dated event cards and one highlighted reference event"
+          "object_description": "one labeled milestone timeline for April 2027 with dated event cards and one highlighted reference event"
         },
         "task_family_key": "milestone_timeline",
-        "task_family_variant_index": 2,
+        "task_family_variant_index": 0,
         "task_key": "timeline_milestone_query",
         "task_variant_index": 2,
         "task_variant_key": "before_reference_count",
-        "task_variant_template_index": 4,
+        "task_variant_template_index": 0,
         "template_paths": [
           "temporal/timeline/temporal_timeline_v1.json"
         ],
@@ -348,7 +287,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 0,
+            "answer_or_evidence_variant_index": 1,
             "prompt_bundle_id": "temporal_timeline_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -358,14 +297,14 @@
               "json_example_answer_only": "{\"answer\":2}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "one labeled milestone timeline for February 2024 with dated event cards and one highlighted reference event"
+              "object_description": "one labeled milestone timeline for April 2027 with dated event cards and one highlighted reference event"
             },
             "task_family_key": "milestone_timeline",
-            "task_family_variant_index": 2,
+            "task_family_variant_index": 0,
             "task_key": "timeline_milestone_query",
             "task_variant_index": 2,
             "task_variant_key": "before_reference_count",
-            "task_variant_template_index": 4,
+            "task_variant_template_index": 0,
             "template_paths": [
               "temporal/timeline/temporal_timeline_v1.json"
             ],
@@ -376,12 +315,12 @@
               "task_variant:before_reference_count": 5
             }
           },
-          "prompt": "You are given an image with one labeled milestone timeline for February 2024 with dated event cards and one highlighted reference event. Read the timeline carefully and answer the question. Count the milestones that occur before the highlighted reference event.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for all event cards before the highlighted reference event.\nAnswer: set \"answer\" to the integer count of events before the highlighted reference event.\nExample JSON:\n{\"evidence\":[[160,158,264,228],[286,158,390,228]],\"answer\":2}"
+          "prompt": "The image shows one labeled milestone timeline for April 2027 with dated event cards and one highlighted reference event. Read the timeline carefully and answer the question. How many events happen before the highlighted reference event?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for all event cards before the highlighted reference event.\nAnswer format: set \"answer\" to the integer count of events before the highlighted reference event.\nExample JSON:\n{\"evidence\":[[160,158,264,228],[286,158,390,228]],\"answer\":2}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 3,
+            "answer_or_evidence_variant_index": 4,
             "prompt_bundle_id": "temporal_timeline_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -391,14 +330,14 @@
               "json_example_answer_only": "{\"answer\":2}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "one labeled milestone timeline for February 2024 with dated event cards and one highlighted reference event"
+              "object_description": "one labeled milestone timeline for April 2027 with dated event cards and one highlighted reference event"
             },
             "task_family_key": "milestone_timeline",
-            "task_family_variant_index": 2,
+            "task_family_variant_index": 0,
             "task_key": "timeline_milestone_query",
             "task_variant_index": 2,
             "task_variant_key": "before_reference_count",
-            "task_variant_template_index": 4,
+            "task_variant_template_index": 0,
             "template_paths": [
               "temporal/timeline/temporal_timeline_v1.json"
             ],
@@ -409,7 +348,7 @@
               "task_variant:before_reference_count": 5
             }
           },
-          "prompt": "You are given an image with one labeled milestone timeline for February 2024 with dated event cards and one highlighted reference event. Read the timeline carefully and answer the question. Count the milestones that occur before the highlighted reference event.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the integer count of events before the highlighted reference event.\nExample JSON:\n{\"answer\":2}"
+          "prompt": "The image shows one labeled milestone timeline for April 2027 with dated event cards and one highlighted reference event. Read the timeline carefully and answer the question. How many events happen before the highlighted reference event?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the integer count of events before the highlighted reference event.\nExample JSON:\n{\"answer\":2}"
         }
       },
       "task_variant": "before_reference_count",
@@ -419,11 +358,7 @@
       "answer_event_ids": [
         "event_a",
         "event_b",
-        "event_c",
-        "event_d",
-        "event_e",
-        "event_f",
-        "event_g"
+        "event_c"
       ],
       "axis_bbox_px": [
         90.0,
@@ -435,56 +370,50 @@
         "event_a": [
           52.0,
           304.16,
-          141.0,
+          153.0,
           374.16
         ],
         "event_b": [
-          163.0,
+          173.786,
           494.16,
-          252.0,
+          274.786,
           564.16
         ],
         "event_c": [
-          280.5,
+          308.071,
           304.16,
-          369.5,
+          409.071,
           374.16
         ],
         "event_d": [
-          398.0,
-          494.16,
-          487.0,
-          564.16
-        ],
-        "event_e": [
-          515.5,
+          442.357,
           304.16,
-          604.5,
+          543.357,
           374.16
         ],
-        "event_f": [
-          633.0,
+        "event_e": [
+          576.643,
           494.16,
-          722.0,
+          677.643,
           564.16
         ],
-        "event_g": [
-          750.5,
+        "event_f": [
+          710.929,
           304.16,
-          839.5,
+          811.929,
+          374.16
+        ],
+        "event_g": [
+          845.214,
+          304.16,
+          946.214,
           374.16
         ],
         "event_h": [
-          868.0,
+          967.0,
           494.16,
-          957.0,
-          564.16
-        ],
-        "event_i": [
-          979.0,
-          304.16,
           1068.0,
-          374.16
+          564.16
         ]
       },
       "image_id": "img0",
@@ -495,7 +424,7 @@
         666.0
       ],
       "reference_event_ids": [
-        "event_h"
+        "event_d"
       ],
       "scene_bbox_px": [
         34.0,
@@ -503,7 +432,7 @@
         1086.0,
         666.0
       ],
-      "subtitle_text": "February 2024",
+      "subtitle_text": "April 2027",
       "title_text": "Milestone timeline"
     },
     "render_spec": {
@@ -547,14 +476,14 @@
         1086.0,
         666.0
       ],
-      "scene_variant": "classic",
+      "scene_variant": "roadmap",
       "timeline_style": {
         "accent_color_name": "maroon",
         "resolved_colors_rgb": {
           "axis_line": [
-            213,
-            204,
-            205
+            87,
+            31,
+            39
           ],
           "event_fill": [
             255,
@@ -572,9 +501,9 @@
             255
           ],
           "panel_outline": [
-            197,
-            185,
-            187
+            63,
+            23,
+            29
           ],
           "primary_reference_fill": [
             150,
@@ -587,8 +516,8 @@
             68
           ]
         },
-        "style_variant": "studio",
-        "subtitle_text": "February 2024",
+        "style_variant": "marker",
+        "subtitle_text": "April 2027",
         "title_text": "Milestone timeline"
       }
     },
@@ -598,11 +527,11 @@
           "card_bbox_px": [
             52.0,
             304.16,
-            141.0,
+            153.0,
             374.16
           ],
           "card_side": "above",
-          "date_text": "Feb 02",
+          "date_text": "Apr 02",
           "event_id": "event_a",
           "label": "A",
           "marker_center_px": [
@@ -615,17 +544,17 @@
         },
         {
           "card_bbox_px": [
-            163.0,
+            173.786,
             494.16,
-            252.0,
+            274.786,
             564.16
           ],
           "card_side": "below",
-          "date_text": "Feb 03",
+          "date_text": "Apr 03",
           "event_id": "event_b",
           "label": "B",
           "marker_center_px": [
-            207.5,
+            224.286,
             434.16
           ],
           "order_index": 1,
@@ -634,17 +563,17 @@
         },
         {
           "card_bbox_px": [
-            280.5,
+            308.071,
             304.16,
-            369.5,
+            409.071,
             374.16
           ],
           "card_side": "above",
-          "date_text": "Feb 07",
+          "date_text": "Apr 08",
           "event_id": "event_c",
           "label": "C",
           "marker_center_px": [
-            325.0,
+            358.571,
             434.16
           ],
           "order_index": 2,
@@ -653,36 +582,36 @@
         },
         {
           "card_bbox_px": [
-            398.0,
-            494.16,
-            487.0,
-            564.16
+            442.357,
+            304.16,
+            543.357,
+            374.16
           ],
-          "card_side": "below",
-          "date_text": "Feb 08",
+          "card_side": "above",
+          "date_text": "Apr 12",
           "event_id": "event_d",
           "label": "D",
           "marker_center_px": [
-            442.5,
+            492.857,
             434.16
           ],
           "order_index": 3,
-          "reference_kind": "none",
+          "reference_kind": "primary",
           "type": "timeline_event_card"
         },
         {
           "card_bbox_px": [
-            515.5,
-            304.16,
-            604.5,
-            374.16
+            576.643,
+            494.16,
+            677.643,
+            564.16
           ],
-          "card_side": "above",
-          "date_text": "Feb 15",
+          "card_side": "below",
+          "date_text": "Apr 18",
           "event_id": "event_e",
           "label": "E",
           "marker_center_px": [
-            560.0,
+            627.143,
             434.16
           ],
           "order_index": 4,
@@ -691,17 +620,17 @@
         },
         {
           "card_bbox_px": [
-            633.0,
-            494.16,
-            722.0,
-            564.16
+            710.929,
+            304.16,
+            811.929,
+            374.16
           ],
-          "card_side": "below",
-          "date_text": "Feb 17",
+          "card_side": "above",
+          "date_text": "Apr 28",
           "event_id": "event_f",
           "label": "F",
           "marker_center_px": [
-            677.5,
+            761.429,
             434.16
           ],
           "order_index": 5,
@@ -710,17 +639,17 @@
         },
         {
           "card_bbox_px": [
-            750.5,
+            845.214,
             304.16,
-            839.5,
+            946.214,
             374.16
           ],
           "card_side": "above",
-          "date_text": "Feb 18",
+          "date_text": "Apr 29",
           "event_id": "event_g",
           "label": "G",
           "marker_center_px": [
-            795.0,
+            895.714,
             434.16
           ],
           "order_index": 6,
@@ -729,54 +658,35 @@
         },
         {
           "card_bbox_px": [
-            868.0,
+            967.0,
             494.16,
-            957.0,
+            1068.0,
             564.16
           ],
           "card_side": "below",
-          "date_text": "Feb 21",
+          "date_text": "Apr 30",
           "event_id": "event_h",
           "label": "H",
-          "marker_center_px": [
-            912.5,
-            434.16
-          ],
-          "order_index": 7,
-          "reference_kind": "primary",
-          "type": "timeline_event_card"
-        },
-        {
-          "card_bbox_px": [
-            979.0,
-            304.16,
-            1068.0,
-            374.16
-          ],
-          "card_side": "above",
-          "date_text": "Feb 29",
-          "event_id": "event_i",
-          "label": "I",
           "marker_center_px": [
             1030.0,
             434.16
           ],
-          "order_index": 8,
+          "order_index": 7,
           "reference_kind": "none",
           "type": "timeline_event_card"
         }
       ],
       "relations": {
         "accent_color_name": "maroon",
-        "month": 2,
-        "month_name": "February",
+        "month": 4,
+        "month_name": "April",
         "reference_event_ids": [
-          "event_h"
+          "event_d"
         ],
-        "scene_variant": "classic",
-        "style_variant": "studio",
+        "scene_variant": "roadmap",
+        "style_variant": "marker",
         "task_variant": "before_reference_count",
-        "year": 2024
+        "year": 2027
       },
       "scene_kind": "temporal_milestone_timeline"
     },
@@ -786,43 +696,19 @@
         [
           52.0,
           304.16,
-          141.0,
+          153.0,
           374.16
         ],
         [
-          163.0,
+          173.786,
           494.16,
-          252.0,
+          274.786,
           564.16
         ],
         [
-          280.5,
+          308.071,
           304.16,
-          369.5,
-          374.16
-        ],
-        [
-          398.0,
-          494.16,
-          487.0,
-          564.16
-        ],
-        [
-          515.5,
-          304.16,
-          604.5,
-          374.16
-        ],
-        [
-          633.0,
-          494.16,
-          722.0,
-          564.16
-        ],
-        [
-          750.5,
-          304.16,
-          839.5,
+          409.071,
           374.16
         ]
       ]

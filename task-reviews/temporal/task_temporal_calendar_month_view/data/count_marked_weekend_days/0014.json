@@ -1,46 +1,27 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 3
+    "value": 0
   },
   "evidence_gt": {
     "type": "bbox_set",
-    "value": [
-      [
-        602.0,
-        251.0,
-        706.0,
-        338.0
-      ],
-      [
-        602.0,
-        441.0,
-        706.0,
-        528.0
-      ],
-      [
-        714.0,
-        536.0,
-        818.0,
-        623.0
-      ]
-    ]
+    "value": []
   },
   "image": {
     "format": "png",
     "path": "temporal/task_temporal_calendar_month_view/images/count_marked_weekend_days/0014.png"
   },
-  "instance_seed": 2099437403596362,
-  "prompt": "Use the calendar in the image. It shows one month-view calendar for January 2022 with weekday headers, date cells, and several marked dates. Use the month-view calendar to answer the question. Among the marked dates, how many are on the weekend?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for all marked weekend date cells.\nAnswer format: set \"answer\" to the integer count of marked weekend dates.\nExample JSON:\n{\"evidence\":[[148,352,250,448],[560,352,662,448]],\"answer\":2}",
+  "instance_seed": 6527808031923429,
+  "prompt": "Work from the month-view calendar shown in the image: one month-view calendar for January 2030 with weekday headers, date cells, and several marked dates. Work from the full calendar grid to answer the question. Among the marked dates, how many are on the weekend?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for all marked weekend date cells.\nAnswer field: set \"answer\" to the integer count of marked weekend dates.\nExample JSON:\n{\"evidence\":[[148,352,250,448],[560,352,662,448]],\"answer\":2}",
   "prompt_variants": {
-    "answer_and_evidence": "Use the calendar in the image. It shows one month-view calendar for January 2022 with weekday headers, date cells, and several marked dates. Use the month-view calendar to answer the question. Among the marked dates, how many are on the weekend?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for all marked weekend date cells.\nAnswer format: set \"answer\" to the integer count of marked weekend dates.\nExample JSON:\n{\"evidence\":[[148,352,250,448],[560,352,662,448]],\"answer\":2}",
-    "answer_only": "Use the calendar in the image. It shows one month-view calendar for January 2022 with weekday headers, date cells, and several marked dates. Use the month-view calendar to answer the question. Among the marked dates, how many are on the weekend?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the integer count of marked weekend dates.\nExample JSON:\n{\"answer\":2}"
+    "answer_and_evidence": "Work from the month-view calendar shown in the image: one month-view calendar for January 2030 with weekday headers, date cells, and several marked dates. Work from the full calendar grid to answer the question. Among the marked dates, how many are on the weekend?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for all marked weekend date cells.\nAnswer field: set \"answer\" to the integer count of marked weekend dates.\nExample JSON:\n{\"evidence\":[[148,352,250,448],[560,352,662,448]],\"answer\":2}",
+    "answer_only": "Work from the month-view calendar shown in the image: one month-view calendar for January 2030 with weekday headers, date cells, and several marked dates. Work from the full calendar grid to answer the question. Among the marked dates, how many are on the weekend?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the integer count of marked weekend dates.\nExample JSON:\n{\"answer\":2}"
   },
   "task": "task_temporal_calendar_month_view",
   "task_variant": "count_marked_weekend_days",
   "trace_payload": {
     "execution_trace": {
-      "accent_color_name": "maroon",
+      "accent_color_name": "blue",
       "accent_color_name_probabilities": {
         "blue": 0.1,
         "brown": 0.1,
@@ -53,32 +34,28 @@
         "red": 0.1,
         "yellow": 0.1
       },
-      "answer_value": 3,
+      "answer_value": 0,
       "days_in_month": 31,
-      "evidence_dates": [
-        8,
-        22,
-        30
-      ],
+      "evidence_dates": [],
       "marked_dates": [
-        8,
-        12,
+        21,
         22,
+        29,
         30
       ],
       "month": 1,
       "month_name": "January",
       "query_occurrence": null,
       "query_weekday_index": null,
-      "row_count": 6,
-      "scene_variant": "minimal",
+      "row_count": 5,
+      "scene_variant": "classic",
       "scene_variant_probabilities": {
         "classic": 0.3333333333333333,
         "minimal": 0.3333333333333333,
         "outline": 0.3333333333333333
       },
-      "start_weekday_index": 5,
-      "style_variant": "studio",
+      "start_weekday_index": 1,
+      "style_variant": "accented",
       "style_variant_probabilities": {
         "accented": 0.3333333333333333,
         "marker": 0.3333333333333333,
@@ -95,33 +72,14 @@
         5,
         6
       ],
-      "year": 2022
+      "year": 2030
     },
     "projected_evidence": {
-      "bbox_set": [
-        [
-          602.0,
-          251.0,
-          706.0,
-          338.0
-        ],
-        [
-          602.0,
-          441.0,
-          706.0,
-          528.0
-        ],
-        [
-          714.0,
-          536.0,
-          818.0,
-          623.0
-        ]
-      ]
+      "bbox_set": []
     },
     "query_spec": {
       "params": {
-        "accent_color_name": "maroon",
+        "accent_color_name": "blue",
         "accent_color_name_probabilities": {
           "blue": 0.1,
           "brown": 0.1,
@@ -179,15 +137,15 @@
         ],
         "month": 1,
         "month_name": "January",
-        "row_count": 6,
-        "scene_variant": "minimal",
+        "row_count": 5,
+        "scene_variant": "classic",
         "scene_variant_probabilities": {
           "classic": 0.3333333333333333,
           "minimal": 0.3333333333333333,
           "outline": 0.3333333333333333
         },
-        "start_weekday_index": 5,
-        "style_variant": "studio",
+        "start_weekday_index": 1,
+        "style_variant": "accented",
         "style_variant_probabilities": {
           "accented": 0.3333333333333333,
           "marker": 0.3333333333333333,
@@ -203,11 +161,11 @@
           5,
           6
         ],
-        "year": 2022
+        "year": 2030
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 1,
+        "answer_or_evidence_variant_index": 3,
         "prompt_bundle_id": "temporal_calendar_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -217,12 +175,12 @@
           "json_example_answer_only": "{\"answer\":2}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "object_description": "one month-view calendar for January 2022 with weekday headers, date cells, and several marked dates"
+          "object_description": "one month-view calendar for January 2030 with weekday headers, date cells, and several marked dates"
         },
         "task_family_key": "month_calendar",
-        "task_family_variant_index": 4,
+        "task_family_variant_index": 3,
         "task_key": "calendar_month_query",
-        "task_variant_index": 1,
+        "task_variant_index": 3,
         "task_variant_key": "count_marked_weekend_days",
         "task_variant_template_index": 2,
         "template_paths": [
@@ -240,7 +198,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 1,
+            "answer_or_evidence_variant_index": 3,
             "prompt_bundle_id": "temporal_calendar_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -250,12 +208,12 @@
               "json_example_answer_only": "{\"answer\":2}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "one month-view calendar for January 2022 with weekday headers, date cells, and several marked dates"
+              "object_description": "one month-view calendar for January 2030 with weekday headers, date cells, and several marked dates"
             },
             "task_family_key": "month_calendar",
-            "task_family_variant_index": 4,
+            "task_family_variant_index": 3,
             "task_key": "calendar_month_query",
-            "task_variant_index": 1,
+            "task_variant_index": 3,
             "task_variant_key": "count_marked_weekend_days",
             "task_variant_template_index": 2,
             "template_paths": [
@@ -268,7 +226,7 @@
               "task_variant:count_marked_weekend_days": 5
             }
           },
-          "prompt": "Use the calendar in the image. It shows one month-view calendar for January 2022 with weekday headers, date cells, and several marked dates. Use the month-view calendar to answer the question. Among the marked dates, how many are on the weekend?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for all marked weekend date cells.\nAnswer format: set \"answer\" to the integer count of marked weekend dates.\nExample JSON:\n{\"evidence\":[[148,352,250,448],[560,352,662,448]],\"answer\":2}"
+          "prompt": "Work from the month-view calendar shown in the image: one month-view calendar for January 2030 with weekday headers, date cells, and several marked dates. Work from the full calendar grid to answer the question. Among the marked dates, how many are on the weekend?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for all marked weekend date cells.\nAnswer field: set \"answer\" to the integer count of marked weekend dates.\nExample JSON:\n{\"evidence\":[[148,352,250,448],[560,352,662,448]],\"answer\":2}"
         },
         "answer_only": {
           "metadata": {
@@ -283,12 +241,12 @@
               "json_example_answer_only": "{\"answer\":2}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "one month-view calendar for January 2022 with weekday headers, date cells, and several marked dates"
+              "object_description": "one month-view calendar for January 2030 with weekday headers, date cells, and several marked dates"
             },
             "task_family_key": "month_calendar",
-            "task_family_variant_index": 4,
+            "task_family_variant_index": 3,
             "task_key": "calendar_month_query",
-            "task_variant_index": 1,
+            "task_variant_index": 3,
             "task_variant_key": "count_marked_weekend_days",
             "task_variant_template_index": 2,
             "template_paths": [
@@ -301,212 +259,208 @@
               "task_variant:count_marked_weekend_days": 5
             }
           },
-          "prompt": "Use the calendar in the image. It shows one month-view calendar for January 2022 with weekday headers, date cells, and several marked dates. Use the month-view calendar to answer the question. Among the marked dates, how many are on the weekend?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the integer count of marked weekend dates.\nExample JSON:\n{\"answer\":2}"
+          "prompt": "Work from the month-view calendar shown in the image: one month-view calendar for January 2030 with weekday headers, date cells, and several marked dates. Work from the full calendar grid to answer the question. Among the marked dates, how many are on the weekend?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the integer count of marked weekend dates.\nExample JSON:\n{\"answer\":2}"
         }
       },
       "task_variant": "count_marked_weekend_days",
       "template_id": "temporal_calendar_v1"
     },
     "render_map": {
-      "calendar_title_text": "January 2022",
+      "calendar_title_text": "January 2030",
       "date_cells_by_day": {
         "1": [
-          602.0,
+          154.0,
           156.0,
-          706.0,
-          243.0
+          258.0,
+          262.0
         ],
         "10": [
-          42.0,
-          346.0,
-          146.0,
-          433.0
+          378.0,
+          270.0,
+          482.0,
+          376.0
         ],
         "11": [
-          154.0,
-          346.0,
-          258.0,
-          433.0
+          490.0,
+          270.0,
+          594.0,
+          376.0
         ],
         "12": [
-          266.0,
-          346.0,
-          370.0,
-          433.0
+          602.0,
+          270.0,
+          706.0,
+          376.0
         ],
         "13": [
-          378.0,
-          346.0,
-          482.0,
-          433.0
+          714.0,
+          270.0,
+          818.0,
+          376.0
         ],
         "14": [
-          490.0,
-          346.0,
-          594.0,
-          433.0
+          42.0,
+          384.0,
+          146.0,
+          490.0
         ],
         "15": [
-          602.0,
-          346.0,
-          706.0,
-          433.0
+          154.0,
+          384.0,
+          258.0,
+          490.0
         ],
         "16": [
-          714.0,
-          346.0,
-          818.0,
-          433.0
+          266.0,
+          384.0,
+          370.0,
+          490.0
         ],
         "17": [
-          42.0,
-          441.0,
-          146.0,
-          528.0
+          378.0,
+          384.0,
+          482.0,
+          490.0
         ],
         "18": [
-          154.0,
-          441.0,
-          258.0,
-          528.0
+          490.0,
+          384.0,
+          594.0,
+          490.0
         ],
         "19": [
-          266.0,
-          441.0,
-          370.0,
-          528.0
+          602.0,
+          384.0,
+          706.0,
+          490.0
         ],
         "2": [
-          714.0,
+          266.0,
           156.0,
-          818.0,
-          243.0
+          370.0,
+          262.0
         ],
         "20": [
-          378.0,
-          441.0,
-          482.0,
-          528.0
+          714.0,
+          384.0,
+          818.0,
+          490.0
         ],
         "21": [
-          490.0,
-          441.0,
-          594.0,
-          528.0
+          42.0,
+          498.0,
+          146.0,
+          604.0
         ],
         "22": [
-          602.0,
-          441.0,
-          706.0,
-          528.0
+          154.0,
+          498.0,
+          258.0,
+          604.0
         ],
         "23": [
-          714.0,
-          441.0,
-          818.0,
-          528.0
+          266.0,
+          498.0,
+          370.0,
+          604.0
         ],
         "24": [
-          42.0,
-          536.0,
-          146.0,
-          623.0
+          378.0,
+          498.0,
+          482.0,
+          604.0
         ],
         "25": [
-          154.0,
-          536.0,
-          258.0,
-          623.0
+          490.0,
+          498.0,
+          594.0,
+          604.0
         ],
         "26": [
-          266.0,
-          536.0,
-          370.0,
-          623.0
+          602.0,
+          498.0,
+          706.0,
+          604.0
         ],
         "27": [
-          378.0,
-          536.0,
-          482.0,
-          623.0
+          714.0,
+          498.0,
+          818.0,
+          604.0
         ],
         "28": [
-          490.0,
-          536.0,
-          594.0,
-          623.0
-        ],
-        "29": [
-          602.0,
-          536.0,
-          706.0,
-          623.0
-        ],
-        "3": [
           42.0,
-          251.0,
-          146.0,
-          338.0
-        ],
-        "30": [
-          714.0,
-          536.0,
-          818.0,
-          623.0
-        ],
-        "31": [
-          42.0,
-          631.0,
+          612.0,
           146.0,
           718.0
         ],
-        "4": [
+        "29": [
           154.0,
-          251.0,
+          612.0,
           258.0,
-          338.0
+          718.0
+        ],
+        "3": [
+          378.0,
+          156.0,
+          482.0,
+          262.0
+        ],
+        "30": [
+          266.0,
+          612.0,
+          370.0,
+          718.0
+        ],
+        "31": [
+          378.0,
+          612.0,
+          482.0,
+          718.0
+        ],
+        "4": [
+          490.0,
+          156.0,
+          594.0,
+          262.0
         ],
         "5": [
-          266.0,
-          251.0,
-          370.0,
-          338.0
+          602.0,
+          156.0,
+          706.0,
+          262.0
         ],
         "6": [
-          378.0,
-          251.0,
-          482.0,
-          338.0
+          714.0,
+          156.0,
+          818.0,
+          262.0
         ],
         "7": [
-          490.0,
-          251.0,
-          594.0,
-          338.0
+          42.0,
+          270.0,
+          146.0,
+          376.0
         ],
         "8": [
-          602.0,
-          251.0,
-          706.0,
-          338.0
+          154.0,
+          270.0,
+          258.0,
+          376.0
         ],
         "9": [
-          714.0,
-          251.0,
-          818.0,
-          338.0
+          266.0,
+          270.0,
+          370.0,
+          376.0
         ]
       },
-      "evidence_dates": [
-        8,
-        22,
-        30
-      ],
+      "evidence_dates": [],
       "image_id": "img0",
       "marked_dates": [
-        8,
-        12,
+        21,
         22,
+        29,
         30
       ],
       "scene_bbox_px": [
@@ -533,7 +487,7 @@
         }
       },
       "calendar_style": {
-        "accent_color_name": "maroon",
+        "accent_color_name": "blue",
         "marker_kind": "fill",
         "resolved_colors_rgb": {
           "date_text": [
@@ -542,49 +496,49 @@
             62
           ],
           "grid_line": [
-            220,
-            213,
-            214
+            200,
+            210,
+            226
           ],
           "marker_fill": [
-            226,
-            199,
-            203
+            163,
+            194,
+            244
           ],
           "marker_outline": [
-            87,
-            31,
-            39
+            26,
+            68,
+            133
           ],
           "panel_fill": [
-            255,
-            255,
-            255
+            242,
+            247,
+            254
           ],
           "panel_outline": [
-            197,
-            185,
-            187
+            26,
+            68,
+            133
           ],
           "title_text": [
-            63,
-            23,
-            29
+            19,
+            49,
+            97
           ],
           "weekday_fill": [
-            240,
-            227,
-            229
+            209,
+            225,
+            250
           ],
           "weekday_text": [
-            63,
-            23,
-            29
+            19,
+            49,
+            97
           ]
         },
-        "row_count": 6,
-        "style_variant": "studio",
-        "title_text": "January 2022"
+        "row_count": 5,
+        "style_variant": "accented",
+        "title_text": "January 2030"
       },
       "canvas_height": 760,
       "canvas_width": 860,
@@ -611,7 +565,7 @@
         826.0,
         726.0
       ],
-      "scene_variant": "minimal"
+      "scene_variant": "classic"
     },
     "scene_ir": {
       "entities": [
@@ -622,14 +576,14 @@
             "month": 1,
             "month_name": "January",
             "week_row_index": 0,
-            "weekday_index": 5,
-            "year": 2022
+            "weekday_index": 1,
+            "year": 2030
           },
           "bbox_px": [
-            602.0,
+            154.0,
             156.0,
-            706.0,
-            243.0
+            258.0,
+            262.0
           ],
           "entity_id": "date_1",
           "entity_type": "calendar_date_cell"
@@ -641,14 +595,14 @@
             "month": 1,
             "month_name": "January",
             "week_row_index": 0,
-            "weekday_index": 6,
-            "year": 2022
+            "weekday_index": 2,
+            "year": 2030
           },
           "bbox_px": [
-            714.0,
+            266.0,
             156.0,
-            818.0,
-            243.0
+            370.0,
+            262.0
           ],
           "entity_id": "date_2",
           "entity_type": "calendar_date_cell"
@@ -659,15 +613,15 @@
             "is_marked": false,
             "month": 1,
             "month_name": "January",
-            "week_row_index": 1,
-            "weekday_index": 0,
-            "year": 2022
+            "week_row_index": 0,
+            "weekday_index": 3,
+            "year": 2030
           },
           "bbox_px": [
-            42.0,
-            251.0,
-            146.0,
-            338.0
+            378.0,
+            156.0,
+            482.0,
+            262.0
           ],
           "entity_id": "date_3",
           "entity_type": "calendar_date_cell"
@@ -678,15 +632,15 @@
             "is_marked": false,
             "month": 1,
             "month_name": "January",
-            "week_row_index": 1,
-            "weekday_index": 1,
-            "year": 2022
+            "week_row_index": 0,
+            "weekday_index": 4,
+            "year": 2030
           },
           "bbox_px": [
-            154.0,
-            251.0,
-            258.0,
-            338.0
+            490.0,
+            156.0,
+            594.0,
+            262.0
           ],
           "entity_id": "date_4",
           "entity_type": "calendar_date_cell"
@@ -697,15 +651,15 @@
             "is_marked": false,
             "month": 1,
             "month_name": "January",
-            "week_row_index": 1,
-            "weekday_index": 2,
-            "year": 2022
+            "week_row_index": 0,
+            "weekday_index": 5,
+            "year": 2030
           },
           "bbox_px": [
-            266.0,
-            251.0,
-            370.0,
-            338.0
+            602.0,
+            156.0,
+            706.0,
+            262.0
           ],
           "entity_id": "date_5",
           "entity_type": "calendar_date_cell"
@@ -716,15 +670,15 @@
             "is_marked": false,
             "month": 1,
             "month_name": "January",
-            "week_row_index": 1,
-            "weekday_index": 3,
-            "year": 2022
+            "week_row_index": 0,
+            "weekday_index": 6,
+            "year": 2030
           },
           "bbox_px": [
-            378.0,
-            251.0,
-            482.0,
-            338.0
+            714.0,
+            156.0,
+            818.0,
+            262.0
           ],
           "entity_id": "date_6",
           "entity_type": "calendar_date_cell"
@@ -736,14 +690,14 @@
             "month": 1,
             "month_name": "January",
             "week_row_index": 1,
-            "weekday_index": 4,
-            "year": 2022
+            "weekday_index": 0,
+            "year": 2030
           },
           "bbox_px": [
-            490.0,
-            251.0,
-            594.0,
-            338.0
+            42.0,
+            270.0,
+            146.0,
+            376.0
           ],
           "entity_id": "date_7",
           "entity_type": "calendar_date_cell"
@@ -751,18 +705,18 @@
         {
           "attrs": {
             "date_number": 8,
-            "is_marked": true,
+            "is_marked": false,
             "month": 1,
             "month_name": "January",
             "week_row_index": 1,
-            "weekday_index": 5,
-            "year": 2022
+            "weekday_index": 1,
+            "year": 2030
           },
           "bbox_px": [
-            602.0,
-            251.0,
-            706.0,
-            338.0
+            154.0,
+            270.0,
+            258.0,
+            376.0
           ],
           "entity_id": "date_8",
           "entity_type": "calendar_date_cell"
@@ -774,14 +728,14 @@
             "month": 1,
             "month_name": "January",
             "week_row_index": 1,
-            "weekday_index": 6,
-            "year": 2022
+            "weekday_index": 2,
+            "year": 2030
           },
           "bbox_px": [
-            714.0,
-            251.0,
-            818.0,
-            338.0
+            266.0,
+            270.0,
+            370.0,
+            376.0
           ],
           "entity_id": "date_9",
           "entity_type": "calendar_date_cell"
@@ -792,15 +746,15 @@
             "is_marked": false,
             "month": 1,
             "month_name": "January",
-            "week_row_index": 2,
-            "weekday_index": 0,
-            "year": 2022
+            "week_row_index": 1,
+            "weekday_index": 3,
+            "year": 2030
           },
           "bbox_px": [
-            42.0,
-            346.0,
-            146.0,
-            433.0
+            378.0,
+            270.0,
+            482.0,
+            376.0
           ],
           "entity_id": "date_10",
           "entity_type": "calendar_date_cell"
@@ -811,15 +765,15 @@
             "is_marked": false,
             "month": 1,
             "month_name": "January",
-            "week_row_index": 2,
-            "weekday_index": 1,
-            "year": 2022
+            "week_row_index": 1,
+            "weekday_index": 4,
+            "year": 2030
           },
           "bbox_px": [
-            154.0,
-            346.0,
-            258.0,
-            433.0
+            490.0,
+            270.0,
+            594.0,
+            376.0
           ],
           "entity_id": "date_11",
           "entity_type": "calendar_date_cell"
@@ -827,18 +781,18 @@
         {
           "attrs": {
             "date_number": 12,
-            "is_marked": true,
+            "is_marked": false,
             "month": 1,
             "month_name": "January",
-            "week_row_index": 2,
-            "weekday_index": 2,
-            "year": 2022
+            "week_row_index": 1,
+            "weekday_index": 5,
+            "year": 2030
           },
           "bbox_px": [
-            266.0,
-            346.0,
-            370.0,
-            433.0
+            602.0,
+            270.0,
+            706.0,
+            376.0
           ],
           "entity_id": "date_12",
           "entity_type": "calendar_date_cell"
@@ -849,15 +803,15 @@
             "is_marked": false,
             "month": 1,
             "month_name": "January",
-            "week_row_index": 2,
-            "weekday_index": 3,
-            "year": 2022
+            "week_row_index": 1,
+            "weekday_index": 6,
+            "year": 2030
           },
           "bbox_px": [
-            378.0,
-            346.0,
-            482.0,
-            433.0
+            714.0,
+            270.0,
+            818.0,
+            376.0
           ],
           "entity_id": "date_13",
           "entity_type": "calendar_date_cell"
@@ -869,14 +823,14 @@
             "month": 1,
             "month_name": "January",
             "week_row_index": 2,
-            "weekday_index": 4,
-            "year": 2022
+            "weekday_index": 0,
+            "year": 2030
           },
           "bbox_px": [
-            490.0,
-            346.0,
-            594.0,
-            433.0
+            42.0,
+            384.0,
+            146.0,
+            490.0
           ],
           "entity_id": "date_14",
           "entity_type": "calendar_date_cell"
@@ -888,14 +842,14 @@
             "month": 1,
             "month_name": "January",
             "week_row_index": 2,
-            "weekday_index": 5,
-            "year": 2022
+            "weekday_index": 1,
+            "year": 2030
           },
           "bbox_px": [
-            602.0,
-            346.0,
-            706.0,
-            433.0
+            154.0,
+            384.0,
+            258.0,
+            490.0
           ],
           "entity_id": "date_15",
           "entity_type": "calendar_date_cell"
@@ -907,14 +861,14 @@
             "month": 1,
             "month_name": "January",
             "week_row_index": 2,
-            "weekday_index": 6,
-            "year": 2022
+            "weekday_index": 2,
+            "year": 2030
           },
           "bbox_px": [
-            714.0,
-            346.0,
-            818.0,
-            433.0
+            266.0,
+            384.0,
+            370.0,
+            490.0
           ],
           "entity_id": "date_16",
           "entity_type": "calendar_date_cell"
@@ -925,15 +879,15 @@
             "is_marked": false,
             "month": 1,
             "month_name": "January",
-            "week_row_index": 3,
-            "weekday_index": 0,
-            "year": 2022
+            "week_row_index": 2,
+            "weekday_index": 3,
+            "year": 2030
           },
           "bbox_px": [
-            42.0,
-            441.0,
-            146.0,
-            528.0
+            378.0,
+            384.0,
+            482.0,
+            490.0
           ],
           "entity_id": "date_17",
           "entity_type": "calendar_date_cell"
@@ -944,15 +898,15 @@
             "is_marked": false,
             "month": 1,
             "month_name": "January",
-            "week_row_index": 3,
-            "weekday_index": 1,
-            "year": 2022
+            "week_row_index": 2,
+            "weekday_index": 4,
+            "year": 2030
           },
           "bbox_px": [
-            154.0,
-            441.0,
-            258.0,
-            528.0
+            490.0,
+            384.0,
+            594.0,
+            490.0
           ],
           "entity_id": "date_18",
           "entity_type": "calendar_date_cell"
@@ -963,15 +917,15 @@
             "is_marked": false,
             "month": 1,
             "month_name": "January",
-            "week_row_index": 3,
-            "weekday_index": 2,
-            "year": 2022
+            "week_row_index": 2,
+            "weekday_index": 5,
+            "year": 2030
           },
           "bbox_px": [
-            266.0,
-            441.0,
-            370.0,
-            528.0
+            602.0,
+            384.0,
+            706.0,
+            490.0
           ],
           "entity_id": "date_19",
           "entity_type": "calendar_date_cell"
@@ -982,15 +936,15 @@
             "is_marked": false,
             "month": 1,
             "month_name": "January",
-            "week_row_index": 3,
-            "weekday_index": 3,
-            "year": 2022
+            "week_row_index": 2,
+            "weekday_index": 6,
+            "year": 2030
           },
           "bbox_px": [
-            378.0,
-            441.0,
-            482.0,
-            528.0
+            714.0,
+            384.0,
+            818.0,
+            490.0
           ],
           "entity_id": "date_20",
           "entity_type": "calendar_date_cell"
@@ -998,18 +952,18 @@
         {
           "attrs": {
             "date_number": 21,
-            "is_marked": false,
+            "is_marked": true,
             "month": 1,
             "month_name": "January",
             "week_row_index": 3,
-            "weekday_index": 4,
-            "year": 2022
+            "weekday_index": 0,
+            "year": 2030
           },
           "bbox_px": [
-            490.0,
-            441.0,
-            594.0,
-            528.0
+            42.0,
+            498.0,
+            146.0,
+            604.0
           ],
           "entity_id": "date_21",
           "entity_type": "calendar_date_cell"
@@ -1021,14 +975,14 @@
             "month": 1,
             "month_name": "January",
             "week_row_index": 3,
-            "weekday_index": 5,
-            "year": 2022
+            "weekday_index": 1,
+            "year": 2030
           },
           "bbox_px": [
-            602.0,
-            441.0,
-            706.0,
-            528.0
+            154.0,
+            498.0,
+            258.0,
+            604.0
           ],
           "entity_id": "date_22",
           "entity_type": "calendar_date_cell"
@@ -1040,14 +994,14 @@
             "month": 1,
             "month_name": "January",
             "week_row_index": 3,
-            "weekday_index": 6,
-            "year": 2022
+            "weekday_index": 2,
+            "year": 2030
           },
           "bbox_px": [
-            714.0,
-            441.0,
-            818.0,
-            528.0
+            266.0,
+            498.0,
+            370.0,
+            604.0
           ],
           "entity_id": "date_23",
           "entity_type": "calendar_date_cell"
@@ -1058,15 +1012,15 @@
             "is_marked": false,
             "month": 1,
             "month_name": "January",
-            "week_row_index": 4,
-            "weekday_index": 0,
-            "year": 2022
+            "week_row_index": 3,
+            "weekday_index": 3,
+            "year": 2030
           },
           "bbox_px": [
-            42.0,
-            536.0,
-            146.0,
-            623.0
+            378.0,
+            498.0,
+            482.0,
+            604.0
           ],
           "entity_id": "date_24",
           "entity_type": "calendar_date_cell"
@@ -1077,15 +1031,15 @@
             "is_marked": false,
             "month": 1,
             "month_name": "January",
-            "week_row_index": 4,
-            "weekday_index": 1,
-            "year": 2022
+            "week_row_index": 3,
+            "weekday_index": 4,
+            "year": 2030
           },
           "bbox_px": [
-            154.0,
-            536.0,
-            258.0,
-            623.0
+            490.0,
+            498.0,
+            594.0,
+            604.0
           ],
           "entity_id": "date_25",
           "entity_type": "calendar_date_cell"
@@ -1096,15 +1050,15 @@
             "is_marked": false,
             "month": 1,
             "month_name": "January",
-            "week_row_index": 4,
-            "weekday_index": 2,
-            "year": 2022
+            "week_row_index": 3,
+            "weekday_index": 5,
+            "year": 2030
           },
           "bbox_px": [
-            266.0,
-            536.0,
-            370.0,
-            623.0
+            602.0,
+            498.0,
+            706.0,
+            604.0
           ],
           "entity_id": "date_26",
           "entity_type": "calendar_date_cell"
@@ -1115,15 +1069,15 @@
             "is_marked": false,
             "month": 1,
             "month_name": "January",
-            "week_row_index": 4,
-            "weekday_index": 3,
-            "year": 2022
+            "week_row_index": 3,
+            "weekday_index": 6,
+            "year": 2030
           },
           "bbox_px": [
-            378.0,
-            536.0,
-            482.0,
-            623.0
+            714.0,
+            498.0,
+            818.0,
+            604.0
           ],
           "entity_id": "date_27",
           "entity_type": "calendar_date_cell"
@@ -1135,14 +1089,14 @@
             "month": 1,
             "month_name": "January",
             "week_row_index": 4,
-            "weekday_index": 4,
-            "year": 2022
+            "weekday_index": 0,
+            "year": 2030
           },
           "bbox_px": [
-            490.0,
-            536.0,
-            594.0,
-            623.0
+            42.0,
+            612.0,
+            146.0,
+            718.0
           ],
           "entity_id": "date_28",
           "entity_type": "calendar_date_cell"
@@ -1150,18 +1104,18 @@
         {
           "attrs": {
             "date_number": 29,
-            "is_marked": false,
+            "is_marked": true,
             "month": 1,
             "month_name": "January",
             "week_row_index": 4,
-            "weekday_index": 5,
-            "year": 2022
+            "weekday_index": 1,
+            "year": 2030
           },
           "bbox_px": [
-            602.0,
-            536.0,
-            706.0,
-            623.0
+            154.0,
+            612.0,
+            258.0,
+            718.0
           ],
           "entity_id": "date_29",
           "entity_type": "calendar_date_cell"
@@ -1173,14 +1127,14 @@
             "month": 1,
             "month_name": "January",
             "week_row_index": 4,
-            "weekday_index": 6,
-            "year": 2022
+            "weekday_index": 2,
+            "year": 2030
           },
           "bbox_px": [
-            714.0,
-            536.0,
-            818.0,
-            623.0
+            266.0,
+            612.0,
+            370.0,
+            718.0
           ],
           "entity_id": "date_30",
           "entity_type": "calendar_date_cell"
@@ -1191,14 +1145,14 @@
             "is_marked": false,
             "month": 1,
             "month_name": "January",
-            "week_row_index": 5,
-            "weekday_index": 0,
-            "year": 2022
+            "week_row_index": 4,
+            "weekday_index": 3,
+            "year": 2030
           },
           "bbox_px": [
-            42.0,
-            631.0,
-            146.0,
+            378.0,
+            612.0,
+            482.0,
             718.0
           ],
           "entity_id": "date_31",
@@ -1206,44 +1160,25 @@
         }
       ],
       "relations": {
-        "accent_color_name": "maroon",
+        "accent_color_name": "blue",
         "marked_dates": [
-          8,
-          12,
+          21,
           22,
+          29,
           30
         ],
         "month": 1,
         "month_name": "January",
-        "scene_variant": "minimal",
-        "style_variant": "studio",
+        "scene_variant": "classic",
+        "style_variant": "accented",
         "task_variant": "count_marked_weekend_days",
-        "year": 2022
+        "year": 2030
       },
       "scene_kind": "temporal_month_calendar"
     },
     "witness_symbolic": {
       "type": "bbox_set",
-      "value": [
-        [
-          602.0,
-          251.0,
-          706.0,
-          338.0
-        ],
-        [
-          602.0,
-          441.0,
-          706.0,
-          528.0
-        ],
-        [
-          714.0,
-          536.0,
-          818.0,
-          623.0
-        ]
-      ]
+      "value": []
     }
   },
   "versions": {

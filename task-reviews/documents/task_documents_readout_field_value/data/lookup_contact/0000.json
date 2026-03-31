@@ -1,22 +1,22 @@
 {
   "answer_gt": {
     "type": "string",
-    "value": "(704) 117-3706"
+    "value": "blueoakoffice@example.com"
   },
   "evidence_gt": {
     "type": "bbox_set",
     "value": [
       [
-        214.0,
-        567.5,
-        294.0,
-        586.5
+        665.0,
+        451.5,
+        841.0,
+        470.5
       ],
       [
-        214.0,
-        601.5,
-        437.0,
-        628.5
+        665.0,
+        485.5,
+        1042.0,
+        512.5
       ]
     ]
   },
@@ -24,18 +24,18 @@
     "format": "png",
     "path": "documents/task_documents_readout_field_value/images/lookup_contact/0000.png"
   },
-  "instance_seed": 8916731547179940,
-  "prompt": "Read the labeled fields in this document: an invoice-style document with labeled header blocks and summary fields. Read the document and answer this question: What is the phone number? Return the exact field text as written.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value.\nAnswer format: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"ava.lee@example.com\"}",
+  "instance_seed": 883102274573553,
+  "prompt": "The image shows an invoice-style document with labeled header blocks and summary fields. Use the labeled fields to answer: What is the contact email? Answer using the exact field value.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value.\nAnswer rule: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"ava.lee@example.com\"}",
   "prompt_variants": {
-    "answer_and_evidence": "Read the labeled fields in this document: an invoice-style document with labeled header blocks and summary fields. Read the document and answer this question: What is the phone number? Return the exact field text as written.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value.\nAnswer format: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"ava.lee@example.com\"}",
-    "answer_only": "Read the labeled fields in this document: an invoice-style document with labeled header blocks and summary fields. Read the document and answer this question: What is the phone number? Return the exact field text as written.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"answer\":\"ava.lee@example.com\"}"
+    "answer_and_evidence": "The image shows an invoice-style document with labeled header blocks and summary fields. Use the labeled fields to answer: What is the contact email? Answer using the exact field value.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value.\nAnswer rule: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"ava.lee@example.com\"}",
+    "answer_only": "The image shows an invoice-style document with labeled header blocks and summary fields. Use the labeled fields to answer: What is the contact email? Answer using the exact field value.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"answer\":\"ava.lee@example.com\"}"
   },
   "task": "task_documents_readout_field_value",
   "task_variant": "lookup_contact",
   "trace_payload": {
     "answer_gt": {
       "type": "string",
-      "value": "(704) 117-3706"
+      "value": "blueoakoffice@example.com"
     },
     "background": {
       "available_styles": [
@@ -56,16 +56,16 @@
       "type": "bbox_set",
       "value": [
         [
-          214.0,
-          567.5,
-          294.0,
-          586.5
+          665.0,
+          451.5,
+          841.0,
+          470.5
         ],
         [
-          214.0,
-          601.5,
-          437.0,
-          628.5
+          665.0,
+          485.5,
+          1042.0,
+          512.5
         ]
       ]
     },
@@ -76,7 +76,7 @@
           "field_category": "lookup_name",
           "field_id": "vendor_name",
           "field_label": "Vendor",
-          "field_value": "Trailhead Co.",
+          "field_value": "Blue Oak Office",
           "label_bbox_id": "vendor_name:label",
           "question_name": "vendor name",
           "value_bbox_id": "vendor_name:value"
@@ -85,7 +85,7 @@
           "field_category": "lookup_name",
           "field_id": "customer_name",
           "field_label": "Customer",
-          "field_value": "Ada Ortiz",
+          "field_value": "Milo Moore",
           "label_bbox_id": "customer_name:label",
           "question_name": "customer name",
           "value_bbox_id": "customer_name:value"
@@ -94,7 +94,7 @@
           "field_category": "lookup_identifier",
           "field_id": "invoice_number",
           "field_label": "Invoice Number",
-          "field_value": "INV-17098",
+          "field_value": "INV-63313",
           "label_bbox_id": "invoice_number:label",
           "question_name": "invoice number",
           "value_bbox_id": "invoice_number:value"
@@ -103,7 +103,7 @@
           "field_category": "lookup_identifier",
           "field_id": "account_id",
           "field_label": "Account ID",
-          "field_value": "ACC-5615",
+          "field_value": "ACC-8375",
           "label_bbox_id": "account_id:label",
           "question_name": "account ID",
           "value_bbox_id": "account_id:value"
@@ -112,7 +112,7 @@
           "field_category": "lookup_date",
           "field_id": "issue_date",
           "field_label": "Issue Date",
-          "field_value": "2026-03-05",
+          "field_value": "2026-03-23",
           "label_bbox_id": "issue_date:label",
           "question_name": "issue date",
           "value_bbox_id": "issue_date:value"
@@ -121,7 +121,7 @@
           "field_category": "lookup_date",
           "field_id": "due_date",
           "field_label": "Due Date",
-          "field_value": "2026-03-20",
+          "field_value": "2026-04-12",
           "label_bbox_id": "due_date:label",
           "question_name": "due date",
           "value_bbox_id": "due_date:value"
@@ -130,7 +130,7 @@
           "field_category": "lookup_contact",
           "field_id": "contact_email",
           "field_label": "Contact Email",
-          "field_value": "trailheadco@northpost.co",
+          "field_value": "blueoakoffice@example.com",
           "label_bbox_id": "contact_email:label",
           "question_name": "contact email",
           "value_bbox_id": "contact_email:value"
@@ -139,7 +139,7 @@
           "field_category": "lookup_contact",
           "field_id": "contact_phone",
           "field_label": "Phone",
-          "field_value": "(704) 117-3706",
+          "field_value": "(212) 721-2637",
           "label_bbox_id": "contact_phone:label",
           "question_name": "phone number",
           "value_bbox_id": "contact_phone:value"
@@ -148,7 +148,7 @@
           "field_category": "lookup_name",
           "field_id": "city",
           "field_label": "City",
-          "field_value": "Brookfield",
+          "field_value": "Riverton",
           "label_bbox_id": "city:label",
           "question_name": "city",
           "value_bbox_id": "city:value"
@@ -157,7 +157,7 @@
           "field_category": "lookup_amount",
           "field_id": "tax_amount",
           "field_label": "Tax",
-          "field_value": "$16.63",
+          "field_value": "$15.21",
           "label_bbox_id": "tax_amount:label",
           "question_name": "tax amount",
           "value_bbox_id": "tax_amount:value"
@@ -166,20 +166,20 @@
           "field_category": "lookup_amount",
           "field_id": "total_due",
           "field_label": "Total Due",
-          "field_value": "$197.46",
+          "field_value": "$228.67",
           "label_bbox_id": "total_due:label",
           "question_name": "total due",
           "value_bbox_id": "total_due:value"
         }
       ],
       "query_field_category": "lookup_contact",
-      "query_field_id": "contact_phone",
-      "query_field_label": "Phone",
-      "query_field_value": "(704) 117-3706",
-      "query_label_bbox_id": "contact_phone:label",
-      "query_value_bbox_id": "contact_phone:value",
+      "query_field_id": "contact_email",
+      "query_field_label": "Contact Email",
+      "query_field_value": "blueoakoffice@example.com",
+      "query_label_bbox_id": "contact_email:label",
+      "query_value_bbox_id": "contact_email:value",
       "question_format": "document_field_lookup",
-      "question_text": "What is the phone number?",
+      "question_text": "What is the contact email?",
       "scene_title": "Invoice",
       "scene_variant": "invoice_sheet",
       "task_variant": "lookup_contact",
@@ -204,16 +204,16 @@
     "projected_evidence": {
       "bbox_set": [
         [
-          214.0,
-          567.5,
-          294.0,
-          586.5
+          665.0,
+          451.5,
+          841.0,
+          470.5
         ],
         [
-          214.0,
-          601.5,
-          437.0,
-          628.5
+          665.0,
+          485.5,
+          1042.0,
+          512.5
         ]
       ]
     },
@@ -241,7 +241,7 @@
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 1,
+        "answer_or_evidence_variant_index": 4,
         "prompt_bundle_id": "documents_readout_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -252,14 +252,14 @@
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
           "object_description": "an invoice-style document with labeled header blocks and summary fields",
-          "question_text": "What is the phone number?"
+          "question_text": "What is the contact email?"
         },
         "task_family_key": "structured_document",
-        "task_family_variant_index": 4,
+        "task_family_variant_index": 0,
         "task_key": "field_lookup_query",
-        "task_variant_index": 1,
+        "task_variant_index": 3,
         "task_variant_key": "lookup_contact",
-        "task_variant_template_index": 1,
+        "task_variant_template_index": 4,
         "template_paths": [
           "documents/readout/documents_readout_v1.json"
         ],
@@ -275,40 +275,6 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 1,
-            "prompt_bundle_id": "documents_readout_v1",
-            "schema_version": "v1",
-            "slot_values": {
-              "answer_hint": "set \"answer\" to the exact field text shown in the document",
-              "evidence_hint": "set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value",
-              "json_example": "{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"ava.lee@example.com\"}",
-              "json_example_answer_only": "{\"answer\":\"ava.lee@example.com\"}",
-              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
-              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "an invoice-style document with labeled header blocks and summary fields",
-              "question_text": "What is the phone number?"
-            },
-            "task_family_key": "structured_document",
-            "task_family_variant_index": 4,
-            "task_key": "field_lookup_query",
-            "task_variant_index": 1,
-            "task_variant_key": "lookup_contact",
-            "task_variant_template_index": 1,
-            "template_paths": [
-              "documents/readout/documents_readout_v1.json"
-            ],
-            "variant_count_by_key": {
-              "answer_or_evidence:answer_and_evidence": 5,
-              "task:field_lookup_query": 5,
-              "task_family:structured_document": 5,
-              "task_variant:lookup_contact": 5
-            }
-          },
-          "prompt": "Read the labeled fields in this document: an invoice-style document with labeled header blocks and summary fields. Read the document and answer this question: What is the phone number? Return the exact field text as written.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value.\nAnswer format: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"ava.lee@example.com\"}"
-        },
-        "answer_only": {
-          "metadata": {
-            "answer_or_evidence_key": "answer_only",
             "answer_or_evidence_variant_index": 4,
             "prompt_bundle_id": "documents_readout_v1",
             "schema_version": "v1",
@@ -320,14 +286,48 @@
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "an invoice-style document with labeled header blocks and summary fields",
-              "question_text": "What is the phone number?"
+              "question_text": "What is the contact email?"
             },
             "task_family_key": "structured_document",
-            "task_family_variant_index": 4,
+            "task_family_variant_index": 0,
             "task_key": "field_lookup_query",
-            "task_variant_index": 1,
+            "task_variant_index": 3,
             "task_variant_key": "lookup_contact",
-            "task_variant_template_index": 1,
+            "task_variant_template_index": 4,
+            "template_paths": [
+              "documents/readout/documents_readout_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:field_lookup_query": 5,
+              "task_family:structured_document": 5,
+              "task_variant:lookup_contact": 5
+            }
+          },
+          "prompt": "The image shows an invoice-style document with labeled header blocks and summary fields. Use the labeled fields to answer: What is the contact email? Answer using the exact field value.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value.\nAnswer rule: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"ava.lee@example.com\"}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 2,
+            "prompt_bundle_id": "documents_readout_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the exact field text shown in the document",
+              "evidence_hint": "set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value",
+              "json_example": "{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"ava.lee@example.com\"}",
+              "json_example_answer_only": "{\"answer\":\"ava.lee@example.com\"}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "an invoice-style document with labeled header blocks and summary fields",
+              "question_text": "What is the contact email?"
+            },
+            "task_family_key": "structured_document",
+            "task_family_variant_index": 0,
+            "task_key": "field_lookup_query",
+            "task_variant_index": 3,
+            "task_variant_key": "lookup_contact",
+            "task_variant_template_index": 4,
             "template_paths": [
               "documents/readout/documents_readout_v1.json"
             ],
@@ -338,7 +338,7 @@
               "task_variant:lookup_contact": 5
             }
           },
-          "prompt": "Read the labeled fields in this document: an invoice-style document with labeled header blocks and summary fields. Read the document and answer this question: What is the phone number? Return the exact field text as written.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"answer\":\"ava.lee@example.com\"}"
+          "prompt": "The image shows an invoice-style document with labeled header blocks and summary fields. Use the labeled fields to answer: What is the contact email? Answer using the exact field value.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"answer\":\"ava.lee@example.com\"}"
         }
       },
       "task_variant": "lookup_contact",
@@ -491,14 +491,14 @@
         "city:value": [
           665.0,
           603.5,
-          809.0,
+          786.0,
           626.5
         ],
         "contact_email:value": [
           665.0,
-          484.5,
-          1031.0,
-          513.5
+          485.5,
+          1042.0,
+          512.5
         ],
         "contact_phone:value": [
           214.0,
@@ -509,7 +509,7 @@
         "customer_name:value": [
           665.0,
           255.5,
-          798.0,
+          820.0,
           278.5
         ],
         "due_date:value": [
@@ -545,7 +545,7 @@
         "vendor_name:value": [
           214.0,
           255.5,
-          404.0,
+          433.0,
           278.5
         ]
       },
@@ -565,7 +565,7 @@
     "render_spec": {
       "canvas_height": 920,
       "canvas_width": 1280,
-      "geometry_seed": 8916731547179940,
+      "geometry_seed": 883102274573553,
       "page_shadow_offset_px": 14,
       "receipt_page_height_px": 760,
       "receipt_page_width_px": 520,
@@ -628,13 +628,13 @@
           "bbox_px": [
             214.0,
             255.5,
-            404.0,
+            433.0,
             278.5
           ],
           "entity_id": "vendor_name:value",
           "entity_type": "document_field_value",
           "field_id": "vendor_name",
-          "text": "Trailhead Co."
+          "text": "Blue Oak Office"
         },
         {
           "bbox_id": "customer_name",
@@ -666,13 +666,13 @@
           "bbox_px": [
             665.0,
             255.5,
-            798.0,
+            820.0,
             278.5
           ],
           "entity_id": "customer_name:value",
           "entity_type": "document_field_value",
           "field_id": "customer_name",
-          "text": "Ada Ortiz"
+          "text": "Milo Moore"
         },
         {
           "bbox_id": "invoice_number",
@@ -710,7 +710,7 @@
           "entity_id": "invoice_number:value",
           "entity_type": "document_field_value",
           "field_id": "invoice_number",
-          "text": "INV-17098"
+          "text": "INV-63313"
         },
         {
           "bbox_id": "account_id",
@@ -748,7 +748,7 @@
           "entity_id": "account_id:value",
           "entity_type": "document_field_value",
           "field_id": "account_id",
-          "text": "ACC-5615"
+          "text": "ACC-8375"
         },
         {
           "bbox_id": "issue_date",
@@ -786,7 +786,7 @@
           "entity_id": "issue_date:value",
           "entity_type": "document_field_value",
           "field_id": "issue_date",
-          "text": "2026-03-05"
+          "text": "2026-03-23"
         },
         {
           "bbox_id": "due_date",
@@ -824,7 +824,7 @@
           "entity_id": "due_date:value",
           "entity_type": "document_field_value",
           "field_id": "due_date",
-          "text": "2026-03-20"
+          "text": "2026-04-12"
         },
         {
           "bbox_id": "contact_email",
@@ -855,14 +855,14 @@
           "bbox_id": "contact_email:value",
           "bbox_px": [
             665.0,
-            484.5,
-            1031.0,
-            513.5
+            485.5,
+            1042.0,
+            512.5
           ],
           "entity_id": "contact_email:value",
           "entity_type": "document_field_value",
           "field_id": "contact_email",
-          "text": "trailheadco@northpost.co"
+          "text": "blueoakoffice@example.com"
         },
         {
           "bbox_id": "contact_phone",
@@ -900,7 +900,7 @@
           "entity_id": "contact_phone:value",
           "entity_type": "document_field_value",
           "field_id": "contact_phone",
-          "text": "(704) 117-3706"
+          "text": "(212) 721-2637"
         },
         {
           "bbox_id": "city",
@@ -932,13 +932,13 @@
           "bbox_px": [
             665.0,
             603.5,
-            809.0,
+            786.0,
             626.5
           ],
           "entity_id": "city:value",
           "entity_type": "document_field_value",
           "field_id": "city",
-          "text": "Brookfield"
+          "text": "Riverton"
         },
         {
           "bbox_id": "tax_amount",
@@ -976,7 +976,7 @@
           "entity_id": "tax_amount:value",
           "entity_type": "document_field_value",
           "field_id": "tax_amount",
-          "text": "$16.63"
+          "text": "$15.21"
         },
         {
           "bbox_id": "total_due",
@@ -1014,12 +1014,12 @@
           "entity_id": "total_due:value",
           "entity_type": "document_field_value",
           "field_id": "total_due",
-          "text": "$197.46"
+          "text": "$228.67"
         }
       ],
       "relations": {
-        "query_field_id": "contact_phone",
-        "query_field_label": "Phone",
+        "query_field_id": "contact_email",
+        "query_field_label": "Contact Email",
         "scene_variant": "invoice_sheet",
         "task_variant": "lookup_contact",
         "view_family": "structured_document"
@@ -1028,10 +1028,10 @@
     },
     "witness_symbolic": {
       "bbox_id_sequence": [
-        "contact_phone:label",
-        "contact_phone:value"
+        "contact_email:label",
+        "contact_email:value"
       ],
-      "field_id": "contact_phone"
+      "field_id": "contact_email"
     }
   },
   "versions": {

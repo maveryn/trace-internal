@@ -1,28 +1,28 @@
 {
   "answer_gt": {
     "type": "string",
-    "value": "$278.60"
+    "value": "$38.36"
   },
   "evidence_gt": {
     "type": "bbox_set",
     "value": [
       [
-        665.0,
-        601.5,
-        784.0,
-        628.5
+        763.0,
+        628.5,
+        864.0,
+        655.5
       ],
       [
-        214.0,
-        722.5,
-        315.0,
-        749.5
+        781.0,
+        698.5,
+        864.0,
+        725.5
       ],
       [
-        665.0,
-        722.5,
-        748.0,
-        749.5
+        781.0,
+        768.5,
+        864.0,
+        795.5
       ]
     ]
   },
@@ -30,18 +30,18 @@
     "format": "png",
     "path": "documents/task_documents_arithmetic_section_expression_value/images/sum_minus_amount_in_section/0024.png"
   },
-  "instance_seed": 6566124760246976,
-  "prompt": "Use the structured document in the image: an invoice with visible named sections, labeled header fields, and summary blocks. Read the document and answer this question: In the Billing Summary section, what is Subtotal plus Tax minus Discount? Return the amount as $0.00. Return the computed amount in the same currency format.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing one bounding box for each referenced operand value, in the same order as the expression in the prompt.\nAnswer format: set \"answer\" to the computed amount formatted exactly as $0.00.\nExample JSON:\n{\"evidence\":[[150,260,364,294],[150,320,364,354],[150,380,364,414]],\"answer\":\"$133.30\"}",
+  "instance_seed": 1813189488340421,
+  "prompt": "You are given a receipt-style document with visible section headers and labeled totals rows. Use the visible section headers and values to answer: In the Totals section, what is Items Total plus Tax minus Discount? Return the amount as $0.00. Give the computed amount as written in $0.00 format.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing one bounding box for each referenced operand value, in the same order as the expression in the prompt.\nAnswer field: set \"answer\" to the computed amount formatted exactly as $0.00.\nExample JSON:\n{\"evidence\":[[150,260,364,294],[150,320,364,354],[150,380,364,414]],\"answer\":\"$133.30\"}",
   "prompt_variants": {
-    "answer_and_evidence": "Use the structured document in the image: an invoice with visible named sections, labeled header fields, and summary blocks. Read the document and answer this question: In the Billing Summary section, what is Subtotal plus Tax minus Discount? Return the amount as $0.00. Return the computed amount in the same currency format.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing one bounding box for each referenced operand value, in the same order as the expression in the prompt.\nAnswer format: set \"answer\" to the computed amount formatted exactly as $0.00.\nExample JSON:\n{\"evidence\":[[150,260,364,294],[150,320,364,354],[150,380,364,414]],\"answer\":\"$133.30\"}",
-    "answer_only": "Use the structured document in the image: an invoice with visible named sections, labeled header fields, and summary blocks. Read the document and answer this question: In the Billing Summary section, what is Subtotal plus Tax minus Discount? Return the amount as $0.00. Return the computed amount in the same currency format.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the computed amount formatted exactly as $0.00.\nExample JSON:\n{\"answer\":\"$133.30\"}"
+    "answer_and_evidence": "You are given a receipt-style document with visible section headers and labeled totals rows. Use the visible section headers and values to answer: In the Totals section, what is Items Total plus Tax minus Discount? Return the amount as $0.00. Give the computed amount as written in $0.00 format.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing one bounding box for each referenced operand value, in the same order as the expression in the prompt.\nAnswer field: set \"answer\" to the computed amount formatted exactly as $0.00.\nExample JSON:\n{\"evidence\":[[150,260,364,294],[150,320,364,354],[150,380,364,414]],\"answer\":\"$133.30\"}",
+    "answer_only": "You are given a receipt-style document with visible section headers and labeled totals rows. Use the visible section headers and values to answer: In the Totals section, what is Items Total plus Tax minus Discount? Return the amount as $0.00. Give the computed amount as written in $0.00 format.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the computed amount formatted exactly as $0.00.\nExample JSON:\n{\"answer\":\"$133.30\"}"
   },
   "task": "task_documents_arithmetic_section_expression_value",
   "task_variant": "sum_minus_amount_in_section",
   "trace_payload": {
     "answer_gt": {
       "type": "string",
-      "value": "$278.60"
+      "value": "$38.36"
     },
     "background": {
       "available_styles": [
@@ -62,161 +62,141 @@
       "type": "bbox_set",
       "value": [
         [
-          665.0,
-          601.5,
-          784.0,
-          628.5
+          763.0,
+          628.5,
+          864.0,
+          655.5
         ],
         [
-          214.0,
-          722.5,
-          315.0,
-          749.5
+          781.0,
+          698.5,
+          864.0,
+          725.5
         ],
         [
-          665.0,
-          722.5,
-          748.0,
-          749.5
+          781.0,
+          768.5,
+          864.0,
+          795.5
         ]
       ]
     },
     "execution_trace": {
       "expression_operand_cents": [
-        25777,
-        2448,
-        365
+        3341,
+        820,
+        325
       ],
-      "field_count": 11,
+      "field_count": 9,
       "field_specs": [
         {
           "comparison_kind": "other",
-          "field_id": "vendor_name",
-          "field_label": "Vendor",
-          "field_value": "Blue Oak Supply",
-          "label_bbox_id": "vendor_name:label",
-          "section_id": "parties",
-          "section_label": "Parties",
-          "value_bbox_id": "vendor_name:value"
+          "field_id": "store_name",
+          "field_label": "Store Name",
+          "field_value": "Elm Works",
+          "label_bbox_id": "store_name:label",
+          "section_id": "store_details",
+          "section_label": "Store Details",
+          "value_bbox_id": "store_name:value"
         },
         {
           "comparison_kind": "other",
-          "field_id": "customer_name",
-          "field_label": "Customer",
-          "field_value": "Luca Lee",
-          "label_bbox_id": "customer_name:label",
-          "section_id": "parties",
-          "section_label": "Parties",
-          "value_bbox_id": "customer_name:value"
+          "field_id": "receipt_number",
+          "field_label": "Receipt No.",
+          "field_value": "R-22676",
+          "label_bbox_id": "receipt_number:label",
+          "section_id": "store_details",
+          "section_label": "Store Details",
+          "value_bbox_id": "receipt_number:value"
         },
         {
           "comparison_kind": "other",
-          "field_id": "invoice_number",
-          "field_label": "Invoice Number",
-          "field_value": "INV-69825",
-          "label_bbox_id": "invoice_number:label",
-          "section_id": "parties",
-          "section_label": "Parties",
-          "value_bbox_id": "invoice_number:value"
+          "field_id": "cashier_name",
+          "field_label": "Cashier",
+          "field_value": "Ezra Ward",
+          "label_bbox_id": "cashier_name:label",
+          "section_id": "store_details",
+          "section_label": "Store Details",
+          "value_bbox_id": "cashier_name:value"
         },
         {
           "comparison_kind": "other",
-          "field_id": "account_id",
-          "field_label": "Account ID",
-          "field_value": "ACC-7282",
-          "label_bbox_id": "account_id:label",
-          "section_id": "account",
-          "section_label": "Account",
-          "value_bbox_id": "account_id:value"
+          "field_id": "purchase_date",
+          "field_label": "Purchase Date",
+          "field_value": "Apr 13, 2026",
+          "label_bbox_id": "purchase_date:label",
+          "section_id": "purchase_info",
+          "section_label": "Purchase Info",
+          "value_bbox_id": "purchase_date:value"
         },
         {
           "comparison_kind": "other",
-          "field_id": "contact_email",
-          "field_label": "Contact Email",
-          "field_value": "blueoaksupply@mailhub.net",
-          "label_bbox_id": "contact_email:label",
-          "section_id": "account",
-          "section_label": "Account",
-          "value_bbox_id": "contact_email:value"
+          "field_id": "member_id",
+          "field_label": "Member ID",
+          "field_value": "M-1306",
+          "label_bbox_id": "member_id:label",
+          "section_id": "purchase_info",
+          "section_label": "Purchase Info",
+          "value_bbox_id": "member_id:value"
         },
         {
           "comparison_kind": "other",
-          "field_id": "issue_date",
-          "field_label": "Issue Date",
-          "field_value": "2026-03-17",
-          "label_bbox_id": "issue_date:label",
-          "section_id": "dates",
-          "section_label": "Dates",
-          "value_bbox_id": "issue_date:value"
-        },
-        {
-          "comparison_kind": "other",
-          "field_id": "service_date",
-          "field_label": "Service Date",
-          "field_value": "2026-03-22",
-          "label_bbox_id": "service_date:label",
-          "section_id": "dates",
-          "section_label": "Dates",
-          "value_bbox_id": "service_date:value"
-        },
-        {
-          "comparison_kind": "other",
-          "field_id": "due_date",
-          "field_label": "Due Date",
-          "field_value": "2026-04-06",
-          "label_bbox_id": "due_date:label",
-          "section_id": "dates",
-          "section_label": "Dates",
-          "value_bbox_id": "due_date:value"
+          "field_id": "register_id",
+          "field_label": "Register ID",
+          "field_value": "REG-772",
+          "label_bbox_id": "register_id:label",
+          "section_id": "purchase_info",
+          "section_label": "Purchase Info",
+          "value_bbox_id": "register_id:value"
         },
         {
           "comparison_kind": "amount",
-          "field_id": "subtotal_amount",
-          "field_label": "Subtotal",
-          "field_value": "$257.77",
-          "label_bbox_id": "subtotal_amount:label",
-          "section_id": "billing_summary",
-          "section_label": "Billing Summary",
-          "value_bbox_id": "subtotal_amount:value"
+          "field_id": "items_total",
+          "field_label": "Items Total",
+          "field_value": "$33.41",
+          "label_bbox_id": "items_total:label",
+          "section_id": "totals",
+          "section_label": "Totals",
+          "value_bbox_id": "items_total:value"
         },
         {
           "comparison_kind": "amount",
           "field_id": "tax_amount",
           "field_label": "Tax",
-          "field_value": "$24.48",
+          "field_value": "$8.20",
           "label_bbox_id": "tax_amount:label",
-          "section_id": "billing_summary",
-          "section_label": "Billing Summary",
+          "section_id": "totals",
+          "section_label": "Totals",
           "value_bbox_id": "tax_amount:value"
         },
         {
           "comparison_kind": "amount",
           "field_id": "discount_amount",
           "field_label": "Discount",
-          "field_value": "$3.65",
+          "field_value": "$3.25",
           "label_bbox_id": "discount_amount:label",
-          "section_id": "billing_summary",
-          "section_label": "Billing Summary",
+          "section_id": "totals",
+          "section_label": "Totals",
           "value_bbox_id": "discount_amount:value"
         }
       ],
       "operand_field_ids": [
-        "subtotal_amount",
+        "items_total",
         "tax_amount",
         "discount_amount"
       ],
       "operand_field_labels": [
-        "Subtotal",
+        "Items Total",
         "Tax",
         "Discount"
       ],
       "operand_field_values": [
-        "$257.77",
-        "$24.48",
-        "$3.65"
+        "$33.41",
+        "$8.20",
+        "$3.25"
       ],
       "operand_value_bbox_ids": [
-        "subtotal_amount:value",
+        "items_total:value",
         "tax_amount:value",
         "discount_amount:value"
       ],
@@ -224,49 +204,41 @@
         "+",
         "-"
       ],
-      "query_section_id": "billing_summary",
-      "query_section_label": "Billing Summary",
+      "query_section_id": "totals",
+      "query_section_label": "Totals",
       "question_format": "document_section_expression_value",
-      "question_text": "In the Billing Summary section, what is Subtotal plus Tax minus Discount? Return the amount as $0.00.",
-      "result_cents": 27860,
-      "result_value": "$278.60",
-      "scene_title": "Invoice",
-      "scene_variant": "invoice_sheet",
+      "question_text": "In the Totals section, what is Items Total plus Tax minus Discount? Return the amount as $0.00.",
+      "result_cents": 3836,
+      "result_value": "$38.36",
+      "scene_title": "Receipt",
+      "scene_variant": "receipt_sheet",
       "section_specs": [
         {
           "field_ids": [
-            "vendor_name",
-            "customer_name",
-            "invoice_number"
+            "store_name",
+            "receipt_number",
+            "cashier_name"
           ],
-          "section_id": "parties",
-          "section_label": "Parties"
+          "section_id": "store_details",
+          "section_label": "Store Details"
         },
         {
           "field_ids": [
-            "account_id",
-            "contact_email"
+            "purchase_date",
+            "member_id",
+            "register_id"
           ],
-          "section_id": "account",
-          "section_label": "Account"
+          "section_id": "purchase_info",
+          "section_label": "Purchase Info"
         },
         {
           "field_ids": [
-            "issue_date",
-            "service_date",
-            "due_date"
-          ],
-          "section_id": "dates",
-          "section_label": "Dates"
-        },
-        {
-          "field_ids": [
-            "subtotal_amount",
+            "items_total",
             "tax_amount",
             "discount_amount"
           ],
-          "section_id": "billing_summary",
-          "section_label": "Billing Summary"
+          "section_id": "totals",
+          "section_label": "Totals"
         }
       ],
       "task_variant": "sum_minus_amount_in_section",
@@ -291,34 +263,34 @@
     "projected_evidence": {
       "bbox_set": [
         [
-          665.0,
-          601.5,
-          784.0,
-          628.5
+          763.0,
+          628.5,
+          864.0,
+          655.5
         ],
         [
-          214.0,
-          722.5,
-          315.0,
-          749.5
+          781.0,
+          698.5,
+          864.0,
+          725.5
         ],
         [
-          665.0,
-          722.5,
-          748.0,
-          749.5
+          781.0,
+          768.5,
+          864.0,
+          795.5
         ]
       ]
     },
     "query_spec": {
       "params": {
-        "field_count": 11,
+        "field_count": 9,
         "field_count_range": [
           9,
           11
         ],
         "operand_count": 3,
-        "scene_variant": "invoice_sheet",
+        "scene_variant": "receipt_sheet",
         "scene_variant_probabilities": {
           "form_sheet": 0.3333333333333333,
           "invoice_sheet": 0.3333333333333333,
@@ -333,7 +305,7 @@
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 1,
+        "answer_or_evidence_variant_index": 3,
         "prompt_bundle_id": "documents_arithmetic_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -343,15 +315,15 @@
           "json_example_answer_only": "{\"answer\":\"$133.30\"}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "object_description": "an invoice with visible named sections, labeled header fields, and summary blocks",
-          "question_text": "In the Billing Summary section, what is Subtotal plus Tax minus Discount? Return the amount as $0.00."
+          "object_description": "a receipt-style document with visible section headers and labeled totals rows",
+          "question_text": "In the Totals section, what is Items Total plus Tax minus Discount? Return the amount as $0.00."
         },
         "task_family_key": "structured_document_sections",
-        "task_family_variant_index": 3,
+        "task_family_variant_index": 2,
         "task_key": "section_expression_query",
-        "task_variant_index": 1,
+        "task_variant_index": 3,
         "task_variant_key": "sum_minus_amount_in_section",
-        "task_variant_template_index": 1,
+        "task_variant_template_index": 3,
         "template_paths": [
           "documents/arithmetic/documents_arithmetic_v1.json"
         ],
@@ -367,7 +339,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 1,
+            "answer_or_evidence_variant_index": 3,
             "prompt_bundle_id": "documents_arithmetic_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -377,15 +349,15 @@
               "json_example_answer_only": "{\"answer\":\"$133.30\"}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "an invoice with visible named sections, labeled header fields, and summary blocks",
-              "question_text": "In the Billing Summary section, what is Subtotal plus Tax minus Discount? Return the amount as $0.00."
+              "object_description": "a receipt-style document with visible section headers and labeled totals rows",
+              "question_text": "In the Totals section, what is Items Total plus Tax minus Discount? Return the amount as $0.00."
             },
             "task_family_key": "structured_document_sections",
-            "task_family_variant_index": 3,
+            "task_family_variant_index": 2,
             "task_key": "section_expression_query",
-            "task_variant_index": 1,
+            "task_variant_index": 3,
             "task_variant_key": "sum_minus_amount_in_section",
-            "task_variant_template_index": 1,
+            "task_variant_template_index": 3,
             "template_paths": [
               "documents/arithmetic/documents_arithmetic_v1.json"
             ],
@@ -396,7 +368,7 @@
               "task_variant:sum_minus_amount_in_section": 5
             }
           },
-          "prompt": "Use the structured document in the image: an invoice with visible named sections, labeled header fields, and summary blocks. Read the document and answer this question: In the Billing Summary section, what is Subtotal plus Tax minus Discount? Return the amount as $0.00. Return the computed amount in the same currency format.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing one bounding box for each referenced operand value, in the same order as the expression in the prompt.\nAnswer format: set \"answer\" to the computed amount formatted exactly as $0.00.\nExample JSON:\n{\"evidence\":[[150,260,364,294],[150,320,364,354],[150,380,364,414]],\"answer\":\"$133.30\"}"
+          "prompt": "You are given a receipt-style document with visible section headers and labeled totals rows. Use the visible section headers and values to answer: In the Totals section, what is Items Total plus Tax minus Discount? Return the amount as $0.00. Give the computed amount as written in $0.00 format.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing one bounding box for each referenced operand value, in the same order as the expression in the prompt.\nAnswer field: set \"answer\" to the computed amount formatted exactly as $0.00.\nExample JSON:\n{\"evidence\":[[150,260,364,294],[150,320,364,354],[150,380,364,414]],\"answer\":\"$133.30\"}"
         },
         "answer_only": {
           "metadata": {
@@ -411,15 +383,15 @@
               "json_example_answer_only": "{\"answer\":\"$133.30\"}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "an invoice with visible named sections, labeled header fields, and summary blocks",
-              "question_text": "In the Billing Summary section, what is Subtotal plus Tax minus Discount? Return the amount as $0.00."
+              "object_description": "a receipt-style document with visible section headers and labeled totals rows",
+              "question_text": "In the Totals section, what is Items Total plus Tax minus Discount? Return the amount as $0.00."
             },
             "task_family_key": "structured_document_sections",
-            "task_family_variant_index": 3,
+            "task_family_variant_index": 2,
             "task_key": "section_expression_query",
-            "task_variant_index": 1,
+            "task_variant_index": 3,
             "task_variant_key": "sum_minus_amount_in_section",
-            "task_variant_template_index": 1,
+            "task_variant_template_index": 3,
             "template_paths": [
               "documents/arithmetic/documents_arithmetic_v1.json"
             ],
@@ -430,7 +402,7 @@
               "task_variant:sum_minus_amount_in_section": 5
             }
           },
-          "prompt": "Use the structured document in the image: an invoice with visible named sections, labeled header fields, and summary blocks. Read the document and answer this question: In the Billing Summary section, what is Subtotal plus Tax minus Discount? Return the amount as $0.00. Return the computed amount in the same currency format.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the computed amount formatted exactly as $0.00.\nExample JSON:\n{\"answer\":\"$133.30\"}"
+          "prompt": "You are given a receipt-style document with visible section headers and labeled totals rows. Use the visible section headers and values to answer: In the Totals section, what is Items Total plus Tax minus Discount? Return the amount as $0.00. Give the computed amount as written in $0.00 format.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the computed amount formatted exactly as $0.00.\nExample JSON:\n{\"answer\":\"$133.30\"}"
         }
       },
       "task_variant": "sum_minus_amount_in_section",
@@ -438,282 +410,234 @@
     },
     "render_map": {
       "field_box_bboxes_px": {
-        "account_id": [
-          498.667,
-          322.0,
-          781.333,
-          420.0
-        ],
-        "contact_email": [
-          797.333,
-          322.0,
-          1080.0,
-          420.0
-        ],
-        "customer_name": [
-          651.0,
-          206.0,
-          1080.0,
-          304.0
+        "cashier_name": [
+          406.0,
+          332.0,
+          874.0,
+          392.0
         ],
         "discount_amount": [
-          651.0,
-          672.0,
-          1080.0,
-          776.0
+          406.0,
+          752.0,
+          874.0,
+          812.0
         ],
-        "due_date": [
-          200.0,
-          554.0,
-          629.0,
-          652.0
+        "items_total": [
+          406.0,
+          612.0,
+          874.0,
+          672.0
         ],
-        "invoice_number": [
-          200.0,
-          322.0,
-          482.667,
-          420.0
+        "member_id": [
+          406.0,
+          472.0,
+          874.0,
+          532.0
         ],
-        "issue_date": [
-          200.0,
-          438.0,
-          629.0,
-          536.0
+        "purchase_date": [
+          406.0,
+          402.0,
+          874.0,
+          462.0
         ],
-        "service_date": [
-          651.0,
-          438.0,
-          1080.0,
-          536.0
+        "receipt_number": [
+          406.0,
+          262.0,
+          874.0,
+          322.0
         ],
-        "subtotal_amount": [
-          651.0,
-          554.0,
-          1080.0,
-          652.0
+        "register_id": [
+          406.0,
+          542.0,
+          874.0,
+          602.0
+        ],
+        "store_name": [
+          406.0,
+          192.0,
+          874.0,
+          252.0
         ],
         "tax_amount": [
-          200.0,
-          672.0,
-          629.0,
-          776.0
-        ],
-        "vendor_name": [
-          200.0,
-          206.0,
-          629.0,
-          304.0
+          406.0,
+          682.0,
+          874.0,
+          742.0
         ]
       },
       "field_label_bboxes_px": {
-        "account_id:label": [
-          512.667,
-          336.0,
-          649.667,
-          354.0
-        ],
-        "contact_email:label": [
-          811.333,
-          335.5,
-          987.333,
-          354.5
-        ],
-        "customer_name:label": [
-          665.0,
-          220.0,
-          787.0,
-          238.0
+        "cashier_name:label": [
+          416.0,
+          352.5,
+          512.0,
+          371.5
         ],
         "discount_amount:label": [
-          665.0,
-          685.5,
-          777.0,
-          704.5
+          416.0,
+          772.5,
+          528.0,
+          791.5
         ],
-        "due_date:label": [
-          214.0,
-          568.0,
-          332.0,
-          586.0
+        "items_total:label": [
+          416.0,
+          632.5,
+          560.0,
+          651.5
         ],
-        "invoice_number:label": [
-          214.0,
-          335.5,
-          412.0,
-          354.5
+        "member_id:label": [
+          416.0,
+          492.5,
+          554.0,
+          511.5
         ],
-        "issue_date:label": [
-          214.0,
-          452.0,
-          348.0,
-          470.0
+        "purchase_date:label": [
+          416.0,
+          423.0,
+          588.0,
+          441.0
         ],
-        "service_date:label": [
-          665.0,
-          451.5,
-          826.0,
-          470.5
+        "receipt_number:label": [
+          416.0,
+          280.0,
+          562.0,
+          304.0
         ],
-        "subtotal_amount:label": [
-          665.0,
-          567.5,
-          775.0,
-          586.5
+        "register_id:label": [
+          416.0,
+          560.0,
+          558.0,
+          584.0
+        ],
+        "store_name:label": [
+          416.0,
+          213.0,
+          565.0,
+          231.0
         ],
         "tax_amount:label": [
-          214.0,
-          686.0,
-          260.0,
-          704.0
-        ],
-        "vendor_name:label": [
-          214.0,
-          219.5,
-          306.0,
-          238.5
+          416.0,
+          703.0,
+          462.0,
+          721.0
         ]
       },
       "field_value_bboxes_px": {
-        "account_id:value": [
-          512.667,
-          372.0,
-          655.667,
-          394.0
-        ],
-        "contact_email:value": [
-          811.333,
-          373.0,
-          1066.333,
-          393.0
-        ],
-        "customer_name:value": [
-          665.0,
-          256.0,
-          792.0,
-          278.0
+        "cashier_name:value": [
+          716.0,
+          350.5,
+          864.0,
+          373.5
         ],
         "discount_amount:value": [
-          665.0,
-          722.5,
-          748.0,
-          749.5
+          781.0,
+          768.5,
+          864.0,
+          795.5
         ],
-        "due_date:value": [
-          214.0,
-          604.0,
-          380.0,
-          626.0
+        "items_total:value": [
+          763.0,
+          628.5,
+          864.0,
+          655.5
         ],
-        "invoice_number:value": [
-          214.0,
-          372.0,
-          364.0,
-          394.0
+        "member_id:value": [
+          756.0,
+          491.0,
+          864.0,
+          513.0
         ],
-        "issue_date:value": [
-          214.0,
-          488.0,
-          380.0,
-          510.0
+        "purchase_date:value": [
+          678.0,
+          418.0,
+          864.0,
+          446.0
         ],
-        "service_date:value": [
-          665.0,
-          488.0,
-          831.0,
-          510.0
+        "receipt_number:value": [
+          743.0,
+          281.0,
+          864.0,
+          303.0
         ],
-        "subtotal_amount:value": [
-          665.0,
-          601.5,
-          784.0,
-          628.5
+        "register_id:value": [
+          739.0,
+          561.0,
+          864.0,
+          583.0
+        ],
+        "store_name:value": [
+          712.0,
+          210.5,
+          864.0,
+          233.5
         ],
         "tax_amount:value": [
-          214.0,
-          722.5,
-          315.0,
-          749.5
-        ],
-        "vendor_name:value": [
-          214.0,
-          252.5,
-          448.0,
-          281.5
+          781.0,
+          698.5,
+          864.0,
+          725.5
         ]
       },
       "page_bbox_px": [
-        160.0,
+        380.0,
         80.0,
-        1120.0,
+        900.0,
         840.0
       ],
       "section_box_bboxes_px": {
-        "account": [
-          486.667,
-          286.0,
-          1092.0,
-          432.0
+        "purchase_info": [
+          394.0,
+          366.0,
+          886.0,
+          614.0
         ],
-        "billing_summary": [
-          188.0,
-          518.0,
-          1092.0,
-          788.0
+        "store_details": [
+          394.0,
+          163.5,
+          886.0,
+          404.0
         ],
-        "dates": [
-          188.0,
-          402.0,
-          1092.0,
-          664.0
-        ],
-        "parties": [
-          188.0,
-          170.0,
-          1092.0,
-          432.0
+        "totals": [
+          394.0,
+          576.0,
+          886.0,
+          824.0
         ]
       },
       "section_label_bboxes_px": {
-        "account": [
-          502.667,
-          292.0,
-          629.667,
-          314.0
+        "purchase_info": [
+          410.0,
+          372.0,
+          608.0,
+          394.0
         ],
-        "billing_summary": [
-          204.0,
-          524.0,
-          437.0,
-          546.0
+        "store_details": [
+          410.0,
+          169.5,
+          600.0,
+          187.5
         ],
-        "dates": [
-          204.0,
-          408.0,
-          302.0,
-          430.0
-        ],
-        "parties": [
-          204.0,
-          176.0,
-          319.0,
-          198.0
+        "totals": [
+          410.0,
+          582.0,
+          513.0,
+          604.0
         ]
       },
       "title_bbox_px": [
-        191.0,
-        105.0,
-        362.0,
-        139.0
+        411.0,
+        100.5,
+        590.0,
+        143.5
       ]
     },
     "render_spec": {
       "canvas_height": 920,
       "canvas_width": 1280,
-      "geometry_seed": 6566124760246976,
+      "geometry_seed": 1813189488340421,
       "page_shadow_offset_px": 14,
       "receipt_page_height_px": 760,
       "receipt_page_width_px": 520,
-      "scene_variant": "invoice_sheet",
+      "scene_variant": "receipt_sheet",
       "sheet_page_height_px": 760,
       "sheet_page_width_px": 960
     },
@@ -722,9 +646,9 @@
         {
           "bbox_id": "page",
           "bbox_px": [
-            160.0,
+            380.0,
             80.0,
-            1120.0,
+            900.0,
             840.0
           ],
           "entity_id": "page",
@@ -733,431 +657,339 @@
         {
           "bbox_id": "title",
           "bbox_px": [
-            191.0,
-            105.0,
-            362.0,
-            139.0
+            411.0,
+            100.5,
+            590.0,
+            143.5
           ],
           "entity_id": "title",
           "entity_type": "document_title",
-          "text": "Invoice"
+          "text": "Receipt"
         },
         {
-          "bbox_id": "parties",
+          "bbox_id": "store_details",
           "bbox_px": [
-            188.0,
-            170.0,
-            1092.0,
-            432.0
+            394.0,
+            163.5,
+            886.0,
+            404.0
           ],
-          "entity_id": "parties:section",
+          "entity_id": "store_details:section",
           "entity_type": "document_section",
           "field_ids": [
-            "vendor_name",
-            "customer_name",
-            "invoice_number"
+            "store_name",
+            "receipt_number",
+            "cashier_name"
           ],
-          "section_id": "parties"
+          "section_id": "store_details"
         },
         {
-          "bbox_id": "account",
+          "bbox_id": "purchase_info",
           "bbox_px": [
-            486.667,
-            286.0,
-            1092.0,
-            432.0
+            394.0,
+            366.0,
+            886.0,
+            614.0
           ],
-          "entity_id": "account:section",
+          "entity_id": "purchase_info:section",
           "entity_type": "document_section",
           "field_ids": [
-            "account_id",
-            "contact_email"
+            "purchase_date",
+            "member_id",
+            "register_id"
           ],
-          "section_id": "account"
+          "section_id": "purchase_info"
         },
         {
-          "bbox_id": "dates",
+          "bbox_id": "totals",
           "bbox_px": [
-            188.0,
-            402.0,
-            1092.0,
-            664.0
+            394.0,
+            576.0,
+            886.0,
+            824.0
           ],
-          "entity_id": "dates:section",
+          "entity_id": "totals:section",
           "entity_type": "document_section",
           "field_ids": [
-            "issue_date",
-            "service_date",
-            "due_date"
-          ],
-          "section_id": "dates"
-        },
-        {
-          "bbox_id": "billing_summary",
-          "bbox_px": [
-            188.0,
-            518.0,
-            1092.0,
-            788.0
-          ],
-          "entity_id": "billing_summary:section",
-          "entity_type": "document_section",
-          "field_ids": [
-            "subtotal_amount",
+            "items_total",
             "tax_amount",
             "discount_amount"
           ],
-          "section_id": "billing_summary"
+          "section_id": "totals"
         },
         {
-          "bbox_id": "vendor_name",
+          "bbox_id": "store_name",
           "bbox_px": [
-            200.0,
-            206.0,
-            629.0,
+            406.0,
+            192.0,
+            874.0,
+            252.0
+          ],
+          "entity_id": "store_name:field",
+          "entity_type": "document_field_box",
+          "field_id": "store_name"
+        },
+        {
+          "bbox_id": "store_name:label",
+          "bbox_px": [
+            416.0,
+            213.0,
+            565.0,
+            231.0
+          ],
+          "entity_id": "store_name:label",
+          "entity_type": "document_field_label",
+          "field_id": "store_name",
+          "text": "Store Name"
+        },
+        {
+          "bbox_id": "store_name:value",
+          "bbox_px": [
+            712.0,
+            210.5,
+            864.0,
+            233.5
+          ],
+          "entity_id": "store_name:value",
+          "entity_type": "document_field_value",
+          "field_id": "store_name",
+          "text": "Elm Works"
+        },
+        {
+          "bbox_id": "receipt_number",
+          "bbox_px": [
+            406.0,
+            262.0,
+            874.0,
+            322.0
+          ],
+          "entity_id": "receipt_number:field",
+          "entity_type": "document_field_box",
+          "field_id": "receipt_number"
+        },
+        {
+          "bbox_id": "receipt_number:label",
+          "bbox_px": [
+            416.0,
+            280.0,
+            562.0,
             304.0
           ],
-          "entity_id": "vendor_name:field",
-          "entity_type": "document_field_box",
-          "field_id": "vendor_name"
-        },
-        {
-          "bbox_id": "vendor_name:label",
-          "bbox_px": [
-            214.0,
-            219.5,
-            306.0,
-            238.5
-          ],
-          "entity_id": "vendor_name:label",
+          "entity_id": "receipt_number:label",
           "entity_type": "document_field_label",
-          "field_id": "vendor_name",
-          "text": "Vendor"
+          "field_id": "receipt_number",
+          "text": "Receipt No."
         },
         {
-          "bbox_id": "vendor_name:value",
+          "bbox_id": "receipt_number:value",
           "bbox_px": [
-            214.0,
-            252.5,
-            448.0,
-            281.5
+            743.0,
+            281.0,
+            864.0,
+            303.0
           ],
-          "entity_id": "vendor_name:value",
+          "entity_id": "receipt_number:value",
           "entity_type": "document_field_value",
-          "field_id": "vendor_name",
-          "text": "Blue Oak Supply"
+          "field_id": "receipt_number",
+          "text": "R-22676"
         },
         {
-          "bbox_id": "customer_name",
+          "bbox_id": "cashier_name",
           "bbox_px": [
-            651.0,
-            206.0,
-            1080.0,
-            304.0
-          ],
-          "entity_id": "customer_name:field",
-          "entity_type": "document_field_box",
-          "field_id": "customer_name"
-        },
-        {
-          "bbox_id": "customer_name:label",
-          "bbox_px": [
-            665.0,
-            220.0,
-            787.0,
-            238.0
-          ],
-          "entity_id": "customer_name:label",
-          "entity_type": "document_field_label",
-          "field_id": "customer_name",
-          "text": "Customer"
-        },
-        {
-          "bbox_id": "customer_name:value",
-          "bbox_px": [
-            665.0,
-            256.0,
-            792.0,
-            278.0
-          ],
-          "entity_id": "customer_name:value",
-          "entity_type": "document_field_value",
-          "field_id": "customer_name",
-          "text": "Luca Lee"
-        },
-        {
-          "bbox_id": "invoice_number",
-          "bbox_px": [
-            200.0,
-            322.0,
-            482.667,
-            420.0
-          ],
-          "entity_id": "invoice_number:field",
-          "entity_type": "document_field_box",
-          "field_id": "invoice_number"
-        },
-        {
-          "bbox_id": "invoice_number:label",
-          "bbox_px": [
-            214.0,
-            335.5,
-            412.0,
-            354.5
-          ],
-          "entity_id": "invoice_number:label",
-          "entity_type": "document_field_label",
-          "field_id": "invoice_number",
-          "text": "Invoice Number"
-        },
-        {
-          "bbox_id": "invoice_number:value",
-          "bbox_px": [
-            214.0,
-            372.0,
-            364.0,
-            394.0
-          ],
-          "entity_id": "invoice_number:value",
-          "entity_type": "document_field_value",
-          "field_id": "invoice_number",
-          "text": "INV-69825"
-        },
-        {
-          "bbox_id": "account_id",
-          "bbox_px": [
-            498.667,
-            322.0,
-            781.333,
-            420.0
-          ],
-          "entity_id": "account_id:field",
-          "entity_type": "document_field_box",
-          "field_id": "account_id"
-        },
-        {
-          "bbox_id": "account_id:label",
-          "bbox_px": [
-            512.667,
-            336.0,
-            649.667,
-            354.0
-          ],
-          "entity_id": "account_id:label",
-          "entity_type": "document_field_label",
-          "field_id": "account_id",
-          "text": "Account ID"
-        },
-        {
-          "bbox_id": "account_id:value",
-          "bbox_px": [
-            512.667,
-            372.0,
-            655.667,
-            394.0
-          ],
-          "entity_id": "account_id:value",
-          "entity_type": "document_field_value",
-          "field_id": "account_id",
-          "text": "ACC-7282"
-        },
-        {
-          "bbox_id": "contact_email",
-          "bbox_px": [
-            797.333,
-            322.0,
-            1080.0,
-            420.0
-          ],
-          "entity_id": "contact_email:field",
-          "entity_type": "document_field_box",
-          "field_id": "contact_email"
-        },
-        {
-          "bbox_id": "contact_email:label",
-          "bbox_px": [
-            811.333,
-            335.5,
-            987.333,
-            354.5
-          ],
-          "entity_id": "contact_email:label",
-          "entity_type": "document_field_label",
-          "field_id": "contact_email",
-          "text": "Contact Email"
-        },
-        {
-          "bbox_id": "contact_email:value",
-          "bbox_px": [
-            811.333,
-            373.0,
-            1066.333,
-            393.0
-          ],
-          "entity_id": "contact_email:value",
-          "entity_type": "document_field_value",
-          "field_id": "contact_email",
-          "text": "blueoaksupply@mailhub.net"
-        },
-        {
-          "bbox_id": "issue_date",
-          "bbox_px": [
-            200.0,
-            438.0,
-            629.0,
-            536.0
-          ],
-          "entity_id": "issue_date:field",
-          "entity_type": "document_field_box",
-          "field_id": "issue_date"
-        },
-        {
-          "bbox_id": "issue_date:label",
-          "bbox_px": [
-            214.0,
-            452.0,
-            348.0,
-            470.0
-          ],
-          "entity_id": "issue_date:label",
-          "entity_type": "document_field_label",
-          "field_id": "issue_date",
-          "text": "Issue Date"
-        },
-        {
-          "bbox_id": "issue_date:value",
-          "bbox_px": [
-            214.0,
-            488.0,
-            380.0,
-            510.0
-          ],
-          "entity_id": "issue_date:value",
-          "entity_type": "document_field_value",
-          "field_id": "issue_date",
-          "text": "2026-03-17"
-        },
-        {
-          "bbox_id": "service_date",
-          "bbox_px": [
-            651.0,
-            438.0,
-            1080.0,
-            536.0
-          ],
-          "entity_id": "service_date:field",
-          "entity_type": "document_field_box",
-          "field_id": "service_date"
-        },
-        {
-          "bbox_id": "service_date:label",
-          "bbox_px": [
-            665.0,
-            451.5,
-            826.0,
-            470.5
-          ],
-          "entity_id": "service_date:label",
-          "entity_type": "document_field_label",
-          "field_id": "service_date",
-          "text": "Service Date"
-        },
-        {
-          "bbox_id": "service_date:value",
-          "bbox_px": [
-            665.0,
-            488.0,
-            831.0,
-            510.0
-          ],
-          "entity_id": "service_date:value",
-          "entity_type": "document_field_value",
-          "field_id": "service_date",
-          "text": "2026-03-22"
-        },
-        {
-          "bbox_id": "due_date",
-          "bbox_px": [
-            200.0,
-            554.0,
-            629.0,
-            652.0
-          ],
-          "entity_id": "due_date:field",
-          "entity_type": "document_field_box",
-          "field_id": "due_date"
-        },
-        {
-          "bbox_id": "due_date:label",
-          "bbox_px": [
-            214.0,
-            568.0,
+            406.0,
             332.0,
-            586.0
+            874.0,
+            392.0
           ],
-          "entity_id": "due_date:label",
-          "entity_type": "document_field_label",
-          "field_id": "due_date",
-          "text": "Due Date"
-        },
-        {
-          "bbox_id": "due_date:value",
-          "bbox_px": [
-            214.0,
-            604.0,
-            380.0,
-            626.0
-          ],
-          "entity_id": "due_date:value",
-          "entity_type": "document_field_value",
-          "field_id": "due_date",
-          "text": "2026-04-06"
-        },
-        {
-          "bbox_id": "subtotal_amount",
-          "bbox_px": [
-            651.0,
-            554.0,
-            1080.0,
-            652.0
-          ],
-          "entity_id": "subtotal_amount:field",
+          "entity_id": "cashier_name:field",
           "entity_type": "document_field_box",
-          "field_id": "subtotal_amount"
+          "field_id": "cashier_name"
         },
         {
-          "bbox_id": "subtotal_amount:label",
+          "bbox_id": "cashier_name:label",
           "bbox_px": [
-            665.0,
-            567.5,
-            775.0,
-            586.5
+            416.0,
+            352.5,
+            512.0,
+            371.5
           ],
-          "entity_id": "subtotal_amount:label",
+          "entity_id": "cashier_name:label",
           "entity_type": "document_field_label",
-          "field_id": "subtotal_amount",
-          "text": "Subtotal"
+          "field_id": "cashier_name",
+          "text": "Cashier"
         },
         {
-          "bbox_id": "subtotal_amount:value",
+          "bbox_id": "cashier_name:value",
           "bbox_px": [
-            665.0,
-            601.5,
-            784.0,
-            628.5
+            716.0,
+            350.5,
+            864.0,
+            373.5
           ],
-          "entity_id": "subtotal_amount:value",
+          "entity_id": "cashier_name:value",
           "entity_type": "document_field_value",
-          "field_id": "subtotal_amount",
-          "text": "$257.77"
+          "field_id": "cashier_name",
+          "text": "Ezra Ward"
+        },
+        {
+          "bbox_id": "purchase_date",
+          "bbox_px": [
+            406.0,
+            402.0,
+            874.0,
+            462.0
+          ],
+          "entity_id": "purchase_date:field",
+          "entity_type": "document_field_box",
+          "field_id": "purchase_date"
+        },
+        {
+          "bbox_id": "purchase_date:label",
+          "bbox_px": [
+            416.0,
+            423.0,
+            588.0,
+            441.0
+          ],
+          "entity_id": "purchase_date:label",
+          "entity_type": "document_field_label",
+          "field_id": "purchase_date",
+          "text": "Purchase Date"
+        },
+        {
+          "bbox_id": "purchase_date:value",
+          "bbox_px": [
+            678.0,
+            418.0,
+            864.0,
+            446.0
+          ],
+          "entity_id": "purchase_date:value",
+          "entity_type": "document_field_value",
+          "field_id": "purchase_date",
+          "text": "Apr 13, 2026"
+        },
+        {
+          "bbox_id": "member_id",
+          "bbox_px": [
+            406.0,
+            472.0,
+            874.0,
+            532.0
+          ],
+          "entity_id": "member_id:field",
+          "entity_type": "document_field_box",
+          "field_id": "member_id"
+        },
+        {
+          "bbox_id": "member_id:label",
+          "bbox_px": [
+            416.0,
+            492.5,
+            554.0,
+            511.5
+          ],
+          "entity_id": "member_id:label",
+          "entity_type": "document_field_label",
+          "field_id": "member_id",
+          "text": "Member ID"
+        },
+        {
+          "bbox_id": "member_id:value",
+          "bbox_px": [
+            756.0,
+            491.0,
+            864.0,
+            513.0
+          ],
+          "entity_id": "member_id:value",
+          "entity_type": "document_field_value",
+          "field_id": "member_id",
+          "text": "M-1306"
+        },
+        {
+          "bbox_id": "register_id",
+          "bbox_px": [
+            406.0,
+            542.0,
+            874.0,
+            602.0
+          ],
+          "entity_id": "register_id:field",
+          "entity_type": "document_field_box",
+          "field_id": "register_id"
+        },
+        {
+          "bbox_id": "register_id:label",
+          "bbox_px": [
+            416.0,
+            560.0,
+            558.0,
+            584.0
+          ],
+          "entity_id": "register_id:label",
+          "entity_type": "document_field_label",
+          "field_id": "register_id",
+          "text": "Register ID"
+        },
+        {
+          "bbox_id": "register_id:value",
+          "bbox_px": [
+            739.0,
+            561.0,
+            864.0,
+            583.0
+          ],
+          "entity_id": "register_id:value",
+          "entity_type": "document_field_value",
+          "field_id": "register_id",
+          "text": "REG-772"
+        },
+        {
+          "bbox_id": "items_total",
+          "bbox_px": [
+            406.0,
+            612.0,
+            874.0,
+            672.0
+          ],
+          "entity_id": "items_total:field",
+          "entity_type": "document_field_box",
+          "field_id": "items_total"
+        },
+        {
+          "bbox_id": "items_total:label",
+          "bbox_px": [
+            416.0,
+            632.5,
+            560.0,
+            651.5
+          ],
+          "entity_id": "items_total:label",
+          "entity_type": "document_field_label",
+          "field_id": "items_total",
+          "text": "Items Total"
+        },
+        {
+          "bbox_id": "items_total:value",
+          "bbox_px": [
+            763.0,
+            628.5,
+            864.0,
+            655.5
+          ],
+          "entity_id": "items_total:value",
+          "entity_type": "document_field_value",
+          "field_id": "items_total",
+          "text": "$33.41"
         },
         {
           "bbox_id": "tax_amount",
           "bbox_px": [
-            200.0,
-            672.0,
-            629.0,
-            776.0
+            406.0,
+            682.0,
+            874.0,
+            742.0
           ],
           "entity_id": "tax_amount:field",
           "entity_type": "document_field_box",
@@ -1166,10 +998,10 @@
         {
           "bbox_id": "tax_amount:label",
           "bbox_px": [
-            214.0,
-            686.0,
-            260.0,
-            704.0
+            416.0,
+            703.0,
+            462.0,
+            721.0
           ],
           "entity_id": "tax_amount:label",
           "entity_type": "document_field_label",
@@ -1179,23 +1011,23 @@
         {
           "bbox_id": "tax_amount:value",
           "bbox_px": [
-            214.0,
-            722.5,
-            315.0,
-            749.5
+            781.0,
+            698.5,
+            864.0,
+            725.5
           ],
           "entity_id": "tax_amount:value",
           "entity_type": "document_field_value",
           "field_id": "tax_amount",
-          "text": "$24.48"
+          "text": "$8.20"
         },
         {
           "bbox_id": "discount_amount",
           "bbox_px": [
-            651.0,
-            672.0,
-            1080.0,
-            776.0
+            406.0,
+            752.0,
+            874.0,
+            812.0
           ],
           "entity_id": "discount_amount:field",
           "entity_type": "document_field_box",
@@ -1204,10 +1036,10 @@
         {
           "bbox_id": "discount_amount:label",
           "bbox_px": [
-            665.0,
-            685.5,
-            777.0,
-            704.5
+            416.0,
+            772.5,
+            528.0,
+            791.5
           ],
           "entity_id": "discount_amount:label",
           "entity_type": "document_field_label",
@@ -1217,86 +1049,73 @@
         {
           "bbox_id": "discount_amount:value",
           "bbox_px": [
-            665.0,
-            722.5,
-            748.0,
-            749.5
+            781.0,
+            768.5,
+            864.0,
+            795.5
           ],
           "entity_id": "discount_amount:value",
           "entity_type": "document_field_value",
           "field_id": "discount_amount",
-          "text": "$3.65"
+          "text": "$3.25"
         },
         {
-          "bbox_id": "parties:label",
+          "bbox_id": "store_details:label",
           "bbox_px": [
-            204.0,
-            176.0,
-            319.0,
-            198.0
+            410.0,
+            169.5,
+            600.0,
+            187.5
           ],
-          "entity_id": "parties:label",
+          "entity_id": "store_details:label",
           "entity_type": "document_section_label",
-          "section_id": "parties",
-          "text": "Parties"
+          "section_id": "store_details",
+          "text": "Store Details"
         },
         {
-          "bbox_id": "account:label",
+          "bbox_id": "purchase_info:label",
           "bbox_px": [
-            502.667,
-            292.0,
-            629.667,
-            314.0
+            410.0,
+            372.0,
+            608.0,
+            394.0
           ],
-          "entity_id": "account:label",
+          "entity_id": "purchase_info:label",
           "entity_type": "document_section_label",
-          "section_id": "account",
-          "text": "Account"
+          "section_id": "purchase_info",
+          "text": "Purchase Info"
         },
         {
-          "bbox_id": "dates:label",
+          "bbox_id": "totals:label",
           "bbox_px": [
-            204.0,
-            408.0,
-            302.0,
-            430.0
+            410.0,
+            582.0,
+            513.0,
+            604.0
           ],
-          "entity_id": "dates:label",
+          "entity_id": "totals:label",
           "entity_type": "document_section_label",
-          "section_id": "dates",
-          "text": "Dates"
-        },
-        {
-          "bbox_id": "billing_summary:label",
-          "bbox_px": [
-            204.0,
-            524.0,
-            437.0,
-            546.0
-          ],
-          "entity_id": "billing_summary:label",
-          "entity_type": "document_section_label",
-          "section_id": "billing_summary",
-          "text": "Billing Summary"
+          "section_id": "totals",
+          "text": "Totals"
         }
       ],
       "relations": {
-        "query_section_id": "billing_summary",
-        "query_section_label": "Billing Summary",
-        "scene_variant": "invoice_sheet",
+        "query_section_id": "totals",
+        "query_section_label": "Totals",
+        "scene_variant": "receipt_sheet",
         "task_variant": "sum_minus_amount_in_section",
         "view_family": "structured_document"
       },
-      "scene_kind": "document_invoice_sheet"
+      "scene_kind": "document_receipt_sheet"
     },
     "witness_symbolic": {
       "bbox_id_sequence": [
-        "subtotal_amount:value",
+        "items_total:value",
         "tax_amount:value",
         "discount_amount:value"
       ],
       "field_id_sequence": [
-        "subtotal_amount",
+        "items_total",
         "tax_amount",
         "discount_amount"
       ]

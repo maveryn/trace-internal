@@ -12,6 +12,7 @@ Use this whenever the task lives under `domain=geometry`.
 2. `docs/core/SYSTEM_ARCHITECTURE.md`
 3. `docs/workflows/TASK_AUTHORING.md`
 4. `docs/workflows/SHARED_UTILITIES.md`
+5. `docs/domains/TASK_FAMILY_VARIANTS.md`
 
 ## Geometry-domain rules
 - Geometry currently uses five consolidated value tasks plus five distinct visual families: `task_geometry_measurement_value`, `task_geometry_comparison_value`, `task_geometry_counting_value`, `task_geometry_analytical_2d_value`, `task_geometry_analytical_3d_value`, `task_geometry_transformation_match`, `task_geometry_similarity_count`, `task_geometry_coordinate_relation`, `task_geometry_solid_view_count`, and `task_geometry_graphing_count` (now spanning quadratic, absolute-value, cubic, sinusoidal, and piecewise plotted curves).
@@ -36,6 +37,7 @@ For current geometry coverage and active task families, use:
 - `docs/domains/TASK_FAMILY_VARIANTS.md`
 
 ## Pair with
+- `skills/domain-audit/SKILL.md`
 - `skills/task-design/SKILL.md`
 - `skills/task-complexity/SKILL.md`
 - `skills/task-implementation/SKILL.md`

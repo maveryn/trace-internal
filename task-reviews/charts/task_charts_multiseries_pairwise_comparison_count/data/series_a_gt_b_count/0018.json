@@ -1,225 +1,281 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 3
+    "value": 5
   },
   "evidence_gt": {
     "type": "label_set",
     "value": [
-      "C",
-      "F",
-      "P"
+      "G",
+      "N",
+      "P",
+      "X",
+      "Y"
     ]
   },
   "image": {
     "format": "png",
     "path": "charts/task_charts_multiseries_pairwise_comparison_count/images/series_a_gt_b_count/0018.png"
   },
-  "instance_seed": 1978335207813832,
-  "prompt": "Look at the multiseries chart in the image. It shows a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Determine how many category labels satisfy the requested pairwise series comparison. Find how many category labels show Augy higher than Darn.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
+  "instance_seed": 3257281295408862,
+  "prompt": "Use the chart in the image. It shows a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Compare the two queried series category by category. How many labeled categories have Rod above Rina?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer format: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
   "prompt_variants": {
-    "answer_and_evidence": "Look at the multiseries chart in the image. It shows a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Determine how many category labels satisfy the requested pairwise series comparison. Find how many category labels show Augy higher than Darn.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
-    "answer_only": "Look at the multiseries chart in the image. It shows a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Determine how many category labels satisfy the requested pairwise series comparison. Find how many category labels show Augy higher than Darn.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":3}"
+    "answer_and_evidence": "Use the chart in the image. It shows a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Compare the two queried series category by category. How many labeled categories have Rod above Rina?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer format: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
+    "answer_only": "Use the chart in the image. It shows a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Compare the two queried series category by category. How many labeled categories have Rod above Rina?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":3}"
   },
   "task": "task_charts_multiseries_pairwise_comparison_count",
   "task_variant": "series_a_gt_b_count",
   "trace_payload": {
     "execution_trace": {
-      "answer_value": 3,
-      "category_count": 5,
+      "answer_value": 5,
+      "category_count": 6,
       "category_count_range": [
         5,
         10
       ],
       "category_labels": [
-        "C",
         "P",
-        "W",
+        "G",
+        "X",
         "E",
-        "F"
+        "Y",
+        "N"
       ],
       "comparison": "greater_than",
       "evidence_labels": [
-        "C",
-        "F",
-        "P"
+        "G",
+        "N",
+        "P",
+        "X",
+        "Y"
       ],
-      "left_series_label": "Augy",
+      "left_series_label": "Rod",
       "mark_color_distance_space": "lab",
       "mark_color_min_distance": 40.0,
       "mark_color_sampling_policy": "random_rgb_palette",
       "queried_series_labels": [
-        "Augy",
-        "Darn"
+        "Rod",
+        "Rina"
       ],
       "question_format": "numeric_open",
-      "right_series_label": "Darn",
-      "scene_variant": "grouped_bar",
+      "right_series_label": "Rina",
+      "scene_variant": "grouped_lollipop",
       "scene_variant_probabilities": {
         "grouped_bar": 0.25,
         "grouped_horizontal_bar": 0.25,
         "grouped_lollipop": 0.25,
         "multi_line": 0.25
       },
-      "series_count": 2,
+      "series_count": 3,
       "series_count_range": [
         2,
         3
       ],
       "series_fill_palette_rgb": [
         [
-          104,
-          118,
-          36
+          181,
+          82,
+          165
         ],
         [
-          64,
-          57,
-          70
+          24,
+          159,
+          139
+        ],
+        [
+          54,
+          41,
+          164
         ]
       ],
       "series_labels": [
-        "Augy",
-        "Darn"
+        "Hamo",
+        "Rod",
+        "Rina"
       ],
       "series_outline_palette_rgb": [
         [
-          57,
-          65,
-          20
+          100,
+          45,
+          91
         ],
         [
-          35,
-          31,
-          38
+          13,
+          87,
+          76
+        ],
+        [
+          30,
+          23,
+          90
         ]
       ],
-      "target_answer": 3,
+      "target_answer": 5,
       "target_answer_range": [
         0,
         8
       ],
       "task_variant": "series_a_gt_b_count",
       "task_variant_probabilities": {
-        "series_a_gt_b_count": 0.5,
-        "series_a_lt_b_count": 0.5
+        "series_a_gt_b_count": 1.0,
+        "series_a_lt_b_count": 0.0
       },
       "values_by_category": {
-        "C": {
-          "Augy": 10,
-          "Darn": 3
-        },
         "E": {
-          "Augy": 14,
-          "Darn": 20
+          "Hamo": 19,
+          "Rina": 20,
+          "Rod": 4
         },
-        "F": {
-          "Augy": 3,
-          "Darn": 1
+        "G": {
+          "Hamo": 15,
+          "Rina": 13,
+          "Rod": 17
+        },
+        "N": {
+          "Hamo": 10,
+          "Rina": 8,
+          "Rod": 16
         },
         "P": {
-          "Augy": 19,
-          "Darn": 15
+          "Hamo": 7,
+          "Rina": 4,
+          "Rod": 18
         },
-        "W": {
-          "Augy": 13,
-          "Darn": 14
+        "X": {
+          "Hamo": 11,
+          "Rina": 7,
+          "Rod": 19
+        },
+        "Y": {
+          "Hamo": 8,
+          "Rina": 5,
+          "Rod": 20
         }
       }
     },
     "projected_evidence": {
       "bbox_set": [
         [
-          128.881,
-          297.524,
-          207.519,
+          249.1,
+          128.19,
+          315.9,
           562.0
         ],
         [
-          738.481,
-          458.857,
-          817.119,
+          757.1,
+          151.238,
+          823.9,
           562.0
         ],
         [
-          281.281,
-          90.095,
-          359.919,
+          122.1,
+          105.143,
+          188.9,
+          562.0
+        ],
+        [
+          376.1,
+          82.095,
+          442.9,
+          562.0
+        ],
+        [
+          630.1,
+          59.048,
+          696.9,
           562.0
         ]
       ],
       "label_set": [
-        "C",
-        "F",
-        "P"
+        "G",
+        "N",
+        "P",
+        "X",
+        "Y"
       ],
       "pixel_point_map": {
-        "C": [
-          168.2,
+        "G": [
+          282.5,
           554.0
         ],
-        "F": [
-          777.8,
+        "N": [
+          790.5,
           554.0
         ],
         "P": [
-          320.6,
+          155.5,
+          554.0
+        ],
+        "X": [
+          409.5,
+          554.0
+        ],
+        "Y": [
+          663.5,
           554.0
         ]
       },
       "pixel_point_set": [
         [
-          168.2,
+          282.5,
           554.0
         ],
         [
-          777.8,
+          790.5,
           554.0
         ],
         [
-          320.6,
+          155.5,
+          554.0
+        ],
+        [
+          409.5,
+          554.0
+        ],
+        [
+          663.5,
           554.0
         ]
       ]
     },
     "query_spec": {
       "params": {
-        "category_count": 5,
+        "category_count": 6,
         "category_count_range": [
           5,
           10
         ],
         "comparison": "greater_than",
         "queried_series_labels": [
-          "Augy",
-          "Darn"
+          "Rod",
+          "Rina"
         ],
-        "scene_variant": "grouped_bar",
+        "scene_variant": "grouped_lollipop",
         "scene_variant_probabilities": {
           "grouped_bar": 0.25,
           "grouped_horizontal_bar": 0.25,
           "grouped_lollipop": 0.25,
           "multi_line": 0.25
         },
-        "series_count": 2,
+        "series_count": 3,
         "series_count_range": [
           2,
           3
         ],
-        "target_answer": 3,
+        "target_answer": 5,
         "target_answer_range": [
           0,
           8
         ],
         "task_variant": "series_a_gt_b_count",
         "task_variant_probabilities": {
-          "series_a_gt_b_count": 0.5,
-          "series_a_lt_b_count": 0.5
+          "series_a_gt_b_count": 1.0,
+          "series_a_lt_b_count": 0.0
         }
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 4,
+        "answer_or_evidence_variant_index": 1,
         "prompt_bundle_id": "charts_multiseries_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -229,16 +285,16 @@
           "json_example_answer_only": "{\"answer\":3}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "left_series": "Augy",
-          "object_description": "a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category",
-          "right_series": "Darn"
+          "left_series": "Rod",
+          "object_description": "a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis",
+          "right_series": "Rina"
         },
         "task_family_key": "multiseries_chart_comparison",
-        "task_family_variant_index": 3,
+        "task_family_variant_index": 1,
         "task_key": "pairwise_comparison_count_query",
-        "task_variant_index": 2,
+        "task_variant_index": 0,
         "task_variant_key": "series_a_gt_b_count",
-        "task_variant_template_index": 4,
+        "task_variant_template_index": 2,
         "template_paths": [
           "charts/multiseries/charts_multiseries_v1.json"
         ],
@@ -254,7 +310,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 4,
+            "answer_or_evidence_variant_index": 1,
             "prompt_bundle_id": "charts_multiseries_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -264,16 +320,16 @@
               "json_example_answer_only": "{\"answer\":3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "left_series": "Augy",
-              "object_description": "a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category",
-              "right_series": "Darn"
+              "left_series": "Rod",
+              "object_description": "a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis",
+              "right_series": "Rina"
             },
             "task_family_key": "multiseries_chart_comparison",
-            "task_family_variant_index": 3,
+            "task_family_variant_index": 1,
             "task_key": "pairwise_comparison_count_query",
-            "task_variant_index": 2,
+            "task_variant_index": 0,
             "task_variant_key": "series_a_gt_b_count",
-            "task_variant_template_index": 4,
+            "task_variant_template_index": 2,
             "template_paths": [
               "charts/multiseries/charts_multiseries_v1.json"
             ],
@@ -284,12 +340,12 @@
               "task_variant:series_a_gt_b_count": 5
             }
           },
-          "prompt": "Look at the multiseries chart in the image. It shows a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Determine how many category labels satisfy the requested pairwise series comparison. Find how many category labels show Augy higher than Darn.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}"
+          "prompt": "Use the chart in the image. It shows a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Compare the two queried series category by category. How many labeled categories have Rod above Rina?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer format: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 4,
+            "answer_or_evidence_variant_index": 1,
             "prompt_bundle_id": "charts_multiseries_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -299,16 +355,16 @@
               "json_example_answer_only": "{\"answer\":3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "left_series": "Augy",
-              "object_description": "a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category",
-              "right_series": "Darn"
+              "left_series": "Rod",
+              "object_description": "a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis",
+              "right_series": "Rina"
             },
             "task_family_key": "multiseries_chart_comparison",
-            "task_family_variant_index": 3,
+            "task_family_variant_index": 1,
             "task_key": "pairwise_comparison_count_query",
-            "task_variant_index": 2,
+            "task_variant_index": 0,
             "task_variant_key": "series_a_gt_b_count",
-            "task_variant_template_index": 4,
+            "task_variant_template_index": 2,
             "template_paths": [
               "charts/multiseries/charts_multiseries_v1.json"
             ],
@@ -319,7 +375,7 @@
               "task_variant:series_a_gt_b_count": 5
             }
           },
-          "prompt": "Look at the multiseries chart in the image. It shows a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Determine how many category labels satisfy the requested pairwise series comparison. Find how many category labels show Augy higher than Darn.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":3}"
+          "prompt": "Use the chart in the image. It shows a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Compare the two queried series category by category. How many labeled categories have Rod above Rina?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":3}"
         }
       },
       "task_variant": "series_a_gt_b_count",
@@ -327,24 +383,28 @@
     },
     "render_map": {
       "category_label_centers_px": {
-        "C": [
-          168.2,
-          554.0
-        ],
         "E": [
-          625.4,
+          536.5,
           554.0
         ],
-        "F": [
-          777.8,
+        "G": [
+          282.5,
+          554.0
+        ],
+        "N": [
+          790.5,
           554.0
         ],
         "P": [
-          320.6,
+          155.5,
           554.0
         ],
-        "W": [
-          473.0,
+        "X": [
+          409.5,
+          554.0
+        ],
+        "Y": [
+          663.5,
           554.0
         ]
       },
@@ -386,26 +446,36 @@
         "sampling_policy": "random_rgb_palette",
         "series_fill_palette_rgb": [
           [
-            104,
-            118,
-            36
+            181,
+            82,
+            165
           ],
           [
-            64,
-            57,
-            70
+            24,
+            159,
+            139
+          ],
+          [
+            54,
+            41,
+            164
           ]
         ],
         "series_outline_palette_rgb": [
           [
-            57,
-            65,
-            20
+            100,
+            45,
+            91
           ],
           [
-            35,
-            31,
-            38
+            13,
+            87,
+            76
+          ],
+          [
+            30,
+            23,
+            90
           ]
         ]
       },
@@ -431,7 +501,7 @@
         "edits": [],
         "enabled": false
       },
-      "scene_variant": "grouped_bar",
+      "scene_variant": "grouped_lollipop",
       "text_style": {
         "label_font_size_px": 22,
         "label_stroke_width_px": 2,
@@ -468,445 +538,785 @@
         {
           "attrs": {
             "category_group_bbox_px": [
-              128.881,
-              297.524,
-              207.519,
+              122.1,
+              105.143,
+              188.9,
               562.0
             ],
-            "category_label": "C",
+            "category_label": "P",
             "category_label_center_px": [
-              168.2,
+              155.5,
               554.0
             ],
             "category_rank": 0,
             "mark_bbox_px": [
-              128.881,
-              297.524,
-              161.799,
-              528.0
+              122.1,
+              358.667,
+              138.1,
+              374.667
             ],
             "mark_center_px": [
-              145.34,
-              297.524
+              130.1,
+              366.667
             ],
             "mark_fill_rgb": [
-              104,
-              118,
-              36
+              181,
+              82,
+              165
             ],
             "mark_outline_rgb": [
-              57,
-              65,
-              20
+              100,
+              45,
+              91
             ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Augy",
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Hamo",
             "series_rank": 0,
-            "value": 10
+            "value": 7
           },
-          "entity_id": "mark_C_Augy",
-          "entity_type": "bar"
+          "entity_id": "mark_P_Hamo",
+          "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              128.881,
-              297.524,
-              207.519,
+              122.1,
+              105.143,
+              188.9,
               562.0
             ],
-            "category_label": "C",
+            "category_label": "P",
             "category_label_center_px": [
-              168.2,
+              155.5,
               554.0
             ],
             "category_rank": 0,
             "mark_bbox_px": [
-              174.601,
-              458.857,
-              207.519,
-              528.0
+              147.5,
+              105.143,
+              163.5,
+              121.143
             ],
             "mark_center_px": [
-              191.06,
-              458.857
+              155.5,
+              113.143
             ],
             "mark_fill_rgb": [
-              64,
-              57,
-              70
+              24,
+              159,
+              139
             ],
             "mark_outline_rgb": [
-              35,
-              31,
-              38
+              13,
+              87,
+              76
             ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Darn",
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Rod",
             "series_rank": 1,
-            "value": 3
+            "value": 18
           },
-          "entity_id": "mark_C_Darn",
-          "entity_type": "bar"
+          "entity_id": "mark_P_Rod",
+          "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              281.281,
-              90.095,
-              359.919,
+              122.1,
+              105.143,
+              188.9,
               562.0
             ],
             "category_label": "P",
             "category_label_center_px": [
-              320.6,
+              155.5,
               554.0
             ],
-            "category_rank": 1,
+            "category_rank": 0,
             "mark_bbox_px": [
-              281.281,
-              90.095,
-              314.199,
-              528.0
+              172.9,
+              427.81,
+              188.9,
+              443.81
             ],
             "mark_center_px": [
-              297.74,
-              90.095
+              180.9,
+              435.81
             ],
             "mark_fill_rgb": [
-              104,
-              118,
-              36
+              54,
+              41,
+              164
             ],
             "mark_outline_rgb": [
-              57,
-              65,
-              20
+              30,
+              23,
+              90
             ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Augy",
-            "series_rank": 0,
-            "value": 19
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Rina",
+            "series_rank": 2,
+            "value": 4
           },
-          "entity_id": "mark_P_Augy",
-          "entity_type": "bar"
+          "entity_id": "mark_P_Rina",
+          "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              281.281,
-              90.095,
-              359.919,
+              249.1,
+              128.19,
+              315.9,
               562.0
             ],
-            "category_label": "P",
+            "category_label": "G",
             "category_label_center_px": [
-              320.6,
+              282.5,
               554.0
             ],
             "category_rank": 1,
             "mark_bbox_px": [
-              327.001,
-              182.286,
-              359.919,
-              528.0
+              249.1,
+              174.286,
+              265.1,
+              190.286
             ],
             "mark_center_px": [
-              343.46,
+              257.1,
               182.286
             ],
             "mark_fill_rgb": [
-              64,
-              57,
-              70
+              181,
+              82,
+              165
             ],
             "mark_outline_rgb": [
-              35,
-              31,
-              38
+              100,
+              45,
+              91
             ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Darn",
-            "series_rank": 1,
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Hamo",
+            "series_rank": 0,
             "value": 15
           },
-          "entity_id": "mark_P_Darn",
-          "entity_type": "bar"
+          "entity_id": "mark_G_Hamo",
+          "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              433.681,
-              205.333,
-              512.319,
+              249.1,
+              128.19,
+              315.9,
               562.0
             ],
-            "category_label": "W",
+            "category_label": "G",
             "category_label_center_px": [
-              473.0,
+              282.5,
               554.0
             ],
-            "category_rank": 2,
+            "category_rank": 1,
             "mark_bbox_px": [
-              433.681,
-              228.381,
-              466.599,
-              528.0
+              274.5,
+              128.19,
+              290.5,
+              144.19
             ],
             "mark_center_px": [
-              450.14,
+              282.5,
+              136.19
+            ],
+            "mark_fill_rgb": [
+              24,
+              159,
+              139
+            ],
+            "mark_outline_rgb": [
+              13,
+              87,
+              76
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Rod",
+            "series_rank": 1,
+            "value": 17
+          },
+          "entity_id": "mark_G_Rod",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              249.1,
+              128.19,
+              315.9,
+              562.0
+            ],
+            "category_label": "G",
+            "category_label_center_px": [
+              282.5,
+              554.0
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              299.9,
+              220.381,
+              315.9,
+              236.381
+            ],
+            "mark_center_px": [
+              307.9,
               228.381
             ],
             "mark_fill_rgb": [
-              104,
-              118,
-              36
+              54,
+              41,
+              164
             ],
             "mark_outline_rgb": [
-              57,
-              65,
-              20
+              30,
+              23,
+              90
             ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Augy",
-            "series_rank": 0,
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Rina",
+            "series_rank": 2,
             "value": 13
           },
-          "entity_id": "mark_W_Augy",
-          "entity_type": "bar"
+          "entity_id": "mark_G_Rina",
+          "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              433.681,
-              205.333,
-              512.319,
+              376.1,
+              82.095,
+              442.9,
               562.0
             ],
-            "category_label": "W",
+            "category_label": "X",
             "category_label_center_px": [
-              473.0,
+              409.5,
               554.0
             ],
             "category_rank": 2,
             "mark_bbox_px": [
-              479.401,
-              205.333,
-              512.319,
-              528.0
+              376.1,
+              266.476,
+              392.1,
+              282.476
             ],
             "mark_center_px": [
-              495.86,
-              205.333
+              384.1,
+              274.476
             ],
             "mark_fill_rgb": [
-              64,
-              57,
-              70
+              181,
+              82,
+              165
             ],
             "mark_outline_rgb": [
-              35,
-              31,
-              38
+              100,
+              45,
+              91
             ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Darn",
-            "series_rank": 1,
-            "value": 14
-          },
-          "entity_id": "mark_W_Darn",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              586.081,
-              67.048,
-              664.719,
-              562.0
-            ],
-            "category_label": "E",
-            "category_label_center_px": [
-              625.4,
-              554.0
-            ],
-            "category_rank": 3,
-            "mark_bbox_px": [
-              586.081,
-              205.333,
-              618.999,
-              528.0
-            ],
-            "mark_center_px": [
-              602.54,
-              205.333
-            ],
-            "mark_fill_rgb": [
-              104,
-              118,
-              36
-            ],
-            "mark_outline_rgb": [
-              57,
-              65,
-              20
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Augy",
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Hamo",
             "series_rank": 0,
-            "value": 14
+            "value": 11
           },
-          "entity_id": "mark_E_Augy",
-          "entity_type": "bar"
+          "entity_id": "mark_X_Hamo",
+          "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              586.081,
-              67.048,
-              664.719,
+              376.1,
+              82.095,
+              442.9,
+              562.0
+            ],
+            "category_label": "X",
+            "category_label_center_px": [
+              409.5,
+              554.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              401.5,
+              82.095,
+              417.5,
+              98.095
+            ],
+            "mark_center_px": [
+              409.5,
+              90.095
+            ],
+            "mark_fill_rgb": [
+              24,
+              159,
+              139
+            ],
+            "mark_outline_rgb": [
+              13,
+              87,
+              76
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Rod",
+            "series_rank": 1,
+            "value": 19
+          },
+          "entity_id": "mark_X_Rod",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              376.1,
+              82.095,
+              442.9,
+              562.0
+            ],
+            "category_label": "X",
+            "category_label_center_px": [
+              409.5,
+              554.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              426.9,
+              358.667,
+              442.9,
+              374.667
+            ],
+            "mark_center_px": [
+              434.9,
+              366.667
+            ],
+            "mark_fill_rgb": [
+              54,
+              41,
+              164
+            ],
+            "mark_outline_rgb": [
+              30,
+              23,
+              90
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Rina",
+            "series_rank": 2,
+            "value": 7
+          },
+          "entity_id": "mark_X_Rina",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              503.1,
+              59.048,
+              569.9,
               562.0
             ],
             "category_label": "E",
             "category_label_center_px": [
-              625.4,
+              536.5,
               554.0
             ],
             "category_rank": 3,
             "mark_bbox_px": [
-              631.801,
-              67.048,
-              664.719,
-              528.0
+              503.1,
+              82.095,
+              519.1,
+              98.095
             ],
             "mark_center_px": [
-              648.26,
+              511.1,
+              90.095
+            ],
+            "mark_fill_rgb": [
+              181,
+              82,
+              165
+            ],
+            "mark_outline_rgb": [
+              100,
+              45,
+              91
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Hamo",
+            "series_rank": 0,
+            "value": 19
+          },
+          "entity_id": "mark_E_Hamo",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              503.1,
+              59.048,
+              569.9,
+              562.0
+            ],
+            "category_label": "E",
+            "category_label_center_px": [
+              536.5,
+              554.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              528.5,
+              427.81,
+              544.5,
+              443.81
+            ],
+            "mark_center_px": [
+              536.5,
+              435.81
+            ],
+            "mark_fill_rgb": [
+              24,
+              159,
+              139
+            ],
+            "mark_outline_rgb": [
+              13,
+              87,
+              76
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Rod",
+            "series_rank": 1,
+            "value": 4
+          },
+          "entity_id": "mark_E_Rod",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              503.1,
+              59.048,
+              569.9,
+              562.0
+            ],
+            "category_label": "E",
+            "category_label_center_px": [
+              536.5,
+              554.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              553.9,
+              59.048,
+              569.9,
+              75.048
+            ],
+            "mark_center_px": [
+              561.9,
               67.048
             ],
             "mark_fill_rgb": [
-              64,
-              57,
-              70
+              54,
+              41,
+              164
             ],
             "mark_outline_rgb": [
-              35,
-              31,
-              38
+              30,
+              23,
+              90
             ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Darn",
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Rina",
+            "series_rank": 2,
+            "value": 20
+          },
+          "entity_id": "mark_E_Rina",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              630.1,
+              59.048,
+              696.9,
+              562.0
+            ],
+            "category_label": "Y",
+            "category_label_center_px": [
+              663.5,
+              554.0
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              630.1,
+              335.619,
+              646.1,
+              351.619
+            ],
+            "mark_center_px": [
+              638.1,
+              343.619
+            ],
+            "mark_fill_rgb": [
+              181,
+              82,
+              165
+            ],
+            "mark_outline_rgb": [
+              100,
+              45,
+              91
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Hamo",
+            "series_rank": 0,
+            "value": 8
+          },
+          "entity_id": "mark_Y_Hamo",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              630.1,
+              59.048,
+              696.9,
+              562.0
+            ],
+            "category_label": "Y",
+            "category_label_center_px": [
+              663.5,
+              554.0
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              655.5,
+              59.048,
+              671.5,
+              75.048
+            ],
+            "mark_center_px": [
+              663.5,
+              67.048
+            ],
+            "mark_fill_rgb": [
+              24,
+              159,
+              139
+            ],
+            "mark_outline_rgb": [
+              13,
+              87,
+              76
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Rod",
             "series_rank": 1,
             "value": 20
           },
-          "entity_id": "mark_E_Darn",
-          "entity_type": "bar"
+          "entity_id": "mark_Y_Rod",
+          "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              738.481,
-              458.857,
-              817.119,
+              630.1,
+              59.048,
+              696.9,
               562.0
             ],
-            "category_label": "F",
+            "category_label": "Y",
             "category_label_center_px": [
-              777.8,
+              663.5,
               554.0
             ],
             "category_rank": 4,
             "mark_bbox_px": [
-              738.481,
-              458.857,
-              771.399,
-              528.0
+              680.9,
+              404.762,
+              696.9,
+              420.762
             ],
             "mark_center_px": [
-              754.94,
-              458.857
+              688.9,
+              412.762
             ],
             "mark_fill_rgb": [
-              104,
-              118,
-              36
+              54,
+              41,
+              164
             ],
             "mark_outline_rgb": [
-              57,
-              65,
-              20
+              30,
+              23,
+              90
             ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Augy",
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Rina",
+            "series_rank": 2,
+            "value": 5
+          },
+          "entity_id": "mark_Y_Rina",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              757.1,
+              151.238,
+              823.9,
+              562.0
+            ],
+            "category_label": "N",
+            "category_label_center_px": [
+              790.5,
+              554.0
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              757.1,
+              289.524,
+              773.1,
+              305.524
+            ],
+            "mark_center_px": [
+              765.1,
+              297.524
+            ],
+            "mark_fill_rgb": [
+              181,
+              82,
+              165
+            ],
+            "mark_outline_rgb": [
+              100,
+              45,
+              91
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Hamo",
             "series_rank": 0,
-            "value": 3
+            "value": 10
           },
-          "entity_id": "mark_F_Augy",
-          "entity_type": "bar"
+          "entity_id": "mark_N_Hamo",
+          "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              738.481,
-              458.857,
-              817.119,
+              757.1,
+              151.238,
+              823.9,
               562.0
             ],
-            "category_label": "F",
+            "category_label": "N",
             "category_label_center_px": [
-              777.8,
+              790.5,
               554.0
             ],
-            "category_rank": 4,
+            "category_rank": 5,
             "mark_bbox_px": [
-              784.201,
-              504.952,
-              817.119,
-              528.0
+              782.5,
+              151.238,
+              798.5,
+              167.238
             ],
             "mark_center_px": [
-              800.66,
-              504.952
+              790.5,
+              159.238
             ],
             "mark_fill_rgb": [
-              64,
-              57,
-              70
+              24,
+              159,
+              139
             ],
             "mark_outline_rgb": [
-              35,
-              31,
-              38
+              13,
+              87,
+              76
             ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Darn",
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Rod",
             "series_rank": 1,
-            "value": 1
+            "value": 16
           },
-          "entity_id": "mark_F_Darn",
-          "entity_type": "bar"
+          "entity_id": "mark_N_Rod",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              757.1,
+              151.238,
+              823.9,
+              562.0
+            ],
+            "category_label": "N",
+            "category_label_center_px": [
+              790.5,
+              554.0
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              807.9,
+              335.619,
+              823.9,
+              351.619
+            ],
+            "mark_center_px": [
+              815.9,
+              343.619
+            ],
+            "mark_fill_rgb": [
+              54,
+              41,
+              164
+            ],
+            "mark_outline_rgb": [
+              30,
+              23,
+              90
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Rina",
+            "series_rank": 2,
+            "value": 8
+          },
+          "entity_id": "mark_N_Rina",
+          "entity_type": "point"
         }
       ],
       "relations": {
         "comparison": "greater_than",
         "evidence_labels": [
-          "C",
-          "F",
-          "P"
+          "G",
+          "N",
+          "P",
+          "X",
+          "Y"
         ],
         "queried_series_labels": [
-          "Augy",
-          "Darn"
+          "Rod",
+          "Rina"
         ],
-        "scene_variant": "grouped_bar",
+        "scene_variant": "grouped_lollipop",
         "task_variant": "series_a_gt_b_count"
       },
-      "scene_kind": "chart_grouped_bar_multiseries"
+      "scene_kind": "chart_grouped_lollipop_multiseries"
     },
     "witness_symbolic": {
       "labels": [
-        "C",
-        "F",
-        "P"
+        "G",
+        "N",
+        "P",
+        "X",
+        "Y"
       ],
       "type": "label_set"
     }

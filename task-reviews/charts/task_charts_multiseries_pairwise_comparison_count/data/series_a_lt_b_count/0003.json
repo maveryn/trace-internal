@@ -1,69 +1,53 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 6
+    "value": 0
   },
   "evidence_gt": {
     "type": "label_set",
-    "value": [
-      "D",
-      "E",
-      "F",
-      "M",
-      "V",
-      "Z"
-    ]
+    "value": []
   },
   "image": {
     "format": "png",
     "path": "charts/task_charts_multiseries_pairwise_comparison_count/images/series_a_lt_b_count/0003.png"
   },
-  "instance_seed": 8461170303343965,
-  "prompt": "You are given a multiseries chart: a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Work category by category and count the labels where the requested series comparison is true. How many labeled categories have Hebe under Boyd?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+  "instance_seed": 4618040247184116,
+  "prompt": "You are given a multiseries chart: a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Compare the two queried series category by category. How many labeled categories have Coad under Tobi?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer requirement: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
   "prompt_variants": {
-    "answer_and_evidence": "You are given a multiseries chart: a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Work category by category and count the labels where the requested series comparison is true. How many labeled categories have Hebe under Boyd?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
-    "answer_only": "You are given a multiseries chart: a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Work category by category and count the labels where the requested series comparison is true. How many labeled categories have Hebe under Boyd?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
+    "answer_and_evidence": "You are given a multiseries chart: a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Compare the two queried series category by category. How many labeled categories have Coad under Tobi?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer requirement: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+    "answer_only": "You are given a multiseries chart: a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Compare the two queried series category by category. How many labeled categories have Coad under Tobi?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
   },
   "task": "task_charts_multiseries_pairwise_comparison_count",
   "task_variant": "series_a_lt_b_count",
   "trace_payload": {
     "execution_trace": {
-      "answer_value": 6,
-      "category_count": 8,
+      "answer_value": 0,
+      "category_count": 6,
       "category_count_range": [
         5,
         10
       ],
       "category_labels": [
-        "J",
-        "V",
-        "M",
-        "F",
-        "P",
+        "Q",
+        "T",
+        "C",
         "E",
-        "Z",
-        "D"
+        "J",
+        "X"
       ],
       "comparison": "less_than",
-      "evidence_labels": [
-        "D",
-        "E",
-        "F",
-        "M",
-        "V",
-        "Z"
-      ],
-      "left_series_label": "Hebe",
+      "evidence_labels": [],
+      "left_series_label": "Coad",
       "mark_color_distance_space": "lab",
       "mark_color_min_distance": 40.0,
       "mark_color_sampling_policy": "random_rgb_palette",
       "queried_series_labels": [
-        "Hebe",
-        "Boyd"
+        "Coad",
+        "Tobi"
       ],
       "question_format": "numeric_open",
-      "right_series_label": "Boyd",
-      "scene_variant": "grouped_lollipop",
+      "right_series_label": "Tobi",
+      "scene_variant": "grouped_bar",
       "scene_variant_probabilities": {
         "grouped_bar": 0.25,
         "grouped_horizontal_bar": 0.25,
@@ -77,209 +61,105 @@
       ],
       "series_fill_palette_rgb": [
         [
-          198,
-          182,
-          92
+          121,
+          149,
+          24
         ],
         [
-          70,
-          28,
-          14
+          127,
+          9,
+          214
         ],
         [
-          210,
-          51,
-          70
+          109,
+          151,
+          218
         ]
       ],
       "series_labels": [
-        "Hebe",
-        "Boyd",
-        "Elon"
+        "Asta",
+        "Coad",
+        "Tobi"
       ],
       "series_outline_palette_rgb": [
         [
-          109,
-          100,
-          51
+          67,
+          82,
+          13
         ],
         [
-          38,
-          15,
-          8
+          70,
+          5,
+          118
         ],
         [
-          116,
-          28,
-          38
+          60,
+          83,
+          120
         ]
       ],
-      "target_answer": 6,
+      "target_answer": 0,
       "target_answer_range": [
         0,
         8
       ],
       "task_variant": "series_a_lt_b_count",
       "task_variant_probabilities": {
-        "series_a_gt_b_count": 0.5,
-        "series_a_lt_b_count": 0.5
+        "series_a_gt_b_count": 0.0,
+        "series_a_lt_b_count": 1.0
       },
       "values_by_category": {
-        "D": {
-          "Boyd": 12,
-          "Elon": 11,
-          "Hebe": 6
+        "C": {
+          "Asta": 17,
+          "Coad": 18,
+          "Tobi": 7
         },
         "E": {
-          "Boyd": 19,
-          "Elon": 14,
-          "Hebe": 3
-        },
-        "F": {
-          "Boyd": 18,
-          "Elon": 13,
-          "Hebe": 12
+          "Asta": 9,
+          "Coad": 10,
+          "Tobi": 7
         },
         "J": {
-          "Boyd": 13,
-          "Elon": 17,
-          "Hebe": 19
+          "Asta": 5,
+          "Coad": 10,
+          "Tobi": 2
         },
-        "M": {
-          "Boyd": 10,
-          "Elon": 6,
-          "Hebe": 1
+        "Q": {
+          "Asta": 9,
+          "Coad": 13,
+          "Tobi": 6
         },
-        "P": {
-          "Boyd": 2,
-          "Elon": 4,
-          "Hebe": 12
+        "T": {
+          "Asta": 14,
+          "Coad": 20,
+          "Tobi": 3
         },
-        "V": {
-          "Boyd": 20,
-          "Elon": 15,
-          "Hebe": 1
-        },
-        "Z": {
-          "Boyd": 17,
-          "Elon": 7,
-          "Hebe": 6
+        "X": {
+          "Asta": 18,
+          "Coad": 20,
+          "Tobi": 17
         }
       }
     },
     "projected_evidence": {
-      "bbox_set": [
-        [
-          779.325,
-          243.429,
-          833.425,
-          562.0
-        ],
-        [
-          588.825,
-          82.095,
-          642.925,
-          562.0
-        ],
-        [
-          398.325,
-          105.143,
-          452.425,
-          562.0
-        ],
-        [
-          303.075,
-          289.524,
-          357.175,
-          562.0
-        ],
-        [
-          207.825,
-          59.048,
-          261.925,
-          562.0
-        ],
-        [
-          684.075,
-          128.19,
-          738.175,
-          562.0
-        ]
-      ],
-      "label_set": [
-        "D",
-        "E",
-        "F",
-        "M",
-        "V",
-        "Z"
-      ],
-      "pixel_point_map": {
-        "D": [
-          806.375,
-          554.0
-        ],
-        "E": [
-          615.875,
-          554.0
-        ],
-        "F": [
-          425.375,
-          554.0
-        ],
-        "M": [
-          330.125,
-          554.0
-        ],
-        "V": [
-          234.875,
-          554.0
-        ],
-        "Z": [
-          711.125,
-          554.0
-        ]
-      },
-      "pixel_point_set": [
-        [
-          806.375,
-          554.0
-        ],
-        [
-          615.875,
-          554.0
-        ],
-        [
-          425.375,
-          554.0
-        ],
-        [
-          330.125,
-          554.0
-        ],
-        [
-          234.875,
-          554.0
-        ],
-        [
-          711.125,
-          554.0
-        ]
-      ]
+      "bbox_set": [],
+      "label_set": [],
+      "pixel_point_map": {},
+      "pixel_point_set": []
     },
     "query_spec": {
       "params": {
-        "category_count": 8,
+        "category_count": 6,
         "category_count_range": [
           5,
           10
         ],
         "comparison": "less_than",
         "queried_series_labels": [
-          "Hebe",
-          "Boyd"
+          "Coad",
+          "Tobi"
         ],
-        "scene_variant": "grouped_lollipop",
+        "scene_variant": "grouped_bar",
         "scene_variant_probabilities": {
           "grouped_bar": 0.25,
           "grouped_horizontal_bar": 0.25,
@@ -291,20 +171,20 @@
           2,
           3
         ],
-        "target_answer": 6,
+        "target_answer": 0,
         "target_answer_range": [
           0,
           8
         ],
         "task_variant": "series_a_lt_b_count",
         "task_variant_probabilities": {
-          "series_a_gt_b_count": 0.5,
-          "series_a_lt_b_count": 0.5
+          "series_a_gt_b_count": 0.0,
+          "series_a_lt_b_count": 1.0
         }
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 4,
+        "answer_or_evidence_variant_index": 2,
         "prompt_bundle_id": "charts_multiseries_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -314,14 +194,14 @@
           "json_example_answer_only": "{\"answer\":2}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "left_series": "Hebe",
-          "object_description": "a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis",
-          "right_series": "Boyd"
+          "left_series": "Coad",
+          "object_description": "a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category",
+          "right_series": "Tobi"
         },
         "task_family_key": "multiseries_chart_comparison",
         "task_family_variant_index": 4,
         "task_key": "pairwise_comparison_count_query",
-        "task_variant_index": 4,
+        "task_variant_index": 0,
         "task_variant_key": "series_a_lt_b_count",
         "task_variant_template_index": 2,
         "template_paths": [
@@ -339,7 +219,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 4,
+            "answer_or_evidence_variant_index": 2,
             "prompt_bundle_id": "charts_multiseries_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -349,14 +229,14 @@
               "json_example_answer_only": "{\"answer\":2}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "left_series": "Hebe",
-              "object_description": "a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis",
-              "right_series": "Boyd"
+              "left_series": "Coad",
+              "object_description": "a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category",
+              "right_series": "Tobi"
             },
             "task_family_key": "multiseries_chart_comparison",
             "task_family_variant_index": 4,
             "task_key": "pairwise_comparison_count_query",
-            "task_variant_index": 4,
+            "task_variant_index": 0,
             "task_variant_key": "series_a_lt_b_count",
             "task_variant_template_index": 2,
             "template_paths": [
@@ -369,7 +249,7 @@
               "task_variant:series_a_lt_b_count": 5
             }
           },
-          "prompt": "You are given a multiseries chart: a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Work category by category and count the labels where the requested series comparison is true. How many labeled categories have Hebe under Boyd?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}"
+          "prompt": "You are given a multiseries chart: a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Compare the two queried series category by category. How many labeled categories have Coad under Tobi?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer requirement: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}"
         },
         "answer_only": {
           "metadata": {
@@ -384,14 +264,14 @@
               "json_example_answer_only": "{\"answer\":2}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "left_series": "Hebe",
-              "object_description": "a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis",
-              "right_series": "Boyd"
+              "left_series": "Coad",
+              "object_description": "a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category",
+              "right_series": "Tobi"
             },
             "task_family_key": "multiseries_chart_comparison",
             "task_family_variant_index": 4,
             "task_key": "pairwise_comparison_count_query",
-            "task_variant_index": 4,
+            "task_variant_index": 0,
             "task_variant_key": "series_a_lt_b_count",
             "task_variant_template_index": 2,
             "template_paths": [
@@ -404,7 +284,7 @@
               "task_variant:series_a_lt_b_count": 5
             }
           },
-          "prompt": "You are given a multiseries chart: a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Work category by category and count the labels where the requested series comparison is true. How many labeled categories have Hebe under Boyd?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
+          "prompt": "You are given a multiseries chart: a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Compare the two queried series category by category. How many labeled categories have Coad under Tobi?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
         }
       },
       "task_variant": "series_a_lt_b_count",
@@ -412,36 +292,28 @@
     },
     "render_map": {
       "category_label_centers_px": {
-        "D": [
-          806.375,
+        "C": [
+          409.5,
           554.0
         ],
         "E": [
-          615.875,
-          554.0
-        ],
-        "F": [
-          425.375,
+          536.5,
           554.0
         ],
         "J": [
-          139.625,
+          663.5,
           554.0
         ],
-        "M": [
-          330.125,
+        "Q": [
+          155.5,
           554.0
         ],
-        "P": [
-          520.625,
+        "T": [
+          282.5,
           554.0
         ],
-        "V": [
-          234.875,
-          554.0
-        ],
-        "Z": [
-          711.125,
+        "X": [
+          790.5,
           554.0
         ]
       },
@@ -483,36 +355,36 @@
         "sampling_policy": "random_rgb_palette",
         "series_fill_palette_rgb": [
           [
-            198,
-            182,
-            92
+            121,
+            149,
+            24
           ],
           [
-            70,
-            28,
-            14
+            127,
+            9,
+            214
           ],
           [
-            210,
-            51,
-            70
+            109,
+            151,
+            218
           ]
         ],
         "series_outline_palette_rgb": [
           [
-            109,
-            100,
-            51
+            67,
+            82,
+            13
           ],
           [
-            38,
-            15,
-            8
+            70,
+            5,
+            118
           ],
           [
-            116,
-            28,
-            38
+            60,
+            83,
+            120
           ]
         ]
       },
@@ -538,7 +410,7 @@
         "edits": [],
         "enabled": false
       },
-      "scene_variant": "grouped_lollipop",
+      "scene_variant": "grouped_bar",
       "text_style": {
         "label_font_size_px": 22,
         "label_stroke_width_px": 2,
@@ -575,1040 +447,774 @@
         {
           "attrs": {
             "category_group_bbox_px": [
-              112.575,
-              82.095,
-              166.675,
-              564.0
+              120.956,
+              228.381,
+              190.044,
+              563.5
             ],
-            "category_label": "J",
+            "category_label": "Q",
             "category_label_center_px": [
-              139.625,
+              155.5,
               554.0
             ],
             "category_rank": 0,
             "mark_bbox_px": [
-              112.575,
-              82.095,
-              128.575,
-              98.095
+              120.956,
+              320.571,
+              139.244,
+              528.0
             ],
             "mark_center_px": [
-              120.575,
-              90.095
+              130.1,
+              320.571
             ],
             "mark_fill_rgb": [
-              198,
-              182,
-              92
+              121,
+              149,
+              24
             ],
             "mark_outline_rgb": [
-              109,
-              100,
-              51
+              67,
+              82,
+              13
             ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Hebe",
+            "scene_variant": "grouped_bar",
+            "series_label": "Asta",
             "series_rank": 0,
-            "value": 19
+            "value": 9
           },
-          "entity_id": "mark_J_Hebe",
-          "entity_type": "point"
+          "entity_id": "mark_Q_Asta",
+          "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              112.575,
-              82.095,
-              166.675,
-              564.0
+              120.956,
+              228.381,
+              190.044,
+              563.5
             ],
-            "category_label": "J",
+            "category_label": "Q",
             "category_label_center_px": [
-              139.625,
+              155.5,
               554.0
             ],
             "category_rank": 0,
             "mark_bbox_px": [
-              131.625,
-              220.381,
-              147.625,
-              236.381
+              146.356,
+              228.381,
+              164.644,
+              528.0
             ],
             "mark_center_px": [
-              139.625,
+              155.5,
               228.381
             ],
             "mark_fill_rgb": [
-              70,
-              28,
-              14
+              127,
+              9,
+              214
             ],
             "mark_outline_rgb": [
-              38,
-              15,
-              8
+              70,
+              5,
+              118
             ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Boyd",
+            "scene_variant": "grouped_bar",
+            "series_label": "Coad",
             "series_rank": 1,
             "value": 13
           },
-          "entity_id": "mark_J_Boyd",
-          "entity_type": "point"
+          "entity_id": "mark_Q_Coad",
+          "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              112.575,
-              82.095,
-              166.675,
-              564.0
+              120.956,
+              228.381,
+              190.044,
+              563.5
             ],
-            "category_label": "J",
+            "category_label": "Q",
             "category_label_center_px": [
-              139.625,
+              155.5,
               554.0
             ],
             "category_rank": 0,
             "mark_bbox_px": [
-              150.675,
-              128.19,
-              166.675,
-              144.19
+              171.756,
+              389.714,
+              190.044,
+              528.0
             ],
             "mark_center_px": [
-              158.675,
-              136.19
-            ],
-            "mark_fill_rgb": [
-              210,
-              51,
-              70
-            ],
-            "mark_outline_rgb": [
-              116,
-              28,
-              38
-            ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Elon",
-            "series_rank": 2,
-            "value": 17
-          },
-          "entity_id": "mark_J_Elon",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              207.825,
-              59.048,
-              261.925,
-              562.0
-            ],
-            "category_label": "V",
-            "category_label_center_px": [
-              234.875,
-              554.0
-            ],
-            "category_rank": 1,
-            "mark_bbox_px": [
-              207.825,
-              496.952,
-              223.825,
-              512.952
-            ],
-            "mark_center_px": [
-              215.825,
-              504.952
-            ],
-            "mark_fill_rgb": [
-              198,
-              182,
-              92
-            ],
-            "mark_outline_rgb": [
-              109,
-              100,
-              51
-            ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Hebe",
-            "series_rank": 0,
-            "value": 1
-          },
-          "entity_id": "mark_V_Hebe",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              207.825,
-              59.048,
-              261.925,
-              562.0
-            ],
-            "category_label": "V",
-            "category_label_center_px": [
-              234.875,
-              554.0
-            ],
-            "category_rank": 1,
-            "mark_bbox_px": [
-              226.875,
-              59.048,
-              242.875,
-              75.048
-            ],
-            "mark_center_px": [
-              234.875,
-              67.048
-            ],
-            "mark_fill_rgb": [
-              70,
-              28,
-              14
-            ],
-            "mark_outline_rgb": [
-              38,
-              15,
-              8
-            ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Boyd",
-            "series_rank": 1,
-            "value": 20
-          },
-          "entity_id": "mark_V_Boyd",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              207.825,
-              59.048,
-              261.925,
-              562.0
-            ],
-            "category_label": "V",
-            "category_label_center_px": [
-              234.875,
-              554.0
-            ],
-            "category_rank": 1,
-            "mark_bbox_px": [
-              245.925,
-              174.286,
-              261.925,
-              190.286
-            ],
-            "mark_center_px": [
-              253.925,
-              182.286
-            ],
-            "mark_fill_rgb": [
-              210,
-              51,
-              70
-            ],
-            "mark_outline_rgb": [
-              116,
-              28,
-              38
-            ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Elon",
-            "series_rank": 2,
-            "value": 15
-          },
-          "entity_id": "mark_V_Elon",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              303.075,
-              289.524,
-              357.175,
-              562.0
-            ],
-            "category_label": "M",
-            "category_label_center_px": [
-              330.125,
-              554.0
-            ],
-            "category_rank": 2,
-            "mark_bbox_px": [
-              303.075,
-              496.952,
-              319.075,
-              512.952
-            ],
-            "mark_center_px": [
-              311.075,
-              504.952
-            ],
-            "mark_fill_rgb": [
-              198,
-              182,
-              92
-            ],
-            "mark_outline_rgb": [
-              109,
-              100,
-              51
-            ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Hebe",
-            "series_rank": 0,
-            "value": 1
-          },
-          "entity_id": "mark_M_Hebe",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              303.075,
-              289.524,
-              357.175,
-              562.0
-            ],
-            "category_label": "M",
-            "category_label_center_px": [
-              330.125,
-              554.0
-            ],
-            "category_rank": 2,
-            "mark_bbox_px": [
-              322.125,
-              289.524,
-              338.125,
-              305.524
-            ],
-            "mark_center_px": [
-              330.125,
-              297.524
-            ],
-            "mark_fill_rgb": [
-              70,
-              28,
-              14
-            ],
-            "mark_outline_rgb": [
-              38,
-              15,
-              8
-            ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Boyd",
-            "series_rank": 1,
-            "value": 10
-          },
-          "entity_id": "mark_M_Boyd",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              303.075,
-              289.524,
-              357.175,
-              562.0
-            ],
-            "category_label": "M",
-            "category_label_center_px": [
-              330.125,
-              554.0
-            ],
-            "category_rank": 2,
-            "mark_bbox_px": [
-              341.175,
-              381.714,
-              357.175,
-              397.714
-            ],
-            "mark_center_px": [
-              349.175,
+              180.9,
               389.714
             ],
             "mark_fill_rgb": [
-              210,
-              51,
-              70
+              109,
+              151,
+              218
             ],
             "mark_outline_rgb": [
-              116,
-              28,
-              38
+              60,
+              83,
+              120
             ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Elon",
+            "scene_variant": "grouped_bar",
+            "series_label": "Tobi",
             "series_rank": 2,
             "value": 6
           },
-          "entity_id": "mark_M_Elon",
-          "entity_type": "point"
+          "entity_id": "mark_Q_Tobi",
+          "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              398.325,
-              105.143,
-              452.425,
+              247.956,
+              67.048,
+              317.044,
               562.0
             ],
-            "category_label": "F",
+            "category_label": "T",
             "category_label_center_px": [
-              425.375,
+              282.5,
               554.0
             ],
-            "category_rank": 3,
+            "category_rank": 1,
             "mark_bbox_px": [
-              398.325,
-              243.429,
-              414.325,
-              259.429
+              247.956,
+              205.333,
+              266.244,
+              528.0
             ],
             "mark_center_px": [
-              406.325,
-              251.429
-            ],
-            "mark_fill_rgb": [
-              198,
-              182,
-              92
-            ],
-            "mark_outline_rgb": [
-              109,
-              100,
-              51
-            ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Hebe",
-            "series_rank": 0,
-            "value": 12
-          },
-          "entity_id": "mark_F_Hebe",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              398.325,
-              105.143,
-              452.425,
-              562.0
-            ],
-            "category_label": "F",
-            "category_label_center_px": [
-              425.375,
-              554.0
-            ],
-            "category_rank": 3,
-            "mark_bbox_px": [
-              417.375,
-              105.143,
-              433.375,
-              121.143
-            ],
-            "mark_center_px": [
-              425.375,
-              113.143
-            ],
-            "mark_fill_rgb": [
-              70,
-              28,
-              14
-            ],
-            "mark_outline_rgb": [
-              38,
-              15,
-              8
-            ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Boyd",
-            "series_rank": 1,
-            "value": 18
-          },
-          "entity_id": "mark_F_Boyd",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              398.325,
-              105.143,
-              452.425,
-              562.0
-            ],
-            "category_label": "F",
-            "category_label_center_px": [
-              425.375,
-              554.0
-            ],
-            "category_rank": 3,
-            "mark_bbox_px": [
-              436.425,
-              220.381,
-              452.425,
-              236.381
-            ],
-            "mark_center_px": [
-              444.425,
-              228.381
-            ],
-            "mark_fill_rgb": [
-              210,
-              51,
-              70
-            ],
-            "mark_outline_rgb": [
-              116,
-              28,
-              38
-            ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Elon",
-            "series_rank": 2,
-            "value": 13
-          },
-          "entity_id": "mark_F_Elon",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              493.575,
-              243.429,
-              547.675,
-              562.0
-            ],
-            "category_label": "P",
-            "category_label_center_px": [
-              520.625,
-              554.0
-            ],
-            "category_rank": 4,
-            "mark_bbox_px": [
-              493.575,
-              243.429,
-              509.575,
-              259.429
-            ],
-            "mark_center_px": [
-              501.575,
-              251.429
-            ],
-            "mark_fill_rgb": [
-              198,
-              182,
-              92
-            ],
-            "mark_outline_rgb": [
-              109,
-              100,
-              51
-            ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Hebe",
-            "series_rank": 0,
-            "value": 12
-          },
-          "entity_id": "mark_P_Hebe",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              493.575,
-              243.429,
-              547.675,
-              562.0
-            ],
-            "category_label": "P",
-            "category_label_center_px": [
-              520.625,
-              554.0
-            ],
-            "category_rank": 4,
-            "mark_bbox_px": [
-              512.625,
-              473.905,
-              528.625,
-              489.905
-            ],
-            "mark_center_px": [
-              520.625,
-              481.905
-            ],
-            "mark_fill_rgb": [
-              70,
-              28,
-              14
-            ],
-            "mark_outline_rgb": [
-              38,
-              15,
-              8
-            ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Boyd",
-            "series_rank": 1,
-            "value": 2
-          },
-          "entity_id": "mark_P_Boyd",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              493.575,
-              243.429,
-              547.675,
-              562.0
-            ],
-            "category_label": "P",
-            "category_label_center_px": [
-              520.625,
-              554.0
-            ],
-            "category_rank": 4,
-            "mark_bbox_px": [
-              531.675,
-              427.81,
-              547.675,
-              443.81
-            ],
-            "mark_center_px": [
-              539.675,
-              435.81
-            ],
-            "mark_fill_rgb": [
-              210,
-              51,
-              70
-            ],
-            "mark_outline_rgb": [
-              116,
-              28,
-              38
-            ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Elon",
-            "series_rank": 2,
-            "value": 4
-          },
-          "entity_id": "mark_P_Elon",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              588.825,
-              82.095,
-              642.925,
-              562.0
-            ],
-            "category_label": "E",
-            "category_label_center_px": [
-              615.875,
-              554.0
-            ],
-            "category_rank": 5,
-            "mark_bbox_px": [
-              588.825,
-              450.857,
-              604.825,
-              466.857
-            ],
-            "mark_center_px": [
-              596.825,
-              458.857
-            ],
-            "mark_fill_rgb": [
-              198,
-              182,
-              92
-            ],
-            "mark_outline_rgb": [
-              109,
-              100,
-              51
-            ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Hebe",
-            "series_rank": 0,
-            "value": 3
-          },
-          "entity_id": "mark_E_Hebe",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              588.825,
-              82.095,
-              642.925,
-              562.0
-            ],
-            "category_label": "E",
-            "category_label_center_px": [
-              615.875,
-              554.0
-            ],
-            "category_rank": 5,
-            "mark_bbox_px": [
-              607.875,
-              82.095,
-              623.875,
-              98.095
-            ],
-            "mark_center_px": [
-              615.875,
-              90.095
-            ],
-            "mark_fill_rgb": [
-              70,
-              28,
-              14
-            ],
-            "mark_outline_rgb": [
-              38,
-              15,
-              8
-            ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Boyd",
-            "series_rank": 1,
-            "value": 19
-          },
-          "entity_id": "mark_E_Boyd",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              588.825,
-              82.095,
-              642.925,
-              562.0
-            ],
-            "category_label": "E",
-            "category_label_center_px": [
-              615.875,
-              554.0
-            ],
-            "category_rank": 5,
-            "mark_bbox_px": [
-              626.925,
-              197.333,
-              642.925,
-              213.333
-            ],
-            "mark_center_px": [
-              634.925,
+              257.1,
               205.333
             ],
             "mark_fill_rgb": [
-              210,
-              51,
-              70
+              121,
+              149,
+              24
             ],
             "mark_outline_rgb": [
-              116,
-              28,
-              38
+              67,
+              82,
+              13
             ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Elon",
-            "series_rank": 2,
+            "scene_variant": "grouped_bar",
+            "series_label": "Asta",
+            "series_rank": 0,
             "value": 14
           },
-          "entity_id": "mark_E_Elon",
-          "entity_type": "point"
+          "entity_id": "mark_T_Asta",
+          "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              684.075,
-              128.19,
-              738.175,
+              247.956,
+              67.048,
+              317.044,
               562.0
             ],
-            "category_label": "Z",
+            "category_label": "T",
             "category_label_center_px": [
-              711.125,
+              282.5,
               554.0
             ],
-            "category_rank": 6,
+            "category_rank": 1,
             "mark_bbox_px": [
-              684.075,
-              381.714,
-              700.075,
-              397.714
+              273.356,
+              67.048,
+              291.644,
+              528.0
             ],
             "mark_center_px": [
-              692.075,
-              389.714
+              282.5,
+              67.048
             ],
             "mark_fill_rgb": [
-              198,
-              182,
-              92
+              127,
+              9,
+              214
             ],
             "mark_outline_rgb": [
-              109,
-              100,
-              51
+              70,
+              5,
+              118
             ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Hebe",
-            "series_rank": 0,
-            "value": 6
+            "scene_variant": "grouped_bar",
+            "series_label": "Coad",
+            "series_rank": 1,
+            "value": 20
           },
-          "entity_id": "mark_Z_Hebe",
-          "entity_type": "point"
+          "entity_id": "mark_T_Coad",
+          "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              684.075,
-              128.19,
-              738.175,
+              247.956,
+              67.048,
+              317.044,
               562.0
             ],
-            "category_label": "Z",
+            "category_label": "T",
             "category_label_center_px": [
-              711.125,
+              282.5,
               554.0
             ],
-            "category_rank": 6,
+            "category_rank": 1,
             "mark_bbox_px": [
-              703.125,
-              128.19,
-              719.125,
-              144.19
+              298.756,
+              458.857,
+              317.044,
+              528.0
             ],
             "mark_center_px": [
-              711.125,
+              307.9,
+              458.857
+            ],
+            "mark_fill_rgb": [
+              109,
+              151,
+              218
+            ],
+            "mark_outline_rgb": [
+              60,
+              83,
+              120
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Tobi",
+            "series_rank": 2,
+            "value": 3
+          },
+          "entity_id": "mark_T_Tobi",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              374.956,
+              113.143,
+              444.044,
+              562.0
+            ],
+            "category_label": "C",
+            "category_label_center_px": [
+              409.5,
+              554.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              374.956,
+              136.19,
+              393.244,
+              528.0
+            ],
+            "mark_center_px": [
+              384.1,
               136.19
             ],
             "mark_fill_rgb": [
-              70,
-              28,
-              14
+              121,
+              149,
+              24
             ],
             "mark_outline_rgb": [
-              38,
-              15,
-              8
+              67,
+              82,
+              13
             ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Boyd",
-            "series_rank": 1,
+            "scene_variant": "grouped_bar",
+            "series_label": "Asta",
+            "series_rank": 0,
             "value": 17
           },
-          "entity_id": "mark_Z_Boyd",
-          "entity_type": "point"
+          "entity_id": "mark_C_Asta",
+          "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              684.075,
-              128.19,
-              738.175,
+              374.956,
+              113.143,
+              444.044,
               562.0
             ],
-            "category_label": "Z",
+            "category_label": "C",
             "category_label_center_px": [
-              711.125,
+              409.5,
               554.0
             ],
-            "category_rank": 6,
+            "category_rank": 2,
             "mark_bbox_px": [
-              722.175,
-              358.667,
-              738.175,
-              374.667
+              400.356,
+              113.143,
+              418.644,
+              528.0
             ],
             "mark_center_px": [
-              730.175,
+              409.5,
+              113.143
+            ],
+            "mark_fill_rgb": [
+              127,
+              9,
+              214
+            ],
+            "mark_outline_rgb": [
+              70,
+              5,
+              118
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Coad",
+            "series_rank": 1,
+            "value": 18
+          },
+          "entity_id": "mark_C_Coad",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              374.956,
+              113.143,
+              444.044,
+              562.0
+            ],
+            "category_label": "C",
+            "category_label_center_px": [
+              409.5,
+              554.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              425.756,
+              366.667,
+              444.044,
+              528.0
+            ],
+            "mark_center_px": [
+              434.9,
               366.667
             ],
             "mark_fill_rgb": [
-              210,
-              51,
-              70
+              109,
+              151,
+              218
             ],
             "mark_outline_rgb": [
-              116,
-              28,
-              38
+              60,
+              83,
+              120
             ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Elon",
+            "scene_variant": "grouped_bar",
+            "series_label": "Tobi",
             "series_rank": 2,
             "value": 7
           },
-          "entity_id": "mark_Z_Elon",
-          "entity_type": "point"
+          "entity_id": "mark_C_Tobi",
+          "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              779.325,
-              243.429,
-              833.425,
+              501.956,
+              297.524,
+              571.044,
               562.0
             ],
-            "category_label": "D",
+            "category_label": "E",
             "category_label_center_px": [
-              806.375,
+              536.5,
               554.0
             ],
-            "category_rank": 7,
+            "category_rank": 3,
             "mark_bbox_px": [
-              779.325,
-              381.714,
-              795.325,
-              397.714
+              501.956,
+              320.571,
+              520.244,
+              528.0
             ],
             "mark_center_px": [
-              787.325,
-              389.714
+              511.1,
+              320.571
             ],
             "mark_fill_rgb": [
-              198,
-              182,
-              92
+              121,
+              149,
+              24
             ],
             "mark_outline_rgb": [
-              109,
-              100,
-              51
+              67,
+              82,
+              13
             ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Hebe",
+            "scene_variant": "grouped_bar",
+            "series_label": "Asta",
             "series_rank": 0,
-            "value": 6
+            "value": 9
           },
-          "entity_id": "mark_D_Hebe",
-          "entity_type": "point"
+          "entity_id": "mark_E_Asta",
+          "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              779.325,
-              243.429,
-              833.425,
+              501.956,
+              297.524,
+              571.044,
               562.0
             ],
-            "category_label": "D",
+            "category_label": "E",
             "category_label_center_px": [
-              806.375,
+              536.5,
               554.0
             ],
-            "category_rank": 7,
+            "category_rank": 3,
             "mark_bbox_px": [
-              798.375,
-              243.429,
-              814.375,
-              259.429
+              527.356,
+              297.524,
+              545.644,
+              528.0
             ],
             "mark_center_px": [
-              806.375,
-              251.429
+              536.5,
+              297.524
             ],
             "mark_fill_rgb": [
+              127,
+              9,
+              214
+            ],
+            "mark_outline_rgb": [
               70,
-              28,
-              14
+              5,
+              118
             ],
-            "mark_outline_rgb": [
-              38,
-              15,
-              8
-            ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Boyd",
+            "scene_variant": "grouped_bar",
+            "series_label": "Coad",
             "series_rank": 1,
-            "value": 12
+            "value": 10
           },
-          "entity_id": "mark_D_Boyd",
-          "entity_type": "point"
+          "entity_id": "mark_E_Coad",
+          "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              779.325,
-              243.429,
-              833.425,
+              501.956,
+              297.524,
+              571.044,
               562.0
             ],
-            "category_label": "D",
+            "category_label": "E",
             "category_label_center_px": [
-              806.375,
+              536.5,
               554.0
             ],
-            "category_rank": 7,
+            "category_rank": 3,
             "mark_bbox_px": [
-              817.425,
-              266.476,
-              833.425,
-              282.476
+              552.756,
+              366.667,
+              571.044,
+              528.0
             ],
             "mark_center_px": [
-              825.425,
-              274.476
+              561.9,
+              366.667
             ],
             "mark_fill_rgb": [
-              210,
-              51,
-              70
+              109,
+              151,
+              218
             ],
             "mark_outline_rgb": [
-              116,
-              28,
-              38
+              60,
+              83,
+              120
             ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Elon",
+            "scene_variant": "grouped_bar",
+            "series_label": "Tobi",
             "series_rank": 2,
-            "value": 11
+            "value": 7
           },
-          "entity_id": "mark_D_Elon",
-          "entity_type": "point"
+          "entity_id": "mark_E_Tobi",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              628.956,
+              297.524,
+              698.044,
+              564.0
+            ],
+            "category_label": "J",
+            "category_label_center_px": [
+              663.5,
+              554.0
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              628.956,
+              412.762,
+              647.244,
+              528.0
+            ],
+            "mark_center_px": [
+              638.1,
+              412.762
+            ],
+            "mark_fill_rgb": [
+              121,
+              149,
+              24
+            ],
+            "mark_outline_rgb": [
+              67,
+              82,
+              13
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Asta",
+            "series_rank": 0,
+            "value": 5
+          },
+          "entity_id": "mark_J_Asta",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              628.956,
+              297.524,
+              698.044,
+              564.0
+            ],
+            "category_label": "J",
+            "category_label_center_px": [
+              663.5,
+              554.0
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              654.356,
+              297.524,
+              672.644,
+              528.0
+            ],
+            "mark_center_px": [
+              663.5,
+              297.524
+            ],
+            "mark_fill_rgb": [
+              127,
+              9,
+              214
+            ],
+            "mark_outline_rgb": [
+              70,
+              5,
+              118
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Coad",
+            "series_rank": 1,
+            "value": 10
+          },
+          "entity_id": "mark_J_Coad",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              628.956,
+              297.524,
+              698.044,
+              564.0
+            ],
+            "category_label": "J",
+            "category_label_center_px": [
+              663.5,
+              554.0
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              679.756,
+              481.905,
+              698.044,
+              528.0
+            ],
+            "mark_center_px": [
+              688.9,
+              481.905
+            ],
+            "mark_fill_rgb": [
+              109,
+              151,
+              218
+            ],
+            "mark_outline_rgb": [
+              60,
+              83,
+              120
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Tobi",
+            "series_rank": 2,
+            "value": 2
+          },
+          "entity_id": "mark_J_Tobi",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              755.956,
+              67.048,
+              825.044,
+              562.0
+            ],
+            "category_label": "X",
+            "category_label_center_px": [
+              790.5,
+              554.0
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              755.956,
+              113.143,
+              774.244,
+              528.0
+            ],
+            "mark_center_px": [
+              765.1,
+              113.143
+            ],
+            "mark_fill_rgb": [
+              121,
+              149,
+              24
+            ],
+            "mark_outline_rgb": [
+              67,
+              82,
+              13
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Asta",
+            "series_rank": 0,
+            "value": 18
+          },
+          "entity_id": "mark_X_Asta",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              755.956,
+              67.048,
+              825.044,
+              562.0
+            ],
+            "category_label": "X",
+            "category_label_center_px": [
+              790.5,
+              554.0
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              781.356,
+              67.048,
+              799.644,
+              528.0
+            ],
+            "mark_center_px": [
+              790.5,
+              67.048
+            ],
+            "mark_fill_rgb": [
+              127,
+              9,
+              214
+            ],
+            "mark_outline_rgb": [
+              70,
+              5,
+              118
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Coad",
+            "series_rank": 1,
+            "value": 20
+          },
+          "entity_id": "mark_X_Coad",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              755.956,
+              67.048,
+              825.044,
+              562.0
+            ],
+            "category_label": "X",
+            "category_label_center_px": [
+              790.5,
+              554.0
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              806.756,
+              136.19,
+              825.044,
+              528.0
+            ],
+            "mark_center_px": [
+              815.9,
+              136.19
+            ],
+            "mark_fill_rgb": [
+              109,
+              151,
+              218
+            ],
+            "mark_outline_rgb": [
+              60,
+              83,
+              120
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Tobi",
+            "series_rank": 2,
+            "value": 17
+          },
+          "entity_id": "mark_X_Tobi",
+          "entity_type": "bar"
         }
       ],
       "relations": {
         "comparison": "less_than",
-        "evidence_labels": [
-          "D",
-          "E",
-          "F",
-          "M",
-          "V",
-          "Z"
-        ],
+        "evidence_labels": [],
         "queried_series_labels": [
-          "Hebe",
-          "Boyd"
+          "Coad",
+          "Tobi"
         ],
-        "scene_variant": "grouped_lollipop",
+        "scene_variant": "grouped_bar",
         "task_variant": "series_a_lt_b_count"
       },
-      "scene_kind": "chart_grouped_lollipop_multiseries"
+      "scene_kind": "chart_grouped_bar_multiseries"
     },
     "witness_symbolic": {
-      "labels": [
-        "D",
-        "E",
-        "F",
-        "M",
-        "V",
-        "Z"
-      ],
+      "labels": [],
       "type": "label_set"
     }
   },

@@ -1,16 +1,16 @@
 {
   "answer_gt": {
     "type": "string",
-    "value": "Schedule Ticket"
+    "value": "Verify Return"
   },
   "evidence_gt": {
     "type": "bbox_set",
     "value": [
       [
-        520.2,
-        609.64,
-        734.2,
-        693.64
+        925.0,
+        417.0,
+        1139.0,
+        501.0
       ]
     ]
   },
@@ -18,11 +18,11 @@
     "format": "png",
     "path": "diagrams/task_diagrams_flow_next_step_label/images/branch_next_step/0016.png"
   },
-  "instance_seed": 5806331277731324,
-  "prompt": "Look at the process diagram in the image: a swimlane process diagram with labeled steps and arrows. Follow the arrows and answer this question: Following the Yes branch from Policy Match?, what is the next step? Return the exact step label shown. Give the full next-step label exactly as shown.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct next-step box.\nAnswer requirement: set \"answer\" to the exact visible next-step label.\nExample JSON:\n{\"evidence\":[[624,228,838,312]],\"answer\":\"Fix Record\"}",
+  "instance_seed": 7397081153384477,
+  "prompt": "You are given a swimlane process diagram with labeled steps and arrows. Read the labeled process steps and then answer: Following the No branch from Need Fix?, what is the next step? Return the exact step label shown. Give the full next-step label exactly as shown.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct next-step box.\nAnswer field: set \"answer\" to the exact visible next-step label.\nExample JSON:\n{\"evidence\":[[624,228,838,312]],\"answer\":\"Fix Record\"}",
   "prompt_variants": {
-    "answer_and_evidence": "Look at the process diagram in the image: a swimlane process diagram with labeled steps and arrows. Follow the arrows and answer this question: Following the Yes branch from Policy Match?, what is the next step? Return the exact step label shown. Give the full next-step label exactly as shown.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct next-step box.\nAnswer requirement: set \"answer\" to the exact visible next-step label.\nExample JSON:\n{\"evidence\":[[624,228,838,312]],\"answer\":\"Fix Record\"}",
-    "answer_only": "Look at the process diagram in the image: a swimlane process diagram with labeled steps and arrows. Follow the arrows and answer this question: Following the Yes branch from Policy Match?, what is the next step? Return the exact step label shown. Give the full next-step label exactly as shown.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the exact visible next-step label.\nExample JSON:\n{\"answer\":\"Fix Record\"}"
+    "answer_and_evidence": "You are given a swimlane process diagram with labeled steps and arrows. Read the labeled process steps and then answer: Following the No branch from Need Fix?, what is the next step? Return the exact step label shown. Give the full next-step label exactly as shown.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct next-step box.\nAnswer field: set \"answer\" to the exact visible next-step label.\nExample JSON:\n{\"evidence\":[[624,228,838,312]],\"answer\":\"Fix Record\"}",
+    "answer_only": "You are given a swimlane process diagram with labeled steps and arrows. Read the labeled process steps and then answer: Following the No branch from Need Fix?, what is the next step? Return the exact step label shown. Give the full next-step label exactly as shown.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the exact visible next-step label.\nExample JSON:\n{\"answer\":\"Fix Record\"}"
   },
   "task": "task_diagrams_flow_next_step_label",
   "task_variant": "branch_next_step",
@@ -43,9 +43,9 @@
       }
     },
     "execution_trace": {
-      "answer_node_bbox_id": "node_bbox_3",
-      "answer_node_id": "node_3",
-      "answer_node_label": "Schedule Ticket",
+      "answer_node_bbox_id": "node_bbox_4",
+      "answer_node_id": "node_4",
+      "answer_node_label": "Verify Return",
       "edge_specs": [
         {
           "edge_id": "edge_0",
@@ -111,19 +111,19 @@
         {
           "lane_bbox_id": "lane_bbox_0",
           "lane_id": "lane_0",
-          "lane_label": "Client",
+          "lane_label": "Request",
           "lane_label_bbox_id": "lane_label_bbox_0"
         },
         {
           "lane_bbox_id": "lane_bbox_1",
           "lane_id": "lane_1",
-          "lane_label": "Processing",
+          "lane_label": "Operations",
           "lane_label_bbox_id": "lane_label_bbox_1"
         },
         {
           "lane_bbox_id": "lane_bbox_2",
           "lane_id": "lane_2",
-          "lane_label": "Records",
+          "lane_label": "Release",
           "lane_label_bbox_id": "lane_label_bbox_2"
         }
       ],
@@ -137,7 +137,7 @@
           "node_bbox_id": "node_bbox_0",
           "node_id": "node_0",
           "node_kind": "process",
-          "node_label": "Close Order",
+          "node_label": "Schedule Ticket",
           "node_label_bbox_id": "node_label_bbox_0"
         },
         {
@@ -149,7 +149,7 @@
           "node_bbox_id": "node_bbox_1",
           "node_id": "node_1",
           "node_kind": "process",
-          "node_label": "Issue Profile",
+          "node_label": "Log Form",
           "node_label_bbox_id": "node_label_bbox_1"
         },
         {
@@ -161,7 +161,7 @@
           "node_bbox_id": "node_bbox_2",
           "node_id": "node_2",
           "node_kind": "decision",
-          "node_label": "Policy Match?",
+          "node_label": "Need Fix?",
           "node_label_bbox_id": "node_label_bbox_2"
         },
         {
@@ -173,7 +173,7 @@
           "node_bbox_id": "node_bbox_3",
           "node_id": "node_3",
           "node_kind": "process",
-          "node_label": "Schedule Ticket",
+          "node_label": "Check Payment",
           "node_label_bbox_id": "node_label_bbox_3"
         },
         {
@@ -185,7 +185,7 @@
           "node_bbox_id": "node_bbox_4",
           "node_id": "node_4",
           "node_kind": "process",
-          "node_label": "Review Ticket",
+          "node_label": "Verify Return",
           "node_label_bbox_id": "node_label_bbox_4"
         },
         {
@@ -197,19 +197,19 @@
           "node_bbox_id": "node_bbox_5",
           "node_id": "node_5",
           "node_kind": "process",
-          "node_label": "Issue Record",
+          "node_label": "Route Profile",
           "node_label_bbox_id": "node_label_bbox_5"
         }
       ],
-      "query_branch_label": "Yes",
+      "query_branch_label": "No",
       "query_node_id": "node_2",
-      "query_node_label": "Policy Match?",
+      "query_node_label": "Need Fix?",
       "question_format": "flow_next_step_label",
-      "question_text": "Following the Yes branch from Policy Match?, what is the next step? Return the exact step label shown.",
+      "question_text": "Following the No branch from Need Fix?, what is the next step? Return the exact step label shown.",
       "scene_title": "Service Flow",
       "scene_variant": "swimlane",
       "supporting_node_bbox_ids": [
-        "node_bbox_3"
+        "node_bbox_4"
       ],
       "task_variant": "branch_next_step",
       "topology_node_count": 6,
@@ -234,17 +234,17 @@
     "projected_evidence": {
       "bbox_set": [
         [
-          520.2,
-          609.64,
-          734.2,
-          693.64
+          925.0,
+          417.0,
+          1139.0,
+          501.0
         ]
       ]
     },
     "query_spec": {
       "params": {
         "lane_count": 3,
-        "query_branch_label": "Yes",
+        "query_branch_label": "No",
         "scene_variant": "swimlane",
         "scene_variant_probabilities": {
           "flowchart": 0.5,
@@ -259,7 +259,7 @@
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 2,
+        "answer_or_evidence_variant_index": 3,
         "prompt_bundle_id": "diagrams_flow_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -270,12 +270,12 @@
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
           "object_description": "a swimlane process diagram with labeled steps and arrows",
-          "question_text": "Following the Yes branch from Policy Match?, what is the next step? Return the exact step label shown."
+          "question_text": "Following the No branch from Need Fix?, what is the next step? Return the exact step label shown."
         },
         "task_family_key": "process_flow_diagram",
-        "task_family_variant_index": 1,
+        "task_family_variant_index": 2,
         "task_key": "next_step_query",
-        "task_variant_index": 1,
+        "task_variant_index": 4,
         "task_variant_key": "branch_next_step",
         "task_variant_template_index": 3,
         "template_paths": [
@@ -293,7 +293,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 2,
+            "answer_or_evidence_variant_index": 3,
             "prompt_bundle_id": "diagrams_flow_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -304,12 +304,12 @@
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a swimlane process diagram with labeled steps and arrows",
-              "question_text": "Following the Yes branch from Policy Match?, what is the next step? Return the exact step label shown."
+              "question_text": "Following the No branch from Need Fix?, what is the next step? Return the exact step label shown."
             },
             "task_family_key": "process_flow_diagram",
-            "task_family_variant_index": 1,
+            "task_family_variant_index": 2,
             "task_key": "next_step_query",
-            "task_variant_index": 1,
+            "task_variant_index": 4,
             "task_variant_key": "branch_next_step",
             "task_variant_template_index": 3,
             "template_paths": [
@@ -322,12 +322,12 @@
               "task_variant:branch_next_step": 5
             }
           },
-          "prompt": "Look at the process diagram in the image: a swimlane process diagram with labeled steps and arrows. Follow the arrows and answer this question: Following the Yes branch from Policy Match?, what is the next step? Return the exact step label shown. Give the full next-step label exactly as shown.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct next-step box.\nAnswer requirement: set \"answer\" to the exact visible next-step label.\nExample JSON:\n{\"evidence\":[[624,228,838,312]],\"answer\":\"Fix Record\"}"
+          "prompt": "You are given a swimlane process diagram with labeled steps and arrows. Read the labeled process steps and then answer: Following the No branch from Need Fix?, what is the next step? Return the exact step label shown. Give the full next-step label exactly as shown.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct next-step box.\nAnswer field: set \"answer\" to the exact visible next-step label.\nExample JSON:\n{\"evidence\":[[624,228,838,312]],\"answer\":\"Fix Record\"}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 3,
+            "answer_or_evidence_variant_index": 1,
             "prompt_bundle_id": "diagrams_flow_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -338,12 +338,12 @@
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a swimlane process diagram with labeled steps and arrows",
-              "question_text": "Following the Yes branch from Policy Match?, what is the next step? Return the exact step label shown."
+              "question_text": "Following the No branch from Need Fix?, what is the next step? Return the exact step label shown."
             },
             "task_family_key": "process_flow_diagram",
-            "task_family_variant_index": 1,
+            "task_family_variant_index": 2,
             "task_key": "next_step_query",
-            "task_variant_index": 1,
+            "task_variant_index": 4,
             "task_variant_key": "branch_next_step",
             "task_variant_template_index": 3,
             "template_paths": [
@@ -356,7 +356,7 @@
               "task_variant:branch_next_step": 5
             }
           },
-          "prompt": "Look at the process diagram in the image: a swimlane process diagram with labeled steps and arrows. Follow the arrows and answer this question: Following the Yes branch from Policy Match?, what is the next step? Return the exact step label shown. Give the full next-step label exactly as shown.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the exact visible next-step label.\nExample JSON:\n{\"answer\":\"Fix Record\"}"
+          "prompt": "You are given a swimlane process diagram with labeled steps and arrows. Read the labeled process steps and then answer: Following the No branch from Need Fix?, what is the next step? Return the exact step label shown. Give the full next-step label exactly as shown.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the exact visible next-step label.\nExample JSON:\n{\"answer\":\"Fix Record\"}"
         }
       },
       "task_variant": "branch_next_step",
@@ -399,21 +399,21 @@
       },
       "lane_label_bboxes_px": {
         "lane_0": [
-          120.0,
-          248.333,
-          200.0,
-          268.333
+          104.5,
+          245.833,
+          215.5,
+          270.833
         ],
         "lane_1": [
-          100.5,
+          99.5,
           449.0,
-          219.5,
+          220.5,
           469.0
         ],
         "lane_2": [
-          105.5,
+          107.0,
           649.667,
-          214.5,
+          213.0,
           669.667
         ]
       },
@@ -457,40 +457,40 @@
       },
       "node_label_bboxes_px": {
         "node_label_bbox_0": [
-          259.9,
-          254.86,
-          448.9,
-          277.86
+          260.9,
+          257.36,
+          447.9,
+          275.36
         ],
         "node_label_bbox_1": [
-          444.2,
-          447.5,
-          634.2,
-          470.5
+          464.2,
+          445.0,
+          614.2,
+          473.0
         ],
         "node_label_bbox_2": [
-          706.0,
-          450.5,
-          830.0,
-          467.5
+          714.0,
+          451.0,
+          822.0,
+          467.0
         ],
         "node_label_bbox_3": [
-          533.7,
-          642.64,
-          720.7,
-          660.64
+          535.7,
+          640.64,
+          718.7,
+          662.64
         ],
         "node_label_bbox_4": [
-          938.5,
-          449.0,
-          1125.5,
-          469.0
+          936.5,
+          446.0,
+          1127.5,
+          472.0
         ],
         "node_label_bbox_5": [
-          936.5,
-          640.64,
-          1127.5,
-          662.64
+          938.5,
+          641.14,
+          1125.5,
+          662.14
         ]
       },
       "panel_bbox_px": [
@@ -511,7 +511,7 @@
       "canvas_width": 1200,
       "decision_diameter_px": 132,
       "edge_width_px": 5,
-      "geometry_seed": 5806331277731324,
+      "geometry_seed": 7397081153384477,
       "lane_gutter_width_px": 160,
       "node_height_px": 84,
       "node_width_px": 214,
@@ -550,19 +550,19 @@
           "entity_id": "lane_bbox_0",
           "entity_type": "diagram_lane",
           "lane_id": "lane_0",
-          "text": "Client"
+          "text": "Request"
         },
         {
           "bbox_xyxy": [
-            120.0,
-            248.333,
-            200.0,
-            268.333
+            104.5,
+            245.833,
+            215.5,
+            270.833
           ],
           "entity_id": "lane_label_bbox_0",
           "entity_type": "diagram_lane_label",
           "lane_id": "lane_0",
-          "text": "Client"
+          "text": "Request"
         },
         {
           "bbox_xyxy": [
@@ -574,19 +574,19 @@
           "entity_id": "lane_bbox_1",
           "entity_type": "diagram_lane",
           "lane_id": "lane_1",
-          "text": "Processing"
+          "text": "Operations"
         },
         {
           "bbox_xyxy": [
-            100.5,
+            99.5,
             449.0,
-            219.5,
+            220.5,
             469.0
           ],
           "entity_id": "lane_label_bbox_1",
           "entity_type": "diagram_lane_label",
           "lane_id": "lane_1",
-          "text": "Processing"
+          "text": "Operations"
         },
         {
           "bbox_xyxy": [
@@ -598,19 +598,19 @@
           "entity_id": "lane_bbox_2",
           "entity_type": "diagram_lane",
           "lane_id": "lane_2",
-          "text": "Records"
+          "text": "Release"
         },
         {
           "bbox_xyxy": [
-            105.5,
+            107.0,
             649.667,
-            214.5,
+            213.0,
             669.667
           ],
           "entity_id": "lane_label_bbox_2",
           "entity_type": "diagram_lane_label",
           "lane_id": "lane_2",
-          "text": "Records"
+          "text": "Release"
         },
         {
           "edge_label": null,
@@ -700,19 +700,19 @@
           "lane_id": "lane_0",
           "node_id": "node_0",
           "node_kind": "process",
-          "text": "Close Order"
+          "text": "Schedule Ticket"
         },
         {
           "bbox_xyxy": [
-            259.9,
-            254.86,
-            448.9,
-            277.86
+            260.9,
+            257.36,
+            447.9,
+            275.36
           ],
           "entity_id": "node_label_bbox_0",
           "entity_type": "diagram_node_label",
           "node_id": "node_0",
-          "text": "Close Order"
+          "text": "Schedule Ticket"
         },
         {
           "bbox_xyxy": [
@@ -726,19 +726,19 @@
           "lane_id": "lane_1",
           "node_id": "node_1",
           "node_kind": "process",
-          "text": "Issue Profile"
+          "text": "Log Form"
         },
         {
           "bbox_xyxy": [
-            444.2,
-            447.5,
-            634.2,
-            470.5
+            464.2,
+            445.0,
+            614.2,
+            473.0
           ],
           "entity_id": "node_label_bbox_1",
           "entity_type": "diagram_node_label",
           "node_id": "node_1",
-          "text": "Issue Profile"
+          "text": "Log Form"
         },
         {
           "bbox_xyxy": [
@@ -752,19 +752,19 @@
           "lane_id": "lane_1",
           "node_id": "node_2",
           "node_kind": "decision",
-          "text": "Policy Match?"
+          "text": "Need Fix?"
         },
         {
           "bbox_xyxy": [
-            706.0,
-            450.5,
-            830.0,
-            467.5
+            714.0,
+            451.0,
+            822.0,
+            467.0
           ],
           "entity_id": "node_label_bbox_2",
           "entity_type": "diagram_node_label",
           "node_id": "node_2",
-          "text": "Policy Match?"
+          "text": "Need Fix?"
         },
         {
           "bbox_xyxy": [
@@ -778,19 +778,19 @@
           "lane_id": "lane_2",
           "node_id": "node_3",
           "node_kind": "process",
-          "text": "Schedule Ticket"
+          "text": "Check Payment"
         },
         {
           "bbox_xyxy": [
-            533.7,
-            642.64,
-            720.7,
-            660.64
+            535.7,
+            640.64,
+            718.7,
+            662.64
           ],
           "entity_id": "node_label_bbox_3",
           "entity_type": "diagram_node_label",
           "node_id": "node_3",
-          "text": "Schedule Ticket"
+          "text": "Check Payment"
         },
         {
           "bbox_xyxy": [
@@ -804,19 +804,19 @@
           "lane_id": "lane_1",
           "node_id": "node_4",
           "node_kind": "process",
-          "text": "Review Ticket"
+          "text": "Verify Return"
         },
         {
           "bbox_xyxy": [
-            938.5,
-            449.0,
-            1125.5,
-            469.0
+            936.5,
+            446.0,
+            1127.5,
+            472.0
           ],
           "entity_id": "node_label_bbox_4",
           "entity_type": "diagram_node_label",
           "node_id": "node_4",
-          "text": "Review Ticket"
+          "text": "Verify Return"
         },
         {
           "bbox_xyxy": [
@@ -830,24 +830,24 @@
           "lane_id": "lane_2",
           "node_id": "node_5",
           "node_kind": "process",
-          "text": "Issue Record"
+          "text": "Route Profile"
         },
         {
           "bbox_xyxy": [
-            936.5,
-            640.64,
-            1127.5,
-            662.64
+            938.5,
+            641.14,
+            1125.5,
+            662.14
           ],
           "entity_id": "node_label_bbox_5",
           "entity_type": "diagram_node_label",
           "node_id": "node_5",
-          "text": "Issue Record"
+          "text": "Route Profile"
         }
       ],
       "relations": {
-        "answer_node_bbox_id": "node_bbox_3",
-        "answer_node_id": "node_3",
+        "answer_node_bbox_id": "node_bbox_4",
+        "answer_node_id": "node_4",
         "scene_variant": "swimlane",
         "task_variant": "branch_next_step",
         "view_family": "process_flow_diagram"
@@ -856,7 +856,7 @@
     },
     "witness_symbolic": {
       "ids": [
-        "node_3"
+        "node_4"
       ],
       "type": "id_set"
     }

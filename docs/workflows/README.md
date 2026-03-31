@@ -8,10 +8,12 @@ Paired repo-local skills:
 - `skills/prompt-design/`
 - `skills/verification-review/`
 - `skills/code-review/`
+- `skills/domain-audit/`
 
 - `TASK_AUTHORING.md` — task creation checklist and contract guidance.
 - `SHARED_UTILITIES.md` — helper placement and anti-duplication rules.
 - `BUILD_VALIDATION.md` — build/test/review workflow.
+- `DOMAIN_AUDIT_REVIEW.md` — domain-by-domain sanitation and audit workflow.
 - `VALIDATION_ERROR_CODES.md` — validation error taxonomy.
 - `CODE_DOCUMENTATION.md` — documentation standards and update triggers.
 - `CODE_REVIEW_GUIDELINES.md` — reusable review checklist and distilled findings.

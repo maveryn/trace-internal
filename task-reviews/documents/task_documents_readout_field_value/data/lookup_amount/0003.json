@@ -1,7 +1,7 @@
 {
   "answer_gt": {
     "type": "string",
-    "value": "$94.89"
+    "value": "$53.61"
   },
   "evidence_gt": {
     "type": "bbox_set",
@@ -24,18 +24,18 @@
     "format": "png",
     "path": "documents/task_documents_readout_field_value/images/lookup_amount/0003.png"
   },
-  "instance_seed": 2889323059079628,
-  "prompt": "The image shows a structured application form with labeled fields and boxed sections. Locate the field and then answer: What is the fee amount? Return the exact field text as written.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value.\nAnswer requirement: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"$128.40\"}",
+  "instance_seed": 3843778823430791,
+  "prompt": "The image shows a structured application form with labeled fields and boxed sections. Find the requested field in the document: What is the fee amount? Return the exact field text as written.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value.\nAnswer requirement: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"$128.40\"}",
   "prompt_variants": {
-    "answer_and_evidence": "The image shows a structured application form with labeled fields and boxed sections. Locate the field and then answer: What is the fee amount? Return the exact field text as written.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value.\nAnswer requirement: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"$128.40\"}",
-    "answer_only": "The image shows a structured application form with labeled fields and boxed sections. Locate the field and then answer: What is the fee amount? Return the exact field text as written.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"answer\":\"$128.40\"}"
+    "answer_and_evidence": "The image shows a structured application form with labeled fields and boxed sections. Find the requested field in the document: What is the fee amount? Return the exact field text as written.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value.\nAnswer requirement: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"$128.40\"}",
+    "answer_only": "The image shows a structured application form with labeled fields and boxed sections. Find the requested field in the document: What is the fee amount? Return the exact field text as written.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"answer\":\"$128.40\"}"
   },
   "task": "task_documents_readout_field_value",
   "task_variant": "lookup_amount",
   "trace_payload": {
     "answer_gt": {
       "type": "string",
-      "value": "$94.89"
+      "value": "$53.61"
     },
     "background": {
       "available_styles": [
@@ -76,7 +76,7 @@
           "field_category": "lookup_name",
           "field_id": "applicant_name",
           "field_label": "Applicant Name",
-          "field_value": "Milo Lee",
+          "field_value": "Jade Miller",
           "label_bbox_id": "applicant_name:label",
           "question_name": "applicant name",
           "value_bbox_id": "applicant_name:value"
@@ -85,7 +85,7 @@
           "field_category": "lookup_identifier",
           "field_id": "reference_id",
           "field_label": "Reference ID",
-          "field_value": "REF-38722",
+          "field_value": "REF-72097",
           "label_bbox_id": "reference_id:label",
           "question_name": "reference ID",
           "value_bbox_id": "reference_id:value"
@@ -94,7 +94,7 @@
           "field_category": "lookup_date",
           "field_id": "submission_date",
           "field_label": "Submission Date",
-          "field_value": "04/24/2026",
+          "field_value": "03/22/2026",
           "label_bbox_id": "submission_date:label",
           "question_name": "submission date",
           "value_bbox_id": "submission_date:value"
@@ -103,7 +103,7 @@
           "field_category": "lookup_contact",
           "field_id": "contact_phone",
           "field_label": "Phone",
-          "field_value": "(503) 336-3238",
+          "field_value": "(929) 287-6996",
           "label_bbox_id": "contact_phone:label",
           "question_name": "phone number",
           "value_bbox_id": "contact_phone:value"
@@ -112,7 +112,7 @@
           "field_category": "lookup_contact",
           "field_id": "contact_email",
           "field_label": "Email",
-          "field_value": "milolee@example.com",
+          "field_value": "jademiller@brightdesk.io",
           "label_bbox_id": "contact_email:label",
           "question_name": "email address",
           "value_bbox_id": "contact_email:value"
@@ -121,7 +121,7 @@
           "field_category": "lookup_name",
           "field_id": "department",
           "field_label": "Department",
-          "field_value": "Planning",
+          "field_value": "Facilities",
           "label_bbox_id": "department:label",
           "question_name": "department",
           "value_bbox_id": "department:value"
@@ -130,7 +130,7 @@
           "field_category": "lookup_name",
           "field_id": "city",
           "field_label": "City",
-          "field_value": "Albany",
+          "field_value": "Fairview",
           "label_bbox_id": "city:label",
           "question_name": "city",
           "value_bbox_id": "city:value"
@@ -139,7 +139,7 @@
           "field_category": "lookup_amount",
           "field_id": "fee_amount",
           "field_label": "Fee Amount",
-          "field_value": "$94.89",
+          "field_value": "$53.61",
           "label_bbox_id": "fee_amount:label",
           "question_name": "fee amount",
           "value_bbox_id": "fee_amount:value"
@@ -148,7 +148,7 @@
           "field_category": "lookup_name",
           "field_id": "reviewer_name",
           "field_label": "Reviewer",
-          "field_value": "Gia Hill",
+          "field_value": "Eli Lopez",
           "label_bbox_id": "reviewer_name:label",
           "question_name": "reviewer name",
           "value_bbox_id": "reviewer_name:value"
@@ -157,7 +157,7 @@
       "query_field_category": "lookup_amount",
       "query_field_id": "fee_amount",
       "query_field_label": "Fee Amount",
-      "query_field_value": "$94.89",
+      "query_field_value": "$53.61",
       "query_label_bbox_id": "fee_amount:label",
       "query_value_bbox_id": "fee_amount:value",
       "question_format": "document_field_lookup",
@@ -239,7 +239,7 @@
         "task_family_key": "structured_document",
         "task_family_variant_index": 0,
         "task_key": "field_lookup_query",
-        "task_variant_index": 4,
+        "task_variant_index": 2,
         "task_variant_key": "lookup_amount",
         "task_variant_template_index": 1,
         "template_paths": [
@@ -273,7 +273,7 @@
             "task_family_key": "structured_document",
             "task_family_variant_index": 0,
             "task_key": "field_lookup_query",
-            "task_variant_index": 4,
+            "task_variant_index": 2,
             "task_variant_key": "lookup_amount",
             "task_variant_template_index": 1,
             "template_paths": [
@@ -286,7 +286,7 @@
               "task_variant:lookup_amount": 5
             }
           },
-          "prompt": "The image shows a structured application form with labeled fields and boxed sections. Locate the field and then answer: What is the fee amount? Return the exact field text as written.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value.\nAnswer requirement: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"$128.40\"}"
+          "prompt": "The image shows a structured application form with labeled fields and boxed sections. Find the requested field in the document: What is the fee amount? Return the exact field text as written.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value.\nAnswer requirement: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"$128.40\"}"
         },
         "answer_only": {
           "metadata": {
@@ -307,7 +307,7 @@
             "task_family_key": "structured_document",
             "task_family_variant_index": 0,
             "task_key": "field_lookup_query",
-            "task_variant_index": 4,
+            "task_variant_index": 2,
             "task_variant_key": "lookup_amount",
             "task_variant_template_index": 1,
             "template_paths": [
@@ -320,7 +320,7 @@
               "task_variant:lookup_amount": 5
             }
           },
-          "prompt": "The image shows a structured application form with labeled fields and boxed sections. Locate the field and then answer: What is the fee amount? Return the exact field text as written.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"answer\":\"$128.40\"}"
+          "prompt": "The image shows a structured application form with labeled fields and boxed sections. Find the requested field in the document: What is the fee amount? Return the exact field text as written.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"answer\":\"$128.40\"}"
         }
       },
       "task_variant": "lookup_amount",
@@ -442,20 +442,20 @@
       "field_value_bboxes_px": {
         "applicant_name:value": [
           218.0,
-          262.5,
-          336.0,
-          285.5
+          259.5,
+          368.0,
+          288.5
         ],
         "city:value": [
           218.0,
-          637.5,
-          317.0,
-          666.5
+          640.5,
+          338.0,
+          663.5
         ],
         "contact_email:value": [
           218.0,
           511.5,
-          539.0,
+          574.0,
           540.5
         ],
         "contact_phone:value": [
@@ -466,9 +466,9 @@
         ],
         "department:value": [
           666.0,
-          511.5,
-          790.0,
-          540.5
+          514.5,
+          791.0,
+          537.5
         ],
         "fee_amount:value": [
           666.0,
@@ -484,9 +484,9 @@
         ],
         "reviewer_name:value": [
           218.0,
-          766.5,
-          321.0,
-          789.5
+          763.5,
+          346.0,
+          792.5
         ],
         "submission_date:value": [
           218.0,
@@ -511,7 +511,7 @@
     "render_spec": {
       "canvas_height": 920,
       "canvas_width": 1280,
-      "geometry_seed": 2889323059079628,
+      "geometry_seed": 3843778823430791,
       "page_shadow_offset_px": 14,
       "receipt_page_height_px": 760,
       "receipt_page_width_px": 520,
@@ -573,14 +573,14 @@
           "bbox_id": "applicant_name:value",
           "bbox_px": [
             218.0,
-            262.5,
-            336.0,
-            285.5
+            259.5,
+            368.0,
+            288.5
           ],
           "entity_id": "applicant_name:value",
           "entity_type": "document_field_value",
           "field_id": "applicant_name",
-          "text": "Milo Lee"
+          "text": "Jade Miller"
         },
         {
           "bbox_id": "reference_id",
@@ -618,7 +618,7 @@
           "entity_id": "reference_id:value",
           "entity_type": "document_field_value",
           "field_id": "reference_id",
-          "text": "REF-38722"
+          "text": "REF-72097"
         },
         {
           "bbox_id": "submission_date",
@@ -656,7 +656,7 @@
           "entity_id": "submission_date:value",
           "entity_type": "document_field_value",
           "field_id": "submission_date",
-          "text": "04/24/2026"
+          "text": "03/22/2026"
         },
         {
           "bbox_id": "contact_phone",
@@ -694,7 +694,7 @@
           "entity_id": "contact_phone:value",
           "entity_type": "document_field_value",
           "field_id": "contact_phone",
-          "text": "(503) 336-3238"
+          "text": "(929) 287-6996"
         },
         {
           "bbox_id": "contact_email",
@@ -726,13 +726,13 @@
           "bbox_px": [
             218.0,
             511.5,
-            539.0,
+            574.0,
             540.5
           ],
           "entity_id": "contact_email:value",
           "entity_type": "document_field_value",
           "field_id": "contact_email",
-          "text": "milolee@example.com"
+          "text": "jademiller@brightdesk.io"
         },
         {
           "bbox_id": "department",
@@ -763,14 +763,14 @@
           "bbox_id": "department:value",
           "bbox_px": [
             666.0,
-            511.5,
-            790.0,
-            540.5
+            514.5,
+            791.0,
+            537.5
           ],
           "entity_id": "department:value",
           "entity_type": "document_field_value",
           "field_id": "department",
-          "text": "Planning"
+          "text": "Facilities"
         },
         {
           "bbox_id": "city",
@@ -801,14 +801,14 @@
           "bbox_id": "city:value",
           "bbox_px": [
             218.0,
-            637.5,
-            317.0,
-            666.5
+            640.5,
+            338.0,
+            663.5
           ],
           "entity_id": "city:value",
           "entity_type": "document_field_value",
           "field_id": "city",
-          "text": "Albany"
+          "text": "Fairview"
         },
         {
           "bbox_id": "fee_amount",
@@ -846,7 +846,7 @@
           "entity_id": "fee_amount:value",
           "entity_type": "document_field_value",
           "field_id": "fee_amount",
-          "text": "$94.89"
+          "text": "$53.61"
         },
         {
           "bbox_id": "reviewer_name",
@@ -877,14 +877,14 @@
           "bbox_id": "reviewer_name:value",
           "bbox_px": [
             218.0,
-            766.5,
-            321.0,
-            789.5
+            763.5,
+            346.0,
+            792.5
           ],
           "entity_id": "reviewer_name:value",
           "entity_type": "document_field_value",
           "field_id": "reviewer_name",
-          "text": "Gia Hill"
+          "text": "Eli Lopez"
         }
       ],
       "relations": {

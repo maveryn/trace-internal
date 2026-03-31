@@ -43,3 +43,10 @@ Use this whenever the task lives under `domain=diagrams`.
 - The first reusable flow scene should support both plain flowchart and swimlane variants while preserving the same step/arrow semantics.
 - Short visible node labels are preferable to long prose inside boxes.
 - Branch questions should make the active branch label explicit in the prompt so the solver does not infer hidden branch semantics.
+
+## Pair with
+- `skills/domain-audit/SKILL.md`
+- `skills/task-design/SKILL.md`
+- `skills/task-complexity/SKILL.md`
+- `skills/task-implementation/SKILL.md`
+- `skills/verification-review/SKILL.md`

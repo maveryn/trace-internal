@@ -1,16 +1,16 @@
 {
   "answer_gt": {
     "type": "string",
-    "value": "Profile"
+    "value": "Contact"
   },
   "evidence_gt": {
     "type": "bbox_set",
     "value": [
       [
         208.0,
-        178.0,
-        317.0,
-        200.0
+        430.0,
+        331.0,
+        452.0
       ]
     ]
   },
@@ -18,18 +18,18 @@
     "format": "png",
     "path": "documents/task_documents_layout_section_membership_label/images/section_of_field_label/0017.png"
   },
-  "instance_seed": 8996468960400776,
-  "prompt": "Look at the document in the image: a structured application form with visible section headers and labeled fields. Read the document and answer this question: Which section contains the field labeled Department? Return the exact section title shown. Return the exact section heading as written.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing exactly one bounding box for the matching section header.\nAnswer: set \"answer\" to the exact section title shown in the document.\nExample JSON:\n{\"evidence\":[[132,182,260,214]],\"answer\":\"Billing Summary\"}",
+  "instance_seed": 3459039928633583,
+  "prompt": "The image shows a structured application form with visible section headers and labeled fields. Use the visible section headers and labeled fields to answer: Which section contains the field labeled Phone? Return the exact section title shown. Answer with the exact section title shown.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly one bounding box for the matching section header.\nAnswer format: set \"answer\" to the exact section title shown in the document.\nExample JSON:\n{\"evidence\":[[132,182,260,214]],\"answer\":\"Billing Summary\"}",
   "prompt_variants": {
-    "answer_and_evidence": "Look at the document in the image: a structured application form with visible section headers and labeled fields. Read the document and answer this question: Which section contains the field labeled Department? Return the exact section title shown. Return the exact section heading as written.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing exactly one bounding box for the matching section header.\nAnswer: set \"answer\" to the exact section title shown in the document.\nExample JSON:\n{\"evidence\":[[132,182,260,214]],\"answer\":\"Billing Summary\"}",
-    "answer_only": "Look at the document in the image: a structured application form with visible section headers and labeled fields. Read the document and answer this question: Which section contains the field labeled Department? Return the exact section title shown. Return the exact section heading as written.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the exact section title shown in the document.\nExample JSON:\n{\"answer\":\"Billing Summary\"}"
+    "answer_and_evidence": "The image shows a structured application form with visible section headers and labeled fields. Use the visible section headers and labeled fields to answer: Which section contains the field labeled Phone? Return the exact section title shown. Answer with the exact section title shown.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly one bounding box for the matching section header.\nAnswer format: set \"answer\" to the exact section title shown in the document.\nExample JSON:\n{\"evidence\":[[132,182,260,214]],\"answer\":\"Billing Summary\"}",
+    "answer_only": "The image shows a structured application form with visible section headers and labeled fields. Use the visible section headers and labeled fields to answer: Which section contains the field labeled Phone? Return the exact section title shown. Answer with the exact section title shown.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the exact section title shown in the document.\nExample JSON:\n{\"answer\":\"Billing Summary\"}"
   },
   "task": "task_documents_layout_section_membership_label",
   "task_variant": "section_of_field_label",
   "trace_payload": {
     "answer_gt": {
       "type": "string",
-      "value": "Profile"
+      "value": "Contact"
     },
     "background": {
       "available_styles": [
@@ -51,9 +51,9 @@
       "value": [
         [
           208.0,
-          178.0,
-          317.0,
-          200.0
+          430.0,
+          331.0,
+          452.0
         ]
       ]
     },
@@ -64,7 +64,7 @@
           "comparison_kind": "other",
           "field_id": "applicant_name",
           "field_label": "Applicant Name",
-          "field_value": "Ben Davis",
+          "field_value": "Tess Price",
           "label_bbox_id": "applicant_name:label",
           "section_id": "profile",
           "section_label": "Profile",
@@ -74,7 +74,7 @@
           "comparison_kind": "other",
           "field_id": "reference_id",
           "field_label": "Reference ID",
-          "field_value": "REF-43987",
+          "field_value": "REF-67666",
           "label_bbox_id": "reference_id:label",
           "section_id": "profile",
           "section_label": "Profile",
@@ -84,7 +84,7 @@
           "comparison_kind": "other",
           "field_id": "department",
           "field_label": "Department",
-          "field_value": "Planning",
+          "field_value": "Finance",
           "label_bbox_id": "department:label",
           "section_id": "profile",
           "section_label": "Profile",
@@ -94,7 +94,7 @@
           "comparison_kind": "other",
           "field_id": "reviewer_name",
           "field_label": "Reviewer",
-          "field_value": "Milo Gomez",
+          "field_value": "Lena Cruz",
           "label_bbox_id": "reviewer_name:label",
           "section_id": "profile",
           "section_label": "Profile",
@@ -104,7 +104,7 @@
           "comparison_kind": "other",
           "field_id": "contact_phone",
           "field_label": "Phone",
-          "field_value": "(503) 980-5709",
+          "field_value": "(415) 666-7685",
           "label_bbox_id": "contact_phone:label",
           "section_id": "contact",
           "section_label": "Contact",
@@ -114,7 +114,7 @@
           "comparison_kind": "other",
           "field_id": "contact_email",
           "field_label": "Email",
-          "field_value": "bendavis@brightdesk.io",
+          "field_value": "tessprice@northpost.co",
           "label_bbox_id": "contact_email:label",
           "section_id": "contact",
           "section_label": "Contact",
@@ -124,7 +124,7 @@
           "comparison_kind": "amount",
           "field_id": "registration_fee",
           "field_label": "Registration Fee",
-          "field_value": "$58.83",
+          "field_value": "$75.37",
           "label_bbox_id": "registration_fee:label",
           "section_id": "fees",
           "section_label": "Fees",
@@ -134,7 +134,7 @@
           "comparison_kind": "amount",
           "field_id": "service_fee",
           "field_label": "Service Fee",
-          "field_value": "$65.40",
+          "field_value": "$25.14",
           "label_bbox_id": "service_fee:label",
           "section_id": "fees",
           "section_label": "Fees",
@@ -144,21 +144,21 @@
           "comparison_kind": "amount",
           "field_id": "discount_amount",
           "field_label": "Discount",
-          "field_value": "$14.88",
+          "field_value": "$5.61",
           "label_bbox_id": "discount_amount:label",
           "section_id": "fees",
           "section_label": "Fees",
           "value_bbox_id": "discount_amount:value"
         }
       ],
-      "query_field_id": "department",
-      "query_field_label": "Department",
-      "query_field_value": "Planning",
-      "query_section_id": "profile",
-      "query_section_label": "Profile",
-      "query_section_label_bbox_id": "profile",
+      "query_field_id": "contact_phone",
+      "query_field_label": "Phone",
+      "query_field_value": "(415) 666-7685",
+      "query_section_id": "contact",
+      "query_section_label": "Contact",
+      "query_section_label_bbox_id": "contact",
       "question_format": "document_section_membership_label",
-      "question_text": "Which section contains the field labeled Department? Return the exact section title shown.",
+      "question_text": "Which section contains the field labeled Phone? Return the exact section title shown.",
       "scene_title": "Application Form",
       "scene_variant": "form_sheet",
       "section_specs": [
@@ -213,9 +213,9 @@
       "bbox_set": [
         [
           208.0,
-          178.0,
-          317.0,
-          200.0
+          430.0,
+          331.0,
+          452.0
         ]
       ]
     },
@@ -242,7 +242,7 @@
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 0,
+        "answer_or_evidence_variant_index": 1,
         "prompt_bundle_id": "documents_layout_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -253,14 +253,14 @@
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
           "object_description": "a structured application form with visible section headers and labeled fields",
-          "question_text": "Which section contains the field labeled Department? Return the exact section title shown."
+          "question_text": "Which section contains the field labeled Phone? Return the exact section title shown."
         },
         "task_family_key": "structured_document_sections",
-        "task_family_variant_index": 1,
+        "task_family_variant_index": 0,
         "task_key": "section_membership_query",
-        "task_variant_index": 1,
+        "task_variant_index": 3,
         "task_variant_key": "section_of_field_label",
-        "task_variant_template_index": 1,
+        "task_variant_template_index": 0,
         "template_paths": [
           "documents/layout/documents_layout_v1.json"
         ],
@@ -276,7 +276,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 0,
+            "answer_or_evidence_variant_index": 1,
             "prompt_bundle_id": "documents_layout_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -287,14 +287,14 @@
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a structured application form with visible section headers and labeled fields",
-              "question_text": "Which section contains the field labeled Department? Return the exact section title shown."
+              "question_text": "Which section contains the field labeled Phone? Return the exact section title shown."
             },
             "task_family_key": "structured_document_sections",
-            "task_family_variant_index": 1,
+            "task_family_variant_index": 0,
             "task_key": "section_membership_query",
-            "task_variant_index": 1,
+            "task_variant_index": 3,
             "task_variant_key": "section_of_field_label",
-            "task_variant_template_index": 1,
+            "task_variant_template_index": 0,
             "template_paths": [
               "documents/layout/documents_layout_v1.json"
             ],
@@ -305,12 +305,12 @@
               "task_variant:section_of_field_label": 5
             }
           },
-          "prompt": "Look at the document in the image: a structured application form with visible section headers and labeled fields. Read the document and answer this question: Which section contains the field labeled Department? Return the exact section title shown. Return the exact section heading as written.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing exactly one bounding box for the matching section header.\nAnswer: set \"answer\" to the exact section title shown in the document.\nExample JSON:\n{\"evidence\":[[132,182,260,214]],\"answer\":\"Billing Summary\"}"
+          "prompt": "The image shows a structured application form with visible section headers and labeled fields. Use the visible section headers and labeled fields to answer: Which section contains the field labeled Phone? Return the exact section title shown. Answer with the exact section title shown.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly one bounding box for the matching section header.\nAnswer format: set \"answer\" to the exact section title shown in the document.\nExample JSON:\n{\"evidence\":[[132,182,260,214]],\"answer\":\"Billing Summary\"}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 4,
+            "answer_or_evidence_variant_index": 3,
             "prompt_bundle_id": "documents_layout_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -321,14 +321,14 @@
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a structured application form with visible section headers and labeled fields",
-              "question_text": "Which section contains the field labeled Department? Return the exact section title shown."
+              "question_text": "Which section contains the field labeled Phone? Return the exact section title shown."
             },
             "task_family_key": "structured_document_sections",
-            "task_family_variant_index": 1,
+            "task_family_variant_index": 0,
             "task_key": "section_membership_query",
-            "task_variant_index": 1,
+            "task_variant_index": 3,
             "task_variant_key": "section_of_field_label",
-            "task_variant_template_index": 1,
+            "task_variant_template_index": 0,
             "template_paths": [
               "documents/layout/documents_layout_v1.json"
             ],
@@ -339,7 +339,7 @@
               "task_variant:section_of_field_label": 5
             }
           },
-          "prompt": "Look at the document in the image: a structured application form with visible section headers and labeled fields. Read the document and answer this question: Which section contains the field labeled Department? Return the exact section title shown. Return the exact section heading as written.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the exact section title shown in the document.\nExample JSON:\n{\"answer\":\"Billing Summary\"}"
+          "prompt": "The image shows a structured application form with visible section headers and labeled fields. Use the visible section headers and labeled fields to answer: Which section contains the field labeled Phone? Return the exact section title shown. Answer with the exact section title shown.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the exact section title shown in the document.\nExample JSON:\n{\"answer\":\"Billing Summary\"}"
         }
       },
       "task_variant": "section_of_field_label",
@@ -462,13 +462,13 @@
         "applicant_name:value": [
           218.0,
           262.5,
-          362.0,
+          363.0,
           285.5
         ],
         "contact_email:value": [
           666.0,
           511.5,
-          1009.0,
+          1002.0,
           540.5
         ],
         "contact_phone:value": [
@@ -479,14 +479,14 @@
         ],
         "department:value": [
           218.0,
-          385.5,
-          342.0,
-          414.5
+          388.5,
+          329.0,
+          411.5
         ],
         "discount_amount:value": [
           218.0,
           764.5,
-          319.0,
+          301.0,
           791.5
         ],
         "reference_id:value": [
@@ -503,9 +503,9 @@
         ],
         "reviewer_name:value": [
           666.0,
-          388.5,
-          832.0,
-          411.5
+          389.0,
+          810.0,
+          411.0
         ],
         "service_fee:value": [
           666.0,
@@ -570,7 +570,7 @@
     "render_spec": {
       "canvas_height": 920,
       "canvas_width": 1280,
-      "geometry_seed": 8996468960400776,
+      "geometry_seed": 3459039928633583,
       "page_shadow_offset_px": 14,
       "receipt_page_height_px": 760,
       "receipt_page_width_px": 520,
@@ -684,13 +684,13 @@
           "bbox_px": [
             218.0,
             262.5,
-            362.0,
+            363.0,
             285.5
           ],
           "entity_id": "applicant_name:value",
           "entity_type": "document_field_value",
           "field_id": "applicant_name",
-          "text": "Ben Davis"
+          "text": "Tess Price"
         },
         {
           "bbox_id": "reference_id",
@@ -728,7 +728,7 @@
           "entity_id": "reference_id:value",
           "entity_type": "document_field_value",
           "field_id": "reference_id",
-          "text": "REF-43987"
+          "text": "REF-67666"
         },
         {
           "bbox_id": "department",
@@ -759,14 +759,14 @@
           "bbox_id": "department:value",
           "bbox_px": [
             218.0,
-            385.5,
-            342.0,
-            414.5
+            388.5,
+            329.0,
+            411.5
           ],
           "entity_id": "department:value",
           "entity_type": "document_field_value",
           "field_id": "department",
-          "text": "Planning"
+          "text": "Finance"
         },
         {
           "bbox_id": "reviewer_name",
@@ -797,14 +797,14 @@
           "bbox_id": "reviewer_name:value",
           "bbox_px": [
             666.0,
-            388.5,
-            832.0,
-            411.5
+            389.0,
+            810.0,
+            411.0
           ],
           "entity_id": "reviewer_name:value",
           "entity_type": "document_field_value",
           "field_id": "reviewer_name",
-          "text": "Milo Gomez"
+          "text": "Lena Cruz"
         },
         {
           "bbox_id": "contact_phone",
@@ -842,7 +842,7 @@
           "entity_id": "contact_phone:value",
           "entity_type": "document_field_value",
           "field_id": "contact_phone",
-          "text": "(503) 980-5709"
+          "text": "(415) 666-7685"
         },
         {
           "bbox_id": "contact_email",
@@ -874,13 +874,13 @@
           "bbox_px": [
             666.0,
             511.5,
-            1009.0,
+            1002.0,
             540.5
           ],
           "entity_id": "contact_email:value",
           "entity_type": "document_field_value",
           "field_id": "contact_email",
-          "text": "bendavis@brightdesk.io"
+          "text": "tessprice@northpost.co"
         },
         {
           "bbox_id": "registration_fee",
@@ -918,7 +918,7 @@
           "entity_id": "registration_fee:value",
           "entity_type": "document_field_value",
           "field_id": "registration_fee",
-          "text": "$58.83"
+          "text": "$75.37"
         },
         {
           "bbox_id": "service_fee",
@@ -956,7 +956,7 @@
           "entity_id": "service_fee:value",
           "entity_type": "document_field_value",
           "field_id": "service_fee",
-          "text": "$65.40"
+          "text": "$25.14"
         },
         {
           "bbox_id": "discount_amount",
@@ -988,13 +988,13 @@
           "bbox_px": [
             218.0,
             764.5,
-            319.0,
+            301.0,
             791.5
           ],
           "entity_id": "discount_amount:value",
           "entity_type": "document_field_value",
           "field_id": "discount_amount",
-          "text": "$14.88"
+          "text": "$5.61"
         },
         {
           "bbox_id": "profile:label",
@@ -1037,8 +1037,8 @@
         }
       ],
       "relations": {
-        "query_section_id": "profile",
-        "query_section_label": "Profile",
+        "query_section_id": "contact",
+        "query_section_label": "Contact",
         "scene_variant": "form_sheet",
         "task_variant": "section_of_field_label",
         "view_family": "structured_document"
@@ -1047,9 +1047,9 @@
     },
     "witness_symbolic": {
       "bbox_id_sequence": [
-        "profile"
+        "contact"
       ],
-      "field_id": "department"
+      "field_id": "contact_phone"
     }
   },
   "versions": {

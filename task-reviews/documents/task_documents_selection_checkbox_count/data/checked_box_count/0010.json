@@ -1,28 +1,53 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 0
+    "value": 4
   },
   "evidence_gt": {
     "type": "bbox_set",
-    "value": []
+    "value": [
+      [
+        666.0,
+        325.0,
+        690.0,
+        349.0
+      ],
+      [
+        666.0,
+        381.0,
+        690.0,
+        405.0
+      ],
+      [
+        666.0,
+        437.0,
+        690.0,
+        461.0
+      ],
+      [
+        666.0,
+        493.0,
+        690.0,
+        517.0
+      ]
+    ]
   },
   "image": {
     "format": "png",
     "path": "documents/task_documents_selection_checkbox_count/images/checked_box_count/0010.png"
   },
-  "instance_seed": 6103091242494522,
-  "prompt": "Use the structured document in the image: an invoice with visible named sections, header fields, and checkbox groups. Read the document and answer this question: In the Billing Flags section, how many checkboxes are checked? Answer with the count as an integer.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing one bounding box for each counted checkbox, in reading order.\nAnswer requirement: set \"answer\" to the number of counted checkboxes.\nExample JSON:\n{\"evidence\":[[154,252,178,276],[154,304,178,328]],\"answer\":2}",
+  "instance_seed": 7898050985527226,
+  "prompt": "Look at the document in the image: an invoice with visible named sections, header fields, and checkbox groups. Read the document and answer this question: In the Billing Flags section, how many checkboxes are checked? Answer with the count as an integer.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing one bounding box for each counted checkbox, in reading order.\nAnswer field: set \"answer\" to the number of counted checkboxes.\nExample JSON:\n{\"evidence\":[[154,252,178,276],[154,304,178,328]],\"answer\":2}",
   "prompt_variants": {
-    "answer_and_evidence": "Use the structured document in the image: an invoice with visible named sections, header fields, and checkbox groups. Read the document and answer this question: In the Billing Flags section, how many checkboxes are checked? Answer with the count as an integer.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing one bounding box for each counted checkbox, in reading order.\nAnswer requirement: set \"answer\" to the number of counted checkboxes.\nExample JSON:\n{\"evidence\":[[154,252,178,276],[154,304,178,328]],\"answer\":2}",
-    "answer_only": "Use the structured document in the image: an invoice with visible named sections, header fields, and checkbox groups. Read the document and answer this question: In the Billing Flags section, how many checkboxes are checked? Answer with the count as an integer.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the number of counted checkboxes.\nExample JSON:\n{\"answer\":2}"
+    "answer_and_evidence": "Look at the document in the image: an invoice with visible named sections, header fields, and checkbox groups. Read the document and answer this question: In the Billing Flags section, how many checkboxes are checked? Answer with the count as an integer.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing one bounding box for each counted checkbox, in reading order.\nAnswer field: set \"answer\" to the number of counted checkboxes.\nExample JSON:\n{\"evidence\":[[154,252,178,276],[154,304,178,328]],\"answer\":2}",
+    "answer_only": "Look at the document in the image: an invoice with visible named sections, header fields, and checkbox groups. Read the document and answer this question: In the Billing Flags section, how many checkboxes are checked? Answer with the count as an integer.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the number of counted checkboxes.\nExample JSON:\n{\"answer\":2}"
   },
   "task": "task_documents_selection_checkbox_count",
   "task_variant": "checked_box_count",
   "trace_payload": {
     "answer_gt": {
       "type": "integer",
-      "value": 0
+      "value": 4
     },
     "background": {
       "available_styles": [
@@ -41,10 +66,35 @@
     },
     "evidence_gt": {
       "type": "bbox_set",
-      "value": []
+      "value": [
+        [
+          666.0,
+          325.0,
+          690.0,
+          349.0
+        ],
+        [
+          666.0,
+          381.0,
+          690.0,
+          405.0
+        ],
+        [
+          666.0,
+          437.0,
+          690.0,
+          461.0
+        ],
+        [
+          666.0,
+          493.0,
+          690.0,
+          517.0
+        ]
+      ]
     },
     "execution_trace": {
-      "answer_count": 0,
+      "answer_count": 4,
       "checkbox_item_count": 4,
       "checkbox_section_specs": [
         {
@@ -58,7 +108,7 @@
             },
             {
               "checkbox_bbox_id": "delivery_options:1:checkbox",
-              "checked": false,
+              "checked": true,
               "item_id": "delivery_options:1",
               "label": "Priority Delivery",
               "label_bbox_id": "delivery_options:1:label"
@@ -72,7 +122,7 @@
             },
             {
               "checkbox_bbox_id": "delivery_options:3:checkbox",
-              "checked": false,
+              "checked": true,
               "item_id": "delivery_options:3",
               "label": "Weekend Dropoff",
               "label_bbox_id": "delivery_options:3:label"
@@ -85,28 +135,28 @@
           "items": [
             {
               "checkbox_bbox_id": "billing_flags:0:checkbox",
-              "checked": false,
+              "checked": true,
               "item_id": "billing_flags:0",
               "label": "Paid Deposit",
               "label_bbox_id": "billing_flags:0:label"
             },
             {
               "checkbox_bbox_id": "billing_flags:1:checkbox",
-              "checked": false,
+              "checked": true,
               "item_id": "billing_flags:1",
               "label": "Paper Invoice",
               "label_bbox_id": "billing_flags:1:label"
             },
             {
               "checkbox_bbox_id": "billing_flags:2:checkbox",
-              "checked": false,
+              "checked": true,
               "item_id": "billing_flags:2",
               "label": "Auto Renew",
               "label_bbox_id": "billing_flags:2:label"
             },
             {
               "checkbox_bbox_id": "billing_flags:3:checkbox",
-              "checked": false,
+              "checked": true,
               "item_id": "billing_flags:3",
               "label": "Tax Exempt",
               "label_bbox_id": "billing_flags:3:label"
@@ -120,26 +170,31 @@
         {
           "field_id": "vendor_name",
           "field_label": "Vendor",
-          "field_value": "Blue Oak Co.",
+          "field_value": "Trailhead Office",
           "label_bbox_id": "vendor_name:label",
           "value_bbox_id": "vendor_name:value"
         },
         {
           "field_id": "invoice_number",
           "field_label": "Invoice Number",
-          "field_value": "INV-49690",
+          "field_value": "INV-67039",
           "label_bbox_id": "invoice_number:label",
           "value_bbox_id": "invoice_number:value"
         },
         {
           "field_id": "due_date",
           "field_label": "Due Date",
-          "field_value": "2026-01-08",
+          "field_value": "2026-02-04",
           "label_bbox_id": "due_date:label",
           "value_bbox_id": "due_date:value"
         }
       ],
-      "evidence_checkbox_bbox_ids": [],
+      "evidence_checkbox_bbox_ids": [
+        "billing_flags:0:checkbox",
+        "billing_flags:1:checkbox",
+        "billing_flags:2:checkbox",
+        "billing_flags:3:checkbox"
+      ],
       "field_count": 3,
       "query_section_id": "billing_flags",
       "query_section_label": "Billing Flags",
@@ -155,10 +210,10 @@
         "billing_flags:3"
       ],
       "target_checkbox_states": {
-        "billing_flags:0": false,
-        "billing_flags:1": false,
-        "billing_flags:2": false,
-        "billing_flags:3": false
+        "billing_flags:0": true,
+        "billing_flags:1": true,
+        "billing_flags:2": true,
+        "billing_flags:3": true
       },
       "task_variant": "checked_box_count",
       "view_family": "structured_document"
@@ -180,7 +235,32 @@
       "enabled": false
     },
     "projected_evidence": {
-      "bbox_set": []
+      "bbox_set": [
+        [
+          666.0,
+          325.0,
+          690.0,
+          349.0
+        ],
+        [
+          666.0,
+          381.0,
+          690.0,
+          405.0
+        ],
+        [
+          666.0,
+          437.0,
+          690.0,
+          461.0
+        ],
+        [
+          666.0,
+          493.0,
+          690.0,
+          517.0
+        ]
+      ]
     },
     "query_spec": {
       "params": {
@@ -204,7 +284,7 @@
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 2,
+        "answer_or_evidence_variant_index": 3,
         "prompt_bundle_id": "documents_selection_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -218,7 +298,7 @@
           "question_text": "In the Billing Flags section, how many checkboxes are checked?"
         },
         "task_family_key": "structured_document_sections",
-        "task_family_variant_index": 3,
+        "task_family_variant_index": 1,
         "task_key": "checkbox_count_query",
         "task_variant_index": 1,
         "task_variant_key": "checked_box_count",
@@ -238,7 +318,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 2,
+            "answer_or_evidence_variant_index": 3,
             "prompt_bundle_id": "documents_selection_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -252,7 +332,7 @@
               "question_text": "In the Billing Flags section, how many checkboxes are checked?"
             },
             "task_family_key": "structured_document_sections",
-            "task_family_variant_index": 3,
+            "task_family_variant_index": 1,
             "task_key": "checkbox_count_query",
             "task_variant_index": 1,
             "task_variant_key": "checked_box_count",
@@ -267,7 +347,7 @@
               "task_variant:checked_box_count": 5
             }
           },
-          "prompt": "Use the structured document in the image: an invoice with visible named sections, header fields, and checkbox groups. Read the document and answer this question: In the Billing Flags section, how many checkboxes are checked? Answer with the count as an integer.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing one bounding box for each counted checkbox, in reading order.\nAnswer requirement: set \"answer\" to the number of counted checkboxes.\nExample JSON:\n{\"evidence\":[[154,252,178,276],[154,304,178,328]],\"answer\":2}"
+          "prompt": "Look at the document in the image: an invoice with visible named sections, header fields, and checkbox groups. Read the document and answer this question: In the Billing Flags section, how many checkboxes are checked? Answer with the count as an integer.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing one bounding box for each counted checkbox, in reading order.\nAnswer field: set \"answer\" to the number of counted checkboxes.\nExample JSON:\n{\"evidence\":[[154,252,178,276],[154,304,178,328]],\"answer\":2}"
         },
         "answer_only": {
           "metadata": {
@@ -286,7 +366,7 @@
               "question_text": "In the Billing Flags section, how many checkboxes are checked?"
             },
             "task_family_key": "structured_document_sections",
-            "task_family_variant_index": 3,
+            "task_family_variant_index": 1,
             "task_key": "checkbox_count_query",
             "task_variant_index": 1,
             "task_variant_key": "checked_box_count",
@@ -301,7 +381,7 @@
               "task_variant:checked_box_count": 5
             }
           },
-          "prompt": "Use the structured document in the image: an invoice with visible named sections, header fields, and checkbox groups. Read the document and answer this question: In the Billing Flags section, how many checkboxes are checked? Answer with the count as an integer.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the number of counted checkboxes.\nExample JSON:\n{\"answer\":2}"
+          "prompt": "Look at the document in the image: an invoice with visible named sections, header fields, and checkbox groups. Read the document and answer this question: In the Billing Flags section, how many checkboxes are checked? Answer with the count as an integer.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the number of counted checkboxes.\nExample JSON:\n{\"answer\":2}"
         }
       },
       "task_variant": "checked_box_count",
@@ -464,7 +544,7 @@
         "vendor_name:value": [
           214.0,
           245.5,
-          397.0,
+          440.0,
           268.5
         ]
       },
@@ -512,7 +592,7 @@
     "render_spec": {
       "canvas_height": 920,
       "canvas_width": 1280,
-      "geometry_seed": 6103091242494522,
+      "geometry_seed": 7898050985527226,
       "page_shadow_offset_px": 14,
       "receipt_page_height_px": 760,
       "receipt_page_width_px": 520,
@@ -575,13 +655,13 @@
           "bbox_px": [
             214.0,
             245.5,
-            397.0,
+            440.0,
             268.5
           ],
           "entity_id": "vendor_name:value",
           "entity_type": "document_field_value",
           "field_id": "vendor_name",
-          "text": "Blue Oak Co."
+          "text": "Trailhead Office"
         },
         {
           "bbox_id": "invoice_number",
@@ -619,7 +699,7 @@
           "entity_id": "invoice_number:value",
           "entity_type": "document_field_value",
           "field_id": "invoice_number",
-          "text": "INV-49690"
+          "text": "INV-67039"
         },
         {
           "bbox_id": "due_date",
@@ -657,7 +737,7 @@
           "entity_id": "due_date:value",
           "entity_type": "document_field_value",
           "field_id": "due_date",
-          "text": "2026-01-08"
+          "text": "2026-02-04"
         },
         {
           "bbox_id": "delivery_options",
@@ -726,7 +806,7 @@
             238.0,
             405.0
           ],
-          "checked": false,
+          "checked": true,
           "entity_id": "delivery_options:1:checkbox",
           "entity_type": "document_checkbox",
           "item_id": "delivery_options:1",
@@ -782,7 +862,7 @@
             238.0,
             517.0
           ],
-          "checked": false,
+          "checked": true,
           "entity_id": "delivery_options:3:checkbox",
           "entity_type": "document_checkbox",
           "item_id": "delivery_options:3",
@@ -841,7 +921,7 @@
             690.0,
             349.0
           ],
-          "checked": false,
+          "checked": true,
           "entity_id": "billing_flags:0:checkbox",
           "entity_type": "document_checkbox",
           "item_id": "billing_flags:0",
@@ -869,7 +949,7 @@
             690.0,
             405.0
           ],
-          "checked": false,
+          "checked": true,
           "entity_id": "billing_flags:1:checkbox",
           "entity_type": "document_checkbox",
           "item_id": "billing_flags:1",
@@ -897,7 +977,7 @@
             690.0,
             461.0
           ],
-          "checked": false,
+          "checked": true,
           "entity_id": "billing_flags:2:checkbox",
           "entity_type": "document_checkbox",
           "item_id": "billing_flags:2",
@@ -925,7 +1005,7 @@
             690.0,
             517.0
           ],
-          "checked": false,
+          "checked": true,
           "entity_id": "billing_flags:3:checkbox",
           "entity_type": "document_checkbox",
           "item_id": "billing_flags:3",
@@ -956,7 +1036,12 @@
       "scene_kind": "document_invoice_sheet"
     },
     "witness_symbolic": {
-      "bbox_id_sequence": [],
+      "bbox_id_sequence": [
+        "billing_flags:0:checkbox",
+        "billing_flags:1:checkbox",
+        "billing_flags:2:checkbox",
+        "billing_flags:3:checkbox"
+      ],
       "section_id": "billing_flags"
     }
   },

@@ -1,15 +1,15 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 12
+    "value": 1
   },
   "evidence_gt": {
     "type": "bbox_set",
     "value": [
       [
-        93.0,
+        332.0,
         222.0,
-        213.0,
+        452.0,
         318.0
       ]
     ]
@@ -18,11 +18,11 @@
     "format": "png",
     "path": "puzzles/task_puzzles_arithmetic_equation_value/images/operand_unknown/0002.png"
   },
-  "instance_seed": 2121076994281285,
-  "prompt": "Look at the arithmetic puzzle in the image: a card-style arithmetic puzzle with 2 to 5 boxed values on the left, arithmetic operators between them, an equals sign, and one boxed result on the right. Read the boxed expression and infer the missing value. What integer completes the left side of the equation when placed in the question-mark box?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the question-mark operand slot.\nAnswer rule: set \"answer\" to the exact integer value requested by the puzzle.\nExample JSON:\n{\"evidence\":[[120,180,240,276]],\"answer\":5}",
+  "instance_seed": 3246390188032704,
+  "prompt": "Use the boxed-number arithmetic puzzle in the image: an outline-style arithmetic puzzle with 2 to 5 boxed values on the left, arithmetic operators between them, an equals sign, and one boxed result on the right. Solve the one-row arithmetic puzzle and report the missing integer. What number should replace the question mark?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the question-mark operand slot.\nAnswer format: set \"answer\" to the exact integer value requested by the puzzle.\nExample JSON:\n{\"evidence\":[[120,180,240,276]],\"answer\":5}",
   "prompt_variants": {
-    "answer_and_evidence": "Look at the arithmetic puzzle in the image: a card-style arithmetic puzzle with 2 to 5 boxed values on the left, arithmetic operators between them, an equals sign, and one boxed result on the right. Read the boxed expression and infer the missing value. What integer completes the left side of the equation when placed in the question-mark box?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the question-mark operand slot.\nAnswer rule: set \"answer\" to the exact integer value requested by the puzzle.\nExample JSON:\n{\"evidence\":[[120,180,240,276]],\"answer\":5}",
-    "answer_only": "Look at the arithmetic puzzle in the image: a card-style arithmetic puzzle with 2 to 5 boxed values on the left, arithmetic operators between them, an equals sign, and one boxed result on the right. Read the boxed expression and infer the missing value. What integer completes the left side of the equation when placed in the question-mark box?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the exact integer value requested by the puzzle.\nExample JSON:\n{\"answer\":5}"
+    "answer_and_evidence": "Use the boxed-number arithmetic puzzle in the image: an outline-style arithmetic puzzle with 2 to 5 boxed values on the left, arithmetic operators between them, an equals sign, and one boxed result on the right. Solve the one-row arithmetic puzzle and report the missing integer. What number should replace the question mark?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the question-mark operand slot.\nAnswer format: set \"answer\" to the exact integer value requested by the puzzle.\nExample JSON:\n{\"evidence\":[[120,180,240,276]],\"answer\":5}",
+    "answer_only": "Use the boxed-number arithmetic puzzle in the image: an outline-style arithmetic puzzle with 2 to 5 boxed values on the left, arithmetic operators between them, an equals sign, and one boxed result on the right. Solve the one-row arithmetic puzzle and report the missing integer. What number should replace the question mark?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the exact integer value requested by the puzzle.\nExample JSON:\n{\"answer\":5}"
   },
   "task": "task_puzzles_arithmetic_equation_value",
   "task_variant": "operand_unknown",
@@ -32,13 +32,24 @@
         1,
         24
       ],
-      "answer_value": 12,
+      "answer_value": 1,
       "equation_rows": [
         [
           {
-            "is_unknown": true,
+            "is_unknown": false,
             "kind": "slot",
             "slot_id": "slot_operand_0",
+            "text": "4",
+            "value": 4
+          },
+          {
+            "kind": "operator",
+            "text": "+"
+          },
+          {
+            "is_unknown": true,
+            "kind": "slot",
+            "slot_id": "slot_operand_1",
             "text": "?",
             "value": null
           },
@@ -49,31 +60,9 @@
           {
             "is_unknown": false,
             "kind": "slot",
-            "slot_id": "slot_operand_1",
-            "text": "8",
-            "value": 8
-          },
-          {
-            "kind": "operator",
-            "text": "+"
-          },
-          {
-            "is_unknown": false,
-            "kind": "slot",
             "slot_id": "slot_operand_2",
-            "text": "1",
-            "value": 1
-          },
-          {
-            "kind": "operator",
-            "text": "-"
-          },
-          {
-            "is_unknown": false,
-            "kind": "slot",
-            "slot_id": "slot_operand_3",
-            "text": "9",
-            "value": 9
+            "text": "11",
+            "value": 11
           },
           {
             "kind": "operator",
@@ -83,51 +72,49 @@
             "is_unknown": false,
             "kind": "slot",
             "slot_id": "slot_result",
-            "text": "12",
-            "value": 12
+            "text": "16",
+            "value": 16
           }
         ]
       ],
       "max_visible_value": 32,
-      "operand_count": 4,
+      "operand_count": 3,
       "operand_count_range": [
         2,
         5
       ],
-      "query_slot_id": "slot_operand_0",
+      "query_slot_id": "slot_operand_1",
       "question_format": "unknown_slot_equation",
-      "scene_variant": "equation_card",
+      "scene_variant": "equation_outline",
       "scene_variant_probabilities": {
         "equation_card": 0.3333333333333333,
         "equation_outline": 0.3333333333333333,
         "equation_strip": 0.3333333333333333
       },
-      "slot_count": 5,
+      "slot_count": 4,
       "slot_count_range": [
         3,
         6
       ],
       "solver_trace": {
-        "hidden_operand_index": 0,
+        "hidden_operand_index": 1,
         "operand_values": [
-          12,
-          8,
+          4,
           1,
-          9
+          11
         ],
-        "operator_count": 3,
+        "operator_count": 2,
         "operator_symbols": [
           "+",
-          "+",
-          "-"
+          "+"
         ],
-        "operator_variety": 2,
-        "result_value": 12,
+        "operator_variety": 1,
+        "result_value": 16,
         "unknown_side": "left"
       },
       "step_count": 1,
       "supporting_slot_ids": [
-        "slot_operand_0"
+        "slot_operand_1"
       ],
       "task_variant": "operand_unknown",
       "task_variant_probabilities": {
@@ -138,9 +125,9 @@
     "projected_evidence": {
       "bbox_set": [
         [
-          93.0,
+          332.0,
           222.0,
-          213.0,
+          452.0,
           318.0
         ]
       ]
@@ -151,18 +138,18 @@
           1,
           24
         ],
-        "operand_count": 4,
+        "operand_count": 3,
         "operand_count_range": [
           2,
           5
         ],
-        "scene_variant": "equation_card",
+        "scene_variant": "equation_outline",
         "scene_variant_probabilities": {
           "equation_card": 0.3333333333333333,
           "equation_outline": 0.3333333333333333,
           "equation_strip": 0.3333333333333333
         },
-        "slot_count": 5,
+        "slot_count": 4,
         "slot_count_range": [
           3,
           6
@@ -176,7 +163,7 @@
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 4,
+        "answer_or_evidence_variant_index": 1,
         "prompt_bundle_id": "puzzles_arithmetic_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -186,14 +173,14 @@
           "json_example_answer_only": "{\"answer\":5}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "object_description": "a card-style arithmetic puzzle with 2 to 5 boxed values on the left, arithmetic operators between them, an equals sign, and one boxed result on the right"
+          "object_description": "an outline-style arithmetic puzzle with 2 to 5 boxed values on the left, arithmetic operators between them, an equals sign, and one boxed result on the right"
         },
         "task_family_key": "arithmetic_unknown_slot_puzzle",
-        "task_family_variant_index": 1,
+        "task_family_variant_index": 4,
         "task_key": "equation_value_query",
-        "task_variant_index": 2,
+        "task_variant_index": 1,
         "task_variant_key": "operand_unknown",
-        "task_variant_template_index": 4,
+        "task_variant_template_index": 0,
         "template_paths": [
           "puzzles/arithmetic/puzzles_arithmetic_v1.json"
         ],
@@ -209,7 +196,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 4,
+            "answer_or_evidence_variant_index": 1,
             "prompt_bundle_id": "puzzles_arithmetic_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -219,14 +206,14 @@
               "json_example_answer_only": "{\"answer\":5}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a card-style arithmetic puzzle with 2 to 5 boxed values on the left, arithmetic operators between them, an equals sign, and one boxed result on the right"
+              "object_description": "an outline-style arithmetic puzzle with 2 to 5 boxed values on the left, arithmetic operators between them, an equals sign, and one boxed result on the right"
             },
             "task_family_key": "arithmetic_unknown_slot_puzzle",
-            "task_family_variant_index": 1,
+            "task_family_variant_index": 4,
             "task_key": "equation_value_query",
-            "task_variant_index": 2,
+            "task_variant_index": 1,
             "task_variant_key": "operand_unknown",
-            "task_variant_template_index": 4,
+            "task_variant_template_index": 0,
             "template_paths": [
               "puzzles/arithmetic/puzzles_arithmetic_v1.json"
             ],
@@ -237,12 +224,12 @@
               "task_variant:operand_unknown": 5
             }
           },
-          "prompt": "Look at the arithmetic puzzle in the image: a card-style arithmetic puzzle with 2 to 5 boxed values on the left, arithmetic operators between them, an equals sign, and one boxed result on the right. Read the boxed expression and infer the missing value. What integer completes the left side of the equation when placed in the question-mark box?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the question-mark operand slot.\nAnswer rule: set \"answer\" to the exact integer value requested by the puzzle.\nExample JSON:\n{\"evidence\":[[120,180,240,276]],\"answer\":5}"
+          "prompt": "Use the boxed-number arithmetic puzzle in the image: an outline-style arithmetic puzzle with 2 to 5 boxed values on the left, arithmetic operators between them, an equals sign, and one boxed result on the right. Solve the one-row arithmetic puzzle and report the missing integer. What number should replace the question mark?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the question-mark operand slot.\nAnswer format: set \"answer\" to the exact integer value requested by the puzzle.\nExample JSON:\n{\"evidence\":[[120,180,240,276]],\"answer\":5}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 0,
+            "answer_or_evidence_variant_index": 3,
             "prompt_bundle_id": "puzzles_arithmetic_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -252,14 +239,14 @@
               "json_example_answer_only": "{\"answer\":5}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a card-style arithmetic puzzle with 2 to 5 boxed values on the left, arithmetic operators between them, an equals sign, and one boxed result on the right"
+              "object_description": "an outline-style arithmetic puzzle with 2 to 5 boxed values on the left, arithmetic operators between them, an equals sign, and one boxed result on the right"
             },
             "task_family_key": "arithmetic_unknown_slot_puzzle",
-            "task_family_variant_index": 1,
+            "task_family_variant_index": 4,
             "task_key": "equation_value_query",
-            "task_variant_index": 2,
+            "task_variant_index": 1,
             "task_variant_key": "operand_unknown",
-            "task_variant_template_index": 4,
+            "task_variant_template_index": 0,
             "template_paths": [
               "puzzles/arithmetic/puzzles_arithmetic_v1.json"
             ],
@@ -270,7 +257,7 @@
               "task_variant:operand_unknown": 5
             }
           },
-          "prompt": "Look at the arithmetic puzzle in the image: a card-style arithmetic puzzle with 2 to 5 boxed values on the left, arithmetic operators between them, an equals sign, and one boxed result on the right. Read the boxed expression and infer the missing value. What integer completes the left side of the equation when placed in the question-mark box?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the exact integer value requested by the puzzle.\nExample JSON:\n{\"answer\":5}"
+          "prompt": "Use the boxed-number arithmetic puzzle in the image: an outline-style arithmetic puzzle with 2 to 5 boxed values on the left, arithmetic operators between them, an equals sign, and one boxed result on the right. Solve the one-row arithmetic puzzle and report the missing integer. What number should replace the question mark?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the exact integer value requested by the puzzle.\nExample JSON:\n{\"answer\":5}"
         }
       },
       "task_variant": "operand_unknown",
@@ -279,10 +266,10 @@
     "render_map": {
       "image_id": "img0",
       "scene_bbox_px": [
-        72.0,
-        72.0,
-        1167.0,
-        468.0
+        93.0,
+        222.0,
+        930.0,
+        318.0
       ],
       "slot_bboxes_px": {
         "slot_operand_0": [
@@ -303,16 +290,10 @@
           691.0,
           318.0
         ],
-        "slot_operand_3": [
-          787.0,
-          222.0,
-          907.0,
-          318.0
-        ],
         "slot_result": [
-          1026.0,
+          810.0,
           222.0,
-          1146.0,
+          930.0,
           318.0
         ]
       }
@@ -334,7 +315,7 @@
         }
       },
       "canvas_height": 540,
-      "canvas_width": 1239,
+      "canvas_width": 1023,
       "coord_space": "pixel",
       "post_image_noise": {
         "applied": false,
@@ -353,12 +334,12 @@
         "enabled": false
       },
       "scene_bbox_px": [
-        72.0,
-        72.0,
-        1167.0,
-        468.0
+        93.0,
+        222.0,
+        930.0,
+        318.0
       ],
-      "scene_variant": "equation_card",
+      "scene_variant": "equation_outline",
       "text_style": {
         "operator_font_size_px": 54,
         "value_font_size_px": 46
@@ -368,11 +349,11 @@
       "entities": [
         {
           "attrs": {
-            "is_unknown": true,
+            "is_unknown": false,
             "row_index": 0,
-            "text": "?",
+            "text": "4",
             "token_index": 0,
-            "value": null
+            "value": 4
           },
           "bbox_px": [
             93.0,
@@ -400,11 +381,11 @@
         },
         {
           "attrs": {
-            "is_unknown": false,
+            "is_unknown": true,
             "row_index": 0,
-            "text": "8",
+            "text": "?",
             "token_index": 2,
-            "value": 8
+            "value": null
           },
           "bbox_px": [
             332.0,
@@ -434,9 +415,9 @@
           "attrs": {
             "is_unknown": false,
             "row_index": 0,
-            "text": "1",
+            "text": "11",
             "token_index": 4,
-            "value": 1
+            "value": 11
           },
           "bbox_px": [
             571.0,
@@ -450,14 +431,14 @@
         {
           "attrs": {
             "row_index": 0,
-            "text": "-",
+            "text": "=",
             "token_index": 5
           },
           "bbox_px": [
             727.0,
-            259.5,
-            751.0,
-            280.5
+            256.0,
+            774.0,
+            284.0
           ],
           "entity_id": "operator_r0_t5",
           "entity_type": "puzzle_operator"
@@ -466,46 +447,14 @@
           "attrs": {
             "is_unknown": false,
             "row_index": 0,
-            "text": "9",
+            "text": "16",
             "token_index": 6,
-            "value": 9
+            "value": 16
           },
           "bbox_px": [
-            787.0,
+            810.0,
             222.0,
-            907.0,
-            318.0
-          ],
-          "entity_id": "slot_operand_3",
-          "entity_type": "puzzle_slot"
-        },
-        {
-          "attrs": {
-            "row_index": 0,
-            "text": "=",
-            "token_index": 7
-          },
-          "bbox_px": [
-            943.0,
-            256.0,
-            990.0,
-            284.0
-          ],
-          "entity_id": "operator_r0_t7",
-          "entity_type": "puzzle_operator"
-        },
-        {
-          "attrs": {
-            "is_unknown": false,
-            "row_index": 0,
-            "text": "12",
-            "token_index": 8,
-            "value": 12
-          },
-          "bbox_px": [
-            1026.0,
-            222.0,
-            1146.0,
+            930.0,
             318.0
           ],
           "entity_id": "slot_result",
@@ -513,20 +462,20 @@
         }
       ],
       "relations": {
-        "answer_value": 12,
-        "query_slot_id": "slot_operand_0",
-        "scene_variant": "equation_card",
+        "answer_value": 1,
+        "query_slot_id": "slot_operand_1",
+        "scene_variant": "equation_outline",
         "task_variant": "operand_unknown"
       },
-      "scene_kind": "puzzle_arithmetic_equation_card"
+      "scene_kind": "puzzle_arithmetic_equation_outline"
     },
     "witness_symbolic": {
       "type": "bbox_set",
       "value": [
         [
-          93.0,
+          332.0,
           222.0,
-          213.0,
+          452.0,
           318.0
         ]
       ]

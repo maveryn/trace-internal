@@ -1,34 +1,46 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 4
+    "value": 6
   },
   "evidence_gt": {
     "type": "bbox_set",
     "value": [
       [
         130.0,
+        360.9,
+        364.0,
+        391.6
+      ],
+      [
+        130.0,
+        391.6,
+        364.0,
+        422.3
+      ],
+      [
+        130.0,
         422.3,
         364.0,
-        483.7
+        514.4
       ],
       [
         130.0,
-        483.7,
+        514.4,
         364.0,
-        575.8
+        545.1
       ],
       [
         130.0,
-        575.8,
+        545.1,
         364.0,
-        667.9
+        637.2
       ],
       [
         130.0,
-        667.9,
+        637.2,
         364.0,
-        698.6
+        729.3
       ]
     ]
   },
@@ -36,17 +48,17 @@
     "format": "png",
     "path": "temporal/task_temporal_schedule_day_planner/images/maximum_non_overlapping_count/0005.png"
   },
-  "instance_seed": 8286302626272664,
-  "prompt": "Work from the day planner shown in the image: one single-day schedule with time labels and 7 scheduled event blocks. Work from the full schedule view to answer the question. What is the greatest number of scheduled events that can be chosen with no overlaps?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for the unique maximum-size non-overlapping event set.\nAnswer rule: set \"answer\" to the maximum number of non-overlapping events as an integer.\nExample JSON:\n{\"evidence\":[[250,220,396,316],[404,316,550,412],[558,412,704,508],[250,508,396,604]],\"answer\":4}",
+  "instance_seed": 3908954166139308,
+  "prompt": "Look at the single-day schedule in the image. It shows one single-day schedule with time labels and 11 scheduled event blocks. Answer the question using the schedule. How many scheduled events can be selected at most so that none overlap?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for the unique maximum-size non-overlapping event set.\nAnswer field: set \"answer\" to the maximum number of non-overlapping events as an integer.\nExample JSON:\n{\"evidence\":[[250,220,396,316],[404,316,550,412],[558,412,704,508],[250,508,396,604]],\"answer\":4}",
   "prompt_variants": {
-    "answer_and_evidence": "Work from the day planner shown in the image: one single-day schedule with time labels and 7 scheduled event blocks. Work from the full schedule view to answer the question. What is the greatest number of scheduled events that can be chosen with no overlaps?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for the unique maximum-size non-overlapping event set.\nAnswer rule: set \"answer\" to the maximum number of non-overlapping events as an integer.\nExample JSON:\n{\"evidence\":[[250,220,396,316],[404,316,550,412],[558,412,704,508],[250,508,396,604]],\"answer\":4}",
-    "answer_only": "Work from the day planner shown in the image: one single-day schedule with time labels and 7 scheduled event blocks. Work from the full schedule view to answer the question. What is the greatest number of scheduled events that can be chosen with no overlaps?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the maximum number of non-overlapping events as an integer.\nExample JSON:\n{\"answer\":4}"
+    "answer_and_evidence": "Look at the single-day schedule in the image. It shows one single-day schedule with time labels and 11 scheduled event blocks. Answer the question using the schedule. How many scheduled events can be selected at most so that none overlap?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for the unique maximum-size non-overlapping event set.\nAnswer field: set \"answer\" to the maximum number of non-overlapping events as an integer.\nExample JSON:\n{\"evidence\":[[250,220,396,316],[404,316,550,412],[558,412,704,508],[250,508,396,604]],\"answer\":4}",
+    "answer_only": "Look at the single-day schedule in the image. It shows one single-day schedule with time labels and 11 scheduled event blocks. Answer the question using the schedule. How many scheduled events can be selected at most so that none overlap?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the maximum number of non-overlapping events as an integer.\nExample JSON:\n{\"answer\":4}"
   },
   "task": "task_temporal_schedule_day_planner",
   "task_variant": "maximum_non_overlapping_count",
   "trace_payload": {
     "execution_trace": {
-      "accent_color_name": "maroon",
+      "accent_color_name": "red",
       "accent_color_name_probabilities": {
         "blue": 0.1,
         "brown": 0.1,
@@ -63,12 +75,14 @@
         "event_a",
         "event_b",
         "event_c",
-        "event_d"
+        "event_d",
+        "event_e",
+        "event_f"
       ],
-      "answer_value": 4,
+      "answer_value": 6,
       "day_label": "Wednesday",
       "end_hour": 18,
-      "event_count": 7,
+      "event_count": 11,
       "event_count_support": [
         7,
         8,
@@ -77,81 +91,125 @@
       ],
       "events": [
         {
-          "duration_slots": 2,
-          "end_slot": 11,
-          "end_time": "13:30",
+          "duration_slots": 1,
+          "end_slot": 8,
+          "end_time": "12:00",
           "event_id": "event_a",
           "is_reference": false,
           "label": "A",
+          "lane_index": 0,
+          "start_slot": 7,
+          "start_time": "11:30"
+        },
+        {
+          "duration_slots": 1,
+          "end_slot": 9,
+          "end_time": "12:30",
+          "event_id": "event_b",
+          "is_reference": false,
+          "label": "B",
+          "lane_index": 0,
+          "start_slot": 8,
+          "start_time": "12:00"
+        },
+        {
+          "duration_slots": 3,
+          "end_slot": 12,
+          "end_time": "14:00",
+          "event_id": "event_c",
+          "is_reference": false,
+          "label": "C",
           "lane_index": 0,
           "start_slot": 9,
           "start_time": "12:30"
         },
         {
-          "duration_slots": 3,
-          "end_slot": 14,
-          "end_time": "15:00",
-          "event_id": "event_b",
-          "is_reference": false,
-          "label": "B",
-          "lane_index": 0,
-          "start_slot": 11,
-          "start_time": "13:30"
-        },
-        {
-          "duration_slots": 3,
-          "end_slot": 17,
-          "end_time": "16:30",
-          "event_id": "event_c",
-          "is_reference": false,
-          "label": "C",
-          "lane_index": 0,
-          "start_slot": 14,
-          "start_time": "15:00"
-        },
-        {
           "duration_slots": 1,
-          "end_slot": 18,
-          "end_time": "17:00",
+          "end_slot": 13,
+          "end_time": "14:30",
           "event_id": "event_d",
           "is_reference": false,
           "label": "D",
           "lane_index": 0,
-          "start_slot": 17,
-          "start_time": "16:30"
+          "start_slot": 12,
+          "start_time": "14:00"
         },
         {
-          "duration_slots": 4,
-          "end_slot": 14,
-          "end_time": "15:00",
+          "duration_slots": 3,
+          "end_slot": 16,
+          "end_time": "16:00",
           "event_id": "event_e",
           "is_reference": false,
           "label": "E",
-          "lane_index": 1,
-          "start_slot": 10,
-          "start_time": "13:00"
-        },
-        {
-          "duration_slots": 4,
-          "end_slot": 17,
-          "end_time": "16:30",
-          "event_id": "event_f",
-          "is_reference": false,
-          "label": "F",
-          "lane_index": 2,
+          "lane_index": 0,
           "start_slot": 13,
           "start_time": "14:30"
         },
         {
+          "duration_slots": 3,
+          "end_slot": 19,
+          "end_time": "17:30",
+          "event_id": "event_f",
+          "is_reference": false,
+          "label": "F",
+          "lane_index": 0,
+          "start_slot": 16,
+          "start_time": "16:00"
+        },
+        {
           "duration_slots": 2,
-          "end_slot": 18,
-          "end_time": "17:00",
+          "end_slot": 9,
+          "end_time": "12:30",
           "event_id": "event_g",
           "is_reference": false,
           "label": "G",
           "lane_index": 1,
-          "start_slot": 16,
-          "start_time": "16:00"
+          "start_slot": 7,
+          "start_time": "11:30"
+        },
+        {
+          "duration_slots": 4,
+          "end_slot": 12,
+          "end_time": "14:00",
+          "event_id": "event_h",
+          "is_reference": false,
+          "label": "H",
+          "lane_index": 2,
+          "start_slot": 8,
+          "start_time": "12:00"
+        },
+        {
+          "duration_slots": 2,
+          "end_slot": 13,
+          "end_time": "14:30",
+          "event_id": "event_i",
+          "is_reference": false,
+          "label": "I",
+          "lane_index": 1,
+          "start_slot": 11,
+          "start_time": "13:30"
+        },
+        {
+          "duration_slots": 4,
+          "end_slot": 16,
+          "end_time": "16:00",
+          "event_id": "event_j",
+          "is_reference": false,
+          "label": "J",
+          "lane_index": 2,
+          "start_slot": 12,
+          "start_time": "14:00"
+        },
+        {
+          "duration_slots": 4,
+          "end_slot": 19,
+          "end_time": "17:30",
+          "event_id": "event_k",
+          "is_reference": false,
+          "label": "K",
+          "lane_index": 1,
+          "start_slot": 15,
+          "start_time": "15:30"
         }
       ],
       "lane_count": 3,
@@ -205,33 +263,45 @@
       "bbox_set": [
         [
           130.0,
+          360.9,
+          364.0,
+          391.6
+        ],
+        [
+          130.0,
+          391.6,
+          364.0,
+          422.3
+        ],
+        [
+          130.0,
           422.3,
           364.0,
-          483.7
+          514.4
         ],
         [
           130.0,
-          483.7,
+          514.4,
           364.0,
-          575.8
+          545.1
         ],
         [
           130.0,
-          575.8,
+          545.1,
           364.0,
-          667.9
+          637.2
         ],
         [
           130.0,
-          667.9,
+          637.2,
           364.0,
-          698.6
+          729.3
         ]
       ]
     },
     "query_spec": {
       "params": {
-        "accent_color_name": "maroon",
+        "accent_color_name": "red",
         "accent_color_name_probabilities": {
           "blue": 0.1,
           "brown": 0.1,
@@ -248,11 +318,13 @@
           "event_a",
           "event_b",
           "event_c",
-          "event_d"
+          "event_d",
+          "event_e",
+          "event_f"
         ],
         "day_label": "Wednesday",
         "end_hour": 18,
-        "event_count": 7,
+        "event_count": 11,
         "event_count_support": [
           7,
           8,
@@ -309,7 +381,7 @@
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 4,
+        "answer_or_evidence_variant_index": 3,
         "prompt_bundle_id": "temporal_schedule_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -319,14 +391,14 @@
           "json_example_answer_only": "{\"answer\":4}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "object_description": "one single-day schedule with time labels and 7 scheduled event blocks"
+          "object_description": "one single-day schedule with time labels and 11 scheduled event blocks"
         },
         "task_family_key": "day_schedule",
-        "task_family_variant_index": 3,
+        "task_family_variant_index": 1,
         "task_key": "schedule_day_query",
-        "task_variant_index": 3,
+        "task_variant_index": 0,
         "task_variant_key": "maximum_non_overlapping_count",
-        "task_variant_template_index": 4,
+        "task_variant_template_index": 2,
         "template_paths": [
           "temporal/schedule/temporal_schedule_v1.json"
         ],
@@ -342,7 +414,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 4,
+            "answer_or_evidence_variant_index": 3,
             "prompt_bundle_id": "temporal_schedule_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -352,14 +424,14 @@
               "json_example_answer_only": "{\"answer\":4}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "one single-day schedule with time labels and 7 scheduled event blocks"
+              "object_description": "one single-day schedule with time labels and 11 scheduled event blocks"
             },
             "task_family_key": "day_schedule",
-            "task_family_variant_index": 3,
+            "task_family_variant_index": 1,
             "task_key": "schedule_day_query",
-            "task_variant_index": 3,
+            "task_variant_index": 0,
             "task_variant_key": "maximum_non_overlapping_count",
-            "task_variant_template_index": 4,
+            "task_variant_template_index": 2,
             "template_paths": [
               "temporal/schedule/temporal_schedule_v1.json"
             ],
@@ -370,12 +442,12 @@
               "task_variant:maximum_non_overlapping_count": 5
             }
           },
-          "prompt": "Work from the day planner shown in the image: one single-day schedule with time labels and 7 scheduled event blocks. Work from the full schedule view to answer the question. What is the greatest number of scheduled events that can be chosen with no overlaps?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for the unique maximum-size non-overlapping event set.\nAnswer rule: set \"answer\" to the maximum number of non-overlapping events as an integer.\nExample JSON:\n{\"evidence\":[[250,220,396,316],[404,316,550,412],[558,412,704,508],[250,508,396,604]],\"answer\":4}"
+          "prompt": "Look at the single-day schedule in the image. It shows one single-day schedule with time labels and 11 scheduled event blocks. Answer the question using the schedule. How many scheduled events can be selected at most so that none overlap?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for the unique maximum-size non-overlapping event set.\nAnswer field: set \"answer\" to the maximum number of non-overlapping events as an integer.\nExample JSON:\n{\"evidence\":[[250,220,396,316],[404,316,550,412],[558,412,704,508],[250,508,396,604]],\"answer\":4}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 2,
+            "answer_or_evidence_variant_index": 4,
             "prompt_bundle_id": "temporal_schedule_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -385,14 +457,14 @@
               "json_example_answer_only": "{\"answer\":4}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "one single-day schedule with time labels and 7 scheduled event blocks"
+              "object_description": "one single-day schedule with time labels and 11 scheduled event blocks"
             },
             "task_family_key": "day_schedule",
-            "task_family_variant_index": 3,
+            "task_family_variant_index": 1,
             "task_key": "schedule_day_query",
-            "task_variant_index": 3,
+            "task_variant_index": 0,
             "task_variant_key": "maximum_non_overlapping_count",
-            "task_variant_template_index": 4,
+            "task_variant_template_index": 2,
             "template_paths": [
               "temporal/schedule/temporal_schedule_v1.json"
             ],
@@ -403,7 +475,7 @@
               "task_variant:maximum_non_overlapping_count": 5
             }
           },
-          "prompt": "Work from the day planner shown in the image: one single-day schedule with time labels and 7 scheduled event blocks. Work from the full schedule view to answer the question. What is the greatest number of scheduled events that can be chosen with no overlaps?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the maximum number of non-overlapping events as an integer.\nExample JSON:\n{\"answer\":4}"
+          "prompt": "Look at the single-day schedule in the image. It shows one single-day schedule with time labels and 11 scheduled event blocks. Answer the question using the schedule. How many scheduled events can be selected at most so that none overlap?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the maximum number of non-overlapping events as an integer.\nExample JSON:\n{\"answer\":4}"
         }
       },
       "task_variant": "maximum_non_overlapping_count",
@@ -414,51 +486,77 @@
         "event_a",
         "event_b",
         "event_c",
-        "event_d"
+        "event_d",
+        "event_e",
+        "event_f"
       ],
       "day_label": "Wednesday",
       "event_bboxes_by_id": {
         "event_a": [
           130.0,
-          422.3,
+          360.9,
           364.0,
-          483.7
+          391.6
         ],
         "event_b": [
           130.0,
-          483.7,
+          391.6,
           364.0,
-          575.8
+          422.3
         ],
         "event_c": [
           130.0,
-          575.8,
+          422.3,
           364.0,
-          667.9
+          514.4
         ],
         "event_d": [
           130.0,
-          667.9,
+          514.4,
           364.0,
-          698.6
+          545.1
         ],
         "event_e": [
-          372.0,
-          453.0,
-          606.0,
-          575.8
+          130.0,
+          545.1,
+          364.0,
+          637.2
         ],
         "event_f": [
-          614.0,
-          545.1,
-          848.0,
-          667.9
+          130.0,
+          637.2,
+          364.0,
+          729.3
         ],
         "event_g": [
           372.0,
-          637.2,
+          360.9,
           606.0,
-          698.6
+          422.3
+        ],
+        "event_h": [
+          614.0,
+          391.6,
+          848.0,
+          514.4
+        ],
+        "event_i": [
+          372.0,
+          483.7,
+          606.0,
+          545.1
+        ],
+        "event_j": [
+          614.0,
+          514.4,
+          848.0,
+          637.2
+        ],
+        "event_k": [
+          372.0,
+          606.5,
+          606.0,
+          729.3
         ]
       },
       "image_id": "img0",
@@ -520,7 +618,7 @@
       ],
       "scene_variant": "outline",
       "schedule_style": {
-        "accent_color_name": "maroon",
+        "accent_color_name": "red",
         "header_kind": "line",
         "resolved_colors_rgb": {
           "event_fill": [
@@ -529,14 +627,14 @@
             255
           ],
           "event_outline": [
-            87,
-            31,
-            39
+            133,
+            29,
+            29
           ],
           "grid_line": [
-            218,
-            206,
-            207
+            228,
+            205,
+            205
           ],
           "header_fill": [
             255,
@@ -544,14 +642,14 @@
             255
           ],
           "header_text": [
-            87,
-            31,
-            39
+            133,
+            29,
+            29
           ],
           "minor_grid_line": [
-            235,
+            240,
             228,
-            229
+            228
           ],
           "panel_fill": [
             255,
@@ -559,9 +657,9 @@
             255
           ],
           "panel_outline": [
-            63,
-            23,
-            29
+            97,
+            21,
+            21
           ],
           "reference_fill": [
             255,
@@ -569,9 +667,9 @@
             255
           ],
           "reference_outline": [
-            150,
-            54,
-            68
+            230,
+            50,
+            50
           ]
         },
         "style_variant": "marker"
@@ -582,15 +680,79 @@
         {
           "bbox_xyxy_px": [
             130.0,
-            422.3,
+            360.9,
             364.0,
-            483.7
+            391.6
           ],
-          "duration_minutes": 60,
-          "end_total_minutes": 810,
+          "duration_minutes": 30,
+          "end_total_minutes": 720,
           "event_id": "event_a",
           "is_reference": false,
           "label": "A",
+          "lane_index": 0,
+          "start_total_minutes": 690,
+          "type": "scheduled_event_block"
+        },
+        {
+          "bbox_xyxy_px": [
+            372.0,
+            360.9,
+            606.0,
+            422.3
+          ],
+          "duration_minutes": 60,
+          "end_total_minutes": 750,
+          "event_id": "event_g",
+          "is_reference": false,
+          "label": "G",
+          "lane_index": 1,
+          "start_total_minutes": 690,
+          "type": "scheduled_event_block"
+        },
+        {
+          "bbox_xyxy_px": [
+            130.0,
+            391.6,
+            364.0,
+            422.3
+          ],
+          "duration_minutes": 30,
+          "end_total_minutes": 750,
+          "event_id": "event_b",
+          "is_reference": false,
+          "label": "B",
+          "lane_index": 0,
+          "start_total_minutes": 720,
+          "type": "scheduled_event_block"
+        },
+        {
+          "bbox_xyxy_px": [
+            614.0,
+            391.6,
+            848.0,
+            514.4
+          ],
+          "duration_minutes": 120,
+          "end_total_minutes": 840,
+          "event_id": "event_h",
+          "is_reference": false,
+          "label": "H",
+          "lane_index": 2,
+          "start_total_minutes": 720,
+          "type": "scheduled_event_block"
+        },
+        {
+          "bbox_xyxy_px": [
+            130.0,
+            422.3,
+            364.0,
+            514.4
+          ],
+          "duration_minutes": 90,
+          "end_total_minutes": 840,
+          "event_id": "event_c",
+          "is_reference": false,
+          "label": "C",
           "lane_index": 0,
           "start_total_minutes": 750,
           "type": "scheduled_event_block"
@@ -598,102 +760,102 @@
         {
           "bbox_xyxy_px": [
             372.0,
-            453.0,
-            606.0,
-            575.8
-          ],
-          "duration_minutes": 120,
-          "end_total_minutes": 900,
-          "event_id": "event_e",
-          "is_reference": false,
-          "label": "E",
-          "lane_index": 1,
-          "start_total_minutes": 780,
-          "type": "scheduled_event_block"
-        },
-        {
-          "bbox_xyxy_px": [
-            130.0,
             483.7,
-            364.0,
-            575.8
+            606.0,
+            545.1
           ],
-          "duration_minutes": 90,
-          "end_total_minutes": 900,
-          "event_id": "event_b",
+          "duration_minutes": 60,
+          "end_total_minutes": 870,
+          "event_id": "event_i",
           "is_reference": false,
-          "label": "B",
-          "lane_index": 0,
+          "label": "I",
+          "lane_index": 1,
           "start_total_minutes": 810,
           "type": "scheduled_event_block"
         },
         {
           "bbox_xyxy_px": [
+            130.0,
+            514.4,
+            364.0,
+            545.1
+          ],
+          "duration_minutes": 30,
+          "end_total_minutes": 870,
+          "event_id": "event_d",
+          "is_reference": false,
+          "label": "D",
+          "lane_index": 0,
+          "start_total_minutes": 840,
+          "type": "scheduled_event_block"
+        },
+        {
+          "bbox_xyxy_px": [
             614.0,
-            545.1,
+            514.4,
             848.0,
-            667.9
+            637.2
           ],
           "duration_minutes": 120,
-          "end_total_minutes": 990,
-          "event_id": "event_f",
+          "end_total_minutes": 960,
+          "event_id": "event_j",
           "is_reference": false,
-          "label": "F",
+          "label": "J",
           "lane_index": 2,
+          "start_total_minutes": 840,
+          "type": "scheduled_event_block"
+        },
+        {
+          "bbox_xyxy_px": [
+            130.0,
+            545.1,
+            364.0,
+            637.2
+          ],
+          "duration_minutes": 90,
+          "end_total_minutes": 960,
+          "event_id": "event_e",
+          "is_reference": false,
+          "label": "E",
+          "lane_index": 0,
           "start_total_minutes": 870,
           "type": "scheduled_event_block"
         },
         {
           "bbox_xyxy_px": [
+            372.0,
+            606.5,
+            606.0,
+            729.3
+          ],
+          "duration_minutes": 120,
+          "end_total_minutes": 1050,
+          "event_id": "event_k",
+          "is_reference": false,
+          "label": "K",
+          "lane_index": 1,
+          "start_total_minutes": 930,
+          "type": "scheduled_event_block"
+        },
+        {
+          "bbox_xyxy_px": [
             130.0,
-            575.8,
+            637.2,
             364.0,
-            667.9
+            729.3
           ],
           "duration_minutes": 90,
-          "end_total_minutes": 990,
-          "event_id": "event_c",
+          "end_total_minutes": 1050,
+          "event_id": "event_f",
           "is_reference": false,
-          "label": "C",
+          "label": "F",
           "lane_index": 0,
-          "start_total_minutes": 900,
-          "type": "scheduled_event_block"
-        },
-        {
-          "bbox_xyxy_px": [
-            372.0,
-            637.2,
-            606.0,
-            698.6
-          ],
-          "duration_minutes": 60,
-          "end_total_minutes": 1020,
-          "event_id": "event_g",
-          "is_reference": false,
-          "label": "G",
-          "lane_index": 1,
           "start_total_minutes": 960,
-          "type": "scheduled_event_block"
-        },
-        {
-          "bbox_xyxy_px": [
-            130.0,
-            667.9,
-            364.0,
-            698.6
-          ],
-          "duration_minutes": 30,
-          "end_total_minutes": 1020,
-          "event_id": "event_d",
-          "is_reference": false,
-          "label": "D",
-          "lane_index": 0,
-          "start_total_minutes": 990,
           "type": "scheduled_event_block"
         }
       ],
       "relations": {
-        "accent_color_name": "maroon",
+        "accent_color_name": "red",
         "day_label": "Wednesday",
         "reference_event_id": null,
         "scene_variant": "outline",
@@ -707,27 +869,39 @@
       "value": [
         [
           130.0,
+          360.9,
+          364.0,
+          391.6
+        ],
+        [
+          130.0,
+          391.6,
+          364.0,
+          422.3
+        ],
+        [
+          130.0,
           422.3,
           364.0,
-          483.7
+          514.4
         ],
         [
           130.0,
-          483.7,
+          514.4,
           364.0,
-          575.8
+          545.1
         ],
         [
           130.0,
-          575.8,
+          545.1,
           364.0,
-          667.9
+          637.2
         ],
         [
           130.0,
-          667.9,
+          637.2,
           364.0,
-          698.6
+          729.3
         ]
       ]
     }

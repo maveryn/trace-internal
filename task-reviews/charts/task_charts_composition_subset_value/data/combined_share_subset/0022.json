@@ -1,31 +1,32 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 75
+    "value": 26
   },
   "evidence_gt": {
     "type": "integer_list",
     "value": [
-      63,
-      12,
-      25
+      10,
+      33,
+      16,
+      41
     ]
   },
   "image": {
     "format": "png",
     "path": "charts/task_charts_composition_subset_value/images/combined_share_subset/0022.png"
   },
-  "instance_seed": 8421731170837344,
-  "prompt": "Use the composition chart in the image. It shows a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Use the printed segment or slice values to answer the composition question. Add the chart percentages for labels Osmo and Tuck. What total percentage do they contribute?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array [v1, v2, ...] listing the slice percentages in legend order for the whole chart.\nAnswer requirement: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[18,27,22,33],\"answer\":45}",
+  "instance_seed": 1481817128977731,
+  "prompt": "The image shows a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Use the chart's printed segment or slice values to compute the answer. What percentage of the whole chart comes from labels Bara and Aley combined?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array [v1, v2, ...] listing the slice percentages in legend order for the whole chart.\nAnswer field: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[18,27,22,33],\"answer\":45}",
   "prompt_variants": {
-    "answer_and_evidence": "Use the composition chart in the image. It shows a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Use the printed segment or slice values to answer the composition question. Add the chart percentages for labels Osmo and Tuck. What total percentage do they contribute?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array [v1, v2, ...] listing the slice percentages in legend order for the whole chart.\nAnswer requirement: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[18,27,22,33],\"answer\":45}",
-    "answer_only": "Use the composition chart in the image. It shows a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Use the printed segment or slice values to answer the composition question. Add the chart percentages for labels Osmo and Tuck. What total percentage do they contribute?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":45}"
+    "answer_and_evidence": "The image shows a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Use the chart's printed segment or slice values to compute the answer. What percentage of the whole chart comes from labels Bara and Aley combined?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array [v1, v2, ...] listing the slice percentages in legend order for the whole chart.\nAnswer field: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[18,27,22,33],\"answer\":45}",
+    "answer_only": "The image shows a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Use the chart's printed segment or slice values to compute the answer. What percentage of the whole chart comes from labels Bara and Aley combined?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":45}"
   },
   "task": "task_charts_composition_subset_value",
   "task_variant": "combined_share_subset",
   "trace_payload": {
     "execution_trace": {
-      "answer_value": 75,
+      "answer_value": 26,
       "category_count": 0,
       "category_count_range": [
         0,
@@ -35,34 +36,36 @@
       "composition_scope": "chart",
       "composition_total": 100,
       "evidence_labels": [
-        "Osmo",
-        "Tuck",
-        "Tips"
+        "Bara",
+        "Zoe",
+        "Aley",
+        "Gena"
       ],
       "evidence_values": [
-        63,
-        12,
-        25
+        10,
+        33,
+        16,
+        41
       ],
       "mark_color_distance_space": "lab",
       "mark_color_min_distance": 58.0,
       "mark_color_sampling_policy": "random_rgb_palette",
       "mark_fill_rgb": [
-        136,
-        96,
-        194
+        74,
+        25,
+        176
       ],
       "mark_outline_rgb": [
-        75,
-        53,
-        107
+        41,
+        14,
+        97
       ],
       "pie_like_mark_color_channel_max": 200,
       "query_category_label": "",
       "query_series_label": "",
       "query_subset_labels": [
-        "Osmo",
-        "Tuck"
+        "Bara",
+        "Aley"
       ],
       "question_format": "numeric_open",
       "scene_mode": "pie_like",
@@ -71,125 +74,153 @@
         "donut": 0.5,
         "pie": 0.5
       },
-      "series_count": 3,
+      "series_count": 4,
       "series_count_range": [
         3,
         5
       ],
       "series_labels": [
-        "Osmo",
-        "Tuck",
-        "Tips"
+        "Bara",
+        "Zoe",
+        "Aley",
+        "Gena"
       ],
       "slice_fill_palette_rgb": [
         [
-          136,
-          96,
-          194
+          74,
+          25,
+          176
         ],
         [
-          45,
-          38,
-          14
+          163,
+          48,
+          113
         ],
         [
-          22,
-          162,
-          71
+          20,
+          147,
+          74
+        ],
+        [
+          197,
+          169,
+          6
         ]
       ],
       "slice_outline_palette_rgb": [
         [
-          75,
-          53,
-          107
+          41,
+          14,
+          97
         ],
         [
-          25,
-          21,
-          8
+          90,
+          26,
+          62
         ],
         [
-          12,
-          89,
-          39
+          11,
+          81,
+          41
+        ],
+        [
+          108,
+          93,
+          3
         ]
       ],
-      "target_answer": 75,
+      "target_answer": 26,
       "target_answer_range": [
         5,
         95
       ],
       "task_variant": "combined_share_subset",
       "task_variant_probabilities": {
-        "combined_share_subset": 0.3333333333333333,
-        "stack_segment_value": 0.3333333333333333,
-        "stack_total_at_label": 0.3333333333333333
+        "combined_share_subset": 1.0,
+        "stack_segment_value": 0.0,
+        "stack_total_at_label": 0.0
       },
       "value_semantics": "percentage",
       "values": [
-        63,
-        12,
-        25
+        10,
+        33,
+        16,
+        41
       ],
       "values_by_label": {
-        "Osmo": 63,
-        "Tips": 25,
-        "Tuck": 12
+        "Aley": 16,
+        "Bara": 10,
+        "Gena": 41,
+        "Zoe": 33
       }
     },
     "projected_evidence": {
       "bbox_set": [
         [
-          252.257,
-          65.6,
-          702.176,
-          585.184
-        ],
-        [
-          181.68,
-          326.0,
           442.08,
-          504.256
-        ],
-        [
-          181.68,
           65.6,
-          442.08,
+          595.139,
           326.0
+        ],
+        [
+          442.08,
+          115.332,
+          702.102,
+          561.617
+        ],
+        [
+          302.551,
+          326.0,
+          552.953,
+          585.886
+        ],
+        [
+          184.214,
+          65.6,
+          442.08,
+          545.863
         ]
       ],
       "integer_list": [
-        63,
-        12,
-        25
+        10,
+        33,
+        16,
+        41
       ],
       "pixel_point_map": {
-        "Osmo": [
-          585.47,
-          388.05
+        "Aley": [
+          432.27,
+          481.932
         ],
-        "Tips": [
-          331.602,
-          215.522
+        "Bara": [
+          490.361,
+          177.407
         ],
-        "Tuck": [
-          296.812,
-          383.516
+        "Gena": [
+          292.044,
+          282.41
+        ],
+        "Zoe": [
+          597.627,
+          340.703
         ]
       },
       "pixel_point_set": [
         [
-          585.47,
-          388.05
+          490.361,
+          177.407
         ],
         [
-          296.812,
-          383.516
+          597.627,
+          340.703
         ],
         [
-          331.602,
-          215.522
+          432.27,
+          481.932
+        ],
+        [
+          292.044,
+          282.41
         ]
       ]
     },
@@ -203,34 +234,34 @@
         "query_category_label": "",
         "query_series_label": "",
         "query_subset_labels": [
-          "Osmo",
-          "Tuck"
+          "Bara",
+          "Aley"
         ],
         "scene_variant": "pie",
         "scene_variant_probabilities": {
           "donut": 0.5,
           "pie": 0.5
         },
-        "series_count": 3,
+        "series_count": 4,
         "series_count_range": [
           3,
           5
         ],
-        "target_answer": 75,
+        "target_answer": 26,
         "target_answer_range": [
           5,
           95
         ],
         "task_variant": "combined_share_subset",
         "task_variant_probabilities": {
-          "combined_share_subset": 0.3333333333333333,
-          "stack_segment_value": 0.3333333333333333,
-          "stack_total_at_label": 0.3333333333333333
+          "combined_share_subset": 1.0,
+          "stack_segment_value": 0.0,
+          "stack_total_at_label": 0.0
         }
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 2,
+        "answer_or_evidence_variant_index": 3,
         "prompt_bundle_id": "charts_composition_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -242,16 +273,16 @@
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
           "object_description": "a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices",
           "query_category_label": "",
-          "query_label_a": "Osmo",
-          "query_label_b": "Tuck",
+          "query_label_a": "Bara",
+          "query_label_b": "Aley",
           "query_series_label": ""
         },
         "task_family_key": "composition_chart_value",
-        "task_family_variant_index": 1,
+        "task_family_variant_index": 0,
         "task_key": "subset_value_query",
-        "task_variant_index": 0,
+        "task_variant_index": 2,
         "task_variant_key": "combined_share_subset",
-        "task_variant_template_index": 1,
+        "task_variant_template_index": 2,
         "template_paths": [
           "charts/composition/charts_composition_v1.json"
         ],
@@ -267,7 +298,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 2,
+            "answer_or_evidence_variant_index": 3,
             "prompt_bundle_id": "charts_composition_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -279,16 +310,16 @@
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices",
               "query_category_label": "",
-              "query_label_a": "Osmo",
-              "query_label_b": "Tuck",
+              "query_label_a": "Bara",
+              "query_label_b": "Aley",
               "query_series_label": ""
             },
             "task_family_key": "composition_chart_value",
-            "task_family_variant_index": 1,
+            "task_family_variant_index": 0,
             "task_key": "subset_value_query",
-            "task_variant_index": 0,
+            "task_variant_index": 2,
             "task_variant_key": "combined_share_subset",
-            "task_variant_template_index": 1,
+            "task_variant_template_index": 2,
             "template_paths": [
               "charts/composition/charts_composition_v1.json"
             ],
@@ -299,7 +330,7 @@
               "task_variant:combined_share_subset": 5
             }
           },
-          "prompt": "Use the composition chart in the image. It shows a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Use the printed segment or slice values to answer the composition question. Add the chart percentages for labels Osmo and Tuck. What total percentage do they contribute?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array [v1, v2, ...] listing the slice percentages in legend order for the whole chart.\nAnswer requirement: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[18,27,22,33],\"answer\":45}"
+          "prompt": "The image shows a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Use the chart's printed segment or slice values to compute the answer. What percentage of the whole chart comes from labels Bara and Aley combined?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array [v1, v2, ...] listing the slice percentages in legend order for the whole chart.\nAnswer field: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[18,27,22,33],\"answer\":45}"
         },
         "answer_only": {
           "metadata": {
@@ -316,16 +347,16 @@
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices",
               "query_category_label": "",
-              "query_label_a": "Osmo",
-              "query_label_b": "Tuck",
+              "query_label_a": "Bara",
+              "query_label_b": "Aley",
               "query_series_label": ""
             },
             "task_family_key": "composition_chart_value",
-            "task_family_variant_index": 1,
+            "task_family_variant_index": 0,
             "task_key": "subset_value_query",
-            "task_variant_index": 0,
+            "task_variant_index": 2,
             "task_variant_key": "combined_share_subset",
-            "task_variant_template_index": 1,
+            "task_variant_template_index": 2,
             "template_paths": [
               "charts/composition/charts_composition_v1.json"
             ],
@@ -336,7 +367,7 @@
               "task_variant:combined_share_subset": 5
             }
           },
-          "prompt": "Use the composition chart in the image. It shows a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Use the printed segment or slice values to answer the composition question. Add the chart percentages for labels Osmo and Tuck. What total percentage do they contribute?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":45}"
+          "prompt": "The image shows a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Use the chart's printed segment or slice values to compute the answer. What percentage of the whole chart comes from labels Bara and Aley combined?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":45}"
         }
       },
       "task_variant": "combined_share_subset",
@@ -345,17 +376,21 @@
     "render_map": {
       "image_id": "img0",
       "label_centers_px": {
-        "Osmo": [
-          875.66,
-          277.0
+        "Aley": [
+          867.66,
+          340.0
         ],
-        "Tips": [
-          865.66,
-          361.0
+        "Bara": [
+          869.16,
+          256.0
         ],
-        "Tuck": [
-          870.16,
-          319.0
+        "Gena": [
+          872.66,
+          382.0
+        ],
+        "Zoe": [
+          862.66,
+          298.0
         ]
       },
       "plot_bbox_px": [
@@ -393,49 +428,59 @@
         "mark_color_distance_space": "lab",
         "mark_color_min_distance": 58.0,
         "mark_fill_rgb": [
-          136,
-          96,
-          194
+          74,
+          25,
+          176
         ],
         "mark_outline_rgb": [
-          75,
-          53,
-          107
+          41,
+          14,
+          97
         ],
         "pie_like_mark_color_channel_max": 200,
         "sampling_policy": "random_rgb_palette",
         "slice_fill_palette_rgb": [
           [
-            136,
-            96,
-            194
+            74,
+            25,
+            176
           ],
           [
-            45,
-            38,
-            14
+            163,
+            48,
+            113
           ],
           [
-            22,
-            162,
-            71
+            20,
+            147,
+            74
+          ],
+          [
+            197,
+            169,
+            6
           ]
         ],
         "slice_outline_palette_rgb": [
           [
-            75,
-            53,
-            107
+            41,
+            14,
+            97
           ],
           [
-            25,
-            21,
-            8
+            90,
+            26,
+            62
           ],
           [
-            12,
-            89,
-            39
+            11,
+            81,
+            41
+          ],
+          [
+            108,
+            93,
+            3
           ]
         ]
       },
@@ -467,7 +512,7 @@
         "label_stroke_width_px": 2,
         "tick_font_size_px": 20
       },
-      "y_axis_max": 64,
+      "y_axis_max": 42,
       "y_ticks": [
         0,
         1,
@@ -511,220 +556,257 @@
         39,
         40,
         41,
-        42,
-        43,
-        44,
-        45,
-        46,
-        47,
-        48,
-        49,
-        50,
-        51,
-        52,
-        53,
-        54,
-        55,
-        56,
-        57,
-        58,
-        59,
-        60,
-        61,
-        62,
-        63,
-        64
+        42
       ]
     },
     "scene_ir": {
       "entities": [
         {
           "attrs": {
-            "end_angle_deg": 136.8,
-            "label": "Osmo",
+            "end_angle_deg": -54.0,
+            "label": "Bara",
             "label_bbox_px": [
               838.16,
-              268.0,
-              913.16,
-              286.0
+              247.0,
+              900.16,
+              265.0
             ],
             "label_center_px": [
-              875.66,
-              277.0
+              869.16,
+              256.0
             ],
             "legend_swatch_bbox_px": [
               788.16,
-              263.0,
+              242.0,
               816.16,
-              291.0
+              270.0
             ],
             "mark_bbox_px": [
-              252.257,
+              442.08,
               65.6,
-              702.176,
-              585.184
+              595.139,
+              326.0
             ],
             "mark_center_px": [
-              585.47,
-              388.05
+              490.361,
+              177.407
             ],
             "mark_fill_rgb": [
-              136,
-              96,
-              194
+              74,
+              25,
+              176
             ],
             "mark_outline_rgb": [
-              75,
-              53,
-              107
+              41,
+              14,
+              97
             ],
             "percentage_bbox_px": [
-              556.47,
-              379.05,
-              614.47,
-              397.05
+              461.361,
+              168.407,
+              519.361,
+              186.407
             ],
             "percentage_center_px": [
-              585.47,
-              388.05
+              490.361,
+              177.407
             ],
             "scene_variant": "pie",
             "start_angle_deg": -90.0,
-            "value": 63,
+            "value": 10,
             "x_rank": 0
           },
-          "entity_id": "mark_Osmo",
+          "entity_id": "mark_Bara",
           "entity_type": "slice"
         },
         {
           "attrs": {
-            "end_angle_deg": 180.0,
-            "label": "Tuck",
+            "end_angle_deg": 64.8,
+            "label": "Zoe",
             "label_bbox_px": [
               838.16,
-              310.0,
-              902.16,
-              328.0
+              289.0,
+              887.16,
+              307.0
             ],
             "label_center_px": [
-              870.16,
-              319.0
+              862.66,
+              298.0
             ],
             "legend_swatch_bbox_px": [
               788.16,
-              305.0,
+              284.0,
               816.16,
-              333.0
+              312.0
             ],
             "mark_bbox_px": [
-              181.68,
-              326.0,
               442.08,
-              504.256
+              115.332,
+              702.102,
+              561.617
             ],
             "mark_center_px": [
-              296.812,
-              383.516
+              597.627,
+              340.703
             ],
             "mark_fill_rgb": [
-              45,
-              38,
-              14
+              163,
+              48,
+              113
             ],
             "mark_outline_rgb": [
-              25,
-              21,
-              8
+              90,
+              26,
+              62
             ],
             "percentage_bbox_px": [
-              267.812,
-              374.516,
-              325.812,
-              392.516
+              568.627,
+              331.703,
+              626.627,
+              349.703
             ],
             "percentage_center_px": [
-              296.812,
-              383.516
+              597.627,
+              340.703
             ],
             "scene_variant": "pie",
-            "start_angle_deg": 136.8,
-            "value": 12,
+            "start_angle_deg": -54.0,
+            "value": 33,
             "x_rank": 1
           },
-          "entity_id": "mark_Tuck",
+          "entity_id": "mark_Zoe",
+          "entity_type": "slice"
+        },
+        {
+          "attrs": {
+            "end_angle_deg": 122.4,
+            "label": "Aley",
+            "label_bbox_px": [
+              838.16,
+              328.5,
+              897.16,
+              351.5
+            ],
+            "label_center_px": [
+              867.66,
+              340.0
+            ],
+            "legend_swatch_bbox_px": [
+              788.16,
+              326.0,
+              816.16,
+              354.0
+            ],
+            "mark_bbox_px": [
+              302.551,
+              326.0,
+              552.953,
+              585.886
+            ],
+            "mark_center_px": [
+              432.27,
+              481.932
+            ],
+            "mark_fill_rgb": [
+              20,
+              147,
+              74
+            ],
+            "mark_outline_rgb": [
+              11,
+              81,
+              41
+            ],
+            "percentage_bbox_px": [
+              403.27,
+              472.932,
+              461.27,
+              490.932
+            ],
+            "percentage_center_px": [
+              432.27,
+              481.932
+            ],
+            "scene_variant": "pie",
+            "start_angle_deg": 64.8,
+            "value": 16,
+            "x_rank": 2
+          },
+          "entity_id": "mark_Aley",
           "entity_type": "slice"
         },
         {
           "attrs": {
             "end_angle_deg": 270.0,
-            "label": "Tips",
+            "label": "Gena",
             "label_bbox_px": [
               838.16,
-              349.5,
-              893.16,
-              372.5
+              373.0,
+              907.16,
+              391.0
             ],
             "label_center_px": [
-              865.66,
-              361.0
+              872.66,
+              382.0
             ],
             "legend_swatch_bbox_px": [
               788.16,
-              347.0,
+              368.0,
               816.16,
-              375.0
+              396.0
             ],
             "mark_bbox_px": [
-              181.68,
+              184.214,
               65.6,
               442.08,
-              326.0
+              545.863
             ],
             "mark_center_px": [
-              331.602,
-              215.522
+              292.044,
+              282.41
             ],
             "mark_fill_rgb": [
-              22,
-              162,
-              71
+              197,
+              169,
+              6
             ],
             "mark_outline_rgb": [
-              12,
-              89,
-              39
+              108,
+              93,
+              3
             ],
             "percentage_bbox_px": [
-              302.602,
-              206.522,
-              360.602,
-              224.522
+              263.044,
+              273.41,
+              321.044,
+              291.41
             ],
             "percentage_center_px": [
-              331.602,
-              215.522
+              292.044,
+              282.41
             ],
             "scene_variant": "pie",
-            "start_angle_deg": 180.0,
-            "value": 25,
-            "x_rank": 2
+            "start_angle_deg": 122.4,
+            "value": 41,
+            "x_rank": 3
           },
-          "entity_id": "mark_Tips",
+          "entity_id": "mark_Gena",
           "entity_type": "slice"
         }
       ],
       "relations": {
-        "answer_value": 75,
+        "answer_value": 26,
         "evidence_labels": [
-          "Osmo",
-          "Tuck",
-          "Tips"
+          "Bara",
+          "Zoe",
+          "Aley",
+          "Gena"
         ],
         "query_category_label": "",
         "query_series_label": "",
         "query_subset_labels": [
-          "Osmo",
-          "Tuck"
+          "Bara",
+          "Aley"
         ],
         "scene_variant": "pie",
         "task_variant": "combined_share_subset"
@@ -733,15 +815,17 @@
     },
     "witness_symbolic": {
       "labels": [
-        "Osmo",
-        "Tuck",
-        "Tips"
+        "Bara",
+        "Zoe",
+        "Aley",
+        "Gena"
       ],
       "type": "integer_list",
       "values": [
-        63,
-        12,
-        25
+        10,
+        33,
+        16,
+        41
       ]
     }
   },

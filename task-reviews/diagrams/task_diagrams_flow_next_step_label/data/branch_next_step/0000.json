@@ -1,16 +1,16 @@
 {
   "answer_gt": {
     "type": "string",
-    "value": "Archive Invoice"
+    "value": "Review Plan"
   },
   "evidence_gt": {
     "type": "bbox_set",
     "value": [
       [
-        513.8,
-        477.2,
-        727.8,
-        561.2
+        909.0,
+        272.52,
+        1123.0,
+        356.52
       ]
     ]
   },
@@ -18,11 +18,11 @@
     "format": "png",
     "path": "diagrams/task_diagrams_flow_next_step_label/images/branch_next_step/0000.png"
   },
-  "instance_seed": 4255230491881688,
-  "prompt": "Use the process diagram in the image: a flowchart with labeled process boxes and arrows. Follow the arrows and answer this question: Following the Yes branch from Approved?, what is the next step? Return the exact step label shown. Respond with the exact step label from the diagram.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct next-step box.\nAnswer format: set \"answer\" to the exact visible next-step label.\nExample JSON:\n{\"evidence\":[[624,228,838,312]],\"answer\":\"Fix Record\"}",
+  "instance_seed": 3892365567429819,
+  "prompt": "Use the process diagram in the image: a flowchart with labeled process boxes and arrows. Determine the correct next step from the diagram: Following the No branch from Info Complete?, what is the next step? Return the exact step label shown. Return the exact visible next-step label.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct next-step box.\nAnswer rule: set \"answer\" to the exact visible next-step label.\nExample JSON:\n{\"evidence\":[[624,228,838,312]],\"answer\":\"Fix Record\"}",
   "prompt_variants": {
-    "answer_and_evidence": "Use the process diagram in the image: a flowchart with labeled process boxes and arrows. Follow the arrows and answer this question: Following the Yes branch from Approved?, what is the next step? Return the exact step label shown. Respond with the exact step label from the diagram.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct next-step box.\nAnswer format: set \"answer\" to the exact visible next-step label.\nExample JSON:\n{\"evidence\":[[624,228,838,312]],\"answer\":\"Fix Record\"}",
-    "answer_only": "Use the process diagram in the image: a flowchart with labeled process boxes and arrows. Follow the arrows and answer this question: Following the Yes branch from Approved?, what is the next step? Return the exact step label shown. Respond with the exact step label from the diagram.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the exact visible next-step label.\nExample JSON:\n{\"answer\":\"Fix Record\"}"
+    "answer_and_evidence": "Use the process diagram in the image: a flowchart with labeled process boxes and arrows. Determine the correct next step from the diagram: Following the No branch from Info Complete?, what is the next step? Return the exact step label shown. Return the exact visible next-step label.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct next-step box.\nAnswer rule: set \"answer\" to the exact visible next-step label.\nExample JSON:\n{\"evidence\":[[624,228,838,312]],\"answer\":\"Fix Record\"}",
+    "answer_only": "Use the process diagram in the image: a flowchart with labeled process boxes and arrows. Determine the correct next step from the diagram: Following the No branch from Info Complete?, what is the next step? Return the exact step label shown. Return the exact visible next-step label.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the exact visible next-step label.\nExample JSON:\n{\"answer\":\"Fix Record\"}"
   },
   "task": "task_diagrams_flow_next_step_label",
   "task_variant": "branch_next_step",
@@ -43,9 +43,9 @@
       }
     },
     "execution_trace": {
-      "answer_node_bbox_id": "node_bbox_3",
-      "answer_node_id": "node_3",
-      "answer_node_label": "Archive Invoice",
+      "answer_node_bbox_id": "node_bbox_4",
+      "answer_node_id": "node_4",
+      "answer_node_label": "Review Plan",
       "edge_specs": [
         {
           "edge_id": "edge_0",
@@ -113,7 +113,7 @@
           "node_bbox_id": "node_bbox_0",
           "node_id": "node_0",
           "node_kind": "process",
-          "node_label": "Review Order",
+          "node_label": "Confirm Packet",
           "node_label_bbox_id": "node_label_bbox_0"
         },
         {
@@ -125,7 +125,7 @@
           "node_bbox_id": "node_bbox_1",
           "node_id": "node_1",
           "node_kind": "process",
-          "node_label": "Approve Summary",
+          "node_label": "Issue Return",
           "node_label_bbox_id": "node_label_bbox_1"
         },
         {
@@ -137,7 +137,7 @@
           "node_bbox_id": "node_bbox_2",
           "node_id": "node_2",
           "node_kind": "decision",
-          "node_label": "Approved?",
+          "node_label": "Info Complete?",
           "node_label_bbox_id": "node_label_bbox_2"
         },
         {
@@ -149,7 +149,7 @@
           "node_bbox_id": "node_bbox_3",
           "node_id": "node_3",
           "node_kind": "process",
-          "node_label": "Archive Invoice",
+          "node_label": "Release Plan",
           "node_label_bbox_id": "node_label_bbox_3"
         },
         {
@@ -161,7 +161,7 @@
           "node_bbox_id": "node_bbox_4",
           "node_id": "node_4",
           "node_kind": "process",
-          "node_label": "Approve Approval",
+          "node_label": "Review Plan",
           "node_label_bbox_id": "node_label_bbox_4"
         },
         {
@@ -173,19 +173,19 @@
           "node_bbox_id": "node_bbox_5",
           "node_id": "node_5",
           "node_kind": "process",
-          "node_label": "Verify Approval",
+          "node_label": "Confirm Record",
           "node_label_bbox_id": "node_label_bbox_5"
         }
       ],
-      "query_branch_label": "Yes",
+      "query_branch_label": "No",
       "query_node_id": "node_2",
-      "query_node_label": "Approved?",
+      "query_node_label": "Info Complete?",
       "question_format": "flow_next_step_label",
-      "question_text": "Following the Yes branch from Approved?, what is the next step? Return the exact step label shown.",
-      "scene_title": "Process Flow",
+      "question_text": "Following the No branch from Info Complete?, what is the next step? Return the exact step label shown.",
+      "scene_title": "Workflow Diagram",
       "scene_variant": "flowchart",
       "supporting_node_bbox_ids": [
-        "node_bbox_3"
+        "node_bbox_4"
       ],
       "task_variant": "branch_next_step",
       "topology_node_count": 6,
@@ -210,17 +210,17 @@
     "projected_evidence": {
       "bbox_set": [
         [
-          513.8,
-          477.2,
-          727.8,
-          561.2
+          909.0,
+          272.52,
+          1123.0,
+          356.52
         ]
       ]
     },
     "query_spec": {
       "params": {
         "lane_count": 0,
-        "query_branch_label": "Yes",
+        "query_branch_label": "No",
         "scene_variant": "flowchart",
         "scene_variant_probabilities": {
           "flowchart": 0.5,
@@ -235,7 +235,7 @@
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 1,
+        "answer_or_evidence_variant_index": 4,
         "prompt_bundle_id": "diagrams_flow_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -246,14 +246,14 @@
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
           "object_description": "a flowchart with labeled process boxes and arrows",
-          "question_text": "Following the Yes branch from Approved?, what is the next step? Return the exact step label shown."
+          "question_text": "Following the No branch from Info Complete?, what is the next step? Return the exact step label shown."
         },
         "task_family_key": "process_flow_diagram",
         "task_family_variant_index": 4,
         "task_key": "next_step_query",
-        "task_variant_index": 1,
+        "task_variant_index": 3,
         "task_variant_key": "branch_next_step",
-        "task_variant_template_index": 2,
+        "task_variant_template_index": 1,
         "template_paths": [
           "diagrams/flow/diagrams_flow_v1.json"
         ],
@@ -269,40 +269,6 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 1,
-            "prompt_bundle_id": "diagrams_flow_v1",
-            "schema_version": "v1",
-            "slot_values": {
-              "answer_hint": "set \"answer\" to the exact visible next-step label",
-              "evidence_hint": "set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct next-step box",
-              "json_example": "{\"evidence\":[[624,228,838,312]],\"answer\":\"Fix Record\"}",
-              "json_example_answer_only": "{\"answer\":\"Fix Record\"}",
-              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
-              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a flowchart with labeled process boxes and arrows",
-              "question_text": "Following the Yes branch from Approved?, what is the next step? Return the exact step label shown."
-            },
-            "task_family_key": "process_flow_diagram",
-            "task_family_variant_index": 4,
-            "task_key": "next_step_query",
-            "task_variant_index": 1,
-            "task_variant_key": "branch_next_step",
-            "task_variant_template_index": 2,
-            "template_paths": [
-              "diagrams/flow/diagrams_flow_v1.json"
-            ],
-            "variant_count_by_key": {
-              "answer_or_evidence:answer_and_evidence": 5,
-              "task:next_step_query": 5,
-              "task_family:process_flow_diagram": 5,
-              "task_variant:branch_next_step": 5
-            }
-          },
-          "prompt": "Use the process diagram in the image: a flowchart with labeled process boxes and arrows. Follow the arrows and answer this question: Following the Yes branch from Approved?, what is the next step? Return the exact step label shown. Respond with the exact step label from the diagram.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct next-step box.\nAnswer format: set \"answer\" to the exact visible next-step label.\nExample JSON:\n{\"evidence\":[[624,228,838,312]],\"answer\":\"Fix Record\"}"
-        },
-        "answer_only": {
-          "metadata": {
-            "answer_or_evidence_key": "answer_only",
             "answer_or_evidence_variant_index": 4,
             "prompt_bundle_id": "diagrams_flow_v1",
             "schema_version": "v1",
@@ -314,14 +280,48 @@
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a flowchart with labeled process boxes and arrows",
-              "question_text": "Following the Yes branch from Approved?, what is the next step? Return the exact step label shown."
+              "question_text": "Following the No branch from Info Complete?, what is the next step? Return the exact step label shown."
             },
             "task_family_key": "process_flow_diagram",
             "task_family_variant_index": 4,
             "task_key": "next_step_query",
-            "task_variant_index": 1,
+            "task_variant_index": 3,
             "task_variant_key": "branch_next_step",
-            "task_variant_template_index": 2,
+            "task_variant_template_index": 1,
+            "template_paths": [
+              "diagrams/flow/diagrams_flow_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:next_step_query": 5,
+              "task_family:process_flow_diagram": 5,
+              "task_variant:branch_next_step": 5
+            }
+          },
+          "prompt": "Use the process diagram in the image: a flowchart with labeled process boxes and arrows. Determine the correct next step from the diagram: Following the No branch from Info Complete?, what is the next step? Return the exact step label shown. Return the exact visible next-step label.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct next-step box.\nAnswer rule: set \"answer\" to the exact visible next-step label.\nExample JSON:\n{\"evidence\":[[624,228,838,312]],\"answer\":\"Fix Record\"}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "diagrams_flow_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the exact visible next-step label",
+              "evidence_hint": "set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct next-step box",
+              "json_example": "{\"evidence\":[[624,228,838,312]],\"answer\":\"Fix Record\"}",
+              "json_example_answer_only": "{\"answer\":\"Fix Record\"}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a flowchart with labeled process boxes and arrows",
+              "question_text": "Following the No branch from Info Complete?, what is the next step? Return the exact step label shown."
+            },
+            "task_family_key": "process_flow_diagram",
+            "task_family_variant_index": 4,
+            "task_key": "next_step_query",
+            "task_variant_index": 3,
+            "task_variant_key": "branch_next_step",
+            "task_variant_template_index": 1,
             "template_paths": [
               "diagrams/flow/diagrams_flow_v1.json"
             ],
@@ -332,7 +332,7 @@
               "task_variant:branch_next_step": 5
             }
           },
-          "prompt": "Use the process diagram in the image: a flowchart with labeled process boxes and arrows. Follow the arrows and answer this question: Following the Yes branch from Approved?, what is the next step? Return the exact step label shown. Respond with the exact step label from the diagram.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the exact visible next-step label.\nExample JSON:\n{\"answer\":\"Fix Record\"}"
+          "prompt": "Use the process diagram in the image: a flowchart with labeled process boxes and arrows. Determine the correct next step from the diagram: Following the No branch from Info Complete?, what is the next step? Return the exact step label shown. Return the exact visible next-step label.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the exact visible next-step label.\nExample JSON:\n{\"answer\":\"Fix Record\"}"
         }
       },
       "task_variant": "branch_next_step",
@@ -395,40 +395,40 @@
       },
       "node_label_bboxes_px": {
         "node_label_bbox_0": [
-          92.5,
-          304.52,
-          275.5,
-          324.52
+          94.0,
+          305.52,
+          274.0,
+          323.52
         ],
         "node_label_bbox_1": [
-          380.2,
-          305.02,
-          570.2,
-          324.02
+          380.7,
+          304.02,
+          569.7,
+          325.02
         ],
         "node_label_bbox_2": [
-          669.8,
-          304.52,
-          779.8,
-          324.52
+          655.8,
+          306.02,
+          793.8,
+          323.02
         ],
         "node_label_bbox_3": [
-          530.3,
-          510.2,
-          711.3,
-          528.2
+          524.8,
+          508.2,
+          716.8,
+          530.2
         ],
         "node_label_bbox_4": [
-          924.0,
-          304.52,
-          1108.0,
-          324.52
+          923.0,
+          303.02,
+          1109.0,
+          326.02
         ],
         "node_label_bbox_5": [
-          924.0,
-          508.2,
-          1108.0,
-          530.2
+          925.0,
+          510.2,
+          1107.0,
+          528.2
         ]
       },
       "panel_bbox_px": [
@@ -438,10 +438,10 @@
         788.0
       ],
       "title_bbox_px": [
-        481.0,
-        78.0,
-        719.0,
-        104.0
+        431.0,
+        74.5,
+        769.0,
+        107.5
       ]
     },
     "render_spec": {
@@ -449,7 +449,7 @@
       "canvas_width": 1200,
       "decision_diameter_px": 132,
       "edge_width_px": 5,
-      "geometry_seed": 4255230491881688,
+      "geometry_seed": 3892365567429819,
       "lane_gutter_width_px": 160,
       "node_height_px": 84,
       "node_width_px": 214,
@@ -469,14 +469,14 @@
         },
         {
           "bbox_xyxy": [
-            481.0,
-            78.0,
-            719.0,
-            104.0
+            431.0,
+            74.5,
+            769.0,
+            107.5
           ],
           "entity_id": "diagram_title",
           "entity_type": "diagram_title",
-          "text": "Process Flow"
+          "text": "Workflow Diagram"
         },
         {
           "edge_label": null,
@@ -566,19 +566,19 @@
           "lane_id": null,
           "node_id": "node_0",
           "node_kind": "process",
-          "text": "Review Order"
+          "text": "Confirm Packet"
         },
         {
           "bbox_xyxy": [
-            92.5,
-            304.52,
-            275.5,
-            324.52
+            94.0,
+            305.52,
+            274.0,
+            323.52
           ],
           "entity_id": "node_label_bbox_0",
           "entity_type": "diagram_node_label",
           "node_id": "node_0",
-          "text": "Review Order"
+          "text": "Confirm Packet"
         },
         {
           "bbox_xyxy": [
@@ -592,19 +592,19 @@
           "lane_id": null,
           "node_id": "node_1",
           "node_kind": "process",
-          "text": "Approve Summary"
+          "text": "Issue Return"
         },
         {
           "bbox_xyxy": [
-            380.2,
-            305.02,
-            570.2,
-            324.02
+            380.7,
+            304.02,
+            569.7,
+            325.02
           ],
           "entity_id": "node_label_bbox_1",
           "entity_type": "diagram_node_label",
           "node_id": "node_1",
-          "text": "Approve Summary"
+          "text": "Issue Return"
         },
         {
           "bbox_xyxy": [
@@ -618,19 +618,19 @@
           "lane_id": null,
           "node_id": "node_2",
           "node_kind": "decision",
-          "text": "Approved?"
+          "text": "Info Complete?"
         },
         {
           "bbox_xyxy": [
-            669.8,
-            304.52,
-            779.8,
-            324.52
+            655.8,
+            306.02,
+            793.8,
+            323.02
           ],
           "entity_id": "node_label_bbox_2",
           "entity_type": "diagram_node_label",
           "node_id": "node_2",
-          "text": "Approved?"
+          "text": "Info Complete?"
         },
         {
           "bbox_xyxy": [
@@ -644,19 +644,19 @@
           "lane_id": null,
           "node_id": "node_3",
           "node_kind": "process",
-          "text": "Archive Invoice"
+          "text": "Release Plan"
         },
         {
           "bbox_xyxy": [
-            530.3,
-            510.2,
-            711.3,
-            528.2
+            524.8,
+            508.2,
+            716.8,
+            530.2
           ],
           "entity_id": "node_label_bbox_3",
           "entity_type": "diagram_node_label",
           "node_id": "node_3",
-          "text": "Archive Invoice"
+          "text": "Release Plan"
         },
         {
           "bbox_xyxy": [
@@ -670,19 +670,19 @@
           "lane_id": null,
           "node_id": "node_4",
           "node_kind": "process",
-          "text": "Approve Approval"
+          "text": "Review Plan"
         },
         {
           "bbox_xyxy": [
-            924.0,
-            304.52,
-            1108.0,
-            324.52
+            923.0,
+            303.02,
+            1109.0,
+            326.02
           ],
           "entity_id": "node_label_bbox_4",
           "entity_type": "diagram_node_label",
           "node_id": "node_4",
-          "text": "Approve Approval"
+          "text": "Review Plan"
         },
         {
           "bbox_xyxy": [
@@ -696,24 +696,24 @@
           "lane_id": null,
           "node_id": "node_5",
           "node_kind": "process",
-          "text": "Verify Approval"
+          "text": "Confirm Record"
         },
         {
           "bbox_xyxy": [
-            924.0,
-            508.2,
-            1108.0,
-            530.2
+            925.0,
+            510.2,
+            1107.0,
+            528.2
           ],
           "entity_id": "node_label_bbox_5",
           "entity_type": "diagram_node_label",
           "node_id": "node_5",
-          "text": "Verify Approval"
+          "text": "Confirm Record"
         }
       ],
       "relations": {
-        "answer_node_bbox_id": "node_bbox_3",
-        "answer_node_id": "node_3",
+        "answer_node_bbox_id": "node_bbox_4",
+        "answer_node_id": "node_4",
         "scene_variant": "flowchart",
         "task_variant": "branch_next_step",
         "view_family": "process_flow_diagram"
@@ -722,7 +722,7 @@
     },
     "witness_symbolic": {
       "ids": [
-        "node_3"
+        "node_4"
       ],
       "type": "id_set"
     }

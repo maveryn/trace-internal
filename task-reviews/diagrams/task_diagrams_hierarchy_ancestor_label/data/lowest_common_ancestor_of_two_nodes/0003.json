@@ -1,16 +1,16 @@
 {
   "answer_gt": {
     "type": "string",
-    "value": "Aryn"
+    "value": "Flo"
   },
   "evidence_gt": {
     "type": "bbox_set",
     "value": [
       [
-        558.0,
-        174.0,
-        722.0,
-        246.0
+        926.0,
+        441.0,
+        1090.0,
+        513.0
       ]
     ]
   },
@@ -18,11 +18,11 @@
     "format": "png",
     "path": "diagrams/task_diagrams_hierarchy_ancestor_label/images/lowest_common_ancestor_of_two_nodes/0003.png"
   },
-  "instance_seed": 5844346174875529,
-  "prompt": "You are given a hierarchical org chart with labeled boxes and parent-child connector lines. What is the lowest common ancestor of Oza and Huda? Return the exact label shown. Answer with the exact label shown.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct ancestor box.\nAnswer requirement: set \"answer\" to the exact visible ancestor label.\nExample JSON:\n{\"evidence\":[[558,530,722,602]],\"answer\":\"Cott\"}",
+  "instance_seed": 7754554261398830,
+  "prompt": "The image shows a hierarchical org chart with labeled boxes and parent-child connector lines. What is the lowest common ancestor of Oby and Buck? Return the exact label shown. Respond with the exact label from the diagram.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct ancestor box.\nAnswer format: set \"answer\" to the exact visible ancestor label.\nExample JSON:\n{\"evidence\":[[558,530,722,602]],\"answer\":\"Cott\"}",
   "prompt_variants": {
-    "answer_and_evidence": "You are given a hierarchical org chart with labeled boxes and parent-child connector lines. What is the lowest common ancestor of Oza and Huda? Return the exact label shown. Answer with the exact label shown.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct ancestor box.\nAnswer requirement: set \"answer\" to the exact visible ancestor label.\nExample JSON:\n{\"evidence\":[[558,530,722,602]],\"answer\":\"Cott\"}",
-    "answer_only": "You are given a hierarchical org chart with labeled boxes and parent-child connector lines. What is the lowest common ancestor of Oza and Huda? Return the exact label shown. Answer with the exact label shown.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the exact visible ancestor label.\nExample JSON:\n{\"answer\":\"Cott\"}"
+    "answer_and_evidence": "The image shows a hierarchical org chart with labeled boxes and parent-child connector lines. What is the lowest common ancestor of Oby and Buck? Return the exact label shown. Respond with the exact label from the diagram.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct ancestor box.\nAnswer format: set \"answer\" to the exact visible ancestor label.\nExample JSON:\n{\"evidence\":[[558,530,722,602]],\"answer\":\"Cott\"}",
+    "answer_only": "The image shows a hierarchical org chart with labeled boxes and parent-child connector lines. What is the lowest common ancestor of Oby and Buck? Return the exact label shown. Respond with the exact label from the diagram.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the exact visible ancestor label.\nExample JSON:\n{\"answer\":\"Cott\"}"
   },
   "task": "task_diagrams_hierarchy_ancestor_label",
   "task_variant": "lowest_common_ancestor_of_two_nodes",
@@ -43,10 +43,10 @@
       }
     },
     "execution_trace": {
-      "answer_node_bbox_id": "node_bbox_0",
-      "answer_node_depth": 0,
-      "answer_node_id": "node_0",
-      "answer_node_label": "Aryn",
+      "answer_node_bbox_id": "node_bbox_3",
+      "answer_node_depth": 1,
+      "answer_node_id": "node_3",
+      "answer_node_label": "Flo",
       "edge_specs": [
         {
           "edge_id": "edge_0",
@@ -94,7 +94,7 @@
           "target_node_id": "node_9"
         }
       ],
-      "lca_span": 4,
+      "lca_span": 2,
       "leaf_count": 6,
       "node_specs": [
         {
@@ -102,7 +102,7 @@
           "is_leaf": false,
           "node_bbox_id": "node_bbox_0",
           "node_id": "node_0",
-          "node_label": "Aryn",
+          "node_label": "Mira",
           "node_label_bbox_id": "node_label_bbox_0",
           "parent_node_id": null
         },
@@ -111,7 +111,7 @@
           "is_leaf": false,
           "node_bbox_id": "node_bbox_1",
           "node_id": "node_1",
-          "node_label": "Itin",
+          "node_label": "Mari",
           "node_label_bbox_id": "node_label_bbox_1",
           "parent_node_id": "node_0"
         },
@@ -120,7 +120,7 @@
           "is_leaf": false,
           "node_bbox_id": "node_bbox_2",
           "node_id": "node_2",
-          "node_label": "Ha",
+          "node_label": "Olav",
           "node_label_bbox_id": "node_label_bbox_2",
           "parent_node_id": "node_0"
         },
@@ -129,7 +129,7 @@
           "is_leaf": false,
           "node_bbox_id": "node_bbox_3",
           "node_id": "node_3",
-          "node_label": "Pass",
+          "node_label": "Flo",
           "node_label_bbox_id": "node_label_bbox_3",
           "parent_node_id": "node_0"
         },
@@ -138,7 +138,7 @@
           "is_leaf": true,
           "node_bbox_id": "node_bbox_4",
           "node_id": "node_4",
-          "node_label": "Dyke",
+          "node_label": "Peh",
           "node_label_bbox_id": "node_label_bbox_4",
           "parent_node_id": "node_1"
         },
@@ -147,7 +147,7 @@
           "is_leaf": true,
           "node_bbox_id": "node_bbox_5",
           "node_id": "node_5",
-          "node_label": "Oza",
+          "node_label": "Foss",
           "node_label_bbox_id": "node_label_bbox_5",
           "parent_node_id": "node_1"
         },
@@ -156,7 +156,7 @@
           "is_leaf": true,
           "node_bbox_id": "node_bbox_6",
           "node_id": "node_6",
-          "node_label": "Rico",
+          "node_label": "Samp",
           "node_label_bbox_id": "node_label_bbox_6",
           "parent_node_id": "node_2"
         },
@@ -165,7 +165,7 @@
           "is_leaf": true,
           "node_bbox_id": "node_bbox_7",
           "node_id": "node_7",
-          "node_label": "Raye",
+          "node_label": "Leon",
           "node_label_bbox_id": "node_label_bbox_7",
           "parent_node_id": "node_2"
         },
@@ -174,7 +174,7 @@
           "is_leaf": true,
           "node_bbox_id": "node_bbox_8",
           "node_id": "node_8",
-          "node_label": "Huda",
+          "node_label": "Oby",
           "node_label_bbox_id": "node_label_bbox_8",
           "parent_node_id": "node_3"
         },
@@ -183,7 +183,7 @@
           "is_leaf": true,
           "node_bbox_id": "node_bbox_9",
           "node_id": "node_9",
-          "node_label": "Hay",
+          "node_label": "Buck",
           "node_label_bbox_id": "node_label_bbox_9",
           "parent_node_id": "node_3"
         }
@@ -193,21 +193,21 @@
         2
       ],
       "query_node_ids": [
-        "node_5",
-        "node_8"
+        "node_8",
+        "node_9"
       ],
       "query_node_labels": [
-        "Oza",
-        "Huda"
+        "Oby",
+        "Buck"
       ],
       "query_relationship": "lowest_common_ancestor",
       "question_format": "hierarchy_ancestor_label",
-      "question_text": "What is the lowest common ancestor of Oza and Huda? Return the exact label shown.",
+      "question_text": "What is the lowest common ancestor of Oby and Buck? Return the exact label shown.",
       "root_node_id": "node_0",
-      "scene_title": "Org Overview",
+      "scene_title": "Department Hierarchy",
       "scene_variant": "org_chart",
       "supporting_node_bbox_ids": [
-        "node_bbox_0"
+        "node_bbox_3"
       ],
       "task_variant": "lowest_common_ancestor_of_two_nodes",
       "template_id": "balanced_three_divisions",
@@ -234,10 +234,10 @@
     "projected_evidence": {
       "bbox_set": [
         [
-          558.0,
-          174.0,
-          722.0,
-          246.0
+          926.0,
+          441.0,
+          1090.0,
+          513.0
         ]
       ]
     },
@@ -259,7 +259,7 @@
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 2,
+        "answer_or_evidence_variant_index": 1,
         "prompt_bundle_id": "diagrams_hierarchy_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -270,14 +270,14 @@
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
           "object_description": "a hierarchical org chart with labeled boxes and parent-child connector lines",
-          "question_text": "What is the lowest common ancestor of Oza and Huda? Return the exact label shown."
+          "question_text": "What is the lowest common ancestor of Oby and Buck? Return the exact label shown."
         },
         "task_family_key": "hierarchy_diagram",
-        "task_family_variant_index": 2,
+        "task_family_variant_index": 0,
         "task_key": "ancestor_query",
         "task_variant_index": 0,
         "task_variant_key": "lowest_common_ancestor_of_two_nodes",
-        "task_variant_template_index": 0,
+        "task_variant_template_index": 2,
         "template_paths": [
           "diagrams/hierarchy/diagrams_hierarchy_v1.json"
         ],
@@ -293,7 +293,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 2,
+            "answer_or_evidence_variant_index": 1,
             "prompt_bundle_id": "diagrams_hierarchy_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -304,14 +304,14 @@
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a hierarchical org chart with labeled boxes and parent-child connector lines",
-              "question_text": "What is the lowest common ancestor of Oza and Huda? Return the exact label shown."
+              "question_text": "What is the lowest common ancestor of Oby and Buck? Return the exact label shown."
             },
             "task_family_key": "hierarchy_diagram",
-            "task_family_variant_index": 2,
+            "task_family_variant_index": 0,
             "task_key": "ancestor_query",
             "task_variant_index": 0,
             "task_variant_key": "lowest_common_ancestor_of_two_nodes",
-            "task_variant_template_index": 0,
+            "task_variant_template_index": 2,
             "template_paths": [
               "diagrams/hierarchy/diagrams_hierarchy_v1.json"
             ],
@@ -322,12 +322,12 @@
               "task_variant:lowest_common_ancestor_of_two_nodes": 5
             }
           },
-          "prompt": "You are given a hierarchical org chart with labeled boxes and parent-child connector lines. What is the lowest common ancestor of Oza and Huda? Return the exact label shown. Answer with the exact label shown.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct ancestor box.\nAnswer requirement: set \"answer\" to the exact visible ancestor label.\nExample JSON:\n{\"evidence\":[[558,530,722,602]],\"answer\":\"Cott\"}"
+          "prompt": "The image shows a hierarchical org chart with labeled boxes and parent-child connector lines. What is the lowest common ancestor of Oby and Buck? Return the exact label shown. Respond with the exact label from the diagram.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct ancestor box.\nAnswer format: set \"answer\" to the exact visible ancestor label.\nExample JSON:\n{\"evidence\":[[558,530,722,602]],\"answer\":\"Cott\"}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 4,
+            "answer_or_evidence_variant_index": 3,
             "prompt_bundle_id": "diagrams_hierarchy_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -338,14 +338,14 @@
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a hierarchical org chart with labeled boxes and parent-child connector lines",
-              "question_text": "What is the lowest common ancestor of Oza and Huda? Return the exact label shown."
+              "question_text": "What is the lowest common ancestor of Oby and Buck? Return the exact label shown."
             },
             "task_family_key": "hierarchy_diagram",
-            "task_family_variant_index": 2,
+            "task_family_variant_index": 0,
             "task_key": "ancestor_query",
             "task_variant_index": 0,
             "task_variant_key": "lowest_common_ancestor_of_two_nodes",
-            "task_variant_template_index": 0,
+            "task_variant_template_index": 2,
             "template_paths": [
               "diagrams/hierarchy/diagrams_hierarchy_v1.json"
             ],
@@ -356,7 +356,7 @@
               "task_variant:lowest_common_ancestor_of_two_nodes": 5
             }
           },
-          "prompt": "You are given a hierarchical org chart with labeled boxes and parent-child connector lines. What is the lowest common ancestor of Oza and Huda? Return the exact label shown. Answer with the exact label shown.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the exact visible ancestor label.\nExample JSON:\n{\"answer\":\"Cott\"}"
+          "prompt": "The image shows a hierarchical org chart with labeled boxes and parent-child connector lines. What is the lowest common ancestor of Oby and Buck? Return the exact label shown. Respond with the exact label from the diagram.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the exact visible ancestor label.\nExample JSON:\n{\"answer\":\"Cott\"}"
         }
       },
       "task_variant": "lowest_common_ancestor_of_two_nodes",
@@ -483,64 +483,64 @@
       },
       "node_label_bboxes_px": {
         "node_label_bbox_0": [
-          607.0,
-          197.5,
-          673.0,
-          222.5
+          609.0,
+          200.0,
+          671.0,
+          220.0
         ],
         "node_label_bbox_1": [
-          248.5,
+          241.0,
           467.0,
-          295.5,
+          303.0,
           487.0
         ],
         "node_label_bbox_2": [
-          621.0,
+          609.0,
           467.0,
-          659.0,
+          671.0,
           487.0
         ],
         "node_label_bbox_3": [
-          976.0,
+          987.0,
           467.0,
-          1040.0,
+          1029.0,
           487.0
         ],
         "node_label_bbox_4": [
-          145.0,
-          731.5,
-          215.0,
-          756.5
+          153.5,
+          734.0,
+          206.5,
+          754.0
         ],
         "node_label_bbox_5": [
-          338.0,
+          333.0,
           734.0,
-          390.0,
+          395.0,
           754.0
         ],
         "node_label_bbox_6": [
-          519.0,
-          734.0,
-          577.0,
-          754.0
+          509.5,
+          731.5,
+          586.5,
+          756.5
         ],
         "node_label_bbox_7": [
-          698.0,
-          731.5,
-          766.0,
-          756.5
-        ],
-        "node_label_bbox_8": [
-          880.0,
+          699.0,
           734.0,
-          952.0,
+          765.0,
           754.0
         ],
-        "node_label_bbox_9": [
-          1073.0,
+        "node_label_bbox_8": [
+          888.5,
           731.5,
-          1127.0,
+          943.5,
           756.5
+        ],
+        "node_label_bbox_9": [
+          1066.0,
+          734.0,
+          1134.0,
+          754.0
         ]
       },
       "panel_bbox_px": [
@@ -550,9 +550,9 @@
         828.0
       ],
       "title_bbox_px": [
-        515.5,
+        436.0,
         74.5,
-        764.5,
+        844.0,
         107.5
       ]
     },
@@ -560,7 +560,7 @@
       "canvas_height": 880,
       "canvas_width": 1280,
       "connector_width_px": 5,
-      "geometry_seed": 5844346174875529,
+      "geometry_seed": 7754554261398830,
       "node_height_px": 72,
       "node_width_px": 164,
       "scene_variant": "org_chart"
@@ -579,14 +579,14 @@
         },
         {
           "bbox_xyxy": [
-            515.5,
+            436.0,
             74.5,
-            764.5,
+            844.0,
             107.5
           ],
           "entity_id": "diagram_title",
           "entity_type": "diagram_title",
-          "text": "Org Overview"
+          "text": "Department Hierarchy"
         },
         {
           "bbox_xyxy": [
@@ -707,19 +707,19 @@
           "entity_id": "node_bbox_0",
           "entity_type": "diagram_node",
           "node_id": "node_0",
-          "text": "Aryn"
+          "text": "Mira"
         },
         {
           "bbox_xyxy": [
-            607.0,
-            197.5,
-            673.0,
-            222.5
+            609.0,
+            200.0,
+            671.0,
+            220.0
           ],
           "entity_id": "node_label_bbox_0",
           "entity_type": "diagram_node_label",
           "node_id": "node_0",
-          "text": "Aryn"
+          "text": "Mira"
         },
         {
           "bbox_xyxy": [
@@ -732,19 +732,19 @@
           "entity_id": "node_bbox_1",
           "entity_type": "diagram_node",
           "node_id": "node_1",
-          "text": "Itin"
+          "text": "Mari"
         },
         {
           "bbox_xyxy": [
-            248.5,
+            241.0,
             467.0,
-            295.5,
+            303.0,
             487.0
           ],
           "entity_id": "node_label_bbox_1",
           "entity_type": "diagram_node_label",
           "node_id": "node_1",
-          "text": "Itin"
+          "text": "Mari"
         },
         {
           "bbox_xyxy": [
@@ -757,19 +757,19 @@
           "entity_id": "node_bbox_2",
           "entity_type": "diagram_node",
           "node_id": "node_2",
-          "text": "Ha"
+          "text": "Olav"
         },
         {
           "bbox_xyxy": [
-            621.0,
+            609.0,
             467.0,
-            659.0,
+            671.0,
             487.0
           ],
           "entity_id": "node_label_bbox_2",
           "entity_type": "diagram_node_label",
           "node_id": "node_2",
-          "text": "Ha"
+          "text": "Olav"
         },
         {
           "bbox_xyxy": [
@@ -782,19 +782,19 @@
           "entity_id": "node_bbox_3",
           "entity_type": "diagram_node",
           "node_id": "node_3",
-          "text": "Pass"
+          "text": "Flo"
         },
         {
           "bbox_xyxy": [
-            976.0,
+            987.0,
             467.0,
-            1040.0,
+            1029.0,
             487.0
           ],
           "entity_id": "node_label_bbox_3",
           "entity_type": "diagram_node_label",
           "node_id": "node_3",
-          "text": "Pass"
+          "text": "Flo"
         },
         {
           "bbox_xyxy": [
@@ -807,19 +807,19 @@
           "entity_id": "node_bbox_4",
           "entity_type": "diagram_node",
           "node_id": "node_4",
-          "text": "Dyke"
+          "text": "Peh"
         },
         {
           "bbox_xyxy": [
-            145.0,
-            731.5,
-            215.0,
-            756.5
+            153.5,
+            734.0,
+            206.5,
+            754.0
           ],
           "entity_id": "node_label_bbox_4",
           "entity_type": "diagram_node_label",
           "node_id": "node_4",
-          "text": "Dyke"
+          "text": "Peh"
         },
         {
           "bbox_xyxy": [
@@ -832,19 +832,19 @@
           "entity_id": "node_bbox_5",
           "entity_type": "diagram_node",
           "node_id": "node_5",
-          "text": "Oza"
+          "text": "Foss"
         },
         {
           "bbox_xyxy": [
-            338.0,
+            333.0,
             734.0,
-            390.0,
+            395.0,
             754.0
           ],
           "entity_id": "node_label_bbox_5",
           "entity_type": "diagram_node_label",
           "node_id": "node_5",
-          "text": "Oza"
+          "text": "Foss"
         },
         {
           "bbox_xyxy": [
@@ -857,19 +857,19 @@
           "entity_id": "node_bbox_6",
           "entity_type": "diagram_node",
           "node_id": "node_6",
-          "text": "Rico"
+          "text": "Samp"
         },
         {
           "bbox_xyxy": [
-            519.0,
-            734.0,
-            577.0,
-            754.0
+            509.5,
+            731.5,
+            586.5,
+            756.5
           ],
           "entity_id": "node_label_bbox_6",
           "entity_type": "diagram_node_label",
           "node_id": "node_6",
-          "text": "Rico"
+          "text": "Samp"
         },
         {
           "bbox_xyxy": [
@@ -882,19 +882,19 @@
           "entity_id": "node_bbox_7",
           "entity_type": "diagram_node",
           "node_id": "node_7",
-          "text": "Raye"
+          "text": "Leon"
         },
         {
           "bbox_xyxy": [
-            698.0,
-            731.5,
-            766.0,
-            756.5
+            699.0,
+            734.0,
+            765.0,
+            754.0
           ],
           "entity_id": "node_label_bbox_7",
           "entity_type": "diagram_node_label",
           "node_id": "node_7",
-          "text": "Raye"
+          "text": "Leon"
         },
         {
           "bbox_xyxy": [
@@ -907,19 +907,19 @@
           "entity_id": "node_bbox_8",
           "entity_type": "diagram_node",
           "node_id": "node_8",
-          "text": "Huda"
+          "text": "Oby"
         },
         {
           "bbox_xyxy": [
-            880.0,
-            734.0,
-            952.0,
-            754.0
+            888.5,
+            731.5,
+            943.5,
+            756.5
           ],
           "entity_id": "node_label_bbox_8",
           "entity_type": "diagram_node_label",
           "node_id": "node_8",
-          "text": "Huda"
+          "text": "Oby"
         },
         {
           "bbox_xyxy": [
@@ -932,24 +932,24 @@
           "entity_id": "node_bbox_9",
           "entity_type": "diagram_node",
           "node_id": "node_9",
-          "text": "Hay"
+          "text": "Buck"
         },
         {
           "bbox_xyxy": [
-            1073.0,
-            731.5,
-            1127.0,
-            756.5
+            1066.0,
+            734.0,
+            1134.0,
+            754.0
           ],
           "entity_id": "node_label_bbox_9",
           "entity_type": "diagram_node_label",
           "node_id": "node_9",
-          "text": "Hay"
+          "text": "Buck"
         }
       ],
       "relations": {
-        "answer_node_bbox_id": "node_bbox_0",
-        "answer_node_id": "node_0",
+        "answer_node_bbox_id": "node_bbox_3",
+        "answer_node_id": "node_3",
         "root_node_id": "node_0",
         "scene_variant": "org_chart",
         "task_variant": "lowest_common_ancestor_of_two_nodes",
@@ -959,7 +959,7 @@
     },
     "witness_symbolic": {
       "ids": [
-        "node_0"
+        "node_3"
       ],
       "type": "id_set"
     }

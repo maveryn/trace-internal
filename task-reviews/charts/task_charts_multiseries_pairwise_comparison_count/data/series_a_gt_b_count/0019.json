@@ -1,134 +1,259 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 0
+    "value": 6
   },
   "evidence_gt": {
     "type": "label_set",
-    "value": []
+    "value": [
+      "C",
+      "H",
+      "K",
+      "U",
+      "W",
+      "X"
+    ]
   },
   "image": {
     "format": "png",
     "path": "charts/task_charts_multiseries_pairwise_comparison_count/images/series_a_gt_b_count/0019.png"
   },
-  "instance_seed": 4499501529540478,
-  "prompt": "Work from the multiseries chart shown in the image: a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Work category by category and count the labels where the requested series comparison is true. Determine the number of categories where Lou is greater than Jaye.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer field: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
+  "instance_seed": 2554435613975010,
+  "prompt": "The image shows a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Compare the two queried series category by category. Find how many category labels show Truc higher than Aura.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer format: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
   "prompt_variants": {
-    "answer_and_evidence": "Work from the multiseries chart shown in the image: a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Work category by category and count the labels where the requested series comparison is true. Determine the number of categories where Lou is greater than Jaye.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer field: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
-    "answer_only": "Work from the multiseries chart shown in the image: a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Work category by category and count the labels where the requested series comparison is true. Determine the number of categories where Lou is greater than Jaye.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":3}"
+    "answer_and_evidence": "The image shows a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Compare the two queried series category by category. Find how many category labels show Truc higher than Aura.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer format: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
+    "answer_only": "The image shows a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Compare the two queried series category by category. Find how many category labels show Truc higher than Aura.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":3}"
   },
   "task": "task_charts_multiseries_pairwise_comparison_count",
   "task_variant": "series_a_gt_b_count",
   "trace_payload": {
     "execution_trace": {
-      "answer_value": 0,
+      "answer_value": 6,
       "category_count": 6,
       "category_count_range": [
         5,
         10
       ],
       "category_labels": [
-        "P",
-        "A",
-        "G",
-        "T",
-        "R",
-        "N"
+        "U",
+        "X",
+        "C",
+        "W",
+        "K",
+        "H"
       ],
       "comparison": "greater_than",
-      "evidence_labels": [],
-      "left_series_label": "Lou",
+      "evidence_labels": [
+        "C",
+        "H",
+        "K",
+        "U",
+        "W",
+        "X"
+      ],
+      "left_series_label": "Truc",
       "mark_color_distance_space": "lab",
       "mark_color_min_distance": 40.0,
       "mark_color_sampling_policy": "random_rgb_palette",
       "queried_series_labels": [
-        "Lou",
-        "Jaye"
+        "Truc",
+        "Aura"
       ],
       "question_format": "numeric_open",
-      "right_series_label": "Jaye",
-      "scene_variant": "multi_line",
+      "right_series_label": "Aura",
+      "scene_variant": "grouped_bar",
       "scene_variant_probabilities": {
         "grouped_bar": 0.25,
         "grouped_horizontal_bar": 0.25,
         "grouped_lollipop": 0.25,
         "multi_line": 0.25
       },
-      "series_count": 2,
+      "series_count": 3,
       "series_count_range": [
         2,
         3
       ],
       "series_fill_palette_rgb": [
         [
-          46,
-          94,
-          5
+          185,
+          10,
+          208
         ],
         [
-          18,
-          182,
-          177
+          134,
+          148,
+          121
+        ],
+        [
+          48,
+          109,
+          211
         ]
       ],
       "series_labels": [
-        "Lou",
-        "Jaye"
+        "Obau",
+        "Truc",
+        "Aura"
       ],
       "series_outline_palette_rgb": [
         [
-          25,
-          52,
-          3
+          102,
+          6,
+          114
         ],
         [
-          10,
-          100,
-          97
+          74,
+          81,
+          67
+        ],
+        [
+          26,
+          60,
+          116
         ]
       ],
-      "target_answer": 0,
+      "target_answer": 6,
       "target_answer_range": [
         0,
         8
       ],
       "task_variant": "series_a_gt_b_count",
       "task_variant_probabilities": {
-        "series_a_gt_b_count": 0.5,
-        "series_a_lt_b_count": 0.5
+        "series_a_gt_b_count": 1.0,
+        "series_a_lt_b_count": 0.0
       },
       "values_by_category": {
-        "A": {
-          "Jaye": 11,
-          "Lou": 8
+        "C": {
+          "Aura": 5,
+          "Obau": 12,
+          "Truc": 18
         },
-        "G": {
-          "Jaye": 16,
-          "Lou": 11
+        "H": {
+          "Aura": 5,
+          "Obau": 8,
+          "Truc": 17
         },
-        "N": {
-          "Jaye": 15,
-          "Lou": 1
+        "K": {
+          "Aura": 3,
+          "Obau": 4,
+          "Truc": 11
         },
-        "P": {
-          "Jaye": 17,
-          "Lou": 5
+        "U": {
+          "Aura": 2,
+          "Obau": 14,
+          "Truc": 16
         },
-        "R": {
-          "Jaye": 16,
-          "Lou": 2
+        "W": {
+          "Aura": 3,
+          "Obau": 7,
+          "Truc": 16
         },
-        "T": {
-          "Jaye": 16,
-          "Lou": 4
+        "X": {
+          "Aura": 12,
+          "Obau": 15,
+          "Truc": 16
         }
       }
     },
     "projected_evidence": {
-      "bbox_set": [],
-      "label_set": [],
-      "pixel_point_map": {},
-      "pixel_point_set": []
+      "bbox_set": [
+        [
+          374.956,
+          69.474,
+          444.044,
+          562.0
+        ],
+        [
+          755.956,
+          94.947,
+          825.044,
+          562.0
+        ],
+        [
+          628.956,
+          247.789,
+          698.044,
+          562.0
+        ],
+        [
+          120.956,
+          120.421,
+          190.044,
+          562.0
+        ],
+        [
+          501.956,
+          120.421,
+          571.044,
+          562.0
+        ],
+        [
+          247.956,
+          120.421,
+          317.044,
+          562.0
+        ]
+      ],
+      "label_set": [
+        "C",
+        "H",
+        "K",
+        "U",
+        "W",
+        "X"
+      ],
+      "pixel_point_map": {
+        "C": [
+          409.5,
+          554.0
+        ],
+        "H": [
+          790.5,
+          554.0
+        ],
+        "K": [
+          663.5,
+          554.0
+        ],
+        "U": [
+          155.5,
+          554.0
+        ],
+        "W": [
+          536.5,
+          554.0
+        ],
+        "X": [
+          282.5,
+          554.0
+        ]
+      },
+      "pixel_point_set": [
+        [
+          409.5,
+          554.0
+        ],
+        [
+          790.5,
+          554.0
+        ],
+        [
+          663.5,
+          554.0
+        ],
+        [
+          155.5,
+          554.0
+        ],
+        [
+          536.5,
+          554.0
+        ],
+        [
+          282.5,
+          554.0
+        ]
+      ]
     },
     "query_spec": {
       "params": {
@@ -139,35 +264,35 @@
         ],
         "comparison": "greater_than",
         "queried_series_labels": [
-          "Lou",
-          "Jaye"
+          "Truc",
+          "Aura"
         ],
-        "scene_variant": "multi_line",
+        "scene_variant": "grouped_bar",
         "scene_variant_probabilities": {
           "grouped_bar": 0.25,
           "grouped_horizontal_bar": 0.25,
           "grouped_lollipop": 0.25,
           "multi_line": 0.25
         },
-        "series_count": 2,
+        "series_count": 3,
         "series_count_range": [
           2,
           3
         ],
-        "target_answer": 0,
+        "target_answer": 6,
         "target_answer_range": [
           0,
           8
         ],
         "task_variant": "series_a_gt_b_count",
         "task_variant_probabilities": {
-          "series_a_gt_b_count": 0.5,
-          "series_a_lt_b_count": 0.5
+          "series_a_gt_b_count": 1.0,
+          "series_a_lt_b_count": 0.0
         }
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 3,
+        "answer_or_evidence_variant_index": 1,
         "prompt_bundle_id": "charts_multiseries_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -177,16 +302,16 @@
           "json_example_answer_only": "{\"answer\":3}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "left_series": "Lou",
-          "object_description": "a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis",
-          "right_series": "Jaye"
+          "left_series": "Truc",
+          "object_description": "a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category",
+          "right_series": "Aura"
         },
         "task_family_key": "multiseries_chart_comparison",
-        "task_family_variant_index": 2,
+        "task_family_variant_index": 0,
         "task_key": "pairwise_comparison_count_query",
-        "task_variant_index": 4,
+        "task_variant_index": 0,
         "task_variant_key": "series_a_gt_b_count",
-        "task_variant_template_index": 3,
+        "task_variant_template_index": 4,
         "template_paths": [
           "charts/multiseries/charts_multiseries_v1.json"
         ],
@@ -202,7 +327,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 3,
+            "answer_or_evidence_variant_index": 1,
             "prompt_bundle_id": "charts_multiseries_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -212,16 +337,16 @@
               "json_example_answer_only": "{\"answer\":3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "left_series": "Lou",
-              "object_description": "a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis",
-              "right_series": "Jaye"
+              "left_series": "Truc",
+              "object_description": "a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category",
+              "right_series": "Aura"
             },
             "task_family_key": "multiseries_chart_comparison",
-            "task_family_variant_index": 2,
+            "task_family_variant_index": 0,
             "task_key": "pairwise_comparison_count_query",
-            "task_variant_index": 4,
+            "task_variant_index": 0,
             "task_variant_key": "series_a_gt_b_count",
-            "task_variant_template_index": 3,
+            "task_variant_template_index": 4,
             "template_paths": [
               "charts/multiseries/charts_multiseries_v1.json"
             ],
@@ -232,7 +357,7 @@
               "task_variant:series_a_gt_b_count": 5
             }
           },
-          "prompt": "Work from the multiseries chart shown in the image: a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Work category by category and count the labels where the requested series comparison is true. Determine the number of categories where Lou is greater than Jaye.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer field: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}"
+          "prompt": "The image shows a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Compare the two queried series category by category. Find how many category labels show Truc higher than Aura.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer format: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}"
         },
         "answer_only": {
           "metadata": {
@@ -247,16 +372,16 @@
               "json_example_answer_only": "{\"answer\":3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "left_series": "Lou",
-              "object_description": "a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis",
-              "right_series": "Jaye"
+              "left_series": "Truc",
+              "object_description": "a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category",
+              "right_series": "Aura"
             },
             "task_family_key": "multiseries_chart_comparison",
-            "task_family_variant_index": 2,
+            "task_family_variant_index": 0,
             "task_key": "pairwise_comparison_count_query",
-            "task_variant_index": 4,
+            "task_variant_index": 0,
             "task_variant_key": "series_a_gt_b_count",
-            "task_variant_template_index": 3,
+            "task_variant_template_index": 4,
             "template_paths": [
               "charts/multiseries/charts_multiseries_v1.json"
             ],
@@ -267,7 +392,7 @@
               "task_variant:series_a_gt_b_count": 5
             }
           },
-          "prompt": "Work from the multiseries chart shown in the image: a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Work category by category and count the labels where the requested series comparison is true. Determine the number of categories where Lou is greater than Jaye.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":3}"
+          "prompt": "The image shows a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Compare the two queried series category by category. Find how many category labels show Truc higher than Aura.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":3}"
         }
       },
       "task_variant": "series_a_gt_b_count",
@@ -275,28 +400,28 @@
     },
     "render_map": {
       "category_label_centers_px": {
-        "A": [
-          282.5,
-          554.0
-        ],
-        "G": [
+        "C": [
           409.5,
           554.0
         ],
-        "N": [
+        "H": [
           790.5,
           554.0
         ],
-        "P": [
-          155.5,
-          554.0
-        ],
-        "R": [
+        "K": [
           663.5,
           554.0
         ],
-        "T": [
+        "U": [
+          155.5,
+          554.0
+        ],
+        "W": [
           536.5,
+          554.0
+        ],
+        "X": [
+          282.5,
           554.0
         ]
       },
@@ -338,26 +463,36 @@
         "sampling_policy": "random_rgb_palette",
         "series_fill_palette_rgb": [
           [
-            46,
-            94,
-            5
+            185,
+            10,
+            208
           ],
           [
-            18,
-            182,
-            177
+            134,
+            148,
+            121
+          ],
+          [
+            48,
+            109,
+            211
           ]
         ],
         "series_outline_palette_rgb": [
           [
-            25,
-            52,
-            3
+            102,
+            6,
+            114
           ],
           [
-            10,
-            100,
-            97
+            74,
+            81,
+            67
+          ],
+          [
+            26,
+            60,
+            116
           ]
         ]
       },
@@ -383,13 +518,13 @@
         "edits": [],
         "enabled": false
       },
-      "scene_variant": "multi_line",
+      "scene_variant": "grouped_bar",
       "text_style": {
         "label_font_size_px": 22,
         "label_stroke_width_px": 2,
         "tick_font_size_px": 18
       },
-      "y_axis_max": 18,
+      "y_axis_max": 19,
       "y_ticks": [
         0,
         1,
@@ -409,7 +544,8 @@
         15,
         16,
         17,
-        18
+        18,
+        19
       ]
     },
     "scene_ir": {
@@ -417,522 +553,788 @@
         {
           "attrs": {
             "category_group_bbox_px": [
-              147.5,
-              62.889,
-              163.5,
+              120.956,
+              120.421,
+              190.044,
               562.0
             ],
-            "category_label": "P",
+            "category_label": "U",
             "category_label_center_px": [
               155.5,
               554.0
             ],
             "category_rank": 0,
             "mark_bbox_px": [
-              147.5,
-              385.556,
-              163.5,
-              401.556
+              120.956,
+              171.368,
+              139.244,
+              528.0
             ],
             "mark_center_px": [
-              155.5,
-              393.556
+              130.1,
+              171.368
             ],
             "mark_fill_rgb": [
-              46,
-              94,
-              5
+              185,
+              10,
+              208
             ],
             "mark_outline_rgb": [
-              25,
-              52,
-              3
+              102,
+              6,
+              114
             ],
-            "scene_variant": "multi_line",
-            "series_label": "Lou",
+            "scene_variant": "grouped_bar",
+            "series_label": "Obau",
             "series_rank": 0,
-            "value": 5
+            "value": 14
           },
-          "entity_id": "mark_P_Lou",
-          "entity_type": "point"
+          "entity_id": "mark_U_Obau",
+          "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              147.5,
-              62.889,
-              163.5,
+              120.956,
+              120.421,
+              190.044,
               562.0
             ],
-            "category_label": "P",
+            "category_label": "U",
             "category_label_center_px": [
               155.5,
               554.0
             ],
             "category_rank": 0,
             "mark_bbox_px": [
-              147.5,
-              62.889,
-              163.5,
-              78.889
+              146.356,
+              120.421,
+              164.644,
+              528.0
             ],
             "mark_center_px": [
               155.5,
-              70.889
+              120.421
             ],
             "mark_fill_rgb": [
-              18,
-              182,
-              177
+              134,
+              148,
+              121
             ],
             "mark_outline_rgb": [
-              10,
-              100,
-              97
+              74,
+              81,
+              67
             ],
-            "scene_variant": "multi_line",
-            "series_label": "Jaye",
-            "series_rank": 1,
-            "value": 17
-          },
-          "entity_id": "mark_P_Jaye",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              274.0,
-              224.222,
-              291.0,
-              562.0
-            ],
-            "category_label": "A",
-            "category_label_center_px": [
-              282.5,
-              554.0
-            ],
-            "category_rank": 1,
-            "mark_bbox_px": [
-              274.5,
-              304.889,
-              290.5,
-              320.889
-            ],
-            "mark_center_px": [
-              282.5,
-              312.889
-            ],
-            "mark_fill_rgb": [
-              46,
-              94,
-              5
-            ],
-            "mark_outline_rgb": [
-              25,
-              52,
-              3
-            ],
-            "scene_variant": "multi_line",
-            "series_label": "Lou",
-            "series_rank": 0,
-            "value": 8
-          },
-          "entity_id": "mark_A_Lou",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              274.0,
-              224.222,
-              291.0,
-              562.0
-            ],
-            "category_label": "A",
-            "category_label_center_px": [
-              282.5,
-              554.0
-            ],
-            "category_rank": 1,
-            "mark_bbox_px": [
-              274.5,
-              224.222,
-              290.5,
-              240.222
-            ],
-            "mark_center_px": [
-              282.5,
-              232.222
-            ],
-            "mark_fill_rgb": [
-              18,
-              182,
-              177
-            ],
-            "mark_outline_rgb": [
-              10,
-              100,
-              97
-            ],
-            "scene_variant": "multi_line",
-            "series_label": "Jaye",
-            "series_rank": 1,
-            "value": 11
-          },
-          "entity_id": "mark_A_Jaye",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              400.5,
-              89.778,
-              418.5,
-              562.0
-            ],
-            "category_label": "G",
-            "category_label_center_px": [
-              409.5,
-              554.0
-            ],
-            "category_rank": 2,
-            "mark_bbox_px": [
-              401.5,
-              224.222,
-              417.5,
-              240.222
-            ],
-            "mark_center_px": [
-              409.5,
-              232.222
-            ],
-            "mark_fill_rgb": [
-              46,
-              94,
-              5
-            ],
-            "mark_outline_rgb": [
-              25,
-              52,
-              3
-            ],
-            "scene_variant": "multi_line",
-            "series_label": "Lou",
-            "series_rank": 0,
-            "value": 11
-          },
-          "entity_id": "mark_G_Lou",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              400.5,
-              89.778,
-              418.5,
-              562.0
-            ],
-            "category_label": "G",
-            "category_label_center_px": [
-              409.5,
-              554.0
-            ],
-            "category_rank": 2,
-            "mark_bbox_px": [
-              401.5,
-              89.778,
-              417.5,
-              105.778
-            ],
-            "mark_center_px": [
-              409.5,
-              97.778
-            ],
-            "mark_fill_rgb": [
-              18,
-              182,
-              177
-            ],
-            "mark_outline_rgb": [
-              10,
-              100,
-              97
-            ],
-            "scene_variant": "multi_line",
-            "series_label": "Jaye",
+            "scene_variant": "grouped_bar",
+            "series_label": "Truc",
             "series_rank": 1,
             "value": 16
           },
-          "entity_id": "mark_G_Jaye",
-          "entity_type": "point"
+          "entity_id": "mark_U_Truc",
+          "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              528.5,
-              89.778,
-              544.5,
+              120.956,
+              120.421,
+              190.044,
               562.0
             ],
-            "category_label": "T",
+            "category_label": "U",
+            "category_label_center_px": [
+              155.5,
+              554.0
+            ],
+            "category_rank": 0,
+            "mark_bbox_px": [
+              171.756,
+              477.053,
+              190.044,
+              528.0
+            ],
+            "mark_center_px": [
+              180.9,
+              477.053
+            ],
+            "mark_fill_rgb": [
+              48,
+              109,
+              211
+            ],
+            "mark_outline_rgb": [
+              26,
+              60,
+              116
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Aura",
+            "series_rank": 2,
+            "value": 2
+          },
+          "entity_id": "mark_U_Aura",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              247.956,
+              120.421,
+              317.044,
+              562.0
+            ],
+            "category_label": "X",
+            "category_label_center_px": [
+              282.5,
+              554.0
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              247.956,
+              145.895,
+              266.244,
+              528.0
+            ],
+            "mark_center_px": [
+              257.1,
+              145.895
+            ],
+            "mark_fill_rgb": [
+              185,
+              10,
+              208
+            ],
+            "mark_outline_rgb": [
+              102,
+              6,
+              114
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Obau",
+            "series_rank": 0,
+            "value": 15
+          },
+          "entity_id": "mark_X_Obau",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              247.956,
+              120.421,
+              317.044,
+              562.0
+            ],
+            "category_label": "X",
+            "category_label_center_px": [
+              282.5,
+              554.0
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              273.356,
+              120.421,
+              291.644,
+              528.0
+            ],
+            "mark_center_px": [
+              282.5,
+              120.421
+            ],
+            "mark_fill_rgb": [
+              134,
+              148,
+              121
+            ],
+            "mark_outline_rgb": [
+              74,
+              81,
+              67
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Truc",
+            "series_rank": 1,
+            "value": 16
+          },
+          "entity_id": "mark_X_Truc",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              247.956,
+              120.421,
+              317.044,
+              562.0
+            ],
+            "category_label": "X",
+            "category_label_center_px": [
+              282.5,
+              554.0
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              298.756,
+              222.316,
+              317.044,
+              528.0
+            ],
+            "mark_center_px": [
+              307.9,
+              222.316
+            ],
+            "mark_fill_rgb": [
+              48,
+              109,
+              211
+            ],
+            "mark_outline_rgb": [
+              26,
+              60,
+              116
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Aura",
+            "series_rank": 2,
+            "value": 12
+          },
+          "entity_id": "mark_X_Aura",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              374.956,
+              69.474,
+              444.044,
+              562.0
+            ],
+            "category_label": "C",
+            "category_label_center_px": [
+              409.5,
+              554.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              374.956,
+              222.316,
+              393.244,
+              528.0
+            ],
+            "mark_center_px": [
+              384.1,
+              222.316
+            ],
+            "mark_fill_rgb": [
+              185,
+              10,
+              208
+            ],
+            "mark_outline_rgb": [
+              102,
+              6,
+              114
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Obau",
+            "series_rank": 0,
+            "value": 12
+          },
+          "entity_id": "mark_C_Obau",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              374.956,
+              69.474,
+              444.044,
+              562.0
+            ],
+            "category_label": "C",
+            "category_label_center_px": [
+              409.5,
+              554.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              400.356,
+              69.474,
+              418.644,
+              528.0
+            ],
+            "mark_center_px": [
+              409.5,
+              69.474
+            ],
+            "mark_fill_rgb": [
+              134,
+              148,
+              121
+            ],
+            "mark_outline_rgb": [
+              74,
+              81,
+              67
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Truc",
+            "series_rank": 1,
+            "value": 18
+          },
+          "entity_id": "mark_C_Truc",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              374.956,
+              69.474,
+              444.044,
+              562.0
+            ],
+            "category_label": "C",
+            "category_label_center_px": [
+              409.5,
+              554.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              425.756,
+              400.632,
+              444.044,
+              528.0
+            ],
+            "mark_center_px": [
+              434.9,
+              400.632
+            ],
+            "mark_fill_rgb": [
+              48,
+              109,
+              211
+            ],
+            "mark_outline_rgb": [
+              26,
+              60,
+              116
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Aura",
+            "series_rank": 2,
+            "value": 5
+          },
+          "entity_id": "mark_C_Aura",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              501.956,
+              120.421,
+              571.044,
+              562.0
+            ],
+            "category_label": "W",
             "category_label_center_px": [
               536.5,
               554.0
             ],
             "category_rank": 3,
             "mark_bbox_px": [
-              528.5,
-              412.444,
-              544.5,
-              428.444
+              501.956,
+              349.684,
+              520.244,
+              528.0
+            ],
+            "mark_center_px": [
+              511.1,
+              349.684
+            ],
+            "mark_fill_rgb": [
+              185,
+              10,
+              208
+            ],
+            "mark_outline_rgb": [
+              102,
+              6,
+              114
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Obau",
+            "series_rank": 0,
+            "value": 7
+          },
+          "entity_id": "mark_W_Obau",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              501.956,
+              120.421,
+              571.044,
+              562.0
+            ],
+            "category_label": "W",
+            "category_label_center_px": [
+              536.5,
+              554.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              527.356,
+              120.421,
+              545.644,
+              528.0
             ],
             "mark_center_px": [
               536.5,
-              420.444
+              120.421
             ],
             "mark_fill_rgb": [
-              46,
-              94,
-              5
+              134,
+              148,
+              121
             ],
             "mark_outline_rgb": [
-              25,
-              52,
-              3
+              74,
+              81,
+              67
             ],
-            "scene_variant": "multi_line",
-            "series_label": "Lou",
+            "scene_variant": "grouped_bar",
+            "series_label": "Truc",
+            "series_rank": 1,
+            "value": 16
+          },
+          "entity_id": "mark_W_Truc",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              501.956,
+              120.421,
+              571.044,
+              562.0
+            ],
+            "category_label": "W",
+            "category_label_center_px": [
+              536.5,
+              554.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              552.756,
+              451.579,
+              571.044,
+              528.0
+            ],
+            "mark_center_px": [
+              561.9,
+              451.579
+            ],
+            "mark_fill_rgb": [
+              48,
+              109,
+              211
+            ],
+            "mark_outline_rgb": [
+              26,
+              60,
+              116
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Aura",
+            "series_rank": 2,
+            "value": 3
+          },
+          "entity_id": "mark_W_Aura",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              628.956,
+              247.789,
+              698.044,
+              562.0
+            ],
+            "category_label": "K",
+            "category_label_center_px": [
+              663.5,
+              554.0
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              628.956,
+              426.105,
+              647.244,
+              528.0
+            ],
+            "mark_center_px": [
+              638.1,
+              426.105
+            ],
+            "mark_fill_rgb": [
+              185,
+              10,
+              208
+            ],
+            "mark_outline_rgb": [
+              102,
+              6,
+              114
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Obau",
             "series_rank": 0,
             "value": 4
           },
-          "entity_id": "mark_T_Lou",
-          "entity_type": "point"
+          "entity_id": "mark_K_Obau",
+          "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              528.5,
-              89.778,
-              544.5,
+              628.956,
+              247.789,
+              698.044,
               562.0
             ],
-            "category_label": "T",
-            "category_label_center_px": [
-              536.5,
-              554.0
-            ],
-            "category_rank": 3,
-            "mark_bbox_px": [
-              528.5,
-              89.778,
-              544.5,
-              105.778
-            ],
-            "mark_center_px": [
-              536.5,
-              97.778
-            ],
-            "mark_fill_rgb": [
-              18,
-              182,
-              177
-            ],
-            "mark_outline_rgb": [
-              10,
-              100,
-              97
-            ],
-            "scene_variant": "multi_line",
-            "series_label": "Jaye",
-            "series_rank": 1,
-            "value": 16
-          },
-          "entity_id": "mark_T_Jaye",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              655.0,
-              89.778,
-              672.0,
-              562.0
-            ],
-            "category_label": "R",
+            "category_label": "K",
             "category_label_center_px": [
               663.5,
               554.0
             ],
             "category_rank": 4,
             "mark_bbox_px": [
-              655.5,
-              466.222,
-              671.5,
-              482.222
+              654.356,
+              247.789,
+              672.644,
+              528.0
             ],
             "mark_center_px": [
               663.5,
-              474.222
+              247.789
             ],
             "mark_fill_rgb": [
-              46,
-              94,
-              5
+              134,
+              148,
+              121
             ],
             "mark_outline_rgb": [
-              25,
-              52,
-              3
+              74,
+              81,
+              67
             ],
-            "scene_variant": "multi_line",
-            "series_label": "Lou",
-            "series_rank": 0,
-            "value": 2
+            "scene_variant": "grouped_bar",
+            "series_label": "Truc",
+            "series_rank": 1,
+            "value": 11
           },
-          "entity_id": "mark_R_Lou",
-          "entity_type": "point"
+          "entity_id": "mark_K_Truc",
+          "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              655.0,
-              89.778,
-              672.0,
+              628.956,
+              247.789,
+              698.044,
               562.0
             ],
-            "category_label": "R",
+            "category_label": "K",
             "category_label_center_px": [
               663.5,
               554.0
             ],
             "category_rank": 4,
             "mark_bbox_px": [
-              655.5,
-              89.778,
-              671.5,
-              105.778
+              679.756,
+              451.579,
+              698.044,
+              528.0
             ],
             "mark_center_px": [
-              663.5,
-              97.778
+              688.9,
+              451.579
             ],
             "mark_fill_rgb": [
-              18,
-              182,
-              177
+              48,
+              109,
+              211
             ],
             "mark_outline_rgb": [
-              10,
-              100,
-              97
+              26,
+              60,
+              116
             ],
-            "scene_variant": "multi_line",
-            "series_label": "Jaye",
-            "series_rank": 1,
-            "value": 16
+            "scene_variant": "grouped_bar",
+            "series_label": "Aura",
+            "series_rank": 2,
+            "value": 3
           },
-          "entity_id": "mark_R_Jaye",
-          "entity_type": "point"
+          "entity_id": "mark_K_Aura",
+          "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              781.5,
-              116.667,
-              799.5,
+              755.956,
+              94.947,
+              825.044,
               562.0
             ],
-            "category_label": "N",
+            "category_label": "H",
             "category_label_center_px": [
               790.5,
               554.0
             ],
             "category_rank": 5,
             "mark_bbox_px": [
-              782.5,
-              493.111,
-              798.5,
-              509.111
+              755.956,
+              324.211,
+              774.244,
+              528.0
             ],
             "mark_center_px": [
-              790.5,
-              501.111
+              765.1,
+              324.211
             ],
             "mark_fill_rgb": [
-              46,
-              94,
-              5
+              185,
+              10,
+              208
             ],
             "mark_outline_rgb": [
-              25,
-              52,
-              3
+              102,
+              6,
+              114
             ],
-            "scene_variant": "multi_line",
-            "series_label": "Lou",
+            "scene_variant": "grouped_bar",
+            "series_label": "Obau",
             "series_rank": 0,
-            "value": 1
+            "value": 8
           },
-          "entity_id": "mark_N_Lou",
-          "entity_type": "point"
+          "entity_id": "mark_H_Obau",
+          "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              781.5,
-              116.667,
-              799.5,
+              755.956,
+              94.947,
+              825.044,
               562.0
             ],
-            "category_label": "N",
+            "category_label": "H",
             "category_label_center_px": [
               790.5,
               554.0
             ],
             "category_rank": 5,
             "mark_bbox_px": [
-              782.5,
-              116.667,
-              798.5,
-              132.667
+              781.356,
+              94.947,
+              799.644,
+              528.0
             ],
             "mark_center_px": [
               790.5,
-              124.667
+              94.947
             ],
             "mark_fill_rgb": [
-              18,
-              182,
-              177
+              134,
+              148,
+              121
             ],
             "mark_outline_rgb": [
-              10,
-              100,
-              97
+              74,
+              81,
+              67
             ],
-            "scene_variant": "multi_line",
-            "series_label": "Jaye",
+            "scene_variant": "grouped_bar",
+            "series_label": "Truc",
             "series_rank": 1,
-            "value": 15
+            "value": 17
           },
-          "entity_id": "mark_N_Jaye",
-          "entity_type": "point"
+          "entity_id": "mark_H_Truc",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              755.956,
+              94.947,
+              825.044,
+              562.0
+            ],
+            "category_label": "H",
+            "category_label_center_px": [
+              790.5,
+              554.0
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              806.756,
+              400.632,
+              825.044,
+              528.0
+            ],
+            "mark_center_px": [
+              815.9,
+              400.632
+            ],
+            "mark_fill_rgb": [
+              48,
+              109,
+              211
+            ],
+            "mark_outline_rgb": [
+              26,
+              60,
+              116
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Aura",
+            "series_rank": 2,
+            "value": 5
+          },
+          "entity_id": "mark_H_Aura",
+          "entity_type": "bar"
         }
       ],
       "relations": {
         "comparison": "greater_than",
-        "evidence_labels": [],
-        "queried_series_labels": [
-          "Lou",
-          "Jaye"
+        "evidence_labels": [
+          "C",
+          "H",
+          "K",
+          "U",
+          "W",
+          "X"
         ],
-        "scene_variant": "multi_line",
+        "queried_series_labels": [
+          "Truc",
+          "Aura"
+        ],
+        "scene_variant": "grouped_bar",
         "task_variant": "series_a_gt_b_count"
       },
-      "scene_kind": "chart_multi_line_multiseries"
+      "scene_kind": "chart_grouped_bar_multiseries"
     },
     "witness_symbolic": {
-      "labels": [],
+      "labels": [
+        "C",
+        "H",
+        "K",
+        "U",
+        "W",
+        "X"
+      ],
       "type": "label_set"
     }
   },

@@ -1,55 +1,73 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 0
+    "value": 7
   },
   "evidence_gt": {
     "type": "label_set",
-    "value": []
+    "value": [
+      "A",
+      "G",
+      "M",
+      "P",
+      "Q",
+      "S",
+      "Y"
+    ]
   },
   "image": {
     "format": "png",
     "path": "charts/task_charts_multiseries_pairwise_comparison_count/images/series_a_gt_b_count/0005.png"
   },
-  "instance_seed": 463797916383980,
-  "prompt": "Look at the multiseries chart in the image. It shows a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Read the chart values and count the categories where the stated series relation holds. How many labeled categories have Paco above Aric?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer requirement: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
+  "instance_seed": 7953234481586946,
+  "prompt": "Use the chart in the image. It shows a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Use the chart to compare the queried pair of series across the category labels. Count the category labels where Aron exceeds Dora.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
   "prompt_variants": {
-    "answer_and_evidence": "Look at the multiseries chart in the image. It shows a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Read the chart values and count the categories where the stated series relation holds. How many labeled categories have Paco above Aric?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer requirement: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
-    "answer_only": "Look at the multiseries chart in the image. It shows a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Read the chart values and count the categories where the stated series relation holds. How many labeled categories have Paco above Aric?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":3}"
+    "answer_and_evidence": "Use the chart in the image. It shows a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Use the chart to compare the queried pair of series across the category labels. Count the category labels where Aron exceeds Dora.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
+    "answer_only": "Use the chart in the image. It shows a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Use the chart to compare the queried pair of series across the category labels. Count the category labels where Aron exceeds Dora.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":3}"
   },
   "task": "task_charts_multiseries_pairwise_comparison_count",
   "task_variant": "series_a_gt_b_count",
   "trace_payload": {
     "execution_trace": {
-      "answer_value": 0,
-      "category_count": 8,
+      "answer_value": 7,
+      "category_count": 10,
       "category_count_range": [
         5,
         10
       ],
       "category_labels": [
-        "K",
-        "P",
-        "D",
+        "M",
+        "H",
         "Y",
-        "J",
-        "B",
-        "W",
-        "Z"
+        "A",
+        "G",
+        "Q",
+        "P",
+        "N",
+        "Z",
+        "S"
       ],
       "comparison": "greater_than",
-      "evidence_labels": [],
-      "left_series_label": "Paco",
+      "evidence_labels": [
+        "A",
+        "G",
+        "M",
+        "P",
+        "Q",
+        "S",
+        "Y"
+      ],
+      "left_series_label": "Aron",
       "mark_color_distance_space": "lab",
       "mark_color_min_distance": 40.0,
       "mark_color_sampling_policy": "random_rgb_palette",
       "queried_series_labels": [
-        "Paco",
-        "Aric"
+        "Aron",
+        "Dora"
       ],
       "question_format": "numeric_open",
-      "right_series_label": "Aric",
-      "scene_variant": "grouped_lollipop",
+      "right_series_label": "Dora",
+      "scene_variant": "grouped_bar",
       "scene_variant_probabilities": {
         "grouped_bar": 0.25,
         "grouped_horizontal_bar": 0.25,
@@ -63,115 +81,234 @@
       ],
       "series_fill_palette_rgb": [
         [
-          143,
-          86,
-          67
+          97,
+          33,
+          141
         ],
         [
-          64,
-          181,
-          171
+          207,
+          37,
+          0
         ],
         [
-          215,
-          124,
-          175
+          43,
+          191,
+          207
         ]
       ],
       "series_labels": [
-        "Paco",
-        "Aric",
-        "Shue"
+        "Aron",
+        "Brew",
+        "Dora"
       ],
       "series_outline_palette_rgb": [
         [
-          79,
-          47,
-          37
+          53,
+          18,
+          78
         ],
         [
-          35,
-          100,
-          94
+          114,
+          20,
+          0
         ],
         [
-          118,
-          68,
-          96
+          24,
+          105,
+          114
         ]
       ],
-      "target_answer": 0,
+      "target_answer": 7,
       "target_answer_range": [
         0,
         8
       ],
       "task_variant": "series_a_gt_b_count",
       "task_variant_probabilities": {
-        "series_a_gt_b_count": 0.5,
-        "series_a_lt_b_count": 0.5
+        "series_a_gt_b_count": 1.0,
+        "series_a_lt_b_count": 0.0
       },
       "values_by_category": {
-        "B": {
-          "Aric": 11,
-          "Paco": 2,
-          "Shue": 8
+        "A": {
+          "Aron": 15,
+          "Brew": 12,
+          "Dora": 9
         },
-        "D": {
-          "Aric": 17,
-          "Paco": 8,
-          "Shue": 12
+        "G": {
+          "Aron": 14,
+          "Brew": 10,
+          "Dora": 7
         },
-        "J": {
-          "Aric": 13,
-          "Paco": 1,
-          "Shue": 10
+        "H": {
+          "Aron": 4,
+          "Brew": 9,
+          "Dora": 19
         },
-        "K": {
-          "Aric": 17,
-          "Paco": 2,
-          "Shue": 4
+        "M": {
+          "Aron": 12,
+          "Brew": 10,
+          "Dora": 2
+        },
+        "N": {
+          "Aron": 10,
+          "Brew": 15,
+          "Dora": 20
         },
         "P": {
-          "Aric": 13,
-          "Paco": 3,
-          "Shue": 4
+          "Aron": 16,
+          "Brew": 15,
+          "Dora": 7
         },
-        "W": {
-          "Aric": 8,
-          "Paco": 1,
-          "Shue": 7
+        "Q": {
+          "Aron": 14,
+          "Brew": 3,
+          "Dora": 1
+        },
+        "S": {
+          "Aron": 8,
+          "Brew": 7,
+          "Dora": 6
         },
         "Y": {
-          "Aric": 16,
-          "Paco": 3,
-          "Shue": 14
+          "Aron": 17,
+          "Brew": 9,
+          "Dora": 6
         },
         "Z": {
-          "Aric": 13,
-          "Paco": 2,
-          "Shue": 11
+          "Aron": 7,
+          "Brew": 9,
+          "Dora": 20
         }
       }
     },
     "projected_evidence": {
-      "bbox_set": [],
-      "label_set": [],
-      "pixel_point_map": {},
-      "pixel_point_set": []
+      "bbox_set": [
+        [
+          337.974,
+          182.286,
+          379.426,
+          562.0
+        ],
+        [
+          414.174,
+          205.333,
+          455.626,
+          562.0
+        ],
+        [
+          109.374,
+          251.429,
+          150.826,
+          562.0
+        ],
+        [
+          566.574,
+          159.238,
+          608.026,
+          562.0
+        ],
+        [
+          490.374,
+          205.333,
+          531.826,
+          563.5
+        ],
+        [
+          795.174,
+          343.619,
+          836.626,
+          562.0
+        ],
+        [
+          261.774,
+          136.19,
+          303.226,
+          562.0
+        ]
+      ],
+      "label_set": [
+        "A",
+        "G",
+        "M",
+        "P",
+        "Q",
+        "S",
+        "Y"
+      ],
+      "pixel_point_map": {
+        "A": [
+          358.7,
+          554.0
+        ],
+        "G": [
+          434.9,
+          554.0
+        ],
+        "M": [
+          130.1,
+          554.0
+        ],
+        "P": [
+          587.3,
+          554.0
+        ],
+        "Q": [
+          511.1,
+          554.0
+        ],
+        "S": [
+          815.9,
+          554.0
+        ],
+        "Y": [
+          282.5,
+          554.0
+        ]
+      },
+      "pixel_point_set": [
+        [
+          358.7,
+          554.0
+        ],
+        [
+          434.9,
+          554.0
+        ],
+        [
+          130.1,
+          554.0
+        ],
+        [
+          587.3,
+          554.0
+        ],
+        [
+          511.1,
+          554.0
+        ],
+        [
+          815.9,
+          554.0
+        ],
+        [
+          282.5,
+          554.0
+        ]
+      ]
     },
     "query_spec": {
       "params": {
-        "category_count": 8,
+        "category_count": 10,
         "category_count_range": [
           5,
           10
         ],
         "comparison": "greater_than",
         "queried_series_labels": [
-          "Paco",
-          "Aric"
+          "Aron",
+          "Dora"
         ],
-        "scene_variant": "grouped_lollipop",
+        "scene_variant": "grouped_bar",
         "scene_variant_probabilities": {
           "grouped_bar": 0.25,
           "grouped_horizontal_bar": 0.25,
@@ -183,20 +320,20 @@
           2,
           3
         ],
-        "target_answer": 0,
+        "target_answer": 7,
         "target_answer_range": [
           0,
           8
         ],
         "task_variant": "series_a_gt_b_count",
         "task_variant_probabilities": {
-          "series_a_gt_b_count": 0.5,
-          "series_a_lt_b_count": 0.5
+          "series_a_gt_b_count": 1.0,
+          "series_a_lt_b_count": 0.0
         }
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 2,
+        "answer_or_evidence_variant_index": 0,
         "prompt_bundle_id": "charts_multiseries_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -206,16 +343,16 @@
           "json_example_answer_only": "{\"answer\":3}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "left_series": "Paco",
-          "object_description": "a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis",
-          "right_series": "Aric"
+          "left_series": "Aron",
+          "object_description": "a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category",
+          "right_series": "Dora"
         },
         "task_family_key": "multiseries_chart_comparison",
-        "task_family_variant_index": 3,
+        "task_family_variant_index": 1,
         "task_key": "pairwise_comparison_count_query",
-        "task_variant_index": 3,
+        "task_variant_index": 1,
         "task_variant_key": "series_a_gt_b_count",
-        "task_variant_template_index": 2,
+        "task_variant_template_index": 1,
         "template_paths": [
           "charts/multiseries/charts_multiseries_v1.json"
         ],
@@ -231,41 +368,6 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 2,
-            "prompt_bundle_id": "charts_multiseries_v1",
-            "schema_version": "v1",
-            "slot_values": {
-              "answer_hint": "set \"answer\" to the number of category labels satisfying the requested series comparison as an integer",
-              "evidence_hint": "set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series",
-              "json_example": "{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
-              "json_example_answer_only": "{\"answer\":3}",
-              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
-              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "left_series": "Paco",
-              "object_description": "a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis",
-              "right_series": "Aric"
-            },
-            "task_family_key": "multiseries_chart_comparison",
-            "task_family_variant_index": 3,
-            "task_key": "pairwise_comparison_count_query",
-            "task_variant_index": 3,
-            "task_variant_key": "series_a_gt_b_count",
-            "task_variant_template_index": 2,
-            "template_paths": [
-              "charts/multiseries/charts_multiseries_v1.json"
-            ],
-            "variant_count_by_key": {
-              "answer_or_evidence:answer_and_evidence": 5,
-              "task:pairwise_comparison_count_query": 5,
-              "task_family:multiseries_chart_comparison": 5,
-              "task_variant:series_a_gt_b_count": 5
-            }
-          },
-          "prompt": "Look at the multiseries chart in the image. It shows a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Read the chart values and count the categories where the stated series relation holds. How many labeled categories have Paco above Aric?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer requirement: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}"
-        },
-        "answer_only": {
-          "metadata": {
-            "answer_or_evidence_key": "answer_only",
             "answer_or_evidence_variant_index": 0,
             "prompt_bundle_id": "charts_multiseries_v1",
             "schema_version": "v1",
@@ -276,16 +378,51 @@
               "json_example_answer_only": "{\"answer\":3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "left_series": "Paco",
-              "object_description": "a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis",
-              "right_series": "Aric"
+              "left_series": "Aron",
+              "object_description": "a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category",
+              "right_series": "Dora"
             },
             "task_family_key": "multiseries_chart_comparison",
-            "task_family_variant_index": 3,
+            "task_family_variant_index": 1,
             "task_key": "pairwise_comparison_count_query",
-            "task_variant_index": 3,
+            "task_variant_index": 1,
             "task_variant_key": "series_a_gt_b_count",
-            "task_variant_template_index": 2,
+            "task_variant_template_index": 1,
+            "template_paths": [
+              "charts/multiseries/charts_multiseries_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:pairwise_comparison_count_query": 5,
+              "task_family:multiseries_chart_comparison": 5,
+              "task_variant:series_a_gt_b_count": 5
+            }
+          },
+          "prompt": "Use the chart in the image. It shows a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Use the chart to compare the queried pair of series across the category labels. Count the category labels where Aron exceeds Dora.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 3,
+            "prompt_bundle_id": "charts_multiseries_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the number of category labels satisfying the requested series comparison as an integer",
+              "evidence_hint": "set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series",
+              "json_example": "{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
+              "json_example_answer_only": "{\"answer\":3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "left_series": "Aron",
+              "object_description": "a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category",
+              "right_series": "Dora"
+            },
+            "task_family_key": "multiseries_chart_comparison",
+            "task_family_variant_index": 1,
+            "task_key": "pairwise_comparison_count_query",
+            "task_variant_index": 1,
+            "task_variant_key": "series_a_gt_b_count",
+            "task_variant_template_index": 1,
             "template_paths": [
               "charts/multiseries/charts_multiseries_v1.json"
             ],
@@ -296,7 +433,7 @@
               "task_variant:series_a_gt_b_count": 5
             }
           },
-          "prompt": "Look at the multiseries chart in the image. It shows a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Read the chart values and count the categories where the stated series relation holds. How many labeled categories have Paco above Aric?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":3}"
+          "prompt": "Use the chart in the image. It shows a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Use the chart to compare the queried pair of series across the category labels. Count the category labels where Aron exceeds Dora.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":3}"
         }
       },
       "task_variant": "series_a_gt_b_count",
@@ -304,36 +441,44 @@
     },
     "render_map": {
       "category_label_centers_px": {
-        "B": [
-          615.875,
+        "A": [
+          358.7,
           554.0
         ],
-        "D": [
-          330.125,
+        "G": [
+          434.9,
           554.0
         ],
-        "J": [
-          520.625,
+        "H": [
+          206.3,
           554.0
         ],
-        "K": [
-          139.625,
+        "M": [
+          130.1,
+          554.0
+        ],
+        "N": [
+          663.5,
           554.0
         ],
         "P": [
-          234.875,
+          587.3,
           554.0
         ],
-        "W": [
-          711.125,
+        "Q": [
+          511.1,
+          554.0
+        ],
+        "S": [
+          815.9,
           554.0
         ],
         "Y": [
-          425.375,
+          282.5,
           554.0
         ],
         "Z": [
-          806.375,
+          739.7,
           554.0
         ]
       },
@@ -375,36 +520,36 @@
         "sampling_policy": "random_rgb_palette",
         "series_fill_palette_rgb": [
           [
-            143,
-            86,
-            67
+            97,
+            33,
+            141
           ],
           [
-            64,
-            181,
-            171
+            207,
+            37,
+            0
           ],
           [
-            215,
-            124,
-            175
+            43,
+            191,
+            207
           ]
         ],
         "series_outline_palette_rgb": [
           [
-            79,
-            47,
-            37
+            53,
+            18,
+            78
           ],
           [
-            35,
-            100,
-            94
+            114,
+            20,
+            0
           ],
           [
-            118,
-            68,
-            96
+            24,
+            105,
+            114
           ]
         ]
       },
@@ -430,13 +575,13 @@
         "edits": [],
         "enabled": false
       },
-      "scene_variant": "grouped_lollipop",
+      "scene_variant": "grouped_bar",
       "text_style": {
         "label_font_size_px": 22,
         "label_stroke_width_px": 2,
         "tick_font_size_px": 18
       },
-      "y_axis_max": 18,
+      "y_axis_max": 21,
       "y_ticks": [
         0,
         1,
@@ -456,7 +601,10 @@
         15,
         16,
         17,
-        18
+        18,
+        19,
+        20,
+        21
       ]
     },
     "scene_ir": {
@@ -464,1026 +612,1294 @@
         {
           "attrs": {
             "category_group_bbox_px": [
-              112.575,
-              62.889,
-              166.675,
+              109.374,
+              251.429,
+              150.826,
               562.0
             ],
-            "category_label": "K",
+            "category_label": "M",
             "category_label_center_px": [
-              139.625,
+              130.1,
               554.0
             ],
             "category_rank": 0,
             "mark_bbox_px": [
-              112.575,
-              466.222,
-              128.575,
-              482.222
+              109.374,
+              251.429,
+              120.346,
+              528.0
             ],
             "mark_center_px": [
-              120.575,
-              474.222
+              114.86,
+              251.429
             ],
             "mark_fill_rgb": [
-              143,
-              86,
-              67
+              97,
+              33,
+              141
             ],
             "mark_outline_rgb": [
-              79,
-              47,
-              37
+              53,
+              18,
+              78
             ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Paco",
+            "scene_variant": "grouped_bar",
+            "series_label": "Aron",
             "series_rank": 0,
+            "value": 12
+          },
+          "entity_id": "mark_M_Aron",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              109.374,
+              251.429,
+              150.826,
+              562.0
+            ],
+            "category_label": "M",
+            "category_label_center_px": [
+              130.1,
+              554.0
+            ],
+            "category_rank": 0,
+            "mark_bbox_px": [
+              124.614,
+              297.524,
+              135.586,
+              528.0
+            ],
+            "mark_center_px": [
+              130.1,
+              297.524
+            ],
+            "mark_fill_rgb": [
+              207,
+              37,
+              0
+            ],
+            "mark_outline_rgb": [
+              114,
+              20,
+              0
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Brew",
+            "series_rank": 1,
+            "value": 10
+          },
+          "entity_id": "mark_M_Brew",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              109.374,
+              251.429,
+              150.826,
+              562.0
+            ],
+            "category_label": "M",
+            "category_label_center_px": [
+              130.1,
+              554.0
+            ],
+            "category_rank": 0,
+            "mark_bbox_px": [
+              139.854,
+              481.905,
+              150.826,
+              528.0
+            ],
+            "mark_center_px": [
+              145.34,
+              481.905
+            ],
+            "mark_fill_rgb": [
+              43,
+              191,
+              207
+            ],
+            "mark_outline_rgb": [
+              24,
+              105,
+              114
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Dora",
+            "series_rank": 2,
             "value": 2
           },
-          "entity_id": "mark_K_Paco",
-          "entity_type": "point"
+          "entity_id": "mark_M_Dora",
+          "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              112.575,
-              62.889,
-              166.675,
+              185.574,
+              90.095,
+              227.026,
               562.0
             ],
-            "category_label": "K",
+            "category_label": "H",
             "category_label_center_px": [
-              139.625,
+              206.3,
               554.0
             ],
-            "category_rank": 0,
+            "category_rank": 1,
             "mark_bbox_px": [
-              131.625,
-              62.889,
-              147.625,
-              78.889
+              185.574,
+              435.81,
+              196.546,
+              528.0
             ],
             "mark_center_px": [
-              139.625,
-              70.889
+              191.06,
+              435.81
             ],
             "mark_fill_rgb": [
-              64,
-              181,
-              171
+              97,
+              33,
+              141
             ],
             "mark_outline_rgb": [
-              35,
-              100,
-              94
+              53,
+              18,
+              78
             ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Aric",
-            "series_rank": 1,
-            "value": 17
-          },
-          "entity_id": "mark_K_Aric",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              112.575,
-              62.889,
-              166.675,
-              562.0
-            ],
-            "category_label": "K",
-            "category_label_center_px": [
-              139.625,
-              554.0
-            ],
-            "category_rank": 0,
-            "mark_bbox_px": [
-              150.675,
-              412.444,
-              166.675,
-              428.444
-            ],
-            "mark_center_px": [
-              158.675,
-              420.444
-            ],
-            "mark_fill_rgb": [
-              215,
-              124,
-              175
-            ],
-            "mark_outline_rgb": [
-              118,
-              68,
-              96
-            ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Shue",
-            "series_rank": 2,
+            "scene_variant": "grouped_bar",
+            "series_label": "Aron",
+            "series_rank": 0,
             "value": 4
           },
-          "entity_id": "mark_K_Shue",
-          "entity_type": "point"
+          "entity_id": "mark_H_Aron",
+          "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              207.825,
-              170.444,
-              261.925,
+              185.574,
+              90.095,
+              227.026,
               562.0
             ],
-            "category_label": "P",
+            "category_label": "H",
             "category_label_center_px": [
-              234.875,
+              206.3,
               554.0
             ],
             "category_rank": 1,
             "mark_bbox_px": [
-              207.825,
-              439.333,
-              223.825,
-              455.333
+              200.814,
+              320.571,
+              211.786,
+              528.0
             ],
             "mark_center_px": [
-              215.825,
-              447.333
+              206.3,
+              320.571
             ],
             "mark_fill_rgb": [
-              143,
-              86,
-              67
+              207,
+              37,
+              0
             ],
             "mark_outline_rgb": [
-              79,
-              47,
-              37
+              114,
+              20,
+              0
             ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Paco",
-            "series_rank": 0,
-            "value": 3
-          },
-          "entity_id": "mark_P_Paco",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              207.825,
-              170.444,
-              261.925,
-              562.0
-            ],
-            "category_label": "P",
-            "category_label_center_px": [
-              234.875,
-              554.0
-            ],
-            "category_rank": 1,
-            "mark_bbox_px": [
-              226.875,
-              170.444,
-              242.875,
-              186.444
-            ],
-            "mark_center_px": [
-              234.875,
-              178.444
-            ],
-            "mark_fill_rgb": [
-              64,
-              181,
-              171
-            ],
-            "mark_outline_rgb": [
-              35,
-              100,
-              94
-            ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Aric",
+            "scene_variant": "grouped_bar",
+            "series_label": "Brew",
             "series_rank": 1,
-            "value": 13
+            "value": 9
           },
-          "entity_id": "mark_P_Aric",
-          "entity_type": "point"
+          "entity_id": "mark_H_Brew",
+          "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              207.825,
-              170.444,
-              261.925,
+              185.574,
+              90.095,
+              227.026,
               562.0
             ],
-            "category_label": "P",
+            "category_label": "H",
             "category_label_center_px": [
-              234.875,
+              206.3,
               554.0
             ],
             "category_rank": 1,
             "mark_bbox_px": [
-              245.925,
-              412.444,
-              261.925,
-              428.444
+              216.054,
+              90.095,
+              227.026,
+              528.0
             ],
             "mark_center_px": [
-              253.925,
-              420.444
+              221.54,
+              90.095
             ],
             "mark_fill_rgb": [
-              215,
-              124,
-              175
+              43,
+              191,
+              207
             ],
             "mark_outline_rgb": [
-              118,
-              68,
-              96
+              24,
+              105,
+              114
             ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Shue",
+            "scene_variant": "grouped_bar",
+            "series_label": "Dora",
             "series_rank": 2,
-            "value": 4
+            "value": 19
           },
-          "entity_id": "mark_P_Shue",
-          "entity_type": "point"
+          "entity_id": "mark_H_Dora",
+          "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              303.075,
-              62.889,
-              357.175,
+              261.774,
+              136.19,
+              303.226,
               562.0
             ],
-            "category_label": "D",
+            "category_label": "Y",
             "category_label_center_px": [
-              330.125,
+              282.5,
               554.0
             ],
             "category_rank": 2,
             "mark_bbox_px": [
-              303.075,
-              304.889,
-              319.075,
-              320.889
+              261.774,
+              136.19,
+              272.746,
+              528.0
             ],
             "mark_center_px": [
-              311.075,
-              312.889
+              267.26,
+              136.19
             ],
             "mark_fill_rgb": [
-              143,
-              86,
-              67
+              97,
+              33,
+              141
             ],
             "mark_outline_rgb": [
-              79,
-              47,
-              37
+              53,
+              18,
+              78
             ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Paco",
+            "scene_variant": "grouped_bar",
+            "series_label": "Aron",
             "series_rank": 0,
-            "value": 8
-          },
-          "entity_id": "mark_D_Paco",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              303.075,
-              62.889,
-              357.175,
-              562.0
-            ],
-            "category_label": "D",
-            "category_label_center_px": [
-              330.125,
-              554.0
-            ],
-            "category_rank": 2,
-            "mark_bbox_px": [
-              322.125,
-              62.889,
-              338.125,
-              78.889
-            ],
-            "mark_center_px": [
-              330.125,
-              70.889
-            ],
-            "mark_fill_rgb": [
-              64,
-              181,
-              171
-            ],
-            "mark_outline_rgb": [
-              35,
-              100,
-              94
-            ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Aric",
-            "series_rank": 1,
             "value": 17
           },
-          "entity_id": "mark_D_Aric",
-          "entity_type": "point"
+          "entity_id": "mark_Y_Aron",
+          "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              303.075,
-              62.889,
-              357.175,
+              261.774,
+              136.19,
+              303.226,
               562.0
             ],
-            "category_label": "D",
+            "category_label": "Y",
             "category_label_center_px": [
-              330.125,
+              282.5,
               554.0
             ],
             "category_rank": 2,
             "mark_bbox_px": [
-              341.175,
-              197.333,
-              357.175,
-              213.333
+              277.014,
+              320.571,
+              287.986,
+              528.0
             ],
             "mark_center_px": [
-              349.175,
+              282.5,
+              320.571
+            ],
+            "mark_fill_rgb": [
+              207,
+              37,
+              0
+            ],
+            "mark_outline_rgb": [
+              114,
+              20,
+              0
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Brew",
+            "series_rank": 1,
+            "value": 9
+          },
+          "entity_id": "mark_Y_Brew",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              261.774,
+              136.19,
+              303.226,
+              562.0
+            ],
+            "category_label": "Y",
+            "category_label_center_px": [
+              282.5,
+              554.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              292.254,
+              389.714,
+              303.226,
+              528.0
+            ],
+            "mark_center_px": [
+              297.74,
+              389.714
+            ],
+            "mark_fill_rgb": [
+              43,
+              191,
+              207
+            ],
+            "mark_outline_rgb": [
+              24,
+              105,
+              114
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Dora",
+            "series_rank": 2,
+            "value": 6
+          },
+          "entity_id": "mark_Y_Dora",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              337.974,
+              182.286,
+              379.426,
+              562.0
+            ],
+            "category_label": "A",
+            "category_label_center_px": [
+              358.7,
+              554.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              337.974,
+              182.286,
+              348.946,
+              528.0
+            ],
+            "mark_center_px": [
+              343.46,
+              182.286
+            ],
+            "mark_fill_rgb": [
+              97,
+              33,
+              141
+            ],
+            "mark_outline_rgb": [
+              53,
+              18,
+              78
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Aron",
+            "series_rank": 0,
+            "value": 15
+          },
+          "entity_id": "mark_A_Aron",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              337.974,
+              182.286,
+              379.426,
+              562.0
+            ],
+            "category_label": "A",
+            "category_label_center_px": [
+              358.7,
+              554.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              353.214,
+              251.429,
+              364.186,
+              528.0
+            ],
+            "mark_center_px": [
+              358.7,
+              251.429
+            ],
+            "mark_fill_rgb": [
+              207,
+              37,
+              0
+            ],
+            "mark_outline_rgb": [
+              114,
+              20,
+              0
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Brew",
+            "series_rank": 1,
+            "value": 12
+          },
+          "entity_id": "mark_A_Brew",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              337.974,
+              182.286,
+              379.426,
+              562.0
+            ],
+            "category_label": "A",
+            "category_label_center_px": [
+              358.7,
+              554.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              368.454,
+              320.571,
+              379.426,
+              528.0
+            ],
+            "mark_center_px": [
+              373.94,
+              320.571
+            ],
+            "mark_fill_rgb": [
+              43,
+              191,
+              207
+            ],
+            "mark_outline_rgb": [
+              24,
+              105,
+              114
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Dora",
+            "series_rank": 2,
+            "value": 9
+          },
+          "entity_id": "mark_A_Dora",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              414.174,
+              205.333,
+              455.626,
+              562.0
+            ],
+            "category_label": "G",
+            "category_label_center_px": [
+              434.9,
+              554.0
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              414.174,
+              205.333,
+              425.146,
+              528.0
+            ],
+            "mark_center_px": [
+              419.66,
               205.333
             ],
             "mark_fill_rgb": [
-              215,
-              124,
-              175
+              97,
+              33,
+              141
             ],
             "mark_outline_rgb": [
-              118,
-              68,
-              96
+              53,
+              18,
+              78
             ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Shue",
-            "series_rank": 2,
-            "value": 12
-          },
-          "entity_id": "mark_D_Shue",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              398.325,
-              89.778,
-              452.425,
-              562.0
-            ],
-            "category_label": "Y",
-            "category_label_center_px": [
-              425.375,
-              554.0
-            ],
-            "category_rank": 3,
-            "mark_bbox_px": [
-              398.325,
-              439.333,
-              414.325,
-              455.333
-            ],
-            "mark_center_px": [
-              406.325,
-              447.333
-            ],
-            "mark_fill_rgb": [
-              143,
-              86,
-              67
-            ],
-            "mark_outline_rgb": [
-              79,
-              47,
-              37
-            ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Paco",
+            "scene_variant": "grouped_bar",
+            "series_label": "Aron",
             "series_rank": 0,
-            "value": 3
-          },
-          "entity_id": "mark_Y_Paco",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              398.325,
-              89.778,
-              452.425,
-              562.0
-            ],
-            "category_label": "Y",
-            "category_label_center_px": [
-              425.375,
-              554.0
-            ],
-            "category_rank": 3,
-            "mark_bbox_px": [
-              417.375,
-              89.778,
-              433.375,
-              105.778
-            ],
-            "mark_center_px": [
-              425.375,
-              97.778
-            ],
-            "mark_fill_rgb": [
-              64,
-              181,
-              171
-            ],
-            "mark_outline_rgb": [
-              35,
-              100,
-              94
-            ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Aric",
-            "series_rank": 1,
-            "value": 16
-          },
-          "entity_id": "mark_Y_Aric",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              398.325,
-              89.778,
-              452.425,
-              562.0
-            ],
-            "category_label": "Y",
-            "category_label_center_px": [
-              425.375,
-              554.0
-            ],
-            "category_rank": 3,
-            "mark_bbox_px": [
-              436.425,
-              143.556,
-              452.425,
-              159.556
-            ],
-            "mark_center_px": [
-              444.425,
-              151.556
-            ],
-            "mark_fill_rgb": [
-              215,
-              124,
-              175
-            ],
-            "mark_outline_rgb": [
-              118,
-              68,
-              96
-            ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Shue",
-            "series_rank": 2,
             "value": 14
           },
-          "entity_id": "mark_Y_Shue",
-          "entity_type": "point"
+          "entity_id": "mark_G_Aron",
+          "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              493.575,
-              170.444,
-              547.675,
-              564.0
+              414.174,
+              205.333,
+              455.626,
+              562.0
             ],
-            "category_label": "J",
+            "category_label": "G",
             "category_label_center_px": [
-              520.625,
+              434.9,
               554.0
             ],
             "category_rank": 4,
             "mark_bbox_px": [
-              493.575,
-              493.111,
-              509.575,
-              509.111
+              429.414,
+              297.524,
+              440.386,
+              528.0
             ],
             "mark_center_px": [
-              501.575,
-              501.111
+              434.9,
+              297.524
             ],
             "mark_fill_rgb": [
-              143,
-              86,
-              67
+              207,
+              37,
+              0
             ],
             "mark_outline_rgb": [
-              79,
-              47,
-              37
+              114,
+              20,
+              0
             ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Paco",
-            "series_rank": 0,
-            "value": 1
-          },
-          "entity_id": "mark_J_Paco",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              493.575,
-              170.444,
-              547.675,
-              564.0
-            ],
-            "category_label": "J",
-            "category_label_center_px": [
-              520.625,
-              554.0
-            ],
-            "category_rank": 4,
-            "mark_bbox_px": [
-              512.625,
-              170.444,
-              528.625,
-              186.444
-            ],
-            "mark_center_px": [
-              520.625,
-              178.444
-            ],
-            "mark_fill_rgb": [
-              64,
-              181,
-              171
-            ],
-            "mark_outline_rgb": [
-              35,
-              100,
-              94
-            ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Aric",
+            "scene_variant": "grouped_bar",
+            "series_label": "Brew",
             "series_rank": 1,
-            "value": 13
-          },
-          "entity_id": "mark_J_Aric",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              493.575,
-              170.444,
-              547.675,
-              564.0
-            ],
-            "category_label": "J",
-            "category_label_center_px": [
-              520.625,
-              554.0
-            ],
-            "category_rank": 4,
-            "mark_bbox_px": [
-              531.675,
-              251.111,
-              547.675,
-              267.111
-            ],
-            "mark_center_px": [
-              539.675,
-              259.111
-            ],
-            "mark_fill_rgb": [
-              215,
-              124,
-              175
-            ],
-            "mark_outline_rgb": [
-              118,
-              68,
-              96
-            ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Shue",
-            "series_rank": 2,
             "value": 10
           },
-          "entity_id": "mark_J_Shue",
-          "entity_type": "point"
+          "entity_id": "mark_G_Brew",
+          "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              588.825,
-              224.222,
-              642.925,
+              414.174,
+              205.333,
+              455.626,
               562.0
             ],
-            "category_label": "B",
+            "category_label": "G",
             "category_label_center_px": [
-              615.875,
+              434.9,
               554.0
             ],
-            "category_rank": 5,
+            "category_rank": 4,
             "mark_bbox_px": [
-              588.825,
-              466.222,
-              604.825,
-              482.222
+              444.654,
+              366.667,
+              455.626,
+              528.0
             ],
             "mark_center_px": [
-              596.825,
-              474.222
+              450.14,
+              366.667
             ],
             "mark_fill_rgb": [
-              143,
-              86,
-              67
+              43,
+              191,
+              207
             ],
             "mark_outline_rgb": [
-              79,
-              47,
-              37
+              24,
+              105,
+              114
             ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Paco",
-            "series_rank": 0,
-            "value": 2
-          },
-          "entity_id": "mark_B_Paco",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              588.825,
-              224.222,
-              642.925,
-              562.0
-            ],
-            "category_label": "B",
-            "category_label_center_px": [
-              615.875,
-              554.0
-            ],
-            "category_rank": 5,
-            "mark_bbox_px": [
-              607.875,
-              224.222,
-              623.875,
-              240.222
-            ],
-            "mark_center_px": [
-              615.875,
-              232.222
-            ],
-            "mark_fill_rgb": [
-              64,
-              181,
-              171
-            ],
-            "mark_outline_rgb": [
-              35,
-              100,
-              94
-            ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Aric",
-            "series_rank": 1,
-            "value": 11
-          },
-          "entity_id": "mark_B_Aric",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              588.825,
-              224.222,
-              642.925,
-              562.0
-            ],
-            "category_label": "B",
-            "category_label_center_px": [
-              615.875,
-              554.0
-            ],
-            "category_rank": 5,
-            "mark_bbox_px": [
-              626.925,
-              304.889,
-              642.925,
-              320.889
-            ],
-            "mark_center_px": [
-              634.925,
-              312.889
-            ],
-            "mark_fill_rgb": [
-              215,
-              124,
-              175
-            ],
-            "mark_outline_rgb": [
-              118,
-              68,
-              96
-            ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Shue",
-            "series_rank": 2,
-            "value": 8
-          },
-          "entity_id": "mark_B_Shue",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              684.075,
-              304.889,
-              738.175,
-              562.0
-            ],
-            "category_label": "W",
-            "category_label_center_px": [
-              711.125,
-              554.0
-            ],
-            "category_rank": 6,
-            "mark_bbox_px": [
-              684.075,
-              493.111,
-              700.075,
-              509.111
-            ],
-            "mark_center_px": [
-              692.075,
-              501.111
-            ],
-            "mark_fill_rgb": [
-              143,
-              86,
-              67
-            ],
-            "mark_outline_rgb": [
-              79,
-              47,
-              37
-            ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Paco",
-            "series_rank": 0,
-            "value": 1
-          },
-          "entity_id": "mark_W_Paco",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              684.075,
-              304.889,
-              738.175,
-              562.0
-            ],
-            "category_label": "W",
-            "category_label_center_px": [
-              711.125,
-              554.0
-            ],
-            "category_rank": 6,
-            "mark_bbox_px": [
-              703.125,
-              304.889,
-              719.125,
-              320.889
-            ],
-            "mark_center_px": [
-              711.125,
-              312.889
-            ],
-            "mark_fill_rgb": [
-              64,
-              181,
-              171
-            ],
-            "mark_outline_rgb": [
-              35,
-              100,
-              94
-            ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Aric",
-            "series_rank": 1,
-            "value": 8
-          },
-          "entity_id": "mark_W_Aric",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              684.075,
-              304.889,
-              738.175,
-              562.0
-            ],
-            "category_label": "W",
-            "category_label_center_px": [
-              711.125,
-              554.0
-            ],
-            "category_rank": 6,
-            "mark_bbox_px": [
-              722.175,
-              331.778,
-              738.175,
-              347.778
-            ],
-            "mark_center_px": [
-              730.175,
-              339.778
-            ],
-            "mark_fill_rgb": [
-              215,
-              124,
-              175
-            ],
-            "mark_outline_rgb": [
-              118,
-              68,
-              96
-            ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Shue",
+            "scene_variant": "grouped_bar",
+            "series_label": "Dora",
             "series_rank": 2,
             "value": 7
           },
-          "entity_id": "mark_W_Shue",
-          "entity_type": "point"
+          "entity_id": "mark_G_Dora",
+          "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              779.325,
-              170.444,
-              833.425,
-              562.0
+              490.374,
+              205.333,
+              531.826,
+              563.5
             ],
-            "category_label": "Z",
+            "category_label": "Q",
             "category_label_center_px": [
-              806.375,
+              511.1,
               554.0
             ],
-            "category_rank": 7,
+            "category_rank": 5,
             "mark_bbox_px": [
-              779.325,
-              466.222,
-              795.325,
-              482.222
+              490.374,
+              205.333,
+              501.346,
+              528.0
             ],
             "mark_center_px": [
-              787.325,
-              474.222
+              495.86,
+              205.333
             ],
             "mark_fill_rgb": [
-              143,
-              86,
-              67
+              97,
+              33,
+              141
             ],
             "mark_outline_rgb": [
-              79,
-              47,
-              37
+              53,
+              18,
+              78
             ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Paco",
+            "scene_variant": "grouped_bar",
+            "series_label": "Aron",
             "series_rank": 0,
-            "value": 2
+            "value": 14
           },
-          "entity_id": "mark_Z_Paco",
-          "entity_type": "point"
+          "entity_id": "mark_Q_Aron",
+          "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              779.325,
-              170.444,
-              833.425,
-              562.0
+              490.374,
+              205.333,
+              531.826,
+              563.5
             ],
-            "category_label": "Z",
+            "category_label": "Q",
             "category_label_center_px": [
-              806.375,
+              511.1,
               554.0
             ],
-            "category_rank": 7,
+            "category_rank": 5,
             "mark_bbox_px": [
-              798.375,
-              170.444,
-              814.375,
-              186.444
+              505.614,
+              458.857,
+              516.586,
+              528.0
             ],
             "mark_center_px": [
-              806.375,
-              178.444
+              511.1,
+              458.857
             ],
             "mark_fill_rgb": [
-              64,
-              181,
-              171
+              207,
+              37,
+              0
             ],
             "mark_outline_rgb": [
-              35,
-              100,
-              94
+              114,
+              20,
+              0
             ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Aric",
+            "scene_variant": "grouped_bar",
+            "series_label": "Brew",
             "series_rank": 1,
-            "value": 13
+            "value": 3
           },
-          "entity_id": "mark_Z_Aric",
-          "entity_type": "point"
+          "entity_id": "mark_Q_Brew",
+          "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              779.325,
-              170.444,
-              833.425,
+              490.374,
+              205.333,
+              531.826,
+              563.5
+            ],
+            "category_label": "Q",
+            "category_label_center_px": [
+              511.1,
+              554.0
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              520.854,
+              504.952,
+              531.826,
+              528.0
+            ],
+            "mark_center_px": [
+              526.34,
+              504.952
+            ],
+            "mark_fill_rgb": [
+              43,
+              191,
+              207
+            ],
+            "mark_outline_rgb": [
+              24,
+              105,
+              114
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Dora",
+            "series_rank": 2,
+            "value": 1
+          },
+          "entity_id": "mark_Q_Dora",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              566.574,
+              159.238,
+              608.026,
               562.0
             ],
-            "category_label": "Z",
+            "category_label": "P",
             "category_label_center_px": [
-              806.375,
+              587.3,
+              554.0
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              566.574,
+              159.238,
+              577.546,
+              528.0
+            ],
+            "mark_center_px": [
+              572.06,
+              159.238
+            ],
+            "mark_fill_rgb": [
+              97,
+              33,
+              141
+            ],
+            "mark_outline_rgb": [
+              53,
+              18,
+              78
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Aron",
+            "series_rank": 0,
+            "value": 16
+          },
+          "entity_id": "mark_P_Aron",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              566.574,
+              159.238,
+              608.026,
+              562.0
+            ],
+            "category_label": "P",
+            "category_label_center_px": [
+              587.3,
+              554.0
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              581.814,
+              182.286,
+              592.786,
+              528.0
+            ],
+            "mark_center_px": [
+              587.3,
+              182.286
+            ],
+            "mark_fill_rgb": [
+              207,
+              37,
+              0
+            ],
+            "mark_outline_rgb": [
+              114,
+              20,
+              0
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Brew",
+            "series_rank": 1,
+            "value": 15
+          },
+          "entity_id": "mark_P_Brew",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              566.574,
+              159.238,
+              608.026,
+              562.0
+            ],
+            "category_label": "P",
+            "category_label_center_px": [
+              587.3,
+              554.0
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              597.054,
+              366.667,
+              608.026,
+              528.0
+            ],
+            "mark_center_px": [
+              602.54,
+              366.667
+            ],
+            "mark_fill_rgb": [
+              43,
+              191,
+              207
+            ],
+            "mark_outline_rgb": [
+              24,
+              105,
+              114
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Dora",
+            "series_rank": 2,
+            "value": 7
+          },
+          "entity_id": "mark_P_Dora",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              642.774,
+              67.048,
+              684.226,
+              562.0
+            ],
+            "category_label": "N",
+            "category_label_center_px": [
+              663.5,
               554.0
             ],
             "category_rank": 7,
             "mark_bbox_px": [
-              817.425,
-              224.222,
-              833.425,
-              240.222
+              642.774,
+              297.524,
+              653.746,
+              528.0
             ],
             "mark_center_px": [
-              825.425,
-              232.222
+              648.26,
+              297.524
             ],
             "mark_fill_rgb": [
-              215,
-              124,
-              175
+              97,
+              33,
+              141
             ],
             "mark_outline_rgb": [
-              118,
-              68,
-              96
+              53,
+              18,
+              78
             ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Shue",
-            "series_rank": 2,
-            "value": 11
+            "scene_variant": "grouped_bar",
+            "series_label": "Aron",
+            "series_rank": 0,
+            "value": 10
           },
-          "entity_id": "mark_Z_Shue",
-          "entity_type": "point"
+          "entity_id": "mark_N_Aron",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              642.774,
+              67.048,
+              684.226,
+              562.0
+            ],
+            "category_label": "N",
+            "category_label_center_px": [
+              663.5,
+              554.0
+            ],
+            "category_rank": 7,
+            "mark_bbox_px": [
+              658.014,
+              182.286,
+              668.986,
+              528.0
+            ],
+            "mark_center_px": [
+              663.5,
+              182.286
+            ],
+            "mark_fill_rgb": [
+              207,
+              37,
+              0
+            ],
+            "mark_outline_rgb": [
+              114,
+              20,
+              0
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Brew",
+            "series_rank": 1,
+            "value": 15
+          },
+          "entity_id": "mark_N_Brew",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              642.774,
+              67.048,
+              684.226,
+              562.0
+            ],
+            "category_label": "N",
+            "category_label_center_px": [
+              663.5,
+              554.0
+            ],
+            "category_rank": 7,
+            "mark_bbox_px": [
+              673.254,
+              67.048,
+              684.226,
+              528.0
+            ],
+            "mark_center_px": [
+              678.74,
+              67.048
+            ],
+            "mark_fill_rgb": [
+              43,
+              191,
+              207
+            ],
+            "mark_outline_rgb": [
+              24,
+              105,
+              114
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Dora",
+            "series_rank": 2,
+            "value": 20
+          },
+          "entity_id": "mark_N_Dora",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              718.974,
+              67.048,
+              760.426,
+              562.0
+            ],
+            "category_label": "Z",
+            "category_label_center_px": [
+              739.7,
+              554.0
+            ],
+            "category_rank": 8,
+            "mark_bbox_px": [
+              718.974,
+              366.667,
+              729.946,
+              528.0
+            ],
+            "mark_center_px": [
+              724.46,
+              366.667
+            ],
+            "mark_fill_rgb": [
+              97,
+              33,
+              141
+            ],
+            "mark_outline_rgb": [
+              53,
+              18,
+              78
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Aron",
+            "series_rank": 0,
+            "value": 7
+          },
+          "entity_id": "mark_Z_Aron",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              718.974,
+              67.048,
+              760.426,
+              562.0
+            ],
+            "category_label": "Z",
+            "category_label_center_px": [
+              739.7,
+              554.0
+            ],
+            "category_rank": 8,
+            "mark_bbox_px": [
+              734.214,
+              320.571,
+              745.186,
+              528.0
+            ],
+            "mark_center_px": [
+              739.7,
+              320.571
+            ],
+            "mark_fill_rgb": [
+              207,
+              37,
+              0
+            ],
+            "mark_outline_rgb": [
+              114,
+              20,
+              0
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Brew",
+            "series_rank": 1,
+            "value": 9
+          },
+          "entity_id": "mark_Z_Brew",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              718.974,
+              67.048,
+              760.426,
+              562.0
+            ],
+            "category_label": "Z",
+            "category_label_center_px": [
+              739.7,
+              554.0
+            ],
+            "category_rank": 8,
+            "mark_bbox_px": [
+              749.454,
+              67.048,
+              760.426,
+              528.0
+            ],
+            "mark_center_px": [
+              754.94,
+              67.048
+            ],
+            "mark_fill_rgb": [
+              43,
+              191,
+              207
+            ],
+            "mark_outline_rgb": [
+              24,
+              105,
+              114
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Dora",
+            "series_rank": 2,
+            "value": 20
+          },
+          "entity_id": "mark_Z_Dora",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              795.174,
+              343.619,
+              836.626,
+              562.0
+            ],
+            "category_label": "S",
+            "category_label_center_px": [
+              815.9,
+              554.0
+            ],
+            "category_rank": 9,
+            "mark_bbox_px": [
+              795.174,
+              343.619,
+              806.146,
+              528.0
+            ],
+            "mark_center_px": [
+              800.66,
+              343.619
+            ],
+            "mark_fill_rgb": [
+              97,
+              33,
+              141
+            ],
+            "mark_outline_rgb": [
+              53,
+              18,
+              78
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Aron",
+            "series_rank": 0,
+            "value": 8
+          },
+          "entity_id": "mark_S_Aron",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              795.174,
+              343.619,
+              836.626,
+              562.0
+            ],
+            "category_label": "S",
+            "category_label_center_px": [
+              815.9,
+              554.0
+            ],
+            "category_rank": 9,
+            "mark_bbox_px": [
+              810.414,
+              366.667,
+              821.386,
+              528.0
+            ],
+            "mark_center_px": [
+              815.9,
+              366.667
+            ],
+            "mark_fill_rgb": [
+              207,
+              37,
+              0
+            ],
+            "mark_outline_rgb": [
+              114,
+              20,
+              0
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Brew",
+            "series_rank": 1,
+            "value": 7
+          },
+          "entity_id": "mark_S_Brew",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              795.174,
+              343.619,
+              836.626,
+              562.0
+            ],
+            "category_label": "S",
+            "category_label_center_px": [
+              815.9,
+              554.0
+            ],
+            "category_rank": 9,
+            "mark_bbox_px": [
+              825.654,
+              389.714,
+              836.626,
+              528.0
+            ],
+            "mark_center_px": [
+              831.14,
+              389.714
+            ],
+            "mark_fill_rgb": [
+              43,
+              191,
+              207
+            ],
+            "mark_outline_rgb": [
+              24,
+              105,
+              114
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Dora",
+            "series_rank": 2,
+            "value": 6
+          },
+          "entity_id": "mark_S_Dora",
+          "entity_type": "bar"
         }
       ],
       "relations": {
         "comparison": "greater_than",
-        "evidence_labels": [],
-        "queried_series_labels": [
-          "Paco",
-          "Aric"
+        "evidence_labels": [
+          "A",
+          "G",
+          "M",
+          "P",
+          "Q",
+          "S",
+          "Y"
         ],
-        "scene_variant": "grouped_lollipop",
+        "queried_series_labels": [
+          "Aron",
+          "Dora"
+        ],
+        "scene_variant": "grouped_bar",
         "task_variant": "series_a_gt_b_count"
       },
-      "scene_kind": "chart_grouped_lollipop_multiseries"
+      "scene_kind": "chart_grouped_bar_multiseries"
     },
     "witness_symbolic": {
-      "labels": [],
+      "labels": [
+        "A",
+        "G",
+        "M",
+        "P",
+        "Q",
+        "S",
+        "Y"
+      ],
       "type": "label_set"
     }
   },

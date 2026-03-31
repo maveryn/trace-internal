@@ -12,12 +12,12 @@
     ],
     "generated_variant_counts": {
       "section_of_field_label": 102,
-      "section_of_field_value": 116,
-      "section_of_label_value_pair": 100
+      "section_of_field_value": 102,
+      "section_of_label_value_pair": 101
     },
     "generation_error_counts": {},
     "target_count_per_variant": 100,
-    "total_generated": 318
+    "total_generated": 305
   },
   "domain": "documents",
   "failed_variants": [],
@@ -31,7 +31,7 @@
     },
     "checks": {
       "max_answer_frequency": {
-        "observed": 0.13333333333333333,
+        "observed": 0.13666666666666666,
         "pass": true,
         "threshold": 0.25
       },
@@ -47,50 +47,50 @@
       }
     },
     "five_bin_numeric": null,
-    "max_answer_count": 40,
-    "max_answer_frequency": 0.13333333333333333,
+    "max_answer_count": 41,
+    "max_answer_frequency": 0.13666666666666666,
     "pass": true,
     "sample_count": 300,
     "top_answers": [
       {
-        "answer_label": "Totals",
-        "count": 40
+        "answer_label": "Fees",
+        "count": 41
       },
       {
         "answer_label": "Profile",
-        "count": 39
-      },
-      {
-        "answer_label": "Fees",
-        "count": 36
-      },
-      {
-        "answer_label": "Billing Summary",
-        "count": 33
-      },
-      {
-        "answer_label": "Purchase Info",
-        "count": 33
-      },
-      {
-        "answer_label": "Parties",
-        "count": 30
+        "count": 41
       },
       {
         "answer_label": "Store Details",
-        "count": 27
-      },
-      {
-        "answer_label": "Contact",
-        "count": 26
-      },
-      {
-        "answer_label": "Account",
-        "count": 18
+        "count": 40
       },
       {
         "answer_label": "Dates",
-        "count": 18
+        "count": 30
+      },
+      {
+        "answer_label": "Totals",
+        "count": 30
+      },
+      {
+        "answer_label": "Purchase Info",
+        "count": 29
+      },
+      {
+        "answer_label": "Billing Summary",
+        "count": 26
+      },
+      {
+        "answer_label": "Parties",
+        "count": 24
+      },
+      {
+        "answer_label": "Contact",
+        "count": 20
+      },
+      {
+        "answer_label": "Account",
+        "count": 19
       }
     ],
     "unique_answers": 10
@@ -125,43 +125,43 @@
       "sample_count": 100,
       "top_answers": [
         {
-          "answer_label": "Fees",
+          "answer_label": "Dates",
           "count": 15
         },
         {
-          "answer_label": "Totals",
-          "count": 15
+          "answer_label": "Fees",
+          "count": 14
         },
         {
           "answer_label": "Profile",
-          "count": 13
+          "count": 14
         },
         {
           "answer_label": "Purchase Info",
           "count": 12
         },
         {
-          "answer_label": "Billing Summary",
-          "count": 11
+          "answer_label": "Totals",
+          "count": 12
         },
         {
           "answer_label": "Store Details",
-          "count": 10
-        },
-        {
-          "answer_label": "Parties",
-          "count": 8
-        },
-        {
-          "answer_label": "Dates",
-          "count": 7
+          "count": 9
         },
         {
           "answer_label": "Account",
-          "count": 6
+          "count": 8
+        },
+        {
+          "answer_label": "Billing Summary",
+          "count": 7
         },
         {
           "answer_label": "Contact",
+          "count": 6
+        },
+        {
+          "answer_label": "Parties",
           "count": 3
         }
       ],
@@ -195,44 +195,44 @@
       "sample_count": 100,
       "top_answers": [
         {
-          "answer_label": "Profile",
+          "answer_label": "Fees",
           "count": 17
         },
         {
-          "answer_label": "Billing Summary",
-          "count": 15
+          "answer_label": "Store Details",
+          "count": 16
         },
         {
-          "answer_label": "Purchase Info",
-          "count": 13
-        },
-        {
-          "answer_label": "Parties",
+          "answer_label": "Profile",
           "count": 12
         },
         {
-          "answer_label": "Totals",
+          "answer_label": "Billing Summary",
           "count": 11
         },
         {
-          "answer_label": "Contact",
+          "answer_label": "Totals",
           "count": 9
         },
         {
-          "answer_label": "Fees",
-          "count": 9
+          "answer_label": "Parties",
+          "count": 8
         },
         {
-          "answer_label": "Dates",
-          "count": 6
+          "answer_label": "Purchase Info",
+          "count": 8
         },
         {
           "answer_label": "Account",
-          "count": 5
+          "count": 7
         },
         {
-          "answer_label": "Store Details",
-          "count": 3
+          "answer_label": "Dates",
+          "count": 7
+        },
+        {
+          "answer_label": "Contact",
+          "count": 5
         }
       ],
       "unique_answers": 10
@@ -243,7 +243,7 @@
       },
       "checks": {
         "max_answer_frequency": {
-          "observed": 0.14,
+          "observed": 0.15,
           "pass": true,
           "threshold": 0.25
         },
@@ -259,50 +259,50 @@
         }
       },
       "five_bin_numeric": null,
-      "max_answer_count": 14,
-      "max_answer_frequency": 0.14,
+      "max_answer_count": 15,
+      "max_answer_frequency": 0.15,
       "pass": true,
       "sample_count": 100,
       "top_answers": [
         {
-          "answer_label": "Contact",
-          "count": 14
+          "answer_label": "Profile",
+          "count": 15
         },
         {
           "answer_label": "Store Details",
-          "count": 14
-        },
-        {
-          "answer_label": "Totals",
-          "count": 14
-        },
-        {
-          "answer_label": "Fees",
-          "count": 12
+          "count": 15
         },
         {
           "answer_label": "Parties",
+          "count": 13
+        },
+        {
+          "answer_label": "Fees",
           "count": 10
         },
         {
-          "answer_label": "Profile",
+          "answer_label": "Contact",
           "count": 9
         },
         {
           "answer_label": "Purchase Info",
+          "count": 9
+        },
+        {
+          "answer_label": "Totals",
+          "count": 9
+        },
+        {
+          "answer_label": "Billing Summary",
+          "count": 8
+        },
+        {
+          "answer_label": "Dates",
           "count": 8
         },
         {
           "answer_label": "Account",
-          "count": 7
-        },
-        {
-          "answer_label": "Billing Summary",
-          "count": 7
-        },
-        {
-          "answer_label": "Dates",
-          "count": 5
+          "count": 4
         }
       ],
       "unique_answers": 10

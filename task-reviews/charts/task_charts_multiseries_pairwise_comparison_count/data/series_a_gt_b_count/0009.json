@@ -1,17 +1,16 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 7
+    "value": 6
   },
   "evidence_gt": {
     "type": "label_set",
     "value": [
-      "A",
+      "B",
       "E",
-      "G",
-      "K",
       "P",
       "U",
+      "Y",
       "Z"
     ]
   },
@@ -19,18 +18,18 @@
     "format": "png",
     "path": "charts/task_charts_multiseries_pairwise_comparison_count/images/series_a_gt_b_count/0009.png"
   },
-  "instance_seed": 3849516017346246,
-  "prompt": "Look at the multiseries chart in the image. It shows a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Compare the two queried series category by category. Across the labeled categories, in how many categories is Cato higher than Dosh?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
+  "instance_seed": 2629381753132045,
+  "prompt": "Use the chart in the image. It shows a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Use the chart to compare the queried pair of series across the category labels. Count the category labels where Ladd exceeds Alva.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer field: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
   "prompt_variants": {
-    "answer_and_evidence": "Look at the multiseries chart in the image. It shows a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Compare the two queried series category by category. Across the labeled categories, in how many categories is Cato higher than Dosh?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
-    "answer_only": "Look at the multiseries chart in the image. It shows a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Compare the two queried series category by category. Across the labeled categories, in how many categories is Cato higher than Dosh?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":3}"
+    "answer_and_evidence": "Use the chart in the image. It shows a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Use the chart to compare the queried pair of series across the category labels. Count the category labels where Ladd exceeds Alva.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer field: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
+    "answer_only": "Use the chart in the image. It shows a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Use the chart to compare the queried pair of series across the category labels. Count the category labels where Ladd exceeds Alva.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":3}"
   },
   "task": "task_charts_multiseries_pairwise_comparison_count",
   "task_variant": "series_a_gt_b_count",
   "trace_payload": {
     "execution_trace": {
-      "answer_value": 7,
-      "category_count": 8,
+      "answer_value": 6,
+      "category_count": 6,
       "category_count_range": [
         5,
         10
@@ -38,271 +37,262 @@
       "category_labels": [
         "U",
         "P",
-        "K",
-        "E",
-        "L",
         "Z",
-        "G",
-        "A"
+        "Y",
+        "B",
+        "E"
       ],
       "comparison": "greater_than",
       "evidence_labels": [
-        "A",
+        "B",
         "E",
-        "G",
-        "K",
         "P",
         "U",
+        "Y",
         "Z"
       ],
-      "left_series_label": "Cato",
+      "left_series_label": "Ladd",
       "mark_color_distance_space": "lab",
       "mark_color_min_distance": 40.0,
       "mark_color_sampling_policy": "random_rgb_palette",
       "queried_series_labels": [
-        "Cato",
-        "Dosh"
+        "Ladd",
+        "Alva"
       ],
       "question_format": "numeric_open",
-      "right_series_label": "Dosh",
-      "scene_variant": "grouped_horizontal_bar",
+      "right_series_label": "Alva",
+      "scene_variant": "grouped_bar",
       "scene_variant_probabilities": {
         "grouped_bar": 0.25,
         "grouped_horizontal_bar": 0.25,
         "grouped_lollipop": 0.25,
         "multi_line": 0.25
       },
-      "series_count": 2,
+      "series_count": 3,
       "series_count_range": [
         2,
         3
       ],
       "series_fill_palette_rgb": [
         [
-          32,
-          33,
-          156
+          17,
+          203,
+          46
         ],
         [
-          152,
-          57,
-          19
+          10,
+          183,
+          119
+        ],
+        [
+          146,
+          93,
+          81
         ]
       ],
       "series_labels": [
-        "Cato",
-        "Dosh"
+        "Durr",
+        "Ladd",
+        "Alva"
       ],
       "series_outline_palette_rgb": [
         [
-          18,
-          18,
-          86
+          9,
+          112,
+          25
         ],
         [
-          84,
-          31,
-          10
+          6,
+          101,
+          65
+        ],
+        [
+          80,
+          51,
+          45
         ]
       ],
-      "target_answer": 7,
+      "target_answer": 6,
       "target_answer_range": [
         0,
         8
       ],
       "task_variant": "series_a_gt_b_count",
       "task_variant_probabilities": {
-        "series_a_gt_b_count": 0.5,
-        "series_a_lt_b_count": 0.5
+        "series_a_gt_b_count": 1.0,
+        "series_a_lt_b_count": 0.0
       },
       "values_by_category": {
-        "A": {
-          "Cato": 15,
-          "Dosh": 8
+        "B": {
+          "Alva": 5,
+          "Durr": 7,
+          "Ladd": 16
         },
         "E": {
-          "Cato": 8,
-          "Dosh": 7
-        },
-        "G": {
-          "Cato": 19,
-          "Dosh": 16
-        },
-        "K": {
-          "Cato": 14,
-          "Dosh": 13
-        },
-        "L": {
-          "Cato": 8,
-          "Dosh": 20
+          "Alva": 6,
+          "Durr": 17,
+          "Ladd": 18
         },
         "P": {
-          "Cato": 10,
-          "Dosh": 5
+          "Alva": 5,
+          "Durr": 15,
+          "Ladd": 18
         },
         "U": {
-          "Cato": 5,
-          "Dosh": 2
+          "Alva": 7,
+          "Durr": 9,
+          "Ladd": 14
+        },
+        "Y": {
+          "Alva": 1,
+          "Durr": 7,
+          "Ladd": 14
         },
         "Z": {
-          "Cato": 8,
-          "Dosh": 2
+          "Alva": 6,
+          "Durr": 9,
+          "Ladd": 17
         }
       }
     },
     "projected_evidence": {
       "bbox_set": [
         [
-          53.5,
-          482.141,
-          636.286,
-          513.359
+          628.956,
+          120.421,
+          698.044,
+          562.0
         ],
         [
-          54.5,
-          240.141,
-          382.286,
-          271.359
+          755.956,
+          69.474,
+          825.044,
+          562.0
         ],
         [
-          53.0,
-          421.641,
-          781.429,
-          452.859
+          247.956,
+          69.474,
+          317.044,
+          562.0
         ],
         [
-          53.0,
-          179.641,
-          600.0,
-          210.859
+          120.956,
+          171.368,
+          190.044,
+          562.0
         ],
         [
-          54.0,
-          119.141,
-          454.857,
-          150.359
+          501.956,
+          171.368,
+          571.044,
+          562.0
         ],
         [
-          53.0,
-          58.641,
-          273.429,
-          89.859
-        ],
-        [
-          54.0,
-          361.141,
-          382.286,
-          392.359
+          374.956,
+          94.947,
+          444.044,
+          562.0
         ]
       ],
       "label_set": [
-        "A",
+        "B",
         "E",
-        "G",
-        "K",
         "P",
         "U",
+        "Y",
         "Z"
       ],
       "pixel_point_map": {
-        "A": [
-          62.0,
-          497.75
+        "B": [
+          663.5,
+          554.0
         ],
         "E": [
-          62.0,
-          255.75
-        ],
-        "G": [
-          62.0,
-          437.25
-        ],
-        "K": [
-          62.0,
-          195.25
+          790.5,
+          554.0
         ],
         "P": [
-          62.0,
-          134.75
+          282.5,
+          554.0
         ],
         "U": [
-          62.0,
-          74.25
+          155.5,
+          554.0
+        ],
+        "Y": [
+          536.5,
+          554.0
         ],
         "Z": [
-          62.0,
-          376.75
+          409.5,
+          554.0
         ]
       },
       "pixel_point_set": [
         [
-          62.0,
-          497.75
+          663.5,
+          554.0
         ],
         [
-          62.0,
-          255.75
+          790.5,
+          554.0
         ],
         [
-          62.0,
-          437.25
+          282.5,
+          554.0
         ],
         [
-          62.0,
-          195.25
+          155.5,
+          554.0
         ],
         [
-          62.0,
-          134.75
+          536.5,
+          554.0
         ],
         [
-          62.0,
-          74.25
-        ],
-        [
-          62.0,
-          376.75
+          409.5,
+          554.0
         ]
       ]
     },
     "query_spec": {
       "params": {
-        "category_count": 8,
+        "category_count": 6,
         "category_count_range": [
           5,
           10
         ],
         "comparison": "greater_than",
         "queried_series_labels": [
-          "Cato",
-          "Dosh"
+          "Ladd",
+          "Alva"
         ],
-        "scene_variant": "grouped_horizontal_bar",
+        "scene_variant": "grouped_bar",
         "scene_variant_probabilities": {
           "grouped_bar": 0.25,
           "grouped_horizontal_bar": 0.25,
           "grouped_lollipop": 0.25,
           "multi_line": 0.25
         },
-        "series_count": 2,
+        "series_count": 3,
         "series_count_range": [
           2,
           3
         ],
-        "target_answer": 7,
+        "target_answer": 6,
         "target_answer_range": [
           0,
           8
         ],
         "task_variant": "series_a_gt_b_count",
         "task_variant_probabilities": {
-          "series_a_gt_b_count": 0.5,
-          "series_a_lt_b_count": 0.5
+          "series_a_gt_b_count": 1.0,
+          "series_a_lt_b_count": 0.0
         }
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 0,
+        "answer_or_evidence_variant_index": 3,
         "prompt_bundle_id": "charts_multiseries_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -312,16 +302,16 @@
           "json_example_answer_only": "{\"answer\":3}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "left_series": "Cato",
-          "object_description": "a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category",
-          "right_series": "Dosh"
+          "left_series": "Ladd",
+          "object_description": "a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category",
+          "right_series": "Alva"
         },
         "task_family_key": "multiseries_chart_comparison",
-        "task_family_variant_index": 3,
+        "task_family_variant_index": 1,
         "task_key": "pairwise_comparison_count_query",
-        "task_variant_index": 0,
+        "task_variant_index": 1,
         "task_variant_key": "series_a_gt_b_count",
-        "task_variant_template_index": 0,
+        "task_variant_template_index": 1,
         "template_paths": [
           "charts/multiseries/charts_multiseries_v1.json"
         ],
@@ -337,7 +327,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 0,
+            "answer_or_evidence_variant_index": 3,
             "prompt_bundle_id": "charts_multiseries_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -347,16 +337,16 @@
               "json_example_answer_only": "{\"answer\":3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "left_series": "Cato",
-              "object_description": "a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category",
-              "right_series": "Dosh"
+              "left_series": "Ladd",
+              "object_description": "a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category",
+              "right_series": "Alva"
             },
             "task_family_key": "multiseries_chart_comparison",
-            "task_family_variant_index": 3,
+            "task_family_variant_index": 1,
             "task_key": "pairwise_comparison_count_query",
-            "task_variant_index": 0,
+            "task_variant_index": 1,
             "task_variant_key": "series_a_gt_b_count",
-            "task_variant_template_index": 0,
+            "task_variant_template_index": 1,
             "template_paths": [
               "charts/multiseries/charts_multiseries_v1.json"
             ],
@@ -367,12 +357,12 @@
               "task_variant:series_a_gt_b_count": 5
             }
           },
-          "prompt": "Look at the multiseries chart in the image. It shows a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Compare the two queried series category by category. Across the labeled categories, in how many categories is Cato higher than Dosh?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}"
+          "prompt": "Use the chart in the image. It shows a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Use the chart to compare the queried pair of series across the category labels. Count the category labels where Ladd exceeds Alva.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer field: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 0,
+            "answer_or_evidence_variant_index": 4,
             "prompt_bundle_id": "charts_multiseries_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -382,16 +372,16 @@
               "json_example_answer_only": "{\"answer\":3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "left_series": "Cato",
-              "object_description": "a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category",
-              "right_series": "Dosh"
+              "left_series": "Ladd",
+              "object_description": "a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category",
+              "right_series": "Alva"
             },
             "task_family_key": "multiseries_chart_comparison",
-            "task_family_variant_index": 3,
+            "task_family_variant_index": 1,
             "task_key": "pairwise_comparison_count_query",
-            "task_variant_index": 0,
+            "task_variant_index": 1,
             "task_variant_key": "series_a_gt_b_count",
-            "task_variant_template_index": 0,
+            "task_variant_template_index": 1,
             "template_paths": [
               "charts/multiseries/charts_multiseries_v1.json"
             ],
@@ -402,7 +392,7 @@
               "task_variant:series_a_gt_b_count": 5
             }
           },
-          "prompt": "Look at the multiseries chart in the image. It shows a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Compare the two queried series category by category. Across the labeled categories, in how many categories is Cato higher than Dosh?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":3}"
+          "prompt": "Use the chart in the image. It shows a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Use the chart to compare the queried pair of series across the category labels. Count the category labels where Ladd exceeds Alva.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":3}"
         }
       },
       "task_variant": "series_a_gt_b_count",
@@ -410,37 +400,29 @@
     },
     "render_map": {
       "category_label_centers_px": {
-        "A": [
-          62.0,
-          497.75
+        "B": [
+          663.5,
+          554.0
         ],
         "E": [
-          62.0,
-          255.75
-        ],
-        "G": [
-          62.0,
-          437.25
-        ],
-        "K": [
-          62.0,
-          195.25
-        ],
-        "L": [
-          62.0,
-          316.25
+          790.5,
+          554.0
         ],
         "P": [
-          62.0,
-          134.75
+          282.5,
+          554.0
         ],
         "U": [
-          62.0,
-          74.25
+          155.5,
+          554.0
+        ],
+        "Y": [
+          536.5,
+          554.0
         ],
         "Z": [
-          62.0,
-          376.75
+          409.5,
+          554.0
         ]
       },
       "image_id": "img0",
@@ -481,26 +463,36 @@
         "sampling_policy": "random_rgb_palette",
         "series_fill_palette_rgb": [
           [
-            32,
-            33,
-            156
+            17,
+            203,
+            46
           ],
           [
-            152,
-            57,
-            19
+            10,
+            183,
+            119
+          ],
+          [
+            146,
+            93,
+            81
           ]
         ],
         "series_outline_palette_rgb": [
           [
-            18,
-            18,
-            86
+            9,
+            112,
+            25
           ],
           [
-            84,
-            31,
-            10
+            6,
+            101,
+            65
+          ],
+          [
+            80,
+            51,
+            45
           ]
         ]
       },
@@ -526,13 +518,13 @@
         "edits": [],
         "enabled": false
       },
-      "scene_variant": "grouped_horizontal_bar",
+      "scene_variant": "grouped_bar",
       "text_style": {
         "label_font_size_px": 22,
         "label_stroke_width_px": 2,
         "tick_font_size_px": 18
       },
-      "y_axis_max": 21,
+      "y_axis_max": 19,
       "y_ticks": [
         0,
         1,
@@ -553,9 +545,7 @@
         16,
         17,
         18,
-        19,
-        20,
-        21
+        19
       ]
     },
     "scene_ir": {
@@ -563,704 +553,786 @@
         {
           "attrs": {
             "category_group_bbox_px": [
-              53.0,
-              58.641,
-              273.429,
-              89.859
+              120.956,
+              171.368,
+              190.044,
+              562.0
             ],
             "category_label": "U",
             "category_label_center_px": [
-              62.0,
-              74.25
+              155.5,
+              554.0
             ],
             "category_rank": 0,
             "mark_bbox_px": [
-              92.0,
-              58.641,
-              273.429,
-              71.709
+              120.956,
+              298.737,
+              139.244,
+              528.0
             ],
             "mark_center_px": [
-              182.714,
-              65.175
+              130.1,
+              298.737
             ],
             "mark_fill_rgb": [
-              32,
-              33,
-              156
+              17,
+              203,
+              46
             ],
             "mark_outline_rgb": [
-              18,
-              18,
-              86
+              9,
+              112,
+              25
             ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Cato",
+            "scene_variant": "grouped_bar",
+            "series_label": "Durr",
             "series_rank": 0,
-            "value": 5
+            "value": 9
           },
-          "entity_id": "mark_U_Cato",
+          "entity_id": "mark_U_Durr",
           "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              53.0,
-              58.641,
-              273.429,
-              89.859
+              120.956,
+              171.368,
+              190.044,
+              562.0
             ],
             "category_label": "U",
             "category_label_center_px": [
-              62.0,
-              74.25
+              155.5,
+              554.0
             ],
             "category_rank": 0,
             "mark_bbox_px": [
-              92.0,
-              76.791,
-              164.571,
-              89.859
+              146.356,
+              171.368,
+              164.644,
+              528.0
             ],
             "mark_center_px": [
-              128.286,
-              83.325
+              155.5,
+              171.368
             ],
             "mark_fill_rgb": [
-              152,
-              57,
-              19
+              10,
+              183,
+              119
             ],
             "mark_outline_rgb": [
-              84,
-              31,
-              10
+              6,
+              101,
+              65
             ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Dosh",
+            "scene_variant": "grouped_bar",
+            "series_label": "Ladd",
             "series_rank": 1,
-            "value": 2
-          },
-          "entity_id": "mark_U_Dosh",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              54.0,
-              119.141,
-              454.857,
-              150.359
-            ],
-            "category_label": "P",
-            "category_label_center_px": [
-              62.0,
-              134.75
-            ],
-            "category_rank": 1,
-            "mark_bbox_px": [
-              92.0,
-              119.141,
-              454.857,
-              132.209
-            ],
-            "mark_center_px": [
-              273.429,
-              125.675
-            ],
-            "mark_fill_rgb": [
-              32,
-              33,
-              156
-            ],
-            "mark_outline_rgb": [
-              18,
-              18,
-              86
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Cato",
-            "series_rank": 0,
-            "value": 10
-          },
-          "entity_id": "mark_P_Cato",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              54.0,
-              119.141,
-              454.857,
-              150.359
-            ],
-            "category_label": "P",
-            "category_label_center_px": [
-              62.0,
-              134.75
-            ],
-            "category_rank": 1,
-            "mark_bbox_px": [
-              92.0,
-              137.291,
-              273.429,
-              150.359
-            ],
-            "mark_center_px": [
-              182.714,
-              143.825
-            ],
-            "mark_fill_rgb": [
-              152,
-              57,
-              19
-            ],
-            "mark_outline_rgb": [
-              84,
-              31,
-              10
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Dosh",
-            "series_rank": 1,
-            "value": 5
-          },
-          "entity_id": "mark_P_Dosh",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              53.0,
-              179.641,
-              600.0,
-              210.859
-            ],
-            "category_label": "K",
-            "category_label_center_px": [
-              62.0,
-              195.25
-            ],
-            "category_rank": 2,
-            "mark_bbox_px": [
-              92.0,
-              179.641,
-              600.0,
-              192.709
-            ],
-            "mark_center_px": [
-              346.0,
-              186.175
-            ],
-            "mark_fill_rgb": [
-              32,
-              33,
-              156
-            ],
-            "mark_outline_rgb": [
-              18,
-              18,
-              86
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Cato",
-            "series_rank": 0,
             "value": 14
           },
-          "entity_id": "mark_K_Cato",
+          "entity_id": "mark_U_Ladd",
           "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              53.0,
-              179.641,
-              600.0,
-              210.859
+              120.956,
+              171.368,
+              190.044,
+              562.0
             ],
-            "category_label": "K",
+            "category_label": "U",
             "category_label_center_px": [
-              62.0,
-              195.25
+              155.5,
+              554.0
             ],
-            "category_rank": 2,
+            "category_rank": 0,
             "mark_bbox_px": [
-              92.0,
-              197.791,
-              563.714,
-              210.859
+              171.756,
+              349.684,
+              190.044,
+              528.0
             ],
             "mark_center_px": [
-              327.857,
-              204.325
+              180.9,
+              349.684
             ],
             "mark_fill_rgb": [
-              152,
-              57,
-              19
+              146,
+              93,
+              81
             ],
             "mark_outline_rgb": [
-              84,
-              31,
-              10
+              80,
+              51,
+              45
             ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Dosh",
-            "series_rank": 1,
-            "value": 13
-          },
-          "entity_id": "mark_K_Dosh",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              54.5,
-              240.141,
-              382.286,
-              271.359
-            ],
-            "category_label": "E",
-            "category_label_center_px": [
-              62.0,
-              255.75
-            ],
-            "category_rank": 3,
-            "mark_bbox_px": [
-              92.0,
-              240.141,
-              382.286,
-              253.209
-            ],
-            "mark_center_px": [
-              237.143,
-              246.675
-            ],
-            "mark_fill_rgb": [
-              32,
-              33,
-              156
-            ],
-            "mark_outline_rgb": [
-              18,
-              18,
-              86
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Cato",
-            "series_rank": 0,
-            "value": 8
-          },
-          "entity_id": "mark_E_Cato",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              54.5,
-              240.141,
-              382.286,
-              271.359
-            ],
-            "category_label": "E",
-            "category_label_center_px": [
-              62.0,
-              255.75
-            ],
-            "category_rank": 3,
-            "mark_bbox_px": [
-              92.0,
-              258.291,
-              346.0,
-              271.359
-            ],
-            "mark_center_px": [
-              219.0,
-              264.825
-            ],
-            "mark_fill_rgb": [
-              152,
-              57,
-              19
-            ],
-            "mark_outline_rgb": [
-              84,
-              31,
-              10
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Dosh",
-            "series_rank": 1,
+            "scene_variant": "grouped_bar",
+            "series_label": "Alva",
+            "series_rank": 2,
             "value": 7
           },
-          "entity_id": "mark_E_Dosh",
+          "entity_id": "mark_U_Alva",
           "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              55.0,
-              300.641,
-              817.714,
-              331.859
+              247.956,
+              69.474,
+              317.044,
+              562.0
             ],
-            "category_label": "L",
+            "category_label": "P",
             "category_label_center_px": [
-              62.0,
-              316.25
+              282.5,
+              554.0
             ],
-            "category_rank": 4,
+            "category_rank": 1,
             "mark_bbox_px": [
-              92.0,
-              300.641,
-              382.286,
-              313.709
+              247.956,
+              145.895,
+              266.244,
+              528.0
             ],
             "mark_center_px": [
-              237.143,
-              307.175
+              257.1,
+              145.895
             ],
             "mark_fill_rgb": [
-              32,
-              33,
-              156
+              17,
+              203,
+              46
             ],
             "mark_outline_rgb": [
-              18,
-              18,
-              86
+              9,
+              112,
+              25
             ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Cato",
-            "series_rank": 0,
-            "value": 8
-          },
-          "entity_id": "mark_L_Cato",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              55.0,
-              300.641,
-              817.714,
-              331.859
-            ],
-            "category_label": "L",
-            "category_label_center_px": [
-              62.0,
-              316.25
-            ],
-            "category_rank": 4,
-            "mark_bbox_px": [
-              92.0,
-              318.791,
-              817.714,
-              331.859
-            ],
-            "mark_center_px": [
-              454.857,
-              325.325
-            ],
-            "mark_fill_rgb": [
-              152,
-              57,
-              19
-            ],
-            "mark_outline_rgb": [
-              84,
-              31,
-              10
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Dosh",
-            "series_rank": 1,
-            "value": 20
-          },
-          "entity_id": "mark_L_Dosh",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              54.0,
-              361.141,
-              382.286,
-              392.359
-            ],
-            "category_label": "Z",
-            "category_label_center_px": [
-              62.0,
-              376.75
-            ],
-            "category_rank": 5,
-            "mark_bbox_px": [
-              92.0,
-              361.141,
-              382.286,
-              374.209
-            ],
-            "mark_center_px": [
-              237.143,
-              367.675
-            ],
-            "mark_fill_rgb": [
-              32,
-              33,
-              156
-            ],
-            "mark_outline_rgb": [
-              18,
-              18,
-              86
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Cato",
-            "series_rank": 0,
-            "value": 8
-          },
-          "entity_id": "mark_Z_Cato",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              54.0,
-              361.141,
-              382.286,
-              392.359
-            ],
-            "category_label": "Z",
-            "category_label_center_px": [
-              62.0,
-              376.75
-            ],
-            "category_rank": 5,
-            "mark_bbox_px": [
-              92.0,
-              379.291,
-              164.571,
-              392.359
-            ],
-            "mark_center_px": [
-              128.286,
-              385.825
-            ],
-            "mark_fill_rgb": [
-              152,
-              57,
-              19
-            ],
-            "mark_outline_rgb": [
-              84,
-              31,
-              10
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Dosh",
-            "series_rank": 1,
-            "value": 2
-          },
-          "entity_id": "mark_Z_Dosh",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              53.0,
-              421.641,
-              781.429,
-              452.859
-            ],
-            "category_label": "G",
-            "category_label_center_px": [
-              62.0,
-              437.25
-            ],
-            "category_rank": 6,
-            "mark_bbox_px": [
-              92.0,
-              421.641,
-              781.429,
-              434.709
-            ],
-            "mark_center_px": [
-              436.714,
-              428.175
-            ],
-            "mark_fill_rgb": [
-              32,
-              33,
-              156
-            ],
-            "mark_outline_rgb": [
-              18,
-              18,
-              86
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Cato",
-            "series_rank": 0,
-            "value": 19
-          },
-          "entity_id": "mark_G_Cato",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              53.0,
-              421.641,
-              781.429,
-              452.859
-            ],
-            "category_label": "G",
-            "category_label_center_px": [
-              62.0,
-              437.25
-            ],
-            "category_rank": 6,
-            "mark_bbox_px": [
-              92.0,
-              439.791,
-              672.571,
-              452.859
-            ],
-            "mark_center_px": [
-              382.286,
-              446.325
-            ],
-            "mark_fill_rgb": [
-              152,
-              57,
-              19
-            ],
-            "mark_outline_rgb": [
-              84,
-              31,
-              10
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Dosh",
-            "series_rank": 1,
-            "value": 16
-          },
-          "entity_id": "mark_G_Dosh",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              53.5,
-              482.141,
-              636.286,
-              513.359
-            ],
-            "category_label": "A",
-            "category_label_center_px": [
-              62.0,
-              497.75
-            ],
-            "category_rank": 7,
-            "mark_bbox_px": [
-              92.0,
-              482.141,
-              636.286,
-              495.209
-            ],
-            "mark_center_px": [
-              364.143,
-              488.675
-            ],
-            "mark_fill_rgb": [
-              32,
-              33,
-              156
-            ],
-            "mark_outline_rgb": [
-              18,
-              18,
-              86
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Cato",
+            "scene_variant": "grouped_bar",
+            "series_label": "Durr",
             "series_rank": 0,
             "value": 15
           },
-          "entity_id": "mark_A_Cato",
+          "entity_id": "mark_P_Durr",
           "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              53.5,
-              482.141,
-              636.286,
-              513.359
+              247.956,
+              69.474,
+              317.044,
+              562.0
             ],
-            "category_label": "A",
+            "category_label": "P",
             "category_label_center_px": [
-              62.0,
-              497.75
+              282.5,
+              554.0
             ],
-            "category_rank": 7,
+            "category_rank": 1,
             "mark_bbox_px": [
-              92.0,
-              500.291,
-              382.286,
-              513.359
+              273.356,
+              69.474,
+              291.644,
+              528.0
             ],
             "mark_center_px": [
-              237.143,
-              506.825
+              282.5,
+              69.474
             ],
             "mark_fill_rgb": [
-              152,
-              57,
-              19
+              10,
+              183,
+              119
             ],
             "mark_outline_rgb": [
-              84,
-              31,
-              10
+              6,
+              101,
+              65
             ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Dosh",
+            "scene_variant": "grouped_bar",
+            "series_label": "Ladd",
             "series_rank": 1,
-            "value": 8
+            "value": 18
           },
-          "entity_id": "mark_A_Dosh",
+          "entity_id": "mark_P_Ladd",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              247.956,
+              69.474,
+              317.044,
+              562.0
+            ],
+            "category_label": "P",
+            "category_label_center_px": [
+              282.5,
+              554.0
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              298.756,
+              400.632,
+              317.044,
+              528.0
+            ],
+            "mark_center_px": [
+              307.9,
+              400.632
+            ],
+            "mark_fill_rgb": [
+              146,
+              93,
+              81
+            ],
+            "mark_outline_rgb": [
+              80,
+              51,
+              45
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Alva",
+            "series_rank": 2,
+            "value": 5
+          },
+          "entity_id": "mark_P_Alva",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              374.956,
+              94.947,
+              444.044,
+              562.0
+            ],
+            "category_label": "Z",
+            "category_label_center_px": [
+              409.5,
+              554.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              374.956,
+              298.737,
+              393.244,
+              528.0
+            ],
+            "mark_center_px": [
+              384.1,
+              298.737
+            ],
+            "mark_fill_rgb": [
+              17,
+              203,
+              46
+            ],
+            "mark_outline_rgb": [
+              9,
+              112,
+              25
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Durr",
+            "series_rank": 0,
+            "value": 9
+          },
+          "entity_id": "mark_Z_Durr",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              374.956,
+              94.947,
+              444.044,
+              562.0
+            ],
+            "category_label": "Z",
+            "category_label_center_px": [
+              409.5,
+              554.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              400.356,
+              94.947,
+              418.644,
+              528.0
+            ],
+            "mark_center_px": [
+              409.5,
+              94.947
+            ],
+            "mark_fill_rgb": [
+              10,
+              183,
+              119
+            ],
+            "mark_outline_rgb": [
+              6,
+              101,
+              65
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Ladd",
+            "series_rank": 1,
+            "value": 17
+          },
+          "entity_id": "mark_Z_Ladd",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              374.956,
+              94.947,
+              444.044,
+              562.0
+            ],
+            "category_label": "Z",
+            "category_label_center_px": [
+              409.5,
+              554.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              425.756,
+              375.158,
+              444.044,
+              528.0
+            ],
+            "mark_center_px": [
+              434.9,
+              375.158
+            ],
+            "mark_fill_rgb": [
+              146,
+              93,
+              81
+            ],
+            "mark_outline_rgb": [
+              80,
+              51,
+              45
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Alva",
+            "series_rank": 2,
+            "value": 6
+          },
+          "entity_id": "mark_Z_Alva",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              501.956,
+              171.368,
+              571.044,
+              562.0
+            ],
+            "category_label": "Y",
+            "category_label_center_px": [
+              536.5,
+              554.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              501.956,
+              349.684,
+              520.244,
+              528.0
+            ],
+            "mark_center_px": [
+              511.1,
+              349.684
+            ],
+            "mark_fill_rgb": [
+              17,
+              203,
+              46
+            ],
+            "mark_outline_rgb": [
+              9,
+              112,
+              25
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Durr",
+            "series_rank": 0,
+            "value": 7
+          },
+          "entity_id": "mark_Y_Durr",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              501.956,
+              171.368,
+              571.044,
+              562.0
+            ],
+            "category_label": "Y",
+            "category_label_center_px": [
+              536.5,
+              554.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              527.356,
+              171.368,
+              545.644,
+              528.0
+            ],
+            "mark_center_px": [
+              536.5,
+              171.368
+            ],
+            "mark_fill_rgb": [
+              10,
+              183,
+              119
+            ],
+            "mark_outline_rgb": [
+              6,
+              101,
+              65
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Ladd",
+            "series_rank": 1,
+            "value": 14
+          },
+          "entity_id": "mark_Y_Ladd",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              501.956,
+              171.368,
+              571.044,
+              562.0
+            ],
+            "category_label": "Y",
+            "category_label_center_px": [
+              536.5,
+              554.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              552.756,
+              502.526,
+              571.044,
+              528.0
+            ],
+            "mark_center_px": [
+              561.9,
+              502.526
+            ],
+            "mark_fill_rgb": [
+              146,
+              93,
+              81
+            ],
+            "mark_outline_rgb": [
+              80,
+              51,
+              45
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Alva",
+            "series_rank": 2,
+            "value": 1
+          },
+          "entity_id": "mark_Y_Alva",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              628.956,
+              120.421,
+              698.044,
+              562.0
+            ],
+            "category_label": "B",
+            "category_label_center_px": [
+              663.5,
+              554.0
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              628.956,
+              349.684,
+              647.244,
+              528.0
+            ],
+            "mark_center_px": [
+              638.1,
+              349.684
+            ],
+            "mark_fill_rgb": [
+              17,
+              203,
+              46
+            ],
+            "mark_outline_rgb": [
+              9,
+              112,
+              25
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Durr",
+            "series_rank": 0,
+            "value": 7
+          },
+          "entity_id": "mark_B_Durr",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              628.956,
+              120.421,
+              698.044,
+              562.0
+            ],
+            "category_label": "B",
+            "category_label_center_px": [
+              663.5,
+              554.0
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              654.356,
+              120.421,
+              672.644,
+              528.0
+            ],
+            "mark_center_px": [
+              663.5,
+              120.421
+            ],
+            "mark_fill_rgb": [
+              10,
+              183,
+              119
+            ],
+            "mark_outline_rgb": [
+              6,
+              101,
+              65
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Ladd",
+            "series_rank": 1,
+            "value": 16
+          },
+          "entity_id": "mark_B_Ladd",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              628.956,
+              120.421,
+              698.044,
+              562.0
+            ],
+            "category_label": "B",
+            "category_label_center_px": [
+              663.5,
+              554.0
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              679.756,
+              400.632,
+              698.044,
+              528.0
+            ],
+            "mark_center_px": [
+              688.9,
+              400.632
+            ],
+            "mark_fill_rgb": [
+              146,
+              93,
+              81
+            ],
+            "mark_outline_rgb": [
+              80,
+              51,
+              45
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Alva",
+            "series_rank": 2,
+            "value": 5
+          },
+          "entity_id": "mark_B_Alva",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              755.956,
+              69.474,
+              825.044,
+              562.0
+            ],
+            "category_label": "E",
+            "category_label_center_px": [
+              790.5,
+              554.0
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              755.956,
+              94.947,
+              774.244,
+              528.0
+            ],
+            "mark_center_px": [
+              765.1,
+              94.947
+            ],
+            "mark_fill_rgb": [
+              17,
+              203,
+              46
+            ],
+            "mark_outline_rgb": [
+              9,
+              112,
+              25
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Durr",
+            "series_rank": 0,
+            "value": 17
+          },
+          "entity_id": "mark_E_Durr",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              755.956,
+              69.474,
+              825.044,
+              562.0
+            ],
+            "category_label": "E",
+            "category_label_center_px": [
+              790.5,
+              554.0
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              781.356,
+              69.474,
+              799.644,
+              528.0
+            ],
+            "mark_center_px": [
+              790.5,
+              69.474
+            ],
+            "mark_fill_rgb": [
+              10,
+              183,
+              119
+            ],
+            "mark_outline_rgb": [
+              6,
+              101,
+              65
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Ladd",
+            "series_rank": 1,
+            "value": 18
+          },
+          "entity_id": "mark_E_Ladd",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              755.956,
+              69.474,
+              825.044,
+              562.0
+            ],
+            "category_label": "E",
+            "category_label_center_px": [
+              790.5,
+              554.0
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              806.756,
+              375.158,
+              825.044,
+              528.0
+            ],
+            "mark_center_px": [
+              815.9,
+              375.158
+            ],
+            "mark_fill_rgb": [
+              146,
+              93,
+              81
+            ],
+            "mark_outline_rgb": [
+              80,
+              51,
+              45
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Alva",
+            "series_rank": 2,
+            "value": 6
+          },
+          "entity_id": "mark_E_Alva",
           "entity_type": "bar"
         }
       ],
       "relations": {
         "comparison": "greater_than",
         "evidence_labels": [
-          "A",
+          "B",
           "E",
-          "G",
-          "K",
           "P",
           "U",
+          "Y",
           "Z"
         ],
         "queried_series_labels": [
-          "Cato",
-          "Dosh"
+          "Ladd",
+          "Alva"
         ],
-        "scene_variant": "grouped_horizontal_bar",
+        "scene_variant": "grouped_bar",
         "task_variant": "series_a_gt_b_count"
       },
-      "scene_kind": "chart_grouped_horizontal_bar_multiseries"
+      "scene_kind": "chart_grouped_bar_multiseries"
     },
     "witness_symbolic": {
       "labels": [
-        "A",
+        "B",
         "E",
-        "G",
-        "K",
         "P",
         "U",
+        "Y",
         "Z"
       ],
       "type": "label_set"

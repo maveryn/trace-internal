@@ -1,7 +1,7 @@
 {
   "answer_gt": {
     "type": "string",
-    "value": "Confirm Form"
+    "value": "Archive Summary"
   },
   "evidence_gt": {
     "type": "bbox_set",
@@ -18,11 +18,11 @@
     "format": "png",
     "path": "diagrams/task_diagrams_flow_next_step_label/images/branch_next_step/0022.png"
   },
-  "instance_seed": 5096332301269568,
-  "prompt": "You are given a flowchart with labeled process boxes and arrows. Following the No branch from Need Fix?, what is the next step? Return the exact step label shown. Answer using the exact visible step label.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct next-step box.\nAnswer requirement: set \"answer\" to the exact visible next-step label.\nExample JSON:\n{\"evidence\":[[624,228,838,312]],\"answer\":\"Fix Record\"}",
+  "instance_seed": 5079578438319454,
+  "prompt": "You are given a flowchart with labeled process boxes and arrows. Read the labeled process steps and then answer: Following the No branch from Stock Ready?, what is the next step? Return the exact step label shown. Answer with the exact step label shown.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct next-step box.\nAnswer requirement: set \"answer\" to the exact visible next-step label.\nExample JSON:\n{\"evidence\":[[624,228,838,312]],\"answer\":\"Fix Record\"}",
   "prompt_variants": {
-    "answer_and_evidence": "You are given a flowchart with labeled process boxes and arrows. Following the No branch from Need Fix?, what is the next step? Return the exact step label shown. Answer using the exact visible step label.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct next-step box.\nAnswer requirement: set \"answer\" to the exact visible next-step label.\nExample JSON:\n{\"evidence\":[[624,228,838,312]],\"answer\":\"Fix Record\"}",
-    "answer_only": "You are given a flowchart with labeled process boxes and arrows. Following the No branch from Need Fix?, what is the next step? Return the exact step label shown. Answer using the exact visible step label.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the exact visible next-step label.\nExample JSON:\n{\"answer\":\"Fix Record\"}"
+    "answer_and_evidence": "You are given a flowchart with labeled process boxes and arrows. Read the labeled process steps and then answer: Following the No branch from Stock Ready?, what is the next step? Return the exact step label shown. Answer with the exact step label shown.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct next-step box.\nAnswer requirement: set \"answer\" to the exact visible next-step label.\nExample JSON:\n{\"evidence\":[[624,228,838,312]],\"answer\":\"Fix Record\"}",
+    "answer_only": "You are given a flowchart with labeled process boxes and arrows. Read the labeled process steps and then answer: Following the No branch from Stock Ready?, what is the next step? Return the exact step label shown. Answer with the exact step label shown.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the exact visible next-step label.\nExample JSON:\n{\"answer\":\"Fix Record\"}"
   },
   "task": "task_diagrams_flow_next_step_label",
   "task_variant": "branch_next_step",
@@ -45,7 +45,7 @@
     "execution_trace": {
       "answer_node_bbox_id": "node_bbox_4",
       "answer_node_id": "node_4",
-      "answer_node_label": "Confirm Form",
+      "answer_node_label": "Archive Summary",
       "edge_specs": [
         {
           "edge_id": "edge_0",
@@ -113,7 +113,7 @@
           "node_bbox_id": "node_bbox_0",
           "node_id": "node_0",
           "node_kind": "process",
-          "node_label": "Log Payment",
+          "node_label": "Archive Plan",
           "node_label_bbox_id": "node_label_bbox_0"
         },
         {
@@ -125,7 +125,7 @@
           "node_bbox_id": "node_bbox_1",
           "node_id": "node_1",
           "node_kind": "process",
-          "node_label": "Submit Return",
+          "node_label": "Inspect Record",
           "node_label_bbox_id": "node_label_bbox_1"
         },
         {
@@ -137,7 +137,7 @@
           "node_bbox_id": "node_bbox_2",
           "node_id": "node_2",
           "node_kind": "decision",
-          "node_label": "Need Fix?",
+          "node_label": "Stock Ready?",
           "node_label_bbox_id": "node_label_bbox_2"
         },
         {
@@ -149,7 +149,7 @@
           "node_bbox_id": "node_bbox_3",
           "node_id": "node_3",
           "node_kind": "process",
-          "node_label": "Archive Ticket",
+          "node_label": "Create Notice",
           "node_label_bbox_id": "node_label_bbox_3"
         },
         {
@@ -161,7 +161,7 @@
           "node_bbox_id": "node_bbox_4",
           "node_id": "node_4",
           "node_kind": "process",
-          "node_label": "Confirm Form",
+          "node_label": "Archive Summary",
           "node_label_bbox_id": "node_label_bbox_4"
         },
         {
@@ -173,15 +173,15 @@
           "node_bbox_id": "node_bbox_5",
           "node_id": "node_5",
           "node_kind": "process",
-          "node_label": "Log Invoice",
+          "node_label": "Archive Packet",
           "node_label_bbox_id": "node_label_bbox_5"
         }
       ],
       "query_branch_label": "No",
       "query_node_id": "node_2",
-      "query_node_label": "Need Fix?",
+      "query_node_label": "Stock Ready?",
       "question_format": "flow_next_step_label",
-      "question_text": "Following the No branch from Need Fix?, what is the next step? Return the exact step label shown.",
+      "question_text": "Following the No branch from Stock Ready?, what is the next step? Return the exact step label shown.",
       "scene_title": "Workflow Diagram",
       "scene_variant": "flowchart",
       "supporting_node_bbox_ids": [
@@ -246,14 +246,14 @@
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
           "object_description": "a flowchart with labeled process boxes and arrows",
-          "question_text": "Following the No branch from Need Fix?, what is the next step? Return the exact step label shown."
+          "question_text": "Following the No branch from Stock Ready?, what is the next step? Return the exact step label shown."
         },
         "task_family_key": "process_flow_diagram",
         "task_family_variant_index": 2,
         "task_key": "next_step_query",
-        "task_variant_index": 0,
+        "task_variant_index": 4,
         "task_variant_key": "branch_next_step",
-        "task_variant_template_index": 4,
+        "task_variant_template_index": 0,
         "template_paths": [
           "diagrams/flow/diagrams_flow_v1.json"
         ],
@@ -280,14 +280,14 @@
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a flowchart with labeled process boxes and arrows",
-              "question_text": "Following the No branch from Need Fix?, what is the next step? Return the exact step label shown."
+              "question_text": "Following the No branch from Stock Ready?, what is the next step? Return the exact step label shown."
             },
             "task_family_key": "process_flow_diagram",
             "task_family_variant_index": 2,
             "task_key": "next_step_query",
-            "task_variant_index": 0,
+            "task_variant_index": 4,
             "task_variant_key": "branch_next_step",
-            "task_variant_template_index": 4,
+            "task_variant_template_index": 0,
             "template_paths": [
               "diagrams/flow/diagrams_flow_v1.json"
             ],
@@ -298,12 +298,12 @@
               "task_variant:branch_next_step": 5
             }
           },
-          "prompt": "You are given a flowchart with labeled process boxes and arrows. Following the No branch from Need Fix?, what is the next step? Return the exact step label shown. Answer using the exact visible step label.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct next-step box.\nAnswer requirement: set \"answer\" to the exact visible next-step label.\nExample JSON:\n{\"evidence\":[[624,228,838,312]],\"answer\":\"Fix Record\"}"
+          "prompt": "You are given a flowchart with labeled process boxes and arrows. Read the labeled process steps and then answer: Following the No branch from Stock Ready?, what is the next step? Return the exact step label shown. Answer with the exact step label shown.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct next-step box.\nAnswer requirement: set \"answer\" to the exact visible next-step label.\nExample JSON:\n{\"evidence\":[[624,228,838,312]],\"answer\":\"Fix Record\"}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 4,
+            "answer_or_evidence_variant_index": 3,
             "prompt_bundle_id": "diagrams_flow_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -314,14 +314,14 @@
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a flowchart with labeled process boxes and arrows",
-              "question_text": "Following the No branch from Need Fix?, what is the next step? Return the exact step label shown."
+              "question_text": "Following the No branch from Stock Ready?, what is the next step? Return the exact step label shown."
             },
             "task_family_key": "process_flow_diagram",
             "task_family_variant_index": 2,
             "task_key": "next_step_query",
-            "task_variant_index": 0,
+            "task_variant_index": 4,
             "task_variant_key": "branch_next_step",
-            "task_variant_template_index": 4,
+            "task_variant_template_index": 0,
             "template_paths": [
               "diagrams/flow/diagrams_flow_v1.json"
             ],
@@ -332,7 +332,7 @@
               "task_variant:branch_next_step": 5
             }
           },
-          "prompt": "You are given a flowchart with labeled process boxes and arrows. Following the No branch from Need Fix?, what is the next step? Return the exact step label shown. Answer using the exact visible step label.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the exact visible next-step label.\nExample JSON:\n{\"answer\":\"Fix Record\"}"
+          "prompt": "You are given a flowchart with labeled process boxes and arrows. Read the labeled process steps and then answer: Following the No branch from Stock Ready?, what is the next step? Return the exact step label shown. Answer with the exact step label shown.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the exact visible next-step label.\nExample JSON:\n{\"answer\":\"Fix Record\"}"
         }
       },
       "task_variant": "branch_next_step",
@@ -395,40 +395,40 @@
       },
       "node_label_bboxes_px": {
         "node_label_bbox_0": [
-          91.0,
-          302.02,
-          277.0,
-          327.02
+          88.5,
+          303.02,
+          279.5,
+          326.02
         ],
         "node_label_bbox_1": [
-          380.2,
-          305.02,
-          570.2,
-          324.02
+          380.7,
+          302.52,
+          569.7,
+          326.52
         ],
         "node_label_bbox_2": [
-          670.8,
-          306.52,
-          778.8,
-          322.52
+          663.3,
+          306.02,
+          786.3,
+          323.02
         ],
         "node_label_bbox_3": [
-          526.8,
-          509.7,
-          714.8,
-          528.7
+          528.8,
+          509.2,
+          712.8,
+          529.2
         ],
         "node_label_bbox_4": [
-          923.5,
+          925.0,
           304.52,
-          1108.5,
+          1107.0,
           324.52
         ],
         "node_label_bbox_5": [
-          925.0,
-          504.7,
-          1107.0,
-          533.7
+          921.5,
+          509.7,
+          1110.5,
+          528.7
         ]
       },
       "panel_bbox_px": [
@@ -449,7 +449,7 @@
       "canvas_width": 1200,
       "decision_diameter_px": 132,
       "edge_width_px": 5,
-      "geometry_seed": 5096332301269568,
+      "geometry_seed": 5079578438319454,
       "lane_gutter_width_px": 160,
       "node_height_px": 84,
       "node_width_px": 214,
@@ -566,19 +566,19 @@
           "lane_id": null,
           "node_id": "node_0",
           "node_kind": "process",
-          "text": "Log Payment"
+          "text": "Archive Plan"
         },
         {
           "bbox_xyxy": [
-            91.0,
-            302.02,
-            277.0,
-            327.02
+            88.5,
+            303.02,
+            279.5,
+            326.02
           ],
           "entity_id": "node_label_bbox_0",
           "entity_type": "diagram_node_label",
           "node_id": "node_0",
-          "text": "Log Payment"
+          "text": "Archive Plan"
         },
         {
           "bbox_xyxy": [
@@ -592,19 +592,19 @@
           "lane_id": null,
           "node_id": "node_1",
           "node_kind": "process",
-          "text": "Submit Return"
+          "text": "Inspect Record"
         },
         {
           "bbox_xyxy": [
-            380.2,
-            305.02,
-            570.2,
-            324.02
+            380.7,
+            302.52,
+            569.7,
+            326.52
           ],
           "entity_id": "node_label_bbox_1",
           "entity_type": "diagram_node_label",
           "node_id": "node_1",
-          "text": "Submit Return"
+          "text": "Inspect Record"
         },
         {
           "bbox_xyxy": [
@@ -618,19 +618,19 @@
           "lane_id": null,
           "node_id": "node_2",
           "node_kind": "decision",
-          "text": "Need Fix?"
+          "text": "Stock Ready?"
         },
         {
           "bbox_xyxy": [
-            670.8,
-            306.52,
-            778.8,
-            322.52
+            663.3,
+            306.02,
+            786.3,
+            323.02
           ],
           "entity_id": "node_label_bbox_2",
           "entity_type": "diagram_node_label",
           "node_id": "node_2",
-          "text": "Need Fix?"
+          "text": "Stock Ready?"
         },
         {
           "bbox_xyxy": [
@@ -644,19 +644,19 @@
           "lane_id": null,
           "node_id": "node_3",
           "node_kind": "process",
-          "text": "Archive Ticket"
+          "text": "Create Notice"
         },
         {
           "bbox_xyxy": [
-            526.8,
-            509.7,
-            714.8,
-            528.7
+            528.8,
+            509.2,
+            712.8,
+            529.2
           ],
           "entity_id": "node_label_bbox_3",
           "entity_type": "diagram_node_label",
           "node_id": "node_3",
-          "text": "Archive Ticket"
+          "text": "Create Notice"
         },
         {
           "bbox_xyxy": [
@@ -670,19 +670,19 @@
           "lane_id": null,
           "node_id": "node_4",
           "node_kind": "process",
-          "text": "Confirm Form"
+          "text": "Archive Summary"
         },
         {
           "bbox_xyxy": [
-            923.5,
+            925.0,
             304.52,
-            1108.5,
+            1107.0,
             324.52
           ],
           "entity_id": "node_label_bbox_4",
           "entity_type": "diagram_node_label",
           "node_id": "node_4",
-          "text": "Confirm Form"
+          "text": "Archive Summary"
         },
         {
           "bbox_xyxy": [
@@ -696,19 +696,19 @@
           "lane_id": null,
           "node_id": "node_5",
           "node_kind": "process",
-          "text": "Log Invoice"
+          "text": "Archive Packet"
         },
         {
           "bbox_xyxy": [
-            925.0,
-            504.7,
-            1107.0,
-            533.7
+            921.5,
+            509.7,
+            1110.5,
+            528.7
           ],
           "entity_id": "node_label_bbox_5",
           "entity_type": "diagram_node_label",
           "node_id": "node_5",
-          "text": "Log Invoice"
+          "text": "Archive Packet"
         }
       ],
       "relations": {

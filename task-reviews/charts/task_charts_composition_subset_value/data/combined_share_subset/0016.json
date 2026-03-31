@@ -1,31 +1,33 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 22
+    "value": 21
   },
   "evidence_gt": {
     "type": "integer_list",
     "value": [
-      5,
-      78,
-      17
+      40,
+      6,
+      20,
+      1,
+      33
     ]
   },
   "image": {
     "format": "png",
     "path": "charts/task_charts_composition_subset_value/images/combined_share_subset/0016.png"
   },
-  "instance_seed": 946182108568927,
-  "prompt": "Look at the chart in the image. It shows a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Use the chart's printed segment or slice values to compute the answer. Add the chart percentages for labels Fran and Pia. What total percentage do they contribute?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array [v1, v2, ...] listing the slice percentages in legend order for the whole chart.\nAnswer field: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[18,27,22,33],\"answer\":45}",
+  "instance_seed": 3187397387440766,
+  "prompt": "You are given a composition chart: a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Read the relevant composition values directly from the chart and answer the question. What total percentage do labels Agee and Ursi contribute together?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array [v1, v2, ...] listing the slice percentages in legend order for the whole chart.\nAnswer rule: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[18,27,22,33],\"answer\":45}",
   "prompt_variants": {
-    "answer_and_evidence": "Look at the chart in the image. It shows a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Use the chart's printed segment or slice values to compute the answer. Add the chart percentages for labels Fran and Pia. What total percentage do they contribute?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array [v1, v2, ...] listing the slice percentages in legend order for the whole chart.\nAnswer field: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[18,27,22,33],\"answer\":45}",
-    "answer_only": "Look at the chart in the image. It shows a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Use the chart's printed segment or slice values to compute the answer. Add the chart percentages for labels Fran and Pia. What total percentage do they contribute?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":45}"
+    "answer_and_evidence": "You are given a composition chart: a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Read the relevant composition values directly from the chart and answer the question. What total percentage do labels Agee and Ursi contribute together?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array [v1, v2, ...] listing the slice percentages in legend order for the whole chart.\nAnswer rule: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[18,27,22,33],\"answer\":45}",
+    "answer_only": "You are given a composition chart: a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Read the relevant composition values directly from the chart and answer the question. What total percentage do labels Agee and Ursi contribute together?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":45}"
   },
   "task": "task_charts_composition_subset_value",
   "task_variant": "combined_share_subset",
   "trace_payload": {
     "execution_trace": {
-      "answer_value": 22,
+      "answer_value": 21,
       "category_count": 0,
       "category_count_range": [
         0,
@@ -35,107 +37,137 @@
       "composition_scope": "chart",
       "composition_total": 100,
       "evidence_labels": [
-        "Fran",
-        "Reid",
-        "Pia"
+        "Kohn",
+        "Duhl",
+        "Agee",
+        "Ursi",
+        "Iams"
       ],
       "evidence_values": [
-        5,
-        78,
-        17
+        40,
+        6,
+        20,
+        1,
+        33
       ],
       "mark_color_distance_space": "lab",
       "mark_color_min_distance": 58.0,
       "mark_color_sampling_policy": "random_rgb_palette",
       "mark_fill_rgb": [
-        66,
-        89,
-        169
+        114,
+        19,
+        27
       ],
       "mark_outline_rgb": [
-        36,
-        49,
-        93
+        63,
+        10,
+        15
       ],
       "pie_like_mark_color_channel_max": 200,
       "query_category_label": "",
       "query_series_label": "",
       "query_subset_labels": [
-        "Fran",
-        "Pia"
+        "Agee",
+        "Ursi"
       ],
       "question_format": "numeric_open",
       "scene_mode": "pie_like",
-      "scene_variant": "pie",
+      "scene_variant": "donut",
       "scene_variant_probabilities": {
         "donut": 0.5,
         "pie": 0.5
       },
-      "series_count": 3,
+      "series_count": 5,
       "series_count_range": [
         3,
         5
       ],
       "series_labels": [
-        "Fran",
-        "Reid",
-        "Pia"
+        "Kohn",
+        "Duhl",
+        "Agee",
+        "Ursi",
+        "Iams"
       ],
       "slice_fill_palette_rgb": [
         [
-          66,
+          114,
+          19,
+          27
+        ],
+        [
+          48,
+          58,
+          153
+        ],
+        [
+          27,
+          189,
+          49
+        ],
+        [
+          15,
           89,
-          169
+          84
         ],
         [
-          69,
-          196,
-          67
-        ],
-        [
-          192,
-          127,
-          29
+          193,
+          172,
+          60
         ]
       ],
       "slice_outline_palette_rgb": [
         [
-          36,
-          49,
-          93
+          63,
+          10,
+          15
         ],
         [
-          38,
-          108,
-          37
+          26,
+          32,
+          84
+        ],
+        [
+          15,
+          104,
+          27
+        ],
+        [
+          8,
+          49,
+          46
         ],
         [
           106,
-          70,
-          16
+          95,
+          33
         ]
       ],
-      "target_answer": 22,
+      "target_answer": 21,
       "target_answer_range": [
         5,
         95
       ],
       "task_variant": "combined_share_subset",
       "task_variant_probabilities": {
-        "combined_share_subset": 0.3333333333333333,
-        "stack_segment_value": 0.3333333333333333,
-        "stack_total_at_label": 0.3333333333333333
+        "combined_share_subset": 1.0,
+        "stack_segment_value": 0.0,
+        "stack_total_at_label": 0.0
       },
       "value_semantics": "percentage",
       "values": [
-        5,
-        78,
-        17
+        40,
+        6,
+        20,
+        1,
+        33
       ],
       "values_by_label": {
-        "Fran": 5,
-        "Pia": 17,
-        "Reid": 78
+        "Agee": 20,
+        "Duhl": 6,
+        "Iams": 33,
+        "Kohn": 40,
+        "Ursi": 1
       }
     },
     "projected_evidence": {
@@ -143,53 +175,83 @@
         [
           442.08,
           65.6,
-          522.548,
-          326.0
+          702.48,
+          536.668
         ],
         [
-          183.253,
-          78.345,
-          702.352,
-          585.75
+          442.08,
+          326.0,
+          595.139,
+          578.219
+        ],
+        [
+          222.217,
+          326.0,
+          506.839,
+          585.886
         ],
         [
           213.89,
+          326.0,
+          442.08,
+          465.529
+        ],
+        [
+          182.728,
           65.6,
           442.08,
-          326.0
+          451.449
         ]
       ],
       "integer_list": [
-        5,
-        78,
-        17
+        40,
+        6,
+        20,
+        1,
+        33
       ],
       "pixel_point_map": {
-        "Fran": [
-          466.521,
-          171.684
+        "Agee": [
+          374.02,
+          497.901
         ],
-        "Pia": [
-          362.547,
-          191.518
+        "Duhl": [
+          520.8,
+          493.288
         ],
-        "Reid": [
-          499.596,
-          471.268
+        "Iams": [
+          282.943,
+          231.886
+        ],
+        "Kohn": [
+          617.915,
+          268.868
+        ],
+        "Ursi": [
+          282.943,
+          420.114
         ]
       },
       "pixel_point_set": [
         [
-          466.521,
-          171.684
+          617.915,
+          268.868
         ],
         [
-          499.596,
-          471.268
+          520.8,
+          493.288
         ],
         [
-          362.547,
-          191.518
+          374.02,
+          497.901
+        ],
+        [
+          282.943,
+          420.114
+        ],
+        [
+          282.943,
+          231.886
         ]
       ]
     },
@@ -203,34 +265,34 @@
         "query_category_label": "",
         "query_series_label": "",
         "query_subset_labels": [
-          "Fran",
-          "Pia"
+          "Agee",
+          "Ursi"
         ],
-        "scene_variant": "pie",
+        "scene_variant": "donut",
         "scene_variant_probabilities": {
           "donut": 0.5,
           "pie": 0.5
         },
-        "series_count": 3,
+        "series_count": 5,
         "series_count_range": [
           3,
           5
         ],
-        "target_answer": 22,
+        "target_answer": 21,
         "target_answer_range": [
           5,
           95
         ],
         "task_variant": "combined_share_subset",
         "task_variant_probabilities": {
-          "combined_share_subset": 0.3333333333333333,
-          "stack_segment_value": 0.3333333333333333,
-          "stack_total_at_label": 0.3333333333333333
+          "combined_share_subset": 1.0,
+          "stack_segment_value": 0.0,
+          "stack_total_at_label": 0.0
         }
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 3,
+        "answer_or_evidence_variant_index": 4,
         "prompt_bundle_id": "charts_composition_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -240,18 +302,18 @@
           "json_example_answer_only": "{\"answer\":45}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "object_description": "a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices",
+          "object_description": "a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices",
           "query_category_label": "",
-          "query_label_a": "Fran",
-          "query_label_b": "Pia",
+          "query_label_a": "Agee",
+          "query_label_b": "Ursi",
           "query_series_label": ""
         },
         "task_family_key": "composition_chart_value",
-        "task_family_variant_index": 3,
+        "task_family_variant_index": 4,
         "task_key": "subset_value_query",
-        "task_variant_index": 2,
+        "task_variant_index": 3,
         "task_variant_key": "combined_share_subset",
-        "task_variant_template_index": 1,
+        "task_variant_template_index": 4,
         "template_paths": [
           "charts/composition/charts_composition_v1.json"
         ],
@@ -267,7 +329,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 3,
+            "answer_or_evidence_variant_index": 4,
             "prompt_bundle_id": "charts_composition_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -277,18 +339,18 @@
               "json_example_answer_only": "{\"answer\":45}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices",
+              "object_description": "a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices",
               "query_category_label": "",
-              "query_label_a": "Fran",
-              "query_label_b": "Pia",
+              "query_label_a": "Agee",
+              "query_label_b": "Ursi",
               "query_series_label": ""
             },
             "task_family_key": "composition_chart_value",
-            "task_family_variant_index": 3,
+            "task_family_variant_index": 4,
             "task_key": "subset_value_query",
-            "task_variant_index": 2,
+            "task_variant_index": 3,
             "task_variant_key": "combined_share_subset",
-            "task_variant_template_index": 1,
+            "task_variant_template_index": 4,
             "template_paths": [
               "charts/composition/charts_composition_v1.json"
             ],
@@ -299,12 +361,12 @@
               "task_variant:combined_share_subset": 5
             }
           },
-          "prompt": "Look at the chart in the image. It shows a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Use the chart's printed segment or slice values to compute the answer. Add the chart percentages for labels Fran and Pia. What total percentage do they contribute?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array [v1, v2, ...] listing the slice percentages in legend order for the whole chart.\nAnswer field: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[18,27,22,33],\"answer\":45}"
+          "prompt": "You are given a composition chart: a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Read the relevant composition values directly from the chart and answer the question. What total percentage do labels Agee and Ursi contribute together?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array [v1, v2, ...] listing the slice percentages in legend order for the whole chart.\nAnswer rule: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[18,27,22,33],\"answer\":45}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 3,
+            "answer_or_evidence_variant_index": 2,
             "prompt_bundle_id": "charts_composition_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -314,18 +376,18 @@
               "json_example_answer_only": "{\"answer\":45}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices",
+              "object_description": "a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices",
               "query_category_label": "",
-              "query_label_a": "Fran",
-              "query_label_b": "Pia",
+              "query_label_a": "Agee",
+              "query_label_b": "Ursi",
               "query_series_label": ""
             },
             "task_family_key": "composition_chart_value",
-            "task_family_variant_index": 3,
+            "task_family_variant_index": 4,
             "task_key": "subset_value_query",
-            "task_variant_index": 2,
+            "task_variant_index": 3,
             "task_variant_key": "combined_share_subset",
-            "task_variant_template_index": 1,
+            "task_variant_template_index": 4,
             "template_paths": [
               "charts/composition/charts_composition_v1.json"
             ],
@@ -336,7 +398,7 @@
               "task_variant:combined_share_subset": 5
             }
           },
-          "prompt": "Look at the chart in the image. It shows a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Use the chart's printed segment or slice values to compute the answer. Add the chart percentages for labels Fran and Pia. What total percentage do they contribute?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":45}"
+          "prompt": "You are given a composition chart: a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Read the relevant composition values directly from the chart and answer the question. What total percentage do labels Agee and Ursi contribute together?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":45}"
         }
       },
       "task_variant": "combined_share_subset",
@@ -345,17 +407,25 @@
     "render_map": {
       "image_id": "img0",
       "label_centers_px": {
-        "Fran": [
-          868.66,
+        "Agee": [
+          872.16,
+          319.0
+        ],
+        "Duhl": [
+          869.16,
           277.0
         ],
-        "Pia": [
-          859.16,
-          361.0
+        "Iams": [
+          870.16,
+          403.0
         ],
-        "Reid": [
-          867.66,
-          319.0
+        "Kohn": [
+          872.66,
+          235.0
+        ],
+        "Ursi": [
+          864.66,
+          361.0
         ]
       },
       "plot_bbox_px": [
@@ -393,49 +463,69 @@
         "mark_color_distance_space": "lab",
         "mark_color_min_distance": 58.0,
         "mark_fill_rgb": [
-          66,
-          89,
-          169
+          114,
+          19,
+          27
         ],
         "mark_outline_rgb": [
-          36,
-          49,
-          93
+          63,
+          10,
+          15
         ],
         "pie_like_mark_color_channel_max": 200,
         "sampling_policy": "random_rgb_palette",
         "slice_fill_palette_rgb": [
           [
-            66,
+            114,
+            19,
+            27
+          ],
+          [
+            48,
+            58,
+            153
+          ],
+          [
+            27,
+            189,
+            49
+          ],
+          [
+            15,
             89,
-            169
+            84
           ],
           [
-            69,
-            196,
-            67
-          ],
-          [
-            192,
-            127,
-            29
+            193,
+            172,
+            60
           ]
         ],
         "slice_outline_palette_rgb": [
           [
-            36,
-            49,
-            93
+            63,
+            10,
+            15
           ],
           [
-            38,
-            108,
-            37
+            26,
+            32,
+            84
+          ],
+          [
+            15,
+            104,
+            27
+          ],
+          [
+            8,
+            49,
+            46
           ],
           [
             106,
-            70,
-            16
+            95,
+            33
           ]
         ]
       },
@@ -461,13 +551,13 @@
         "edits": [],
         "enabled": false
       },
-      "scene_variant": "pie",
+      "scene_variant": "donut",
       "text_style": {
         "label_font_size_px": 24,
         "label_stroke_width_px": 2,
         "tick_font_size_px": 20
       },
-      "y_axis_max": 79,
+      "y_axis_max": 41,
       "y_ticks": [
         0,
         1,
@@ -510,61 +600,81 @@
         38,
         39,
         40,
-        41,
-        42,
-        43,
-        44,
-        45,
-        46,
-        47,
-        48,
-        49,
-        50,
-        51,
-        52,
-        53,
-        54,
-        55,
-        56,
-        57,
-        58,
-        59,
-        60,
-        61,
-        62,
-        63,
-        64,
-        65,
-        66,
-        67,
-        68,
-        69,
-        70,
-        71,
-        72,
-        73,
-        74,
-        75,
-        76,
-        77,
-        78,
-        79
+        41
       ]
     },
     "scene_ir": {
       "entities": [
         {
           "attrs": {
-            "end_angle_deg": -72.0,
-            "label": "Fran",
+            "end_angle_deg": 54.0,
+            "label": "Kohn",
+            "label_bbox_px": [
+              838.16,
+              226.0,
+              907.16,
+              244.0
+            ],
+            "label_center_px": [
+              872.66,
+              235.0
+            ],
+            "legend_swatch_bbox_px": [
+              788.16,
+              221.0,
+              816.16,
+              249.0
+            ],
+            "mark_bbox_px": [
+              442.08,
+              65.6,
+              702.48,
+              536.668
+            ],
+            "mark_center_px": [
+              617.915,
+              268.868
+            ],
+            "mark_fill_rgb": [
+              114,
+              19,
+              27
+            ],
+            "mark_outline_rgb": [
+              63,
+              10,
+              15
+            ],
+            "percentage_bbox_px": [
+              588.915,
+              259.868,
+              646.915,
+              277.868
+            ],
+            "percentage_center_px": [
+              617.915,
+              268.868
+            ],
+            "scene_variant": "donut",
+            "start_angle_deg": -90.0,
+            "value": 40,
+            "x_rank": 0
+          },
+          "entity_id": "mark_Kohn",
+          "entity_type": "slice"
+        },
+        {
+          "attrs": {
+            "end_angle_deg": 75.6,
+            "label": "Duhl",
             "label_bbox_px": [
               838.16,
               268.0,
-              899.16,
+              900.16,
               286.0
             ],
             "label_center_px": [
-              868.66,
+              869.16,
               277.0
             ],
             "legend_swatch_bbox_px": [
@@ -575,54 +685,54 @@
             ],
             "mark_bbox_px": [
               442.08,
-              65.6,
-              522.548,
-              326.0
+              326.0,
+              595.139,
+              578.219
             ],
             "mark_center_px": [
-              466.521,
-              171.684
+              520.8,
+              493.288
             ],
             "mark_fill_rgb": [
-              66,
-              89,
-              169
+              48,
+              58,
+              153
             ],
             "mark_outline_rgb": [
-              36,
-              49,
-              93
+              26,
+              32,
+              84
             ],
             "percentage_bbox_px": [
-              446.021,
-              162.684,
-              487.021,
-              180.684
+              500.3,
+              484.288,
+              541.3,
+              502.288
             ],
             "percentage_center_px": [
-              466.521,
-              171.684
+              520.8,
+              493.288
             ],
-            "scene_variant": "pie",
-            "start_angle_deg": -90.0,
-            "value": 5,
-            "x_rank": 0
+            "scene_variant": "donut",
+            "start_angle_deg": 54.0,
+            "value": 6,
+            "x_rank": 1
           },
-          "entity_id": "mark_Fran",
+          "entity_id": "mark_Duhl",
           "entity_type": "slice"
         },
         {
           "attrs": {
-            "end_angle_deg": 208.8,
-            "label": "Reid",
+            "end_angle_deg": 147.6,
+            "label": "Agee",
             "label_bbox_px": [
               838.16,
-              310.0,
-              897.16,
-              328.0
+              307.5,
+              906.16,
+              330.5
             ],
             "label_center_px": [
-              867.66,
+              872.16,
               319.0
             ],
             "legend_swatch_bbox_px": [
@@ -632,55 +742,55 @@
               333.0
             ],
             "mark_bbox_px": [
-              183.253,
-              78.345,
-              702.352,
-              585.75
+              222.217,
+              326.0,
+              506.839,
+              585.886
             ],
             "mark_center_px": [
-              499.596,
-              471.268
+              374.02,
+              497.901
             ],
             "mark_fill_rgb": [
-              69,
-              196,
-              67
+              27,
+              189,
+              49
             ],
             "mark_outline_rgb": [
-              38,
-              108,
-              37
+              15,
+              104,
+              27
             ],
             "percentage_bbox_px": [
-              470.596,
-              462.268,
-              528.596,
-              480.268
+              345.02,
+              488.901,
+              403.02,
+              506.901
             ],
             "percentage_center_px": [
-              499.596,
-              471.268
+              374.02,
+              497.901
             ],
-            "scene_variant": "pie",
-            "start_angle_deg": -72.0,
-            "value": 78,
-            "x_rank": 1
+            "scene_variant": "donut",
+            "start_angle_deg": 75.6,
+            "value": 20,
+            "x_rank": 2
           },
-          "entity_id": "mark_Reid",
+          "entity_id": "mark_Agee",
           "entity_type": "slice"
         },
         {
           "attrs": {
-            "end_angle_deg": 270.0,
-            "label": "Pia",
+            "end_angle_deg": 151.2,
+            "label": "Ursi",
             "label_bbox_px": [
               838.16,
               352.0,
-              880.16,
+              891.16,
               370.0
             ],
             "label_center_px": [
-              859.16,
+              864.66,
               361.0
             ],
             "legend_swatch_bbox_px": [
@@ -691,72 +801,136 @@
             ],
             "mark_bbox_px": [
               213.89,
-              65.6,
+              326.0,
               442.08,
-              326.0
+              465.529
             ],
             "mark_center_px": [
-              362.547,
-              191.518
+              282.943,
+              420.114
             ],
             "mark_fill_rgb": [
-              192,
-              127,
-              29
+              15,
+              89,
+              84
+            ],
+            "mark_outline_rgb": [
+              8,
+              49,
+              46
+            ],
+            "percentage_bbox_px": [
+              183.671,
+              457.699,
+              224.671,
+              475.699
+            ],
+            "percentage_center_px": [
+              204.171,
+              466.699
+            ],
+            "scene_variant": "donut",
+            "start_angle_deg": 147.6,
+            "value": 1,
+            "x_rank": 3
+          },
+          "entity_id": "mark_Ursi",
+          "entity_type": "slice"
+        },
+        {
+          "attrs": {
+            "end_angle_deg": 270.0,
+            "label": "Iams",
+            "label_bbox_px": [
+              838.16,
+              394.0,
+              902.16,
+              412.0
+            ],
+            "label_center_px": [
+              870.16,
+              403.0
+            ],
+            "legend_swatch_bbox_px": [
+              788.16,
+              389.0,
+              816.16,
+              417.0
+            ],
+            "mark_bbox_px": [
+              182.728,
+              65.6,
+              442.08,
+              451.449
+            ],
+            "mark_center_px": [
+              282.943,
+              231.886
+            ],
+            "mark_fill_rgb": [
+              193,
+              172,
+              60
             ],
             "mark_outline_rgb": [
               106,
-              70,
-              16
+              95,
+              33
             ],
             "percentage_bbox_px": [
-              333.547,
-              182.518,
-              391.547,
-              200.518
+              253.943,
+              222.886,
+              311.943,
+              240.886
             ],
             "percentage_center_px": [
-              362.547,
-              191.518
+              282.943,
+              231.886
             ],
-            "scene_variant": "pie",
-            "start_angle_deg": 208.8,
-            "value": 17,
-            "x_rank": 2
+            "scene_variant": "donut",
+            "start_angle_deg": 151.2,
+            "value": 33,
+            "x_rank": 4
           },
-          "entity_id": "mark_Pia",
+          "entity_id": "mark_Iams",
           "entity_type": "slice"
         }
       ],
       "relations": {
-        "answer_value": 22,
+        "answer_value": 21,
         "evidence_labels": [
-          "Fran",
-          "Reid",
-          "Pia"
+          "Kohn",
+          "Duhl",
+          "Agee",
+          "Ursi",
+          "Iams"
         ],
         "query_category_label": "",
         "query_series_label": "",
         "query_subset_labels": [
-          "Fran",
-          "Pia"
+          "Agee",
+          "Ursi"
         ],
-        "scene_variant": "pie",
+        "scene_variant": "donut",
         "task_variant": "combined_share_subset"
       },
-      "scene_kind": "chart_pie_composition"
+      "scene_kind": "chart_donut_composition"
     },
     "witness_symbolic": {
       "labels": [
-        "Fran",
-        "Reid",
-        "Pia"
+        "Kohn",
+        "Duhl",
+        "Agee",
+        "Ursi",
+        "Iams"
       ],
       "type": "integer_list",
       "values": [
-        5,
-        78,
-        17
+        40,
+        6,
+        20,
+        1,
+        33
       ]
     }
   },

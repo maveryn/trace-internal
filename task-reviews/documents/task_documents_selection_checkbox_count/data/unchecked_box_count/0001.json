@@ -1,41 +1,28 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 2
+    "value": 0
   },
   "evidence_gt": {
     "type": "bbox_set",
-    "value": [
-      [
-        218.0,
-        465.0,
-        242.0,
-        489.0
-      ],
-      [
-        218.0,
-        515.0,
-        242.0,
-        539.0
-      ]
-    ]
+    "value": []
   },
   "image": {
     "format": "png",
     "path": "documents/task_documents_selection_checkbox_count/images/unchecked_box_count/0001.png"
   },
-  "instance_seed": 3417591905425209,
-  "prompt": "The image shows a structured application form with visible section headers, context fields, and checkbox groups. Find the named section and then answer: In the Contact Preferences section, how many checkboxes are not checked? Answer with the count as an integer.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing one bounding box for each counted checkbox, in reading order.\nAnswer format: set \"answer\" to the number of counted checkboxes.\nExample JSON:\n{\"evidence\":[[154,356,178,380]],\"answer\":1}",
+  "instance_seed": 715081478652181,
+  "prompt": "You are given a structured application form with visible section headers, context fields, and checkbox groups. In the Submission Flags section, how many checkboxes are not checked? Give the count of unchecked boxes as an integer.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing one bounding box for each counted checkbox, in reading order.\nAnswer rule: set \"answer\" to the number of counted checkboxes.\nExample JSON:\n{\"evidence\":[[154,356,178,380]],\"answer\":1}",
   "prompt_variants": {
-    "answer_and_evidence": "The image shows a structured application form with visible section headers, context fields, and checkbox groups. Find the named section and then answer: In the Contact Preferences section, how many checkboxes are not checked? Answer with the count as an integer.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing one bounding box for each counted checkbox, in reading order.\nAnswer format: set \"answer\" to the number of counted checkboxes.\nExample JSON:\n{\"evidence\":[[154,356,178,380]],\"answer\":1}",
-    "answer_only": "The image shows a structured application form with visible section headers, context fields, and checkbox groups. Find the named section and then answer: In the Contact Preferences section, how many checkboxes are not checked? Answer with the count as an integer.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the number of counted checkboxes.\nExample JSON:\n{\"answer\":1}"
+    "answer_and_evidence": "You are given a structured application form with visible section headers, context fields, and checkbox groups. In the Submission Flags section, how many checkboxes are not checked? Give the count of unchecked boxes as an integer.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing one bounding box for each counted checkbox, in reading order.\nAnswer rule: set \"answer\" to the number of counted checkboxes.\nExample JSON:\n{\"evidence\":[[154,356,178,380]],\"answer\":1}",
+    "answer_only": "You are given a structured application form with visible section headers, context fields, and checkbox groups. In the Submission Flags section, how many checkboxes are not checked? Give the count of unchecked boxes as an integer.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the number of counted checkboxes.\nExample JSON:\n{\"answer\":1}"
   },
   "task": "task_documents_selection_checkbox_count",
   "task_variant": "unchecked_box_count",
   "trace_payload": {
     "answer_gt": {
       "type": "integer",
-      "value": 2
+      "value": 0
     },
     "background": {
       "available_styles": [
@@ -54,30 +41,17 @@
     },
     "evidence_gt": {
       "type": "bbox_set",
-      "value": [
-        [
-          218.0,
-          465.0,
-          242.0,
-          489.0
-        ],
-        [
-          218.0,
-          515.0,
-          242.0,
-          539.0
-        ]
-      ]
+      "value": []
     },
     "execution_trace": {
-      "answer_count": 2,
+      "answer_count": 0,
       "checkbox_item_count": 4,
       "checkbox_section_specs": [
         {
           "items": [
             {
               "checkbox_bbox_id": "contact_preferences:0:checkbox",
-              "checked": true,
+              "checked": false,
               "item_id": "contact_preferences:0",
               "label": "Email Updates",
               "label_bbox_id": "contact_preferences:0:label"
@@ -111,14 +85,14 @@
           "items": [
             {
               "checkbox_bbox_id": "submission_flags:0:checkbox",
-              "checked": false,
+              "checked": true,
               "item_id": "submission_flags:0",
               "label": "Rush Review",
               "label_bbox_id": "submission_flags:0:label"
             },
             {
               "checkbox_bbox_id": "submission_flags:1:checkbox",
-              "checked": false,
+              "checked": true,
               "item_id": "submission_flags:1",
               "label": "Weekend Pickup",
               "label_bbox_id": "submission_flags:1:label"
@@ -146,21 +120,21 @@
         {
           "field_id": "applicant_name",
           "field_label": "Applicant Name",
-          "field_value": "Cole Moore",
+          "field_value": "Kai Howard",
           "label_bbox_id": "applicant_name:label",
           "value_bbox_id": "applicant_name:value"
         },
         {
           "field_id": "reference_id",
           "field_label": "Reference ID",
-          "field_value": "REF-69455",
+          "field_value": "REF-22352",
           "label_bbox_id": "reference_id:label",
           "value_bbox_id": "reference_id:value"
         },
         {
           "field_id": "submission_date",
           "field_label": "Submission Date",
-          "field_value": "04/08/2026",
+          "field_value": "02/11/2026",
           "label_bbox_id": "submission_date:label",
           "value_bbox_id": "submission_date:value"
         },
@@ -172,29 +146,26 @@
           "value_bbox_id": "department:value"
         }
       ],
-      "evidence_checkbox_bbox_ids": [
-        "contact_preferences:1:checkbox",
-        "contact_preferences:2:checkbox"
-      ],
+      "evidence_checkbox_bbox_ids": [],
       "field_count": 4,
-      "query_section_id": "contact_preferences",
-      "query_section_label": "Contact Preferences",
+      "query_section_id": "submission_flags",
+      "query_section_label": "Submission Flags",
       "query_selection_strategy": "combined_hash_mod_support",
       "question_format": "document_checkbox_count",
-      "question_text": "In the Contact Preferences section, how many checkboxes are not checked?",
+      "question_text": "In the Submission Flags section, how many checkboxes are not checked?",
       "scene_title": "Application Form",
       "scene_variant": "form_sheet",
       "target_checkbox_ids": [
-        "contact_preferences:0",
-        "contact_preferences:1",
-        "contact_preferences:2",
-        "contact_preferences:3"
+        "submission_flags:0",
+        "submission_flags:1",
+        "submission_flags:2",
+        "submission_flags:3"
       ],
       "target_checkbox_states": {
-        "contact_preferences:0": true,
-        "contact_preferences:1": false,
-        "contact_preferences:2": false,
-        "contact_preferences:3": true
+        "submission_flags:0": true,
+        "submission_flags:1": true,
+        "submission_flags:2": true,
+        "submission_flags:3": true
       },
       "task_variant": "unchecked_box_count",
       "view_family": "structured_document"
@@ -216,20 +187,7 @@
       "enabled": false
     },
     "projected_evidence": {
-      "bbox_set": [
-        [
-          218.0,
-          465.0,
-          242.0,
-          489.0
-        ],
-        [
-          218.0,
-          515.0,
-          242.0,
-          539.0
-        ]
-      ]
+      "bbox_set": []
     },
     "query_spec": {
       "params": {
@@ -253,7 +211,7 @@
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 1,
+        "answer_or_evidence_variant_index": 4,
         "prompt_bundle_id": "documents_selection_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -264,14 +222,14 @@
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
           "object_description": "a structured application form with visible section headers, context fields, and checkbox groups",
-          "question_text": "In the Contact Preferences section, how many checkboxes are not checked?"
+          "question_text": "In the Submission Flags section, how many checkboxes are not checked?"
         },
         "task_family_key": "structured_document_sections",
-        "task_family_variant_index": 0,
+        "task_family_variant_index": 2,
         "task_key": "checkbox_count_query",
-        "task_variant_index": 2,
+        "task_variant_index": 0,
         "task_variant_key": "unchecked_box_count",
-        "task_variant_template_index": 0,
+        "task_variant_template_index": 3,
         "template_paths": [
           "documents/selection/documents_selection_v1.json"
         ],
@@ -287,7 +245,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 1,
+            "answer_or_evidence_variant_index": 4,
             "prompt_bundle_id": "documents_selection_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -298,14 +256,14 @@
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a structured application form with visible section headers, context fields, and checkbox groups",
-              "question_text": "In the Contact Preferences section, how many checkboxes are not checked?"
+              "question_text": "In the Submission Flags section, how many checkboxes are not checked?"
             },
             "task_family_key": "structured_document_sections",
-            "task_family_variant_index": 0,
+            "task_family_variant_index": 2,
             "task_key": "checkbox_count_query",
-            "task_variant_index": 2,
+            "task_variant_index": 0,
             "task_variant_key": "unchecked_box_count",
-            "task_variant_template_index": 0,
+            "task_variant_template_index": 3,
             "template_paths": [
               "documents/selection/documents_selection_v1.json"
             ],
@@ -316,12 +274,12 @@
               "task_variant:unchecked_box_count": 5
             }
           },
-          "prompt": "The image shows a structured application form with visible section headers, context fields, and checkbox groups. Find the named section and then answer: In the Contact Preferences section, how many checkboxes are not checked? Answer with the count as an integer.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing one bounding box for each counted checkbox, in reading order.\nAnswer format: set \"answer\" to the number of counted checkboxes.\nExample JSON:\n{\"evidence\":[[154,356,178,380]],\"answer\":1}"
+          "prompt": "You are given a structured application form with visible section headers, context fields, and checkbox groups. In the Submission Flags section, how many checkboxes are not checked? Give the count of unchecked boxes as an integer.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing one bounding box for each counted checkbox, in reading order.\nAnswer rule: set \"answer\" to the number of counted checkboxes.\nExample JSON:\n{\"evidence\":[[154,356,178,380]],\"answer\":1}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 2,
+            "answer_or_evidence_variant_index": 0,
             "prompt_bundle_id": "documents_selection_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -332,14 +290,14 @@
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a structured application form with visible section headers, context fields, and checkbox groups",
-              "question_text": "In the Contact Preferences section, how many checkboxes are not checked?"
+              "question_text": "In the Submission Flags section, how many checkboxes are not checked?"
             },
             "task_family_key": "structured_document_sections",
-            "task_family_variant_index": 0,
+            "task_family_variant_index": 2,
             "task_key": "checkbox_count_query",
-            "task_variant_index": 2,
+            "task_variant_index": 0,
             "task_variant_key": "unchecked_box_count",
-            "task_variant_template_index": 0,
+            "task_variant_template_index": 3,
             "template_paths": [
               "documents/selection/documents_selection_v1.json"
             ],
@@ -350,7 +308,7 @@
               "task_variant:unchecked_box_count": 5
             }
           },
-          "prompt": "The image shows a structured application form with visible section headers, context fields, and checkbox groups. Find the named section and then answer: In the Contact Preferences section, how many checkboxes are not checked? Answer with the count as an integer.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the number of counted checkboxes.\nExample JSON:\n{\"answer\":1}"
+          "prompt": "You are given a structured application form with visible section headers, context fields, and checkbox groups. In the Submission Flags section, how many checkboxes are not checked? Give the count of unchecked boxes as an integer.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the number of counted checkboxes.\nExample JSON:\n{\"answer\":1}"
         }
       },
       "task_variant": "unchecked_box_count",
@@ -513,7 +471,7 @@
         "applicant_name:value": [
           218.0,
           243.5,
-          378.0,
+          380.0,
           266.5
         ],
         "department:value": [
@@ -579,7 +537,7 @@
     "render_spec": {
       "canvas_height": 920,
       "canvas_width": 1280,
-      "geometry_seed": 3417591905425209,
+      "geometry_seed": 715081478652181,
       "page_shadow_offset_px": 14,
       "receipt_page_height_px": 760,
       "receipt_page_width_px": 520,
@@ -642,13 +600,13 @@
           "bbox_px": [
             218.0,
             243.5,
-            378.0,
+            380.0,
             266.5
           ],
           "entity_id": "applicant_name:value",
           "entity_type": "document_field_value",
           "field_id": "applicant_name",
-          "text": "Cole Moore"
+          "text": "Kai Howard"
         },
         {
           "bbox_id": "reference_id",
@@ -686,7 +644,7 @@
           "entity_id": "reference_id:value",
           "entity_type": "document_field_value",
           "field_id": "reference_id",
-          "text": "REF-69455"
+          "text": "REF-22352"
         },
         {
           "bbox_id": "submission_date",
@@ -724,7 +682,7 @@
           "entity_id": "submission_date:value",
           "entity_type": "document_field_value",
           "field_id": "submission_date",
-          "text": "04/08/2026"
+          "text": "02/11/2026"
         },
         {
           "bbox_id": "department",
@@ -803,7 +761,7 @@
             242.0,
             439.0
           ],
-          "checked": true,
+          "checked": false,
           "entity_id": "contact_preferences:0:checkbox",
           "entity_type": "document_checkbox",
           "item_id": "contact_preferences:0",
@@ -946,7 +904,7 @@
             242.0,
             659.0
           ],
-          "checked": false,
+          "checked": true,
           "entity_id": "submission_flags:0:checkbox",
           "entity_type": "document_checkbox",
           "item_id": "submission_flags:0",
@@ -974,7 +932,7 @@
             242.0,
             709.0
           ],
-          "checked": false,
+          "checked": true,
           "entity_id": "submission_flags:1:checkbox",
           "entity_type": "document_checkbox",
           "item_id": "submission_flags:1",
@@ -1052,8 +1010,8 @@
         }
       ],
       "relations": {
-        "query_section_id": "contact_preferences",
-        "query_section_label": "Contact Preferences",
+        "query_section_id": "submission_flags",
+        "query_section_label": "Submission Flags",
         "scene_variant": "form_sheet",
         "task_variant": "unchecked_box_count",
         "view_family": "structured_document"
@@ -1061,11 +1019,8 @@
       "scene_kind": "document_form_sheet"
     },
     "witness_symbolic": {
-      "bbox_id_sequence": [
-        "contact_preferences:1:checkbox",
-        "contact_preferences:2:checkbox"
-      ],
-      "section_id": "contact_preferences"
+      "bbox_id_sequence": [],
+      "section_id": "submission_flags"
     }
   },
   "versions": {

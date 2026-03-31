@@ -1,67 +1,69 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 18
+    "value": 16
   },
   "evidence_gt": {
     "type": "integer_list",
     "value": [
-      1,
-      19
+      2,
+      18
     ]
   },
   "image": {
     "format": "png",
     "path": "charts/task_charts_readout_subset_value/images/difference_two_abs/0014.png"
   },
-  "instance_seed": 2644314394897718,
-  "prompt": "Work from the labeled chart shown in the image: a labeled lollipop chart. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Use the chart values for the specified labels and answer the question. For labels Z and P, what is the absolute difference between their values?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question.\nAnswer field: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[14,9],\"answer\":5}",
+  "instance_seed": 6687319745990164,
+  "prompt": "Look at the chart in the image. It shows a labeled dot plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Read the requested values directly from the chart and answer the question. What is the positive difference between the values of labels E and P?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question.\nAnswer field: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[14,9],\"answer\":5}",
   "prompt_variants": {
-    "answer_and_evidence": "Work from the labeled chart shown in the image: a labeled lollipop chart. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Use the chart values for the specified labels and answer the question. For labels Z and P, what is the absolute difference between their values?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question.\nAnswer field: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[14,9],\"answer\":5}",
-    "answer_only": "Work from the labeled chart shown in the image: a labeled lollipop chart. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Use the chart values for the specified labels and answer the question. For labels Z and P, what is the absolute difference between their values?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":5}"
+    "answer_and_evidence": "Look at the chart in the image. It shows a labeled dot plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Read the requested values directly from the chart and answer the question. What is the positive difference between the values of labels E and P?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question.\nAnswer field: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[14,9],\"answer\":5}",
+    "answer_only": "Look at the chart in the image. It shows a labeled dot plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Read the requested values directly from the chart and answer the question. What is the positive difference between the values of labels E and P?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":5}"
   },
   "task": "task_charts_readout_subset_value",
   "task_variant": "difference_two_abs",
   "trace_payload": {
     "execution_trace": {
-      "answer_value": 18,
+      "answer_value": 16,
       "labels": [
-        "Z",
-        "P",
-        "X",
+        "L",
+        "A",
+        "R",
+        "E",
         "U",
-        "D",
-        "H",
-        "T"
+        "P",
+        "Y",
+        "N",
+        "M"
       ],
       "mark_color_distance_space": "lab",
       "mark_color_min_distance": 40.0,
       "mark_color_sampling_policy": "random_rgb",
-      "mark_count": 7,
+      "mark_count": 9,
       "mark_count_range": [
         5,
         10
       ],
       "mark_fill_rgb": [
-        160,
-        2,
-        205
+        197,
+        98,
+        38
       ],
       "mark_outline_rgb": [
-        88,
-        1,
-        113
+        108,
+        54,
+        21
       ],
       "query_labels": [
-        "Z",
+        "E",
         "P"
       ],
       "query_values": [
-        1,
-        19
+        2,
+        18
       ],
       "question_format": "numeric_open",
-      "scene_variant": "lollipop",
+      "scene_variant": "dot_plot",
       "scene_variant_probabilities": {
         "area": 0.1,
         "bar": 0.1,
@@ -74,88 +76,92 @@
         "radar": 0.1,
         "scatter": 0.1
       },
-      "target_answer": 18,
+      "target_answer": 16,
       "target_answer_range": [
         0,
         19
       ],
       "task_variant": "difference_two_abs",
       "task_variant_probabilities": {
-        "difference_two_abs": 0.2,
-        "max_two": 0.2,
-        "mean_two": 0.2,
-        "min_two": 0.2,
-        "sum_two": 0.2
+        "difference_two_abs": 1.0,
+        "max_two": 0.0,
+        "mean_two": 0.0,
+        "min_two": 0.0,
+        "sum_two": 0.0
       },
       "value_max": 20,
       "value_min": 1,
       "values": [
-        1,
-        19,
-        3,
-        13,
-        14,
+        8,
         12,
-        15
+        3,
+        2,
+        10,
+        18,
+        18,
+        14,
+        19
       ],
       "values_by_label": {
-        "D": 14,
-        "H": 12,
-        "P": 19,
-        "T": 15,
-        "U": 13,
-        "X": 3,
-        "Z": 1
+        "A": 12,
+        "E": 2,
+        "L": 8,
+        "M": 19,
+        "N": 14,
+        "P": 18,
+        "R": 3,
+        "U": 10,
+        "Y": 18
       }
     },
     "projected_evidence": {
       "bbox_set": [
         [
-          131.286,
-          476.8,
-          147.286,
-          492.8
+          341.444,
+          453.6,
+          357.444,
+          469.6
         ],
         [
-          225.857,
-          59.2,
-          241.857,
-          75.2
+          488.556,
+          82.4,
+          504.556,
+          98.4
         ]
       ],
       "integer_list": [
-        1,
-        19
+        2,
+        18
       ],
       "pixel_point_map": {
-        "P": [
-          233.857,
-          67.2
+        "E": [
+          349.444,
+          461.6
         ],
-        "Z": [
-          139.286,
-          484.8
+        "P": [
+          496.556,
+          90.4
         ]
       },
       "pixel_point_set": [
         [
-          139.286,
-          484.8
+          349.444,
+          461.6
         ],
         [
-          233.857,
-          67.2
+          496.556,
+          90.4
         ]
       ]
     },
     "query_spec": {
       "params": {
-        "mark_count": 7,
+        "mark_count": 9,
         "query_labels": [
-          "Z",
+          "E",
           "P"
         ],
-        "scene_variant": "lollipop",
+        "scene_variant": "dot_plot",
         "scene_variant_probabilities": {
           "area": 0.1,
           "bar": 0.1,
@@ -168,18 +174,18 @@
           "radar": 0.1,
           "scatter": 0.1
         },
-        "target_answer": 18,
+        "target_answer": 16,
         "target_answer_range": [
           0,
           19
         ],
         "task_variant": "difference_two_abs",
         "task_variant_probabilities": {
-          "difference_two_abs": 0.2,
-          "max_two": 0.2,
-          "mean_two": 0.2,
-          "min_two": 0.2,
-          "sum_two": 0.2
+          "difference_two_abs": 1.0,
+          "max_two": 0.0,
+          "mean_two": 0.0,
+          "min_two": 0.0,
+          "sum_two": 0.0
         }
       },
       "prompt_variant": {
@@ -194,16 +200,16 @@
           "json_example_answer_only": "{\"answer\":5}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "object_description": "a labeled lollipop chart. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis",
-          "query_label_a": "Z",
+          "object_description": "a labeled dot plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis",
+          "query_label_a": "E",
           "query_label_b": "P"
         },
         "task_family_key": "labeled_chart_readout",
-        "task_family_variant_index": 2,
+        "task_family_variant_index": 3,
         "task_key": "subset_value_query",
-        "task_variant_index": 1,
+        "task_variant_index": 0,
         "task_variant_key": "difference_two_abs",
-        "task_variant_template_index": 0,
+        "task_variant_template_index": 1,
         "template_paths": [
           "charts/readout/charts_readout_v1.json"
         ],
@@ -229,16 +235,16 @@
               "json_example_answer_only": "{\"answer\":5}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a labeled lollipop chart. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis",
-              "query_label_a": "Z",
+              "object_description": "a labeled dot plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis",
+              "query_label_a": "E",
               "query_label_b": "P"
             },
             "task_family_key": "labeled_chart_readout",
-            "task_family_variant_index": 2,
+            "task_family_variant_index": 3,
             "task_key": "subset_value_query",
-            "task_variant_index": 1,
+            "task_variant_index": 0,
             "task_variant_key": "difference_two_abs",
-            "task_variant_template_index": 0,
+            "task_variant_template_index": 1,
             "template_paths": [
               "charts/readout/charts_readout_v1.json"
             ],
@@ -249,7 +255,7 @@
               "task_variant:difference_two_abs": 5
             }
           },
-          "prompt": "Work from the labeled chart shown in the image: a labeled lollipop chart. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Use the chart values for the specified labels and answer the question. For labels Z and P, what is the absolute difference between their values?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question.\nAnswer field: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[14,9],\"answer\":5}"
+          "prompt": "Look at the chart in the image. It shows a labeled dot plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Read the requested values directly from the chart and answer the question. What is the positive difference between the values of labels E and P?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question.\nAnswer field: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[14,9],\"answer\":5}"
         },
         "answer_only": {
           "metadata": {
@@ -264,16 +270,16 @@
               "json_example_answer_only": "{\"answer\":5}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a labeled lollipop chart. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis",
-              "query_label_a": "Z",
+              "object_description": "a labeled dot plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis",
+              "query_label_a": "E",
               "query_label_b": "P"
             },
             "task_family_key": "labeled_chart_readout",
-            "task_family_variant_index": 2,
+            "task_family_variant_index": 3,
             "task_key": "subset_value_query",
-            "task_variant_index": 1,
+            "task_variant_index": 0,
             "task_variant_key": "difference_two_abs",
-            "task_variant_template_index": 0,
+            "task_variant_template_index": 1,
             "template_paths": [
               "charts/readout/charts_readout_v1.json"
             ],
@@ -284,7 +290,7 @@
               "task_variant:difference_two_abs": 5
             }
           },
-          "prompt": "Work from the labeled chart shown in the image: a labeled lollipop chart. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Use the chart values for the specified labels and answer the question. For labels Z and P, what is the absolute difference between their values?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":5}"
+          "prompt": "Look at the chart in the image. It shows a labeled dot plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Read the requested values directly from the chart and answer the question. What is the positive difference between the values of labels E and P?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":5}"
         }
       },
       "task_variant": "difference_two_abs",
@@ -293,33 +299,41 @@
     "render_map": {
       "image_id": "img0",
       "label_centers_px": {
-        "D": [
-          517.571,
-          161.2
-        ],
-        "H": [
-          612.143,
+        "A": [
+          202.333,
           207.6
         ],
-        "P": [
-          233.857,
+        "E": [
+          349.444,
+          439.6
+        ],
+        "L": [
+          128.778,
+          300.4
+        ],
+        "M": [
+          717.222,
           45.2
         ],
-        "T": [
-          706.714,
-          138.0
+        "N": [
+          643.667,
+          161.2
+        ],
+        "P": [
+          496.556,
+          68.4
+        ],
+        "R": [
+          275.889,
+          416.4
         ],
         "U": [
           423.0,
-          184.4
+          254.0
         ],
-        "X": [
-          328.429,
-          416.4
-        ],
-        "Z": [
-          139.286,
-          462.8
+        "Y": [
+          570.111,
+          68.4
         ]
       },
       "plot_bbox_px": [
@@ -357,14 +371,14 @@
         "mark_color_distance_space": "lab",
         "mark_color_min_distance": 40.0,
         "mark_fill_rgb": [
-          160,
-          2,
-          205
+          197,
+          98,
+          38
         ],
         "mark_outline_rgb": [
-          88,
-          1,
-          113
+          108,
+          54,
+          21
         ],
         "sampling_policy": "random_rgb"
       },
@@ -390,7 +404,7 @@
         "edits": [],
         "enabled": false
       },
-      "scene_variant": "lollipop",
+      "scene_variant": "dot_plot",
       "text_style": {
         "label_font_size_px": 22,
         "label_stroke_width_px": 2,
@@ -425,104 +439,138 @@
       "entities": [
         {
           "attrs": {
-            "label": "Z",
+            "label": "L",
             "label_center_px": [
-              139.286,
-              462.8
+              128.778,
+              300.4
             ],
             "mark_bbox_px": [
-              131.286,
-              476.8,
-              147.286,
-              492.8
+              120.778,
+              314.4,
+              136.778,
+              330.4
             ],
             "mark_center_px": [
-              139.286,
-              484.8
+              128.778,
+              322.4
             ],
             "mark_fill_rgb": [
-              160,
-              2,
-              205
+              197,
+              98,
+              38
             ],
             "mark_outline_rgb": [
-              88,
-              1,
-              113
+              108,
+              54,
+              21
             ],
-            "scene_variant": "lollipop",
-            "value": 1,
+            "scene_variant": "dot_plot",
+            "value": 8,
             "x_rank": 0
           },
-          "entity_id": "mark_Z",
+          "entity_id": "mark_L",
           "entity_type": "point"
         },
         {
           "attrs": {
-            "label": "P",
+            "label": "A",
             "label_center_px": [
-              233.857,
-              45.2
+              202.333,
+              207.6
             ],
             "mark_bbox_px": [
-              225.857,
-              59.2,
-              241.857,
-              75.2
+              194.333,
+              221.6,
+              210.333,
+              237.6
             ],
             "mark_center_px": [
-              233.857,
-              67.2
+              202.333,
+              229.6
             ],
             "mark_fill_rgb": [
-              160,
-              2,
-              205
+              197,
+              98,
+              38
             ],
             "mark_outline_rgb": [
-              88,
-              1,
-              113
+              108,
+              54,
+              21
             ],
-            "scene_variant": "lollipop",
-            "value": 19,
+            "scene_variant": "dot_plot",
+            "value": 12,
             "x_rank": 1
           },
-          "entity_id": "mark_P",
+          "entity_id": "mark_A",
           "entity_type": "point"
         },
         {
           "attrs": {
-            "label": "X",
+            "label": "R",
             "label_center_px": [
-              328.429,
+              275.889,
               416.4
             ],
             "mark_bbox_px": [
-              320.429,
+              267.889,
               430.4,
-              336.429,
+              283.889,
               446.4
             ],
             "mark_center_px": [
-              328.429,
+              275.889,
               438.4
             ],
             "mark_fill_rgb": [
-              160,
-              2,
-              205
+              197,
+              98,
+              38
             ],
             "mark_outline_rgb": [
-              88,
-              1,
-              113
+              108,
+              54,
+              21
             ],
-            "scene_variant": "lollipop",
+            "scene_variant": "dot_plot",
             "value": 3,
             "x_rank": 2
           },
-          "entity_id": "mark_X",
+          "entity_id": "mark_R",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "E",
+            "label_center_px": [
+              349.444,
+              439.6
+            ],
+            "mark_bbox_px": [
+              341.444,
+              453.6,
+              357.444,
+              469.6
+            ],
+            "mark_center_px": [
+              349.444,
+              461.6
+            ],
+            "mark_fill_rgb": [
+              197,
+              98,
+              38
+            ],
+            "mark_outline_rgb": [
+              108,
+              54,
+              21
+            ],
+            "scene_variant": "dot_plot",
+            "value": 2,
+            "x_rank": 3
+          },
+          "entity_id": "mark_E",
           "entity_type": "point"
         },
         {
@@ -530,162 +578,196 @@
             "label": "U",
             "label_center_px": [
               423.0,
-              184.4
+              254.0
             ],
             "mark_bbox_px": [
               415.0,
-              198.4,
+              268.0,
               431.0,
-              214.4
+              284.0
             ],
             "mark_center_px": [
               423.0,
-              206.4
+              276.0
             ],
             "mark_fill_rgb": [
-              160,
-              2,
-              205
+              197,
+              98,
+              38
             ],
             "mark_outline_rgb": [
-              88,
-              1,
-              113
+              108,
+              54,
+              21
             ],
-            "scene_variant": "lollipop",
-            "value": 13,
-            "x_rank": 3
+            "scene_variant": "dot_plot",
+            "value": 10,
+            "x_rank": 4
           },
           "entity_id": "mark_U",
           "entity_type": "point"
         },
         {
           "attrs": {
-            "label": "D",
+            "label": "P",
             "label_center_px": [
-              517.571,
+              496.556,
+              68.4
+            ],
+            "mark_bbox_px": [
+              488.556,
+              82.4,
+              504.556,
+              98.4
+            ],
+            "mark_center_px": [
+              496.556,
+              90.4
+            ],
+            "mark_fill_rgb": [
+              197,
+              98,
+              38
+            ],
+            "mark_outline_rgb": [
+              108,
+              54,
+              21
+            ],
+            "scene_variant": "dot_plot",
+            "value": 18,
+            "x_rank": 5
+          },
+          "entity_id": "mark_P",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "Y",
+            "label_center_px": [
+              570.111,
+              68.4
+            ],
+            "mark_bbox_px": [
+              562.111,
+              82.4,
+              578.111,
+              98.4
+            ],
+            "mark_center_px": [
+              570.111,
+              90.4
+            ],
+            "mark_fill_rgb": [
+              197,
+              98,
+              38
+            ],
+            "mark_outline_rgb": [
+              108,
+              54,
+              21
+            ],
+            "scene_variant": "dot_plot",
+            "value": 18,
+            "x_rank": 6
+          },
+          "entity_id": "mark_Y",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "N",
+            "label_center_px": [
+              643.667,
               161.2
             ],
             "mark_bbox_px": [
-              509.571,
+              635.667,
               175.2,
-              525.571,
+              651.667,
               191.2
             ],
             "mark_center_px": [
-              517.571,
+              643.667,
               183.2
             ],
             "mark_fill_rgb": [
-              160,
-              2,
-              205
+              197,
+              98,
+              38
             ],
             "mark_outline_rgb": [
-              88,
-              1,
-              113
+              108,
+              54,
+              21
             ],
-            "scene_variant": "lollipop",
+            "scene_variant": "dot_plot",
             "value": 14,
-            "x_rank": 4
+            "x_rank": 7
           },
-          "entity_id": "mark_D",
+          "entity_id": "mark_N",
           "entity_type": "point"
         },
         {
           "attrs": {
-            "label": "H",
+            "label": "M",
             "label_center_px": [
-              612.143,
-              207.6
+              717.222,
+              45.2
             ],
             "mark_bbox_px": [
-              604.143,
-              221.6,
-              620.143,
-              237.6
+              709.222,
+              59.2,
+              725.222,
+              75.2
             ],
             "mark_center_px": [
-              612.143,
-              229.6
+              717.222,
+              67.2
             ],
             "mark_fill_rgb": [
-              160,
-              2,
-              205
+              197,
+              98,
+              38
             ],
             "mark_outline_rgb": [
-              88,
-              1,
-              113
+              108,
+              54,
+              21
             ],
-            "scene_variant": "lollipop",
-            "value": 12,
-            "x_rank": 5
+            "scene_variant": "dot_plot",
+            "value": 19,
+            "x_rank": 8
           },
-          "entity_id": "mark_H",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "label": "T",
-            "label_center_px": [
-              706.714,
-              138.0
-            ],
-            "mark_bbox_px": [
-              698.714,
-              152.0,
-              714.714,
-              168.0
-            ],
-            "mark_center_px": [
-              706.714,
-              160.0
-            ],
-            "mark_fill_rgb": [
-              160,
-              2,
-              205
-            ],
-            "mark_outline_rgb": [
-              88,
-              1,
-              113
-            ],
-            "scene_variant": "lollipop",
-            "value": 15,
-            "x_rank": 6
-          },
-          "entity_id": "mark_T",
+          "entity_id": "mark_M",
           "entity_type": "point"
         }
       ],
       "relations": {
-        "answer_value": 18,
+        "answer_value": 16,
         "query_labels": [
-          "Z",
+          "E",
           "P"
         ],
         "query_values": [
-          1,
-          19
+          2,
+          18
         ],
-        "scene_variant": "lollipop",
+        "scene_variant": "dot_plot",
         "task_variant": "difference_two_abs"
       },
-      "scene_kind": "chart_lollipop_readout"
+      "scene_kind": "chart_dot_plot_readout"
     },
     "witness_symbolic": {
       "query_labels": [
-        "Z",
+        "E",
         "P"
       ],
       "type": "integer_list",
       "values": [
-        1,
-        19
+        2,
+        18
       ]
     }
   },

@@ -1,25 +1,26 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 1326
+    "value": 717
   },
   "evidence_gt": {
     "type": "measurement_ref_map",
     "value": {
-      "HI": 39,
-      "IJ": 30,
-      "ML": 8
+      "JK": 21,
+      "LK": 9,
+      "NI": 22,
+      "NM": 24
     }
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_2d_value/images/composite_area/0011.png"
   },
-  "instance_seed": 264936740358252,
-  "prompt": "The image shows a shaded composite geometric region with measurement annotations. The shaded figure is a rectangle with a triangular roof attached. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: HI, IJ, ML.\nAnswer: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"HI\":2,\"IJ\":3,\"ML\":4},\"answer\":8}",
+  "instance_seed": 729829643639404,
+  "prompt": "Look at the annotated image showing a shaded composite geometric region with measurement annotations. Question: The shaded figure is a step-shaped union of two rectangles. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: NM, NI, LK, JK.\nAnswer requirement: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"NM\":2,\"NI\":3,\"LK\":4,\"JK\":5},\"answer\":8}",
   "prompt_variants": {
-    "answer_and_evidence": "The image shows a shaded composite geometric region with measurement annotations. The shaded figure is a rectangle with a triangular roof attached. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: HI, IJ, ML.\nAnswer: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"HI\":2,\"IJ\":3,\"ML\":4},\"answer\":8}",
-    "answer_only": "The image shows a shaded composite geometric region with measurement annotations. The shaded figure is a rectangle with a triangular roof attached. What is the area of the shaded region in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"answer\":8}"
+    "answer_and_evidence": "Look at the annotated image showing a shaded composite geometric region with measurement annotations. Question: The shaded figure is a step-shaped union of two rectangles. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: NM, NI, LK, JK.\nAnswer requirement: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"NM\":2,\"NI\":3,\"LK\":4,\"JK\":5},\"answer\":8}",
+    "answer_only": "Look at the annotated image showing a shaded composite geometric region with measurement annotations. Question: The shaded figure is a step-shaped union of two rectangles. What is the area of the shaded region in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"answer\":8}"
   },
   "task": "task_geometry_analytical_2d_value",
   "task_variant": "composite_area",
@@ -27,31 +28,35 @@
     "execution_trace": {
       "answer_max": 2500,
       "answer_min": 20,
-      "answer_scalar": 1326,
+      "answer_scalar": 717,
       "answer_type": "integer",
-      "answer_value": 1326,
+      "answer_value": 717,
       "evidence_map": {
-        "HI": 39,
-        "IJ": 30,
-        "ML": 8
+        "JK": 21,
+        "LK": 9,
+        "NI": 22,
+        "NM": 24
       },
       "evidence_role_tokens": {
-        "rect_height": "IJ",
-        "roof_height": "ML",
-        "width": "HI"
+        "left_height": "NI",
+        "left_width": "NM",
+        "right_height": "JK",
+        "right_width": "LK"
       },
       "evidence_role_values": {
-        "rect_height": 30,
-        "roof_height": 8,
-        "width": 39
+        "left_height": 22,
+        "left_width": 24,
+        "right_height": 21,
+        "right_width": 9
       },
       "evidence_roles": [
-        "width",
-        "rect_height",
-        "roof_height"
+        "left_width",
+        "left_height",
+        "right_width",
+        "right_height"
       ],
-      "formula_expression": "width * rect_height + (width * roof_height) / 2",
-      "legacy_query_variant": "rectangle_triangle_union",
+      "formula_expression": "left_width * left_height + right_width * right_height",
+      "legacy_query_variant": "step_rectangles_union",
       "legacy_scene_variant": "composite_region",
       "legacy_task_id": "task_geometry_analytical_2d_composite_area",
       "query_variant": "composite_area",
@@ -61,11 +66,12 @@
         "length": 0.0,
         "perimeter": 0.0
       },
-      "raw_answer_value": 1326,
+      "raw_answer_value": 717,
       "required_annotations": [
-        "HI",
-        "IJ",
-        "ML"
+        "NM",
+        "NI",
+        "LK",
+        "JK"
       ],
       "scene_kind": "composite_region",
       "scene_variant": "composite_region",
@@ -97,46 +103,57 @@
     },
     "projected_evidence": {
       "annotation_labels": {
-        "rect_height": "IJ",
-        "roof_height": "ML",
-        "width": "HI"
+        "left_height": "NI",
+        "left_width": "NM",
+        "right_height": "JK",
+        "right_width": "LK"
       },
       "id_set": [
-        "HI",
-        "IJ",
-        "ML"
+        "NM",
+        "NI",
+        "LK",
+        "JK"
       ],
       "measurement_ref_map": {
-        "HI": 39,
-        "IJ": 30,
-        "ML": 8
+        "JK": 21,
+        "LK": 9,
+        "NI": 22,
+        "NM": 24
       },
       "pixel_annotation_centers": {
-        "HI": [
-          320.5,
-          542.7610363685093
+        "JK": [
+          544.84,
+          350.2453590828805
         ],
-        "IJ": [
-          553.34,
-          366.74308765056054
+        "LK": [
+          461.63818181818186,
+          241.10778332530472
         ],
-        "ML": [
-          340.26666666666665,
-          167.64257483004772
+        "NI": [
+          86.39333333333332,
+          344.1562681737896
+        ],
+        "NM": [
+          260.69818181818187,
+          228.99626817378956
         ]
       },
       "pixel_point_set": [
         [
-          320.5,
-          542.7610363685093
+          260.69818181818187,
+          228.99626817378956
         ],
         [
-          553.34,
-          366.74308765056054
+          86.39333333333332,
+          344.1562681737896
         ],
         [
-          340.26666666666665,
-          167.64257483004772
+          461.63818181818186,
+          241.10778332530472
+        ],
+        [
+          544.84,
+          350.2453590828805
         ]
       ]
     },
@@ -144,7 +161,7 @@
       "params": {
         "answer_max": 2500,
         "answer_min": 20,
-        "legacy_query_variant": "rectangle_triangle_union",
+        "legacy_query_variant": "step_rectangles_union",
         "legacy_scene_variant": "composite_region",
         "legacy_task_id": "task_geometry_analytical_2d_composite_area",
         "query_variant": "composite_area",
@@ -165,7 +182,7 @@
           "trapezoid": 0.0,
           "triangle": 0.0
         },
-        "task_variant": "rectangle_triangle_union",
+        "task_variant": "step_rectangles_union",
         "variant_probabilities": {
           "area": 0.0,
           "composite_area": 1.0,
@@ -175,23 +192,23 @@
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 0,
+        "answer_or_evidence_variant_index": 2,
         "prompt_bundle_id": "geometry_analytical_composite_area_v1",
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the area value as an integer",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: HI, IJ, ML",
-          "json_example": "{\"evidence\":{\"HI\":2,\"IJ\":3,\"ML\":4},\"answer\":8}",
+          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: NM, NI, LK, JK",
+          "json_example": "{\"evidence\":{\"NM\":2,\"NI\":3,\"LK\":4,\"JK\":5},\"answer\":8}",
           "json_example_answer_only": "{\"answer\":8}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
           "object_description": "a shaded composite geometric region with measurement annotations",
-          "question_text": "The shaded figure is a rectangle with a triangular roof attached. What is the area of the shaded region in square units?"
+          "question_text": "The shaded figure is a step-shaped union of two rectangles. What is the area of the shaded region in square units?"
         },
         "task_family_key": "analytical_composite_area_scene",
-        "task_family_variant_index": 1,
+        "task_family_variant_index": 2,
         "task_key": "analytical_composite_area_query",
-        "task_variant_index": 0,
+        "task_variant_index": 1,
         "task_variant_key": null,
         "task_variant_template_index": null,
         "template_paths": [
@@ -208,23 +225,23 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 0,
+            "answer_or_evidence_variant_index": 2,
             "prompt_bundle_id": "geometry_analytical_composite_area_v1",
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the area value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: HI, IJ, ML",
-              "json_example": "{\"evidence\":{\"HI\":2,\"IJ\":3,\"ML\":4},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: NM, NI, LK, JK",
+              "json_example": "{\"evidence\":{\"NM\":2,\"NI\":3,\"LK\":4,\"JK\":5},\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a shaded composite geometric region with measurement annotations",
-              "question_text": "The shaded figure is a rectangle with a triangular roof attached. What is the area of the shaded region in square units?"
+              "question_text": "The shaded figure is a step-shaped union of two rectangles. What is the area of the shaded region in square units?"
             },
             "task_family_key": "analytical_composite_area_scene",
-            "task_family_variant_index": 1,
+            "task_family_variant_index": 2,
             "task_key": "analytical_composite_area_query",
-            "task_variant_index": 0,
+            "task_variant_index": 1,
             "task_variant_key": null,
             "task_variant_template_index": null,
             "template_paths": [
@@ -236,7 +253,7 @@
               "task_family:analytical_composite_area_scene": 5
             }
           },
-          "prompt": "The image shows a shaded composite geometric region with measurement annotations. The shaded figure is a rectangle with a triangular roof attached. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: HI, IJ, ML.\nAnswer: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"HI\":2,\"IJ\":3,\"ML\":4},\"answer\":8}"
+          "prompt": "Look at the annotated image showing a shaded composite geometric region with measurement annotations. Question: The shaded figure is a step-shaped union of two rectangles. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: NM, NI, LK, JK.\nAnswer requirement: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"NM\":2,\"NI\":3,\"LK\":4,\"JK\":5},\"answer\":8}"
         },
         "answer_only": {
           "metadata": {
@@ -246,18 +263,18 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the area value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: HI, IJ, ML",
-              "json_example": "{\"evidence\":{\"HI\":2,\"IJ\":3,\"ML\":4},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: NM, NI, LK, JK",
+              "json_example": "{\"evidence\":{\"NM\":2,\"NI\":3,\"LK\":4,\"JK\":5},\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a shaded composite geometric region with measurement annotations",
-              "question_text": "The shaded figure is a rectangle with a triangular roof attached. What is the area of the shaded region in square units?"
+              "question_text": "The shaded figure is a step-shaped union of two rectangles. What is the area of the shaded region in square units?"
             },
             "task_family_key": "analytical_composite_area_scene",
-            "task_family_variant_index": 1,
+            "task_family_variant_index": 2,
             "task_key": "analytical_composite_area_query",
-            "task_variant_index": 0,
+            "task_variant_index": 1,
             "task_variant_key": null,
             "task_variant_template_index": null,
             "template_paths": [
@@ -269,7 +286,7 @@
               "task_family:analytical_composite_area_scene": 5
             }
           },
-          "prompt": "The image shows a shaded composite geometric region with measurement annotations. The shaded figure is a rectangle with a triangular roof attached. What is the area of the shaded region in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"answer\":8}"
+          "prompt": "Look at the annotated image showing a shaded composite geometric region with measurement annotations. Question: The shaded figure is a step-shaped union of two rectangles. What is the area of the shaded region in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"answer\":8}"
         }
       },
       "task_variant": "composite_area",
@@ -277,31 +294,36 @@
     },
     "render_map": {
       "annotation_centers": {
-        "HI": [
-          320.5,
-          542.7610363685093
+        "JK": [
+          544.84,
+          350.2453590828805
         ],
-        "IJ": [
-          553.34,
-          366.74308765056054
+        "LK": [
+          461.63818181818186,
+          241.10778332530472
         ],
-        "ML": [
-          340.26666666666665,
-          167.64257483004772
+        "NI": [
+          86.39333333333332,
+          344.1562681737896
+        ],
+        "NM": [
+          260.69818181818187,
+          228.99626817378956
         ]
       },
       "annotation_labels": {
-        "rect_height": "IJ",
-        "roof_height": "ML",
-        "width": "HI"
+        "left_height": "NI",
+        "left_width": "NM",
+        "right_height": "JK",
+        "right_width": "LK"
       },
       "coord_space": "pixel",
       "instance_anchor": {
         "bbox": [
-          116.16,
-          125.72667739415027,
-          524.84,
-          523.9277030351759
+          114.55999999999997,
+          210.19626817378958,
+          516.44,
+          478.1162681737896
         ],
         "coord_space": "pixel"
       }
@@ -316,31 +338,33 @@
         ],
         "enabled": true,
         "render_scale": 3,
-        "selected_style": "solid_warm",
+        "selected_style": "solid_offwhite",
         "style_spec": {
           "color": [
             252,
-            249,
-            245
+            252,
+            252
           ],
           "kind": "solid"
         }
       },
-      "canvas_size": 641,
+      "canvas_size": 631,
       "coord_space": "pixel",
       "graph_coordinate_frame": {
         "coord_space": "graph_unit",
         "full_cells_x": 8,
         "full_cells_y": 8,
+        "origin_fraction_x": 0.5,
+        "origin_fraction_y": 0.5,
         "origin_pixel": [
-          320,
-          320
+          315,
+          315
         ],
         "outer_margin_px": 16,
         "partial_edge_cells": true,
-        "spacing_px": 71,
-        "target_cells_x": 9,
-        "target_cells_y": 9,
+        "spacing_px": 63,
+        "target_cells_x": 10,
+        "target_cells_y": 10,
         "x_positive": "right",
         "y_positive": "up"
       },
@@ -348,13 +372,13 @@
         "full_cells_x": 8,
         "full_cells_y": 8,
         "partial_edge_cells": true,
-        "spacing_px": 71,
-        "target_cells_x": 9,
-        "target_cells_y": 9
+        "spacing_px": 63,
+        "target_cells_x": 10,
+        "target_cells_y": 10
       },
       "legacy_scene_variant": "composite_region",
       "post_image_noise": {
-        "applied": true,
+        "applied": false,
         "apply_prob": 0.5,
         "edit_count_range": [
           1,
@@ -366,33 +390,26 @@
           "jpeg",
           "noise"
         ],
-        "edits": [
-          {
-            "params": {
-              "radius": 0.188453
-            },
-            "type": "blur"
-          }
-        ],
+        "edits": [],
         "enabled": true
       },
       "query_variant": "composite_area",
       "scene_variant": "composite_region",
       "shape_style": {
         "label_color": [
-          12,
-          104,
-          93
+          93,
+          90,
+          161
         ],
         "label_stroke_color": [
-          251,
-          251,
-          251
+          253,
+          250,
+          250
         ],
         "line_color": [
-          12,
-          104,
-          93
+          93,
+          90,
+          161
         ]
       }
     },
@@ -403,70 +420,42 @@
             "fill_kind": "shaded",
             "vertices": [
               [
-                116.16,
-                523.9277030351759
+                114.55999999999997,
+                478.1162681737896
               ],
               [
-                524.84,
-                523.9277030351759
+                516.44,
+                478.1162681737896
               ],
               [
-                524.84,
-                209.55847226594517
+                516.44,
+                222.37444999197137
               ],
               [
-                116.16,
-                209.55847226594517
+                406.83636363636367,
+                222.37444999197137
+              ],
+              [
+                406.83636363636367,
+                210.19626817378958
+              ],
+              [
+                114.55999999999997,
+                210.19626817378958
               ]
             ]
           },
-          "entity_id": "rect_body",
-          "entity_type": "rectangle"
-        },
-        {
-          "attrs": {
-            "fill_kind": "shaded",
-            "vertices": [
-              [
-                116.16,
-                209.55847226594517
-              ],
-              [
-                524.84,
-                209.55847226594517
-              ],
-              [
-                320.5,
-                125.72667739415027
-              ]
-            ]
-          },
-          "entity_id": "roof_tri",
-          "entity_type": "isosceles_triangle"
-        },
-        {
-          "attrs": {
-            "helper": true,
-            "point_a": [
-              320.5,
-              209.55847226594517
-            ],
-            "point_b": [
-              320.5,
-              125.72667739415027
-            ]
-          },
-          "entity_id": "roof_height",
-          "entity_type": "altitude"
+          "entity_id": "step_union",
+          "entity_type": "step_shape"
         }
       ],
       "frames": {
         "graph_unit": {
           "origin_pixel": [
-            320,
-            320
+            315,
+            315
           ],
-          "spacing_px": 71,
+          "spacing_px": 63,
           "x_positive": "right",
           "y_positive": "up"
         },
@@ -480,7 +469,7 @@
         }
       },
       "relations": {
-        "legacy_query_variant": "rectangle_triangle_union",
+        "legacy_query_variant": "step_rectangles_union",
         "legacy_scene_variant": "composite_region",
         "legacy_task_id": "task_geometry_analytical_2d_composite_area",
         "query_variant": "composite_area",
@@ -490,27 +479,31 @@
     },
     "witness_symbolic": {
       "annotation_ids": [
-        "HI",
-        "IJ",
-        "ML"
+        "NM",
+        "NI",
+        "LK",
+        "JK"
       ],
       "annotation_labels": {
-        "rect_height": "IJ",
-        "roof_height": "ML",
-        "width": "HI"
+        "left_height": "NI",
+        "left_width": "NM",
+        "right_height": "JK",
+        "right_width": "LK"
       },
       "annotation_values": {
-        "HI": 39,
-        "IJ": 30,
-        "ML": 8
+        "JK": 21,
+        "LK": 9,
+        "NI": 22,
+        "NM": 24
       },
-      "formula_expression": "width * rect_height + (width * roof_height) / 2",
+      "formula_expression": "left_width * left_height + right_width * right_height",
       "measurement_ref_map": {
-        "HI": 39,
-        "IJ": 30,
-        "ML": 8
+        "JK": 21,
+        "LK": 9,
+        "NI": 22,
+        "NM": 24
       },
-      "task_variant": "rectangle_triangle_union",
+      "task_variant": "step_rectangles_union",
       "type": "annotation_measurement_map"
     }
   },

@@ -1,60 +1,54 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 2
+    "value": 0
   },
   "evidence_gt": {
     "type": "label_set",
-    "value": [
-      "J",
-      "S"
-    ]
+    "value": []
   },
   "image": {
     "format": "png",
     "path": "charts/task_charts_multiseries_pairwise_comparison_count/images/series_a_gt_b_count/0014.png"
   },
-  "instance_seed": 6070769854618988,
-  "prompt": "Use the chart in the image. It shows a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Read the chart values and count the categories where the stated series relation holds. Across the labeled categories, in how many categories is Lola higher than Ong?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer field: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
+  "instance_seed": 3750042548226327,
+  "prompt": "You are given a multiseries chart: a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Read the chart values and count the categories where the stated series relation holds. Determine the number of categories where Taka is greater than Ron.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer requirement: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
   "prompt_variants": {
-    "answer_and_evidence": "Use the chart in the image. It shows a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Read the chart values and count the categories where the stated series relation holds. Across the labeled categories, in how many categories is Lola higher than Ong?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer field: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
-    "answer_only": "Use the chart in the image. It shows a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Read the chart values and count the categories where the stated series relation holds. Across the labeled categories, in how many categories is Lola higher than Ong?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":3}"
+    "answer_and_evidence": "You are given a multiseries chart: a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Read the chart values and count the categories where the stated series relation holds. Determine the number of categories where Taka is greater than Ron.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer requirement: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
+    "answer_only": "You are given a multiseries chart: a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Read the chart values and count the categories where the stated series relation holds. Determine the number of categories where Taka is greater than Ron.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":3}"
   },
   "task": "task_charts_multiseries_pairwise_comparison_count",
   "task_variant": "series_a_gt_b_count",
   "trace_payload": {
     "execution_trace": {
-      "answer_value": 2,
+      "answer_value": 0,
       "category_count": 7,
       "category_count_range": [
         5,
         10
       ],
       "category_labels": [
-        "J",
+        "K",
+        "L",
+        "M",
         "Y",
-        "A",
-        "E",
-        "X",
-        "S",
-        "Z"
+        "Z",
+        "R",
+        "E"
       ],
       "comparison": "greater_than",
-      "evidence_labels": [
-        "J",
-        "S"
-      ],
-      "left_series_label": "Lola",
+      "evidence_labels": [],
+      "left_series_label": "Taka",
       "mark_color_distance_space": "lab",
       "mark_color_min_distance": 40.0,
       "mark_color_sampling_policy": "random_rgb_palette",
       "queried_series_labels": [
-        "Lola",
-        "Ong"
+        "Taka",
+        "Ron"
       ],
       "question_format": "numeric_open",
-      "right_series_label": "Ong",
-      "scene_variant": "grouped_horizontal_bar",
+      "right_series_label": "Ron",
+      "scene_variant": "grouped_bar",
       "scene_variant_probabilities": {
         "grouped_bar": 0.25,
         "grouped_horizontal_bar": 0.25,
@@ -68,130 +62,96 @@
       ],
       "series_fill_palette_rgb": [
         [
-          125,
+          35,
+          156,
+          91
+        ],
+        [
+          177,
+          148,
+          34
+        ],
+        [
+          194,
           32,
-          59
-        ],
-        [
-          85,
-          152,
-          217
-        ],
-        [
-          57,
-          189,
-          11
+          151
         ]
       ],
       "series_labels": [
-        "Lola",
-        "Shep",
-        "Ong"
+        "Zoes",
+        "Taka",
+        "Ron"
       ],
       "series_outline_palette_rgb": [
         [
-          69,
+          19,
+          86,
+          50
+        ],
+        [
+          97,
+          81,
+          19
+        ],
+        [
+          107,
           18,
-          32
-        ],
-        [
-          47,
-          84,
-          119
-        ],
-        [
-          31,
-          104,
-          6
+          83
         ]
       ],
-      "target_answer": 2,
+      "target_answer": 0,
       "target_answer_range": [
         0,
         8
       ],
       "task_variant": "series_a_gt_b_count",
       "task_variant_probabilities": {
-        "series_a_gt_b_count": 0.5,
-        "series_a_lt_b_count": 0.5
+        "series_a_gt_b_count": 1.0,
+        "series_a_lt_b_count": 0.0
       },
       "values_by_category": {
-        "A": {
-          "Lola": 12,
-          "Ong": 19,
-          "Shep": 18
-        },
         "E": {
-          "Lola": 4,
-          "Ong": 18,
-          "Shep": 9
+          "Ron": 19,
+          "Taka": 14,
+          "Zoes": 18
         },
-        "J": {
-          "Lola": 19,
-          "Ong": 9,
-          "Shep": 12
+        "K": {
+          "Ron": 14,
+          "Taka": 5,
+          "Zoes": 10
         },
-        "S": {
-          "Lola": 19,
-          "Ong": 8,
-          "Shep": 12
+        "L": {
+          "Ron": 18,
+          "Taka": 4,
+          "Zoes": 9
         },
-        "X": {
-          "Lola": 2,
-          "Ong": 8,
-          "Shep": 4
+        "M": {
+          "Ron": 20,
+          "Taka": 14,
+          "Zoes": 15
+        },
+        "R": {
+          "Ron": 14,
+          "Taka": 12,
+          "Zoes": 13
         },
         "Y": {
-          "Lola": 8,
-          "Ong": 20,
-          "Shep": 15
+          "Ron": 17,
+          "Taka": 6,
+          "Zoes": 7
         },
         "Z": {
-          "Lola": 6,
-          "Ong": 20,
-          "Shep": 10
+          "Ron": 20,
+          "Taka": 7,
+          "Zoes": 11
         }
       }
     },
     "projected_evidence": {
-      "bbox_set": [
-        [
-          57.0,
-          59.765,
-          781.429,
-          97.378
-        ],
-        [
-          54.0,
-          405.479,
-          781.429,
-          443.093
-        ]
-      ],
-      "label_set": [
-        "J",
-        "S"
-      ],
-      "pixel_point_map": {
-        "J": [
-          62.0,
-          78.571
-        ],
-        "S": [
-          62.0,
-          424.286
-        ]
-      },
-      "pixel_point_set": [
-        [
-          62.0,
-          78.571
-        ],
-        [
-          62.0,
-          424.286
-        ]
-      ]
+      "bbox_set": [],
+      "label_set": [],
+      "pixel_point_map": {},
+      "pixel_point_set": []
     },
     "query_spec": {
       "params": {
@@ -202,10 +162,10 @@
         ],
         "comparison": "greater_than",
         "queried_series_labels": [
-          "Lola",
-          "Ong"
+          "Taka",
+          "Ron"
         ],
-        "scene_variant": "grouped_horizontal_bar",
+        "scene_variant": "grouped_bar",
         "scene_variant_probabilities": {
           "grouped_bar": 0.25,
           "grouped_horizontal_bar": 0.25,
@@ -217,20 +177,20 @@
           2,
           3
         ],
-        "target_answer": 2,
+        "target_answer": 0,
         "target_answer_range": [
           0,
           8
         ],
         "task_variant": "series_a_gt_b_count",
         "task_variant_probabilities": {
-          "series_a_gt_b_count": 0.5,
-          "series_a_lt_b_count": 0.5
+          "series_a_gt_b_count": 1.0,
+          "series_a_lt_b_count": 0.0
         }
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 3,
+        "answer_or_evidence_variant_index": 2,
         "prompt_bundle_id": "charts_multiseries_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -240,16 +200,16 @@
           "json_example_answer_only": "{\"answer\":3}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "left_series": "Lola",
-          "object_description": "a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category",
-          "right_series": "Ong"
+          "left_series": "Taka",
+          "object_description": "a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category",
+          "right_series": "Ron"
         },
         "task_family_key": "multiseries_chart_comparison",
-        "task_family_variant_index": 1,
+        "task_family_variant_index": 4,
         "task_key": "pairwise_comparison_count_query",
         "task_variant_index": 3,
         "task_variant_key": "series_a_gt_b_count",
-        "task_variant_template_index": 0,
+        "task_variant_template_index": 3,
         "template_paths": [
           "charts/multiseries/charts_multiseries_v1.json"
         ],
@@ -265,7 +225,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 3,
+            "answer_or_evidence_variant_index": 2,
             "prompt_bundle_id": "charts_multiseries_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -275,16 +235,16 @@
               "json_example_answer_only": "{\"answer\":3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "left_series": "Lola",
-              "object_description": "a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category",
-              "right_series": "Ong"
+              "left_series": "Taka",
+              "object_description": "a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category",
+              "right_series": "Ron"
             },
             "task_family_key": "multiseries_chart_comparison",
-            "task_family_variant_index": 1,
+            "task_family_variant_index": 4,
             "task_key": "pairwise_comparison_count_query",
             "task_variant_index": 3,
             "task_variant_key": "series_a_gt_b_count",
-            "task_variant_template_index": 0,
+            "task_variant_template_index": 3,
             "template_paths": [
               "charts/multiseries/charts_multiseries_v1.json"
             ],
@@ -295,7 +255,7 @@
               "task_variant:series_a_gt_b_count": 5
             }
           },
-          "prompt": "Use the chart in the image. It shows a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Read the chart values and count the categories where the stated series relation holds. Across the labeled categories, in how many categories is Lola higher than Ong?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer field: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}"
+          "prompt": "You are given a multiseries chart: a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Read the chart values and count the categories where the stated series relation holds. Determine the number of categories where Taka is greater than Ron.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer requirement: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}"
         },
         "answer_only": {
           "metadata": {
@@ -310,16 +270,16 @@
               "json_example_answer_only": "{\"answer\":3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "left_series": "Lola",
-              "object_description": "a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category",
-              "right_series": "Ong"
+              "left_series": "Taka",
+              "object_description": "a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category",
+              "right_series": "Ron"
             },
             "task_family_key": "multiseries_chart_comparison",
-            "task_family_variant_index": 1,
+            "task_family_variant_index": 4,
             "task_key": "pairwise_comparison_count_query",
             "task_variant_index": 3,
             "task_variant_key": "series_a_gt_b_count",
-            "task_variant_template_index": 0,
+            "task_variant_template_index": 3,
             "template_paths": [
               "charts/multiseries/charts_multiseries_v1.json"
             ],
@@ -330,7 +290,7 @@
               "task_variant:series_a_gt_b_count": 5
             }
           },
-          "prompt": "Use the chart in the image. It shows a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Read the chart values and count the categories where the stated series relation holds. Across the labeled categories, in how many categories is Lola higher than Ong?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":3}"
+          "prompt": "You are given a multiseries chart: a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Read the chart values and count the categories where the stated series relation holds. Determine the number of categories where Taka is greater than Ron.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":3}"
         }
       },
       "task_variant": "series_a_gt_b_count",
@@ -338,33 +298,33 @@
     },
     "render_map": {
       "category_label_centers_px": {
-        "A": [
-          62.0,
-          216.857
-        ],
         "E": [
-          62.0,
-          286.0
+          799.571,
+          554.0
         ],
-        "J": [
-          62.0,
-          78.571
+        "K": [
+          146.429,
+          554.0
         ],
-        "S": [
-          62.0,
-          424.286
+        "L": [
+          255.286,
+          554.0
         ],
-        "X": [
-          62.0,
-          355.143
+        "M": [
+          364.143,
+          554.0
+        ],
+        "R": [
+          690.714,
+          554.0
         ],
         "Y": [
-          62.0,
-          147.714
+          473.0,
+          554.0
         ],
         "Z": [
-          62.0,
-          493.429
+          581.857,
+          554.0
         ]
       },
       "image_id": "img0",
@@ -405,36 +365,36 @@
         "sampling_policy": "random_rgb_palette",
         "series_fill_palette_rgb": [
           [
-            125,
+            35,
+            156,
+            91
+          ],
+          [
+            177,
+            148,
+            34
+          ],
+          [
+            194,
             32,
-            59
-          ],
-          [
-            85,
-            152,
-            217
-          ],
-          [
-            57,
-            189,
-            11
+            151
           ]
         ],
         "series_outline_palette_rgb": [
           [
-            69,
+            19,
+            86,
+            50
+          ],
+          [
+            97,
+            81,
+            19
+          ],
+          [
+            107,
             18,
-            32
-          ],
-          [
-            47,
-            84,
-            119
-          ],
-          [
-            31,
-            104,
-            6
+            83
           ]
         ]
       },
@@ -460,7 +420,7 @@
         "edits": [],
         "enabled": false
       },
-      "scene_variant": "grouped_horizontal_bar",
+      "scene_variant": "grouped_bar",
       "text_style": {
         "label_font_size_px": 22,
         "label_stroke_width_px": 2,
@@ -497,906 +457,900 @@
         {
           "attrs": {
             "category_group_bbox_px": [
-              57.0,
-              59.765,
-              781.429,
-              97.378
+              116.819,
+              205.333,
+              176.038,
+              562.0
             ],
-            "category_label": "J",
+            "category_label": "K",
             "category_label_center_px": [
-              62.0,
-              78.571
+              146.429,
+              554.0
             ],
             "category_rank": 0,
             "mark_bbox_px": [
-              92.0,
-              59.765,
-              781.429,
-              69.721
+              116.819,
+              297.524,
+              132.495,
+              528.0
             ],
             "mark_center_px": [
-              436.714,
-              64.743
+              124.657,
+              297.524
             ],
             "mark_fill_rgb": [
-              125,
-              32,
-              59
+              35,
+              156,
+              91
             ],
             "mark_outline_rgb": [
-              69,
-              18,
-              32
+              19,
+              86,
+              50
             ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Lola",
+            "scene_variant": "grouped_bar",
+            "series_label": "Zoes",
             "series_rank": 0,
-            "value": 19
+            "value": 10
           },
-          "entity_id": "mark_J_Lola",
+          "entity_id": "mark_K_Zoes",
           "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              57.0,
-              59.765,
-              781.429,
-              97.378
+              116.819,
+              205.333,
+              176.038,
+              562.0
             ],
-            "category_label": "J",
+            "category_label": "K",
             "category_label_center_px": [
-              62.0,
-              78.571
+              146.429,
+              554.0
             ],
             "category_rank": 0,
             "mark_bbox_px": [
-              92.0,
-              73.593,
-              527.429,
-              83.55
+              138.591,
+              412.762,
+              154.266,
+              528.0
             ],
             "mark_center_px": [
-              309.714,
-              78.571
+              146.429,
+              412.762
             ],
             "mark_fill_rgb": [
-              85,
-              152,
-              217
+              177,
+              148,
+              34
             ],
             "mark_outline_rgb": [
-              47,
-              84,
-              119
+              97,
+              81,
+              19
             ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Shep",
+            "scene_variant": "grouped_bar",
+            "series_label": "Taka",
             "series_rank": 1,
-            "value": 12
+            "value": 5
           },
-          "entity_id": "mark_J_Shep",
+          "entity_id": "mark_K_Taka",
           "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              57.0,
-              59.765,
-              781.429,
-              97.378
+              116.819,
+              205.333,
+              176.038,
+              562.0
             ],
-            "category_label": "J",
+            "category_label": "K",
             "category_label_center_px": [
-              62.0,
-              78.571
+              146.429,
+              554.0
             ],
             "category_rank": 0,
             "mark_bbox_px": [
-              92.0,
-              87.422,
-              418.571,
-              97.378
+              160.362,
+              205.333,
+              176.038,
+              528.0
+            ],
+            "mark_center_px": [
+              168.2,
+              205.333
+            ],
+            "mark_fill_rgb": [
+              194,
+              32,
+              151
+            ],
+            "mark_outline_rgb": [
+              107,
+              18,
+              83
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Ron",
+            "series_rank": 2,
+            "value": 14
+          },
+          "entity_id": "mark_K_Ron",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              225.677,
+              113.143,
+              284.895,
+              562.0
+            ],
+            "category_label": "L",
+            "category_label_center_px": [
+              255.286,
+              554.0
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              225.677,
+              320.571,
+              241.352,
+              528.0
+            ],
+            "mark_center_px": [
+              233.514,
+              320.571
+            ],
+            "mark_fill_rgb": [
+              35,
+              156,
+              91
+            ],
+            "mark_outline_rgb": [
+              19,
+              86,
+              50
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Zoes",
+            "series_rank": 0,
+            "value": 9
+          },
+          "entity_id": "mark_L_Zoes",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              225.677,
+              113.143,
+              284.895,
+              562.0
+            ],
+            "category_label": "L",
+            "category_label_center_px": [
+              255.286,
+              554.0
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              247.448,
+              435.81,
+              263.123,
+              528.0
             ],
             "mark_center_px": [
               255.286,
-              92.4
+              435.81
             ],
             "mark_fill_rgb": [
-              57,
-              189,
-              11
+              177,
+              148,
+              34
             ],
             "mark_outline_rgb": [
-              31,
-              104,
-              6
+              97,
+              81,
+              19
             ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Ong",
-            "series_rank": 2,
-            "value": 9
+            "scene_variant": "grouped_bar",
+            "series_label": "Taka",
+            "series_rank": 1,
+            "value": 4
           },
-          "entity_id": "mark_J_Ong",
+          "entity_id": "mark_L_Taka",
           "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              53.0,
-              128.907,
-              817.714,
-              166.521
+              225.677,
+              113.143,
+              284.895,
+              562.0
             ],
-            "category_label": "Y",
+            "category_label": "L",
             "category_label_center_px": [
-              62.0,
-              147.714
+              255.286,
+              554.0
             ],
             "category_rank": 1,
             "mark_bbox_px": [
-              92.0,
-              128.907,
-              382.286,
-              138.864
+              269.219,
+              113.143,
+              284.895,
+              528.0
             ],
             "mark_center_px": [
-              237.143,
-              133.886
+              277.057,
+              113.143
             ],
             "mark_fill_rgb": [
-              125,
+              194,
               32,
-              59
+              151
             ],
             "mark_outline_rgb": [
-              69,
+              107,
               18,
-              32
+              83
             ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Lola",
-            "series_rank": 0,
-            "value": 8
+            "scene_variant": "grouped_bar",
+            "series_label": "Ron",
+            "series_rank": 2,
+            "value": 18
           },
-          "entity_id": "mark_Y_Lola",
+          "entity_id": "mark_L_Ron",
           "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              53.0,
-              128.907,
-              817.714,
-              166.521
+              334.534,
+              67.048,
+              393.752,
+              562.0
             ],
-            "category_label": "Y",
+            "category_label": "M",
             "category_label_center_px": [
-              62.0,
-              147.714
+              364.143,
+              554.0
             ],
-            "category_rank": 1,
+            "category_rank": 2,
             "mark_bbox_px": [
-              92.0,
-              142.736,
-              636.286,
-              152.693
+              334.534,
+              182.286,
+              350.209,
+              528.0
+            ],
+            "mark_center_px": [
+              342.371,
+              182.286
+            ],
+            "mark_fill_rgb": [
+              35,
+              156,
+              91
+            ],
+            "mark_outline_rgb": [
+              19,
+              86,
+              50
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Zoes",
+            "series_rank": 0,
+            "value": 15
+          },
+          "entity_id": "mark_M_Zoes",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              334.534,
+              67.048,
+              393.752,
+              562.0
+            ],
+            "category_label": "M",
+            "category_label_center_px": [
+              364.143,
+              554.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              356.305,
+              205.333,
+              371.981,
+              528.0
             ],
             "mark_center_px": [
               364.143,
-              147.714
+              205.333
             ],
             "mark_fill_rgb": [
-              85,
-              152,
-              217
+              177,
+              148,
+              34
             ],
             "mark_outline_rgb": [
-              47,
-              84,
-              119
+              97,
+              81,
+              19
             ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Shep",
+            "scene_variant": "grouped_bar",
+            "series_label": "Taka",
             "series_rank": 1,
-            "value": 15
+            "value": 14
           },
-          "entity_id": "mark_Y_Shep",
+          "entity_id": "mark_M_Taka",
           "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              53.0,
-              128.907,
-              817.714,
-              166.521
+              334.534,
+              67.048,
+              393.752,
+              562.0
+            ],
+            "category_label": "M",
+            "category_label_center_px": [
+              364.143,
+              554.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              378.077,
+              67.048,
+              393.752,
+              528.0
+            ],
+            "mark_center_px": [
+              385.914,
+              67.048
+            ],
+            "mark_fill_rgb": [
+              194,
+              32,
+              151
+            ],
+            "mark_outline_rgb": [
+              107,
+              18,
+              83
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Ron",
+            "series_rank": 2,
+            "value": 20
+          },
+          "entity_id": "mark_M_Ron",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              443.391,
+              136.19,
+              502.609,
+              562.0
             ],
             "category_label": "Y",
             "category_label_center_px": [
-              62.0,
-              147.714
-            ],
-            "category_rank": 1,
-            "mark_bbox_px": [
-              92.0,
-              156.565,
-              817.714,
-              166.521
-            ],
-            "mark_center_px": [
-              454.857,
-              161.543
-            ],
-            "mark_fill_rgb": [
-              57,
-              189,
-              11
-            ],
-            "mark_outline_rgb": [
-              31,
-              104,
-              6
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Ong",
-            "series_rank": 2,
-            "value": 20
-          },
-          "entity_id": "mark_Y_Ong",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              53.5,
-              198.05,
-              781.429,
-              235.664
-            ],
-            "category_label": "A",
-            "category_label_center_px": [
-              62.0,
-              216.857
-            ],
-            "category_rank": 2,
-            "mark_bbox_px": [
-              92.0,
-              198.05,
-              527.429,
-              208.007
-            ],
-            "mark_center_px": [
-              309.714,
-              203.029
-            ],
-            "mark_fill_rgb": [
-              125,
-              32,
-              59
-            ],
-            "mark_outline_rgb": [
-              69,
-              18,
-              32
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Lola",
-            "series_rank": 0,
-            "value": 12
-          },
-          "entity_id": "mark_A_Lola",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              53.5,
-              198.05,
-              781.429,
-              235.664
-            ],
-            "category_label": "A",
-            "category_label_center_px": [
-              62.0,
-              216.857
-            ],
-            "category_rank": 2,
-            "mark_bbox_px": [
-              92.0,
-              211.879,
-              745.143,
-              221.835
-            ],
-            "mark_center_px": [
-              418.571,
-              216.857
-            ],
-            "mark_fill_rgb": [
-              85,
-              152,
-              217
-            ],
-            "mark_outline_rgb": [
-              47,
-              84,
-              119
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Shep",
-            "series_rank": 1,
-            "value": 18
-          },
-          "entity_id": "mark_A_Shep",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              53.5,
-              198.05,
-              781.429,
-              235.664
-            ],
-            "category_label": "A",
-            "category_label_center_px": [
-              62.0,
-              216.857
-            ],
-            "category_rank": 2,
-            "mark_bbox_px": [
-              92.0,
-              225.707,
-              781.429,
-              235.664
-            ],
-            "mark_center_px": [
-              436.714,
-              230.686
-            ],
-            "mark_fill_rgb": [
-              57,
-              189,
-              11
-            ],
-            "mark_outline_rgb": [
-              31,
-              104,
-              6
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Ong",
-            "series_rank": 2,
-            "value": 19
-          },
-          "entity_id": "mark_A_Ong",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              54.5,
-              267.193,
-              745.143,
-              304.807
-            ],
-            "category_label": "E",
-            "category_label_center_px": [
-              62.0,
-              286.0
+              473.0,
+              554.0
             ],
             "category_rank": 3,
             "mark_bbox_px": [
-              92.0,
-              267.193,
-              237.143,
-              277.15
+              443.391,
+              366.667,
+              459.066,
+              528.0
             ],
             "mark_center_px": [
-              164.571,
-              272.171
+              451.229,
+              366.667
             ],
             "mark_fill_rgb": [
-              125,
-              32,
-              59
+              35,
+              156,
+              91
             ],
             "mark_outline_rgb": [
-              69,
-              18,
-              32
+              19,
+              86,
+              50
             ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Lola",
+            "scene_variant": "grouped_bar",
+            "series_label": "Zoes",
             "series_rank": 0,
-            "value": 4
+            "value": 7
           },
-          "entity_id": "mark_E_Lola",
+          "entity_id": "mark_Y_Zoes",
           "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              54.5,
-              267.193,
-              745.143,
-              304.807
+              443.391,
+              136.19,
+              502.609,
+              562.0
             ],
-            "category_label": "E",
+            "category_label": "Y",
             "category_label_center_px": [
-              62.0,
-              286.0
+              473.0,
+              554.0
             ],
             "category_rank": 3,
             "mark_bbox_px": [
-              92.0,
-              281.022,
-              418.571,
-              290.978
+              465.162,
+              389.714,
+              480.838,
+              528.0
             ],
             "mark_center_px": [
-              255.286,
-              286.0
+              473.0,
+              389.714
             ],
             "mark_fill_rgb": [
-              85,
-              152,
-              217
+              177,
+              148,
+              34
             ],
             "mark_outline_rgb": [
-              47,
-              84,
-              119
+              97,
+              81,
+              19
             ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Shep",
+            "scene_variant": "grouped_bar",
+            "series_label": "Taka",
             "series_rank": 1,
-            "value": 9
-          },
-          "entity_id": "mark_E_Shep",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              54.5,
-              267.193,
-              745.143,
-              304.807
-            ],
-            "category_label": "E",
-            "category_label_center_px": [
-              62.0,
-              286.0
-            ],
-            "category_rank": 3,
-            "mark_bbox_px": [
-              92.0,
-              294.85,
-              745.143,
-              304.807
-            ],
-            "mark_center_px": [
-              418.571,
-              299.829
-            ],
-            "mark_fill_rgb": [
-              57,
-              189,
-              11
-            ],
-            "mark_outline_rgb": [
-              31,
-              104,
-              6
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Ong",
-            "series_rank": 2,
-            "value": 18
-          },
-          "entity_id": "mark_E_Ong",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              53.5,
-              336.336,
-              382.286,
-              373.95
-            ],
-            "category_label": "X",
-            "category_label_center_px": [
-              62.0,
-              355.143
-            ],
-            "category_rank": 4,
-            "mark_bbox_px": [
-              92.0,
-              336.336,
-              164.571,
-              346.293
-            ],
-            "mark_center_px": [
-              128.286,
-              341.314
-            ],
-            "mark_fill_rgb": [
-              125,
-              32,
-              59
-            ],
-            "mark_outline_rgb": [
-              69,
-              18,
-              32
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Lola",
-            "series_rank": 0,
-            "value": 2
-          },
-          "entity_id": "mark_X_Lola",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              53.5,
-              336.336,
-              382.286,
-              373.95
-            ],
-            "category_label": "X",
-            "category_label_center_px": [
-              62.0,
-              355.143
-            ],
-            "category_rank": 4,
-            "mark_bbox_px": [
-              92.0,
-              350.165,
-              237.143,
-              360.121
-            ],
-            "mark_center_px": [
-              164.571,
-              355.143
-            ],
-            "mark_fill_rgb": [
-              85,
-              152,
-              217
-            ],
-            "mark_outline_rgb": [
-              47,
-              84,
-              119
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Shep",
-            "series_rank": 1,
-            "value": 4
-          },
-          "entity_id": "mark_X_Shep",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              53.5,
-              336.336,
-              382.286,
-              373.95
-            ],
-            "category_label": "X",
-            "category_label_center_px": [
-              62.0,
-              355.143
-            ],
-            "category_rank": 4,
-            "mark_bbox_px": [
-              92.0,
-              363.993,
-              382.286,
-              373.95
-            ],
-            "mark_center_px": [
-              237.143,
-              368.971
-            ],
-            "mark_fill_rgb": [
-              57,
-              189,
-              11
-            ],
-            "mark_outline_rgb": [
-              31,
-              104,
-              6
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Ong",
-            "series_rank": 2,
-            "value": 8
-          },
-          "entity_id": "mark_X_Ong",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              54.0,
-              405.479,
-              781.429,
-              443.093
-            ],
-            "category_label": "S",
-            "category_label_center_px": [
-              62.0,
-              424.286
-            ],
-            "category_rank": 5,
-            "mark_bbox_px": [
-              92.0,
-              405.479,
-              781.429,
-              415.435
-            ],
-            "mark_center_px": [
-              436.714,
-              410.457
-            ],
-            "mark_fill_rgb": [
-              125,
-              32,
-              59
-            ],
-            "mark_outline_rgb": [
-              69,
-              18,
-              32
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Lola",
-            "series_rank": 0,
-            "value": 19
-          },
-          "entity_id": "mark_S_Lola",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              54.0,
-              405.479,
-              781.429,
-              443.093
-            ],
-            "category_label": "S",
-            "category_label_center_px": [
-              62.0,
-              424.286
-            ],
-            "category_rank": 5,
-            "mark_bbox_px": [
-              92.0,
-              419.307,
-              527.429,
-              429.264
-            ],
-            "mark_center_px": [
-              309.714,
-              424.286
-            ],
-            "mark_fill_rgb": [
-              85,
-              152,
-              217
-            ],
-            "mark_outline_rgb": [
-              47,
-              84,
-              119
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Shep",
-            "series_rank": 1,
-            "value": 12
-          },
-          "entity_id": "mark_S_Shep",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              54.0,
-              405.479,
-              781.429,
-              443.093
-            ],
-            "category_label": "S",
-            "category_label_center_px": [
-              62.0,
-              424.286
-            ],
-            "category_rank": 5,
-            "mark_bbox_px": [
-              92.0,
-              433.136,
-              382.286,
-              443.093
-            ],
-            "mark_center_px": [
-              237.143,
-              438.114
-            ],
-            "mark_fill_rgb": [
-              57,
-              189,
-              11
-            ],
-            "mark_outline_rgb": [
-              31,
-              104,
-              6
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Ong",
-            "series_rank": 2,
-            "value": 8
-          },
-          "entity_id": "mark_S_Ong",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              54.0,
-              474.622,
-              817.714,
-              512.235
-            ],
-            "category_label": "Z",
-            "category_label_center_px": [
-              62.0,
-              493.429
-            ],
-            "category_rank": 6,
-            "mark_bbox_px": [
-              92.0,
-              474.622,
-              309.714,
-              484.578
-            ],
-            "mark_center_px": [
-              200.857,
-              479.6
-            ],
-            "mark_fill_rgb": [
-              125,
-              32,
-              59
-            ],
-            "mark_outline_rgb": [
-              69,
-              18,
-              32
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Lola",
-            "series_rank": 0,
             "value": 6
           },
-          "entity_id": "mark_Z_Lola",
+          "entity_id": "mark_Y_Taka",
           "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              54.0,
-              474.622,
-              817.714,
-              512.235
+              443.391,
+              136.19,
+              502.609,
+              562.0
             ],
-            "category_label": "Z",
+            "category_label": "Y",
             "category_label_center_px": [
-              62.0,
-              493.429
+              473.0,
+              554.0
             ],
-            "category_rank": 6,
+            "category_rank": 3,
             "mark_bbox_px": [
-              92.0,
-              488.45,
-              454.857,
-              498.407
+              486.934,
+              136.19,
+              502.609,
+              528.0
             ],
             "mark_center_px": [
-              273.429,
-              493.429
+              494.771,
+              136.19
             ],
             "mark_fill_rgb": [
-              85,
-              152,
-              217
+              194,
+              32,
+              151
             ],
             "mark_outline_rgb": [
-              47,
-              84,
-              119
+              107,
+              18,
+              83
             ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Shep",
-            "series_rank": 1,
-            "value": 10
+            "scene_variant": "grouped_bar",
+            "series_label": "Ron",
+            "series_rank": 2,
+            "value": 17
           },
-          "entity_id": "mark_Z_Shep",
+          "entity_id": "mark_Y_Ron",
           "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              54.0,
-              474.622,
-              817.714,
-              512.235
+              552.248,
+              67.048,
+              611.466,
+              562.0
             ],
             "category_label": "Z",
             "category_label_center_px": [
-              62.0,
-              493.429
+              581.857,
+              554.0
             ],
-            "category_rank": 6,
+            "category_rank": 4,
             "mark_bbox_px": [
-              92.0,
-              502.279,
-              817.714,
-              512.235
+              552.248,
+              274.476,
+              567.923,
+              528.0
             ],
             "mark_center_px": [
-              454.857,
-              507.257
+              560.086,
+              274.476
             ],
             "mark_fill_rgb": [
-              57,
-              189,
-              11
+              35,
+              156,
+              91
             ],
             "mark_outline_rgb": [
-              31,
-              104,
-              6
+              19,
+              86,
+              50
             ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Ong",
+            "scene_variant": "grouped_bar",
+            "series_label": "Zoes",
+            "series_rank": 0,
+            "value": 11
+          },
+          "entity_id": "mark_Z_Zoes",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              552.248,
+              67.048,
+              611.466,
+              562.0
+            ],
+            "category_label": "Z",
+            "category_label_center_px": [
+              581.857,
+              554.0
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              574.019,
+              366.667,
+              589.695,
+              528.0
+            ],
+            "mark_center_px": [
+              581.857,
+              366.667
+            ],
+            "mark_fill_rgb": [
+              177,
+              148,
+              34
+            ],
+            "mark_outline_rgb": [
+              97,
+              81,
+              19
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Taka",
+            "series_rank": 1,
+            "value": 7
+          },
+          "entity_id": "mark_Z_Taka",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              552.248,
+              67.048,
+              611.466,
+              562.0
+            ],
+            "category_label": "Z",
+            "category_label_center_px": [
+              581.857,
+              554.0
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              595.791,
+              67.048,
+              611.466,
+              528.0
+            ],
+            "mark_center_px": [
+              603.629,
+              67.048
+            ],
+            "mark_fill_rgb": [
+              194,
+              32,
+              151
+            ],
+            "mark_outline_rgb": [
+              107,
+              18,
+              83
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Ron",
             "series_rank": 2,
             "value": 20
           },
-          "entity_id": "mark_Z_Ong",
+          "entity_id": "mark_Z_Ron",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              661.105,
+              205.333,
+              720.323,
+              562.0
+            ],
+            "category_label": "R",
+            "category_label_center_px": [
+              690.714,
+              554.0
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              661.105,
+              228.381,
+              676.781,
+              528.0
+            ],
+            "mark_center_px": [
+              668.943,
+              228.381
+            ],
+            "mark_fill_rgb": [
+              35,
+              156,
+              91
+            ],
+            "mark_outline_rgb": [
+              19,
+              86,
+              50
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Zoes",
+            "series_rank": 0,
+            "value": 13
+          },
+          "entity_id": "mark_R_Zoes",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              661.105,
+              205.333,
+              720.323,
+              562.0
+            ],
+            "category_label": "R",
+            "category_label_center_px": [
+              690.714,
+              554.0
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              682.877,
+              251.429,
+              698.552,
+              528.0
+            ],
+            "mark_center_px": [
+              690.714,
+              251.429
+            ],
+            "mark_fill_rgb": [
+              177,
+              148,
+              34
+            ],
+            "mark_outline_rgb": [
+              97,
+              81,
+              19
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Taka",
+            "series_rank": 1,
+            "value": 12
+          },
+          "entity_id": "mark_R_Taka",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              661.105,
+              205.333,
+              720.323,
+              562.0
+            ],
+            "category_label": "R",
+            "category_label_center_px": [
+              690.714,
+              554.0
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              704.648,
+              205.333,
+              720.323,
+              528.0
+            ],
+            "mark_center_px": [
+              712.486,
+              205.333
+            ],
+            "mark_fill_rgb": [
+              194,
+              32,
+              151
+            ],
+            "mark_outline_rgb": [
+              107,
+              18,
+              83
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Ron",
+            "series_rank": 2,
+            "value": 14
+          },
+          "entity_id": "mark_R_Ron",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              769.962,
+              90.095,
+              829.181,
+              562.0
+            ],
+            "category_label": "E",
+            "category_label_center_px": [
+              799.571,
+              554.0
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              769.962,
+              113.143,
+              785.638,
+              528.0
+            ],
+            "mark_center_px": [
+              777.8,
+              113.143
+            ],
+            "mark_fill_rgb": [
+              35,
+              156,
+              91
+            ],
+            "mark_outline_rgb": [
+              19,
+              86,
+              50
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Zoes",
+            "series_rank": 0,
+            "value": 18
+          },
+          "entity_id": "mark_E_Zoes",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              769.962,
+              90.095,
+              829.181,
+              562.0
+            ],
+            "category_label": "E",
+            "category_label_center_px": [
+              799.571,
+              554.0
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              791.734,
+              205.333,
+              807.409,
+              528.0
+            ],
+            "mark_center_px": [
+              799.571,
+              205.333
+            ],
+            "mark_fill_rgb": [
+              177,
+              148,
+              34
+            ],
+            "mark_outline_rgb": [
+              97,
+              81,
+              19
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Taka",
+            "series_rank": 1,
+            "value": 14
+          },
+          "entity_id": "mark_E_Taka",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              769.962,
+              90.095,
+              829.181,
+              562.0
+            ],
+            "category_label": "E",
+            "category_label_center_px": [
+              799.571,
+              554.0
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              813.505,
+              90.095,
+              829.181,
+              528.0
+            ],
+            "mark_center_px": [
+              821.343,
+              90.095
+            ],
+            "mark_fill_rgb": [
+              194,
+              32,
+              151
+            ],
+            "mark_outline_rgb": [
+              107,
+              18,
+              83
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Ron",
+            "series_rank": 2,
+            "value": 19
+          },
+          "entity_id": "mark_E_Ron",
           "entity_type": "bar"
         }
       ],
       "relations": {
         "comparison": "greater_than",
-        "evidence_labels": [
-          "J",
-          "S"
-        ],
+        "evidence_labels": [],
         "queried_series_labels": [
-          "Lola",
-          "Ong"
+          "Taka",
+          "Ron"
         ],
-        "scene_variant": "grouped_horizontal_bar",
+        "scene_variant": "grouped_bar",
         "task_variant": "series_a_gt_b_count"
       },
-      "scene_kind": "chart_grouped_horizontal_bar_multiseries"
+      "scene_kind": "chart_grouped_bar_multiseries"
     },
     "witness_symbolic": {
-      "labels": [
-        "J",
-        "S"
-      ],
+      "labels": [],
       "type": "label_set"
     }
   },

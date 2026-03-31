@@ -1,60 +1,55 @@
 {
   "answer_gt": {
     "type": "option_letter",
-    "value": "C"
+    "value": "E"
   },
   "evidence_gt": {
     "type": "integer",
-    "value": 12
+    "value": 6
   },
   "image": {
     "format": "png",
     "path": "charts/task_charts_statistics_summary_label/images/argmax/0023.png"
   },
-  "instance_seed": 5882226474470837,
-  "prompt": "Use the chart in the image. It shows a labeled bar chart. Each bar's numeric height can be read from the vertical axis. Use the chart values to identify the correct label. Find the label of the maximum-value mark.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to the maximum value as an integer.\nAnswer rule: set \"answer\" to the single uppercase label of the requested mark.\nExample JSON:\n{\"evidence\":8,\"answer\":\"D\"}",
+  "instance_seed": 597386082259790,
+  "prompt": "Work from the labeled chart shown in the image: a labeled radar chart with one spoke per label. Each label marks one plotted point on the radar polygon, and the relevant values are the printed values near those points. Find the label of the mark that satisfies the requested statistic. Find the label of the maximum-value mark.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to the maximum value as an integer.\nAnswer field: set \"answer\" to the single uppercase label of the requested mark.\nExample JSON:\n{\"evidence\":8,\"answer\":\"D\"}",
   "prompt_variants": {
-    "answer_and_evidence": "Use the chart in the image. It shows a labeled bar chart. Each bar's numeric height can be read from the vertical axis. Use the chart values to identify the correct label. Find the label of the maximum-value mark.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to the maximum value as an integer.\nAnswer rule: set \"answer\" to the single uppercase label of the requested mark.\nExample JSON:\n{\"evidence\":8,\"answer\":\"D\"}",
-    "answer_only": "Use the chart in the image. It shows a labeled bar chart. Each bar's numeric height can be read from the vertical axis. Use the chart values to identify the correct label. Find the label of the maximum-value mark.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the single uppercase label of the requested mark.\nExample JSON:\n{\"answer\":\"D\"}"
+    "answer_and_evidence": "Work from the labeled chart shown in the image: a labeled radar chart with one spoke per label. Each label marks one plotted point on the radar polygon, and the relevant values are the printed values near those points. Find the label of the mark that satisfies the requested statistic. Find the label of the maximum-value mark.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to the maximum value as an integer.\nAnswer field: set \"answer\" to the single uppercase label of the requested mark.\nExample JSON:\n{\"evidence\":8,\"answer\":\"D\"}",
+    "answer_only": "Work from the labeled chart shown in the image: a labeled radar chart with one spoke per label. Each label marks one plotted point on the radar polygon, and the relevant values are the printed values near those points. Find the label of the mark that satisfies the requested statistic. Find the label of the maximum-value mark.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the single uppercase label of the requested mark.\nExample JSON:\n{\"answer\":\"D\"}"
   },
   "task": "task_charts_statistics_summary_label",
   "task_variant": "argmax",
   "trace_payload": {
     "execution_trace": {
-      "answer_label": "C",
-      "evidence_value": 12,
+      "answer_label": "E",
+      "evidence_value": 6,
       "labels": [
-        "M",
-        "X",
-        "Z",
-        "C",
         "R",
-        "W",
-        "B",
+        "C",
         "F",
-        "G",
-        "E"
+        "E",
+        "X"
       ],
       "mark_color_distance_space": "lab",
       "mark_color_min_distance": 40.0,
       "mark_color_sampling_policy": "random_rgb",
-      "mark_count": 10,
+      "mark_count": 5,
       "mark_count_range": [
         5,
-        10
+        7
       ],
       "mark_fill_rgb": [
-        131,
-        168,
-        95
+        113,
+        89,
+        206
       ],
       "mark_outline_rgb": [
-        72,
-        92,
-        52
+        62,
+        49,
+        113
       ],
       "question_format": "label_open",
-      "scene_variant": "bar",
+      "scene_variant": "radar",
       "scene_variant_probabilities": {
         "area": 0.1,
         "bar": 0.1,
@@ -68,72 +63,62 @@
         "scatter": 0.1
       },
       "statistic_kind": "max",
-      "target_answer": 12,
+      "target_answer": 6,
       "target_answer_range": [
         4,
         12
       ],
       "task_variant": "argmax",
       "task_variant_probabilities": {
-        "argmax": 0.3333333333333333,
-        "argmin": 0.3333333333333333,
-        "median_label": 0.3333333333333333
+        "argmax": 1.0,
+        "argmin": 0.0,
+        "median_label": 0.0
       },
       "value_max": 20,
       "value_min": 1,
       "values": [
+        2,
         4,
+        5,
         6,
-        4,
-        12,
-        8,
-        9,
-        11,
-        9,
-        1,
-        7
+        2
       ],
       "values_by_label": {
-        "B": 11,
-        "C": 12,
-        "E": 7,
-        "F": 9,
-        "G": 1,
-        "M": 4,
-        "R": 8,
-        "W": 9,
-        "X": 6,
-        "Z": 4
+        "C": 4,
+        "E": 6,
+        "F": 5,
+        "R": 2,
+        "X": 2
       },
-      "winning_label": "C"
+      "winning_label": "E"
     },
     "projected_evidence": {
       "bbox_set": [
         [
-          304.502,
-          79.692,
-          342.898,
-          508.0
+          334.389,
+          378.951,
+          350.389,
+          394.951
         ]
       ],
-      "integer": 12,
+      "integer": 6,
       "pixel_point_map": {
-        "C": [
-          323.7,
-          79.692
+        "E": [
+          342.389,
+          386.951
         ]
       },
       "pixel_point_set": [
         [
-          323.7,
-          79.692
+          342.389,
+          386.951
         ]
       ]
     },
     "query_spec": {
       "params": {
-        "mark_count": 10,
-        "scene_variant": "bar",
+        "mark_count": 5,
+        "scene_variant": "radar",
         "scene_variant_probabilities": {
           "area": 0.1,
           "bar": 0.1,
@@ -147,21 +132,21 @@
           "scatter": 0.1
         },
         "statistic_kind": "max",
-        "target_answer": 12,
+        "target_answer": 6,
         "target_answer_range": [
           4,
           12
         ],
         "task_variant": "argmax",
         "task_variant_probabilities": {
-          "argmax": 0.3333333333333333,
-          "argmin": 0.3333333333333333,
-          "median_label": 0.3333333333333333
+          "argmax": 1.0,
+          "argmin": 0.0,
+          "median_label": 0.0
         }
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 4,
+        "answer_or_evidence_variant_index": 3,
         "prompt_bundle_id": "charts_statistics_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -171,12 +156,12 @@
           "json_example_answer_only": "{\"answer\":\"D\"}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "object_description": "a labeled bar chart. Each bar's numeric height can be read from the vertical axis"
+          "object_description": "a labeled radar chart with one spoke per label. Each label marks one plotted point on the radar polygon, and the relevant values are the printed values near those points"
         },
         "task_family_key": "labeled_chart_statistics",
-        "task_family_variant_index": 1,
+        "task_family_variant_index": 2,
         "task_key": "summary_label_query",
-        "task_variant_index": 2,
+        "task_variant_index": 3,
         "task_variant_key": "argmax",
         "task_variant_template_index": 1,
         "template_paths": [
@@ -194,7 +179,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 4,
+            "answer_or_evidence_variant_index": 3,
             "prompt_bundle_id": "charts_statistics_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -204,12 +189,12 @@
               "json_example_answer_only": "{\"answer\":\"D\"}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a labeled bar chart. Each bar's numeric height can be read from the vertical axis"
+              "object_description": "a labeled radar chart with one spoke per label. Each label marks one plotted point on the radar polygon, and the relevant values are the printed values near those points"
             },
             "task_family_key": "labeled_chart_statistics",
-            "task_family_variant_index": 1,
+            "task_family_variant_index": 2,
             "task_key": "summary_label_query",
-            "task_variant_index": 2,
+            "task_variant_index": 3,
             "task_variant_key": "argmax",
             "task_variant_template_index": 1,
             "template_paths": [
@@ -222,12 +207,12 @@
               "task_variant:argmax": 5
             }
           },
-          "prompt": "Use the chart in the image. It shows a labeled bar chart. Each bar's numeric height can be read from the vertical axis. Use the chart values to identify the correct label. Find the label of the maximum-value mark.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to the maximum value as an integer.\nAnswer rule: set \"answer\" to the single uppercase label of the requested mark.\nExample JSON:\n{\"evidence\":8,\"answer\":\"D\"}"
+          "prompt": "Work from the labeled chart shown in the image: a labeled radar chart with one spoke per label. Each label marks one plotted point on the radar polygon, and the relevant values are the printed values near those points. Find the label of the mark that satisfies the requested statistic. Find the label of the maximum-value mark.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to the maximum value as an integer.\nAnswer field: set \"answer\" to the single uppercase label of the requested mark.\nExample JSON:\n{\"evidence\":8,\"answer\":\"D\"}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 2,
+            "answer_or_evidence_variant_index": 0,
             "prompt_bundle_id": "charts_statistics_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -237,12 +222,12 @@
               "json_example_answer_only": "{\"answer\":\"D\"}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a labeled bar chart. Each bar's numeric height can be read from the vertical axis"
+              "object_description": "a labeled radar chart with one spoke per label. Each label marks one plotted point on the radar polygon, and the relevant values are the printed values near those points"
             },
             "task_family_key": "labeled_chart_statistics",
-            "task_family_variant_index": 1,
+            "task_family_variant_index": 2,
             "task_key": "summary_label_query",
-            "task_variant_index": 2,
+            "task_variant_index": 3,
             "task_variant_key": "argmax",
             "task_variant_template_index": 1,
             "template_paths": [
@@ -255,7 +240,7 @@
               "task_variant:argmax": 5
             }
           },
-          "prompt": "Use the chart in the image. It shows a labeled bar chart. Each bar's numeric height can be read from the vertical axis. Use the chart values to identify the correct label. Find the label of the maximum-value mark.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the single uppercase label of the requested mark.\nExample JSON:\n{\"answer\":\"D\"}"
+          "prompt": "Work from the labeled chart shown in the image: a labeled radar chart with one spoke per label. Each label marks one plotted point on the radar polygon, and the relevant values are the printed values near those points. Find the label of the mark that satisfies the requested statistic. Find the label of the maximum-value mark.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the single uppercase label of the requested mark.\nExample JSON:\n{\"answer\":\"D\"}"
         }
       },
       "task_variant": "argmax",
@@ -264,45 +249,25 @@
     "render_map": {
       "image_id": "img0",
       "label_centers_px": {
-        "B": [
-          522.3,
-          534.0
-        ],
         "C": [
-          323.7,
-          534.0
+          603.701,
+          217.287
         ],
         "E": [
-          720.9,
-          534.0
+          311.321,
+          429.713
         ],
         "F": [
-          588.5,
-          534.0
-        ],
-        "G": [
-          654.7,
-          534.0
-        ],
-        "M": [
-          125.1,
-          534.0
+          534.679,
+          429.713
         ],
         "R": [
-          389.9,
-          534.0
-        ],
-        "W": [
-          456.1,
-          534.0
+          423.0,
+          86.0
         ],
         "X": [
-          191.3,
-          534.0
-        ],
-        "Z": [
-          257.5,
-          534.0
+          242.299,
+          217.287
         ]
       },
       "plot_bbox_px": [
@@ -340,14 +305,14 @@
         "mark_color_distance_space": "lab",
         "mark_color_min_distance": 40.0,
         "mark_fill_rgb": [
-          131,
-          168,
-          95
+          113,
+          89,
+          206
         ],
         "mark_outline_rgb": [
-          72,
-          92,
-          52
+          62,
+          49,
+          113
         ],
         "sampling_policy": "random_rgb"
       },
@@ -373,13 +338,13 @@
         "edits": [],
         "enabled": false
       },
-      "scene_variant": "bar",
+      "scene_variant": "radar",
       "text_style": {
         "label_font_size_px": 22,
         "label_stroke_width_px": 2,
         "tick_font_size_px": 18
       },
-      "y_axis_max": 13,
+      "y_axis_max": 7,
       "y_ticks": [
         0,
         1,
@@ -388,370 +353,214 @@
         4,
         5,
         6,
-        7,
-        8,
-        9,
-        10,
-        11,
-        12,
-        13
+        7
       ]
     },
     "scene_ir": {
       "entities": [
         {
           "attrs": {
-            "label": "M",
+            "label": "R",
             "label_center_px": [
-              125.1,
-              534.0
+              423.0,
+              86.0
             ],
             "mark_bbox_px": [
-              105.902,
-              365.231,
-              144.298,
-              508.0
+              415.0,
+              222.286,
+              431.0,
+              238.286
             ],
             "mark_center_px": [
-              125.1,
-              365.231
+              423.0,
+              230.286
             ],
             "mark_fill_rgb": [
-              131,
-              168,
-              95
+              113,
+              89,
+              206
             ],
             "mark_outline_rgb": [
-              72,
-              92,
-              52
+              62,
+              49,
+              113
             ],
-            "scene_variant": "bar",
-            "value": 4,
+            "scene_variant": "radar",
+            "value": 2,
+            "value_center_px": [
+              423.0,
+              248.286
+            ],
             "x_rank": 0
           },
-          "entity_id": "mark_M",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "label": "X",
-            "label_center_px": [
-              191.3,
-              534.0
-            ],
-            "mark_bbox_px": [
-              172.102,
-              293.846,
-              210.498,
-              508.0
-            ],
-            "mark_center_px": [
-              191.3,
-              293.846
-            ],
-            "mark_fill_rgb": [
-              131,
-              168,
-              95
-            ],
-            "mark_outline_rgb": [
-              72,
-              92,
-              52
-            ],
-            "scene_variant": "bar",
-            "value": 6,
-            "x_rank": 1
-          },
-          "entity_id": "mark_X",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "label": "Z",
-            "label_center_px": [
-              257.5,
-              534.0
-            ],
-            "mark_bbox_px": [
-              238.302,
-              365.231,
-              276.698,
-              508.0
-            ],
-            "mark_center_px": [
-              257.5,
-              365.231
-            ],
-            "mark_fill_rgb": [
-              131,
-              168,
-              95
-            ],
-            "mark_outline_rgb": [
-              72,
-              92,
-              52
-            ],
-            "scene_variant": "bar",
-            "value": 4,
-            "x_rank": 2
-          },
-          "entity_id": "mark_Z",
-          "entity_type": "bar"
+          "entity_id": "mark_R",
+          "entity_type": "point"
         },
         {
           "attrs": {
             "label": "C",
             "label_center_px": [
-              323.7,
-              534.0
+              603.701,
+              217.287
             ],
             "mark_bbox_px": [
-              304.502,
-              79.692,
-              342.898,
-              508.0
+              501.954,
+              239.747,
+              517.954,
+              255.747
             ],
             "mark_center_px": [
-              323.7,
-              79.692
+              509.954,
+              247.747
             ],
             "mark_fill_rgb": [
-              131,
-              168,
-              95
+              113,
+              89,
+              206
             ],
             "mark_outline_rgb": [
-              72,
-              92,
-              52
+              62,
+              49,
+              113
             ],
-            "scene_variant": "bar",
-            "value": 12,
-            "x_rank": 3
+            "scene_variant": "radar",
+            "value": 4,
+            "value_center_px": [
+              492.835,
+              253.309
+            ],
+            "x_rank": 1
           },
           "entity_id": "mark_C",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "label": "R",
-            "label_center_px": [
-              389.9,
-              534.0
-            ],
-            "mark_bbox_px": [
-              370.702,
-              222.462,
-              409.098,
-              508.0
-            ],
-            "mark_center_px": [
-              389.9,
-              222.462
-            ],
-            "mark_fill_rgb": [
-              131,
-              168,
-              95
-            ],
-            "mark_outline_rgb": [
-              72,
-              92,
-              52
-            ],
-            "scene_variant": "bar",
-            "value": 8,
-            "x_rank": 4
-          },
-          "entity_id": "mark_R",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "label": "W",
-            "label_center_px": [
-              456.1,
-              534.0
-            ],
-            "mark_bbox_px": [
-              436.902,
-              186.769,
-              475.298,
-              508.0
-            ],
-            "mark_center_px": [
-              456.1,
-              186.769
-            ],
-            "mark_fill_rgb": [
-              131,
-              168,
-              95
-            ],
-            "mark_outline_rgb": [
-              72,
-              92,
-              52
-            ],
-            "scene_variant": "bar",
-            "value": 9,
-            "x_rank": 5
-          },
-          "entity_id": "mark_W",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "label": "B",
-            "label_center_px": [
-              522.3,
-              534.0
-            ],
-            "mark_bbox_px": [
-              503.102,
-              115.385,
-              541.498,
-              508.0
-            ],
-            "mark_center_px": [
-              522.3,
-              115.385
-            ],
-            "mark_fill_rgb": [
-              131,
-              168,
-              95
-            ],
-            "mark_outline_rgb": [
-              72,
-              92,
-              52
-            ],
-            "scene_variant": "bar",
-            "value": 11,
-            "x_rank": 6
-          },
-          "entity_id": "mark_B",
-          "entity_type": "bar"
+          "entity_type": "point"
         },
         {
           "attrs": {
             "label": "F",
             "label_center_px": [
-              588.5,
-              534.0
+              534.679,
+              429.713
             ],
             "mark_bbox_px": [
-              569.302,
-              186.769,
-              607.698,
-              508.0
+              482.175,
+              360.459,
+              498.175,
+              376.459
             ],
             "mark_center_px": [
-              588.5,
-              186.769
+              490.175,
+              368.459
             ],
             "mark_fill_rgb": [
-              131,
-              168,
-              95
+              113,
+              89,
+              206
             ],
             "mark_outline_rgb": [
-              72,
-              92,
-              52
+              62,
+              49,
+              113
             ],
-            "scene_variant": "bar",
-            "value": 9,
-            "x_rank": 7
+            "scene_variant": "radar",
+            "value": 5,
+            "value_center_px": [
+              479.595,
+              353.897
+            ],
+            "x_rank": 2
           },
           "entity_id": "mark_F",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "label": "G",
-            "label_center_px": [
-              654.7,
-              534.0
-            ],
-            "mark_bbox_px": [
-              635.502,
-              472.308,
-              673.898,
-              508.0
-            ],
-            "mark_center_px": [
-              654.7,
-              472.308
-            ],
-            "mark_fill_rgb": [
-              131,
-              168,
-              95
-            ],
-            "mark_outline_rgb": [
-              72,
-              92,
-              52
-            ],
-            "scene_variant": "bar",
-            "value": 1,
-            "x_rank": 8
-          },
-          "entity_id": "mark_G",
-          "entity_type": "bar"
+          "entity_type": "point"
         },
         {
           "attrs": {
             "label": "E",
             "label_center_px": [
-              720.9,
-              534.0
+              311.321,
+              429.713
             ],
             "mark_bbox_px": [
-              701.702,
-              258.154,
-              740.098,
-              508.0
+              334.389,
+              378.951,
+              350.389,
+              394.951
             ],
             "mark_center_px": [
-              720.9,
-              258.154
+              342.389,
+              386.951
             ],
             "mark_fill_rgb": [
-              131,
-              168,
-              95
+              113,
+              89,
+              206
             ],
             "mark_outline_rgb": [
-              72,
-              92,
-              52
+              62,
+              49,
+              113
             ],
-            "scene_variant": "bar",
-            "value": 7,
-            "x_rank": 9
+            "scene_variant": "radar",
+            "value": 6,
+            "value_center_px": [
+              352.97,
+              372.389
+            ],
+            "x_rank": 3
           },
           "entity_id": "mark_E",
-          "entity_type": "bar"
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "X",
+            "label_center_px": [
+              242.299,
+              217.287
+            ],
+            "mark_bbox_px": [
+              371.523,
+              253.874,
+              387.523,
+              269.874
+            ],
+            "mark_center_px": [
+              379.523,
+              261.874
+            ],
+            "mark_fill_rgb": [
+              113,
+              89,
+              206
+            ],
+            "mark_outline_rgb": [
+              62,
+              49,
+              113
+            ],
+            "scene_variant": "radar",
+            "value": 2,
+            "value_center_px": [
+              396.642,
+              267.436
+            ],
+            "x_rank": 4
+          },
+          "entity_id": "mark_X",
+          "entity_type": "point"
         }
       ],
       "relations": {
-        "answer_label": "C",
-        "evidence_value": 12,
-        "scene_variant": "bar",
+        "answer_label": "E",
+        "evidence_value": 6,
+        "scene_variant": "radar",
         "statistic_kind": "max",
         "task_variant": "argmax"
       },
-      "scene_kind": "chart_bar_statistics"
+      "scene_kind": "chart_radar_statistics"
     },
     "witness_symbolic": {
       "type": "integer",
-      "value": 12
+      "value": 6
     }
   },
   "versions": {

@@ -1,16 +1,16 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 13
+    "value": 1
   },
   "evidence_gt": {
     "type": "bbox_set",
     "value": [
       [
-        276.0,
-        206.0,
-        396.0,
-        306.0
+        420.0,
+        330.0,
+        540.0,
+        430.0
       ]
     ]
   },
@@ -18,11 +18,11 @@
     "format": "png",
     "path": "puzzles/task_puzzles_arithmetic_grid_value/images/sum_rule_missing/0018.png"
   },
-  "instance_seed": 6036900418125689,
-  "prompt": "Look at the arithmetic grid puzzle in the image: a card-style arithmetic puzzle grid with 3 columns and 3 to 5 rows of boxed integers, where one cell shows a question mark instead of a number. Use the repeated row rule to determine the missing number. Determine the value that belongs in the question-mark cell.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the question-mark grid cell.\nAnswer requirement: set \"answer\" to the exact integer value requested by the puzzle.\nExample JSON:\n{\"evidence\":[[420,250,540,350]],\"answer\":7}",
+  "instance_seed": 7521216506459560,
+  "prompt": "Look at the arithmetic grid puzzle in the image: a card-style arithmetic puzzle grid with 3 columns and 3 to 5 rows of boxed integers, where one cell shows a question mark instead of a number. Solve the arithmetic grid puzzle and report the missing integer. Determine the value that belongs in the question-mark cell.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the question-mark grid cell.\nAnswer format: set \"answer\" to the exact integer value requested by the puzzle.\nExample JSON:\n{\"evidence\":[[420,250,540,350]],\"answer\":7}",
   "prompt_variants": {
-    "answer_and_evidence": "Look at the arithmetic grid puzzle in the image: a card-style arithmetic puzzle grid with 3 columns and 3 to 5 rows of boxed integers, where one cell shows a question mark instead of a number. Use the repeated row rule to determine the missing number. Determine the value that belongs in the question-mark cell.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the question-mark grid cell.\nAnswer requirement: set \"answer\" to the exact integer value requested by the puzzle.\nExample JSON:\n{\"evidence\":[[420,250,540,350]],\"answer\":7}",
-    "answer_only": "Look at the arithmetic grid puzzle in the image: a card-style arithmetic puzzle grid with 3 columns and 3 to 5 rows of boxed integers, where one cell shows a question mark instead of a number. Use the repeated row rule to determine the missing number. Determine the value that belongs in the question-mark cell.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the exact integer value requested by the puzzle.\nExample JSON:\n{\"answer\":7}"
+    "answer_and_evidence": "Look at the arithmetic grid puzzle in the image: a card-style arithmetic puzzle grid with 3 columns and 3 to 5 rows of boxed integers, where one cell shows a question mark instead of a number. Solve the arithmetic grid puzzle and report the missing integer. Determine the value that belongs in the question-mark cell.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the question-mark grid cell.\nAnswer format: set \"answer\" to the exact integer value requested by the puzzle.\nExample JSON:\n{\"evidence\":[[420,250,540,350]],\"answer\":7}",
+    "answer_only": "Look at the arithmetic grid puzzle in the image: a card-style arithmetic puzzle grid with 3 columns and 3 to 5 rows of boxed integers, where one cell shows a question mark instead of a number. Solve the arithmetic grid puzzle and report the missing integer. Determine the value that belongs in the question-mark cell.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the exact integer value requested by the puzzle.\nExample JSON:\n{\"answer\":7}"
   },
   "task": "task_puzzles_arithmetic_grid_value",
   "task_variant": "sum_rule_missing",
@@ -32,7 +32,7 @@
         1,
         24
       ],
-      "answer_value": 13,
+      "answer_value": 1,
       "cell_count": 15,
       "cell_count_range": [
         9,
@@ -44,57 +44,77 @@
           {
             "cell_id": "cell_r0_c0",
             "is_unknown": false,
-            "text": "3",
-            "value": 3
+            "text": "20",
+            "value": 20
           },
           {
             "cell_id": "cell_r0_c1",
             "is_unknown": false,
-            "text": "15",
-            "value": 15
+            "text": "2",
+            "value": 2
           },
           {
             "cell_id": "cell_r0_c2",
             "is_unknown": false,
-            "text": "18",
-            "value": 18
+            "text": "22",
+            "value": 22
           }
         ],
         [
           {
             "cell_id": "cell_r1_c0",
-            "is_unknown": true,
-            "text": "?",
-            "value": null
+            "is_unknown": false,
+            "text": "1",
+            "value": 1
           },
           {
             "cell_id": "cell_r1_c1",
             "is_unknown": false,
-            "text": "10",
-            "value": 10
+            "text": "4",
+            "value": 4
           },
           {
             "cell_id": "cell_r1_c2",
             "is_unknown": false,
-            "text": "23",
-            "value": 23
+            "text": "5",
+            "value": 5
           }
         ],
         [
           {
             "cell_id": "cell_r2_c0",
             "is_unknown": false,
-            "text": "8",
-            "value": 8
+            "text": "5",
+            "value": 5
           },
           {
             "cell_id": "cell_r2_c1",
-            "is_unknown": false,
-            "text": "16",
-            "value": 16
+            "is_unknown": true,
+            "text": "?",
+            "value": null
           },
           {
             "cell_id": "cell_r2_c2",
+            "is_unknown": false,
+            "text": "6",
+            "value": 6
+          }
+        ],
+        [
+          {
+            "cell_id": "cell_r3_c0",
+            "is_unknown": false,
+            "text": "22",
+            "value": 22
+          },
+          {
+            "cell_id": "cell_r3_c1",
+            "is_unknown": false,
+            "text": "2",
+            "value": 2
+          },
+          {
+            "cell_id": "cell_r3_c2",
             "is_unknown": false,
             "text": "24",
             "value": 24
@@ -102,49 +122,29 @@
         ],
         [
           {
-            "cell_id": "cell_r3_c0",
-            "is_unknown": false,
-            "text": "3",
-            "value": 3
-          },
-          {
-            "cell_id": "cell_r3_c1",
-            "is_unknown": false,
-            "text": "14",
-            "value": 14
-          },
-          {
-            "cell_id": "cell_r3_c2",
-            "is_unknown": false,
-            "text": "17",
-            "value": 17
-          }
-        ],
-        [
-          {
             "cell_id": "cell_r4_c0",
             "is_unknown": false,
-            "text": "7",
-            "value": 7
+            "text": "16",
+            "value": 16
           },
           {
             "cell_id": "cell_r4_c1",
             "is_unknown": false,
-            "text": "15",
-            "value": 15
+            "text": "4",
+            "value": 4
           },
           {
             "cell_id": "cell_r4_c2",
             "is_unknown": false,
-            "text": "22",
-            "value": 22
+            "text": "20",
+            "value": 20
           }
         ]
       ],
       "max_visible_value": 24,
-      "query_cell_id": "cell_r1_c0",
-      "query_col_index": 0,
-      "query_row_index": 1,
+      "query_cell_id": "cell_r2_c1",
+      "query_col_index": 1,
+      "query_row_index": 2,
       "question_format": "unknown_cell_grid",
       "row_count": 5,
       "row_count_range": [
@@ -153,29 +153,29 @@
       ],
       "row_values": [
         [
-          3,
-          15,
-          18
+          20,
+          2,
+          22
         ],
         [
-          13,
-          10,
-          23
+          1,
+          4,
+          5
         ],
         [
-          8,
-          16,
+          5,
+          1,
+          6
+        ],
+        [
+          22,
+          2,
           24
         ],
         [
-          3,
-          14,
-          17
-        ],
-        [
-          7,
-          15,
-          22
+          16,
+          4,
+          20
         ]
       ],
       "scene_variant": "grid_card",
@@ -188,12 +188,12 @@
         "complete_rows_unique_operator": true,
         "hidden_position_kind": "operand",
         "operator_symbol": "+",
-        "query_col_index": 0,
-        "query_row_index": 1,
+        "query_col_index": 1,
+        "query_row_index": 2,
         "visible_example_row_count": 4
       },
       "supporting_cell_ids": [
-        "cell_r1_c0"
+        "cell_r2_c1"
       ],
       "task_variant": "sum_rule_missing",
       "task_variant_probabilities": {
@@ -203,34 +203,34 @@
       },
       "visible_example_rows": [
         [
-          3,
-          15,
-          18
+          20,
+          2,
+          22
         ],
         [
-          8,
-          16,
+          1,
+          4,
+          5
+        ],
+        [
+          22,
+          2,
           24
         ],
         [
-          3,
-          14,
-          17
-        ],
-        [
-          7,
-          15,
-          22
+          16,
+          4,
+          20
         ]
       ]
     },
     "projected_evidence": {
       "bbox_set": [
         [
-          276.0,
-          206.0,
-          396.0,
-          306.0
+          420.0,
+          330.0,
+          540.0,
+          430.0
         ]
       ]
     },
@@ -266,7 +266,7 @@
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 2,
+        "answer_or_evidence_variant_index": 1,
         "prompt_bundle_id": "puzzles_arithmetic_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -281,7 +281,7 @@
         "task_family_key": "arithmetic_grid_unknown_puzzle",
         "task_family_variant_index": 1,
         "task_key": "grid_value_query",
-        "task_variant_index": 0,
+        "task_variant_index": 1,
         "task_variant_key": "sum_rule_missing",
         "task_variant_template_index": 2,
         "template_paths": [
@@ -299,39 +299,6 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 2,
-            "prompt_bundle_id": "puzzles_arithmetic_v1",
-            "schema_version": "v1",
-            "slot_values": {
-              "answer_hint": "set \"answer\" to the exact integer value requested by the puzzle",
-              "evidence_hint": "set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the question-mark grid cell",
-              "json_example": "{\"evidence\":[[420,250,540,350]],\"answer\":7}",
-              "json_example_answer_only": "{\"answer\":7}",
-              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
-              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a card-style arithmetic puzzle grid with 3 columns and 3 to 5 rows of boxed integers, where one cell shows a question mark instead of a number"
-            },
-            "task_family_key": "arithmetic_grid_unknown_puzzle",
-            "task_family_variant_index": 1,
-            "task_key": "grid_value_query",
-            "task_variant_index": 0,
-            "task_variant_key": "sum_rule_missing",
-            "task_variant_template_index": 2,
-            "template_paths": [
-              "puzzles/arithmetic/puzzles_arithmetic_v1.json"
-            ],
-            "variant_count_by_key": {
-              "answer_or_evidence:answer_and_evidence": 5,
-              "task:grid_value_query": 5,
-              "task_family:arithmetic_grid_unknown_puzzle": 5,
-              "task_variant:sum_rule_missing": 5
-            }
-          },
-          "prompt": "Look at the arithmetic grid puzzle in the image: a card-style arithmetic puzzle grid with 3 columns and 3 to 5 rows of boxed integers, where one cell shows a question mark instead of a number. Use the repeated row rule to determine the missing number. Determine the value that belongs in the question-mark cell.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the question-mark grid cell.\nAnswer requirement: set \"answer\" to the exact integer value requested by the puzzle.\nExample JSON:\n{\"evidence\":[[420,250,540,350]],\"answer\":7}"
-        },
-        "answer_only": {
-          "metadata": {
-            "answer_or_evidence_key": "answer_only",
             "answer_or_evidence_variant_index": 1,
             "prompt_bundle_id": "puzzles_arithmetic_v1",
             "schema_version": "v1",
@@ -347,7 +314,40 @@
             "task_family_key": "arithmetic_grid_unknown_puzzle",
             "task_family_variant_index": 1,
             "task_key": "grid_value_query",
-            "task_variant_index": 0,
+            "task_variant_index": 1,
+            "task_variant_key": "sum_rule_missing",
+            "task_variant_template_index": 2,
+            "template_paths": [
+              "puzzles/arithmetic/puzzles_arithmetic_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:grid_value_query": 5,
+              "task_family:arithmetic_grid_unknown_puzzle": 5,
+              "task_variant:sum_rule_missing": 5
+            }
+          },
+          "prompt": "Look at the arithmetic grid puzzle in the image: a card-style arithmetic puzzle grid with 3 columns and 3 to 5 rows of boxed integers, where one cell shows a question mark instead of a number. Solve the arithmetic grid puzzle and report the missing integer. Determine the value that belongs in the question-mark cell.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the question-mark grid cell.\nAnswer format: set \"answer\" to the exact integer value requested by the puzzle.\nExample JSON:\n{\"evidence\":[[420,250,540,350]],\"answer\":7}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 4,
+            "prompt_bundle_id": "puzzles_arithmetic_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the exact integer value requested by the puzzle",
+              "evidence_hint": "set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the question-mark grid cell",
+              "json_example": "{\"evidence\":[[420,250,540,350]],\"answer\":7}",
+              "json_example_answer_only": "{\"answer\":7}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a card-style arithmetic puzzle grid with 3 columns and 3 to 5 rows of boxed integers, where one cell shows a question mark instead of a number"
+            },
+            "task_family_key": "arithmetic_grid_unknown_puzzle",
+            "task_family_variant_index": 1,
+            "task_key": "grid_value_query",
+            "task_variant_index": 1,
             "task_variant_key": "sum_rule_missing",
             "task_variant_template_index": 2,
             "template_paths": [
@@ -360,7 +360,7 @@
               "task_variant:sum_rule_missing": 5
             }
           },
-          "prompt": "Look at the arithmetic grid puzzle in the image: a card-style arithmetic puzzle grid with 3 columns and 3 to 5 rows of boxed integers, where one cell shows a question mark instead of a number. Use the repeated row rule to determine the missing number. Determine the value that belongs in the question-mark cell.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the exact integer value requested by the puzzle.\nExample JSON:\n{\"answer\":7}"
+          "prompt": "Look at the arithmetic grid puzzle in the image: a card-style arithmetic puzzle grid with 3 columns and 3 to 5 rows of boxed integers, where one cell shows a question mark instead of a number. Solve the arithmetic grid puzzle and report the missing integer. Determine the value that belongs in the question-mark cell.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the exact integer value requested by the puzzle.\nExample JSON:\n{\"answer\":7}"
         }
       },
       "task_variant": "sum_rule_missing",
@@ -520,14 +520,14 @@
             "col_index": 0,
             "is_unknown": false,
             "row_index": 0,
-            "text": "3",
+            "text": "20",
             "text_bbox_px": [
-              319.0,
+              303.0,
               113.5,
-              353.0,
+              369.0,
               150.5
             ],
-            "value": 3
+            "value": 20
           },
           "bbox_px": [
             276.0,
@@ -543,14 +543,14 @@
             "col_index": 1,
             "is_unknown": false,
             "row_index": 0,
-            "text": "15",
+            "text": "2",
             "text_bbox_px": [
-              447.0,
-              114.0,
-              513.0,
-              150.0
+              463.0,
+              113.5,
+              497.0,
+              150.5
             ],
-            "value": 15
+            "value": 2
           },
           "bbox_px": [
             420.0,
@@ -566,14 +566,14 @@
             "col_index": 2,
             "is_unknown": false,
             "row_index": 0,
-            "text": "18",
+            "text": "22",
             "text_bbox_px": [
               591.0,
               113.5,
               657.0,
               150.5
             ],
-            "value": 18
+            "value": 22
           },
           "bbox_px": [
             564.0,
@@ -587,16 +587,16 @@
         {
           "attrs": {
             "col_index": 0,
-            "is_unknown": true,
+            "is_unknown": false,
             "row_index": 1,
-            "text": "?",
+            "text": "1",
             "text_bbox_px": [
-              321.5,
+              319.0,
               238.0,
-              350.5,
+              353.0,
               274.0
             ],
-            "value": null
+            "value": 1
           },
           "bbox_px": [
             276.0,
@@ -612,14 +612,14 @@
             "col_index": 1,
             "is_unknown": false,
             "row_index": 1,
-            "text": "10",
+            "text": "4",
             "text_bbox_px": [
-              447.0,
-              237.5,
-              513.0,
-              274.5
+              463.0,
+              238.0,
+              497.0,
+              274.0
             ],
-            "value": 10
+            "value": 4
           },
           "bbox_px": [
             420.0,
@@ -635,14 +635,14 @@
             "col_index": 2,
             "is_unknown": false,
             "row_index": 1,
-            "text": "23",
+            "text": "5",
             "text_bbox_px": [
-              591.0,
-              237.5,
-              657.0,
-              274.5
+              607.0,
+              238.0,
+              641.0,
+              274.0
             ],
-            "value": 23
+            "value": 5
           },
           "bbox_px": [
             564.0,
@@ -658,14 +658,14 @@
             "col_index": 0,
             "is_unknown": false,
             "row_index": 2,
-            "text": "8",
+            "text": "5",
             "text_bbox_px": [
               319.0,
-              361.5,
+              362.0,
               353.0,
-              398.5
+              398.0
             ],
-            "value": 8
+            "value": 5
           },
           "bbox_px": [
             276.0,
@@ -679,16 +679,16 @@
         {
           "attrs": {
             "col_index": 1,
-            "is_unknown": false,
+            "is_unknown": true,
             "row_index": 2,
-            "text": "16",
+            "text": "?",
             "text_bbox_px": [
-              447.0,
-              361.5,
-              513.0,
-              398.5
+              465.5,
+              362.0,
+              494.5,
+              398.0
             ],
-            "value": 16
+            "value": null
           },
           "bbox_px": [
             420.0,
@@ -704,14 +704,14 @@
             "col_index": 2,
             "is_unknown": false,
             "row_index": 2,
-            "text": "24",
+            "text": "6",
             "text_bbox_px": [
-              591.0,
+              607.0,
               361.5,
-              657.0,
+              641.0,
               398.5
             ],
-            "value": 24
+            "value": 6
           },
           "bbox_px": [
             564.0,
@@ -727,14 +727,14 @@
             "col_index": 0,
             "is_unknown": false,
             "row_index": 3,
-            "text": "3",
+            "text": "22",
             "text_bbox_px": [
-              319.0,
+              303.0,
               485.5,
-              353.0,
+              369.0,
               522.5
             ],
-            "value": 3
+            "value": 22
           },
           "bbox_px": [
             276.0,
@@ -750,14 +750,14 @@
             "col_index": 1,
             "is_unknown": false,
             "row_index": 3,
-            "text": "14",
+            "text": "2",
             "text_bbox_px": [
-              447.0,
-              486.0,
-              513.0,
-              522.0
+              463.0,
+              485.5,
+              497.0,
+              522.5
             ],
-            "value": 14
+            "value": 2
           },
           "bbox_px": [
             420.0,
@@ -773,14 +773,14 @@
             "col_index": 2,
             "is_unknown": false,
             "row_index": 3,
-            "text": "17",
+            "text": "24",
             "text_bbox_px": [
               591.0,
-              486.0,
+              485.5,
               657.0,
-              522.0
+              522.5
             ],
-            "value": 17
+            "value": 24
           },
           "bbox_px": [
             564.0,
@@ -796,14 +796,14 @@
             "col_index": 0,
             "is_unknown": false,
             "row_index": 4,
-            "text": "7",
+            "text": "16",
             "text_bbox_px": [
-              319.0,
-              610.0,
-              353.0,
-              646.0
+              303.0,
+              609.5,
+              369.0,
+              646.5
             ],
-            "value": 7
+            "value": 16
           },
           "bbox_px": [
             276.0,
@@ -819,14 +819,14 @@
             "col_index": 1,
             "is_unknown": false,
             "row_index": 4,
-            "text": "15",
+            "text": "4",
             "text_bbox_px": [
-              447.0,
+              463.0,
               610.0,
-              513.0,
+              497.0,
               646.0
             ],
-            "value": 15
+            "value": 4
           },
           "bbox_px": [
             420.0,
@@ -842,14 +842,14 @@
             "col_index": 2,
             "is_unknown": false,
             "row_index": 4,
-            "text": "22",
+            "text": "20",
             "text_bbox_px": [
               591.0,
               609.5,
               657.0,
               646.5
             ],
-            "value": 22
+            "value": 20
           },
           "bbox_px": [
             564.0,
@@ -862,8 +862,8 @@
         }
       ],
       "relations": {
-        "answer_value": 13,
-        "query_cell_id": "cell_r1_c0",
+        "answer_value": 1,
+        "query_cell_id": "cell_r2_c1",
         "scene_variant": "grid_card",
         "task_variant": "sum_rule_missing"
       },
@@ -873,10 +873,10 @@
       "type": "bbox_set",
       "value": [
         [
-          276.0,
-          206.0,
-          396.0,
-          306.0
+          420.0,
+          330.0,
+          540.0,
+          430.0
         ]
       ]
     }

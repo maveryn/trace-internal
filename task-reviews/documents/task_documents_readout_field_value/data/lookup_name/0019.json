@@ -1,22 +1,22 @@
 {
   "answer_gt": {
     "type": "string",
-    "value": "Nia Bailey"
+    "value": "Pinecrest"
   },
   "evidence_gt": {
     "type": "bbox_set",
     "value": [
       [
         665.0,
-        220.0,
-        787.0,
-        238.0
+        565.0,
+        716.0,
+        589.0
       ],
       [
         665.0,
-        252.5,
-        808.0,
-        281.5
+        603.5,
+        797.0,
+        626.5
       ]
     ]
   },
@@ -24,18 +24,18 @@
     "format": "png",
     "path": "documents/task_documents_readout_field_value/images/lookup_name/0019.png"
   },
-  "instance_seed": 8352519372630717,
-  "prompt": "The image shows an invoice-style document with labeled header blocks and summary fields. Use the labeled fields to answer: What is the customer name? Return the exact field text as written.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value.\nAnswer requirement: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"Ava Lee\"}",
+  "instance_seed": 4480848209260473,
+  "prompt": "Use the structured document in the image: an invoice-style document with labeled header blocks and summary fields. Use the labeled fields to answer: What is the city? Answer using the exact field value.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value.\nAnswer requirement: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"Ava Lee\"}",
   "prompt_variants": {
-    "answer_and_evidence": "The image shows an invoice-style document with labeled header blocks and summary fields. Use the labeled fields to answer: What is the customer name? Return the exact field text as written.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value.\nAnswer requirement: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"Ava Lee\"}",
-    "answer_only": "The image shows an invoice-style document with labeled header blocks and summary fields. Use the labeled fields to answer: What is the customer name? Return the exact field text as written.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"answer\":\"Ava Lee\"}"
+    "answer_and_evidence": "Use the structured document in the image: an invoice-style document with labeled header blocks and summary fields. Use the labeled fields to answer: What is the city? Answer using the exact field value.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value.\nAnswer requirement: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"Ava Lee\"}",
+    "answer_only": "Use the structured document in the image: an invoice-style document with labeled header blocks and summary fields. Use the labeled fields to answer: What is the city? Answer using the exact field value.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"answer\":\"Ava Lee\"}"
   },
   "task": "task_documents_readout_field_value",
   "task_variant": "lookup_name",
   "trace_payload": {
     "answer_gt": {
       "type": "string",
-      "value": "Nia Bailey"
+      "value": "Pinecrest"
     },
     "background": {
       "available_styles": [
@@ -57,15 +57,15 @@
       "value": [
         [
           665.0,
-          220.0,
-          787.0,
-          238.0
+          565.0,
+          716.0,
+          589.0
         ],
         [
           665.0,
-          252.5,
-          808.0,
-          281.5
+          603.5,
+          797.0,
+          626.5
         ]
       ]
     },
@@ -76,7 +76,7 @@
           "field_category": "lookup_name",
           "field_id": "vendor_name",
           "field_label": "Vendor",
-          "field_value": "Timber Co.",
+          "field_value": "Cedar Supply",
           "label_bbox_id": "vendor_name:label",
           "question_name": "vendor name",
           "value_bbox_id": "vendor_name:value"
@@ -85,7 +85,7 @@
           "field_category": "lookup_name",
           "field_id": "customer_name",
           "field_label": "Customer",
-          "field_value": "Nia Bailey",
+          "field_value": "Theo Chen",
           "label_bbox_id": "customer_name:label",
           "question_name": "customer name",
           "value_bbox_id": "customer_name:value"
@@ -94,7 +94,7 @@
           "field_category": "lookup_identifier",
           "field_id": "invoice_number",
           "field_label": "Invoice Number",
-          "field_value": "INV-58051",
+          "field_value": "INV-42511",
           "label_bbox_id": "invoice_number:label",
           "question_name": "invoice number",
           "value_bbox_id": "invoice_number:value"
@@ -103,7 +103,7 @@
           "field_category": "lookup_identifier",
           "field_id": "account_id",
           "field_label": "Account ID",
-          "field_value": "ACC-9738",
+          "field_value": "ACC-6087",
           "label_bbox_id": "account_id:label",
           "question_name": "account ID",
           "value_bbox_id": "account_id:value"
@@ -112,7 +112,7 @@
           "field_category": "lookup_date",
           "field_id": "issue_date",
           "field_label": "Issue Date",
-          "field_value": "2026-03-15",
+          "field_value": "2026-03-29",
           "label_bbox_id": "issue_date:label",
           "question_name": "issue date",
           "value_bbox_id": "issue_date:value"
@@ -121,7 +121,7 @@
           "field_category": "lookup_date",
           "field_id": "due_date",
           "field_label": "Due Date",
-          "field_value": "2026-04-08",
+          "field_value": "2026-04-09",
           "label_bbox_id": "due_date:label",
           "question_name": "due date",
           "value_bbox_id": "due_date:value"
@@ -130,7 +130,7 @@
           "field_category": "lookup_contact",
           "field_id": "contact_email",
           "field_label": "Contact Email",
-          "field_value": "timberco@example.com",
+          "field_value": "cedarsupply@brightdesk.io",
           "label_bbox_id": "contact_email:label",
           "question_name": "contact email",
           "value_bbox_id": "contact_email:value"
@@ -139,7 +139,7 @@
           "field_category": "lookup_contact",
           "field_id": "contact_phone",
           "field_label": "Phone",
-          "field_value": "(704) 497-3257",
+          "field_value": "(617) 760-5569",
           "label_bbox_id": "contact_phone:label",
           "question_name": "phone number",
           "value_bbox_id": "contact_phone:value"
@@ -148,7 +148,7 @@
           "field_category": "lookup_name",
           "field_id": "city",
           "field_label": "City",
-          "field_value": "Arbor",
+          "field_value": "Pinecrest",
           "label_bbox_id": "city:label",
           "question_name": "city",
           "value_bbox_id": "city:value"
@@ -157,7 +157,7 @@
           "field_category": "lookup_amount",
           "field_id": "tax_amount",
           "field_label": "Tax",
-          "field_value": "$9.93",
+          "field_value": "$21.31",
           "label_bbox_id": "tax_amount:label",
           "question_name": "tax amount",
           "value_bbox_id": "tax_amount:value"
@@ -166,20 +166,20 @@
           "field_category": "lookup_amount",
           "field_id": "total_due",
           "field_label": "Total Due",
-          "field_value": "$159.74",
+          "field_value": "$231.97",
           "label_bbox_id": "total_due:label",
           "question_name": "total due",
           "value_bbox_id": "total_due:value"
         }
       ],
       "query_field_category": "lookup_name",
-      "query_field_id": "customer_name",
-      "query_field_label": "Customer",
-      "query_field_value": "Nia Bailey",
-      "query_label_bbox_id": "customer_name:label",
-      "query_value_bbox_id": "customer_name:value",
+      "query_field_id": "city",
+      "query_field_label": "City",
+      "query_field_value": "Pinecrest",
+      "query_label_bbox_id": "city:label",
+      "query_value_bbox_id": "city:value",
       "question_format": "document_field_lookup",
-      "question_text": "What is the customer name?",
+      "question_text": "What is the city?",
       "scene_title": "Invoice",
       "scene_variant": "invoice_sheet",
       "task_variant": "lookup_name",
@@ -205,15 +205,15 @@
       "bbox_set": [
         [
           665.0,
-          220.0,
-          787.0,
-          238.0
+          565.0,
+          716.0,
+          589.0
         ],
         [
           665.0,
-          252.5,
-          808.0,
-          281.5
+          603.5,
+          797.0,
+          626.5
         ]
       ]
     },
@@ -252,14 +252,14 @@
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
           "object_description": "an invoice-style document with labeled header blocks and summary fields",
-          "question_text": "What is the customer name?"
+          "question_text": "What is the city?"
         },
         "task_family_key": "structured_document",
-        "task_family_variant_index": 0,
+        "task_family_variant_index": 3,
         "task_key": "field_lookup_query",
         "task_variant_index": 3,
         "task_variant_key": "lookup_name",
-        "task_variant_template_index": 1,
+        "task_variant_template_index": 4,
         "template_paths": [
           "documents/readout/documents_readout_v1.json"
         ],
@@ -286,14 +286,14 @@
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "an invoice-style document with labeled header blocks and summary fields",
-              "question_text": "What is the customer name?"
+              "question_text": "What is the city?"
             },
             "task_family_key": "structured_document",
-            "task_family_variant_index": 0,
+            "task_family_variant_index": 3,
             "task_key": "field_lookup_query",
             "task_variant_index": 3,
             "task_variant_key": "lookup_name",
-            "task_variant_template_index": 1,
+            "task_variant_template_index": 4,
             "template_paths": [
               "documents/readout/documents_readout_v1.json"
             ],
@@ -304,12 +304,12 @@
               "task_variant:lookup_name": 5
             }
           },
-          "prompt": "The image shows an invoice-style document with labeled header blocks and summary fields. Use the labeled fields to answer: What is the customer name? Return the exact field text as written.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value.\nAnswer requirement: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"Ava Lee\"}"
+          "prompt": "Use the structured document in the image: an invoice-style document with labeled header blocks and summary fields. Use the labeled fields to answer: What is the city? Answer using the exact field value.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value.\nAnswer requirement: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"Ava Lee\"}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 4,
+            "answer_or_evidence_variant_index": 1,
             "prompt_bundle_id": "documents_readout_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -320,14 +320,14 @@
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "an invoice-style document with labeled header blocks and summary fields",
-              "question_text": "What is the customer name?"
+              "question_text": "What is the city?"
             },
             "task_family_key": "structured_document",
-            "task_family_variant_index": 0,
+            "task_family_variant_index": 3,
             "task_key": "field_lookup_query",
             "task_variant_index": 3,
             "task_variant_key": "lookup_name",
-            "task_variant_template_index": 1,
+            "task_variant_template_index": 4,
             "template_paths": [
               "documents/readout/documents_readout_v1.json"
             ],
@@ -338,7 +338,7 @@
               "task_variant:lookup_name": 5
             }
           },
-          "prompt": "The image shows an invoice-style document with labeled header blocks and summary fields. Use the labeled fields to answer: What is the customer name? Return the exact field text as written.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"answer\":\"Ava Lee\"}"
+          "prompt": "Use the structured document in the image: an invoice-style document with labeled header blocks and summary fields. Use the labeled fields to answer: What is the city? Answer using the exact field value.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"answer\":\"Ava Lee\"}"
         }
       },
       "task_variant": "lookup_name",
@@ -491,13 +491,13 @@
         "city:value": [
           665.0,
           603.5,
-          745.0,
+          797.0,
           626.5
         ],
         "contact_email:value": [
           665.0,
           484.5,
-          1009.0,
+          1053.0,
           513.5
         ],
         "contact_phone:value": [
@@ -508,9 +508,9 @@
         ],
         "customer_name:value": [
           665.0,
-          252.5,
-          808.0,
-          281.5
+          255.5,
+          819.0,
+          278.5
         ],
         "due_date:value": [
           214.0,
@@ -533,7 +533,7 @@
         "tax_amount:value": [
           214.0,
           722.5,
-          297.0,
+          315.0,
           749.5
         ],
         "total_due:value": [
@@ -544,9 +544,9 @@
         ],
         "vendor_name:value": [
           214.0,
-          255.5,
-          371.0,
-          278.5
+          252.5,
+          406.0,
+          281.5
         ]
       },
       "page_bbox_px": [
@@ -565,7 +565,7 @@
     "render_spec": {
       "canvas_height": 920,
       "canvas_width": 1280,
-      "geometry_seed": 8352519372630717,
+      "geometry_seed": 4480848209260473,
       "page_shadow_offset_px": 14,
       "receipt_page_height_px": 760,
       "receipt_page_width_px": 520,
@@ -627,14 +627,14 @@
           "bbox_id": "vendor_name:value",
           "bbox_px": [
             214.0,
-            255.5,
-            371.0,
-            278.5
+            252.5,
+            406.0,
+            281.5
           ],
           "entity_id": "vendor_name:value",
           "entity_type": "document_field_value",
           "field_id": "vendor_name",
-          "text": "Timber Co."
+          "text": "Cedar Supply"
         },
         {
           "bbox_id": "customer_name",
@@ -665,14 +665,14 @@
           "bbox_id": "customer_name:value",
           "bbox_px": [
             665.0,
-            252.5,
-            808.0,
-            281.5
+            255.5,
+            819.0,
+            278.5
           ],
           "entity_id": "customer_name:value",
           "entity_type": "document_field_value",
           "field_id": "customer_name",
-          "text": "Nia Bailey"
+          "text": "Theo Chen"
         },
         {
           "bbox_id": "invoice_number",
@@ -710,7 +710,7 @@
           "entity_id": "invoice_number:value",
           "entity_type": "document_field_value",
           "field_id": "invoice_number",
-          "text": "INV-58051"
+          "text": "INV-42511"
         },
         {
           "bbox_id": "account_id",
@@ -748,7 +748,7 @@
           "entity_id": "account_id:value",
           "entity_type": "document_field_value",
           "field_id": "account_id",
-          "text": "ACC-9738"
+          "text": "ACC-6087"
         },
         {
           "bbox_id": "issue_date",
@@ -786,7 +786,7 @@
           "entity_id": "issue_date:value",
           "entity_type": "document_field_value",
           "field_id": "issue_date",
-          "text": "2026-03-15"
+          "text": "2026-03-29"
         },
         {
           "bbox_id": "due_date",
@@ -824,7 +824,7 @@
           "entity_id": "due_date:value",
           "entity_type": "document_field_value",
           "field_id": "due_date",
-          "text": "2026-04-08"
+          "text": "2026-04-09"
         },
         {
           "bbox_id": "contact_email",
@@ -856,13 +856,13 @@
           "bbox_px": [
             665.0,
             484.5,
-            1009.0,
+            1053.0,
             513.5
           ],
           "entity_id": "contact_email:value",
           "entity_type": "document_field_value",
           "field_id": "contact_email",
-          "text": "timberco@example.com"
+          "text": "cedarsupply@brightdesk.io"
         },
         {
           "bbox_id": "contact_phone",
@@ -900,7 +900,7 @@
           "entity_id": "contact_phone:value",
           "entity_type": "document_field_value",
           "field_id": "contact_phone",
-          "text": "(704) 497-3257"
+          "text": "(617) 760-5569"
         },
         {
           "bbox_id": "city",
@@ -932,13 +932,13 @@
           "bbox_px": [
             665.0,
             603.5,
-            745.0,
+            797.0,
             626.5
           ],
           "entity_id": "city:value",
           "entity_type": "document_field_value",
           "field_id": "city",
-          "text": "Arbor"
+          "text": "Pinecrest"
         },
         {
           "bbox_id": "tax_amount",
@@ -970,13 +970,13 @@
           "bbox_px": [
             214.0,
             722.5,
-            297.0,
+            315.0,
             749.5
           ],
           "entity_id": "tax_amount:value",
           "entity_type": "document_field_value",
           "field_id": "tax_amount",
-          "text": "$9.93"
+          "text": "$21.31"
         },
         {
           "bbox_id": "total_due",
@@ -1014,12 +1014,12 @@
           "entity_id": "total_due:value",
           "entity_type": "document_field_value",
           "field_id": "total_due",
-          "text": "$159.74"
+          "text": "$231.97"
         }
       ],
       "relations": {
-        "query_field_id": "customer_name",
-        "query_field_label": "Customer",
+        "query_field_id": "city",
+        "query_field_label": "City",
         "scene_variant": "invoice_sheet",
         "task_variant": "lookup_name",
         "view_family": "structured_document"
@@ -1028,10 +1028,10 @@
     },
     "witness_symbolic": {
       "bbox_id_sequence": [
-        "customer_name:label",
-        "customer_name:value"
+        "city:label",
+        "city:value"
       ],
-      "field_id": "customer_name"
+      "field_id": "city"
     }
   },
   "versions": {

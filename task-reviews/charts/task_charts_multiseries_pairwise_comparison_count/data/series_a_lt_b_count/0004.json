@@ -6,52 +6,56 @@
   "evidence_gt": {
     "type": "label_set",
     "value": [
-      "V"
+      "J"
     ]
   },
   "image": {
     "format": "png",
     "path": "charts/task_charts_multiseries_pairwise_comparison_count/images/series_a_lt_b_count/0004.png"
   },
-  "instance_seed": 3742796185067964,
-  "prompt": "The image shows a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Use the chart to compare the queried pair of series across the category labels. Determine the number of categories where Vano is less than Bor.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer format: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+  "instance_seed": 1014607412109351,
+  "prompt": "Work from the multiseries chart shown in the image: a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Read the chart values and count the categories where the stated series relation holds. Find how many category labels show Lupe lower than Ivar.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer requirement: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
   "prompt_variants": {
-    "answer_and_evidence": "The image shows a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Use the chart to compare the queried pair of series across the category labels. Determine the number of categories where Vano is less than Bor.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer format: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
-    "answer_only": "The image shows a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Use the chart to compare the queried pair of series across the category labels. Determine the number of categories where Vano is less than Bor.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
+    "answer_and_evidence": "Work from the multiseries chart shown in the image: a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Read the chart values and count the categories where the stated series relation holds. Find how many category labels show Lupe lower than Ivar.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer requirement: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+    "answer_only": "Work from the multiseries chart shown in the image: a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Read the chart values and count the categories where the stated series relation holds. Find how many category labels show Lupe lower than Ivar.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
   },
   "task": "task_charts_multiseries_pairwise_comparison_count",
   "task_variant": "series_a_lt_b_count",
   "trace_payload": {
     "execution_trace": {
       "answer_value": 1,
-      "category_count": 6,
+      "category_count": 10,
       "category_count_range": [
         5,
         10
       ],
       "category_labels": [
-        "R",
+        "U",
+        "J",
+        "Q",
+        "N",
+        "A",
+        "P",
         "Y",
-        "C",
+        "M",
         "T",
-        "V",
-        "D"
+        "G"
       ],
       "comparison": "less_than",
       "evidence_labels": [
-        "V"
+        "J"
       ],
-      "left_series_label": "Vano",
+      "left_series_label": "Lupe",
       "mark_color_distance_space": "lab",
       "mark_color_min_distance": 40.0,
       "mark_color_sampling_policy": "random_rgb_palette",
       "queried_series_labels": [
-        "Vano",
-        "Bor"
+        "Lupe",
+        "Ivar"
       ],
       "question_format": "numeric_open",
-      "right_series_label": "Bor",
-      "scene_variant": "grouped_bar",
+      "right_series_label": "Ivar",
+      "scene_variant": "multi_line",
       "scene_variant_probabilities": {
         "grouped_bar": 0.25,
         "grouped_horizontal_bar": 0.25,
@@ -65,30 +69,30 @@
       ],
       "series_fill_palette_rgb": [
         [
-          71,
-          76,
-          32
+          219,
+          123,
+          123
         ],
         [
-          57,
-          30,
-          142
+          119,
+          109,
+          127
         ]
       ],
       "series_labels": [
-        "Vano",
-        "Bor"
+        "Lupe",
+        "Ivar"
       ],
       "series_outline_palette_rgb": [
         [
-          39,
-          42,
-          18
+          120,
+          68,
+          68
         ],
         [
-          31,
-          16,
-          78
+          65,
+          60,
+          70
         ]
       ],
       "target_answer": 1,
@@ -98,74 +102,90 @@
       ],
       "task_variant": "series_a_lt_b_count",
       "task_variant_probabilities": {
-        "series_a_gt_b_count": 0.5,
-        "series_a_lt_b_count": 0.5
+        "series_a_gt_b_count": 0.0,
+        "series_a_lt_b_count": 1.0
       },
       "values_by_category": {
-        "C": {
-          "Bor": 3,
-          "Vano": 5
+        "A": {
+          "Ivar": 3,
+          "Lupe": 5
         },
-        "D": {
-          "Bor": 11,
-          "Vano": 13
+        "G": {
+          "Ivar": 11,
+          "Lupe": 16
         },
-        "R": {
-          "Bor": 1,
-          "Vano": 13
+        "J": {
+          "Ivar": 17,
+          "Lupe": 8
+        },
+        "M": {
+          "Ivar": 3,
+          "Lupe": 11
+        },
+        "N": {
+          "Ivar": 1,
+          "Lupe": 9
+        },
+        "P": {
+          "Ivar": 4,
+          "Lupe": 6
+        },
+        "Q": {
+          "Ivar": 10,
+          "Lupe": 14
         },
         "T": {
-          "Bor": 4,
-          "Vano": 10
+          "Ivar": 8,
+          "Lupe": 12
         },
-        "V": {
-          "Bor": 11,
-          "Vano": 7
+        "U": {
+          "Ivar": 2,
+          "Lupe": 5
         },
         "Y": {
-          "Bor": 7,
-          "Vano": 10
+          "Ivar": 9,
+          "Lupe": 14
         }
       }
     },
     "projected_evidence": {
       "bbox_set": [
         [
-          630.734,
-          147.714,
-          696.266,
-          562.0
+          198.3,
+          62.889,
+          214.3,
+          564.0
         ]
       ],
       "label_set": [
-        "V"
+        "J"
       ],
       "pixel_point_map": {
-        "V": [
-          663.5,
+        "J": [
+          206.3,
           554.0
         ]
       },
       "pixel_point_set": [
         [
-          663.5,
+          206.3,
           554.0
         ]
       ]
     },
     "query_spec": {
       "params": {
-        "category_count": 6,
+        "category_count": 10,
         "category_count_range": [
           5,
           10
         ],
         "comparison": "less_than",
         "queried_series_labels": [
-          "Vano",
-          "Bor"
+          "Lupe",
+          "Ivar"
         ],
-        "scene_variant": "grouped_bar",
+        "scene_variant": "multi_line",
         "scene_variant_probabilities": {
           "grouped_bar": 0.25,
           "grouped_horizontal_bar": 0.25,
@@ -184,13 +204,13 @@
         ],
         "task_variant": "series_a_lt_b_count",
         "task_variant_probabilities": {
-          "series_a_gt_b_count": 0.5,
-          "series_a_lt_b_count": 0.5
+          "series_a_gt_b_count": 0.0,
+          "series_a_lt_b_count": 1.0
         }
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 1,
+        "answer_or_evidence_variant_index": 2,
         "prompt_bundle_id": "charts_multiseries_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -200,16 +220,16 @@
           "json_example_answer_only": "{\"answer\":2}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "left_series": "Vano",
-          "object_description": "a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category",
-          "right_series": "Bor"
+          "left_series": "Lupe",
+          "object_description": "a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis",
+          "right_series": "Ivar"
         },
         "task_family_key": "multiseries_chart_comparison",
-        "task_family_variant_index": 0,
+        "task_family_variant_index": 2,
         "task_key": "pairwise_comparison_count_query",
-        "task_variant_index": 1,
+        "task_variant_index": 3,
         "task_variant_key": "series_a_lt_b_count",
-        "task_variant_template_index": 3,
+        "task_variant_template_index": 4,
         "template_paths": [
           "charts/multiseries/charts_multiseries_v1.json"
         ],
@@ -225,7 +245,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 1,
+            "answer_or_evidence_variant_index": 2,
             "prompt_bundle_id": "charts_multiseries_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -235,16 +255,16 @@
               "json_example_answer_only": "{\"answer\":2}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "left_series": "Vano",
-              "object_description": "a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category",
-              "right_series": "Bor"
+              "left_series": "Lupe",
+              "object_description": "a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis",
+              "right_series": "Ivar"
             },
             "task_family_key": "multiseries_chart_comparison",
-            "task_family_variant_index": 0,
+            "task_family_variant_index": 2,
             "task_key": "pairwise_comparison_count_query",
-            "task_variant_index": 1,
+            "task_variant_index": 3,
             "task_variant_key": "series_a_lt_b_count",
-            "task_variant_template_index": 3,
+            "task_variant_template_index": 4,
             "template_paths": [
               "charts/multiseries/charts_multiseries_v1.json"
             ],
@@ -255,7 +275,7 @@
               "task_variant:series_a_lt_b_count": 5
             }
           },
-          "prompt": "The image shows a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Use the chart to compare the queried pair of series across the category labels. Determine the number of categories where Vano is less than Bor.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer format: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}"
+          "prompt": "Work from the multiseries chart shown in the image: a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Read the chart values and count the categories where the stated series relation holds. Find how many category labels show Lupe lower than Ivar.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer requirement: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}"
         },
         "answer_only": {
           "metadata": {
@@ -270,16 +290,16 @@
               "json_example_answer_only": "{\"answer\":2}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "left_series": "Vano",
-              "object_description": "a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category",
-              "right_series": "Bor"
+              "left_series": "Lupe",
+              "object_description": "a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis",
+              "right_series": "Ivar"
             },
             "task_family_key": "multiseries_chart_comparison",
-            "task_family_variant_index": 0,
+            "task_family_variant_index": 2,
             "task_key": "pairwise_comparison_count_query",
-            "task_variant_index": 1,
+            "task_variant_index": 3,
             "task_variant_key": "series_a_lt_b_count",
-            "task_variant_template_index": 3,
+            "task_variant_template_index": 4,
             "template_paths": [
               "charts/multiseries/charts_multiseries_v1.json"
             ],
@@ -290,7 +310,7 @@
               "task_variant:series_a_lt_b_count": 5
             }
           },
-          "prompt": "The image shows a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Use the chart to compare the queried pair of series across the category labels. Determine the number of categories where Vano is less than Bor.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
+          "prompt": "Work from the multiseries chart shown in the image: a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Read the chart values and count the categories where the stated series relation holds. Find how many category labels show Lupe lower than Ivar.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
         }
       },
       "task_variant": "series_a_lt_b_count",
@@ -298,28 +318,44 @@
     },
     "render_map": {
       "category_label_centers_px": {
-        "C": [
-          409.5,
+        "A": [
+          434.9,
           554.0
         ],
-        "D": [
-          790.5,
+        "G": [
+          815.9,
           554.0
         ],
-        "R": [
-          155.5,
+        "J": [
+          206.3,
           554.0
         ],
-        "T": [
-          536.5,
-          554.0
-        ],
-        "V": [
+        "M": [
           663.5,
           554.0
         ],
-        "Y": [
+        "N": [
+          358.7,
+          554.0
+        ],
+        "P": [
+          511.1,
+          554.0
+        ],
+        "Q": [
           282.5,
+          554.0
+        ],
+        "T": [
+          739.7,
+          554.0
+        ],
+        "U": [
+          130.1,
+          554.0
+        ],
+        "Y": [
+          587.3,
           554.0
         ]
       },
@@ -361,26 +397,26 @@
         "sampling_policy": "random_rgb_palette",
         "series_fill_palette_rgb": [
           [
-            71,
-            76,
-            32
+            219,
+            123,
+            123
           ],
           [
-            57,
-            30,
-            142
+            119,
+            109,
+            127
           ]
         ],
         "series_outline_palette_rgb": [
           [
-            39,
-            42,
-            18
+            120,
+            68,
+            68
           ],
           [
-            31,
-            16,
-            78
+            65,
+            60,
+            70
           ]
         ]
       },
@@ -406,13 +442,13 @@
         "edits": [],
         "enabled": false
       },
-      "scene_variant": "grouped_bar",
+      "scene_variant": "multi_line",
       "text_style": {
         "label_font_size_px": 22,
         "label_stroke_width_px": 2,
         "tick_font_size_px": 18
       },
-      "y_axis_max": 14,
+      "y_axis_max": 18,
       "y_ticks": [
         0,
         1,
@@ -428,7 +464,11 @@
         11,
         12,
         13,
-        14
+        14,
+        15,
+        16,
+        17,
+        18
       ]
     },
     "scene_ir": {
@@ -436,525 +476,861 @@
         {
           "attrs": {
             "category_group_bbox_px": [
-              122.734,
-              78.571,
-              188.266,
+              121.1,
+              385.556,
+              139.1,
               562.0
             ],
-            "category_label": "R",
+            "category_label": "U",
             "category_label_center_px": [
-              155.5,
+              130.1,
               554.0
             ],
             "category_rank": 0,
             "mark_bbox_px": [
-              122.734,
-              78.571,
-              150.166,
-              528.0
+              122.1,
+              385.556,
+              138.1,
+              401.556
             ],
             "mark_center_px": [
-              136.45,
-              78.571
+              130.1,
+              393.556
             ],
             "mark_fill_rgb": [
-              71,
-              76,
-              32
+              219,
+              123,
+              123
             ],
             "mark_outline_rgb": [
-              39,
-              42,
-              18
+              120,
+              68,
+              68
             ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Vano",
-            "series_rank": 0,
-            "value": 13
-          },
-          "entity_id": "mark_R_Vano",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              122.734,
-              78.571,
-              188.266,
-              562.0
-            ],
-            "category_label": "R",
-            "category_label_center_px": [
-              155.5,
-              554.0
-            ],
-            "category_rank": 0,
-            "mark_bbox_px": [
-              160.834,
-              493.429,
-              188.266,
-              528.0
-            ],
-            "mark_center_px": [
-              174.55,
-              493.429
-            ],
-            "mark_fill_rgb": [
-              57,
-              30,
-              142
-            ],
-            "mark_outline_rgb": [
-              31,
-              16,
-              78
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Bor",
-            "series_rank": 1,
-            "value": 1
-          },
-          "entity_id": "mark_R_Bor",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              249.734,
-              182.286,
-              315.266,
-              562.0
-            ],
-            "category_label": "Y",
-            "category_label_center_px": [
-              282.5,
-              554.0
-            ],
-            "category_rank": 1,
-            "mark_bbox_px": [
-              249.734,
-              182.286,
-              277.166,
-              528.0
-            ],
-            "mark_center_px": [
-              263.45,
-              182.286
-            ],
-            "mark_fill_rgb": [
-              71,
-              76,
-              32
-            ],
-            "mark_outline_rgb": [
-              39,
-              42,
-              18
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Vano",
-            "series_rank": 0,
-            "value": 10
-          },
-          "entity_id": "mark_Y_Vano",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              249.734,
-              182.286,
-              315.266,
-              562.0
-            ],
-            "category_label": "Y",
-            "category_label_center_px": [
-              282.5,
-              554.0
-            ],
-            "category_rank": 1,
-            "mark_bbox_px": [
-              287.834,
-              286.0,
-              315.266,
-              528.0
-            ],
-            "mark_center_px": [
-              301.55,
-              286.0
-            ],
-            "mark_fill_rgb": [
-              57,
-              30,
-              142
-            ],
-            "mark_outline_rgb": [
-              31,
-              16,
-              78
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Bor",
-            "series_rank": 1,
-            "value": 7
-          },
-          "entity_id": "mark_Y_Bor",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              376.734,
-              355.143,
-              442.266,
-              562.0
-            ],
-            "category_label": "C",
-            "category_label_center_px": [
-              409.5,
-              554.0
-            ],
-            "category_rank": 2,
-            "mark_bbox_px": [
-              376.734,
-              355.143,
-              404.166,
-              528.0
-            ],
-            "mark_center_px": [
-              390.45,
-              355.143
-            ],
-            "mark_fill_rgb": [
-              71,
-              76,
-              32
-            ],
-            "mark_outline_rgb": [
-              39,
-              42,
-              18
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Vano",
+            "scene_variant": "multi_line",
+            "series_label": "Lupe",
             "series_rank": 0,
             "value": 5
           },
-          "entity_id": "mark_C_Vano",
-          "entity_type": "bar"
+          "entity_id": "mark_U_Lupe",
+          "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              376.734,
-              355.143,
-              442.266,
+              121.1,
+              385.556,
+              139.1,
               562.0
             ],
-            "category_label": "C",
+            "category_label": "U",
             "category_label_center_px": [
-              409.5,
+              130.1,
+              554.0
+            ],
+            "category_rank": 0,
+            "mark_bbox_px": [
+              122.1,
+              466.222,
+              138.1,
+              482.222
+            ],
+            "mark_center_px": [
+              130.1,
+              474.222
+            ],
+            "mark_fill_rgb": [
+              119,
+              109,
+              127
+            ],
+            "mark_outline_rgb": [
+              65,
+              60,
+              70
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Ivar",
+            "series_rank": 1,
+            "value": 2
+          },
+          "entity_id": "mark_U_Ivar",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              198.3,
+              62.889,
+              214.3,
+              564.0
+            ],
+            "category_label": "J",
+            "category_label_center_px": [
+              206.3,
+              554.0
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              198.3,
+              304.889,
+              214.3,
+              320.889
+            ],
+            "mark_center_px": [
+              206.3,
+              312.889
+            ],
+            "mark_fill_rgb": [
+              219,
+              123,
+              123
+            ],
+            "mark_outline_rgb": [
+              120,
+              68,
+              68
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Lupe",
+            "series_rank": 0,
+            "value": 8
+          },
+          "entity_id": "mark_J_Lupe",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              198.3,
+              62.889,
+              214.3,
+              564.0
+            ],
+            "category_label": "J",
+            "category_label_center_px": [
+              206.3,
+              554.0
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              198.3,
+              62.889,
+              214.3,
+              78.889
+            ],
+            "mark_center_px": [
+              206.3,
+              70.889
+            ],
+            "mark_fill_rgb": [
+              119,
+              109,
+              127
+            ],
+            "mark_outline_rgb": [
+              65,
+              60,
+              70
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Ivar",
+            "series_rank": 1,
+            "value": 17
+          },
+          "entity_id": "mark_J_Ivar",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              273.0,
+              143.556,
+              292.0,
+              563.5
+            ],
+            "category_label": "Q",
+            "category_label_center_px": [
+              282.5,
               554.0
             ],
             "category_rank": 2,
             "mark_bbox_px": [
-              414.834,
-              424.286,
-              442.266,
-              528.0
+              274.5,
+              143.556,
+              290.5,
+              159.556
             ],
             "mark_center_px": [
-              428.55,
-              424.286
+              282.5,
+              151.556
             ],
             "mark_fill_rgb": [
-              57,
-              30,
-              142
+              219,
+              123,
+              123
             ],
             "mark_outline_rgb": [
-              31,
-              16,
-              78
+              120,
+              68,
+              68
             ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Bor",
-            "series_rank": 1,
-            "value": 3
+            "scene_variant": "multi_line",
+            "series_label": "Lupe",
+            "series_rank": 0,
+            "value": 14
           },
-          "entity_id": "mark_C_Bor",
-          "entity_type": "bar"
+          "entity_id": "mark_Q_Lupe",
+          "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              503.734,
-              182.286,
-              569.266,
-              562.0
+              273.0,
+              143.556,
+              292.0,
+              563.5
             ],
-            "category_label": "T",
+            "category_label": "Q",
             "category_label_center_px": [
-              536.5,
+              282.5,
               554.0
             ],
-            "category_rank": 3,
+            "category_rank": 2,
             "mark_bbox_px": [
-              503.734,
-              182.286,
-              531.166,
-              528.0
+              274.5,
+              251.111,
+              290.5,
+              267.111
             ],
             "mark_center_px": [
-              517.45,
-              182.286
+              282.5,
+              259.111
             ],
             "mark_fill_rgb": [
-              71,
-              76,
-              32
+              119,
+              109,
+              127
             ],
             "mark_outline_rgb": [
-              39,
-              42,
-              18
+              65,
+              60,
+              70
             ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Vano",
-            "series_rank": 0,
+            "scene_variant": "multi_line",
+            "series_label": "Ivar",
+            "series_rank": 1,
             "value": 10
           },
-          "entity_id": "mark_T_Vano",
-          "entity_type": "bar"
+          "entity_id": "mark_Q_Ivar",
+          "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              503.734,
-              182.286,
-              569.266,
+              349.7,
+              278.0,
+              367.7,
               562.0
             ],
-            "category_label": "T",
+            "category_label": "N",
             "category_label_center_px": [
-              536.5,
+              358.7,
               554.0
             ],
             "category_rank": 3,
             "mark_bbox_px": [
-              541.834,
-              389.714,
-              569.266,
-              528.0
+              350.7,
+              278.0,
+              366.7,
+              294.0
             ],
             "mark_center_px": [
-              555.55,
-              389.714
-            ],
-            "mark_fill_rgb": [
-              57,
-              30,
-              142
-            ],
-            "mark_outline_rgb": [
-              31,
-              16,
-              78
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Bor",
-            "series_rank": 1,
-            "value": 4
-          },
-          "entity_id": "mark_T_Bor",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              630.734,
-              147.714,
-              696.266,
-              562.0
-            ],
-            "category_label": "V",
-            "category_label_center_px": [
-              663.5,
-              554.0
-            ],
-            "category_rank": 4,
-            "mark_bbox_px": [
-              630.734,
-              286.0,
-              658.166,
-              528.0
-            ],
-            "mark_center_px": [
-              644.45,
+              358.7,
               286.0
             ],
             "mark_fill_rgb": [
-              71,
-              76,
-              32
+              219,
+              123,
+              123
             ],
             "mark_outline_rgb": [
-              39,
-              42,
-              18
+              120,
+              68,
+              68
             ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Vano",
+            "scene_variant": "multi_line",
+            "series_label": "Lupe",
             "series_rank": 0,
-            "value": 7
+            "value": 9
           },
-          "entity_id": "mark_V_Vano",
-          "entity_type": "bar"
+          "entity_id": "mark_N_Lupe",
+          "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              630.734,
-              147.714,
-              696.266,
+              349.7,
+              278.0,
+              367.7,
               562.0
             ],
-            "category_label": "V",
+            "category_label": "N",
             "category_label_center_px": [
-              663.5,
+              358.7,
+              554.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              350.7,
+              493.111,
+              366.7,
+              509.111
+            ],
+            "mark_center_px": [
+              358.7,
+              501.111
+            ],
+            "mark_fill_rgb": [
+              119,
+              109,
+              127
+            ],
+            "mark_outline_rgb": [
+              65,
+              60,
+              70
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Ivar",
+            "series_rank": 1,
+            "value": 1
+          },
+          "entity_id": "mark_N_Ivar",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              426.4,
+              385.556,
+              443.4,
+              562.0
+            ],
+            "category_label": "A",
+            "category_label_center_px": [
+              434.9,
               554.0
             ],
             "category_rank": 4,
             "mark_bbox_px": [
-              668.834,
-              147.714,
-              696.266,
-              528.0
+              426.9,
+              385.556,
+              442.9,
+              401.556
             ],
             "mark_center_px": [
-              682.55,
-              147.714
+              434.9,
+              393.556
             ],
             "mark_fill_rgb": [
-              57,
-              30,
-              142
+              219,
+              123,
+              123
             ],
             "mark_outline_rgb": [
-              31,
-              16,
-              78
+              120,
+              68,
+              68
             ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Bor",
-            "series_rank": 1,
-            "value": 11
-          },
-          "entity_id": "mark_V_Bor",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              757.734,
-              78.571,
-              823.266,
-              562.0
-            ],
-            "category_label": "D",
-            "category_label_center_px": [
-              790.5,
-              554.0
-            ],
-            "category_rank": 5,
-            "mark_bbox_px": [
-              757.734,
-              78.571,
-              785.166,
-              528.0
-            ],
-            "mark_center_px": [
-              771.45,
-              78.571
-            ],
-            "mark_fill_rgb": [
-              71,
-              76,
-              32
-            ],
-            "mark_outline_rgb": [
-              39,
-              42,
-              18
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Vano",
+            "scene_variant": "multi_line",
+            "series_label": "Lupe",
             "series_rank": 0,
-            "value": 13
+            "value": 5
           },
-          "entity_id": "mark_D_Vano",
-          "entity_type": "bar"
+          "entity_id": "mark_A_Lupe",
+          "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              757.734,
-              78.571,
-              823.266,
+              426.4,
+              385.556,
+              443.4,
               562.0
             ],
-            "category_label": "D",
+            "category_label": "A",
             "category_label_center_px": [
-              790.5,
+              434.9,
+              554.0
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              426.9,
+              439.333,
+              442.9,
+              455.333
+            ],
+            "mark_center_px": [
+              434.9,
+              447.333
+            ],
+            "mark_fill_rgb": [
+              119,
+              109,
+              127
+            ],
+            "mark_outline_rgb": [
+              65,
+              60,
+              70
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Ivar",
+            "series_rank": 1,
+            "value": 3
+          },
+          "entity_id": "mark_A_Ivar",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              503.1,
+              358.667,
+              519.1,
+              562.0
+            ],
+            "category_label": "P",
+            "category_label_center_px": [
+              511.1,
               554.0
             ],
             "category_rank": 5,
             "mark_bbox_px": [
-              795.834,
-              147.714,
-              823.266,
-              528.0
+              503.1,
+              358.667,
+              519.1,
+              374.667
             ],
             "mark_center_px": [
-              809.55,
-              147.714
+              511.1,
+              366.667
             ],
             "mark_fill_rgb": [
-              57,
-              30,
-              142
+              219,
+              123,
+              123
             ],
             "mark_outline_rgb": [
-              31,
-              16,
-              78
+              120,
+              68,
+              68
             ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Bor",
+            "scene_variant": "multi_line",
+            "series_label": "Lupe",
+            "series_rank": 0,
+            "value": 6
+          },
+          "entity_id": "mark_P_Lupe",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              503.1,
+              358.667,
+              519.1,
+              562.0
+            ],
+            "category_label": "P",
+            "category_label_center_px": [
+              511.1,
+              554.0
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              503.1,
+              412.444,
+              519.1,
+              428.444
+            ],
+            "mark_center_px": [
+              511.1,
+              420.444
+            ],
+            "mark_fill_rgb": [
+              119,
+              109,
+              127
+            ],
+            "mark_outline_rgb": [
+              65,
+              60,
+              70
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Ivar",
+            "series_rank": 1,
+            "value": 4
+          },
+          "entity_id": "mark_P_Ivar",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              578.3,
+              143.556,
+              596.3,
+              562.0
+            ],
+            "category_label": "Y",
+            "category_label_center_px": [
+              587.3,
+              554.0
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              579.3,
+              143.556,
+              595.3,
+              159.556
+            ],
+            "mark_center_px": [
+              587.3,
+              151.556
+            ],
+            "mark_fill_rgb": [
+              219,
+              123,
+              123
+            ],
+            "mark_outline_rgb": [
+              120,
+              68,
+              68
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Lupe",
+            "series_rank": 0,
+            "value": 14
+          },
+          "entity_id": "mark_Y_Lupe",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              578.3,
+              143.556,
+              596.3,
+              562.0
+            ],
+            "category_label": "Y",
+            "category_label_center_px": [
+              587.3,
+              554.0
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              579.3,
+              278.0,
+              595.3,
+              294.0
+            ],
+            "mark_center_px": [
+              587.3,
+              286.0
+            ],
+            "mark_fill_rgb": [
+              119,
+              109,
+              127
+            ],
+            "mark_outline_rgb": [
+              65,
+              60,
+              70
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Ivar",
+            "series_rank": 1,
+            "value": 9
+          },
+          "entity_id": "mark_Y_Ivar",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              652.5,
+              224.222,
+              674.5,
+              562.0
+            ],
+            "category_label": "M",
+            "category_label_center_px": [
+              663.5,
+              554.0
+            ],
+            "category_rank": 7,
+            "mark_bbox_px": [
+              655.5,
+              224.222,
+              671.5,
+              240.222
+            ],
+            "mark_center_px": [
+              663.5,
+              232.222
+            ],
+            "mark_fill_rgb": [
+              219,
+              123,
+              123
+            ],
+            "mark_outline_rgb": [
+              120,
+              68,
+              68
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Lupe",
+            "series_rank": 0,
+            "value": 11
+          },
+          "entity_id": "mark_M_Lupe",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              652.5,
+              224.222,
+              674.5,
+              562.0
+            ],
+            "category_label": "M",
+            "category_label_center_px": [
+              663.5,
+              554.0
+            ],
+            "category_rank": 7,
+            "mark_bbox_px": [
+              655.5,
+              439.333,
+              671.5,
+              455.333
+            ],
+            "mark_center_px": [
+              663.5,
+              447.333
+            ],
+            "mark_fill_rgb": [
+              119,
+              109,
+              127
+            ],
+            "mark_outline_rgb": [
+              65,
+              60,
+              70
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Ivar",
+            "series_rank": 1,
+            "value": 3
+          },
+          "entity_id": "mark_M_Ivar",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              731.7,
+              197.333,
+              747.7,
+              562.0
+            ],
+            "category_label": "T",
+            "category_label_center_px": [
+              739.7,
+              554.0
+            ],
+            "category_rank": 8,
+            "mark_bbox_px": [
+              731.7,
+              197.333,
+              747.7,
+              213.333
+            ],
+            "mark_center_px": [
+              739.7,
+              205.333
+            ],
+            "mark_fill_rgb": [
+              219,
+              123,
+              123
+            ],
+            "mark_outline_rgb": [
+              120,
+              68,
+              68
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Lupe",
+            "series_rank": 0,
+            "value": 12
+          },
+          "entity_id": "mark_T_Lupe",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              731.7,
+              197.333,
+              747.7,
+              562.0
+            ],
+            "category_label": "T",
+            "category_label_center_px": [
+              739.7,
+              554.0
+            ],
+            "category_rank": 8,
+            "mark_bbox_px": [
+              731.7,
+              304.889,
+              747.7,
+              320.889
+            ],
+            "mark_center_px": [
+              739.7,
+              312.889
+            ],
+            "mark_fill_rgb": [
+              119,
+              109,
+              127
+            ],
+            "mark_outline_rgb": [
+              65,
+              60,
+              70
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Ivar",
+            "series_rank": 1,
+            "value": 8
+          },
+          "entity_id": "mark_T_Ivar",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              806.9,
+              89.778,
+              824.9,
+              562.0
+            ],
+            "category_label": "G",
+            "category_label_center_px": [
+              815.9,
+              554.0
+            ],
+            "category_rank": 9,
+            "mark_bbox_px": [
+              807.9,
+              89.778,
+              823.9,
+              105.778
+            ],
+            "mark_center_px": [
+              815.9,
+              97.778
+            ],
+            "mark_fill_rgb": [
+              219,
+              123,
+              123
+            ],
+            "mark_outline_rgb": [
+              120,
+              68,
+              68
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Lupe",
+            "series_rank": 0,
+            "value": 16
+          },
+          "entity_id": "mark_G_Lupe",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              806.9,
+              89.778,
+              824.9,
+              562.0
+            ],
+            "category_label": "G",
+            "category_label_center_px": [
+              815.9,
+              554.0
+            ],
+            "category_rank": 9,
+            "mark_bbox_px": [
+              807.9,
+              224.222,
+              823.9,
+              240.222
+            ],
+            "mark_center_px": [
+              815.9,
+              232.222
+            ],
+            "mark_fill_rgb": [
+              119,
+              109,
+              127
+            ],
+            "mark_outline_rgb": [
+              65,
+              60,
+              70
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Ivar",
             "series_rank": 1,
             "value": 11
           },
-          "entity_id": "mark_D_Bor",
-          "entity_type": "bar"
+          "entity_id": "mark_G_Ivar",
+          "entity_type": "point"
         }
       ],
       "relations": {
         "comparison": "less_than",
         "evidence_labels": [
-          "V"
+          "J"
         ],
         "queried_series_labels": [
-          "Vano",
-          "Bor"
+          "Lupe",
+          "Ivar"
         ],
-        "scene_variant": "grouped_bar",
+        "scene_variant": "multi_line",
         "task_variant": "series_a_lt_b_count"
       },
-      "scene_kind": "chart_grouped_bar_multiseries"
+      "scene_kind": "chart_multi_line_multiseries"
     },
     "witness_symbolic": {
       "labels": [
-        "V"
+        "J"
       ],
       "type": "label_set"
     }

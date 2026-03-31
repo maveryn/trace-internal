@@ -1,7 +1,7 @@
 {
   "answer_gt": {
     "type": "string",
-    "value": "$62.66"
+    "value": "$130.89"
   },
   "evidence_gt": {
     "type": "bbox_set",
@@ -30,18 +30,18 @@
     "format": "png",
     "path": "documents/task_documents_arithmetic_section_expression_value/images/sum_minus_amount_in_section/0003.png"
   },
-  "instance_seed": 1049391872335901,
-  "prompt": "Look at the document in the image: a structured application form with visible section headers and labeled fields. Locate the relevant section before computing the answer: In the Fees section, what is Registration Fee plus Service Fee minus Discount? Return the amount as $0.00. Answer using the resulting amount only.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing one bounding box for each referenced operand value, in the same order as the expression in the prompt.\nAnswer rule: set \"answer\" to the computed amount formatted exactly as $0.00.\nExample JSON:\n{\"evidence\":[[150,260,364,294],[150,320,364,354],[150,380,364,414]],\"answer\":\"$133.30\"}",
+  "instance_seed": 4666152458323834,
+  "prompt": "You are given a structured application form with visible section headers and labeled fields. In the Fees section, what is Registration Fee plus Service Fee minus Discount? Return the amount as $0.00. Give the computed amount as written in $0.00 format.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing one bounding box for each referenced operand value, in the same order as the expression in the prompt.\nAnswer format: set \"answer\" to the computed amount formatted exactly as $0.00.\nExample JSON:\n{\"evidence\":[[150,260,364,294],[150,320,364,354],[150,380,364,414]],\"answer\":\"$133.30\"}",
   "prompt_variants": {
-    "answer_and_evidence": "Look at the document in the image: a structured application form with visible section headers and labeled fields. Locate the relevant section before computing the answer: In the Fees section, what is Registration Fee plus Service Fee minus Discount? Return the amount as $0.00. Answer using the resulting amount only.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing one bounding box for each referenced operand value, in the same order as the expression in the prompt.\nAnswer rule: set \"answer\" to the computed amount formatted exactly as $0.00.\nExample JSON:\n{\"evidence\":[[150,260,364,294],[150,320,364,354],[150,380,364,414]],\"answer\":\"$133.30\"}",
-    "answer_only": "Look at the document in the image: a structured application form with visible section headers and labeled fields. Locate the relevant section before computing the answer: In the Fees section, what is Registration Fee plus Service Fee minus Discount? Return the amount as $0.00. Answer using the resulting amount only.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the computed amount formatted exactly as $0.00.\nExample JSON:\n{\"answer\":\"$133.30\"}"
+    "answer_and_evidence": "You are given a structured application form with visible section headers and labeled fields. In the Fees section, what is Registration Fee plus Service Fee minus Discount? Return the amount as $0.00. Give the computed amount as written in $0.00 format.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing one bounding box for each referenced operand value, in the same order as the expression in the prompt.\nAnswer format: set \"answer\" to the computed amount formatted exactly as $0.00.\nExample JSON:\n{\"evidence\":[[150,260,364,294],[150,320,364,354],[150,380,364,414]],\"answer\":\"$133.30\"}",
+    "answer_only": "You are given a structured application form with visible section headers and labeled fields. In the Fees section, what is Registration Fee plus Service Fee minus Discount? Return the amount as $0.00. Give the computed amount as written in $0.00 format.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the computed amount formatted exactly as $0.00.\nExample JSON:\n{\"answer\":\"$133.30\"}"
   },
   "task": "task_documents_arithmetic_section_expression_value",
   "task_variant": "sum_minus_amount_in_section",
   "trace_payload": {
     "answer_gt": {
       "type": "string",
-      "value": "$62.66"
+      "value": "$130.89"
     },
     "background": {
       "available_styles": [
@@ -83,9 +83,9 @@
     },
     "execution_trace": {
       "expression_operand_cents": [
-        6205,
-        1838,
-        1777
+        9431,
+        5456,
+        1798
       ],
       "field_count": 9,
       "field_specs": [
@@ -93,7 +93,7 @@
           "comparison_kind": "other",
           "field_id": "applicant_name",
           "field_label": "Applicant Name",
-          "field_value": "Nora Brooks",
+          "field_value": "Dana Lee",
           "label_bbox_id": "applicant_name:label",
           "section_id": "profile",
           "section_label": "Profile",
@@ -103,7 +103,7 @@
           "comparison_kind": "other",
           "field_id": "reference_id",
           "field_label": "Reference ID",
-          "field_value": "REF-24075",
+          "field_value": "REF-33196",
           "label_bbox_id": "reference_id:label",
           "section_id": "profile",
           "section_label": "Profile",
@@ -123,7 +123,7 @@
           "comparison_kind": "other",
           "field_id": "reviewer_name",
           "field_label": "Reviewer",
-          "field_value": "Lila Cruz",
+          "field_value": "Jade Brooks",
           "label_bbox_id": "reviewer_name:label",
           "section_id": "profile",
           "section_label": "Profile",
@@ -133,7 +133,7 @@
           "comparison_kind": "other",
           "field_id": "contact_phone",
           "field_label": "Phone",
-          "field_value": "(818) 227-7990",
+          "field_value": "(415) 582-3844",
           "label_bbox_id": "contact_phone:label",
           "section_id": "contact",
           "section_label": "Contact",
@@ -143,7 +143,7 @@
           "comparison_kind": "other",
           "field_id": "contact_email",
           "field_label": "Email",
-          "field_value": "norabrooks@northpost.co",
+          "field_value": "danalee@example.com",
           "label_bbox_id": "contact_email:label",
           "section_id": "contact",
           "section_label": "Contact",
@@ -153,7 +153,7 @@
           "comparison_kind": "amount",
           "field_id": "registration_fee",
           "field_label": "Registration Fee",
-          "field_value": "$62.05",
+          "field_value": "$94.31",
           "label_bbox_id": "registration_fee:label",
           "section_id": "fees",
           "section_label": "Fees",
@@ -163,7 +163,7 @@
           "comparison_kind": "amount",
           "field_id": "service_fee",
           "field_label": "Service Fee",
-          "field_value": "$18.38",
+          "field_value": "$54.56",
           "label_bbox_id": "service_fee:label",
           "section_id": "fees",
           "section_label": "Fees",
@@ -173,7 +173,7 @@
           "comparison_kind": "amount",
           "field_id": "discount_amount",
           "field_label": "Discount",
-          "field_value": "$17.77",
+          "field_value": "$17.98",
           "label_bbox_id": "discount_amount:label",
           "section_id": "fees",
           "section_label": "Fees",
@@ -191,9 +191,9 @@
         "Discount"
       ],
       "operand_field_values": [
-        "$62.05",
-        "$18.38",
-        "$17.77"
+        "$94.31",
+        "$54.56",
+        "$17.98"
       ],
       "operand_value_bbox_ids": [
         "registration_fee:value",
@@ -208,8 +208,8 @@
       "query_section_label": "Fees",
       "question_format": "document_section_expression_value",
       "question_text": "In the Fees section, what is Registration Fee plus Service Fee minus Discount? Return the amount as $0.00.",
-      "result_cents": 6266,
-      "result_value": "$62.66",
+      "result_cents": 13089,
+      "result_value": "$130.89",
       "scene_title": "Application Form",
       "scene_variant": "form_sheet",
       "section_specs": [
@@ -305,7 +305,7 @@
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 4,
+        "answer_or_evidence_variant_index": 1,
         "prompt_bundle_id": "documents_arithmetic_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -319,11 +319,11 @@
           "question_text": "In the Fees section, what is Registration Fee plus Service Fee minus Discount? Return the amount as $0.00."
         },
         "task_family_key": "structured_document_sections",
-        "task_family_variant_index": 1,
+        "task_family_variant_index": 2,
         "task_key": "section_expression_query",
-        "task_variant_index": 4,
+        "task_variant_index": 0,
         "task_variant_key": "sum_minus_amount_in_section",
-        "task_variant_template_index": 4,
+        "task_variant_template_index": 3,
         "template_paths": [
           "documents/arithmetic/documents_arithmetic_v1.json"
         ],
@@ -339,7 +339,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 4,
+            "answer_or_evidence_variant_index": 1,
             "prompt_bundle_id": "documents_arithmetic_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -353,11 +353,11 @@
               "question_text": "In the Fees section, what is Registration Fee plus Service Fee minus Discount? Return the amount as $0.00."
             },
             "task_family_key": "structured_document_sections",
-            "task_family_variant_index": 1,
+            "task_family_variant_index": 2,
             "task_key": "section_expression_query",
-            "task_variant_index": 4,
+            "task_variant_index": 0,
             "task_variant_key": "sum_minus_amount_in_section",
-            "task_variant_template_index": 4,
+            "task_variant_template_index": 3,
             "template_paths": [
               "documents/arithmetic/documents_arithmetic_v1.json"
             ],
@@ -368,7 +368,7 @@
               "task_variant:sum_minus_amount_in_section": 5
             }
           },
-          "prompt": "Look at the document in the image: a structured application form with visible section headers and labeled fields. Locate the relevant section before computing the answer: In the Fees section, what is Registration Fee plus Service Fee minus Discount? Return the amount as $0.00. Answer using the resulting amount only.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing one bounding box for each referenced operand value, in the same order as the expression in the prompt.\nAnswer rule: set \"answer\" to the computed amount formatted exactly as $0.00.\nExample JSON:\n{\"evidence\":[[150,260,364,294],[150,320,364,354],[150,380,364,414]],\"answer\":\"$133.30\"}"
+          "prompt": "You are given a structured application form with visible section headers and labeled fields. In the Fees section, what is Registration Fee plus Service Fee minus Discount? Return the amount as $0.00. Give the computed amount as written in $0.00 format.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing one bounding box for each referenced operand value, in the same order as the expression in the prompt.\nAnswer format: set \"answer\" to the computed amount formatted exactly as $0.00.\nExample JSON:\n{\"evidence\":[[150,260,364,294],[150,320,364,354],[150,380,364,414]],\"answer\":\"$133.30\"}"
         },
         "answer_only": {
           "metadata": {
@@ -387,11 +387,11 @@
               "question_text": "In the Fees section, what is Registration Fee plus Service Fee minus Discount? Return the amount as $0.00."
             },
             "task_family_key": "structured_document_sections",
-            "task_family_variant_index": 1,
+            "task_family_variant_index": 2,
             "task_key": "section_expression_query",
-            "task_variant_index": 4,
+            "task_variant_index": 0,
             "task_variant_key": "sum_minus_amount_in_section",
-            "task_variant_template_index": 4,
+            "task_variant_template_index": 3,
             "template_paths": [
               "documents/arithmetic/documents_arithmetic_v1.json"
             ],
@@ -402,7 +402,7 @@
               "task_variant:sum_minus_amount_in_section": 5
             }
           },
-          "prompt": "Look at the document in the image: a structured application form with visible section headers and labeled fields. Locate the relevant section before computing the answer: In the Fees section, what is Registration Fee plus Service Fee minus Discount? Return the amount as $0.00. Answer using the resulting amount only.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the computed amount formatted exactly as $0.00.\nExample JSON:\n{\"answer\":\"$133.30\"}"
+          "prompt": "You are given a structured application form with visible section headers and labeled fields. In the Fees section, what is Registration Fee plus Service Fee minus Discount? Return the amount as $0.00. Give the computed amount as written in $0.00 format.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the computed amount formatted exactly as $0.00.\nExample JSON:\n{\"answer\":\"$133.30\"}"
         }
       },
       "task_variant": "sum_minus_amount_in_section",
@@ -524,14 +524,14 @@
       "field_value_bboxes_px": {
         "applicant_name:value": [
           218.0,
-          262.5,
-          392.0,
-          285.5
+          263.0,
+          353.0,
+          285.0
         ],
         "contact_email:value": [
           666.0,
           511.5,
-          1033.0,
+          997.0,
           540.5
         ],
         "contact_phone:value": [
@@ -566,9 +566,9 @@
         ],
         "reviewer_name:value": [
           666.0,
-          388.5,
-          791.0,
-          411.5
+          385.5,
+          835.0,
+          414.5
         ],
         "service_fee:value": [
           666.0,
@@ -633,7 +633,7 @@
     "render_spec": {
       "canvas_height": 920,
       "canvas_width": 1280,
-      "geometry_seed": 1049391872335901,
+      "geometry_seed": 4666152458323834,
       "page_shadow_offset_px": 14,
       "receipt_page_height_px": 760,
       "receipt_page_width_px": 520,
@@ -746,14 +746,14 @@
           "bbox_id": "applicant_name:value",
           "bbox_px": [
             218.0,
-            262.5,
-            392.0,
-            285.5
+            263.0,
+            353.0,
+            285.0
           ],
           "entity_id": "applicant_name:value",
           "entity_type": "document_field_value",
           "field_id": "applicant_name",
-          "text": "Nora Brooks"
+          "text": "Dana Lee"
         },
         {
           "bbox_id": "reference_id",
@@ -791,7 +791,7 @@
           "entity_id": "reference_id:value",
           "entity_type": "document_field_value",
           "field_id": "reference_id",
-          "text": "REF-24075"
+          "text": "REF-33196"
         },
         {
           "bbox_id": "department",
@@ -860,14 +860,14 @@
           "bbox_id": "reviewer_name:value",
           "bbox_px": [
             666.0,
-            388.5,
-            791.0,
-            411.5
+            385.5,
+            835.0,
+            414.5
           ],
           "entity_id": "reviewer_name:value",
           "entity_type": "document_field_value",
           "field_id": "reviewer_name",
-          "text": "Lila Cruz"
+          "text": "Jade Brooks"
         },
         {
           "bbox_id": "contact_phone",
@@ -905,7 +905,7 @@
           "entity_id": "contact_phone:value",
           "entity_type": "document_field_value",
           "field_id": "contact_phone",
-          "text": "(818) 227-7990"
+          "text": "(415) 582-3844"
         },
         {
           "bbox_id": "contact_email",
@@ -937,13 +937,13 @@
           "bbox_px": [
             666.0,
             511.5,
-            1033.0,
+            997.0,
             540.5
           ],
           "entity_id": "contact_email:value",
           "entity_type": "document_field_value",
           "field_id": "contact_email",
-          "text": "norabrooks@northpost.co"
+          "text": "danalee@example.com"
         },
         {
           "bbox_id": "registration_fee",
@@ -981,7 +981,7 @@
           "entity_id": "registration_fee:value",
           "entity_type": "document_field_value",
           "field_id": "registration_fee",
-          "text": "$62.05"
+          "text": "$94.31"
         },
         {
           "bbox_id": "service_fee",
@@ -1019,7 +1019,7 @@
           "entity_id": "service_fee:value",
           "entity_type": "document_field_value",
           "field_id": "service_fee",
-          "text": "$18.38"
+          "text": "$54.56"
         },
         {
           "bbox_id": "discount_amount",
@@ -1057,7 +1057,7 @@
           "entity_id": "discount_amount:value",
           "entity_type": "document_field_value",
           "field_id": "discount_amount",
-          "text": "$17.77"
+          "text": "$17.98"
         },
         {
           "bbox_id": "profile:label",

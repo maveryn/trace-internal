@@ -1,14 +1,17 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 4
+    "value": 7
   },
   "evidence_gt": {
     "type": "label_set",
     "value": [
-      "A",
-      "F",
-      "M",
+      "B",
+      "L",
+      "N",
+      "Q",
+      "V",
+      "X",
       "Z"
     ]
   },
@@ -16,47 +19,54 @@
     "format": "png",
     "path": "charts/task_charts_multiseries_pairwise_comparison_count/images/series_a_lt_b_count/0015.png"
   },
-  "instance_seed": 6783915707328318,
-  "prompt": "You are given a multiseries chart: a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Work category by category and count the labels where the requested series comparison is true. Determine the number of categories where Even is less than Yona.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+  "instance_seed": 4954063198826445,
+  "prompt": "Work from the multiseries chart shown in the image: a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Work category by category and count the labels where the requested series comparison is true. Across the labeled categories, in how many categories is Libb lower than Rafa?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
   "prompt_variants": {
-    "answer_and_evidence": "You are given a multiseries chart: a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Work category by category and count the labels where the requested series comparison is true. Determine the number of categories where Even is less than Yona.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
-    "answer_only": "You are given a multiseries chart: a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Work category by category and count the labels where the requested series comparison is true. Determine the number of categories where Even is less than Yona.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
+    "answer_and_evidence": "Work from the multiseries chart shown in the image: a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Work category by category and count the labels where the requested series comparison is true. Across the labeled categories, in how many categories is Libb lower than Rafa?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+    "answer_only": "Work from the multiseries chart shown in the image: a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Work category by category and count the labels where the requested series comparison is true. Across the labeled categories, in how many categories is Libb lower than Rafa?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
   },
   "task": "task_charts_multiseries_pairwise_comparison_count",
   "task_variant": "series_a_lt_b_count",
   "trace_payload": {
     "execution_trace": {
-      "answer_value": 4,
-      "category_count": 5,
+      "answer_value": 7,
+      "category_count": 9,
       "category_count_range": [
         5,
         10
       ],
       "category_labels": [
-        "Z",
         "M",
-        "T",
-        "F",
-        "A"
+        "Z",
+        "N",
+        "L",
+        "X",
+        "B",
+        "Q",
+        "V",
+        "J"
       ],
       "comparison": "less_than",
       "evidence_labels": [
-        "A",
-        "F",
-        "M",
+        "B",
+        "L",
+        "N",
+        "Q",
+        "V",
+        "X",
         "Z"
       ],
-      "left_series_label": "Even",
+      "left_series_label": "Libb",
       "mark_color_distance_space": "lab",
       "mark_color_min_distance": 40.0,
       "mark_color_sampling_policy": "random_rgb_palette",
       "queried_series_labels": [
-        "Even",
-        "Yona"
+        "Libb",
+        "Rafa"
       ],
       "question_format": "numeric_open",
-      "right_series_label": "Yona",
-      "scene_variant": "grouped_horizontal_bar",
+      "right_series_label": "Rafa",
+      "scene_variant": "multi_line",
       "scene_variant_probabilities": {
         "grouped_bar": 0.25,
         "grouped_horizontal_bar": 0.25,
@@ -70,148 +80,209 @@
       ],
       "series_fill_palette_rgb": [
         [
-          118,
-          153,
-          17
+          201,
+          158,
+          48
         ],
         [
-          175,
-          134,
-          126
+          168,
+          32,
+          37
         ]
       ],
       "series_labels": [
-        "Even",
-        "Yona"
+        "Libb",
+        "Rafa"
       ],
       "series_outline_palette_rgb": [
         [
-          65,
-          84,
-          9
+          111,
+          87,
+          26
         ],
         [
-          96,
-          74,
-          69
+          92,
+          18,
+          20
         ]
       ],
-      "target_answer": 4,
+      "target_answer": 7,
       "target_answer_range": [
         0,
         8
       ],
       "task_variant": "series_a_lt_b_count",
       "task_variant_probabilities": {
-        "series_a_gt_b_count": 0.5,
-        "series_a_lt_b_count": 0.5
+        "series_a_gt_b_count": 0.0,
+        "series_a_lt_b_count": 1.0
       },
       "values_by_category": {
-        "A": {
-          "Even": 5,
-          "Yona": 8
+        "B": {
+          "Libb": 1,
+          "Rafa": 9
         },
-        "F": {
-          "Even": 2,
-          "Yona": 18
+        "J": {
+          "Libb": 19,
+          "Rafa": 1
+        },
+        "L": {
+          "Libb": 2,
+          "Rafa": 4
         },
         "M": {
-          "Even": 10,
-          "Yona": 16
+          "Libb": 20,
+          "Rafa": 12
         },
-        "T": {
-          "Even": 20,
-          "Yona": 14
+        "N": {
+          "Libb": 9,
+          "Rafa": 19
+        },
+        "Q": {
+          "Libb": 2,
+          "Rafa": 7
+        },
+        "V": {
+          "Libb": 4,
+          "Rafa": 16
+        },
+        "X": {
+          "Libb": 11,
+          "Rafa": 15
         },
         "Z": {
-          "Even": 10,
-          "Yona": 18
+          "Libb": 4,
+          "Rafa": 16
         }
       }
     },
     "projected_evidence": {
       "bbox_set": [
         [
-          53.5,
-          454.626,
-          382.286,
-          504.574
+          549.167,
+          312.571,
+          566.167,
+          562.0
         ],
         [
-          54.5,
-          357.826,
-          745.143,
-          407.774
+          380.333,
+          427.81,
+          396.333,
+          562.0
         ],
         [
-          51.0,
-          164.226,
-          672.571,
-          214.174
+          294.667,
+          82.095,
+          312.667,
+          562.0
         ],
         [
-          54.0,
-          67.426,
-          745.143,
-          117.374
+          632.833,
+          358.667,
+          651.833,
+          563.5
+        ],
+        [
+          718.5,
+          151.238,
+          735.5,
+          562.0
+        ],
+        [
+          464.5,
+          174.286,
+          481.5,
+          562.0
+        ],
+        [
+          211.0,
+          151.238,
+          227.0,
+          562.0
         ]
       ],
       "label_set": [
-        "A",
-        "F",
-        "M",
+        "B",
+        "L",
+        "N",
+        "Q",
+        "V",
+        "X",
         "Z"
       ],
       "pixel_point_map": {
-        "A": [
-          62.0,
-          479.6
+        "B": [
+          557.667,
+          554.0
         ],
-        "F": [
-          62.0,
-          382.8
+        "L": [
+          388.333,
+          554.0
         ],
-        "M": [
-          62.0,
-          189.2
+        "N": [
+          303.667,
+          554.0
+        ],
+        "Q": [
+          642.333,
+          554.0
+        ],
+        "V": [
+          727.0,
+          554.0
+        ],
+        "X": [
+          473.0,
+          554.0
         ],
         "Z": [
-          62.0,
-          92.4
+          219.0,
+          554.0
         ]
       },
       "pixel_point_set": [
         [
-          62.0,
-          479.6
+          557.667,
+          554.0
         ],
         [
-          62.0,
-          382.8
+          388.333,
+          554.0
         ],
         [
-          62.0,
-          189.2
+          303.667,
+          554.0
         ],
         [
-          62.0,
-          92.4
+          642.333,
+          554.0
+        ],
+        [
+          727.0,
+          554.0
+        ],
+        [
+          473.0,
+          554.0
+        ],
+        [
+          219.0,
+          554.0
         ]
       ]
     },
     "query_spec": {
       "params": {
-        "category_count": 5,
+        "category_count": 9,
         "category_count_range": [
           5,
           10
         ],
         "comparison": "less_than",
         "queried_series_labels": [
-          "Even",
-          "Yona"
+          "Libb",
+          "Rafa"
         ],
-        "scene_variant": "grouped_horizontal_bar",
+        "scene_variant": "multi_line",
         "scene_variant_probabilities": {
           "grouped_bar": 0.25,
           "grouped_horizontal_bar": 0.25,
@@ -223,15 +294,15 @@
           2,
           3
         ],
-        "target_answer": 4,
+        "target_answer": 7,
         "target_answer_range": [
           0,
           8
         ],
         "task_variant": "series_a_lt_b_count",
         "task_variant_probabilities": {
-          "series_a_gt_b_count": 0.5,
-          "series_a_lt_b_count": 0.5
+          "series_a_gt_b_count": 0.0,
+          "series_a_lt_b_count": 1.0
         }
       },
       "prompt_variant": {
@@ -246,16 +317,16 @@
           "json_example_answer_only": "{\"answer\":2}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "left_series": "Even",
-          "object_description": "a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category",
-          "right_series": "Yona"
+          "left_series": "Libb",
+          "object_description": "a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis",
+          "right_series": "Rafa"
         },
         "task_family_key": "multiseries_chart_comparison",
-        "task_family_variant_index": 4,
+        "task_family_variant_index": 2,
         "task_key": "pairwise_comparison_count_query",
         "task_variant_index": 4,
         "task_variant_key": "series_a_lt_b_count",
-        "task_variant_template_index": 3,
+        "task_variant_template_index": 0,
         "template_paths": [
           "charts/multiseries/charts_multiseries_v1.json"
         ],
@@ -281,16 +352,16 @@
               "json_example_answer_only": "{\"answer\":2}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "left_series": "Even",
-              "object_description": "a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category",
-              "right_series": "Yona"
+              "left_series": "Libb",
+              "object_description": "a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis",
+              "right_series": "Rafa"
             },
             "task_family_key": "multiseries_chart_comparison",
-            "task_family_variant_index": 4,
+            "task_family_variant_index": 2,
             "task_key": "pairwise_comparison_count_query",
             "task_variant_index": 4,
             "task_variant_key": "series_a_lt_b_count",
-            "task_variant_template_index": 3,
+            "task_variant_template_index": 0,
             "template_paths": [
               "charts/multiseries/charts_multiseries_v1.json"
             ],
@@ -301,12 +372,12 @@
               "task_variant:series_a_lt_b_count": 5
             }
           },
-          "prompt": "You are given a multiseries chart: a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Work category by category and count the labels where the requested series comparison is true. Determine the number of categories where Even is less than Yona.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}"
+          "prompt": "Work from the multiseries chart shown in the image: a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Work category by category and count the labels where the requested series comparison is true. Across the labeled categories, in how many categories is Libb lower than Rafa?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 1,
+            "answer_or_evidence_variant_index": 3,
             "prompt_bundle_id": "charts_multiseries_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -316,16 +387,16 @@
               "json_example_answer_only": "{\"answer\":2}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "left_series": "Even",
-              "object_description": "a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category",
-              "right_series": "Yona"
+              "left_series": "Libb",
+              "object_description": "a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis",
+              "right_series": "Rafa"
             },
             "task_family_key": "multiseries_chart_comparison",
-            "task_family_variant_index": 4,
+            "task_family_variant_index": 2,
             "task_key": "pairwise_comparison_count_query",
             "task_variant_index": 4,
             "task_variant_key": "series_a_lt_b_count",
-            "task_variant_template_index": 3,
+            "task_variant_template_index": 0,
             "template_paths": [
               "charts/multiseries/charts_multiseries_v1.json"
             ],
@@ -336,7 +407,7 @@
               "task_variant:series_a_lt_b_count": 5
             }
           },
-          "prompt": "You are given a multiseries chart: a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Work category by category and count the labels where the requested series comparison is true. Determine the number of categories where Even is less than Yona.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
+          "prompt": "Work from the multiseries chart shown in the image: a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Work category by category and count the labels where the requested series comparison is true. Across the labeled categories, in how many categories is Libb lower than Rafa?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
         }
       },
       "task_variant": "series_a_lt_b_count",
@@ -344,25 +415,41 @@
     },
     "render_map": {
       "category_label_centers_px": {
-        "A": [
-          62.0,
-          479.6
+        "B": [
+          557.667,
+          554.0
         ],
-        "F": [
-          62.0,
-          382.8
+        "J": [
+          811.667,
+          554.0
+        ],
+        "L": [
+          388.333,
+          554.0
         ],
         "M": [
-          62.0,
-          189.2
+          134.333,
+          554.0
         ],
-        "T": [
-          62.0,
-          286.0
+        "N": [
+          303.667,
+          554.0
+        ],
+        "Q": [
+          642.333,
+          554.0
+        ],
+        "V": [
+          727.0,
+          554.0
+        ],
+        "X": [
+          473.0,
+          554.0
         ],
         "Z": [
-          62.0,
-          92.4
+          219.0,
+          554.0
         ]
       },
       "image_id": "img0",
@@ -403,26 +490,26 @@
         "sampling_policy": "random_rgb_palette",
         "series_fill_palette_rgb": [
           [
-            118,
-            153,
-            17
+            201,
+            158,
+            48
           ],
           [
-            175,
-            134,
-            126
+            168,
+            32,
+            37
           ]
         ],
         "series_outline_palette_rgb": [
           [
-            65,
-            84,
-            9
+            111,
+            87,
+            26
           ],
           [
-            96,
-            74,
-            69
+            92,
+            18,
+            20
           ]
         ]
       },
@@ -448,7 +535,7 @@
         "edits": [],
         "enabled": false
       },
-      "scene_variant": "grouped_horizontal_bar",
+      "scene_variant": "multi_line",
       "text_style": {
         "label_font_size_px": 22,
         "label_stroke_width_px": 2,
@@ -485,446 +572,788 @@
         {
           "attrs": {
             "category_group_bbox_px": [
-              54.0,
-              67.426,
-              745.143,
-              117.374
-            ],
-            "category_label": "Z",
-            "category_label_center_px": [
-              62.0,
-              92.4
-            ],
-            "category_rank": 0,
-            "mark_bbox_px": [
-              92.0,
-              67.426,
-              454.857,
-              88.334
-            ],
-            "mark_center_px": [
-              273.429,
-              77.88
-            ],
-            "mark_fill_rgb": [
-              118,
-              153,
-              17
-            ],
-            "mark_outline_rgb": [
-              65,
-              84,
-              9
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Even",
-            "series_rank": 0,
-            "value": 10
-          },
-          "entity_id": "mark_Z_Even",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              54.0,
-              67.426,
-              745.143,
-              117.374
-            ],
-            "category_label": "Z",
-            "category_label_center_px": [
-              62.0,
-              92.4
-            ],
-            "category_rank": 0,
-            "mark_bbox_px": [
-              92.0,
-              96.466,
-              745.143,
-              117.374
-            ],
-            "mark_center_px": [
-              418.571,
-              106.92
-            ],
-            "mark_fill_rgb": [
-              175,
-              134,
-              126
-            ],
-            "mark_outline_rgb": [
-              96,
-              74,
-              69
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Yona",
-            "series_rank": 1,
-            "value": 18
-          },
-          "entity_id": "mark_Z_Yona",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              51.0,
-              164.226,
-              672.571,
-              214.174
+              123.333,
+              59.048,
+              145.333,
+              562.0
             ],
             "category_label": "M",
             "category_label_center_px": [
-              62.0,
-              189.2
+              134.333,
+              554.0
             ],
-            "category_rank": 1,
+            "category_rank": 0,
             "mark_bbox_px": [
-              92.0,
-              164.226,
-              454.857,
-              185.134
+              126.333,
+              59.048,
+              142.333,
+              75.048
             ],
             "mark_center_px": [
-              273.429,
-              174.68
+              134.333,
+              67.048
             ],
             "mark_fill_rgb": [
-              118,
-              153,
-              17
+              201,
+              158,
+              48
             ],
             "mark_outline_rgb": [
-              65,
-              84,
-              9
+              111,
+              87,
+              26
             ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Even",
-            "series_rank": 0,
-            "value": 10
-          },
-          "entity_id": "mark_M_Even",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              51.0,
-              164.226,
-              672.571,
-              214.174
-            ],
-            "category_label": "M",
-            "category_label_center_px": [
-              62.0,
-              189.2
-            ],
-            "category_rank": 1,
-            "mark_bbox_px": [
-              92.0,
-              193.266,
-              672.571,
-              214.174
-            ],
-            "mark_center_px": [
-              382.286,
-              203.72
-            ],
-            "mark_fill_rgb": [
-              175,
-              134,
-              126
-            ],
-            "mark_outline_rgb": [
-              96,
-              74,
-              69
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Yona",
-            "series_rank": 1,
-            "value": 16
-          },
-          "entity_id": "mark_M_Yona",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              54.5,
-              261.026,
-              817.714,
-              310.974
-            ],
-            "category_label": "T",
-            "category_label_center_px": [
-              62.0,
-              286.0
-            ],
-            "category_rank": 2,
-            "mark_bbox_px": [
-              92.0,
-              261.026,
-              817.714,
-              281.934
-            ],
-            "mark_center_px": [
-              454.857,
-              271.48
-            ],
-            "mark_fill_rgb": [
-              118,
-              153,
-              17
-            ],
-            "mark_outline_rgb": [
-              65,
-              84,
-              9
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Even",
+            "scene_variant": "multi_line",
+            "series_label": "Libb",
             "series_rank": 0,
             "value": 20
           },
-          "entity_id": "mark_T_Even",
-          "entity_type": "bar"
+          "entity_id": "mark_M_Libb",
+          "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              54.5,
-              261.026,
-              817.714,
-              310.974
+              123.333,
+              59.048,
+              145.333,
+              562.0
             ],
-            "category_label": "T",
+            "category_label": "M",
             "category_label_center_px": [
-              62.0,
-              286.0
+              134.333,
+              554.0
+            ],
+            "category_rank": 0,
+            "mark_bbox_px": [
+              126.333,
+              243.429,
+              142.333,
+              259.429
+            ],
+            "mark_center_px": [
+              134.333,
+              251.429
+            ],
+            "mark_fill_rgb": [
+              168,
+              32,
+              37
+            ],
+            "mark_outline_rgb": [
+              92,
+              18,
+              20
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Rafa",
+            "series_rank": 1,
+            "value": 12
+          },
+          "entity_id": "mark_M_Rafa",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              211.0,
+              151.238,
+              227.0,
+              562.0
+            ],
+            "category_label": "Z",
+            "category_label_center_px": [
+              219.0,
+              554.0
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              211.0,
+              427.81,
+              227.0,
+              443.81
+            ],
+            "mark_center_px": [
+              219.0,
+              435.81
+            ],
+            "mark_fill_rgb": [
+              201,
+              158,
+              48
+            ],
+            "mark_outline_rgb": [
+              111,
+              87,
+              26
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Libb",
+            "series_rank": 0,
+            "value": 4
+          },
+          "entity_id": "mark_Z_Libb",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              211.0,
+              151.238,
+              227.0,
+              562.0
+            ],
+            "category_label": "Z",
+            "category_label_center_px": [
+              219.0,
+              554.0
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              211.0,
+              151.238,
+              227.0,
+              167.238
+            ],
+            "mark_center_px": [
+              219.0,
+              159.238
+            ],
+            "mark_fill_rgb": [
+              168,
+              32,
+              37
+            ],
+            "mark_outline_rgb": [
+              92,
+              18,
+              20
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Rafa",
+            "series_rank": 1,
+            "value": 16
+          },
+          "entity_id": "mark_Z_Rafa",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              294.667,
+              82.095,
+              312.667,
+              562.0
+            ],
+            "category_label": "N",
+            "category_label_center_px": [
+              303.667,
+              554.0
             ],
             "category_rank": 2,
             "mark_bbox_px": [
-              92.0,
-              290.066,
-              600.0,
-              310.974
+              295.667,
+              312.571,
+              311.667,
+              328.571
             ],
             "mark_center_px": [
-              346.0,
-              300.52
+              303.667,
+              320.571
             ],
             "mark_fill_rgb": [
-              175,
-              134,
-              126
+              201,
+              158,
+              48
             ],
             "mark_outline_rgb": [
-              96,
-              74,
-              69
+              111,
+              87,
+              26
             ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Yona",
-            "series_rank": 1,
-            "value": 14
+            "scene_variant": "multi_line",
+            "series_label": "Libb",
+            "series_rank": 0,
+            "value": 9
           },
-          "entity_id": "mark_T_Yona",
-          "entity_type": "bar"
+          "entity_id": "mark_N_Libb",
+          "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              54.5,
-              357.826,
-              745.143,
-              407.774
+              294.667,
+              82.095,
+              312.667,
+              562.0
             ],
-            "category_label": "F",
+            "category_label": "N",
             "category_label_center_px": [
-              62.0,
-              382.8
+              303.667,
+              554.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              295.667,
+              82.095,
+              311.667,
+              98.095
+            ],
+            "mark_center_px": [
+              303.667,
+              90.095
+            ],
+            "mark_fill_rgb": [
+              168,
+              32,
+              37
+            ],
+            "mark_outline_rgb": [
+              92,
+              18,
+              20
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Rafa",
+            "series_rank": 1,
+            "value": 19
+          },
+          "entity_id": "mark_N_Rafa",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              380.333,
+              427.81,
+              396.333,
+              562.0
+            ],
+            "category_label": "L",
+            "category_label_center_px": [
+              388.333,
+              554.0
             ],
             "category_rank": 3,
             "mark_bbox_px": [
-              92.0,
-              357.826,
-              164.571,
-              378.734
+              380.333,
+              473.905,
+              396.333,
+              489.905
             ],
             "mark_center_px": [
-              128.286,
-              368.28
+              388.333,
+              481.905
             ],
             "mark_fill_rgb": [
-              118,
-              153,
-              17
+              201,
+              158,
+              48
             ],
             "mark_outline_rgb": [
-              65,
-              84,
-              9
+              111,
+              87,
+              26
             ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Even",
+            "scene_variant": "multi_line",
+            "series_label": "Libb",
             "series_rank": 0,
             "value": 2
           },
-          "entity_id": "mark_F_Even",
-          "entity_type": "bar"
+          "entity_id": "mark_L_Libb",
+          "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              54.5,
-              357.826,
-              745.143,
-              407.774
+              380.333,
+              427.81,
+              396.333,
+              562.0
             ],
-            "category_label": "F",
+            "category_label": "L",
             "category_label_center_px": [
-              62.0,
-              382.8
+              388.333,
+              554.0
             ],
             "category_rank": 3,
             "mark_bbox_px": [
-              92.0,
-              386.866,
-              745.143,
-              407.774
+              380.333,
+              427.81,
+              396.333,
+              443.81
             ],
             "mark_center_px": [
-              418.571,
-              397.32
+              388.333,
+              435.81
             ],
             "mark_fill_rgb": [
-              175,
-              134,
-              126
+              168,
+              32,
+              37
             ],
             "mark_outline_rgb": [
-              96,
-              74,
-              69
+              92,
+              18,
+              20
             ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Yona",
+            "scene_variant": "multi_line",
+            "series_label": "Rafa",
             "series_rank": 1,
-            "value": 18
+            "value": 4
           },
-          "entity_id": "mark_F_Yona",
-          "entity_type": "bar"
+          "entity_id": "mark_L_Rafa",
+          "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              53.5,
-              454.626,
-              382.286,
-              504.574
+              464.5,
+              174.286,
+              481.5,
+              562.0
             ],
-            "category_label": "A",
+            "category_label": "X",
             "category_label_center_px": [
-              62.0,
-              479.6
+              473.0,
+              554.0
             ],
             "category_rank": 4,
             "mark_bbox_px": [
-              92.0,
-              454.626,
-              273.429,
-              475.534
+              465.0,
+              266.476,
+              481.0,
+              282.476
             ],
             "mark_center_px": [
-              182.714,
-              465.08
+              473.0,
+              274.476
             ],
             "mark_fill_rgb": [
-              118,
-              153,
-              17
+              201,
+              158,
+              48
             ],
             "mark_outline_rgb": [
-              65,
-              84,
-              9
+              111,
+              87,
+              26
             ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Even",
+            "scene_variant": "multi_line",
+            "series_label": "Libb",
             "series_rank": 0,
-            "value": 5
+            "value": 11
           },
-          "entity_id": "mark_A_Even",
-          "entity_type": "bar"
+          "entity_id": "mark_X_Libb",
+          "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              53.5,
-              454.626,
-              382.286,
-              504.574
+              464.5,
+              174.286,
+              481.5,
+              562.0
             ],
-            "category_label": "A",
+            "category_label": "X",
             "category_label_center_px": [
-              62.0,
-              479.6
+              473.0,
+              554.0
             ],
             "category_rank": 4,
             "mark_bbox_px": [
-              92.0,
-              483.666,
-              382.286,
-              504.574
+              465.0,
+              174.286,
+              481.0,
+              190.286
             ],
             "mark_center_px": [
-              237.143,
-              494.12
+              473.0,
+              182.286
             ],
             "mark_fill_rgb": [
-              175,
-              134,
-              126
+              168,
+              32,
+              37
             ],
             "mark_outline_rgb": [
-              96,
-              74,
-              69
+              92,
+              18,
+              20
             ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Yona",
+            "scene_variant": "multi_line",
+            "series_label": "Rafa",
             "series_rank": 1,
-            "value": 8
+            "value": 15
           },
-          "entity_id": "mark_A_Yona",
-          "entity_type": "bar"
+          "entity_id": "mark_X_Rafa",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              549.167,
+              312.571,
+              566.167,
+              562.0
+            ],
+            "category_label": "B",
+            "category_label_center_px": [
+              557.667,
+              554.0
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              549.667,
+              496.952,
+              565.667,
+              512.952
+            ],
+            "mark_center_px": [
+              557.667,
+              504.952
+            ],
+            "mark_fill_rgb": [
+              201,
+              158,
+              48
+            ],
+            "mark_outline_rgb": [
+              111,
+              87,
+              26
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Libb",
+            "series_rank": 0,
+            "value": 1
+          },
+          "entity_id": "mark_B_Libb",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              549.167,
+              312.571,
+              566.167,
+              562.0
+            ],
+            "category_label": "B",
+            "category_label_center_px": [
+              557.667,
+              554.0
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              549.667,
+              312.571,
+              565.667,
+              328.571
+            ],
+            "mark_center_px": [
+              557.667,
+              320.571
+            ],
+            "mark_fill_rgb": [
+              168,
+              32,
+              37
+            ],
+            "mark_outline_rgb": [
+              92,
+              18,
+              20
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Rafa",
+            "series_rank": 1,
+            "value": 9
+          },
+          "entity_id": "mark_B_Rafa",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              632.833,
+              358.667,
+              651.833,
+              563.5
+            ],
+            "category_label": "Q",
+            "category_label_center_px": [
+              642.333,
+              554.0
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              634.333,
+              473.905,
+              650.333,
+              489.905
+            ],
+            "mark_center_px": [
+              642.333,
+              481.905
+            ],
+            "mark_fill_rgb": [
+              201,
+              158,
+              48
+            ],
+            "mark_outline_rgb": [
+              111,
+              87,
+              26
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Libb",
+            "series_rank": 0,
+            "value": 2
+          },
+          "entity_id": "mark_Q_Libb",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              632.833,
+              358.667,
+              651.833,
+              563.5
+            ],
+            "category_label": "Q",
+            "category_label_center_px": [
+              642.333,
+              554.0
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              634.333,
+              358.667,
+              650.333,
+              374.667
+            ],
+            "mark_center_px": [
+              642.333,
+              366.667
+            ],
+            "mark_fill_rgb": [
+              168,
+              32,
+              37
+            ],
+            "mark_outline_rgb": [
+              92,
+              18,
+              20
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Rafa",
+            "series_rank": 1,
+            "value": 7
+          },
+          "entity_id": "mark_Q_Rafa",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              718.5,
+              151.238,
+              735.5,
+              562.0
+            ],
+            "category_label": "V",
+            "category_label_center_px": [
+              727.0,
+              554.0
+            ],
+            "category_rank": 7,
+            "mark_bbox_px": [
+              719.0,
+              427.81,
+              735.0,
+              443.81
+            ],
+            "mark_center_px": [
+              727.0,
+              435.81
+            ],
+            "mark_fill_rgb": [
+              201,
+              158,
+              48
+            ],
+            "mark_outline_rgb": [
+              111,
+              87,
+              26
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Libb",
+            "series_rank": 0,
+            "value": 4
+          },
+          "entity_id": "mark_V_Libb",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              718.5,
+              151.238,
+              735.5,
+              562.0
+            ],
+            "category_label": "V",
+            "category_label_center_px": [
+              727.0,
+              554.0
+            ],
+            "category_rank": 7,
+            "mark_bbox_px": [
+              719.0,
+              151.238,
+              735.0,
+              167.238
+            ],
+            "mark_center_px": [
+              727.0,
+              159.238
+            ],
+            "mark_fill_rgb": [
+              168,
+              32,
+              37
+            ],
+            "mark_outline_rgb": [
+              92,
+              18,
+              20
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Rafa",
+            "series_rank": 1,
+            "value": 16
+          },
+          "entity_id": "mark_V_Rafa",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              803.667,
+              82.095,
+              819.667,
+              564.0
+            ],
+            "category_label": "J",
+            "category_label_center_px": [
+              811.667,
+              554.0
+            ],
+            "category_rank": 8,
+            "mark_bbox_px": [
+              803.667,
+              82.095,
+              819.667,
+              98.095
+            ],
+            "mark_center_px": [
+              811.667,
+              90.095
+            ],
+            "mark_fill_rgb": [
+              201,
+              158,
+              48
+            ],
+            "mark_outline_rgb": [
+              111,
+              87,
+              26
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Libb",
+            "series_rank": 0,
+            "value": 19
+          },
+          "entity_id": "mark_J_Libb",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              803.667,
+              82.095,
+              819.667,
+              564.0
+            ],
+            "category_label": "J",
+            "category_label_center_px": [
+              811.667,
+              554.0
+            ],
+            "category_rank": 8,
+            "mark_bbox_px": [
+              803.667,
+              496.952,
+              819.667,
+              512.952
+            ],
+            "mark_center_px": [
+              811.667,
+              504.952
+            ],
+            "mark_fill_rgb": [
+              168,
+              32,
+              37
+            ],
+            "mark_outline_rgb": [
+              92,
+              18,
+              20
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Rafa",
+            "series_rank": 1,
+            "value": 1
+          },
+          "entity_id": "mark_J_Rafa",
+          "entity_type": "point"
         }
       ],
       "relations": {
         "comparison": "less_than",
         "evidence_labels": [
-          "A",
-          "F",
-          "M",
+          "B",
+          "L",
+          "N",
+          "Q",
+          "V",
+          "X",
           "Z"
         ],
         "queried_series_labels": [
-          "Even",
-          "Yona"
+          "Libb",
+          "Rafa"
         ],
-        "scene_variant": "grouped_horizontal_bar",
+        "scene_variant": "multi_line",
         "task_variant": "series_a_lt_b_count"
       },
-      "scene_kind": "chart_grouped_horizontal_bar_multiseries"
+      "scene_kind": "chart_multi_line_multiseries"
     },
     "witness_symbolic": {
       "labels": [
-        "A",
-        "F",
-        "M",
+        "B",
+        "L",
+        "N",
+        "Q",
+        "V",
+        "X",
         "Z"
       ],
       "type": "label_set"

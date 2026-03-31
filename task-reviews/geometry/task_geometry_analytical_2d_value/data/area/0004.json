@@ -1,23 +1,24 @@
 {
   "answer_gt": {
-    "type": "pi_expression",
-    "value": "529π"
+    "type": "integer",
+    "value": 246
   },
   "evidence_gt": {
     "type": "measurement_ref_map",
     "value": {
-      "HI": 46
+      "UV": 6,
+      "WX": 41
     }
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_2d_value/images/area/0004.png"
   },
-  "instance_seed": 6579109778001353,
-  "prompt": "The image shows a geometric shape with measurement annotations. Read the marked measurements and answer: The circle has an annotated diameter. What is its area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: HI.\nAnswer format: set \"answer\" to the area value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":{\"HI\":2},\"answer\":\"12π\"}",
+  "instance_seed": 6370056425392036,
+  "prompt": "Use the image showing a geometric shape with measurement annotations. Question: The parallelogram has an annotated base and height. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: UV, WX.\nAnswer: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"UV\":2,\"WX\":3},\"answer\":8}",
   "prompt_variants": {
-    "answer_and_evidence": "The image shows a geometric shape with measurement annotations. Read the marked measurements and answer: The circle has an annotated diameter. What is its area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: HI.\nAnswer format: set \"answer\" to the area value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":{\"HI\":2},\"answer\":\"12π\"}",
-    "answer_only": "The image shows a geometric shape with measurement annotations. Read the marked measurements and answer: The circle has an annotated diameter. What is its area? Express the result in kπ form.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the area value in the form kπ (for example 12π).\nExample JSON:\n{\"answer\":\"12π\"}"
+    "answer_and_evidence": "Use the image showing a geometric shape with measurement annotations. Question: The parallelogram has an annotated base and height. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: UV, WX.\nAnswer: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"UV\":2,\"WX\":3},\"answer\":8}",
+    "answer_only": "Use the image showing a geometric shape with measurement annotations. Question: The parallelogram has an annotated base and height. What is its area in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"answer\":8}"
   },
   "task": "task_geometry_analytical_2d_value",
   "task_variant": "area",
@@ -25,28 +26,33 @@
     "execution_trace": {
       "answer_max": 2500,
       "answer_min": 8,
-      "answer_scalar": 529,
-      "answer_type": "pi_expression",
-      "answer_value": "529π",
-      "case_id": "circle_derived",
+      "answer_scalar": 246,
+      "answer_type": "integer",
+      "answer_value": 246,
+      "case_id": "parallelogram_explicit",
       "evidence_annotations": {
-        "d": "HI"
+        "b": "UV",
+        "h": "WX"
       },
       "evidence_ids": [
-        "HI"
+        "UV",
+        "WX"
       ],
       "evidence_label_values": {
-        "d": 46
+        "b": 6,
+        "h": 41
       },
       "evidence_map": {
-        "HI": 46
+        "UV": 6,
+        "WX": 41
       },
       "evidence_roles": [
-        "d"
+        "b",
+        "h"
       ],
-      "formula_expression": "A = π * (d/2)^2",
-      "legacy_query_variant": "circle_derived",
-      "legacy_scene_variant": "circle",
+      "formula_expression": "A = b * h",
+      "legacy_query_variant": "parallelogram_explicit",
+      "legacy_scene_variant": "parallelogram",
       "legacy_task_id": "task_geometry_analytical_2d_area",
       "mode_probabilities": {
         "derived": 0.5,
@@ -59,11 +65,12 @@
         "length": 0.0,
         "perimeter": 0.0
       },
-      "reasoning_mode": "derived",
+      "reasoning_mode": "explicit",
       "required_annotations": [
-        "HI"
+        "UV",
+        "WX"
       ],
-      "scene_variant": "circle",
+      "scene_variant": "parallelogram",
       "scene_variant_probabilities": {
         "circle": 0.14285714285714285,
         "composite_region": 0.0,
@@ -75,15 +82,15 @@
         "triangle": 0.14285714285714285
       },
       "shape_probabilities": {
-        "circle": 1.0,
+        "circle": 0.0,
         "ellipse": 0.0,
-        "parallelogram": 0.0,
+        "parallelogram": 1.0,
         "rectangle": 0.0,
         "rhombus": 0.0,
         "trapezoid": 0.0,
         "triangle": 0.0
       },
-      "shape_variant": "circle",
+      "shape_variant": "parallelogram",
       "task_variant": "area",
       "task_variant_probabilities": {
         "area": 1.0,
@@ -94,24 +101,35 @@
     },
     "projected_evidence": {
       "annotation_labels": {
-        "d": "HI"
+        "b": "UV",
+        "h": "WX"
       },
       "id_set": [
-        "HI"
+        "UV",
+        "WX"
       ],
       "measurement_ref_map": {
-        "HI": 46
+        "UV": 6,
+        "WX": 41
       },
       "pixel_annotation_centers": {
-        "HI": [
-          262.0,
-          224.0
+        "UV": [
+          62.0,
+          54.5
+        ],
+        "WX": [
+          22.532909926991845,
+          291.36484601967805
         ]
       },
       "pixel_point_set": [
         [
-          262.0,
-          224.0
+          62.0,
+          54.5
+        ],
+        [
+          22.532909926991845,
+          291.36484601967805
         ]
       ]
     },
@@ -119,8 +137,8 @@
       "params": {
         "answer_max": 2500,
         "answer_min": 8,
-        "legacy_query_variant": "circle_derived",
-        "legacy_scene_variant": "circle",
+        "legacy_query_variant": "parallelogram_explicit",
+        "legacy_scene_variant": "parallelogram",
         "legacy_task_id": "task_geometry_analytical_2d_area",
         "mode_probabilities": {
           "derived": 0.5,
@@ -133,8 +151,8 @@
           "length": 0.0,
           "perimeter": 0.0
         },
-        "reasoning_mode": "derived",
-        "scene_variant": "circle",
+        "reasoning_mode": "explicit",
+        "scene_variant": "parallelogram",
         "scene_variant_probabilities": {
           "circle": 0.14285714285714285,
           "composite_region": 0.0,
@@ -146,15 +164,15 @@
           "triangle": 0.14285714285714285
         },
         "shape_probabilities": {
-          "circle": 1.0,
+          "circle": 0.0,
           "ellipse": 0.0,
-          "parallelogram": 0.0,
+          "parallelogram": 1.0,
           "rectangle": 0.0,
           "rhombus": 0.0,
           "trapezoid": 0.0,
           "triangle": 0.0
         },
-        "shape_variant": "circle",
+        "shape_variant": "parallelogram",
         "variant_probabilities": {
           "area": 1.0,
           "composite_area": 0.0,
@@ -164,23 +182,23 @@
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 1,
+        "answer_or_evidence_variant_index": 0,
         "prompt_bundle_id": "geometry_analytical_area_v1",
         "schema_version": "v1",
         "slot_values": {
-          "answer_hint": "set \"answer\" to the area value in the form kπ (for example 12π)",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: HI",
-          "json_example": "{\"evidence\":{\"HI\":2},\"answer\":\"12π\"}",
-          "json_example_answer_only": "{\"answer\":\"12π\"}",
+          "answer_hint": "set \"answer\" to the area value as an integer",
+          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: UV, WX",
+          "json_example": "{\"evidence\":{\"UV\":2,\"WX\":3},\"answer\":8}",
+          "json_example_answer_only": "{\"answer\":8}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
           "object_description": "a geometric shape with measurement annotations",
-          "question_text": "The circle has an annotated diameter. What is its area? Express the result in kπ form."
+          "question_text": "The parallelogram has an annotated base and height. What is its area in square units?"
         },
         "task_family_key": "analytical_single_shape",
-        "task_family_variant_index": 1,
+        "task_family_variant_index": 3,
         "task_key": "analytical_area_query",
-        "task_variant_index": 3,
+        "task_variant_index": 1,
         "task_variant_key": null,
         "task_variant_template_index": null,
         "template_paths": [
@@ -197,23 +215,23 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 1,
+            "answer_or_evidence_variant_index": 0,
             "prompt_bundle_id": "geometry_analytical_area_v1",
             "schema_version": "v1",
             "slot_values": {
-              "answer_hint": "set \"answer\" to the area value in the form kπ (for example 12π)",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: HI",
-              "json_example": "{\"evidence\":{\"HI\":2},\"answer\":\"12π\"}",
-              "json_example_answer_only": "{\"answer\":\"12π\"}",
+              "answer_hint": "set \"answer\" to the area value as an integer",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: UV, WX",
+              "json_example": "{\"evidence\":{\"UV\":2,\"WX\":3},\"answer\":8}",
+              "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a geometric shape with measurement annotations",
-              "question_text": "The circle has an annotated diameter. What is its area? Express the result in kπ form."
+              "question_text": "The parallelogram has an annotated base and height. What is its area in square units?"
             },
             "task_family_key": "analytical_single_shape",
-            "task_family_variant_index": 1,
+            "task_family_variant_index": 3,
             "task_key": "analytical_area_query",
-            "task_variant_index": 3,
+            "task_variant_index": 1,
             "task_variant_key": null,
             "task_variant_template_index": null,
             "template_paths": [
@@ -225,7 +243,7 @@
               "task_family:analytical_single_shape": 5
             }
           },
-          "prompt": "The image shows a geometric shape with measurement annotations. Read the marked measurements and answer: The circle has an annotated diameter. What is its area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: HI.\nAnswer format: set \"answer\" to the area value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":{\"HI\":2},\"answer\":\"12π\"}"
+          "prompt": "Use the image showing a geometric shape with measurement annotations. Question: The parallelogram has an annotated base and height. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: UV, WX.\nAnswer: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"UV\":2,\"WX\":3},\"answer\":8}"
         },
         "answer_only": {
           "metadata": {
@@ -234,19 +252,19 @@
             "prompt_bundle_id": "geometry_analytical_area_v1",
             "schema_version": "v1",
             "slot_values": {
-              "answer_hint": "set \"answer\" to the area value in the form kπ (for example 12π)",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: HI",
-              "json_example": "{\"evidence\":{\"HI\":2},\"answer\":\"12π\"}",
-              "json_example_answer_only": "{\"answer\":\"12π\"}",
+              "answer_hint": "set \"answer\" to the area value as an integer",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: UV, WX",
+              "json_example": "{\"evidence\":{\"UV\":2,\"WX\":3},\"answer\":8}",
+              "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a geometric shape with measurement annotations",
-              "question_text": "The circle has an annotated diameter. What is its area? Express the result in kπ form."
+              "question_text": "The parallelogram has an annotated base and height. What is its area in square units?"
             },
             "task_family_key": "analytical_single_shape",
-            "task_family_variant_index": 1,
+            "task_family_variant_index": 3,
             "task_key": "analytical_area_query",
-            "task_variant_index": 3,
+            "task_variant_index": 1,
             "task_variant_key": null,
             "task_variant_template_index": null,
             "template_paths": [
@@ -258,7 +276,7 @@
               "task_family:analytical_single_shape": 5
             }
           },
-          "prompt": "The image shows a geometric shape with measurement annotations. Read the marked measurements and answer: The circle has an annotated diameter. What is its area? Express the result in kπ form.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the area value in the form kπ (for example 12π).\nExample JSON:\n{\"answer\":\"12π\"}"
+          "prompt": "Use the image showing a geometric shape with measurement annotations. Question: The parallelogram has an annotated base and height. What is its area in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"answer\":8}"
         }
       },
       "task_variant": "area",
@@ -266,27 +284,48 @@
     },
     "render_map": {
       "annotation_centers": {
-        "HI": [
-          262.0,
-          224.0
+        "UV": [
+          62.0,
+          54.5
+        ],
+        "WX": [
+          22.532909926991845,
+          291.36484601967805
         ]
       },
       "annotation_labels": {
-        "d": "HI"
+        "b": "UV",
+        "h": "WX"
       },
       "coord_space": "pixel",
       "entity_id": "shape_1",
       "instance_anchor": {
-        "bbox": [
-          32.0,
-          22.0,
-          492.0,
-          482.0
-        ],
         "coord_space": "pixel",
         "point": [
-          262.0,
-          252.0
+          32.0,
+          72.0
+        ],
+        "polyline": [
+          [
+            32.0,
+            72.0
+          ],
+          [
+            92.0,
+            72.0
+          ],
+          [
+            122.0,
+            482.0
+          ],
+          [
+            62.0,
+            482.0
+          ],
+          [
+            32.0,
+            72.0
+          ]
         ]
       }
     },
@@ -300,45 +339,47 @@
         ],
         "enabled": true,
         "render_scale": 3,
-        "selected_style": "solid_offwhite",
+        "selected_style": "solid_cool",
         "style_spec": {
           "color": [
-            252,
-            252,
+            246,
+            248,
             252
           ],
           "kind": "solid"
         }
       },
-      "canvas_size": 524,
+      "canvas_size": 546,
       "coord_space": "pixel",
       "graph_coordinate_frame": {
         "coord_space": "graph_unit",
-        "full_cells_x": 8,
-        "full_cells_y": 8,
+        "full_cells_x": 4,
+        "full_cells_y": 4,
+        "origin_fraction_x": 0.5,
+        "origin_fraction_y": 0.5,
         "origin_pixel": [
-          262,
-          262
+          272,
+          272
         ],
         "outer_margin_px": 16,
         "partial_edge_cells": true,
-        "spacing_px": 58,
-        "target_cells_x": 9,
-        "target_cells_y": 9,
+        "spacing_px": 91,
+        "target_cells_x": 6,
+        "target_cells_y": 6,
         "x_positive": "right",
         "y_positive": "up"
       },
       "graph_paper_grid": {
-        "full_cells_x": 8,
-        "full_cells_y": 8,
+        "full_cells_x": 4,
+        "full_cells_y": 4,
         "partial_edge_cells": true,
-        "spacing_px": 58,
-        "target_cells_x": 9,
-        "target_cells_y": 9
+        "spacing_px": 91,
+        "target_cells_x": 6,
+        "target_cells_y": 6
       },
-      "legacy_scene_variant": "circle",
+      "legacy_scene_variant": "parallelogram",
       "post_image_noise": {
-        "applied": false,
+        "applied": true,
         "apply_prob": 0.5,
         "edit_count_range": [
           1,
@@ -350,26 +391,33 @@
           "jpeg",
           "noise"
         ],
-        "edits": [],
+        "edits": [
+          {
+            "params": {
+              "scale": 0.951268
+            },
+            "type": "downsample"
+          }
+        ],
         "enabled": true
       },
       "query_variant": "area",
-      "scene_variant": "circle",
+      "scene_variant": "parallelogram",
       "shape_style": {
         "label_color": [
-          111,
-          63,
-          144
+          37,
+          95,
+          39
         ],
         "label_stroke_color": [
-          255,
-          252,
-          250
+          251,
+          254,
+          249
         ],
         "line_color": [
-          111,
-          63,
-          144
+          37,
+          95,
+          39
         ]
       }
     },
@@ -377,27 +425,42 @@
       "entities": [
         {
           "attrs": {
-            "area_pi_coefficient": 529,
-            "center": [
-              262.0,
-              252.0
-            ],
-            "diameter_units": 46,
-            "radius_units": 23,
-            "reasoning_mode": "derived",
-            "shape_variant": "circle"
+            "area_square_units": 246,
+            "base_units": 6,
+            "height_units": 41,
+            "horizontal_offset_units": 3,
+            "reasoning_mode": "explicit",
+            "shape_variant": "parallelogram",
+            "vertices": [
+              [
+                32.0,
+                72.0
+              ],
+              [
+                92.0,
+                72.0
+              ],
+              [
+                122.0,
+                482.0
+              ],
+              [
+                62.0,
+                482.0
+              ]
+            ]
           },
           "entity_id": "shape_1",
-          "entity_type": "circle"
+          "entity_type": "parallelogram"
         }
       ],
       "frames": {
         "graph_unit": {
           "origin_pixel": [
-            262,
-            262
+            272,
+            272
           ],
-          "spacing_px": 58,
+          "spacing_px": 91,
           "x_positive": "right",
           "y_positive": "up"
         },
@@ -411,31 +474,35 @@
         }
       },
       "relations": {
-        "legacy_query_variant": "circle_derived",
-        "legacy_scene_variant": "circle",
+        "legacy_query_variant": "parallelogram_explicit",
+        "legacy_scene_variant": "parallelogram",
         "legacy_task_id": "task_geometry_analytical_2d_area",
         "query_variant": "area",
-        "scene_variant": "circle"
+        "scene_variant": "parallelogram"
       },
       "scene_kind": "geometry_2d_analytical_area"
     },
     "witness_symbolic": {
       "annotation_ids": [
-        "HI"
+        "UV",
+        "WX"
       ],
       "annotation_labels": {
-        "d": "HI"
+        "b": "UV",
+        "h": "WX"
       },
       "annotation_values": {
-        "HI": 46
+        "UV": 6,
+        "WX": 41
       },
-      "case_id": "circle_derived",
-      "formula_expression": "A = π * (d/2)^2",
+      "case_id": "parallelogram_explicit",
+      "formula_expression": "A = b * h",
       "measurement_ref_map": {
-        "HI": 46
+        "UV": 6,
+        "WX": 41
       },
-      "reasoning_mode": "derived",
-      "shape_variant": "circle",
+      "reasoning_mode": "explicit",
+      "shape_variant": "parallelogram",
       "type": "annotation_measurement_map"
     }
   },

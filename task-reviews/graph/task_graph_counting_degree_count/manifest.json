@@ -1,10 +1,10 @@
 {
-  "inspection_count": 15,
+  "inspection_count": 75,
   "task_id": "task_graph_counting_degree_count",
   "variants": {
-    "degree_count": 5,
-    "in_degree_count": 5,
-    "out_degree_count": 5
+    "degree_count": 25,
+    "in_degree_count": 25,
+    "out_degree_count": 25
   },
   "workbook": "graph/task_graph_counting_degree_count/task_graph_counting_degree_count.xlsx",
   "workbook_sheets": {

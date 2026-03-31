@@ -1,36 +1,36 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 5
+    "value": 11
   },
   "evidence_gt": {
     "type": "integer_list",
     "value": [
-      18,
-      13
+      6,
+      17
     ]
   },
   "image": {
     "format": "png",
     "path": "charts/task_charts_readout_subset_value/images/difference_two_abs/0020.png"
   },
-  "instance_seed": 5159001461299622,
-  "prompt": "The image shows a labeled radar chart with one spoke per label. Each label marks one plotted point on the radar polygon, and the relevant values are the printed values near those points. Use the labeled chart values for the named labels to answer the question. What is the positive difference between the values of labels T and H?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question.\nAnswer: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[14,9],\"answer\":5}",
+  "instance_seed": 6880265782081252,
+  "prompt": "Work from the labeled chart shown in the image: a labeled radar chart with one spoke per label. Each label marks one plotted point on the radar polygon, and the relevant values are the printed values near those points. Determine the requested value from the two specified chart labels. What is the positive difference between the values of labels P and R?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question.\nAnswer field: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[14,9],\"answer\":5}",
   "prompt_variants": {
-    "answer_and_evidence": "The image shows a labeled radar chart with one spoke per label. Each label marks one plotted point on the radar polygon, and the relevant values are the printed values near those points. Use the labeled chart values for the named labels to answer the question. What is the positive difference between the values of labels T and H?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question.\nAnswer: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[14,9],\"answer\":5}",
-    "answer_only": "The image shows a labeled radar chart with one spoke per label. Each label marks one plotted point on the radar polygon, and the relevant values are the printed values near those points. Use the labeled chart values for the named labels to answer the question. What is the positive difference between the values of labels T and H?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":5}"
+    "answer_and_evidence": "Work from the labeled chart shown in the image: a labeled radar chart with one spoke per label. Each label marks one plotted point on the radar polygon, and the relevant values are the printed values near those points. Determine the requested value from the two specified chart labels. What is the positive difference between the values of labels P and R?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question.\nAnswer field: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[14,9],\"answer\":5}",
+    "answer_only": "Work from the labeled chart shown in the image: a labeled radar chart with one spoke per label. Each label marks one plotted point on the radar polygon, and the relevant values are the printed values near those points. Determine the requested value from the two specified chart labels. What is the positive difference between the values of labels P and R?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":5}"
   },
   "task": "task_charts_readout_subset_value",
   "task_variant": "difference_two_abs",
   "trace_payload": {
     "execution_trace": {
-      "answer_value": 5,
+      "answer_value": 11,
       "labels": [
-        "H",
-        "J",
-        "V",
-        "Q",
-        "T"
+        "L",
+        "P",
+        "E",
+        "W",
+        "R"
       ],
       "mark_color_distance_space": "lab",
       "mark_color_min_distance": 40.0,
@@ -41,22 +41,22 @@
         7
       ],
       "mark_fill_rgb": [
-        165,
-        3,
-        18
+        194,
+        140,
+        80
       ],
       "mark_outline_rgb": [
-        91,
-        2,
-        10
+        107,
+        77,
+        44
       ],
       "query_labels": [
-        "T",
-        "H"
+        "P",
+        "R"
       ],
       "query_values": [
-        18,
-        13
+        6,
+        17
       ],
       "question_format": "numeric_open",
       "scene_variant": "radar",
@@ -72,73 +72,73 @@
         "radar": 0.1,
         "scatter": 0.1
       },
-      "target_answer": 5,
+      "target_answer": 11,
       "target_answer_range": [
         0,
         19
       ],
       "task_variant": "difference_two_abs",
       "task_variant_probabilities": {
-        "difference_two_abs": 0.2,
-        "max_two": 0.2,
-        "mean_two": 0.2,
-        "min_two": 0.2,
-        "sum_two": 0.2
+        "difference_two_abs": 1.0,
+        "max_two": 0.0,
+        "mean_two": 0.0,
+        "min_two": 0.0,
+        "sum_two": 0.0
       },
       "value_max": 20,
       "value_min": 1,
       "values": [
-        13,
-        12,
+        18,
         6,
-        20,
-        18
+        3,
+        18,
+        17
       ],
       "values_by_label": {
-        "H": 13,
-        "J": 12,
-        "Q": 20,
-        "T": 18,
-        "V": 6
+        "E": 3,
+        "L": 18,
+        "P": 6,
+        "R": 17,
+        "W": 18
       }
     },
     "projected_evidence": {
       "bbox_set": [
         [
-          284.569,
-          225.621,
-          300.569,
-          241.621
+          463.053,
+          252.387,
+          479.053,
+          268.387
         ],
         [
-          415.0,
-          168.952,
-          431.0,
-          184.952
+          278.849,
+          223.762,
+          294.849,
+          239.762
         ]
       ],
       "integer_list": [
-        18,
-        13
+        6,
+        17
       ],
       "pixel_point_map": {
-        "H": [
-          423.0,
-          176.952
+        "P": [
+          471.053,
+          260.387
         ],
-        "T": [
-          292.569,
-          233.621
+        "R": [
+          286.849,
+          231.762
         ]
       },
       "pixel_point_set": [
         [
-          292.569,
-          233.621
+          471.053,
+          260.387
         ],
         [
-          423.0,
-          176.952
+          286.849,
+          231.762
         ]
       ]
     },
@@ -146,8 +146,8 @@
       "params": {
         "mark_count": 5,
         "query_labels": [
-          "T",
-          "H"
+          "P",
+          "R"
         ],
         "scene_variant": "radar",
         "scene_variant_probabilities": {
@@ -162,23 +162,23 @@
           "radar": 0.1,
           "scatter": 0.1
         },
-        "target_answer": 5,
+        "target_answer": 11,
         "target_answer_range": [
           0,
           19
         ],
         "task_variant": "difference_two_abs",
         "task_variant_probabilities": {
-          "difference_two_abs": 0.2,
-          "max_two": 0.2,
-          "mean_two": 0.2,
-          "min_two": 0.2,
-          "sum_two": 0.2
+          "difference_two_abs": 1.0,
+          "max_two": 0.0,
+          "mean_two": 0.0,
+          "min_two": 0.0,
+          "sum_two": 0.0
         }
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 0,
+        "answer_or_evidence_variant_index": 3,
         "prompt_bundle_id": "charts_readout_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -189,13 +189,13 @@
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
           "object_description": "a labeled radar chart with one spoke per label. Each label marks one plotted point on the radar polygon, and the relevant values are the printed values near those points",
-          "query_label_a": "T",
-          "query_label_b": "H"
+          "query_label_a": "P",
+          "query_label_b": "R"
         },
         "task_family_key": "labeled_chart_readout",
-        "task_family_variant_index": 0,
+        "task_family_variant_index": 2,
         "task_key": "subset_value_query",
-        "task_variant_index": 3,
+        "task_variant_index": 4,
         "task_variant_key": "difference_two_abs",
         "task_variant_template_index": 1,
         "template_paths": [
@@ -213,7 +213,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 0,
+            "answer_or_evidence_variant_index": 3,
             "prompt_bundle_id": "charts_readout_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -224,13 +224,13 @@
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a labeled radar chart with one spoke per label. Each label marks one plotted point on the radar polygon, and the relevant values are the printed values near those points",
-              "query_label_a": "T",
-              "query_label_b": "H"
+              "query_label_a": "P",
+              "query_label_b": "R"
             },
             "task_family_key": "labeled_chart_readout",
-            "task_family_variant_index": 0,
+            "task_family_variant_index": 2,
             "task_key": "subset_value_query",
-            "task_variant_index": 3,
+            "task_variant_index": 4,
             "task_variant_key": "difference_two_abs",
             "task_variant_template_index": 1,
             "template_paths": [
@@ -243,12 +243,12 @@
               "task_variant:difference_two_abs": 5
             }
           },
-          "prompt": "The image shows a labeled radar chart with one spoke per label. Each label marks one plotted point on the radar polygon, and the relevant values are the printed values near those points. Use the labeled chart values for the named labels to answer the question. What is the positive difference between the values of labels T and H?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question.\nAnswer: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[14,9],\"answer\":5}"
+          "prompt": "Work from the labeled chart shown in the image: a labeled radar chart with one spoke per label. Each label marks one plotted point on the radar polygon, and the relevant values are the printed values near those points. Determine the requested value from the two specified chart labels. What is the positive difference between the values of labels P and R?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question.\nAnswer field: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[14,9],\"answer\":5}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 2,
+            "answer_or_evidence_variant_index": 1,
             "prompt_bundle_id": "charts_readout_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -259,13 +259,13 @@
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a labeled radar chart with one spoke per label. Each label marks one plotted point on the radar polygon, and the relevant values are the printed values near those points",
-              "query_label_a": "T",
-              "query_label_b": "H"
+              "query_label_a": "P",
+              "query_label_b": "R"
             },
             "task_family_key": "labeled_chart_readout",
-            "task_family_variant_index": 0,
+            "task_family_variant_index": 2,
             "task_key": "subset_value_query",
-            "task_variant_index": 3,
+            "task_variant_index": 4,
             "task_variant_key": "difference_two_abs",
             "task_variant_template_index": 1,
             "template_paths": [
@@ -278,7 +278,7 @@
               "task_variant:difference_two_abs": 5
             }
           },
-          "prompt": "The image shows a labeled radar chart with one spoke per label. Each label marks one plotted point on the radar polygon, and the relevant values are the printed values near those points. Use the labeled chart values for the named labels to answer the question. What is the positive difference between the values of labels T and H?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":5}"
+          "prompt": "Work from the labeled chart shown in the image: a labeled radar chart with one spoke per label. Each label marks one plotted point on the radar polygon, and the relevant values are the printed values near those points. Determine the requested value from the two specified chart labels. What is the positive difference between the values of labels P and R?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":5}"
         }
       },
       "task_variant": "difference_two_abs",
@@ -287,24 +287,24 @@
     "render_map": {
       "image_id": "img0",
       "label_centers_px": {
-        "H": [
+        "E": [
+          534.679,
+          429.713
+        ],
+        "L": [
           423.0,
           86.0
         ],
-        "J": [
+        "P": [
           603.701,
           217.287
         ],
-        "Q": [
-          311.321,
-          429.713
-        ],
-        "T": [
+        "R": [
           242.299,
           217.287
         ],
-        "V": [
-          534.679,
+        "W": [
+          311.321,
           429.713
         ]
       },
@@ -343,14 +343,14 @@
         "mark_color_distance_space": "lab",
         "mark_color_min_distance": 40.0,
         "mark_fill_rgb": [
-          165,
-          3,
-          18
+          194,
+          140,
+          80
         ],
         "mark_outline_rgb": [
-          91,
-          2,
-          10
+          107,
+          77,
+          44
         ],
         "sampling_policy": "random_rgb"
       },
@@ -382,7 +382,7 @@
         "label_stroke_width_px": 2,
         "tick_font_size_px": 18
       },
-      "y_axis_max": 21,
+      "y_axis_max": 19,
       "y_ticks": [
         0,
         1,
@@ -403,213 +403,211 @@
         16,
         17,
         18,
-        19,
-        20,
-        21
+        19
       ]
     },
     "scene_ir": {
       "entities": [
         {
           "attrs": {
-            "label": "H",
+            "label": "L",
             "label_center_px": [
               423.0,
               86.0
             ],
             "mark_bbox_px": [
               415.0,
-              168.952,
+              116.421,
               431.0,
-              184.952
+              132.421
             ],
             "mark_center_px": [
               423.0,
-              176.952
+              124.421
             ],
             "mark_fill_rgb": [
-              165,
-              3,
-              18
+              194,
+              140,
+              80
             ],
             "mark_outline_rgb": [
-              91,
-              2,
-              10
+              107,
+              77,
+              44
             ],
             "scene_variant": "radar",
-            "value": 13,
+            "value": 18,
             "value_center_px": [
               423.0,
-              194.952
+              142.421
             ],
             "x_rank": 0
           },
-          "entity_id": "mark_H",
+          "entity_id": "mark_L",
           "entity_type": "point"
         },
         {
           "attrs": {
-            "label": "J",
+            "label": "P",
             "label_center_px": [
               603.701,
               217.287
             ],
             "mark_bbox_px": [
-              501.954,
-              239.747,
-              517.954,
-              255.747
+              463.053,
+              252.387,
+              479.053,
+              268.387
             ],
             "mark_center_px": [
-              509.954,
-              247.747
+              471.053,
+              260.387
             ],
             "mark_fill_rgb": [
-              165,
-              3,
-              18
+              194,
+              140,
+              80
             ],
             "mark_outline_rgb": [
-              91,
-              2,
-              10
+              107,
+              77,
+              44
             ],
             "scene_variant": "radar",
-            "value": 12,
+            "value": 6,
             "value_center_px": [
-              492.835,
-              253.309
+              453.934,
+              265.949
             ],
             "x_rank": 1
           },
-          "entity_id": "mark_J",
+          "entity_id": "mark_P",
           "entity_type": "point"
         },
         {
           "attrs": {
-            "label": "V",
+            "label": "E",
             "label_center_px": [
               534.679,
               429.713
             ],
             "mark_bbox_px": [
-              441.87,
-              304.984,
-              457.87,
-              320.984
+              429.849,
+              288.438,
+              445.849,
+              304.438
             ],
             "mark_center_px": [
-              449.87,
-              312.984
+              437.849,
+              296.438
             ],
             "mark_fill_rgb": [
-              165,
-              3,
-              18
+              194,
+              140,
+              80
             ],
             "mark_outline_rgb": [
-              91,
-              2,
-              10
+              107,
+              77,
+              44
             ],
             "scene_variant": "radar",
-            "value": 6,
+            "value": 3,
             "value_center_px": [
-              439.29,
-              298.421
+              433.58,
+              290.562
             ],
             "x_rank": 2
           },
-          "entity_id": "mark_V",
+          "entity_id": "mark_E",
           "entity_type": "point"
         },
         {
           "attrs": {
-            "label": "Q",
+            "label": "W",
             "label_center_px": [
               311.321,
               429.713
             ],
             "mark_bbox_px": [
-              325.433,
-              391.279,
-              341.433,
-              407.279
+              325.904,
+              390.63,
+              341.904,
+              406.63
             ],
             "mark_center_px": [
-              333.433,
-              399.279
+              333.904,
+              398.63
             ],
             "mark_fill_rgb": [
-              165,
-              3,
-              18
+              194,
+              140,
+              80
             ],
             "mark_outline_rgb": [
-              91,
-              2,
-              10
+              107,
+              77,
+              44
             ],
             "scene_variant": "radar",
-            "value": 20,
+            "value": 18,
             "value_center_px": [
-              344.013,
-              384.716
+              344.484,
+              384.068
             ],
             "x_rank": 3
           },
-          "entity_id": "mark_Q",
+          "entity_id": "mark_W",
           "entity_type": "point"
         },
         {
           "attrs": {
-            "label": "T",
+            "label": "R",
             "label_center_px": [
               242.299,
               217.287
             ],
             "mark_bbox_px": [
-              284.569,
-              225.621,
-              300.569,
-              241.621
+              278.849,
+              223.762,
+              294.849,
+              239.762
             ],
             "mark_center_px": [
-              292.569,
-              233.621
+              286.849,
+              231.762
             ],
             "mark_fill_rgb": [
-              165,
-              3,
-              18
+              194,
+              140,
+              80
             ],
             "mark_outline_rgb": [
-              91,
-              2,
-              10
+              107,
+              77,
+              44
             ],
             "scene_variant": "radar",
-            "value": 18,
+            "value": 17,
             "value_center_px": [
-              309.688,
-              239.183
+              303.968,
+              237.324
             ],
             "x_rank": 4
           },
-          "entity_id": "mark_T",
+          "entity_id": "mark_R",
           "entity_type": "point"
         }
       ],
       "relations": {
-        "answer_value": 5,
+        "answer_value": 11,
         "query_labels": [
-          "T",
-          "H"
+          "P",
+          "R"
         ],
         "query_values": [
-          18,
-          13
+          6,
+          17
         ],
         "scene_variant": "radar",
         "task_variant": "difference_two_abs"
@@ -618,13 +616,13 @@
     },
     "witness_symbolic": {
       "query_labels": [
-        "T",
-        "H"
+        "P",
+        "R"
       ],
       "type": "integer_list",
       "values": [
-        18,
-        13
+        6,
+        17
       ]
     }
   },

@@ -1,65 +1,66 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 2
+    "value": 12
   },
   "evidence_gt": {
     "type": "integer_list",
     "value": [
-      3,
-      1
+      4,
+      20
     ]
   },
   "image": {
     "format": "png",
     "path": "charts/task_charts_readout_subset_value/images/mean_two/0011.png"
   },
-  "instance_seed": 5051830435466674,
-  "prompt": "The image shows a labeled lollipop chart. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Use the labeled chart values for the named labels to answer the question. For labels J and N, what is the mean of their values?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question.\nAnswer requirement: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[6,10],\"answer\":8}",
+  "instance_seed": 4488955950739277,
+  "prompt": "Look at the chart in the image. It shows a labeled radar chart with one spoke per label. Each label marks one plotted point on the radar polygon, and the relevant values are the printed values near those points. Determine the requested value from the two specified chart labels. What mean value do you get from labels H and X?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question.\nAnswer requirement: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[6,10],\"answer\":8}",
   "prompt_variants": {
-    "answer_and_evidence": "The image shows a labeled lollipop chart. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Use the labeled chart values for the named labels to answer the question. For labels J and N, what is the mean of their values?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question.\nAnswer requirement: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[6,10],\"answer\":8}",
-    "answer_only": "The image shows a labeled lollipop chart. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Use the labeled chart values for the named labels to answer the question. For labels J and N, what is the mean of their values?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":8}"
+    "answer_and_evidence": "Look at the chart in the image. It shows a labeled radar chart with one spoke per label. Each label marks one plotted point on the radar polygon, and the relevant values are the printed values near those points. Determine the requested value from the two specified chart labels. What mean value do you get from labels H and X?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question.\nAnswer requirement: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[6,10],\"answer\":8}",
+    "answer_only": "Look at the chart in the image. It shows a labeled radar chart with one spoke per label. Each label marks one plotted point on the radar polygon, and the relevant values are the printed values near those points. Determine the requested value from the two specified chart labels. What mean value do you get from labels H and X?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":8}"
   },
   "task": "task_charts_readout_subset_value",
   "task_variant": "mean_two",
   "trace_payload": {
     "execution_trace": {
-      "answer_value": 2,
+      "answer_value": 12,
       "labels": [
-        "V",
-        "N",
-        "S",
-        "F",
-        "J"
+        "D",
+        "R",
+        "H",
+        "X",
+        "W",
+        "U"
       ],
       "mark_color_distance_space": "lab",
       "mark_color_min_distance": 40.0,
       "mark_color_sampling_policy": "random_rgb",
-      "mark_count": 5,
+      "mark_count": 6,
       "mark_count_range": [
         5,
-        10
+        7
       ],
       "mark_fill_rgb": [
-        114,
-        158,
-        42
+        202,
+        91,
+        73
       ],
       "mark_outline_rgb": [
-        63,
-        87,
-        23
+        111,
+        50,
+        40
       ],
       "query_labels": [
-        "J",
-        "N"
+        "H",
+        "X"
       ],
       "query_values": [
-        3,
-        1
+        4,
+        20
       ],
       "question_format": "numeric_open",
-      "scene_variant": "lollipop",
+      "scene_variant": "radar",
       "scene_variant_probabilities": {
         "area": 0.1,
         "bar": 0.1,
@@ -72,84 +73,86 @@
         "radar": 0.1,
         "scatter": 0.1
       },
-      "target_answer": 2,
+      "target_answer": 12,
       "target_answer_range": [
         1,
         20
       ],
       "task_variant": "mean_two",
       "task_variant_probabilities": {
-        "difference_two_abs": 0.2,
-        "max_two": 0.2,
-        "mean_two": 0.2,
-        "min_two": 0.2,
-        "sum_two": 0.2
+        "difference_two_abs": 0.0,
+        "max_two": 0.0,
+        "mean_two": 1.0,
+        "min_two": 0.0,
+        "sum_two": 0.0
       },
       "value_max": 20,
       "value_min": 1,
       "values": [
-        1,
-        1,
-        1,
+        8,
+        9,
+        4,
         20,
-        3
+        10,
+        19
       ],
       "values_by_label": {
-        "F": 20,
-        "J": 3,
-        "N": 1,
-        "S": 1,
-        "V": 1
+        "D": 8,
+        "H": 4,
+        "R": 9,
+        "U": 19,
+        "W": 10,
+        "X": 20
       }
     },
     "projected_evidence": {
       "bbox_set": [
         [
-          679.8,
-          433.714,
-          695.8,
-          449.714
+          441.393,
+          283.238,
+          457.393,
+          299.238
         ],
         [
-          282.6,
-          477.905,
-          298.6,
-          493.905
+          415.0,
+          420.381,
+          431.0,
+          436.381
         ]
       ],
       "integer_list": [
-        3,
-        1
+        4,
+        20
       ],
       "pixel_point_map": {
-        "J": [
-          687.8,
-          441.714
+        "H": [
+          449.393,
+          291.238
         ],
-        "N": [
-          290.6,
-          485.905
+        "X": [
+          423.0,
+          428.381
         ]
       },
       "pixel_point_set": [
         [
-          687.8,
-          441.714
+          449.393,
+          291.238
         ],
         [
-          290.6,
-          485.905
+          423.0,
+          428.381
         ]
       ]
     },
     "query_spec": {
       "params": {
-        "mark_count": 5,
+        "mark_count": 6,
         "query_labels": [
-          "J",
-          "N"
+          "H",
+          "X"
         ],
-        "scene_variant": "lollipop",
+        "scene_variant": "radar",
         "scene_variant_probabilities": {
           "area": 0.1,
           "bar": 0.1,
@@ -162,18 +165,18 @@
           "radar": 0.1,
           "scatter": 0.1
         },
-        "target_answer": 2,
+        "target_answer": 12,
         "target_answer_range": [
           1,
           20
         ],
         "task_variant": "mean_two",
         "task_variant_probabilities": {
-          "difference_two_abs": 0.2,
-          "max_two": 0.2,
-          "mean_two": 0.2,
-          "min_two": 0.2,
-          "sum_two": 0.2
+          "difference_two_abs": 0.0,
+          "max_two": 0.0,
+          "mean_two": 1.0,
+          "min_two": 0.0,
+          "sum_two": 0.0
         }
       },
       "prompt_variant": {
@@ -188,16 +191,16 @@
           "json_example_answer_only": "{\"answer\":8}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "object_description": "a labeled lollipop chart. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis",
-          "query_label_a": "J",
-          "query_label_b": "N"
+          "object_description": "a labeled radar chart with one spoke per label. Each label marks one plotted point on the radar polygon, and the relevant values are the printed values near those points",
+          "query_label_a": "H",
+          "query_label_b": "X"
         },
         "task_family_key": "labeled_chart_readout",
-        "task_family_variant_index": 0,
+        "task_family_variant_index": 3,
         "task_key": "subset_value_query",
-        "task_variant_index": 3,
+        "task_variant_index": 4,
         "task_variant_key": "mean_two",
-        "task_variant_template_index": 0,
+        "task_variant_template_index": 4,
         "template_paths": [
           "charts/readout/charts_readout_v1.json"
         ],
@@ -223,16 +226,16 @@
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a labeled lollipop chart. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis",
-              "query_label_a": "J",
-              "query_label_b": "N"
+              "object_description": "a labeled radar chart with one spoke per label. Each label marks one plotted point on the radar polygon, and the relevant values are the printed values near those points",
+              "query_label_a": "H",
+              "query_label_b": "X"
             },
             "task_family_key": "labeled_chart_readout",
-            "task_family_variant_index": 0,
+            "task_family_variant_index": 3,
             "task_key": "subset_value_query",
-            "task_variant_index": 3,
+            "task_variant_index": 4,
             "task_variant_key": "mean_two",
-            "task_variant_template_index": 0,
+            "task_variant_template_index": 4,
             "template_paths": [
               "charts/readout/charts_readout_v1.json"
             ],
@@ -243,12 +246,12 @@
               "task_variant:mean_two": 5
             }
           },
-          "prompt": "The image shows a labeled lollipop chart. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Use the labeled chart values for the named labels to answer the question. For labels J and N, what is the mean of their values?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question.\nAnswer requirement: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[6,10],\"answer\":8}"
+          "prompt": "Look at the chart in the image. It shows a labeled radar chart with one spoke per label. Each label marks one plotted point on the radar polygon, and the relevant values are the printed values near those points. Determine the requested value from the two specified chart labels. What mean value do you get from labels H and X?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question.\nAnswer requirement: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[6,10],\"answer\":8}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 4,
+            "answer_or_evidence_variant_index": 2,
             "prompt_bundle_id": "charts_readout_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -258,16 +261,16 @@
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a labeled lollipop chart. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis",
-              "query_label_a": "J",
-              "query_label_b": "N"
+              "object_description": "a labeled radar chart with one spoke per label. Each label marks one plotted point on the radar polygon, and the relevant values are the printed values near those points",
+              "query_label_a": "H",
+              "query_label_b": "X"
             },
             "task_family_key": "labeled_chart_readout",
-            "task_family_variant_index": 0,
+            "task_family_variant_index": 3,
             "task_key": "subset_value_query",
-            "task_variant_index": 3,
+            "task_variant_index": 4,
             "task_variant_key": "mean_two",
-            "task_variant_template_index": 0,
+            "task_variant_template_index": 4,
             "template_paths": [
               "charts/readout/charts_readout_v1.json"
             ],
@@ -278,7 +281,7 @@
               "task_variant:mean_two": 5
             }
           },
-          "prompt": "The image shows a labeled lollipop chart. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Use the labeled chart values for the named labels to answer the question. For labels J and N, what is the mean of their values?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":8}"
+          "prompt": "Look at the chart in the image. It shows a labeled radar chart with one spoke per label. Each label marks one plotted point on the radar polygon, and the relevant values are the printed values near those points. Determine the requested value from the two specified chart labels. What mean value do you get from labels H and X?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":8}"
         }
       },
       "task_variant": "mean_two",
@@ -287,25 +290,29 @@
     "render_map": {
       "image_id": "img0",
       "label_centers_px": {
-        "F": [
-          555.4,
-          44.095
-        ],
-        "J": [
-          687.8,
-          419.714
-        ],
-        "N": [
-          290.6,
-          463.905
-        ],
-        "S": [
+        "D": [
           423.0,
-          463.905
+          86.0
         ],
-        "V": [
-          158.2,
-          463.905
+        "H": [
+          587.545,
+          371.0
+        ],
+        "R": [
+          587.545,
+          181.0
+        ],
+        "U": [
+          258.455,
+          181.0
+        ],
+        "W": [
+          258.455,
+          371.0
+        ],
+        "X": [
+          423.0,
+          466.0
         ]
       },
       "plot_bbox_px": [
@@ -343,14 +350,14 @@
         "mark_color_distance_space": "lab",
         "mark_color_min_distance": 40.0,
         "mark_fill_rgb": [
-          114,
-          158,
-          42
+          202,
+          91,
+          73
         ],
         "mark_outline_rgb": [
-          63,
-          87,
-          23
+          111,
+          50,
+          40
         ],
         "sampling_policy": "random_rgb"
       },
@@ -376,7 +383,7 @@
         "edits": [],
         "enabled": false
       },
-      "scene_variant": "lollipop",
+      "scene_variant": "radar",
       "text_style": {
         "label_font_size_px": 22,
         "label_stroke_width_px": 2,
@@ -412,199 +419,257 @@
       "entities": [
         {
           "attrs": {
-            "label": "V",
-            "label_center_px": [
-              158.2,
-              463.905
-            ],
-            "mark_bbox_px": [
-              150.2,
-              477.905,
-              166.2,
-              493.905
-            ],
-            "mark_center_px": [
-              158.2,
-              485.905
-            ],
-            "mark_fill_rgb": [
-              114,
-              158,
-              42
-            ],
-            "mark_outline_rgb": [
-              63,
-              87,
-              23
-            ],
-            "scene_variant": "lollipop",
-            "value": 1,
-            "x_rank": 0
-          },
-          "entity_id": "mark_V",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "label": "N",
-            "label_center_px": [
-              290.6,
-              463.905
-            ],
-            "mark_bbox_px": [
-              282.6,
-              477.905,
-              298.6,
-              493.905
-            ],
-            "mark_center_px": [
-              290.6,
-              485.905
-            ],
-            "mark_fill_rgb": [
-              114,
-              158,
-              42
-            ],
-            "mark_outline_rgb": [
-              63,
-              87,
-              23
-            ],
-            "scene_variant": "lollipop",
-            "value": 1,
-            "x_rank": 1
-          },
-          "entity_id": "mark_N",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "label": "S",
+            "label": "D",
             "label_center_px": [
               423.0,
-              463.905
+              86.0
             ],
             "mark_bbox_px": [
               415.0,
-              477.905,
+              207.048,
               431.0,
-              493.905
+              223.048
             ],
             "mark_center_px": [
               423.0,
-              485.905
+              215.048
             ],
             "mark_fill_rgb": [
-              114,
-              158,
-              42
+              202,
+              91,
+              73
             ],
             "mark_outline_rgb": [
-              63,
-              87,
-              23
+              111,
+              50,
+              40
             ],
-            "scene_variant": "lollipop",
-            "value": 1,
+            "scene_variant": "radar",
+            "value": 8,
+            "value_center_px": [
+              423.0,
+              233.048
+            ],
+            "x_rank": 0
+          },
+          "entity_id": "mark_D",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "R",
+            "label_center_px": [
+              587.545,
+              181.0
+            ],
+            "mark_bbox_px": [
+              474.385,
+              233.714,
+              490.385,
+              249.714
+            ],
+            "mark_center_px": [
+              482.385,
+              241.714
+            ],
+            "mark_fill_rgb": [
+              202,
+              91,
+              73
+            ],
+            "mark_outline_rgb": [
+              111,
+              50,
+              40
+            ],
+            "scene_variant": "radar",
+            "value": 9,
+            "value_center_px": [
+              466.796,
+              250.714
+            ],
+            "x_rank": 1
+          },
+          "entity_id": "mark_R",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "H",
+            "label_center_px": [
+              587.545,
+              371.0
+            ],
+            "mark_bbox_px": [
+              441.393,
+              283.238,
+              457.393,
+              299.238
+            ],
+            "mark_center_px": [
+              449.393,
+              291.238
+            ],
+            "mark_fill_rgb": [
+              202,
+              91,
+              73
+            ],
+            "mark_outline_rgb": [
+              111,
+              50,
+              40
+            ],
+            "scene_variant": "radar",
+            "value": 4,
+            "value_center_px": [
+              438.588,
+              285.0
+            ],
             "x_rank": 2
           },
-          "entity_id": "mark_S",
+          "entity_id": "mark_H",
           "entity_type": "point"
         },
         {
           "attrs": {
-            "label": "F",
+            "label": "X",
             "label_center_px": [
-              555.4,
-              44.095
+              423.0,
+              466.0
             ],
             "mark_bbox_px": [
-              547.4,
-              58.095,
-              563.4,
-              74.095
+              415.0,
+              420.381,
+              431.0,
+              436.381
             ],
             "mark_center_px": [
-              555.4,
-              66.095
+              423.0,
+              428.381
             ],
             "mark_fill_rgb": [
-              114,
-              158,
-              42
+              202,
+              91,
+              73
             ],
             "mark_outline_rgb": [
-              63,
-              87,
-              23
+              111,
+              50,
+              40
             ],
-            "scene_variant": "lollipop",
+            "scene_variant": "radar",
             "value": 20,
+            "value_center_px": [
+              423.0,
+              410.381
+            ],
             "x_rank": 3
           },
-          "entity_id": "mark_F",
+          "entity_id": "mark_X",
           "entity_type": "point"
         },
         {
           "attrs": {
-            "label": "J",
+            "label": "W",
             "label_center_px": [
-              687.8,
-              419.714
+              258.455,
+              371.0
             ],
             "mark_bbox_px": [
-              679.8,
-              433.714,
-              695.8,
-              449.714
+              349.017,
+              306.095,
+              365.017,
+              322.095
             ],
             "mark_center_px": [
-              687.8,
-              441.714
+              357.017,
+              314.095
             ],
             "mark_fill_rgb": [
-              114,
-              158,
-              42
+              202,
+              91,
+              73
             ],
             "mark_outline_rgb": [
-              63,
-              87,
-              23
+              111,
+              50,
+              40
             ],
-            "scene_variant": "lollipop",
-            "value": 3,
+            "scene_variant": "radar",
+            "value": 10,
+            "value_center_px": [
+              372.606,
+              305.095
+            ],
             "x_rank": 4
           },
-          "entity_id": "mark_J",
+          "entity_id": "mark_W",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "U",
+            "label_center_px": [
+              258.455,
+              181.0
+            ],
+            "mark_bbox_px": [
+              289.633,
+              195.619,
+              305.633,
+              211.619
+            ],
+            "mark_center_px": [
+              297.633,
+              203.619
+            ],
+            "mark_fill_rgb": [
+              202,
+              91,
+              73
+            ],
+            "mark_outline_rgb": [
+              111,
+              50,
+              40
+            ],
+            "scene_variant": "radar",
+            "value": 19,
+            "value_center_px": [
+              313.221,
+              212.619
+            ],
+            "x_rank": 5
+          },
+          "entity_id": "mark_U",
           "entity_type": "point"
         }
       ],
       "relations": {
-        "answer_value": 2,
+        "answer_value": 12,
         "query_labels": [
-          "J",
-          "N"
+          "H",
+          "X"
         ],
         "query_values": [
-          3,
-          1
+          4,
+          20
         ],
-        "scene_variant": "lollipop",
+        "scene_variant": "radar",
         "task_variant": "mean_two"
       },
-      "scene_kind": "chart_lollipop_readout"
+      "scene_kind": "chart_radar_readout"
     },
     "witness_symbolic": {
       "query_labels": [
-        "J",
-        "N"
+        "H",
+        "X"
       ],
       "type": "integer_list",
       "values": [
-        3,
-        1
+        4,
+        20
       ]
     }
   },

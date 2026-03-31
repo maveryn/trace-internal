@@ -6,24 +6,24 @@
   "evidence_gt": {
     "type": "label_set",
     "value": [
-      "A",
-      "D",
+      "B",
       "F",
-      "G",
+      "J",
       "L",
-      "V",
-      "Z"
+      "M",
+      "N",
+      "X"
     ]
   },
   "image": {
     "format": "png",
     "path": "charts/task_charts_multiseries_pairwise_comparison_count/images/series_a_gt_b_count/0008.png"
   },
-  "instance_seed": 8638871776836255,
-  "prompt": "Look at the multiseries chart in the image. It shows a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Read the chart values and count the categories where the stated series relation holds. Count the category labels where Ard exceeds Toby.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer field: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
+  "instance_seed": 1811240283917631,
+  "prompt": "Use the chart in the image. It shows a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Work category by category and count the labels where the requested series comparison is true. Determine the number of categories where Aria is greater than Esma.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
   "prompt_variants": {
-    "answer_and_evidence": "Look at the multiseries chart in the image. It shows a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Read the chart values and count the categories where the stated series relation holds. Count the category labels where Ard exceeds Toby.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer field: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
-    "answer_only": "Look at the multiseries chart in the image. It shows a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Read the chart values and count the categories where the stated series relation holds. Count the category labels where Ard exceeds Toby.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":3}"
+    "answer_and_evidence": "Use the chart in the image. It shows a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Work category by category and count the labels where the requested series comparison is true. Determine the number of categories where Aria is greater than Esma.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
+    "answer_only": "Use the chart in the image. It shows a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Work category by category and count the labels where the requested series comparison is true. Determine the number of categories where Aria is greater than Esma.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":3}"
   },
   "task": "task_charts_multiseries_pairwise_comparison_count",
   "task_variant": "series_a_gt_b_count",
@@ -36,34 +36,34 @@
         10
       ],
       "category_labels": [
+        "B",
+        "J",
         "L",
         "F",
-        "G",
-        "Z",
-        "A",
-        "D",
-        "V"
+        "N",
+        "M",
+        "X"
       ],
       "comparison": "greater_than",
       "evidence_labels": [
-        "A",
-        "D",
+        "B",
         "F",
-        "G",
+        "J",
         "L",
-        "V",
-        "Z"
+        "M",
+        "N",
+        "X"
       ],
-      "left_series_label": "Ard",
+      "left_series_label": "Aria",
       "mark_color_distance_space": "lab",
       "mark_color_min_distance": 40.0,
       "mark_color_sampling_policy": "random_rgb_palette",
       "queried_series_labels": [
-        "Ard",
-        "Toby"
+        "Aria",
+        "Esma"
       ],
       "question_format": "numeric_open",
-      "right_series_label": "Toby",
+      "right_series_label": "Esma",
       "scene_variant": "multi_line",
       "scene_variant_probabilities": {
         "grouped_bar": 0.25,
@@ -78,30 +78,30 @@
       ],
       "series_fill_palette_rgb": [
         [
-          137,
-          171,
-          14
+          177,
+          14,
+          34
         ],
         [
-          70,
-          160,
-          136
+          35,
+          108,
+          49
         ]
       ],
       "series_labels": [
-        "Ard",
-        "Toby"
+        "Aria",
+        "Esma"
       ],
       "series_outline_palette_rgb": [
         [
-          75,
-          94,
-          8
+          97,
+          8,
+          19
         ],
         [
-          38,
-          88,
-          75
+          19,
+          59,
+          27
         ]
       ],
       "target_answer": 7,
@@ -111,131 +111,131 @@
       ],
       "task_variant": "series_a_gt_b_count",
       "task_variant_probabilities": {
-        "series_a_gt_b_count": 0.5,
-        "series_a_lt_b_count": 0.5
+        "series_a_gt_b_count": 1.0,
+        "series_a_lt_b_count": 0.0
       },
       "values_by_category": {
-        "A": {
-          "Ard": 17,
-          "Toby": 12
-        },
-        "D": {
-          "Ard": 9,
-          "Toby": 4
+        "B": {
+          "Aria": 20,
+          "Esma": 3
         },
         "F": {
-          "Ard": 10,
-          "Toby": 5
+          "Aria": 18,
+          "Esma": 5
         },
-        "G": {
-          "Ard": 19,
-          "Toby": 10
+        "J": {
+          "Aria": 6,
+          "Esma": 3
         },
         "L": {
-          "Ard": 13,
-          "Toby": 9
+          "Aria": 19,
+          "Esma": 1
         },
-        "V": {
-          "Ard": 10,
-          "Toby": 8
+        "M": {
+          "Aria": 19,
+          "Esma": 9
         },
-        "Z": {
-          "Ard": 17,
-          "Toby": 15
+        "N": {
+          "Aria": 20,
+          "Esma": 6
+        },
+        "X": {
+          "Aria": 17,
+          "Esma": 15
         }
       }
     },
     "projected_evidence": {
       "bbox_set": [
         [
-          573.357,
-          108.6,
-          590.357,
-          562.0
-        ],
-        [
-          681.714,
-          302.2,
-          699.714,
-          562.0
-        ],
-        [
-          247.286,
-          278.0,
-          263.286,
-          562.0
-        ],
-        [
-          355.143,
-          60.2,
-          373.143,
-          562.0
-        ],
-        [
-          138.429,
-          205.4,
-          154.429,
-          562.0
-        ],
-        [
-          791.071,
-          278.0,
-          808.071,
+          137.929,
+          59.048,
+          154.929,
           562.0
         ],
         [
           465.0,
-          108.6,
+          105.143,
           481.0,
+          562.0
+        ],
+        [
+          247.286,
+          381.714,
+          263.286,
+          564.0
+        ],
+        [
+          356.143,
+          82.095,
+          372.143,
+          562.0
+        ],
+        [
+          679.714,
+          82.095,
+          701.714,
+          562.0
+        ],
+        [
+          572.857,
+          59.048,
+          590.857,
+          562.0
+        ],
+        [
+          791.071,
+          128.19,
+          808.071,
           562.0
         ]
       ],
       "label_set": [
-        "A",
-        "D",
+        "B",
         "F",
-        "G",
+        "J",
         "L",
-        "V",
-        "Z"
+        "M",
+        "N",
+        "X"
       ],
       "pixel_point_map": {
-        "A": [
-          581.857,
-          554.0
-        ],
-        "D": [
-          690.714,
-          554.0
-        ],
-        "F": [
-          255.286,
-          554.0
-        ],
-        "G": [
-          364.143,
-          554.0
-        ],
-        "L": [
+        "B": [
           146.429,
           554.0
         ],
-        "V": [
-          799.571,
+        "F": [
+          473.0,
           554.0
         ],
-        "Z": [
-          473.0,
+        "J": [
+          255.286,
+          554.0
+        ],
+        "L": [
+          364.143,
+          554.0
+        ],
+        "M": [
+          690.714,
+          554.0
+        ],
+        "N": [
+          581.857,
+          554.0
+        ],
+        "X": [
+          799.571,
           554.0
         ]
       },
       "pixel_point_set": [
         [
-          581.857,
+          146.429,
           554.0
         ],
         [
-          690.714,
+          473.0,
           554.0
         ],
         [
@@ -247,15 +247,15 @@
           554.0
         ],
         [
-          146.429,
+          690.714,
+          554.0
+        ],
+        [
+          581.857,
           554.0
         ],
         [
           799.571,
-          554.0
-        ],
-        [
-          473.0,
           554.0
         ]
       ]
@@ -269,8 +269,8 @@
         ],
         "comparison": "greater_than",
         "queried_series_labels": [
-          "Ard",
-          "Toby"
+          "Aria",
+          "Esma"
         ],
         "scene_variant": "multi_line",
         "scene_variant_probabilities": {
@@ -291,13 +291,13 @@
         ],
         "task_variant": "series_a_gt_b_count",
         "task_variant_probabilities": {
-          "series_a_gt_b_count": 0.5,
-          "series_a_lt_b_count": 0.5
+          "series_a_gt_b_count": 1.0,
+          "series_a_lt_b_count": 0.0
         }
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 3,
+        "answer_or_evidence_variant_index": 4,
         "prompt_bundle_id": "charts_multiseries_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -307,16 +307,16 @@
           "json_example_answer_only": "{\"answer\":3}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "left_series": "Ard",
+          "left_series": "Aria",
           "object_description": "a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis",
-          "right_series": "Toby"
+          "right_series": "Esma"
         },
         "task_family_key": "multiseries_chart_comparison",
-        "task_family_variant_index": 3,
+        "task_family_variant_index": 1,
         "task_key": "pairwise_comparison_count_query",
-        "task_variant_index": 3,
+        "task_variant_index": 4,
         "task_variant_key": "series_a_gt_b_count",
-        "task_variant_template_index": 1,
+        "task_variant_template_index": 3,
         "template_paths": [
           "charts/multiseries/charts_multiseries_v1.json"
         ],
@@ -332,41 +332,6 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 3,
-            "prompt_bundle_id": "charts_multiseries_v1",
-            "schema_version": "v1",
-            "slot_values": {
-              "answer_hint": "set \"answer\" to the number of category labels satisfying the requested series comparison as an integer",
-              "evidence_hint": "set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series",
-              "json_example": "{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
-              "json_example_answer_only": "{\"answer\":3}",
-              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
-              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "left_series": "Ard",
-              "object_description": "a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis",
-              "right_series": "Toby"
-            },
-            "task_family_key": "multiseries_chart_comparison",
-            "task_family_variant_index": 3,
-            "task_key": "pairwise_comparison_count_query",
-            "task_variant_index": 3,
-            "task_variant_key": "series_a_gt_b_count",
-            "task_variant_template_index": 1,
-            "template_paths": [
-              "charts/multiseries/charts_multiseries_v1.json"
-            ],
-            "variant_count_by_key": {
-              "answer_or_evidence:answer_and_evidence": 5,
-              "task:pairwise_comparison_count_query": 5,
-              "task_family:multiseries_chart_comparison": 5,
-              "task_variant:series_a_gt_b_count": 5
-            }
-          },
-          "prompt": "Look at the multiseries chart in the image. It shows a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Read the chart values and count the categories where the stated series relation holds. Count the category labels where Ard exceeds Toby.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer field: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}"
-        },
-        "answer_only": {
-          "metadata": {
-            "answer_or_evidence_key": "answer_only",
             "answer_or_evidence_variant_index": 4,
             "prompt_bundle_id": "charts_multiseries_v1",
             "schema_version": "v1",
@@ -377,16 +342,51 @@
               "json_example_answer_only": "{\"answer\":3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "left_series": "Ard",
+              "left_series": "Aria",
               "object_description": "a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis",
-              "right_series": "Toby"
+              "right_series": "Esma"
             },
             "task_family_key": "multiseries_chart_comparison",
-            "task_family_variant_index": 3,
+            "task_family_variant_index": 1,
             "task_key": "pairwise_comparison_count_query",
-            "task_variant_index": 3,
+            "task_variant_index": 4,
             "task_variant_key": "series_a_gt_b_count",
-            "task_variant_template_index": 1,
+            "task_variant_template_index": 3,
+            "template_paths": [
+              "charts/multiseries/charts_multiseries_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:pairwise_comparison_count_query": 5,
+              "task_family:multiseries_chart_comparison": 5,
+              "task_variant:series_a_gt_b_count": 5
+            }
+          },
+          "prompt": "Use the chart in the image. It shows a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Work category by category and count the labels where the requested series comparison is true. Determine the number of categories where Aria is greater than Esma.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "charts_multiseries_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the number of category labels satisfying the requested series comparison as an integer",
+              "evidence_hint": "set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series",
+              "json_example": "{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
+              "json_example_answer_only": "{\"answer\":3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "left_series": "Aria",
+              "object_description": "a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis",
+              "right_series": "Esma"
+            },
+            "task_family_key": "multiseries_chart_comparison",
+            "task_family_variant_index": 1,
+            "task_key": "pairwise_comparison_count_query",
+            "task_variant_index": 4,
+            "task_variant_key": "series_a_gt_b_count",
+            "task_variant_template_index": 3,
             "template_paths": [
               "charts/multiseries/charts_multiseries_v1.json"
             ],
@@ -397,7 +397,7 @@
               "task_variant:series_a_gt_b_count": 5
             }
           },
-          "prompt": "Look at the multiseries chart in the image. It shows a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Read the chart values and count the categories where the stated series relation holds. Count the category labels where Ard exceeds Toby.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":3}"
+          "prompt": "Use the chart in the image. It shows a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Work category by category and count the labels where the requested series comparison is true. Determine the number of categories where Aria is greater than Esma.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":3}"
         }
       },
       "task_variant": "series_a_gt_b_count",
@@ -405,32 +405,32 @@
     },
     "render_map": {
       "category_label_centers_px": {
-        "A": [
-          581.857,
-          554.0
-        ],
-        "D": [
-          690.714,
-          554.0
-        ],
-        "F": [
-          255.286,
-          554.0
-        ],
-        "G": [
-          364.143,
-          554.0
-        ],
-        "L": [
+        "B": [
           146.429,
           554.0
         ],
-        "V": [
-          799.571,
+        "F": [
+          473.0,
           554.0
         ],
-        "Z": [
-          473.0,
+        "J": [
+          255.286,
+          554.0
+        ],
+        "L": [
+          364.143,
+          554.0
+        ],
+        "M": [
+          690.714,
+          554.0
+        ],
+        "N": [
+          581.857,
+          554.0
+        ],
+        "X": [
+          799.571,
           554.0
         ]
       },
@@ -472,26 +472,26 @@
         "sampling_policy": "random_rgb_palette",
         "series_fill_palette_rgb": [
           [
-            137,
-            171,
-            14
+            177,
+            14,
+            34
           ],
           [
-            70,
-            160,
-            136
+            35,
+            108,
+            49
           ]
         ],
         "series_outline_palette_rgb": [
           [
-            75,
-            94,
-            8
+            97,
+            8,
+            19
           ],
           [
-            38,
-            88,
-            75
+            19,
+            59,
+            27
           ]
         ]
       },
@@ -523,7 +523,7 @@
         "label_stroke_width_px": 2,
         "tick_font_size_px": 18
       },
-      "y_axis_max": 20,
+      "y_axis_max": 21,
       "y_ticks": [
         0,
         1,
@@ -545,7 +545,8 @@
         17,
         18,
         19,
-        20
+        20,
+        21
       ]
     },
     "scene_ir": {
@@ -553,12 +554,12 @@
         {
           "attrs": {
             "category_group_bbox_px": [
-              138.429,
-              205.4,
-              154.429,
+              137.929,
+              59.048,
+              154.929,
               562.0
             ],
-            "category_label": "L",
+            "category_label": "B",
             "category_label_center_px": [
               146.429,
               554.0
@@ -566,41 +567,41 @@
             "category_rank": 0,
             "mark_bbox_px": [
               138.429,
-              205.4,
+              59.048,
               154.429,
-              221.4
+              75.048
             ],
             "mark_center_px": [
               146.429,
-              213.4
+              67.048
             ],
             "mark_fill_rgb": [
-              137,
-              171,
-              14
+              177,
+              14,
+              34
             ],
             "mark_outline_rgb": [
-              75,
-              94,
-              8
+              97,
+              8,
+              19
             ],
             "scene_variant": "multi_line",
-            "series_label": "Ard",
+            "series_label": "Aria",
             "series_rank": 0,
-            "value": 13
+            "value": 20
           },
-          "entity_id": "mark_L_Ard",
+          "entity_id": "mark_B_Aria",
           "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              138.429,
-              205.4,
-              154.429,
+              137.929,
+              59.048,
+              154.929,
               562.0
             ],
-            "category_label": "L",
+            "category_label": "B",
             "category_label_center_px": [
               146.429,
               554.0
@@ -608,41 +609,41 @@
             "category_rank": 0,
             "mark_bbox_px": [
               138.429,
-              302.2,
+              450.857,
               154.429,
-              318.2
+              466.857
             ],
             "mark_center_px": [
               146.429,
-              310.2
+              458.857
             ],
             "mark_fill_rgb": [
-              70,
-              160,
-              136
+              35,
+              108,
+              49
             ],
             "mark_outline_rgb": [
-              38,
-              88,
-              75
+              19,
+              59,
+              27
             ],
             "scene_variant": "multi_line",
-            "series_label": "Toby",
+            "series_label": "Esma",
             "series_rank": 1,
-            "value": 9
+            "value": 3
           },
-          "entity_id": "mark_L_Toby",
+          "entity_id": "mark_B_Esma",
           "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
               247.286,
-              278.0,
+              381.714,
               263.286,
-              562.0
+              564.0
             ],
-            "category_label": "F",
+            "category_label": "J",
             "category_label_center_px": [
               255.286,
               554.0
@@ -650,41 +651,41 @@
             "category_rank": 1,
             "mark_bbox_px": [
               247.286,
-              278.0,
+              381.714,
               263.286,
-              294.0
+              397.714
             ],
             "mark_center_px": [
               255.286,
-              286.0
+              389.714
             ],
             "mark_fill_rgb": [
-              137,
-              171,
-              14
+              177,
+              14,
+              34
             ],
             "mark_outline_rgb": [
-              75,
-              94,
-              8
+              97,
+              8,
+              19
             ],
             "scene_variant": "multi_line",
-            "series_label": "Ard",
+            "series_label": "Aria",
             "series_rank": 0,
-            "value": 10
+            "value": 6
           },
-          "entity_id": "mark_F_Ard",
+          "entity_id": "mark_J_Aria",
           "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
               247.286,
-              278.0,
+              381.714,
               263.286,
-              562.0
+              564.0
             ],
-            "category_label": "F",
+            "category_label": "J",
             "category_label_center_px": [
               255.286,
               554.0
@@ -692,41 +693,41 @@
             "category_rank": 1,
             "mark_bbox_px": [
               247.286,
-              399.0,
+              450.857,
               263.286,
-              415.0
+              466.857
             ],
             "mark_center_px": [
               255.286,
-              407.0
+              458.857
             ],
             "mark_fill_rgb": [
-              70,
-              160,
-              136
+              35,
+              108,
+              49
             ],
             "mark_outline_rgb": [
-              38,
-              88,
-              75
+              19,
+              59,
+              27
             ],
             "scene_variant": "multi_line",
-            "series_label": "Toby",
+            "series_label": "Esma",
             "series_rank": 1,
-            "value": 5
+            "value": 3
           },
-          "entity_id": "mark_F_Toby",
+          "entity_id": "mark_J_Esma",
           "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              355.143,
-              60.2,
-              373.143,
+              356.143,
+              82.095,
+              372.143,
               562.0
             ],
-            "category_label": "G",
+            "category_label": "L",
             "category_label_center_px": [
               364.143,
               554.0
@@ -734,41 +735,41 @@
             "category_rank": 2,
             "mark_bbox_px": [
               356.143,
-              60.2,
+              82.095,
               372.143,
-              76.2
+              98.095
             ],
             "mark_center_px": [
               364.143,
-              68.2
+              90.095
             ],
             "mark_fill_rgb": [
-              137,
-              171,
-              14
+              177,
+              14,
+              34
             ],
             "mark_outline_rgb": [
-              75,
-              94,
-              8
+              97,
+              8,
+              19
             ],
             "scene_variant": "multi_line",
-            "series_label": "Ard",
+            "series_label": "Aria",
             "series_rank": 0,
             "value": 19
           },
-          "entity_id": "mark_G_Ard",
+          "entity_id": "mark_L_Aria",
           "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              355.143,
-              60.2,
-              373.143,
+              356.143,
+              82.095,
+              372.143,
               562.0
             ],
-            "category_label": "G",
+            "category_label": "L",
             "category_label_center_px": [
               364.143,
               554.0
@@ -776,41 +777,41 @@
             "category_rank": 2,
             "mark_bbox_px": [
               356.143,
-              278.0,
+              496.952,
               372.143,
-              294.0
+              512.952
             ],
             "mark_center_px": [
               364.143,
-              286.0
+              504.952
             ],
             "mark_fill_rgb": [
-              70,
-              160,
-              136
+              35,
+              108,
+              49
             ],
             "mark_outline_rgb": [
-              38,
-              88,
-              75
+              19,
+              59,
+              27
             ],
             "scene_variant": "multi_line",
-            "series_label": "Toby",
+            "series_label": "Esma",
             "series_rank": 1,
-            "value": 10
+            "value": 1
           },
-          "entity_id": "mark_G_Toby",
+          "entity_id": "mark_L_Esma",
           "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
               465.0,
-              108.6,
+              105.143,
               481.0,
               562.0
             ],
-            "category_label": "Z",
+            "category_label": "F",
             "category_label_center_px": [
               473.0,
               554.0
@@ -818,341 +819,341 @@
             "category_rank": 3,
             "mark_bbox_px": [
               465.0,
-              108.6,
+              105.143,
               481.0,
-              124.6
+              121.143
             ],
             "mark_center_px": [
               473.0,
-              116.6
+              113.143
             ],
             "mark_fill_rgb": [
-              137,
-              171,
-              14
+              177,
+              14,
+              34
             ],
             "mark_outline_rgb": [
-              75,
-              94,
-              8
+              97,
+              8,
+              19
             ],
             "scene_variant": "multi_line",
-            "series_label": "Ard",
+            "series_label": "Aria",
+            "series_rank": 0,
+            "value": 18
+          },
+          "entity_id": "mark_F_Aria",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              465.0,
+              105.143,
+              481.0,
+              562.0
+            ],
+            "category_label": "F",
+            "category_label_center_px": [
+              473.0,
+              554.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              465.0,
+              404.762,
+              481.0,
+              420.762
+            ],
+            "mark_center_px": [
+              473.0,
+              412.762
+            ],
+            "mark_fill_rgb": [
+              35,
+              108,
+              49
+            ],
+            "mark_outline_rgb": [
+              19,
+              59,
+              27
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Esma",
+            "series_rank": 1,
+            "value": 5
+          },
+          "entity_id": "mark_F_Esma",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              572.857,
+              59.048,
+              590.857,
+              562.0
+            ],
+            "category_label": "N",
+            "category_label_center_px": [
+              581.857,
+              554.0
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              573.857,
+              59.048,
+              589.857,
+              75.048
+            ],
+            "mark_center_px": [
+              581.857,
+              67.048
+            ],
+            "mark_fill_rgb": [
+              177,
+              14,
+              34
+            ],
+            "mark_outline_rgb": [
+              97,
+              8,
+              19
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Aria",
+            "series_rank": 0,
+            "value": 20
+          },
+          "entity_id": "mark_N_Aria",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              572.857,
+              59.048,
+              590.857,
+              562.0
+            ],
+            "category_label": "N",
+            "category_label_center_px": [
+              581.857,
+              554.0
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              573.857,
+              381.714,
+              589.857,
+              397.714
+            ],
+            "mark_center_px": [
+              581.857,
+              389.714
+            ],
+            "mark_fill_rgb": [
+              35,
+              108,
+              49
+            ],
+            "mark_outline_rgb": [
+              19,
+              59,
+              27
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Esma",
+            "series_rank": 1,
+            "value": 6
+          },
+          "entity_id": "mark_N_Esma",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              679.714,
+              82.095,
+              701.714,
+              562.0
+            ],
+            "category_label": "M",
+            "category_label_center_px": [
+              690.714,
+              554.0
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              682.714,
+              82.095,
+              698.714,
+              98.095
+            ],
+            "mark_center_px": [
+              690.714,
+              90.095
+            ],
+            "mark_fill_rgb": [
+              177,
+              14,
+              34
+            ],
+            "mark_outline_rgb": [
+              97,
+              8,
+              19
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Aria",
+            "series_rank": 0,
+            "value": 19
+          },
+          "entity_id": "mark_M_Aria",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              679.714,
+              82.095,
+              701.714,
+              562.0
+            ],
+            "category_label": "M",
+            "category_label_center_px": [
+              690.714,
+              554.0
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              682.714,
+              312.571,
+              698.714,
+              328.571
+            ],
+            "mark_center_px": [
+              690.714,
+              320.571
+            ],
+            "mark_fill_rgb": [
+              35,
+              108,
+              49
+            ],
+            "mark_outline_rgb": [
+              19,
+              59,
+              27
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Esma",
+            "series_rank": 1,
+            "value": 9
+          },
+          "entity_id": "mark_M_Esma",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              791.071,
+              128.19,
+              808.071,
+              562.0
+            ],
+            "category_label": "X",
+            "category_label_center_px": [
+              799.571,
+              554.0
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              791.571,
+              128.19,
+              807.571,
+              144.19
+            ],
+            "mark_center_px": [
+              799.571,
+              136.19
+            ],
+            "mark_fill_rgb": [
+              177,
+              14,
+              34
+            ],
+            "mark_outline_rgb": [
+              97,
+              8,
+              19
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Aria",
             "series_rank": 0,
             "value": 17
           },
-          "entity_id": "mark_Z_Ard",
+          "entity_id": "mark_X_Aria",
           "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              465.0,
-              108.6,
-              481.0,
+              791.071,
+              128.19,
+              808.071,
               562.0
             ],
-            "category_label": "Z",
+            "category_label": "X",
             "category_label_center_px": [
-              473.0,
+              799.571,
               554.0
             ],
-            "category_rank": 3,
+            "category_rank": 6,
             "mark_bbox_px": [
-              465.0,
-              157.0,
-              481.0,
-              173.0
+              791.571,
+              174.286,
+              807.571,
+              190.286
             ],
             "mark_center_px": [
-              473.0,
-              165.0
+              799.571,
+              182.286
             ],
             "mark_fill_rgb": [
-              70,
-              160,
-              136
+              35,
+              108,
+              49
             ],
             "mark_outline_rgb": [
-              38,
-              88,
-              75
+              19,
+              59,
+              27
             ],
             "scene_variant": "multi_line",
-            "series_label": "Toby",
+            "series_label": "Esma",
             "series_rank": 1,
             "value": 15
           },
-          "entity_id": "mark_Z_Toby",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              573.357,
-              108.6,
-              590.357,
-              562.0
-            ],
-            "category_label": "A",
-            "category_label_center_px": [
-              581.857,
-              554.0
-            ],
-            "category_rank": 4,
-            "mark_bbox_px": [
-              573.857,
-              108.6,
-              589.857,
-              124.6
-            ],
-            "mark_center_px": [
-              581.857,
-              116.6
-            ],
-            "mark_fill_rgb": [
-              137,
-              171,
-              14
-            ],
-            "mark_outline_rgb": [
-              75,
-              94,
-              8
-            ],
-            "scene_variant": "multi_line",
-            "series_label": "Ard",
-            "series_rank": 0,
-            "value": 17
-          },
-          "entity_id": "mark_A_Ard",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              573.357,
-              108.6,
-              590.357,
-              562.0
-            ],
-            "category_label": "A",
-            "category_label_center_px": [
-              581.857,
-              554.0
-            ],
-            "category_rank": 4,
-            "mark_bbox_px": [
-              573.857,
-              229.6,
-              589.857,
-              245.6
-            ],
-            "mark_center_px": [
-              581.857,
-              237.6
-            ],
-            "mark_fill_rgb": [
-              70,
-              160,
-              136
-            ],
-            "mark_outline_rgb": [
-              38,
-              88,
-              75
-            ],
-            "scene_variant": "multi_line",
-            "series_label": "Toby",
-            "series_rank": 1,
-            "value": 12
-          },
-          "entity_id": "mark_A_Toby",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              681.714,
-              302.2,
-              699.714,
-              562.0
-            ],
-            "category_label": "D",
-            "category_label_center_px": [
-              690.714,
-              554.0
-            ],
-            "category_rank": 5,
-            "mark_bbox_px": [
-              682.714,
-              302.2,
-              698.714,
-              318.2
-            ],
-            "mark_center_px": [
-              690.714,
-              310.2
-            ],
-            "mark_fill_rgb": [
-              137,
-              171,
-              14
-            ],
-            "mark_outline_rgb": [
-              75,
-              94,
-              8
-            ],
-            "scene_variant": "multi_line",
-            "series_label": "Ard",
-            "series_rank": 0,
-            "value": 9
-          },
-          "entity_id": "mark_D_Ard",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              681.714,
-              302.2,
-              699.714,
-              562.0
-            ],
-            "category_label": "D",
-            "category_label_center_px": [
-              690.714,
-              554.0
-            ],
-            "category_rank": 5,
-            "mark_bbox_px": [
-              682.714,
-              423.2,
-              698.714,
-              439.2
-            ],
-            "mark_center_px": [
-              690.714,
-              431.2
-            ],
-            "mark_fill_rgb": [
-              70,
-              160,
-              136
-            ],
-            "mark_outline_rgb": [
-              38,
-              88,
-              75
-            ],
-            "scene_variant": "multi_line",
-            "series_label": "Toby",
-            "series_rank": 1,
-            "value": 4
-          },
-          "entity_id": "mark_D_Toby",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              791.071,
-              278.0,
-              808.071,
-              562.0
-            ],
-            "category_label": "V",
-            "category_label_center_px": [
-              799.571,
-              554.0
-            ],
-            "category_rank": 6,
-            "mark_bbox_px": [
-              791.571,
-              278.0,
-              807.571,
-              294.0
-            ],
-            "mark_center_px": [
-              799.571,
-              286.0
-            ],
-            "mark_fill_rgb": [
-              137,
-              171,
-              14
-            ],
-            "mark_outline_rgb": [
-              75,
-              94,
-              8
-            ],
-            "scene_variant": "multi_line",
-            "series_label": "Ard",
-            "series_rank": 0,
-            "value": 10
-          },
-          "entity_id": "mark_V_Ard",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              791.071,
-              278.0,
-              808.071,
-              562.0
-            ],
-            "category_label": "V",
-            "category_label_center_px": [
-              799.571,
-              554.0
-            ],
-            "category_rank": 6,
-            "mark_bbox_px": [
-              791.571,
-              326.4,
-              807.571,
-              342.4
-            ],
-            "mark_center_px": [
-              799.571,
-              334.4
-            ],
-            "mark_fill_rgb": [
-              70,
-              160,
-              136
-            ],
-            "mark_outline_rgb": [
-              38,
-              88,
-              75
-            ],
-            "scene_variant": "multi_line",
-            "series_label": "Toby",
-            "series_rank": 1,
-            "value": 8
-          },
-          "entity_id": "mark_V_Toby",
+          "entity_id": "mark_X_Esma",
           "entity_type": "point"
         }
       ],
       "relations": {
         "comparison": "greater_than",
         "evidence_labels": [
-          "A",
-          "D",
+          "B",
           "F",
-          "G",
+          "J",
           "L",
-          "V",
-          "Z"
+          "M",
+          "N",
+          "X"
         ],
         "queried_series_labels": [
-          "Ard",
-          "Toby"
+          "Aria",
+          "Esma"
         ],
         "scene_variant": "multi_line",
         "task_variant": "series_a_gt_b_count"
@@ -1161,13 +1162,13 @@
     },
     "witness_symbolic": {
       "labels": [
-        "A",
-        "D",
+        "B",
         "F",
-        "G",
+        "J",
         "L",
-        "V",
-        "Z"
+        "M",
+        "N",
+        "X"
       ],
       "type": "label_set"
     }

@@ -1,16 +1,16 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 8
+    "value": 7
   },
   "evidence_gt": {
     "type": "bbox_set",
     "value": [
       [
         811.65,
-        374.49,
+        375.49,
         853.15,
-        419.99
+        418.99
       ]
     ]
   },
@@ -18,11 +18,11 @@
     "format": "png",
     "path": "diagrams/task_diagrams_set_diagram_region_sum_value/images/sum_only_in_named_set/0006.png"
   },
-  "instance_seed": 343261618056147,
-  "prompt": "Look at the set diagram in the image: a 3-set overlap diagram with one single-digit number placed in each visible region. Use the set diagram to answer: What is the sum of the numbers only in Set B? Return the integer sum. Answer with the integer total.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every digit used in the sum, ordered from top to bottom and then left to right.\nAnswer format: set \"answer\" to the integer sum of the contributing digits.\nExample JSON:\n{\"evidence\":[[300,326,329,367]],\"answer\":7}",
+  "instance_seed": 5384227677416067,
+  "prompt": "Look at the set diagram in the image: a 3-set overlap diagram with one single-digit number placed in each visible region. Use the set diagram to answer: What is the sum of the numbers only in Set B? Return the integer sum. Respond with the integer sum only.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every digit used in the sum, ordered from top to bottom and then left to right.\nAnswer requirement: set \"answer\" to the integer sum of the contributing digits.\nExample JSON:\n{\"evidence\":[[300,326,329,367]],\"answer\":7}",
   "prompt_variants": {
-    "answer_and_evidence": "Look at the set diagram in the image: a 3-set overlap diagram with one single-digit number placed in each visible region. Use the set diagram to answer: What is the sum of the numbers only in Set B? Return the integer sum. Answer with the integer total.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every digit used in the sum, ordered from top to bottom and then left to right.\nAnswer format: set \"answer\" to the integer sum of the contributing digits.\nExample JSON:\n{\"evidence\":[[300,326,329,367]],\"answer\":7}",
-    "answer_only": "Look at the set diagram in the image: a 3-set overlap diagram with one single-digit number placed in each visible region. Use the set diagram to answer: What is the sum of the numbers only in Set B? Return the integer sum. Answer with the integer total.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the integer sum of the contributing digits.\nExample JSON:\n{\"answer\":7}"
+    "answer_and_evidence": "Look at the set diagram in the image: a 3-set overlap diagram with one single-digit number placed in each visible region. Use the set diagram to answer: What is the sum of the numbers only in Set B? Return the integer sum. Respond with the integer sum only.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every digit used in the sum, ordered from top to bottom and then left to right.\nAnswer requirement: set \"answer\" to the integer sum of the contributing digits.\nExample JSON:\n{\"evidence\":[[300,326,329,367]],\"answer\":7}",
+    "answer_only": "Look at the set diagram in the image: a 3-set overlap diagram with one single-digit number placed in each visible region. Use the set diagram to answer: What is the sum of the numbers only in Set B? Return the integer sum. Respond with the integer sum only.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the integer sum of the contributing digits.\nExample JSON:\n{\"answer\":7}"
   },
   "task": "task_diagrams_set_diagram_region_sum_value",
   "task_variant": "sum_only_in_named_set",
@@ -43,7 +43,7 @@
       }
     },
     "execution_trace": {
-      "answer_value": 8,
+      "answer_value": 7,
       "color_distance_space": "lab",
       "contributing_region_ids": [
         "B_only"
@@ -54,7 +54,7 @@
         {
           "number_bbox_id": "number_bbox_0",
           "number_id": "number_0",
-          "number_value": 2,
+          "number_value": 8,
           "region_id": "A_only",
           "set_memberships": [
             "A"
@@ -63,7 +63,7 @@
         {
           "number_bbox_id": "number_bbox_1",
           "number_id": "number_1",
-          "number_value": 8,
+          "number_value": 7,
           "region_id": "B_only",
           "set_memberships": [
             "B"
@@ -72,7 +72,7 @@
         {
           "number_bbox_id": "number_bbox_2",
           "number_id": "number_2",
-          "number_value": 5,
+          "number_value": 2,
           "region_id": "C_only",
           "set_memberships": [
             "C"
@@ -81,7 +81,7 @@
         {
           "number_bbox_id": "number_bbox_3",
           "number_id": "number_3",
-          "number_value": 7,
+          "number_value": 4,
           "region_id": "AB_only",
           "set_memberships": [
             "A",
@@ -91,7 +91,7 @@
         {
           "number_bbox_id": "number_bbox_4",
           "number_id": "number_4",
-          "number_value": 1,
+          "number_value": 5,
           "region_id": "AC_only",
           "set_memberships": [
             "A",
@@ -101,7 +101,7 @@
         {
           "number_bbox_id": "number_bbox_5",
           "number_id": "number_5",
-          "number_value": 4,
+          "number_value": 1,
           "region_id": "BC_only",
           "set_memberships": [
             "B",
@@ -134,31 +134,31 @@
       ],
       "region_number_map": {
         "ABC": 3,
-        "AB_only": 7,
-        "AC_only": 1,
-        "A_only": 2,
-        "BC_only": 4,
-        "B_only": 8,
-        "C_only": 5
+        "AB_only": 4,
+        "AC_only": 5,
+        "A_only": 8,
+        "BC_only": 1,
+        "B_only": 7,
+        "C_only": 2
       },
-      "scene_title": "Set Diagram",
+      "scene_title": "Set Number Sums",
       "scene_variant": "set_diagram",
       "set_count": 3,
       "set_fill_rgb_map": {
         "A": [
-          159,
-          85,
-          116
+          208,
+          87,
+          84
         ],
         "B": [
-          177,
-          167,
-          87
+          104,
+          70,
+          184
         ],
         "C": [
-          78,
-          90,
-          201
+          141,
+          189,
+          85
         ]
       },
       "set_ids": [
@@ -195,9 +195,9 @@
       "bbox_set": [
         [
           811.65,
-          374.49,
+          375.49,
           853.15,
-          419.99
+          418.99
         ]
       ]
     },
@@ -222,7 +222,7 @@
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 1,
+        "answer_or_evidence_variant_index": 2,
         "prompt_bundle_id": "diagrams_set_diagram_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -240,7 +240,7 @@
         "task_key": "region_sum_query",
         "task_variant_index": 1,
         "task_variant_key": "sum_only_in_named_set",
-        "task_variant_template_index": 1,
+        "task_variant_template_index": 2,
         "template_paths": [
           "diagrams/set_diagram/diagrams_set_diagram_v1.json"
         ],
@@ -256,7 +256,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 1,
+            "answer_or_evidence_variant_index": 2,
             "prompt_bundle_id": "diagrams_set_diagram_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -274,7 +274,7 @@
             "task_key": "region_sum_query",
             "task_variant_index": 1,
             "task_variant_key": "sum_only_in_named_set",
-            "task_variant_template_index": 1,
+            "task_variant_template_index": 2,
             "template_paths": [
               "diagrams/set_diagram/diagrams_set_diagram_v1.json"
             ],
@@ -285,12 +285,12 @@
               "task_variant:sum_only_in_named_set": 5
             }
           },
-          "prompt": "Look at the set diagram in the image: a 3-set overlap diagram with one single-digit number placed in each visible region. Use the set diagram to answer: What is the sum of the numbers only in Set B? Return the integer sum. Answer with the integer total.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every digit used in the sum, ordered from top to bottom and then left to right.\nAnswer format: set \"answer\" to the integer sum of the contributing digits.\nExample JSON:\n{\"evidence\":[[300,326,329,367]],\"answer\":7}"
+          "prompt": "Look at the set diagram in the image: a 3-set overlap diagram with one single-digit number placed in each visible region. Use the set diagram to answer: What is the sum of the numbers only in Set B? Return the integer sum. Respond with the integer sum only.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every digit used in the sum, ordered from top to bottom and then left to right.\nAnswer requirement: set \"answer\" to the integer sum of the contributing digits.\nExample JSON:\n{\"evidence\":[[300,326,329,367]],\"answer\":7}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 3,
+            "answer_or_evidence_variant_index": 0,
             "prompt_bundle_id": "diagrams_set_diagram_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -308,7 +308,7 @@
             "task_key": "region_sum_query",
             "task_variant_index": 1,
             "task_variant_key": "sum_only_in_named_set",
-            "task_variant_template_index": 1,
+            "task_variant_template_index": 2,
             "template_paths": [
               "diagrams/set_diagram/diagrams_set_diagram_v1.json"
             ],
@@ -319,7 +319,7 @@
               "task_variant:sum_only_in_named_set": 5
             }
           },
-          "prompt": "Look at the set diagram in the image: a 3-set overlap diagram with one single-digit number placed in each visible region. Use the set diagram to answer: What is the sum of the numbers only in Set B? Return the integer sum. Answer with the integer total.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the integer sum of the contributing digits.\nExample JSON:\n{\"answer\":7}"
+          "prompt": "Look at the set diagram in the image: a 3-set overlap diagram with one single-digit number placed in each visible region. Use the set diagram to answer: What is the sum of the numbers only in Set B? Return the integer sum. Respond with the integer sum only.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the integer sum of the contributing digits.\nExample JSON:\n{\"answer\":7}"
         }
       },
       "task_variant": "sum_only_in_named_set",
@@ -329,15 +329,15 @@
       "number_bboxes_px": {
         "number_bbox_0": [
           346.85,
-          374.99,
+          374.49,
           388.35,
-          419.49
+          419.99
         ],
         "number_bbox_1": [
           811.65,
-          374.49,
+          375.49,
           853.15,
-          419.99
+          418.99
         ],
         "number_bbox_2": [
           579.25,
@@ -353,9 +353,9 @@
         ],
         "number_bbox_4": [
           471.25,
-          524.11,
+          523.61,
           512.75,
-          567.61
+          568.11
         ],
         "number_bbox_5": [
           687.25,
@@ -461,17 +461,17 @@
         ]
       },
       "title_bbox_px": [
-        487.5,
-        74.75,
-        712.5,
-        107.25
+        437.25,
+        78.0,
+        762.75,
+        104.0
       ]
     },
     "render_spec": {
       "canvas_height": 860,
       "canvas_width": 1200,
       "color_distance_space": "lab",
-      "geometry_seed": 343261618056147,
+      "geometry_seed": 5384227677416067,
       "min_set_color_distance": 50.0,
       "number_slot_height_px": 76,
       "number_slot_width_px": 76,
@@ -480,19 +480,19 @@
       "set_fill_alpha": 96,
       "set_fill_rgb_map": {
         "A": [
-          159,
-          85,
-          116
+          208,
+          87,
+          84
         ],
         "B": [
-          177,
-          167,
-          87
+          104,
+          70,
+          184
         ],
         "C": [
-          78,
-          90,
-          201
+          141,
+          189,
+          85
         ]
       }
     },
@@ -510,14 +510,14 @@
         },
         {
           "bbox_xyxy": [
-            487.5,
-            74.75,
-            712.5,
-            107.25
+            437.25,
+            78.0,
+            762.75,
+            104.0
           ],
           "entity_id": "diagram_title",
           "entity_type": "diagram_title",
-          "text": "Set Diagram"
+          "text": "Set Number Sums"
         },
         {
           "bbox_xyxy": [
@@ -588,28 +588,28 @@
         {
           "bbox_xyxy": [
             346.85,
-            374.99,
+            374.49,
             388.35,
-            419.49
+            419.99
           ],
           "entity_id": "number_bbox_0",
           "entity_type": "diagram_set_number",
           "number_id": "number_0",
           "region_id": "A_only",
-          "text": "2"
+          "text": "8"
         },
         {
           "bbox_xyxy": [
             811.65,
-            374.49,
+            375.49,
             853.15,
-            419.99
+            418.99
           ],
           "entity_id": "number_bbox_1",
           "entity_type": "diagram_set_number",
           "number_id": "number_1",
           "region_id": "B_only",
-          "text": "8"
+          "text": "7"
         },
         {
           "bbox_xyxy": [
@@ -622,7 +622,7 @@
           "entity_type": "diagram_set_number",
           "number_id": "number_2",
           "region_id": "C_only",
-          "text": "5"
+          "text": "2"
         },
         {
           "bbox_xyxy": [
@@ -635,20 +635,20 @@
           "entity_type": "diagram_set_number",
           "number_id": "number_3",
           "region_id": "AB_only",
-          "text": "7"
+          "text": "4"
         },
         {
           "bbox_xyxy": [
             471.25,
-            524.11,
+            523.61,
             512.75,
-            567.61
+            568.11
           ],
           "entity_id": "number_bbox_4",
           "entity_type": "diagram_set_number",
           "number_id": "number_4",
           "region_id": "AC_only",
-          "text": "1"
+          "text": "5"
         },
         {
           "bbox_xyxy": [
@@ -661,7 +661,7 @@
           "entity_type": "diagram_set_number",
           "number_id": "number_5",
           "region_id": "BC_only",
-          "text": "4"
+          "text": "1"
         },
         {
           "bbox_xyxy": [

@@ -1,23 +1,24 @@
 {
   "answer_gt": {
     "type": "pi_expression",
-    "value": "1024π"
+    "value": "2952π"
   },
   "evidence_gt": {
     "type": "measurement_ref_map",
     "value": {
-      "OP": 16
+      "BC": 36,
+      "DC": 46
     }
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_3d_value/images/surface_area/0003.png"
   },
-  "instance_seed": 4170857945503611,
-  "prompt": "Work from the annotated figure showing an annotated 3D solid. Task: The sphere has an annotated radius. What is its total surface area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: OP.\nAnswer: set \"answer\" to the value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":{\"OP\":2},\"answer\":\"12π\"}",
+  "instance_seed": 2961404657033117,
+  "prompt": "You are given an image showing an annotated 3D solid. Task: The cone has an annotated radius and slant height. What is its total surface area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: BC, DC.\nAnswer field: set \"answer\" to the value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":{\"BC\":2,\"DC\":3},\"answer\":\"12π\"}",
   "prompt_variants": {
-    "answer_and_evidence": "Work from the annotated figure showing an annotated 3D solid. Task: The sphere has an annotated radius. What is its total surface area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: OP.\nAnswer: set \"answer\" to the value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":{\"OP\":2},\"answer\":\"12π\"}",
-    "answer_only": "Work from the annotated figure showing an annotated 3D solid. Task: The sphere has an annotated radius. What is its total surface area? Express the result in kπ form.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the value in the form kπ (for example 12π).\nExample JSON:\n{\"answer\":\"12π\"}"
+    "answer_and_evidence": "You are given an image showing an annotated 3D solid. Task: The cone has an annotated radius and slant height. What is its total surface area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: BC, DC.\nAnswer field: set \"answer\" to the value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":{\"BC\":2,\"DC\":3},\"answer\":\"12π\"}",
+    "answer_only": "You are given an image showing an annotated 3D solid. Task: The cone has an annotated radius and slant height. What is its total surface area? Express the result in kπ form.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the value in the form kπ (for example 12π).\nExample JSON:\n{\"answer\":\"12π\"}"
   },
   "task": "task_geometry_analytical_3d_value",
   "task_variant": "surface_area",
@@ -25,24 +26,28 @@
     "execution_trace": {
       "answer_max": 200000,
       "answer_min": 8,
-      "answer_scalar": 1024,
+      "answer_scalar": 2952,
       "answer_type": "pi_expression",
-      "answer_value": "1024π",
+      "answer_value": "2952π",
       "evidence_map": {
-        "OP": 16
+        "BC": 36,
+        "DC": 46
       },
       "evidence_role_tokens": {
-        "r": "OP"
+        "l": "DC",
+        "r": "BC"
       },
       "evidence_role_values": {
-        "r": 16
+        "l": 46,
+        "r": 36
       },
       "evidence_roles": [
-        "r"
+        "r",
+        "l"
       ],
-      "formula_expression": "SA = 4 * π * r^2",
-      "legacy_query_variant": "sphere_given_r",
-      "legacy_scene_variant": "sphere_given_r",
+      "formula_expression": "SA = π * r * (r + l)",
+      "legacy_query_variant": "cone_given_r_slant_height",
+      "legacy_scene_variant": "cone_given_r_slant_height",
       "legacy_task_id": "task_geometry_analytical_3d_surface_area",
       "query_variant": "surface_area",
       "query_variant_probabilities": {
@@ -50,9 +55,10 @@
         "volume": 0.0
       },
       "required_annotations": [
-        "OP"
+        "BC",
+        "DC"
       ],
-      "scene_variant": "sphere",
+      "scene_variant": "cone",
       "scene_variant_probabilities": {
         "cone": 0.16666666666666666,
         "cylinder": 0.16666666666666666,
@@ -67,34 +73,45 @@
         "volume": 0.0
       },
       "variant_probabilities": {
-        "cone_given_r_slant_height": 0.0,
+        "cone_given_r_slant_height": 1.0,
         "cylinder_given_r_h": 0.0,
         "rectangular_prism_given_lwh": 0.0,
-        "sphere_given_r": 1.0,
+        "sphere_given_r": 0.0,
         "square_pyramid_given_base_side_slant_height": 0.0,
         "triangular_prism_given_a_b_c_l": 0.0
       }
     },
     "projected_evidence": {
       "annotation_labels": {
-        "r": "OP"
+        "l": "DC",
+        "r": "BC"
       },
       "id_set": [
-        "OP"
+        "BC",
+        "DC"
       ],
       "measurement_ref_map": {
-        "OP": 16
+        "BC": 36,
+        "DC": 46
       },
       "pixel_annotation_centers": {
-        "OP": [
-          426.75,
-          282.44
+        "BC": [
+          468.0,
+          417.18
+        ],
+        "DC": [
+          490.9362572400917,
+          267.72478806638634
         ]
       },
       "pixel_point_set": [
         [
-          426.75,
-          282.44
+          468.0,
+          417.18
+        ],
+        [
+          490.9362572400917,
+          267.72478806638634
         ]
       ]
     },
@@ -102,15 +119,15 @@
       "params": {
         "answer_max": 200000,
         "answer_min": 8,
-        "legacy_query_variant": "sphere_given_r",
-        "legacy_scene_variant": "sphere_given_r",
+        "legacy_query_variant": "cone_given_r_slant_height",
+        "legacy_scene_variant": "cone_given_r_slant_height",
         "legacy_task_id": "task_geometry_analytical_3d_surface_area",
         "query_variant": "surface_area",
         "query_variant_probabilities": {
           "surface_area": 1.0,
           "volume": 0.0
         },
-        "scene_variant": "sphere",
+        "scene_variant": "cone",
         "scene_variant_probabilities": {
           "cone": 0.16666666666666666,
           "cylinder": 0.16666666666666666,
@@ -119,7 +136,7 @@
           "square_pyramid": 0.16666666666666666,
           "triangular_prism": 0.16666666666666666
         },
-        "task_variant": "sphere_given_r",
+        "task_variant": "cone_given_r_slant_height",
         "variant_probabilities": {
           "surface_area": 1.0,
           "volume": 0.0
@@ -127,21 +144,21 @@
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 0,
+        "answer_or_evidence_variant_index": 3,
         "prompt_bundle_id": "geometry_analytical_surface_area_v1",
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the value in the form kπ (for example 12π)",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: OP",
-          "json_example": "{\"evidence\":{\"OP\":2},\"answer\":\"12π\"}",
+          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: BC, DC",
+          "json_example": "{\"evidence\":{\"BC\":2,\"DC\":3},\"answer\":\"12π\"}",
           "json_example_answer_only": "{\"answer\":\"12π\"}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
           "object_description": "an annotated 3D solid",
-          "question_text": "The sphere has an annotated radius. What is its total surface area? Express the result in kπ form."
+          "question_text": "The cone has an annotated radius and slant height. What is its total surface area? Express the result in kπ form."
         },
         "task_family_key": "analytical_single_solid",
-        "task_family_variant_index": 4,
+        "task_family_variant_index": 0,
         "task_key": "analytical_surface_area_query",
         "task_variant_index": 2,
         "task_variant_key": null,
@@ -160,21 +177,21 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 0,
+            "answer_or_evidence_variant_index": 3,
             "prompt_bundle_id": "geometry_analytical_surface_area_v1",
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the value in the form kπ (for example 12π)",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: OP",
-              "json_example": "{\"evidence\":{\"OP\":2},\"answer\":\"12π\"}",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: BC, DC",
+              "json_example": "{\"evidence\":{\"BC\":2,\"DC\":3},\"answer\":\"12π\"}",
               "json_example_answer_only": "{\"answer\":\"12π\"}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "an annotated 3D solid",
-              "question_text": "The sphere has an annotated radius. What is its total surface area? Express the result in kπ form."
+              "question_text": "The cone has an annotated radius and slant height. What is its total surface area? Express the result in kπ form."
             },
             "task_family_key": "analytical_single_solid",
-            "task_family_variant_index": 4,
+            "task_family_variant_index": 0,
             "task_key": "analytical_surface_area_query",
             "task_variant_index": 2,
             "task_variant_key": null,
@@ -188,7 +205,7 @@
               "task_family:analytical_single_solid": 5
             }
           },
-          "prompt": "Work from the annotated figure showing an annotated 3D solid. Task: The sphere has an annotated radius. What is its total surface area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: OP.\nAnswer: set \"answer\" to the value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":{\"OP\":2},\"answer\":\"12π\"}"
+          "prompt": "You are given an image showing an annotated 3D solid. Task: The cone has an annotated radius and slant height. What is its total surface area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: BC, DC.\nAnswer field: set \"answer\" to the value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":{\"BC\":2,\"DC\":3},\"answer\":\"12π\"}"
         },
         "answer_only": {
           "metadata": {
@@ -198,16 +215,16 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the value in the form kπ (for example 12π)",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: OP",
-              "json_example": "{\"evidence\":{\"OP\":2},\"answer\":\"12π\"}",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: BC, DC",
+              "json_example": "{\"evidence\":{\"BC\":2,\"DC\":3},\"answer\":\"12π\"}",
               "json_example_answer_only": "{\"answer\":\"12π\"}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "an annotated 3D solid",
-              "question_text": "The sphere has an annotated radius. What is its total surface area? Express the result in kπ form."
+              "question_text": "The cone has an annotated radius and slant height. What is its total surface area? Express the result in kπ form."
             },
             "task_family_key": "analytical_single_solid",
-            "task_family_variant_index": 4,
+            "task_family_variant_index": 0,
             "task_key": "analytical_surface_area_query",
             "task_variant_index": 2,
             "task_variant_key": null,
@@ -221,7 +238,7 @@
               "task_family:analytical_single_solid": 5
             }
           },
-          "prompt": "Work from the annotated figure showing an annotated 3D solid. Task: The sphere has an annotated radius. What is its total surface area? Express the result in kπ form.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the value in the form kπ (for example 12π).\nExample JSON:\n{\"answer\":\"12π\"}"
+          "prompt": "You are given an image showing an annotated 3D solid. Task: The cone has an annotated radius and slant height. What is its total surface area? Express the result in kπ form.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the value in the form kπ (for example 12π).\nExample JSON:\n{\"answer\":\"12π\"}"
         }
       },
       "task_variant": "surface_area",
@@ -229,30 +246,43 @@
     },
     "render_map": {
       "annotation_centers": {
-        "OP": [
-          426.75,
-          282.44
+        "BC": [
+          468.0,
+          417.18
+        ],
+        "DC": [
+          490.9362572400917,
+          267.72478806638634
         ]
       },
       "annotation_labels": {
-        "r": "OP"
+        "l": "DC",
+        "r": "BC"
       },
       "coord_space": "pixel",
       "entity_id": "solid_1",
       "instance_anchor": {
         "coord_space": "pixel",
         "point": [
-          426.75,
-          310.44
+          335.5,
+          336.4824641421078
         ],
         "polyline": [
           [
-            298.5,
-            310.44
+            335.5,
+            178.3898565684314
           ],
           [
-            555.0,
-            310.44
+            335.5,
+            389.17999999999995
+          ],
+          [
+            70.5,
+            389.17999999999995
+          ],
+          [
+            600.5,
+            389.17999999999995
           ]
         ]
       }
@@ -277,33 +307,35 @@
           "kind": "solid"
         }
       },
-      "canvas_size": 597,
+      "canvas_size": 671,
       "coord_space": "pixel",
       "graph_coordinate_frame": {
         "coord_space": "graph_unit",
-        "full_cells_x": 6,
-        "full_cells_y": 6,
+        "full_cells_x": 10,
+        "full_cells_y": 10,
+        "origin_fraction_x": 0.5,
+        "origin_fraction_y": 0.5,
         "origin_pixel": [
-          298,
-          298
+          335,
+          335
         ],
         "outer_margin_px": 16,
         "partial_edge_cells": true,
-        "spacing_px": 75,
-        "target_cells_x": 8,
-        "target_cells_y": 8,
+        "spacing_px": 56,
+        "target_cells_x": 12,
+        "target_cells_y": 12,
         "x_positive": "right",
         "y_positive": "up"
       },
       "graph_paper_grid": {
-        "full_cells_x": 6,
-        "full_cells_y": 6,
+        "full_cells_x": 10,
+        "full_cells_y": 10,
         "partial_edge_cells": true,
-        "spacing_px": 75,
-        "target_cells_x": 8,
-        "target_cells_y": 8
+        "spacing_px": 56,
+        "target_cells_x": 12,
+        "target_cells_y": 12
       },
-      "legacy_scene_variant": "sphere_given_r",
+      "legacy_scene_variant": "cone_given_r_slant_height",
       "post_image_noise": {
         "applied": true,
         "apply_prob": 0.5,
@@ -320,7 +352,7 @@
         "edits": [
           {
             "params": {
-              "alpha": 0.025036
+              "alpha": 0.025394
             },
             "type": "noise"
           }
@@ -328,22 +360,22 @@
         "enabled": true
       },
       "query_variant": "surface_area",
-      "scene_variant": "sphere",
+      "scene_variant": "cone",
       "shape_style": {
         "label_color": [
-          165,
-          71,
-          94
+          72,
+          155,
+          69
         ],
         "label_stroke_color": [
-          252,
-          252,
+          250,
+          248,
           251
         ],
         "line_color": [
-          165,
-          71,
-          94
+          72,
+          155,
+          69
         ]
       }
     },
@@ -351,31 +383,41 @@
       "entities": [
         {
           "attrs": {
+            "height_units": 28.635642126552707,
             "points": {
-              "center": [
-                298.5,
-                310.44
+              "apex": [
+                335.5,
+                178.3898565684314
               ],
-              "right_point": [
-                555.0,
-                310.44
+              "base_center": [
+                335.5,
+                389.17999999999995
+              ],
+              "left_base": [
+                70.5,
+                389.17999999999995
+              ],
+              "right_base": [
+                600.5,
+                389.17999999999995
               ]
             },
-            "radius_units": 16,
-            "surface_area_pi_coefficient": 1024,
-            "task_variant": "sphere_given_r"
+            "radius_units": 36,
+            "slant_height_units": 46,
+            "surface_area_pi_coefficient": 2952,
+            "task_variant": "cone_given_r_slant_height"
           },
           "entity_id": "solid_1",
-          "entity_type": "sphere"
+          "entity_type": "cone"
         }
       ],
       "frames": {
         "graph_unit": {
           "origin_pixel": [
-            298,
-            298
+            335,
+            335
           ],
-          "spacing_px": 75,
+          "spacing_px": 56,
           "x_positive": "right",
           "y_positive": "up"
         },
@@ -389,29 +431,33 @@
         }
       },
       "relations": {
-        "legacy_query_variant": "sphere_given_r",
-        "legacy_scene_variant": "sphere_given_r",
+        "legacy_query_variant": "cone_given_r_slant_height",
+        "legacy_scene_variant": "cone_given_r_slant_height",
         "legacy_task_id": "task_geometry_analytical_3d_surface_area",
         "query_variant": "surface_area",
-        "scene_variant": "sphere"
+        "scene_variant": "cone"
       },
       "scene_kind": "geometry_3d_analytical_surface_area"
     },
     "witness_symbolic": {
       "annotation_ids": [
-        "OP"
+        "BC",
+        "DC"
       ],
       "annotation_labels": {
-        "r": "OP"
+        "l": "DC",
+        "r": "BC"
       },
       "annotation_values": {
-        "OP": 16
+        "BC": 36,
+        "DC": 46
       },
-      "formula_expression": "SA = 4 * π * r^2",
+      "formula_expression": "SA = π * r * (r + l)",
       "measurement_ref_map": {
-        "OP": 16
+        "BC": 36,
+        "DC": 46
       },
-      "task_variant": "sphere_given_r",
+      "task_variant": "cone_given_r_slant_height",
       "type": "annotation_measurement_map"
     }
   },

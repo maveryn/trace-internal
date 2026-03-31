@@ -11,13 +11,13 @@
       "shown_time"
     ],
     "generated_variant_counts": {
-      "minutes_after": 100,
-      "minutes_before": 116,
-      "shown_time": 104
+      "minutes_after": 102,
+      "minutes_before": 103,
+      "shown_time": 100
     },
     "generation_error_counts": {},
     "target_count_per_variant": 100,
-    "total_generated": 320
+    "total_generated": 305
   },
   "domain": "temporal",
   "failed_variants": [],
@@ -31,7 +31,7 @@
     },
     "checks": {
       "max_answer_frequency": {
-        "observed": 0.023333333333333334,
+        "observed": 0.043333333333333335,
         "pass": true,
         "threshold": 0.25
       },
@@ -41,123 +41,75 @@
         "status": "not_applicable_non_numeric_answers"
       },
       "min_unique_answers": {
-        "observed": 126,
+        "observed": 111,
         "pass": true,
         "threshold": 5
       }
     },
     "five_bin_numeric": null,
-    "max_answer_count": 7,
-    "max_answer_frequency": 0.023333333333333334,
+    "max_answer_count": 13,
+    "max_answer_frequency": 0.043333333333333335,
     "pass": true,
     "sample_count": 300,
     "top_answers": [
       {
-        "answer_label": "12:35",
-        "count": 7
+        "answer_label": "04:50",
+        "count": 13
       },
       {
-        "answer_label": "03:35",
-        "count": 6
+        "answer_label": "05:45",
+        "count": 13
       },
       {
-        "answer_label": "06:15",
-        "count": 6
+        "answer_label": "06:40",
+        "count": 13
       },
       {
-        "answer_label": "07:05",
-        "count": 6
+        "answer_label": "07:35",
+        "count": 13
       },
       {
-        "answer_label": "06:45",
-        "count": 5
+        "answer_label": "03:55",
+        "count": 12
       },
       {
-        "answer_label": "07:30",
-        "count": 5
+        "answer_label": "01:00",
+        "count": 11
       },
       {
-        "answer_label": "10:35",
-        "count": 5
+        "answer_label": "02:00",
+        "count": 11
       },
       {
-        "answer_label": "11:00",
-        "count": 5
-      },
-      {
-        "answer_label": "11:20",
-        "count": 5
-      },
-      {
-        "answer_label": "02:15",
-        "count": 4
-      },
-      {
-        "answer_label": "02:45",
-        "count": 4
-      },
-      {
-        "answer_label": "02:50",
-        "count": 4
+        "answer_label": "08:35",
+        "count": 11
       },
       {
         "answer_label": "03:00",
-        "count": 4
-      },
-      {
-        "answer_label": "05:20",
-        "count": 4
-      },
-      {
-        "answer_label": "07:00",
-        "count": 4
-      },
-      {
-        "answer_label": "08:40",
-        "count": 4
-      },
-      {
-        "answer_label": "10:05",
-        "count": 4
-      },
-      {
-        "answer_label": "10:50",
-        "count": 4
-      },
-      {
-        "answer_label": "11:35",
-        "count": 4
-      },
-      {
-        "answer_label": "11:40",
-        "count": 4
-      },
-      {
-        "answer_label": "12:55",
-        "count": 4
-      },
-      {
-        "answer_label": "01:10",
-        "count": 3
-      },
-      {
-        "answer_label": "01:15",
-        "count": 3
-      },
-      {
-        "answer_label": "01:45",
-        "count": 3
-      },
-      {
-        "answer_label": "02:05",
-        "count": 3
+        "count": 10
       },
       {
         "answer_label": "02:55",
+        "count": 4
+      },
+      {
+        "answer_label": "08:30",
+        "count": 4
+      },
+      {
+        "answer_label": "01:55",
         "count": 3
       },
       {
-        "answer_label": "03:15",
+        "answer_label": "02:30",
+        "count": 3
+      },
+      {
+        "answer_label": "02:40",
+        "count": 3
+      },
+      {
+        "answer_label": "02:50",
         "count": 3
       },
       {
@@ -165,99 +117,31 @@
         "count": 3
       },
       {
-        "answer_label": "03:45",
+        "answer_label": "03:50",
         "count": 3
       },
       {
-        "answer_label": "04:05",
+        "answer_label": "09:05",
         "count": 3
       },
       {
-        "answer_label": "04:35",
+        "answer_label": "09:15",
         "count": 3
       },
       {
-        "answer_label": "04:55",
+        "answer_label": "09:25",
         "count": 3
       },
       {
-        "answer_label": "05:25",
-        "count": 3
+        "answer_label": "01:20",
+        "count": 2
       },
       {
-        "answer_label": "05:35",
-        "count": 3
+        "answer_label": "01:30",
+        "count": 2
       },
       {
-        "answer_label": "05:50",
-        "count": 3
-      },
-      {
-        "answer_label": "05:55",
-        "count": 3
-      },
-      {
-        "answer_label": "06:00",
-        "count": 3
-      },
-      {
-        "answer_label": "06:05",
-        "count": 3
-      },
-      {
-        "answer_label": "06:10",
-        "count": 3
-      },
-      {
-        "answer_label": "06:20",
-        "count": 3
-      },
-      {
-        "answer_label": "07:10",
-        "count": 3
-      },
-      {
-        "answer_label": "07:40",
-        "count": 3
-      },
-      {
-        "answer_label": "08:50",
-        "count": 3
-      },
-      {
-        "answer_label": "08:55",
-        "count": 3
-      },
-      {
-        "answer_label": "09:20",
-        "count": 3
-      },
-      {
-        "answer_label": "09:35",
-        "count": 3
-      },
-      {
-        "answer_label": "10:15",
-        "count": 3
-      },
-      {
-        "answer_label": "10:45",
-        "count": 3
-      },
-      {
-        "answer_label": "12:00",
-        "count": 3
-      },
-      {
-        "answer_label": "12:15",
-        "count": 3
-      },
-      {
-        "answer_label": "12:30",
-        "count": 3
-      },
-      {
-        "answer_label": "01:25",
+        "answer_label": "01:40",
         "count": 2
       },
       {
@@ -265,15 +149,15 @@
         "count": 2
       },
       {
-        "answer_label": "02:00",
+        "answer_label": "02:05",
         "count": 2
       },
       {
-        "answer_label": "02:30",
+        "answer_label": "02:15",
         "count": 2
       },
       {
-        "answer_label": "02:35",
+        "answer_label": "02:20",
         "count": 2
       },
       {
@@ -281,15 +165,27 @@
         "count": 2
       },
       {
+        "answer_label": "03:10",
+        "count": 2
+      },
+      {
         "answer_label": "03:20",
         "count": 2
       },
       {
-        "answer_label": "03:55",
+        "answer_label": "03:25",
+        "count": 2
+      },
+      {
+        "answer_label": "03:30",
         "count": 2
       },
       {
         "answer_label": "04:00",
+        "count": 2
+      },
+      {
+        "answer_label": "04:05",
         "count": 2
       },
       {
@@ -305,11 +201,95 @@
         "count": 2
       },
       {
+        "answer_label": "04:25",
+        "count": 2
+      },
+      {
+        "answer_label": "04:30",
+        "count": 2
+      },
+      {
+        "answer_label": "04:35",
+        "count": 2
+      },
+      {
         "answer_label": "04:40",
         "count": 2
       },
       {
+        "answer_label": "04:45",
+        "count": 2
+      },
+      {
+        "answer_label": "04:55",
+        "count": 2
+      },
+      {
+        "answer_label": "05:00",
+        "count": 2
+      },
+      {
         "answer_label": "05:05",
+        "count": 2
+      },
+      {
+        "answer_label": "05:10",
+        "count": 2
+      },
+      {
+        "answer_label": "05:15",
+        "count": 2
+      },
+      {
+        "answer_label": "05:20",
+        "count": 2
+      },
+      {
+        "answer_label": "05:25",
+        "count": 2
+      },
+      {
+        "answer_label": "05:30",
+        "count": 2
+      },
+      {
+        "answer_label": "05:35",
+        "count": 2
+      },
+      {
+        "answer_label": "05:40",
+        "count": 2
+      },
+      {
+        "answer_label": "05:50",
+        "count": 2
+      },
+      {
+        "answer_label": "05:55",
+        "count": 2
+      },
+      {
+        "answer_label": "06:00",
+        "count": 2
+      },
+      {
+        "answer_label": "06:05",
+        "count": 2
+      },
+      {
+        "answer_label": "06:10",
+        "count": 2
+      },
+      {
+        "answer_label": "06:15",
+        "count": 2
+      },
+      {
+        "answer_label": "06:20",
+        "count": 2
+      },
+      {
+        "answer_label": "06:25",
         "count": 2
       },
       {
@@ -321,11 +301,47 @@
         "count": 2
       },
       {
+        "answer_label": "06:45",
+        "count": 2
+      },
+      {
         "answer_label": "06:50",
         "count": 2
       },
       {
-        "answer_label": "07:35",
+        "answer_label": "06:55",
+        "count": 2
+      },
+      {
+        "answer_label": "07:00",
+        "count": 2
+      },
+      {
+        "answer_label": "07:05",
+        "count": 2
+      },
+      {
+        "answer_label": "07:10",
+        "count": 2
+      },
+      {
+        "answer_label": "07:15",
+        "count": 2
+      },
+      {
+        "answer_label": "07:20",
+        "count": 2
+      },
+      {
+        "answer_label": "07:25",
+        "count": 2
+      },
+      {
+        "answer_label": "07:30",
+        "count": 2
+      },
+      {
+        "answer_label": "07:40",
         "count": 2
       },
       {
@@ -337,6 +353,10 @@
         "count": 2
       },
       {
+        "answer_label": "07:55",
+        "count": 2
+      },
+      {
         "answer_label": "08:00",
         "count": 2
       },
@@ -345,19 +365,31 @@
         "count": 2
       },
       {
+        "answer_label": "08:10",
+        "count": 2
+      },
+      {
+        "answer_label": "08:15",
+        "count": 2
+      },
+      {
         "answer_label": "08:20",
         "count": 2
       },
       {
-        "answer_label": "08:45",
+        "answer_label": "08:25",
         "count": 2
       },
       {
-        "answer_label": "09:05",
+        "answer_label": "08:40",
         "count": 2
       },
       {
-        "answer_label": "09:25",
+        "answer_label": "08:50",
+        "count": 2
+      },
+      {
+        "answer_label": "08:55",
         "count": 2
       },
       {
@@ -365,51 +397,23 @@
         "count": 2
       },
       {
-        "answer_label": "09:40",
+        "answer_label": "09:35",
         "count": 2
       },
       {
-        "answer_label": "09:55",
-        "count": 2
-      },
-      {
-        "answer_label": "10:25",
-        "count": 2
-      },
-      {
-        "answer_label": "10:30",
-        "count": 2
-      },
-      {
-        "answer_label": "11:10",
-        "count": 2
-      },
-      {
-        "answer_label": "11:45",
-        "count": 2
-      },
-      {
-        "answer_label": "11:50",
-        "count": 2
-      },
-      {
-        "answer_label": "12:10",
-        "count": 2
-      },
-      {
-        "answer_label": "12:45",
-        "count": 2
-      },
-      {
-        "answer_label": "12:50",
-        "count": 2
-      },
-      {
-        "answer_label": "01:00",
+        "answer_label": "01:05",
         "count": 1
       },
       {
-        "answer_label": "01:30",
+        "answer_label": "01:10",
+        "count": 1
+      },
+      {
+        "answer_label": "01:15",
+        "count": 1
+      },
+      {
+        "answer_label": "01:25",
         "count": 1
       },
       {
@@ -417,11 +421,11 @@
         "count": 1
       },
       {
-        "answer_label": "02:10",
+        "answer_label": "01:45",
         "count": 1
       },
       {
-        "answer_label": "02:20",
+        "answer_label": "02:10",
         "count": 1
       },
       {
@@ -429,67 +433,27 @@
         "count": 1
       },
       {
-        "answer_label": "02:40",
+        "answer_label": "02:35",
         "count": 1
       },
       {
-        "answer_label": "03:10",
+        "answer_label": "02:45",
         "count": 1
       },
       {
-        "answer_label": "03:30",
+        "answer_label": "03:15",
         "count": 1
       },
       {
-        "answer_label": "04:45",
+        "answer_label": "03:35",
         "count": 1
       },
       {
-        "answer_label": "05:00",
+        "answer_label": "03:45",
         "count": 1
       },
       {
-        "answer_label": "05:15",
-        "count": 1
-      },
-      {
-        "answer_label": "05:40",
-        "count": 1
-      },
-      {
-        "answer_label": "05:45",
-        "count": 1
-      },
-      {
-        "answer_label": "06:55",
-        "count": 1
-      },
-      {
-        "answer_label": "07:15",
-        "count": 1
-      },
-      {
-        "answer_label": "07:20",
-        "count": 1
-      },
-      {
-        "answer_label": "07:25",
-        "count": 1
-      },
-      {
-        "answer_label": "07:55",
-        "count": 1
-      },
-      {
-        "answer_label": "08:10",
-        "count": 1
-      },
-      {
-        "answer_label": "08:30",
-        "count": 1
-      },
-      {
-        "answer_label": "08:35",
+        "answer_label": "08:45",
         "count": 1
       },
       {
@@ -501,7 +465,11 @@
         "count": 1
       },
       {
-        "answer_label": "09:15",
+        "answer_label": "09:20",
+        "count": 1
+      },
+      {
+        "answer_label": "09:40",
         "count": 1
       },
       {
@@ -509,55 +477,27 @@
         "count": 1
       },
       {
-        "answer_label": "09:50",
+        "answer_label": "09:55",
         "count": 1
       },
       {
-        "answer_label": "10:10",
+        "answer_label": "10:05",
         "count": 1
       },
       {
-        "answer_label": "10:20",
+        "answer_label": "10:15",
         "count": 1
       },
       {
-        "answer_label": "10:55",
+        "answer_label": "10:25",
         "count": 1
       },
       {
-        "answer_label": "11:05",
-        "count": 1
-      },
-      {
-        "answer_label": "11:15",
-        "count": 1
-      },
-      {
-        "answer_label": "11:25",
-        "count": 1
-      },
-      {
-        "answer_label": "11:30",
-        "count": 1
-      },
-      {
-        "answer_label": "12:05",
-        "count": 1
-      },
-      {
-        "answer_label": "12:20",
-        "count": 1
-      },
-      {
-        "answer_label": "12:25",
-        "count": 1
-      },
-      {
-        "answer_label": "12:40",
+        "answer_label": "12:55",
         "count": 1
       }
     ],
-    "unique_answers": 126
+    "unique_answers": 111
   },
   "pass": true,
   "per_task_variant": {
@@ -567,7 +507,7 @@
       },
       "checks": {
         "max_answer_frequency": {
-          "observed": 0.03,
+          "observed": 0.02,
           "pass": true,
           "threshold": 0.25
         },
@@ -577,103 +517,55 @@
           "status": "not_applicable_non_numeric_answers"
         },
         "min_unique_answers": {
-          "observed": 77,
+          "observed": 92,
           "pass": true,
           "threshold": 5
         }
       },
       "five_bin_numeric": null,
-      "max_answer_count": 3,
-      "max_answer_frequency": 0.03,
+      "max_answer_count": 2,
+      "max_answer_frequency": 0.02,
       "pass": true,
       "sample_count": 100,
       "top_answers": [
         {
-          "answer_label": "11:20",
-          "count": 3
-        },
-        {
-          "answer_label": "11:40",
-          "count": 3
-        },
-        {
-          "answer_label": "01:50",
+          "answer_label": "02:30",
           "count": 2
         },
         {
-          "answer_label": "02:15",
+          "answer_label": "02:40",
           "count": 2
         },
         {
-          "answer_label": "02:45",
+          "answer_label": "02:50",
           "count": 2
         },
         {
-          "answer_label": "03:00",
+          "answer_label": "03:40",
           "count": 2
         },
         {
-          "answer_label": "03:20",
+          "answer_label": "03:50",
           "count": 2
         },
         {
-          "answer_label": "04:00",
+          "answer_label": "09:05",
           "count": 2
         },
         {
-          "answer_label": "04:55",
+          "answer_label": "09:15",
           "count": 2
         },
         {
-          "answer_label": "05:05",
+          "answer_label": "09:25",
           "count": 2
         },
         {
-          "answer_label": "05:25",
-          "count": 2
+          "answer_label": "01:05",
+          "count": 1
         },
         {
-          "answer_label": "06:10",
-          "count": 2
-        },
-        {
-          "answer_label": "07:00",
-          "count": 2
-        },
-        {
-          "answer_label": "07:05",
-          "count": 2
-        },
-        {
-          "answer_label": "07:30",
-          "count": 2
-        },
-        {
-          "answer_label": "08:05",
-          "count": 2
-        },
-        {
-          "answer_label": "09:30",
-          "count": 2
-        },
-        {
-          "answer_label": "09:40",
-          "count": 2
-        },
-        {
-          "answer_label": "11:00",
-          "count": 2
-        },
-        {
-          "answer_label": "12:35",
-          "count": 2
-        },
-        {
-          "answer_label": "12:45",
-          "count": 2
-        },
-        {
-          "answer_label": "01:10",
+          "answer_label": "01:20",
           "count": 1
         },
         {
@@ -681,7 +573,15 @@
           "count": 1
         },
         {
-          "answer_label": "01:45",
+          "answer_label": "01:40",
+          "count": 1
+        },
+        {
+          "answer_label": "01:50",
+          "count": 1
+        },
+        {
+          "answer_label": "02:00",
           "count": 1
         },
         {
@@ -693,23 +593,23 @@
           "count": 1
         },
         {
-          "answer_label": "02:25",
+          "answer_label": "02:15",
           "count": 1
         },
         {
-          "answer_label": "02:30",
+          "answer_label": "02:20",
           "count": 1
         },
         {
-          "answer_label": "02:35",
+          "answer_label": "03:00",
           "count": 1
         },
         {
-          "answer_label": "02:40",
+          "answer_label": "03:05",
           "count": 1
         },
         {
-          "answer_label": "02:55",
+          "answer_label": "03:10",
           "count": 1
         },
         {
@@ -717,11 +617,23 @@
           "count": 1
         },
         {
+          "answer_label": "03:20",
+          "count": 1
+        },
+        {
+          "answer_label": "03:25",
+          "count": 1
+        },
+        {
           "answer_label": "03:30",
           "count": 1
         },
         {
-          "answer_label": "03:40",
+          "answer_label": "04:00",
+          "count": 1
+        },
+        {
+          "answer_label": "04:05",
           "count": 1
         },
         {
@@ -733,6 +645,22 @@
           "count": 1
         },
         {
+          "answer_label": "04:20",
+          "count": 1
+        },
+        {
+          "answer_label": "04:25",
+          "count": 1
+        },
+        {
+          "answer_label": "04:30",
+          "count": 1
+        },
+        {
+          "answer_label": "04:35",
+          "count": 1
+        },
+        {
           "answer_label": "04:40",
           "count": 1
         },
@@ -741,7 +669,39 @@
           "count": 1
         },
         {
+          "answer_label": "04:50",
+          "count": 1
+        },
+        {
+          "answer_label": "04:55",
+          "count": 1
+        },
+        {
+          "answer_label": "05:00",
+          "count": 1
+        },
+        {
+          "answer_label": "05:05",
+          "count": 1
+        },
+        {
+          "answer_label": "05:10",
+          "count": 1
+        },
+        {
           "answer_label": "05:15",
+          "count": 1
+        },
+        {
+          "answer_label": "05:20",
+          "count": 1
+        },
+        {
+          "answer_label": "05:25",
+          "count": 1
+        },
+        {
+          "answer_label": "05:30",
           "count": 1
         },
         {
@@ -773,11 +733,19 @@
           "count": 1
         },
         {
+          "answer_label": "06:10",
+          "count": 1
+        },
+        {
           "answer_label": "06:15",
           "count": 1
         },
         {
           "answer_label": "06:20",
+          "count": 1
+        },
+        {
+          "answer_label": "06:25",
           "count": 1
         },
         {
@@ -789,309 +757,7 @@
           "count": 1
         },
         {
-          "answer_label": "06:45",
-          "count": 1
-        },
-        {
-          "answer_label": "06:50",
-          "count": 1
-        },
-        {
-          "answer_label": "07:10",
-          "count": 1
-        },
-        {
-          "answer_label": "07:25",
-          "count": 1
-        },
-        {
-          "answer_label": "07:45",
-          "count": 1
-        },
-        {
-          "answer_label": "08:40",
-          "count": 1
-        },
-        {
-          "answer_label": "08:45",
-          "count": 1
-        },
-        {
-          "answer_label": "08:50",
-          "count": 1
-        },
-        {
-          "answer_label": "09:10",
-          "count": 1
-        },
-        {
-          "answer_label": "09:25",
-          "count": 1
-        },
-        {
-          "answer_label": "09:35",
-          "count": 1
-        },
-        {
-          "answer_label": "09:55",
-          "count": 1
-        },
-        {
-          "answer_label": "10:05",
-          "count": 1
-        },
-        {
-          "answer_label": "10:15",
-          "count": 1
-        },
-        {
-          "answer_label": "10:20",
-          "count": 1
-        },
-        {
-          "answer_label": "10:30",
-          "count": 1
-        },
-        {
-          "answer_label": "10:45",
-          "count": 1
-        },
-        {
-          "answer_label": "10:50",
-          "count": 1
-        },
-        {
-          "answer_label": "10:55",
-          "count": 1
-        },
-        {
-          "answer_label": "11:05",
-          "count": 1
-        },
-        {
-          "answer_label": "11:25",
-          "count": 1
-        },
-        {
-          "answer_label": "11:35",
-          "count": 1
-        },
-        {
-          "answer_label": "11:50",
-          "count": 1
-        },
-        {
-          "answer_label": "12:00",
-          "count": 1
-        },
-        {
-          "answer_label": "12:10",
-          "count": 1
-        },
-        {
-          "answer_label": "12:30",
-          "count": 1
-        },
-        {
-          "answer_label": "12:55",
-          "count": 1
-        }
-      ],
-      "unique_answers": 77
-    },
-    "minutes_before": {
-      "answer_type_counts": {
-        "string": 100
-      },
-      "checks": {
-        "max_answer_frequency": {
-          "observed": 0.04,
-          "pass": true,
-          "threshold": 0.25
-        },
-        "max_five_bin_frequency": {
-          "observed": null,
-          "pass": null,
-          "status": "not_applicable_non_numeric_answers"
-        },
-        "min_unique_answers": {
-          "observed": 73,
-          "pass": true,
-          "threshold": 5
-        }
-      },
-      "five_bin_numeric": null,
-      "max_answer_count": 4,
-      "max_answer_frequency": 0.04,
-      "pass": true,
-      "sample_count": 100,
-      "top_answers": [
-        {
-          "answer_label": "06:15",
-          "count": 4
-        },
-        {
-          "answer_label": "07:30",
-          "count": 3
-        },
-        {
-          "answer_label": "10:05",
-          "count": 3
-        },
-        {
-          "answer_label": "10:35",
-          "count": 3
-        },
-        {
-          "answer_label": "01:10",
-          "count": 2
-        },
-        {
-          "answer_label": "02:45",
-          "count": 2
-        },
-        {
-          "answer_label": "02:50",
-          "count": 2
-        },
-        {
-          "answer_label": "03:05",
-          "count": 2
-        },
-        {
-          "answer_label": "03:15",
-          "count": 2
-        },
-        {
-          "answer_label": "03:35",
-          "count": 2
-        },
-        {
-          "answer_label": "03:40",
-          "count": 2
-        },
-        {
-          "answer_label": "05:55",
-          "count": 2
-        },
-        {
-          "answer_label": "06:05",
-          "count": 2
-        },
-        {
-          "answer_label": "06:20",
-          "count": 2
-        },
-        {
-          "answer_label": "07:10",
-          "count": 2
-        },
-        {
-          "answer_label": "08:40",
-          "count": 2
-        },
-        {
-          "answer_label": "09:20",
-          "count": 2
-        },
-        {
-          "answer_label": "10:50",
-          "count": 2
-        },
-        {
-          "answer_label": "11:35",
-          "count": 2
-        },
-        {
-          "answer_label": "12:00",
-          "count": 2
-        },
-        {
-          "answer_label": "12:30",
-          "count": 2
-        },
-        {
-          "answer_label": "12:35",
-          "count": 2
-        },
-        {
-          "answer_label": "01:00",
-          "count": 1
-        },
-        {
-          "answer_label": "01:15",
-          "count": 1
-        },
-        {
-          "answer_label": "01:25",
-          "count": 1
-        },
-        {
-          "answer_label": "01:35",
-          "count": 1
-        },
-        {
-          "answer_label": "01:45",
-          "count": 1
-        },
-        {
-          "answer_label": "02:00",
-          "count": 1
-        },
-        {
-          "answer_label": "02:15",
-          "count": 1
-        },
-        {
-          "answer_label": "02:30",
-          "count": 1
-        },
-        {
-          "answer_label": "02:55",
-          "count": 1
-        },
-        {
-          "answer_label": "03:00",
-          "count": 1
-        },
-        {
-          "answer_label": "03:10",
-          "count": 1
-        },
-        {
-          "answer_label": "03:55",
-          "count": 1
-        },
-        {
-          "answer_label": "04:05",
-          "count": 1
-        },
-        {
-          "answer_label": "04:10",
-          "count": 1
-        },
-        {
-          "answer_label": "04:20",
-          "count": 1
-        },
-        {
-          "answer_label": "04:35",
-          "count": 1
-        },
-        {
-          "answer_label": "04:40",
-          "count": 1
-        },
-        {
-          "answer_label": "05:35",
-          "count": 1
-        },
-        {
-          "answer_label": "05:50",
-          "count": 1
-        },
-        {
-          "answer_label": "06:35",
+          "answer_label": "06:40",
           "count": 1
         },
         {
@@ -1107,7 +773,15 @@
           "count": 1
         },
         {
+          "answer_label": "07:00",
+          "count": 1
+        },
+        {
           "answer_label": "07:05",
+          "count": 1
+        },
+        {
+          "answer_label": "07:10",
           "count": 1
         },
         {
@@ -1119,11 +793,27 @@
           "count": 1
         },
         {
+          "answer_label": "07:25",
+          "count": 1
+        },
+        {
+          "answer_label": "07:30",
+          "count": 1
+        },
+        {
           "answer_label": "07:35",
           "count": 1
         },
         {
+          "answer_label": "07:40",
+          "count": 1
+        },
+        {
           "answer_label": "07:45",
+          "count": 1
+        },
+        {
+          "answer_label": "07:50",
           "count": 1
         },
         {
@@ -1135,11 +825,23 @@
           "count": 1
         },
         {
+          "answer_label": "08:05",
+          "count": 1
+        },
+        {
           "answer_label": "08:10",
           "count": 1
         },
         {
+          "answer_label": "08:15",
+          "count": 1
+        },
+        {
           "answer_label": "08:20",
+          "count": 1
+        },
+        {
+          "answer_label": "08:25",
           "count": 1
         },
         {
@@ -1151,6 +853,10 @@
           "count": 1
         },
         {
+          "answer_label": "08:40",
+          "count": 1
+        },
+        {
           "answer_label": "08:45",
           "count": 1
         },
@@ -1159,11 +865,7 @@
           "count": 1
         },
         {
-          "answer_label": "09:05",
-          "count": 1
-        },
-        {
-          "answer_label": "09:25",
+          "answer_label": "08:55",
           "count": 1
         },
         {
@@ -1171,11 +873,19 @@
           "count": 1
         },
         {
+          "answer_label": "09:40",
+          "count": 1
+        },
+        {
           "answer_label": "09:45",
           "count": 1
         },
         {
-          "answer_label": "09:50",
+          "answer_label": "09:55",
+          "count": 1
+        },
+        {
+          "answer_label": "10:05",
           "count": 1
         },
         {
@@ -1183,51 +893,19 @@
           "count": 1
         },
         {
-          "answer_label": "10:45",
-          "count": 1
-        },
-        {
-          "answer_label": "11:00",
-          "count": 1
-        },
-        {
-          "answer_label": "11:10",
-          "count": 1
-        },
-        {
-          "answer_label": "11:30",
-          "count": 1
-        },
-        {
-          "answer_label": "11:45",
-          "count": 1
-        },
-        {
-          "answer_label": "12:05",
-          "count": 1
-        },
-        {
-          "answer_label": "12:10",
-          "count": 1
-        },
-        {
-          "answer_label": "12:15",
-          "count": 1
-        },
-        {
-          "answer_label": "12:55",
+          "answer_label": "10:25",
           "count": 1
         }
       ],
-      "unique_answers": 73
+      "unique_answers": 92
     },
-    "shown_time": {
+    "minutes_before": {
       "answer_type_counts": {
         "string": 100
       },
       "checks": {
         "max_answer_frequency": {
-          "observed": 0.04,
+          "observed": 0.11,
           "pass": true,
           "threshold": 0.25
         },
@@ -1237,111 +915,133 @@
           "status": "not_applicable_non_numeric_answers"
         },
         "min_unique_answers": {
-          "observed": 67,
+          "observed": 14,
           "pass": true,
           "threshold": 5
         }
       },
       "five_bin_numeric": null,
-      "max_answer_count": 4,
-      "max_answer_frequency": 0.04,
+      "max_answer_count": 11,
+      "max_answer_frequency": 0.11,
       "pass": true,
       "sample_count": 100,
       "top_answers": [
         {
-          "answer_label": "03:35",
-          "count": 4
+          "answer_label": "03:55",
+          "count": 11
         },
         {
-          "answer_label": "05:20",
-          "count": 4
+          "answer_label": "04:50",
+          "count": 11
         },
         {
-          "answer_label": "03:45",
+          "answer_label": "05:45",
+          "count": 11
+        },
+        {
+          "answer_label": "06:40",
+          "count": 11
+        },
+        {
+          "answer_label": "07:35",
+          "count": 11
+        },
+        {
+          "answer_label": "01:00",
+          "count": 10
+        },
+        {
+          "answer_label": "02:00",
+          "count": 9
+        },
+        {
+          "answer_label": "08:35",
+          "count": 9
+        },
+        {
+          "answer_label": "03:00",
+          "count": 8
+        },
+        {
+          "answer_label": "02:55",
           "count": 3
         },
         {
-          "answer_label": "06:45",
-          "count": 3
-        },
-        {
-          "answer_label": "07:05",
-          "count": 3
-        },
-        {
-          "answer_label": "07:40",
-          "count": 3
-        },
-        {
-          "answer_label": "08:55",
-          "count": 3
-        },
-        {
-          "answer_label": "12:35",
-          "count": 3
-        },
-        {
-          "answer_label": "01:15",
+          "answer_label": "01:55",
           "count": 2
         },
         {
-          "answer_label": "02:05",
+          "answer_label": "08:30",
           "count": 2
         },
         {
-          "answer_label": "02:50",
-          "count": 2
-        },
-        {
-          "answer_label": "04:05",
-          "count": 2
-        },
-        {
-          "answer_label": "04:35",
-          "count": 2
-        },
-        {
-          "answer_label": "06:00",
-          "count": 2
-        },
-        {
-          "answer_label": "07:00",
-          "count": 2
-        },
-        {
-          "answer_label": "07:50",
-          "count": 2
-        },
-        {
-          "answer_label": "10:25",
-          "count": 2
-        },
-        {
-          "answer_label": "10:35",
-          "count": 2
-        },
-        {
-          "answer_label": "11:00",
-          "count": 2
-        },
-        {
-          "answer_label": "11:20",
-          "count": 2
-        },
-        {
-          "answer_label": "12:15",
-          "count": 2
-        },
-        {
-          "answer_label": "12:50",
-          "count": 2
+          "answer_label": "09:30",
+          "count": 1
         },
         {
           "answer_label": "12:55",
-          "count": 2
+          "count": 1
+        }
+      ],
+      "unique_answers": 14
+    },
+    "shown_time": {
+      "answer_type_counts": {
+        "string": 100
+      },
+      "checks": {
+        "max_answer_frequency": {
+          "observed": 0.01,
+          "pass": true,
+          "threshold": 0.25
+        },
+        "max_five_bin_frequency": {
+          "observed": null,
+          "pass": null,
+          "status": "not_applicable_non_numeric_answers"
+        },
+        "min_unique_answers": {
+          "observed": 100,
+          "pass": true,
+          "threshold": 5
+        }
+      },
+      "five_bin_numeric": null,
+      "max_answer_count": 1,
+      "max_answer_frequency": 0.01,
+      "pass": true,
+      "sample_count": 100,
+      "top_answers": [
+        {
+          "answer_label": "01:00",
+          "count": 1
+        },
+        {
+          "answer_label": "01:10",
+          "count": 1
+        },
+        {
+          "answer_label": "01:15",
+          "count": 1
+        },
+        {
+          "answer_label": "01:20",
+          "count": 1
         },
         {
           "answer_label": "01:25",
+          "count": 1
+        },
+        {
+          "answer_label": "01:30",
+          "count": 1
+        },
+        {
+          "answer_label": "01:35",
+          "count": 1
+        },
+        {
+          "answer_label": "01:40",
           "count": 1
         },
         {
@@ -1349,7 +1049,19 @@
           "count": 1
         },
         {
+          "answer_label": "01:50",
+          "count": 1
+        },
+        {
+          "answer_label": "01:55",
+          "count": 1
+        },
+        {
           "answer_label": "02:00",
+          "count": 1
+        },
+        {
+          "answer_label": "02:05",
           "count": 1
         },
         {
@@ -1361,7 +1073,27 @@
           "count": 1
         },
         {
+          "answer_label": "02:25",
+          "count": 1
+        },
+        {
+          "answer_label": "02:30",
+          "count": 1
+        },
+        {
           "answer_label": "02:35",
+          "count": 1
+        },
+        {
+          "answer_label": "02:40",
+          "count": 1
+        },
+        {
+          "answer_label": "02:45",
+          "count": 1
+        },
+        {
+          "answer_label": "02:50",
           "count": 1
         },
         {
@@ -1373,7 +1105,55 @@
           "count": 1
         },
         {
+          "answer_label": "03:05",
+          "count": 1
+        },
+        {
+          "answer_label": "03:10",
+          "count": 1
+        },
+        {
+          "answer_label": "03:20",
+          "count": 1
+        },
+        {
+          "answer_label": "03:25",
+          "count": 1
+        },
+        {
+          "answer_label": "03:30",
+          "count": 1
+        },
+        {
+          "answer_label": "03:35",
+          "count": 1
+        },
+        {
+          "answer_label": "03:40",
+          "count": 1
+        },
+        {
+          "answer_label": "03:45",
+          "count": 1
+        },
+        {
+          "answer_label": "03:50",
+          "count": 1
+        },
+        {
           "answer_label": "03:55",
+          "count": 1
+        },
+        {
+          "answer_label": "04:00",
+          "count": 1
+        },
+        {
+          "answer_label": "04:05",
+          "count": 1
+        },
+        {
+          "answer_label": "04:10",
           "count": 1
         },
         {
@@ -1385,6 +1165,30 @@
           "count": 1
         },
         {
+          "answer_label": "04:25",
+          "count": 1
+        },
+        {
+          "answer_label": "04:30",
+          "count": 1
+        },
+        {
+          "answer_label": "04:35",
+          "count": 1
+        },
+        {
+          "answer_label": "04:40",
+          "count": 1
+        },
+        {
+          "answer_label": "04:45",
+          "count": 1
+        },
+        {
+          "answer_label": "04:50",
+          "count": 1
+        },
+        {
           "answer_label": "04:55",
           "count": 1
         },
@@ -1393,7 +1197,27 @@
           "count": 1
         },
         {
+          "answer_label": "05:05",
+          "count": 1
+        },
+        {
+          "answer_label": "05:10",
+          "count": 1
+        },
+        {
+          "answer_label": "05:15",
+          "count": 1
+        },
+        {
+          "answer_label": "05:20",
+          "count": 1
+        },
+        {
           "answer_label": "05:25",
+          "count": 1
+        },
+        {
+          "answer_label": "05:30",
           "count": 1
         },
         {
@@ -1401,7 +1225,27 @@
           "count": 1
         },
         {
+          "answer_label": "05:40",
+          "count": 1
+        },
+        {
+          "answer_label": "05:45",
+          "count": 1
+        },
+        {
           "answer_label": "05:50",
+          "count": 1
+        },
+        {
+          "answer_label": "05:55",
+          "count": 1
+        },
+        {
+          "answer_label": "06:00",
+          "count": 1
+        },
+        {
+          "answer_label": "06:05",
           "count": 1
         },
         {
@@ -1413,7 +1257,63 @@
           "count": 1
         },
         {
+          "answer_label": "06:20",
+          "count": 1
+        },
+        {
+          "answer_label": "06:25",
+          "count": 1
+        },
+        {
           "answer_label": "06:30",
+          "count": 1
+        },
+        {
+          "answer_label": "06:35",
+          "count": 1
+        },
+        {
+          "answer_label": "06:40",
+          "count": 1
+        },
+        {
+          "answer_label": "06:45",
+          "count": 1
+        },
+        {
+          "answer_label": "06:50",
+          "count": 1
+        },
+        {
+          "answer_label": "06:55",
+          "count": 1
+        },
+        {
+          "answer_label": "07:00",
+          "count": 1
+        },
+        {
+          "answer_label": "07:05",
+          "count": 1
+        },
+        {
+          "answer_label": "07:10",
+          "count": 1
+        },
+        {
+          "answer_label": "07:15",
+          "count": 1
+        },
+        {
+          "answer_label": "07:20",
+          "count": 1
+        },
+        {
+          "answer_label": "07:25",
+          "count": 1
+        },
+        {
+          "answer_label": "07:30",
           "count": 1
         },
         {
@@ -1421,11 +1321,51 @@
           "count": 1
         },
         {
+          "answer_label": "07:40",
+          "count": 1
+        },
+        {
+          "answer_label": "07:45",
+          "count": 1
+        },
+        {
+          "answer_label": "07:50",
+          "count": 1
+        },
+        {
+          "answer_label": "07:55",
+          "count": 1
+        },
+        {
           "answer_label": "08:00",
           "count": 1
         },
         {
+          "answer_label": "08:05",
+          "count": 1
+        },
+        {
+          "answer_label": "08:10",
+          "count": 1
+        },
+        {
+          "answer_label": "08:15",
+          "count": 1
+        },
+        {
           "answer_label": "08:20",
+          "count": 1
+        },
+        {
+          "answer_label": "08:25",
+          "count": 1
+        },
+        {
+          "answer_label": "08:30",
+          "count": 1
+        },
+        {
+          "answer_label": "08:35",
           "count": 1
         },
         {
@@ -1437,11 +1377,19 @@
           "count": 1
         },
         {
+          "answer_label": "08:55",
+          "count": 1
+        },
+        {
           "answer_label": "09:00",
           "count": 1
         },
         {
           "answer_label": "09:05",
+          "count": 1
+        },
+        {
+          "answer_label": "09:10",
           "count": 1
         },
         {
@@ -1453,71 +1401,19 @@
           "count": 1
         },
         {
+          "answer_label": "09:25",
+          "count": 1
+        },
+        {
+          "answer_label": "09:30",
+          "count": 1
+        },
+        {
           "answer_label": "09:35",
-          "count": 1
-        },
-        {
-          "answer_label": "09:55",
-          "count": 1
-        },
-        {
-          "answer_label": "10:10",
-          "count": 1
-        },
-        {
-          "answer_label": "10:15",
-          "count": 1
-        },
-        {
-          "answer_label": "10:30",
-          "count": 1
-        },
-        {
-          "answer_label": "10:45",
-          "count": 1
-        },
-        {
-          "answer_label": "10:50",
-          "count": 1
-        },
-        {
-          "answer_label": "11:10",
-          "count": 1
-        },
-        {
-          "answer_label": "11:15",
-          "count": 1
-        },
-        {
-          "answer_label": "11:35",
-          "count": 1
-        },
-        {
-          "answer_label": "11:40",
-          "count": 1
-        },
-        {
-          "answer_label": "11:45",
-          "count": 1
-        },
-        {
-          "answer_label": "11:50",
-          "count": 1
-        },
-        {
-          "answer_label": "12:20",
-          "count": 1
-        },
-        {
-          "answer_label": "12:25",
-          "count": 1
-        },
-        {
-          "answer_label": "12:40",
           "count": 1
         }
       ],
-      "unique_answers": 67
+      "unique_answers": 100
     }
   },
   "sampling_axes": {

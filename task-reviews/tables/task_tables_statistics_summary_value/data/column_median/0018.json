@@ -1,15 +1,15 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 23
+    "value": 12
   },
   "evidence_gt": {
     "type": "bbox_set",
     "value": [
       [
-        647.232,
+        406.464,
         144.667,
-        767.616,
+        526.848,
         588.0
       ]
     ]
@@ -18,31 +18,31 @@
     "format": "png",
     "path": "tables/task_tables_statistics_summary_value/images/column_median/0018.png"
   },
-  "instance_seed": 37850599009134,
-  "prompt": "The image shows a card-style table with one Name column, several numeric columns, a rounded outer frame, and a shaded header row. Determine the requested summary value for the queried numeric column. What median value does the Temp column have?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the supporting queried-column region.\nAnswer format: set \"answer\" to the exact integer summary value.\nExample JSON:\n{\"evidence\":[[260,180,372,520]],\"answer\":13}",
+  "instance_seed": 2349130251862163,
+  "prompt": "Use the table in the image. It shows a card-style table with one Name column, several numeric columns, a rounded outer frame, and a shaded header row. Answer this question. Compute the median of the Time column.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the supporting queried-column region.\nAnswer format: set \"answer\" to the exact integer summary value.\nExample JSON:\n{\"evidence\":[[260,180,372,520]],\"answer\":13}",
   "prompt_variants": {
-    "answer_and_evidence": "The image shows a card-style table with one Name column, several numeric columns, a rounded outer frame, and a shaded header row. Determine the requested summary value for the queried numeric column. What median value does the Temp column have?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the supporting queried-column region.\nAnswer format: set \"answer\" to the exact integer summary value.\nExample JSON:\n{\"evidence\":[[260,180,372,520]],\"answer\":13}",
-    "answer_only": "The image shows a card-style table with one Name column, several numeric columns, a rounded outer frame, and a shaded header row. Determine the requested summary value for the queried numeric column. What median value does the Temp column have?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the exact integer summary value.\nExample JSON:\n{\"answer\":13}"
+    "answer_and_evidence": "Use the table in the image. It shows a card-style table with one Name column, several numeric columns, a rounded outer frame, and a shaded header row. Answer this question. Compute the median of the Time column.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the supporting queried-column region.\nAnswer format: set \"answer\" to the exact integer summary value.\nExample JSON:\n{\"evidence\":[[260,180,372,520]],\"answer\":13}",
+    "answer_only": "Use the table in the image. It shows a card-style table with one Name column, several numeric columns, a rounded outer frame, and a shaded header row. Answer this question. Compute the median of the Time column.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the exact integer summary value.\nExample JSON:\n{\"answer\":13}"
   },
   "task": "task_tables_statistics_summary_value",
   "task_variant": "column_median",
   "trace_payload": {
     "execution_trace": {
-      "answer_value": 23,
+      "answer_value": 12,
       "column_headers": [
-        "Score",
         "Wins",
-        "Cost",
-        "Temp",
-        "Age"
+        "Time",
+        "Mass",
+        "Pts",
+        "Rate"
       ],
       "numeric_column_count": 5,
       "numeric_column_count_range": [
         3,
         5
       ],
-      "query_column": "Temp",
-      "query_column_index": 3,
+      "query_column": "Time",
+      "query_column_index": 1,
       "question_format": "column_summary_value",
       "row_count": 5,
       "row_count_range": [
@@ -50,11 +50,11 @@
         10
       ],
       "row_labels": [
-        "Body",
-        "Car",
-        "Cyna",
-        "Pyne",
-        "Fong"
+        "Kara",
+        "Main",
+        "Jopa",
+        "Jarv",
+        "Vic"
       ],
       "scene_variant": "card_table",
       "scene_variant_probabilities": {
@@ -63,7 +63,7 @@
         "spreadsheet": 0.25,
         "zebra": 0.25
       },
-      "supporting_column_header": "Temp",
+      "supporting_column_header": "Time",
       "supporting_region_kind": "column",
       "task_variant": "column_median",
       "task_variant_probabilities": {
@@ -80,49 +80,49 @@
         32
       ],
       "values_by_row": {
-        "Body": {
-          "Age": 10,
-          "Cost": 14,
-          "Score": 11,
-          "Temp": 21,
-          "Wins": 10
+        "Jarv": {
+          "Mass": 21,
+          "Pts": 30,
+          "Rate": 10,
+          "Time": 12,
+          "Wins": 27
         },
-        "Car": {
-          "Age": 15,
-          "Cost": 20,
-          "Score": 11,
-          "Temp": 24,
-          "Wins": 4
+        "Jopa": {
+          "Mass": 30,
+          "Pts": 6,
+          "Rate": 27,
+          "Time": 21,
+          "Wins": 8
         },
-        "Cyna": {
-          "Age": 22,
-          "Cost": 29,
-          "Score": 6,
-          "Temp": 22,
+        "Kara": {
+          "Mass": 14,
+          "Pts": 20,
+          "Rate": 14,
+          "Time": 14,
           "Wins": 19
         },
-        "Fong": {
-          "Age": 30,
-          "Cost": 6,
-          "Score": 17,
-          "Temp": 31,
-          "Wins": 12
+        "Main": {
+          "Mass": 30,
+          "Pts": 12,
+          "Rate": 16,
+          "Time": 3,
+          "Wins": 32
         },
-        "Pyne": {
-          "Age": 21,
-          "Cost": 13,
-          "Score": 23,
-          "Temp": 23,
-          "Wins": 4
+        "Vic": {
+          "Mass": 14,
+          "Pts": 13,
+          "Rate": 32,
+          "Time": 7,
+          "Wins": 32
         }
       }
     },
     "projected_evidence": {
       "bbox_set": [
         [
-          647.232,
+          406.464,
           144.667,
-          767.616,
+          526.848,
           588.0
         ]
       ]
@@ -130,7 +130,7 @@
     "query_spec": {
       "params": {
         "numeric_column_count": 5,
-        "query_column": "Temp",
+        "query_column": "Time",
         "row_count": 5,
         "scene_variant": "card_table",
         "scene_variant_probabilities": {
@@ -163,14 +163,14 @@
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
           "object_description": "a card-style table with one Name column, several numeric columns, a rounded outer frame, and a shaded header row",
-          "query_column": "Temp"
+          "query_column": "Time"
         },
         "task_family_key": "styled_table_statistics",
-        "task_family_variant_index": 0,
+        "task_family_variant_index": 1,
         "task_key": "summary_value_query",
-        "task_variant_index": 1,
+        "task_variant_index": 0,
         "task_variant_key": "column_median",
-        "task_variant_template_index": 3,
+        "task_variant_template_index": 4,
         "template_paths": [
           "tables/statistics/tables_statistics_v1.json"
         ],
@@ -197,14 +197,14 @@
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a card-style table with one Name column, several numeric columns, a rounded outer frame, and a shaded header row",
-              "query_column": "Temp"
+              "query_column": "Time"
             },
             "task_family_key": "styled_table_statistics",
-            "task_family_variant_index": 0,
+            "task_family_variant_index": 1,
             "task_key": "summary_value_query",
-            "task_variant_index": 1,
+            "task_variant_index": 0,
             "task_variant_key": "column_median",
-            "task_variant_template_index": 3,
+            "task_variant_template_index": 4,
             "template_paths": [
               "tables/statistics/tables_statistics_v1.json"
             ],
@@ -215,12 +215,12 @@
               "task_variant:column_median": 5
             }
           },
-          "prompt": "The image shows a card-style table with one Name column, several numeric columns, a rounded outer frame, and a shaded header row. Determine the requested summary value for the queried numeric column. What median value does the Temp column have?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the supporting queried-column region.\nAnswer format: set \"answer\" to the exact integer summary value.\nExample JSON:\n{\"evidence\":[[260,180,372,520]],\"answer\":13}"
+          "prompt": "Use the table in the image. It shows a card-style table with one Name column, several numeric columns, a rounded outer frame, and a shaded header row. Answer this question. Compute the median of the Time column.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the supporting queried-column region.\nAnswer format: set \"answer\" to the exact integer summary value.\nExample JSON:\n{\"evidence\":[[260,180,372,520]],\"answer\":13}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 0,
+            "answer_or_evidence_variant_index": 2,
             "prompt_bundle_id": "tables_statistics_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -231,14 +231,14 @@
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a card-style table with one Name column, several numeric columns, a rounded outer frame, and a shaded header row",
-              "query_column": "Temp"
+              "query_column": "Time"
             },
             "task_family_key": "styled_table_statistics",
-            "task_family_variant_index": 0,
+            "task_family_variant_index": 1,
             "task_key": "summary_value_query",
-            "task_variant_index": 1,
+            "task_variant_index": 0,
             "task_variant_key": "column_median",
-            "task_variant_template_index": 3,
+            "task_variant_template_index": 4,
             "template_paths": [
               "tables/statistics/tables_statistics_v1.json"
             ],
@@ -249,7 +249,7 @@
               "task_variant:column_median": 5
             }
           },
-          "prompt": "The image shows a card-style table with one Name column, several numeric columns, a rounded outer frame, and a shaded header row. Determine the requested summary value for the queried numeric column. What median value does the Temp column have?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the exact integer summary value.\nExample JSON:\n{\"answer\":13}"
+          "prompt": "Use the table in the image. It shows a card-style table with one Name column, several numeric columns, a rounded outer frame, and a shaded header row. Answer this question. Compute the median of the Time column.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the exact integer summary value.\nExample JSON:\n{\"answer\":13}"
         }
       },
       "task_variant": "column_median",
@@ -475,66 +475,66 @@
         ]
       },
       "column_region_bboxes_px": {
-        "Age": [
+        "Mass": [
+          526.848,
+          144.667,
+          647.232,
+          588.0
+        ],
+        "Pts": [
+          647.232,
+          144.667,
+          767.616,
+          588.0
+        ],
+        "Rate": [
           767.616,
           144.667,
           888.0,
           588.0
         ],
-        "Cost": [
-          526.848,
-          144.667,
-          647.232,
-          588.0
-        ],
-        "Score": [
-          286.08,
-          144.667,
+        "Time": [
           406.464,
-          588.0
-        ],
-        "Temp": [
-          647.232,
           144.667,
-          767.616,
+          526.848,
           588.0
         ],
         "Wins": [
-          406.464,
+          286.08,
           144.667,
-          526.848,
+          406.464,
           588.0
         ]
       },
       "header_bboxes_px": {
-        "Age": [
+        "Mass": [
+          526.848,
+          56.0,
+          647.232,
+          144.667
+        ],
+        "Pts": [
+          647.232,
+          56.0,
+          767.616,
+          144.667
+        ],
+        "Rate": [
           767.616,
           56.0,
           888.0,
           144.667
         ],
-        "Cost": [
-          526.848,
-          56.0,
-          647.232,
-          144.667
-        ],
-        "Score": [
-          286.08,
-          56.0,
+        "Time": [
           406.464,
-          144.667
-        ],
-        "Temp": [
-          647.232,
           56.0,
-          767.616,
+          526.848,
           144.667
         ],
         "Wins": [
-          406.464,
+          286.08,
           56.0,
-          526.848,
+          406.464,
           144.667
         ]
       },
@@ -546,67 +546,67 @@
         588.0
       ],
       "row_label_bboxes_px": {
-        "Body": [
+        "Jarv": [
           52.0,
-          144.667,
+          410.667,
           286.08,
-          233.333
+          499.333
         ],
-        "Car": [
-          52.0,
-          233.333,
-          286.08,
-          322.0
-        ],
-        "Cyna": [
+        "Jopa": [
           52.0,
           322.0,
           286.08,
           410.667
         ],
-        "Fong": [
+        "Kara": [
+          52.0,
+          144.667,
+          286.08,
+          233.333
+        ],
+        "Main": [
+          52.0,
+          233.333,
+          286.08,
+          322.0
+        ],
+        "Vic": [
           52.0,
           499.333,
           286.08,
           588.0
-        ],
-        "Pyne": [
-          52.0,
-          410.667,
-          286.08,
-          499.333
         ]
       },
       "row_region_bboxes_px": {
-        "Body": [
+        "Jarv": [
           286.08,
-          144.667,
+          410.667,
           888.0,
-          233.333
+          499.333
         ],
-        "Car": [
-          286.08,
-          233.333,
-          888.0,
-          322.0
-        ],
-        "Cyna": [
+        "Jopa": [
           286.08,
           322.0,
           888.0,
           410.667
         ],
-        "Fong": [
+        "Kara": [
+          286.08,
+          144.667,
+          888.0,
+          233.333
+        ],
+        "Main": [
+          286.08,
+          233.333,
+          888.0,
+          322.0
+        ],
+        "Vic": [
           286.08,
           499.333,
           888.0,
           588.0
-        ],
-        "Pyne": [
-          286.08,
-          410.667,
-          888.0,
-          499.333
         ]
       },
       "table_bbox_px": [
@@ -697,15 +697,15 @@
         {
           "attrs": {
             "cell_role": "header",
-            "column_header": "Score",
+            "column_header": "Wins",
             "column_index": 1,
             "row_index": 0,
             "row_label": null,
-            "text": "Score",
+            "text": "Wins",
             "text_bbox_px": [
-              308.772,
+              313.772,
               91.333,
-              383.772,
+              378.772,
               109.333
             ],
             "value": null
@@ -722,11 +722,11 @@
         {
           "attrs": {
             "cell_role": "header",
-            "column_header": "Wins",
+            "column_header": "Time",
             "column_index": 2,
             "row_index": 0,
             "row_label": null,
-            "text": "Wins",
+            "text": "Time",
             "text_bbox_px": [
               434.156,
               91.333,
@@ -747,15 +747,15 @@
         {
           "attrs": {
             "cell_role": "header",
-            "column_header": "Cost",
+            "column_header": "Mass",
             "column_index": 3,
             "row_index": 0,
             "row_label": null,
-            "text": "Cost",
+            "text": "Mass",
             "text_bbox_px": [
-              557.54,
+              553.04,
               91.333,
-              616.54,
+              621.04,
               109.333
             ],
             "value": null
@@ -772,16 +772,16 @@
         {
           "attrs": {
             "cell_role": "header",
-            "column_header": "Temp",
+            "column_header": "Pts",
             "column_index": 4,
             "row_index": 0,
             "row_label": null,
-            "text": "Temp",
+            "text": "Pts",
             "text_bbox_px": [
-              670.424,
-              88.833,
-              744.424,
-              111.833
+              685.924,
+              91.333,
+              728.924,
+              109.333
             ],
             "value": null
           },
@@ -797,16 +797,16 @@
         {
           "attrs": {
             "cell_role": "header",
-            "column_header": "Age",
+            "column_header": "Rate",
             "column_index": 5,
             "row_index": 0,
             "row_label": null,
-            "text": "Age",
+            "text": "Rate",
             "text_bbox_px": [
-              801.808,
-              88.833,
-              853.808,
-              111.833
+              797.308,
+              91.333,
+              858.308,
+              109.333
             ],
             "value": null
           },
@@ -825,13 +825,13 @@
             "column_header": "Name",
             "column_index": 0,
             "row_index": 1,
-            "row_label": "Body",
-            "text": "Body",
+            "row_label": "Kara",
+            "text": "Kara",
             "text_bbox_px": [
               66.0,
-              177.5,
-              133.0,
-              200.5
+              180.0,
+              129.0,
+              198.0
             ],
             "value": null
           },
@@ -847,18 +847,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Score",
+            "column_header": "Wins",
             "column_index": 1,
             "row_index": 1,
-            "row_label": "Body",
-            "text": "11",
+            "row_label": "Kara",
+            "text": "19",
             "text_bbox_px": [
               332.272,
               181.0,
               360.272,
               197.0
             ],
-            "value": 11
+            "value": 19
           },
           "bbox_px": [
             286.08,
@@ -872,18 +872,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Wins",
+            "column_header": "Time",
             "column_index": 2,
             "row_index": 1,
-            "row_label": "Body",
-            "text": "10",
+            "row_label": "Kara",
+            "text": "14",
             "text_bbox_px": [
               452.656,
               181.0,
               480.656,
               197.0
             ],
-            "value": 10
+            "value": 14
           },
           "bbox_px": [
             406.464,
@@ -897,10 +897,10 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Cost",
+            "column_header": "Mass",
             "column_index": 3,
             "row_index": 1,
-            "row_label": "Body",
+            "row_label": "Kara",
             "text": "14",
             "text_bbox_px": [
               573.04,
@@ -922,18 +922,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Temp",
+            "column_header": "Pts",
             "column_index": 4,
             "row_index": 1,
-            "row_label": "Body",
-            "text": "21",
+            "row_label": "Kara",
+            "text": "20",
             "text_bbox_px": [
               693.424,
               181.0,
               721.424,
               197.0
             ],
-            "value": 21
+            "value": 20
           },
           "bbox_px": [
             647.232,
@@ -947,18 +947,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Age",
+            "column_header": "Rate",
             "column_index": 5,
             "row_index": 1,
-            "row_label": "Body",
-            "text": "10",
+            "row_label": "Kara",
+            "text": "14",
             "text_bbox_px": [
               813.808,
               181.0,
               841.808,
               197.0
             ],
-            "value": 10
+            "value": 14
           },
           "bbox_px": [
             767.616,
@@ -975,12 +975,12 @@
             "column_header": "Name",
             "column_index": 0,
             "row_index": 2,
-            "row_label": "Car",
-            "text": "Car",
+            "row_label": "Main",
+            "text": "Main",
             "text_bbox_px": [
               66.0,
               268.667,
-              112.0,
+              131.0,
               286.667
             ],
             "value": null
@@ -997,18 +997,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Score",
+            "column_header": "Wins",
             "column_index": 1,
             "row_index": 2,
-            "row_label": "Car",
-            "text": "11",
+            "row_label": "Main",
+            "text": "32",
             "text_bbox_px": [
               332.272,
               269.667,
               360.272,
               285.667
             ],
-            "value": 11
+            "value": 32
           },
           "bbox_px": [
             286.08,
@@ -1022,18 +1022,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Wins",
+            "column_header": "Time",
             "column_index": 2,
             "row_index": 2,
-            "row_label": "Car",
-            "text": "4",
+            "row_label": "Main",
+            "text": "3",
             "text_bbox_px": [
               459.656,
               269.667,
               473.656,
               285.667
             ],
-            "value": 4
+            "value": 3
           },
           "bbox_px": [
             406.464,
@@ -1047,18 +1047,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Cost",
+            "column_header": "Mass",
             "column_index": 3,
             "row_index": 2,
-            "row_label": "Car",
-            "text": "20",
+            "row_label": "Main",
+            "text": "30",
             "text_bbox_px": [
               573.04,
               269.667,
               601.04,
               285.667
             ],
-            "value": 20
+            "value": 30
           },
           "bbox_px": [
             526.848,
@@ -1072,18 +1072,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Temp",
+            "column_header": "Pts",
             "column_index": 4,
             "row_index": 2,
-            "row_label": "Car",
-            "text": "24",
+            "row_label": "Main",
+            "text": "12",
             "text_bbox_px": [
               693.424,
               269.667,
               721.424,
               285.667
             ],
-            "value": 24
+            "value": 12
           },
           "bbox_px": [
             647.232,
@@ -1097,18 +1097,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Age",
+            "column_header": "Rate",
             "column_index": 5,
             "row_index": 2,
-            "row_label": "Car",
-            "text": "15",
+            "row_label": "Main",
+            "text": "16",
             "text_bbox_px": [
               813.808,
               269.667,
               841.808,
               285.667
             ],
-            "value": 15
+            "value": 16
           },
           "bbox_px": [
             767.616,
@@ -1125,12 +1125,12 @@
             "column_header": "Name",
             "column_index": 0,
             "row_index": 3,
-            "row_label": "Cyna",
-            "text": "Cyna",
+            "row_label": "Jopa",
+            "text": "Jopa",
             "text_bbox_px": [
               66.0,
               354.833,
-              133.0,
+              126.0,
               377.833
             ],
             "value": null
@@ -1147,18 +1147,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Score",
+            "column_header": "Wins",
             "column_index": 1,
             "row_index": 3,
-            "row_label": "Cyna",
-            "text": "6",
+            "row_label": "Jopa",
+            "text": "8",
             "text_bbox_px": [
               339.272,
               358.333,
               353.272,
               374.333
             ],
-            "value": 6
+            "value": 8
           },
           "bbox_px": [
             286.08,
@@ -1172,18 +1172,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Wins",
+            "column_header": "Time",
             "column_index": 2,
             "row_index": 3,
-            "row_label": "Cyna",
-            "text": "19",
+            "row_label": "Jopa",
+            "text": "21",
             "text_bbox_px": [
               452.656,
               358.333,
               480.656,
               374.333
             ],
-            "value": 19
+            "value": 21
           },
           "bbox_px": [
             406.464,
@@ -1197,18 +1197,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Cost",
+            "column_header": "Mass",
             "column_index": 3,
             "row_index": 3,
-            "row_label": "Cyna",
-            "text": "29",
+            "row_label": "Jopa",
+            "text": "30",
             "text_bbox_px": [
               573.04,
               358.333,
               601.04,
               374.333
             ],
-            "value": 29
+            "value": 30
           },
           "bbox_px": [
             526.848,
@@ -1222,18 +1222,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Temp",
+            "column_header": "Pts",
             "column_index": 4,
             "row_index": 3,
-            "row_label": "Cyna",
-            "text": "22",
+            "row_label": "Jopa",
+            "text": "6",
             "text_bbox_px": [
-              693.424,
+              700.424,
               358.333,
-              721.424,
+              714.424,
               374.333
             ],
-            "value": 22
+            "value": 6
           },
           "bbox_px": [
             647.232,
@@ -1247,18 +1247,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Age",
+            "column_header": "Rate",
             "column_index": 5,
             "row_index": 3,
-            "row_label": "Cyna",
-            "text": "22",
+            "row_label": "Jopa",
+            "text": "27",
             "text_bbox_px": [
               813.808,
               358.333,
               841.808,
               374.333
             ],
-            "value": 22
+            "value": 27
           },
           "bbox_px": [
             767.616,
@@ -1275,12 +1275,12 @@
             "column_header": "Name",
             "column_index": 0,
             "row_index": 4,
-            "row_label": "Pyne",
-            "text": "Pyne",
+            "row_label": "Jarv",
+            "text": "Jarv",
             "text_bbox_px": [
               66.0,
               443.5,
-              133.0,
+              121.0,
               466.5
             ],
             "value": null
@@ -1297,18 +1297,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Score",
+            "column_header": "Wins",
             "column_index": 1,
             "row_index": 4,
-            "row_label": "Pyne",
-            "text": "23",
+            "row_label": "Jarv",
+            "text": "27",
             "text_bbox_px": [
               332.272,
               447.0,
               360.272,
               463.0
             ],
-            "value": 23
+            "value": 27
           },
           "bbox_px": [
             286.08,
@@ -1322,18 +1322,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Wins",
+            "column_header": "Time",
             "column_index": 2,
             "row_index": 4,
-            "row_label": "Pyne",
-            "text": "4",
+            "row_label": "Jarv",
+            "text": "12",
             "text_bbox_px": [
-              459.656,
+              452.656,
               447.0,
-              473.656,
+              480.656,
               463.0
             ],
-            "value": 4
+            "value": 12
           },
           "bbox_px": [
             406.464,
@@ -1347,18 +1347,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Cost",
+            "column_header": "Mass",
             "column_index": 3,
             "row_index": 4,
-            "row_label": "Pyne",
-            "text": "13",
+            "row_label": "Jarv",
+            "text": "21",
             "text_bbox_px": [
               573.04,
               447.0,
               601.04,
               463.0
             ],
-            "value": 13
+            "value": 21
           },
           "bbox_px": [
             526.848,
@@ -1372,18 +1372,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Temp",
+            "column_header": "Pts",
             "column_index": 4,
             "row_index": 4,
-            "row_label": "Pyne",
-            "text": "23",
+            "row_label": "Jarv",
+            "text": "30",
             "text_bbox_px": [
               693.424,
               447.0,
               721.424,
               463.0
             ],
-            "value": 23
+            "value": 30
           },
           "bbox_px": [
             647.232,
@@ -1397,18 +1397,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Age",
+            "column_header": "Rate",
             "column_index": 5,
             "row_index": 4,
-            "row_label": "Pyne",
-            "text": "21",
+            "row_label": "Jarv",
+            "text": "10",
             "text_bbox_px": [
               813.808,
               447.0,
               841.808,
               463.0
             ],
-            "value": 21
+            "value": 10
           },
           "bbox_px": [
             767.616,
@@ -1425,13 +1425,13 @@
             "column_header": "Name",
             "column_index": 0,
             "row_index": 5,
-            "row_label": "Fong",
-            "text": "Fong",
+            "row_label": "Vic",
+            "text": "Vic",
             "text_bbox_px": [
               66.0,
-              532.167,
-              132.0,
-              555.167
+              534.667,
+              107.0,
+              552.667
             ],
             "value": null
           },
@@ -1447,18 +1447,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Score",
+            "column_header": "Wins",
             "column_index": 1,
             "row_index": 5,
-            "row_label": "Fong",
-            "text": "17",
+            "row_label": "Vic",
+            "text": "32",
             "text_bbox_px": [
               332.272,
               535.667,
               360.272,
               551.667
             ],
-            "value": 17
+            "value": 32
           },
           "bbox_px": [
             286.08,
@@ -1472,18 +1472,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Wins",
+            "column_header": "Time",
             "column_index": 2,
             "row_index": 5,
-            "row_label": "Fong",
-            "text": "12",
+            "row_label": "Vic",
+            "text": "7",
             "text_bbox_px": [
-              452.656,
+              459.656,
               535.667,
-              480.656,
+              473.656,
               551.667
             ],
-            "value": 12
+            "value": 7
           },
           "bbox_px": [
             406.464,
@@ -1497,18 +1497,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Cost",
+            "column_header": "Mass",
             "column_index": 3,
             "row_index": 5,
-            "row_label": "Fong",
-            "text": "6",
+            "row_label": "Vic",
+            "text": "14",
             "text_bbox_px": [
-              580.04,
+              573.04,
               535.667,
-              594.04,
+              601.04,
               551.667
             ],
-            "value": 6
+            "value": 14
           },
           "bbox_px": [
             526.848,
@@ -1522,18 +1522,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Temp",
+            "column_header": "Pts",
             "column_index": 4,
             "row_index": 5,
-            "row_label": "Fong",
-            "text": "31",
+            "row_label": "Vic",
+            "text": "13",
             "text_bbox_px": [
               693.424,
               535.667,
               721.424,
               551.667
             ],
-            "value": 31
+            "value": 13
           },
           "bbox_px": [
             647.232,
@@ -1547,18 +1547,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Age",
+            "column_header": "Rate",
             "column_index": 5,
             "row_index": 5,
-            "row_label": "Fong",
-            "text": "30",
+            "row_label": "Vic",
+            "text": "32",
             "text_bbox_px": [
               813.808,
               535.667,
               841.808,
               551.667
             ],
-            "value": 30
+            "value": 32
           },
           "bbox_px": [
             767.616,
@@ -1571,10 +1571,10 @@
         }
       ],
       "relations": {
-        "answer_value": 23,
-        "query_column": "Temp",
+        "answer_value": 12,
+        "query_column": "Time",
         "scene_variant": "card_table",
-        "supporting_column_header": "Temp",
+        "supporting_column_header": "Time",
         "supporting_region_kind": "column",
         "task_variant": "column_median"
       },
@@ -1584,9 +1584,9 @@
       "type": "bbox_set",
       "value": [
         [
-          647.232,
+          406.464,
           144.667,
-          767.616,
+          526.848,
           588.0
         ]
       ]

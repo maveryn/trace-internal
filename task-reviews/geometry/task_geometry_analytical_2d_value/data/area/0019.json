@@ -1,23 +1,24 @@
 {
   "answer_gt": {
     "type": "pi_expression",
-    "value": "441π"
+    "value": "15π"
   },
   "evidence_gt": {
     "type": "measurement_ref_map",
     "value": {
-      "DE": 42
+      "QR": 5,
+      "QS": 4
     }
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_2d_value/images/area/0019.png"
   },
-  "instance_seed": 8088305283425471,
-  "prompt": "Use the image showing a geometric shape with measurement annotations. Read the marked measurements and answer: The circle has an annotated diameter. What is its area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: DE.\nAnswer rule: set \"answer\" to the area value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":{\"DE\":2},\"answer\":\"12π\"}",
+  "instance_seed": 3848396498971751,
+  "prompt": "Use the image showing a geometric shape with measurement annotations. The ellipse shows the semimajor axis and focal distance. What is its area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: QR, QS.\nAnswer rule: set \"answer\" to the area value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":{\"QR\":2,\"QS\":3},\"answer\":\"12π\"}",
   "prompt_variants": {
-    "answer_and_evidence": "Use the image showing a geometric shape with measurement annotations. Read the marked measurements and answer: The circle has an annotated diameter. What is its area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: DE.\nAnswer rule: set \"answer\" to the area value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":{\"DE\":2},\"answer\":\"12π\"}",
-    "answer_only": "Use the image showing a geometric shape with measurement annotations. Read the marked measurements and answer: The circle has an annotated diameter. What is its area? Express the result in kπ form.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the area value in the form kπ (for example 12π).\nExample JSON:\n{\"answer\":\"12π\"}"
+    "answer_and_evidence": "Use the image showing a geometric shape with measurement annotations. The ellipse shows the semimajor axis and focal distance. What is its area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: QR, QS.\nAnswer rule: set \"answer\" to the area value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":{\"QR\":2,\"QS\":3},\"answer\":\"12π\"}",
+    "answer_only": "Use the image showing a geometric shape with measurement annotations. The ellipse shows the semimajor axis and focal distance. What is its area? Express the result in kπ form.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the area value in the form kπ (for example 12π).\nExample JSON:\n{\"answer\":\"12π\"}"
   },
   "task": "task_geometry_analytical_2d_value",
   "task_variant": "area",
@@ -25,28 +26,33 @@
     "execution_trace": {
       "answer_max": 2500,
       "answer_min": 8,
-      "answer_scalar": 441,
+      "answer_scalar": 15,
       "answer_type": "pi_expression",
-      "answer_value": "441π",
-      "case_id": "circle_derived",
+      "answer_value": "15π",
+      "case_id": "ellipse_derived",
       "evidence_annotations": {
-        "d": "DE"
+        "a": "QR",
+        "c": "QS"
       },
       "evidence_ids": [
-        "DE"
+        "QR",
+        "QS"
       ],
       "evidence_label_values": {
-        "d": 42
+        "a": 5,
+        "c": 4
       },
       "evidence_map": {
-        "DE": 42
+        "QR": 5,
+        "QS": 4
       },
       "evidence_roles": [
-        "d"
+        "a",
+        "c"
       ],
-      "formula_expression": "A = π * (d/2)^2",
-      "legacy_query_variant": "circle_derived",
-      "legacy_scene_variant": "circle",
+      "formula_expression": "A = π * a * sqrt(a^2 - c^2)",
+      "legacy_query_variant": "ellipse_derived",
+      "legacy_scene_variant": "ellipse",
       "legacy_task_id": "task_geometry_analytical_2d_area",
       "mode_probabilities": {
         "derived": 0.5,
@@ -61,9 +67,10 @@
       },
       "reasoning_mode": "derived",
       "required_annotations": [
-        "DE"
+        "QR",
+        "QS"
       ],
-      "scene_variant": "circle",
+      "scene_variant": "ellipse",
       "scene_variant_probabilities": {
         "circle": 0.14285714285714285,
         "composite_region": 0.0,
@@ -75,15 +82,15 @@
         "triangle": 0.14285714285714285
       },
       "shape_probabilities": {
-        "circle": 1.0,
-        "ellipse": 0.0,
+        "circle": 0.0,
+        "ellipse": 1.0,
         "parallelogram": 0.0,
         "rectangle": 0.0,
         "rhombus": 0.0,
         "trapezoid": 0.0,
         "triangle": 0.0
       },
-      "shape_variant": "circle",
+      "shape_variant": "ellipse",
       "task_variant": "area",
       "task_variant_probabilities": {
         "area": 1.0,
@@ -94,24 +101,35 @@
     },
     "projected_evidence": {
       "annotation_labels": {
-        "d": "DE"
+        "a": "QR",
+        "c": "QS"
       },
       "id_set": [
-        "DE"
+        "QR",
+        "QS"
       ],
       "measurement_ref_map": {
-        "DE": 42
+        "QR": 5,
+        "QS": 4
       },
       "pixel_annotation_centers": {
-        "DE": [
-          314.0,
-          276.0
+        "QR": [
+          372.0,
+          249.5
+        ],
+        "QS": [
+          367.0,
+          284.5
         ]
       },
       "pixel_point_set": [
         [
-          314.0,
-          276.0
+          372.0,
+          249.5
+        ],
+        [
+          367.0,
+          284.5
         ]
       ]
     },
@@ -119,8 +137,8 @@
       "params": {
         "answer_max": 2500,
         "answer_min": 8,
-        "legacy_query_variant": "circle_derived",
-        "legacy_scene_variant": "circle",
+        "legacy_query_variant": "ellipse_derived",
+        "legacy_scene_variant": "ellipse",
         "legacy_task_id": "task_geometry_analytical_2d_area",
         "mode_probabilities": {
           "derived": 0.5,
@@ -134,7 +152,7 @@
           "perimeter": 0.0
         },
         "reasoning_mode": "derived",
-        "scene_variant": "circle",
+        "scene_variant": "ellipse",
         "scene_variant_probabilities": {
           "circle": 0.14285714285714285,
           "composite_region": 0.0,
@@ -146,15 +164,15 @@
           "triangle": 0.14285714285714285
         },
         "shape_probabilities": {
-          "circle": 1.0,
-          "ellipse": 0.0,
+          "circle": 0.0,
+          "ellipse": 1.0,
           "parallelogram": 0.0,
           "rectangle": 0.0,
           "rhombus": 0.0,
           "trapezoid": 0.0,
           "triangle": 0.0
         },
-        "shape_variant": "circle",
+        "shape_variant": "ellipse",
         "variant_probabilities": {
           "area": 1.0,
           "composite_area": 0.0,
@@ -169,18 +187,18 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the area value in the form kπ (for example 12π)",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: DE",
-          "json_example": "{\"evidence\":{\"DE\":2},\"answer\":\"12π\"}",
+          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: QR, QS",
+          "json_example": "{\"evidence\":{\"QR\":2,\"QS\":3},\"answer\":\"12π\"}",
           "json_example_answer_only": "{\"answer\":\"12π\"}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
           "object_description": "a geometric shape with measurement annotations",
-          "question_text": "The circle has an annotated diameter. What is its area? Express the result in kπ form."
+          "question_text": "The ellipse shows the semimajor axis and focal distance. What is its area? Express the result in kπ form."
         },
         "task_family_key": "analytical_single_shape",
         "task_family_variant_index": 3,
         "task_key": "analytical_area_query",
-        "task_variant_index": 3,
+        "task_variant_index": 0,
         "task_variant_key": null,
         "task_variant_template_index": null,
         "template_paths": [
@@ -202,18 +220,18 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the area value in the form kπ (for example 12π)",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: DE",
-              "json_example": "{\"evidence\":{\"DE\":2},\"answer\":\"12π\"}",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: QR, QS",
+              "json_example": "{\"evidence\":{\"QR\":2,\"QS\":3},\"answer\":\"12π\"}",
               "json_example_answer_only": "{\"answer\":\"12π\"}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a geometric shape with measurement annotations",
-              "question_text": "The circle has an annotated diameter. What is its area? Express the result in kπ form."
+              "question_text": "The ellipse shows the semimajor axis and focal distance. What is its area? Express the result in kπ form."
             },
             "task_family_key": "analytical_single_shape",
             "task_family_variant_index": 3,
             "task_key": "analytical_area_query",
-            "task_variant_index": 3,
+            "task_variant_index": 0,
             "task_variant_key": null,
             "task_variant_template_index": null,
             "template_paths": [
@@ -225,7 +243,7 @@
               "task_family:analytical_single_shape": 5
             }
           },
-          "prompt": "Use the image showing a geometric shape with measurement annotations. Read the marked measurements and answer: The circle has an annotated diameter. What is its area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: DE.\nAnswer rule: set \"answer\" to the area value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":{\"DE\":2},\"answer\":\"12π\"}"
+          "prompt": "Use the image showing a geometric shape with measurement annotations. The ellipse shows the semimajor axis and focal distance. What is its area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: QR, QS.\nAnswer rule: set \"answer\" to the area value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":{\"QR\":2,\"QS\":3},\"answer\":\"12π\"}"
         },
         "answer_only": {
           "metadata": {
@@ -235,18 +253,18 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the area value in the form kπ (for example 12π)",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: DE",
-              "json_example": "{\"evidence\":{\"DE\":2},\"answer\":\"12π\"}",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: QR, QS",
+              "json_example": "{\"evidence\":{\"QR\":2,\"QS\":3},\"answer\":\"12π\"}",
               "json_example_answer_only": "{\"answer\":\"12π\"}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a geometric shape with measurement annotations",
-              "question_text": "The circle has an annotated diameter. What is its area? Express the result in kπ form."
+              "question_text": "The ellipse shows the semimajor axis and focal distance. What is its area? Express the result in kπ form."
             },
             "task_family_key": "analytical_single_shape",
             "task_family_variant_index": 3,
             "task_key": "analytical_area_query",
-            "task_variant_index": 3,
+            "task_variant_index": 0,
             "task_variant_key": null,
             "task_variant_template_index": null,
             "template_paths": [
@@ -258,7 +276,7 @@
               "task_family:analytical_single_shape": 5
             }
           },
-          "prompt": "Use the image showing a geometric shape with measurement annotations. Read the marked measurements and answer: The circle has an annotated diameter. What is its area? Express the result in kπ form.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the area value in the form kπ (for example 12π).\nExample JSON:\n{\"answer\":\"12π\"}"
+          "prompt": "Use the image showing a geometric shape with measurement annotations. The ellipse shows the semimajor axis and focal distance. What is its area? Express the result in kπ form.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the area value in the form kπ (for example 12π).\nExample JSON:\n{\"answer\":\"12π\"}"
         }
       },
       "task_variant": "area",
@@ -266,27 +284,32 @@
     },
     "render_map": {
       "annotation_centers": {
-        "DE": [
-          314.0,
-          276.0
+        "QR": [
+          372.0,
+          249.5
+        ],
+        "QS": [
+          367.0,
+          284.5
         ]
       },
       "annotation_labels": {
-        "d": "DE"
+        "a": "QR",
+        "c": "QS"
       },
       "coord_space": "pixel",
       "entity_id": "shape_1",
       "instance_anchor": {
         "bbox": [
-          104.0,
-          94.0,
-          524.0,
-          514.0
+          297.0,
+          237.0,
+          397.0,
+          297.0
         ],
         "coord_space": "pixel",
         "point": [
-          314.0,
-          304.0
+          347.0,
+          267.0
         ]
       }
     },
@@ -310,35 +333,37 @@
           "kind": "solid"
         }
       },
-      "canvas_size": 550,
+      "canvas_size": 575,
       "coord_space": "pixel",
       "graph_coordinate_frame": {
         "coord_space": "graph_unit",
-        "full_cells_x": 6,
-        "full_cells_y": 6,
+        "full_cells_x": 8,
+        "full_cells_y": 8,
+        "origin_fraction_x": 0.5,
+        "origin_fraction_y": 0.5,
         "origin_pixel": [
-          274,
-          274
+          287,
+          287
         ],
         "outer_margin_px": 16,
         "partial_edge_cells": true,
-        "spacing_px": 69,
-        "target_cells_x": 8,
-        "target_cells_y": 8,
+        "spacing_px": 64,
+        "target_cells_x": 9,
+        "target_cells_y": 9,
         "x_positive": "right",
         "y_positive": "up"
       },
       "graph_paper_grid": {
-        "full_cells_x": 6,
-        "full_cells_y": 6,
+        "full_cells_x": 8,
+        "full_cells_y": 8,
         "partial_edge_cells": true,
-        "spacing_px": 69,
-        "target_cells_x": 8,
-        "target_cells_y": 8
+        "spacing_px": 64,
+        "target_cells_x": 9,
+        "target_cells_y": 9
       },
-      "legacy_scene_variant": "circle",
+      "legacy_scene_variant": "ellipse",
       "post_image_noise": {
-        "applied": true,
+        "applied": false,
         "apply_prob": 0.5,
         "edit_count_range": [
           1,
@@ -350,33 +375,26 @@
           "jpeg",
           "noise"
         ],
-        "edits": [
-          {
-            "params": {
-              "quality": 93.0
-            },
-            "type": "jpeg"
-          }
-        ],
+        "edits": [],
         "enabled": true
       },
       "query_variant": "area",
-      "scene_variant": "circle",
+      "scene_variant": "ellipse",
       "shape_style": {
         "label_color": [
-          84,
-          20,
-          121
+          138,
+          111,
+          16
         ],
         "label_stroke_color": [
           249,
           251,
-          249
+          248
         ],
         "line_color": [
-          84,
-          20,
-          121
+          138,
+          111,
+          16
         ]
       }
     },
@@ -384,27 +402,28 @@
       "entities": [
         {
           "attrs": {
-            "area_pi_coefficient": 441,
+            "area_pi_coefficient": 15,
             "center": [
-              314.0,
-              304.0
+              347.0,
+              267.0
             ],
-            "diameter_units": 42,
-            "radius_units": 21,
+            "focal_distance_units": 4,
             "reasoning_mode": "derived",
-            "shape_variant": "circle"
+            "semi_axis_x_units": 5,
+            "semi_axis_y_units": 3,
+            "shape_variant": "ellipse"
           },
           "entity_id": "shape_1",
-          "entity_type": "circle"
+          "entity_type": "ellipse"
         }
       ],
       "frames": {
         "graph_unit": {
           "origin_pixel": [
-            274,
-            274
+            287,
+            287
           ],
-          "spacing_px": 69,
+          "spacing_px": 64,
           "x_positive": "right",
           "y_positive": "up"
         },
@@ -418,31 +437,35 @@
         }
       },
       "relations": {
-        "legacy_query_variant": "circle_derived",
-        "legacy_scene_variant": "circle",
+        "legacy_query_variant": "ellipse_derived",
+        "legacy_scene_variant": "ellipse",
         "legacy_task_id": "task_geometry_analytical_2d_area",
         "query_variant": "area",
-        "scene_variant": "circle"
+        "scene_variant": "ellipse"
       },
       "scene_kind": "geometry_2d_analytical_area"
     },
     "witness_symbolic": {
       "annotation_ids": [
-        "DE"
+        "QR",
+        "QS"
       ],
       "annotation_labels": {
-        "d": "DE"
+        "a": "QR",
+        "c": "QS"
       },
       "annotation_values": {
-        "DE": 42
+        "QR": 5,
+        "QS": 4
       },
-      "case_id": "circle_derived",
-      "formula_expression": "A = π * (d/2)^2",
+      "case_id": "ellipse_derived",
+      "formula_expression": "A = π * a * sqrt(a^2 - c^2)",
       "measurement_ref_map": {
-        "DE": 42
+        "QR": 5,
+        "QS": 4
       },
       "reasoning_mode": "derived",
-      "shape_variant": "circle",
+      "shape_variant": "ellipse",
       "type": "annotation_measurement_map"
     }
   },

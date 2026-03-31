@@ -1,16 +1,16 @@
 {
   "answer_gt": {
     "type": "string",
-    "value": "Purchase Info"
+    "value": "Billing Summary"
   },
   "evidence_gt": {
     "type": "bbox_set",
     "value": [
       [
-        410.0,
-        372.0,
-        608.0,
-        394.0
+        204.0,
+        524.0,
+        437.0,
+        546.0
       ]
     ]
   },
@@ -18,18 +18,18 @@
     "format": "png",
     "path": "documents/task_documents_layout_section_membership_label/images/section_of_label_value_pair/0013.png"
   },
-  "instance_seed": 2927805392883089,
-  "prompt": "Read the named sections in this document: a receipt-style document with visible section headers and labeled totals rows. Locate the relevant section before answering: Which section contains the field labeled Member ID with value M-9338? Return the exact section title shown. Respond with the exact section title from the document.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly one bounding box for the matching section header.\nAnswer requirement: set \"answer\" to the exact section title shown in the document.\nExample JSON:\n{\"evidence\":[[132,182,260,214]],\"answer\":\"Billing Summary\"}",
+  "instance_seed": 6161121108711730,
+  "prompt": "Look at the document in the image: an invoice with visible named sections, labeled header fields, and summary blocks. Locate the relevant section before answering: Which section contains the field labeled Discount with value $8.63? Return the exact section title shown. Answer with the exact section title shown.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing exactly one bounding box for the matching section header.\nAnswer field: set \"answer\" to the exact section title shown in the document.\nExample JSON:\n{\"evidence\":[[132,182,260,214]],\"answer\":\"Billing Summary\"}",
   "prompt_variants": {
-    "answer_and_evidence": "Read the named sections in this document: a receipt-style document with visible section headers and labeled totals rows. Locate the relevant section before answering: Which section contains the field labeled Member ID with value M-9338? Return the exact section title shown. Respond with the exact section title from the document.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly one bounding box for the matching section header.\nAnswer requirement: set \"answer\" to the exact section title shown in the document.\nExample JSON:\n{\"evidence\":[[132,182,260,214]],\"answer\":\"Billing Summary\"}",
-    "answer_only": "Read the named sections in this document: a receipt-style document with visible section headers and labeled totals rows. Locate the relevant section before answering: Which section contains the field labeled Member ID with value M-9338? Return the exact section title shown. Respond with the exact section title from the document.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the exact section title shown in the document.\nExample JSON:\n{\"answer\":\"Billing Summary\"}"
+    "answer_and_evidence": "Look at the document in the image: an invoice with visible named sections, labeled header fields, and summary blocks. Locate the relevant section before answering: Which section contains the field labeled Discount with value $8.63? Return the exact section title shown. Answer with the exact section title shown.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing exactly one bounding box for the matching section header.\nAnswer field: set \"answer\" to the exact section title shown in the document.\nExample JSON:\n{\"evidence\":[[132,182,260,214]],\"answer\":\"Billing Summary\"}",
+    "answer_only": "Look at the document in the image: an invoice with visible named sections, labeled header fields, and summary blocks. Locate the relevant section before answering: Which section contains the field labeled Discount with value $8.63? Return the exact section title shown. Answer with the exact section title shown.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the exact section title shown in the document.\nExample JSON:\n{\"answer\":\"Billing Summary\"}"
   },
   "task": "task_documents_layout_section_membership_label",
   "task_variant": "section_of_label_value_pair",
   "trace_payload": {
     "answer_gt": {
       "type": "string",
-      "value": "Purchase Info"
+      "value": "Billing Summary"
     },
     "background": {
       "available_styles": [
@@ -50,144 +50,172 @@
       "type": "bbox_set",
       "value": [
         [
-          410.0,
-          372.0,
-          608.0,
-          394.0
+          204.0,
+          524.0,
+          437.0,
+          546.0
         ]
       ]
     },
     "execution_trace": {
-      "field_count": 9,
+      "field_count": 11,
       "field_specs": [
         {
           "comparison_kind": "other",
-          "field_id": "store_name",
-          "field_label": "Store Name",
-          "field_value": "Juniper Market",
-          "label_bbox_id": "store_name:label",
-          "section_id": "store_details",
-          "section_label": "Store Details",
-          "value_bbox_id": "store_name:value"
+          "field_id": "vendor_name",
+          "field_label": "Vendor",
+          "field_value": "Evergreen Supply",
+          "label_bbox_id": "vendor_name:label",
+          "section_id": "parties",
+          "section_label": "Parties",
+          "value_bbox_id": "vendor_name:value"
         },
         {
           "comparison_kind": "other",
-          "field_id": "receipt_number",
-          "field_label": "Receipt No.",
-          "field_value": "R-88588",
-          "label_bbox_id": "receipt_number:label",
-          "section_id": "store_details",
-          "section_label": "Store Details",
-          "value_bbox_id": "receipt_number:value"
+          "field_id": "customer_name",
+          "field_label": "Customer",
+          "field_value": "Nora Bailey",
+          "label_bbox_id": "customer_name:label",
+          "section_id": "parties",
+          "section_label": "Parties",
+          "value_bbox_id": "customer_name:value"
         },
         {
           "comparison_kind": "other",
-          "field_id": "cashier_name",
-          "field_label": "Cashier",
-          "field_value": "Iris Foster",
-          "label_bbox_id": "cashier_name:label",
-          "section_id": "store_details",
-          "section_label": "Store Details",
-          "value_bbox_id": "cashier_name:value"
+          "field_id": "invoice_number",
+          "field_label": "Invoice Number",
+          "field_value": "INV-12211",
+          "label_bbox_id": "invoice_number:label",
+          "section_id": "parties",
+          "section_label": "Parties",
+          "value_bbox_id": "invoice_number:value"
         },
         {
           "comparison_kind": "other",
-          "field_id": "purchase_date",
-          "field_label": "Purchase Date",
-          "field_value": "Apr 16, 2026",
-          "label_bbox_id": "purchase_date:label",
-          "section_id": "purchase_info",
-          "section_label": "Purchase Info",
-          "value_bbox_id": "purchase_date:value"
+          "field_id": "account_id",
+          "field_label": "Account ID",
+          "field_value": "ACC-4382",
+          "label_bbox_id": "account_id:label",
+          "section_id": "account",
+          "section_label": "Account",
+          "value_bbox_id": "account_id:value"
         },
         {
           "comparison_kind": "other",
-          "field_id": "member_id",
-          "field_label": "Member ID",
-          "field_value": "M-9338",
-          "label_bbox_id": "member_id:label",
-          "section_id": "purchase_info",
-          "section_label": "Purchase Info",
-          "value_bbox_id": "member_id:value"
+          "field_id": "contact_email",
+          "field_label": "Contact Email",
+          "field_value": "evergreensuppl@example.com",
+          "label_bbox_id": "contact_email:label",
+          "section_id": "account",
+          "section_label": "Account",
+          "value_bbox_id": "contact_email:value"
         },
         {
           "comparison_kind": "other",
-          "field_id": "register_id",
-          "field_label": "Register ID",
-          "field_value": "REG-881",
-          "label_bbox_id": "register_id:label",
-          "section_id": "purchase_info",
-          "section_label": "Purchase Info",
-          "value_bbox_id": "register_id:value"
+          "field_id": "issue_date",
+          "field_label": "Issue Date",
+          "field_value": "2026-03-11",
+          "label_bbox_id": "issue_date:label",
+          "section_id": "dates",
+          "section_label": "Dates",
+          "value_bbox_id": "issue_date:value"
+        },
+        {
+          "comparison_kind": "other",
+          "field_id": "service_date",
+          "field_label": "Service Date",
+          "field_value": "2026-03-17",
+          "label_bbox_id": "service_date:label",
+          "section_id": "dates",
+          "section_label": "Dates",
+          "value_bbox_id": "service_date:value"
+        },
+        {
+          "comparison_kind": "other",
+          "field_id": "due_date",
+          "field_label": "Due Date",
+          "field_value": "2026-04-07",
+          "label_bbox_id": "due_date:label",
+          "section_id": "dates",
+          "section_label": "Dates",
+          "value_bbox_id": "due_date:value"
         },
         {
           "comparison_kind": "amount",
-          "field_id": "items_total",
-          "field_label": "Items Total",
-          "field_value": "$26.86",
-          "label_bbox_id": "items_total:label",
-          "section_id": "totals",
-          "section_label": "Totals",
-          "value_bbox_id": "items_total:value"
+          "field_id": "subtotal_amount",
+          "field_label": "Subtotal",
+          "field_value": "$314.82",
+          "label_bbox_id": "subtotal_amount:label",
+          "section_id": "billing_summary",
+          "section_label": "Billing Summary",
+          "value_bbox_id": "subtotal_amount:value"
         },
         {
           "comparison_kind": "amount",
           "field_id": "tax_amount",
           "field_label": "Tax",
-          "field_value": "$5.46",
+          "field_value": "$7.51",
           "label_bbox_id": "tax_amount:label",
-          "section_id": "totals",
-          "section_label": "Totals",
+          "section_id": "billing_summary",
+          "section_label": "Billing Summary",
           "value_bbox_id": "tax_amount:value"
         },
         {
           "comparison_kind": "amount",
           "field_id": "discount_amount",
           "field_label": "Discount",
-          "field_value": "$4.83",
+          "field_value": "$8.63",
           "label_bbox_id": "discount_amount:label",
-          "section_id": "totals",
-          "section_label": "Totals",
+          "section_id": "billing_summary",
+          "section_label": "Billing Summary",
           "value_bbox_id": "discount_amount:value"
         }
       ],
-      "query_field_id": "member_id",
-      "query_field_label": "Member ID",
-      "query_field_value": "M-9338",
-      "query_section_id": "purchase_info",
-      "query_section_label": "Purchase Info",
-      "query_section_label_bbox_id": "purchase_info",
+      "query_field_id": "discount_amount",
+      "query_field_label": "Discount",
+      "query_field_value": "$8.63",
+      "query_section_id": "billing_summary",
+      "query_section_label": "Billing Summary",
+      "query_section_label_bbox_id": "billing_summary",
       "question_format": "document_section_membership_label",
-      "question_text": "Which section contains the field labeled Member ID with value M-9338? Return the exact section title shown.",
-      "scene_title": "Receipt",
-      "scene_variant": "receipt_sheet",
+      "question_text": "Which section contains the field labeled Discount with value $8.63? Return the exact section title shown.",
+      "scene_title": "Invoice",
+      "scene_variant": "invoice_sheet",
       "section_specs": [
         {
           "field_ids": [
-            "store_name",
-            "receipt_number",
-            "cashier_name"
+            "vendor_name",
+            "customer_name",
+            "invoice_number"
           ],
-          "section_id": "store_details",
-          "section_label": "Store Details"
+          "section_id": "parties",
+          "section_label": "Parties"
         },
         {
           "field_ids": [
-            "purchase_date",
-            "member_id",
-            "register_id"
+            "account_id",
+            "contact_email"
           ],
-          "section_id": "purchase_info",
-          "section_label": "Purchase Info"
+          "section_id": "account",
+          "section_label": "Account"
         },
         {
           "field_ids": [
-            "items_total",
+            "issue_date",
+            "service_date",
+            "due_date"
+          ],
+          "section_id": "dates",
+          "section_label": "Dates"
+        },
+        {
+          "field_ids": [
+            "subtotal_amount",
             "tax_amount",
             "discount_amount"
           ],
-          "section_id": "totals",
-          "section_label": "Totals"
+          "section_id": "billing_summary",
+          "section_label": "Billing Summary"
         }
       ],
       "task_variant": "section_of_label_value_pair",
@@ -212,27 +240,27 @@
     "projected_evidence": {
       "bbox_set": [
         [
-          410.0,
-          372.0,
-          608.0,
-          394.0
+          204.0,
+          524.0,
+          437.0,
+          546.0
         ]
       ]
     },
     "query_spec": {
       "params": {
-        "field_count": 9,
+        "field_count": 11,
         "field_count_range": [
           9,
           11
         ],
-        "scene_variant": "receipt_sheet",
+        "scene_variant": "invoice_sheet",
         "scene_variant_probabilities": {
           "form_sheet": 0.3333333333333333,
           "invoice_sheet": 0.3333333333333333,
           "receipt_sheet": 0.3333333333333333
         },
-        "section_count": 3,
+        "section_count": 4,
         "task_variant": "section_of_label_value_pair",
         "task_variant_probabilities": {
           "section_of_field_label": 0.0,
@@ -242,7 +270,7 @@
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 2,
+        "answer_or_evidence_variant_index": 3,
         "prompt_bundle_id": "documents_layout_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -252,15 +280,15 @@
           "json_example_answer_only": "{\"answer\":\"Billing Summary\"}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "object_description": "a receipt-style document with visible section headers and labeled totals rows",
-          "question_text": "Which section contains the field labeled Member ID with value M-9338? Return the exact section title shown."
+          "object_description": "an invoice with visible named sections, labeled header fields, and summary blocks",
+          "question_text": "Which section contains the field labeled Discount with value $8.63? Return the exact section title shown."
         },
         "task_family_key": "structured_document_sections",
-        "task_family_variant_index": 4,
+        "task_family_variant_index": 1,
         "task_key": "section_membership_query",
         "task_variant_index": 4,
         "task_variant_key": "section_of_label_value_pair",
-        "task_variant_template_index": 2,
+        "task_variant_template_index": 0,
         "template_paths": [
           "documents/layout/documents_layout_v1.json"
         ],
@@ -276,7 +304,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 2,
+            "answer_or_evidence_variant_index": 3,
             "prompt_bundle_id": "documents_layout_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -286,15 +314,15 @@
               "json_example_answer_only": "{\"answer\":\"Billing Summary\"}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a receipt-style document with visible section headers and labeled totals rows",
-              "question_text": "Which section contains the field labeled Member ID with value M-9338? Return the exact section title shown."
+              "object_description": "an invoice with visible named sections, labeled header fields, and summary blocks",
+              "question_text": "Which section contains the field labeled Discount with value $8.63? Return the exact section title shown."
             },
             "task_family_key": "structured_document_sections",
-            "task_family_variant_index": 4,
+            "task_family_variant_index": 1,
             "task_key": "section_membership_query",
             "task_variant_index": 4,
             "task_variant_key": "section_of_label_value_pair",
-            "task_variant_template_index": 2,
+            "task_variant_template_index": 0,
             "template_paths": [
               "documents/layout/documents_layout_v1.json"
             ],
@@ -305,12 +333,12 @@
               "task_variant:section_of_label_value_pair": 5
             }
           },
-          "prompt": "Read the named sections in this document: a receipt-style document with visible section headers and labeled totals rows. Locate the relevant section before answering: Which section contains the field labeled Member ID with value M-9338? Return the exact section title shown. Respond with the exact section title from the document.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly one bounding box for the matching section header.\nAnswer requirement: set \"answer\" to the exact section title shown in the document.\nExample JSON:\n{\"evidence\":[[132,182,260,214]],\"answer\":\"Billing Summary\"}"
+          "prompt": "Look at the document in the image: an invoice with visible named sections, labeled header fields, and summary blocks. Locate the relevant section before answering: Which section contains the field labeled Discount with value $8.63? Return the exact section title shown. Answer with the exact section title shown.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing exactly one bounding box for the matching section header.\nAnswer field: set \"answer\" to the exact section title shown in the document.\nExample JSON:\n{\"evidence\":[[132,182,260,214]],\"answer\":\"Billing Summary\"}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 0,
+            "answer_or_evidence_variant_index": 2,
             "prompt_bundle_id": "documents_layout_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -320,15 +348,15 @@
               "json_example_answer_only": "{\"answer\":\"Billing Summary\"}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a receipt-style document with visible section headers and labeled totals rows",
-              "question_text": "Which section contains the field labeled Member ID with value M-9338? Return the exact section title shown."
+              "object_description": "an invoice with visible named sections, labeled header fields, and summary blocks",
+              "question_text": "Which section contains the field labeled Discount with value $8.63? Return the exact section title shown."
             },
             "task_family_key": "structured_document_sections",
-            "task_family_variant_index": 4,
+            "task_family_variant_index": 1,
             "task_key": "section_membership_query",
             "task_variant_index": 4,
             "task_variant_key": "section_of_label_value_pair",
-            "task_variant_template_index": 2,
+            "task_variant_template_index": 0,
             "template_paths": [
               "documents/layout/documents_layout_v1.json"
             ],
@@ -339,7 +367,7 @@
               "task_variant:section_of_label_value_pair": 5
             }
           },
-          "prompt": "Read the named sections in this document: a receipt-style document with visible section headers and labeled totals rows. Locate the relevant section before answering: Which section contains the field labeled Member ID with value M-9338? Return the exact section title shown. Respond with the exact section title from the document.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the exact section title shown in the document.\nExample JSON:\n{\"answer\":\"Billing Summary\"}"
+          "prompt": "Look at the document in the image: an invoice with visible named sections, labeled header fields, and summary blocks. Locate the relevant section before answering: Which section contains the field labeled Discount with value $8.63? Return the exact section title shown. Answer with the exact section title shown.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the exact section title shown in the document.\nExample JSON:\n{\"answer\":\"Billing Summary\"}"
         }
       },
       "task_variant": "section_of_label_value_pair",
@@ -347,234 +375,282 @@
     },
     "render_map": {
       "field_box_bboxes_px": {
-        "cashier_name": [
-          406.0,
-          332.0,
-          874.0,
-          392.0
+        "account_id": [
+          498.667,
+          322.0,
+          781.333,
+          420.0
+        ],
+        "contact_email": [
+          797.333,
+          322.0,
+          1080.0,
+          420.0
+        ],
+        "customer_name": [
+          651.0,
+          206.0,
+          1080.0,
+          304.0
         ],
         "discount_amount": [
-          406.0,
-          752.0,
-          874.0,
-          812.0
+          651.0,
+          672.0,
+          1080.0,
+          776.0
         ],
-        "items_total": [
-          406.0,
-          612.0,
-          874.0,
-          672.0
+        "due_date": [
+          200.0,
+          554.0,
+          629.0,
+          652.0
         ],
-        "member_id": [
-          406.0,
-          472.0,
-          874.0,
-          532.0
+        "invoice_number": [
+          200.0,
+          322.0,
+          482.667,
+          420.0
         ],
-        "purchase_date": [
-          406.0,
-          402.0,
-          874.0,
-          462.0
+        "issue_date": [
+          200.0,
+          438.0,
+          629.0,
+          536.0
         ],
-        "receipt_number": [
-          406.0,
-          262.0,
-          874.0,
-          322.0
+        "service_date": [
+          651.0,
+          438.0,
+          1080.0,
+          536.0
         ],
-        "register_id": [
-          406.0,
-          542.0,
-          874.0,
-          602.0
-        ],
-        "store_name": [
-          406.0,
-          192.0,
-          874.0,
-          252.0
+        "subtotal_amount": [
+          651.0,
+          554.0,
+          1080.0,
+          652.0
         ],
         "tax_amount": [
-          406.0,
-          682.0,
-          874.0,
-          742.0
+          200.0,
+          672.0,
+          629.0,
+          776.0
+        ],
+        "vendor_name": [
+          200.0,
+          206.0,
+          629.0,
+          304.0
         ]
       },
       "field_label_bboxes_px": {
-        "cashier_name:label": [
-          416.0,
-          352.5,
-          512.0,
-          371.5
+        "account_id:label": [
+          512.667,
+          336.0,
+          649.667,
+          354.0
+        ],
+        "contact_email:label": [
+          811.333,
+          335.5,
+          987.333,
+          354.5
+        ],
+        "customer_name:label": [
+          665.0,
+          220.0,
+          787.0,
+          238.0
         ],
         "discount_amount:label": [
-          416.0,
-          772.5,
-          528.0,
-          791.5
+          665.0,
+          685.5,
+          777.0,
+          704.5
         ],
-        "items_total:label": [
-          416.0,
-          632.5,
-          560.0,
-          651.5
+        "due_date:label": [
+          214.0,
+          568.0,
+          332.0,
+          586.0
         ],
-        "member_id:label": [
-          416.0,
-          492.5,
-          554.0,
-          511.5
+        "invoice_number:label": [
+          214.0,
+          335.5,
+          412.0,
+          354.5
         ],
-        "purchase_date:label": [
-          416.0,
-          423.0,
-          588.0,
-          441.0
+        "issue_date:label": [
+          214.0,
+          452.0,
+          348.0,
+          470.0
         ],
-        "receipt_number:label": [
-          416.0,
-          280.0,
-          562.0,
-          304.0
+        "service_date:label": [
+          665.0,
+          451.5,
+          826.0,
+          470.5
         ],
-        "register_id:label": [
-          416.0,
-          560.0,
-          558.0,
-          584.0
-        ],
-        "store_name:label": [
-          416.0,
-          213.0,
-          565.0,
-          231.0
+        "subtotal_amount:label": [
+          665.0,
+          567.5,
+          775.0,
+          586.5
         ],
         "tax_amount:label": [
-          416.0,
-          703.0,
-          462.0,
-          721.0
+          214.0,
+          686.0,
+          260.0,
+          704.0
+        ],
+        "vendor_name:label": [
+          214.0,
+          219.5,
+          306.0,
+          238.5
         ]
       },
       "field_value_bboxes_px": {
-        "cashier_name:value": [
-          722.0,
-          350.5,
-          864.0,
-          373.5
+        "account_id:value": [
+          512.667,
+          372.0,
+          655.667,
+          394.0
+        ],
+        "contact_email:value": [
+          811.333,
+          373.0,
+          1092.333,
+          393.0
+        ],
+        "customer_name:value": [
+          665.0,
+          252.5,
+          829.0,
+          281.5
         ],
         "discount_amount:value": [
-          781.0,
-          768.5,
-          864.0,
-          795.5
+          665.0,
+          722.5,
+          748.0,
+          749.5
         ],
-        "items_total:value": [
-          763.0,
-          628.5,
-          864.0,
-          655.5
+        "due_date:value": [
+          214.0,
+          604.0,
+          380.0,
+          626.0
         ],
-        "member_id:value": [
-          756.0,
-          491.0,
-          864.0,
-          513.0
+        "invoice_number:value": [
+          214.0,
+          372.0,
+          364.0,
+          394.0
         ],
-        "purchase_date:value": [
-          678.0,
-          418.0,
-          864.0,
-          446.0
+        "issue_date:value": [
+          214.0,
+          488.0,
+          380.0,
+          510.0
         ],
-        "receipt_number:value": [
-          743.0,
-          281.0,
-          864.0,
-          303.0
+        "service_date:value": [
+          665.0,
+          488.0,
+          831.0,
+          510.0
         ],
-        "register_id:value": [
-          739.0,
-          561.0,
-          864.0,
-          583.0
-        ],
-        "store_name:value": [
-          655.0,
-          207.5,
-          864.0,
-          236.5
+        "subtotal_amount:value": [
+          665.0,
+          601.5,
+          784.0,
+          628.5
         ],
         "tax_amount:value": [
-          781.0,
-          698.5,
-          864.0,
-          725.5
+          214.0,
+          722.5,
+          297.0,
+          749.5
+        ],
+        "vendor_name:value": [
+          214.0,
+          252.5,
+          468.0,
+          281.5
         ]
       },
       "page_bbox_px": [
-        380.0,
+        160.0,
         80.0,
-        900.0,
+        1120.0,
         840.0
       ],
       "section_box_bboxes_px": {
-        "purchase_info": [
-          394.0,
-          366.0,
-          886.0,
-          614.0
+        "account": [
+          486.667,
+          286.0,
+          1092.0,
+          432.0
         ],
-        "store_details": [
-          394.0,
-          163.5,
-          886.0,
-          404.0
+        "billing_summary": [
+          188.0,
+          518.0,
+          1092.0,
+          788.0
         ],
-        "totals": [
-          394.0,
-          576.0,
-          886.0,
-          824.0
+        "dates": [
+          188.0,
+          402.0,
+          1092.0,
+          664.0
+        ],
+        "parties": [
+          188.0,
+          170.0,
+          1092.0,
+          432.0
         ]
       },
       "section_label_bboxes_px": {
-        "purchase_info": [
-          410.0,
-          372.0,
-          608.0,
-          394.0
+        "account": [
+          502.667,
+          292.0,
+          629.667,
+          314.0
         ],
-        "store_details": [
-          410.0,
-          169.5,
-          600.0,
-          187.5
+        "billing_summary": [
+          204.0,
+          524.0,
+          437.0,
+          546.0
         ],
-        "totals": [
-          410.0,
-          582.0,
-          513.0,
-          604.0
+        "dates": [
+          204.0,
+          408.0,
+          302.0,
+          430.0
+        ],
+        "parties": [
+          204.0,
+          176.0,
+          319.0,
+          198.0
         ]
       },
       "title_bbox_px": [
-        411.0,
-        100.5,
-        590.0,
-        143.5
+        191.0,
+        105.0,
+        362.0,
+        139.0
       ]
     },
     "render_spec": {
       "canvas_height": 920,
       "canvas_width": 1280,
-      "geometry_seed": 2927805392883089,
+      "geometry_seed": 6161121108711730,
       "page_shadow_offset_px": 14,
       "receipt_page_height_px": 760,
       "receipt_page_width_px": 520,
-      "scene_variant": "receipt_sheet",
+      "scene_variant": "invoice_sheet",
       "sheet_page_height_px": 760,
       "sheet_page_width_px": 960
     },
@@ -583,9 +659,9 @@
         {
           "bbox_id": "page",
           "bbox_px": [
-            380.0,
+            160.0,
             80.0,
-            900.0,
+            1120.0,
             840.0
           ],
           "entity_id": "page",
@@ -594,339 +670,431 @@
         {
           "bbox_id": "title",
           "bbox_px": [
-            411.0,
-            100.5,
-            590.0,
-            143.5
+            191.0,
+            105.0,
+            362.0,
+            139.0
           ],
           "entity_id": "title",
           "entity_type": "document_title",
-          "text": "Receipt"
+          "text": "Invoice"
         },
         {
-          "bbox_id": "store_details",
+          "bbox_id": "parties",
           "bbox_px": [
-            394.0,
-            163.5,
-            886.0,
-            404.0
+            188.0,
+            170.0,
+            1092.0,
+            432.0
           ],
-          "entity_id": "store_details:section",
+          "entity_id": "parties:section",
           "entity_type": "document_section",
           "field_ids": [
-            "store_name",
-            "receipt_number",
-            "cashier_name"
+            "vendor_name",
+            "customer_name",
+            "invoice_number"
           ],
-          "section_id": "store_details"
+          "section_id": "parties"
         },
         {
-          "bbox_id": "purchase_info",
+          "bbox_id": "account",
           "bbox_px": [
-            394.0,
-            366.0,
-            886.0,
-            614.0
+            486.667,
+            286.0,
+            1092.0,
+            432.0
           ],
-          "entity_id": "purchase_info:section",
+          "entity_id": "account:section",
           "entity_type": "document_section",
           "field_ids": [
-            "purchase_date",
-            "member_id",
-            "register_id"
+            "account_id",
+            "contact_email"
           ],
-          "section_id": "purchase_info"
+          "section_id": "account"
         },
         {
-          "bbox_id": "totals",
+          "bbox_id": "dates",
           "bbox_px": [
-            394.0,
-            576.0,
-            886.0,
-            824.0
+            188.0,
+            402.0,
+            1092.0,
+            664.0
           ],
-          "entity_id": "totals:section",
+          "entity_id": "dates:section",
           "entity_type": "document_section",
           "field_ids": [
-            "items_total",
+            "issue_date",
+            "service_date",
+            "due_date"
+          ],
+          "section_id": "dates"
+        },
+        {
+          "bbox_id": "billing_summary",
+          "bbox_px": [
+            188.0,
+            518.0,
+            1092.0,
+            788.0
+          ],
+          "entity_id": "billing_summary:section",
+          "entity_type": "document_section",
+          "field_ids": [
+            "subtotal_amount",
             "tax_amount",
             "discount_amount"
           ],
-          "section_id": "totals"
+          "section_id": "billing_summary"
         },
         {
-          "bbox_id": "store_name",
+          "bbox_id": "vendor_name",
           "bbox_px": [
-            406.0,
-            192.0,
-            874.0,
-            252.0
-          ],
-          "entity_id": "store_name:field",
-          "entity_type": "document_field_box",
-          "field_id": "store_name"
-        },
-        {
-          "bbox_id": "store_name:label",
-          "bbox_px": [
-            416.0,
-            213.0,
-            565.0,
-            231.0
-          ],
-          "entity_id": "store_name:label",
-          "entity_type": "document_field_label",
-          "field_id": "store_name",
-          "text": "Store Name"
-        },
-        {
-          "bbox_id": "store_name:value",
-          "bbox_px": [
-            655.0,
-            207.5,
-            864.0,
-            236.5
-          ],
-          "entity_id": "store_name:value",
-          "entity_type": "document_field_value",
-          "field_id": "store_name",
-          "text": "Juniper Market"
-        },
-        {
-          "bbox_id": "receipt_number",
-          "bbox_px": [
-            406.0,
-            262.0,
-            874.0,
-            322.0
-          ],
-          "entity_id": "receipt_number:field",
-          "entity_type": "document_field_box",
-          "field_id": "receipt_number"
-        },
-        {
-          "bbox_id": "receipt_number:label",
-          "bbox_px": [
-            416.0,
-            280.0,
-            562.0,
+            200.0,
+            206.0,
+            629.0,
             304.0
           ],
-          "entity_id": "receipt_number:label",
-          "entity_type": "document_field_label",
-          "field_id": "receipt_number",
-          "text": "Receipt No."
-        },
-        {
-          "bbox_id": "receipt_number:value",
-          "bbox_px": [
-            743.0,
-            281.0,
-            864.0,
-            303.0
-          ],
-          "entity_id": "receipt_number:value",
-          "entity_type": "document_field_value",
-          "field_id": "receipt_number",
-          "text": "R-88588"
-        },
-        {
-          "bbox_id": "cashier_name",
-          "bbox_px": [
-            406.0,
-            332.0,
-            874.0,
-            392.0
-          ],
-          "entity_id": "cashier_name:field",
+          "entity_id": "vendor_name:field",
           "entity_type": "document_field_box",
-          "field_id": "cashier_name"
+          "field_id": "vendor_name"
         },
         {
-          "bbox_id": "cashier_name:label",
+          "bbox_id": "vendor_name:label",
           "bbox_px": [
-            416.0,
-            352.5,
-            512.0,
-            371.5
+            214.0,
+            219.5,
+            306.0,
+            238.5
           ],
-          "entity_id": "cashier_name:label",
+          "entity_id": "vendor_name:label",
           "entity_type": "document_field_label",
-          "field_id": "cashier_name",
-          "text": "Cashier"
+          "field_id": "vendor_name",
+          "text": "Vendor"
         },
         {
-          "bbox_id": "cashier_name:value",
+          "bbox_id": "vendor_name:value",
           "bbox_px": [
-            722.0,
-            350.5,
-            864.0,
-            373.5
+            214.0,
+            252.5,
+            468.0,
+            281.5
           ],
-          "entity_id": "cashier_name:value",
+          "entity_id": "vendor_name:value",
           "entity_type": "document_field_value",
-          "field_id": "cashier_name",
-          "text": "Iris Foster"
+          "field_id": "vendor_name",
+          "text": "Evergreen Supply"
         },
         {
-          "bbox_id": "purchase_date",
+          "bbox_id": "customer_name",
           "bbox_px": [
-            406.0,
-            402.0,
-            874.0,
-            462.0
+            651.0,
+            206.0,
+            1080.0,
+            304.0
           ],
-          "entity_id": "purchase_date:field",
+          "entity_id": "customer_name:field",
           "entity_type": "document_field_box",
-          "field_id": "purchase_date"
+          "field_id": "customer_name"
         },
         {
-          "bbox_id": "purchase_date:label",
+          "bbox_id": "customer_name:label",
           "bbox_px": [
-            416.0,
-            423.0,
-            588.0,
-            441.0
+            665.0,
+            220.0,
+            787.0,
+            238.0
           ],
-          "entity_id": "purchase_date:label",
+          "entity_id": "customer_name:label",
           "entity_type": "document_field_label",
-          "field_id": "purchase_date",
-          "text": "Purchase Date"
+          "field_id": "customer_name",
+          "text": "Customer"
         },
         {
-          "bbox_id": "purchase_date:value",
+          "bbox_id": "customer_name:value",
           "bbox_px": [
-            678.0,
-            418.0,
-            864.0,
-            446.0
+            665.0,
+            252.5,
+            829.0,
+            281.5
           ],
-          "entity_id": "purchase_date:value",
+          "entity_id": "customer_name:value",
           "entity_type": "document_field_value",
-          "field_id": "purchase_date",
-          "text": "Apr 16, 2026"
+          "field_id": "customer_name",
+          "text": "Nora Bailey"
         },
         {
-          "bbox_id": "member_id",
+          "bbox_id": "invoice_number",
           "bbox_px": [
-            406.0,
-            472.0,
-            874.0,
-            532.0
+            200.0,
+            322.0,
+            482.667,
+            420.0
           ],
-          "entity_id": "member_id:field",
+          "entity_id": "invoice_number:field",
           "entity_type": "document_field_box",
-          "field_id": "member_id"
+          "field_id": "invoice_number"
         },
         {
-          "bbox_id": "member_id:label",
+          "bbox_id": "invoice_number:label",
           "bbox_px": [
-            416.0,
-            492.5,
+            214.0,
+            335.5,
+            412.0,
+            354.5
+          ],
+          "entity_id": "invoice_number:label",
+          "entity_type": "document_field_label",
+          "field_id": "invoice_number",
+          "text": "Invoice Number"
+        },
+        {
+          "bbox_id": "invoice_number:value",
+          "bbox_px": [
+            214.0,
+            372.0,
+            364.0,
+            394.0
+          ],
+          "entity_id": "invoice_number:value",
+          "entity_type": "document_field_value",
+          "field_id": "invoice_number",
+          "text": "INV-12211"
+        },
+        {
+          "bbox_id": "account_id",
+          "bbox_px": [
+            498.667,
+            322.0,
+            781.333,
+            420.0
+          ],
+          "entity_id": "account_id:field",
+          "entity_type": "document_field_box",
+          "field_id": "account_id"
+        },
+        {
+          "bbox_id": "account_id:label",
+          "bbox_px": [
+            512.667,
+            336.0,
+            649.667,
+            354.0
+          ],
+          "entity_id": "account_id:label",
+          "entity_type": "document_field_label",
+          "field_id": "account_id",
+          "text": "Account ID"
+        },
+        {
+          "bbox_id": "account_id:value",
+          "bbox_px": [
+            512.667,
+            372.0,
+            655.667,
+            394.0
+          ],
+          "entity_id": "account_id:value",
+          "entity_type": "document_field_value",
+          "field_id": "account_id",
+          "text": "ACC-4382"
+        },
+        {
+          "bbox_id": "contact_email",
+          "bbox_px": [
+            797.333,
+            322.0,
+            1080.0,
+            420.0
+          ],
+          "entity_id": "contact_email:field",
+          "entity_type": "document_field_box",
+          "field_id": "contact_email"
+        },
+        {
+          "bbox_id": "contact_email:label",
+          "bbox_px": [
+            811.333,
+            335.5,
+            987.333,
+            354.5
+          ],
+          "entity_id": "contact_email:label",
+          "entity_type": "document_field_label",
+          "field_id": "contact_email",
+          "text": "Contact Email"
+        },
+        {
+          "bbox_id": "contact_email:value",
+          "bbox_px": [
+            811.333,
+            373.0,
+            1092.333,
+            393.0
+          ],
+          "entity_id": "contact_email:value",
+          "entity_type": "document_field_value",
+          "field_id": "contact_email",
+          "text": "evergreensuppl@example.com"
+        },
+        {
+          "bbox_id": "issue_date",
+          "bbox_px": [
+            200.0,
+            438.0,
+            629.0,
+            536.0
+          ],
+          "entity_id": "issue_date:field",
+          "entity_type": "document_field_box",
+          "field_id": "issue_date"
+        },
+        {
+          "bbox_id": "issue_date:label",
+          "bbox_px": [
+            214.0,
+            452.0,
+            348.0,
+            470.0
+          ],
+          "entity_id": "issue_date:label",
+          "entity_type": "document_field_label",
+          "field_id": "issue_date",
+          "text": "Issue Date"
+        },
+        {
+          "bbox_id": "issue_date:value",
+          "bbox_px": [
+            214.0,
+            488.0,
+            380.0,
+            510.0
+          ],
+          "entity_id": "issue_date:value",
+          "entity_type": "document_field_value",
+          "field_id": "issue_date",
+          "text": "2026-03-11"
+        },
+        {
+          "bbox_id": "service_date",
+          "bbox_px": [
+            651.0,
+            438.0,
+            1080.0,
+            536.0
+          ],
+          "entity_id": "service_date:field",
+          "entity_type": "document_field_box",
+          "field_id": "service_date"
+        },
+        {
+          "bbox_id": "service_date:label",
+          "bbox_px": [
+            665.0,
+            451.5,
+            826.0,
+            470.5
+          ],
+          "entity_id": "service_date:label",
+          "entity_type": "document_field_label",
+          "field_id": "service_date",
+          "text": "Service Date"
+        },
+        {
+          "bbox_id": "service_date:value",
+          "bbox_px": [
+            665.0,
+            488.0,
+            831.0,
+            510.0
+          ],
+          "entity_id": "service_date:value",
+          "entity_type": "document_field_value",
+          "field_id": "service_date",
+          "text": "2026-03-17"
+        },
+        {
+          "bbox_id": "due_date",
+          "bbox_px": [
+            200.0,
             554.0,
-            511.5
+            629.0,
+            652.0
           ],
-          "entity_id": "member_id:label",
-          "entity_type": "document_field_label",
-          "field_id": "member_id",
-          "text": "Member ID"
-        },
-        {
-          "bbox_id": "member_id:value",
-          "bbox_px": [
-            756.0,
-            491.0,
-            864.0,
-            513.0
-          ],
-          "entity_id": "member_id:value",
-          "entity_type": "document_field_value",
-          "field_id": "member_id",
-          "text": "M-9338"
-        },
-        {
-          "bbox_id": "register_id",
-          "bbox_px": [
-            406.0,
-            542.0,
-            874.0,
-            602.0
-          ],
-          "entity_id": "register_id:field",
+          "entity_id": "due_date:field",
           "entity_type": "document_field_box",
-          "field_id": "register_id"
+          "field_id": "due_date"
         },
         {
-          "bbox_id": "register_id:label",
+          "bbox_id": "due_date:label",
           "bbox_px": [
-            416.0,
-            560.0,
-            558.0,
-            584.0
+            214.0,
+            568.0,
+            332.0,
+            586.0
           ],
-          "entity_id": "register_id:label",
+          "entity_id": "due_date:label",
           "entity_type": "document_field_label",
-          "field_id": "register_id",
-          "text": "Register ID"
+          "field_id": "due_date",
+          "text": "Due Date"
         },
         {
-          "bbox_id": "register_id:value",
+          "bbox_id": "due_date:value",
           "bbox_px": [
-            739.0,
-            561.0,
-            864.0,
-            583.0
+            214.0,
+            604.0,
+            380.0,
+            626.0
           ],
-          "entity_id": "register_id:value",
+          "entity_id": "due_date:value",
           "entity_type": "document_field_value",
-          "field_id": "register_id",
-          "text": "REG-881"
+          "field_id": "due_date",
+          "text": "2026-04-07"
         },
         {
-          "bbox_id": "items_total",
+          "bbox_id": "subtotal_amount",
           "bbox_px": [
-            406.0,
-            612.0,
-            874.0,
-            672.0
+            651.0,
+            554.0,
+            1080.0,
+            652.0
           ],
-          "entity_id": "items_total:field",
+          "entity_id": "subtotal_amount:field",
           "entity_type": "document_field_box",
-          "field_id": "items_total"
+          "field_id": "subtotal_amount"
         },
         {
-          "bbox_id": "items_total:label",
+          "bbox_id": "subtotal_amount:label",
           "bbox_px": [
-            416.0,
-            632.5,
-            560.0,
-            651.5
+            665.0,
+            567.5,
+            775.0,
+            586.5
           ],
-          "entity_id": "items_total:label",
+          "entity_id": "subtotal_amount:label",
           "entity_type": "document_field_label",
-          "field_id": "items_total",
-          "text": "Items Total"
+          "field_id": "subtotal_amount",
+          "text": "Subtotal"
         },
         {
-          "bbox_id": "items_total:value",
+          "bbox_id": "subtotal_amount:value",
           "bbox_px": [
-            763.0,
-            628.5,
-            864.0,
-            655.5
+            665.0,
+            601.5,
+            784.0,
+            628.5
           ],
-          "entity_id": "items_total:value",
+          "entity_id": "subtotal_amount:value",
           "entity_type": "document_field_value",
-          "field_id": "items_total",
-          "text": "$26.86"
+          "field_id": "subtotal_amount",
+          "text": "$314.82"
         },
         {
           "bbox_id": "tax_amount",
           "bbox_px": [
-            406.0,
-            682.0,
-            874.0,
-            742.0
+            200.0,
+            672.0,
+            629.0,
+            776.0
           ],
           "entity_id": "tax_amount:field",
           "entity_type": "document_field_box",
@@ -935,10 +1103,10 @@
         {
           "bbox_id": "tax_amount:label",
           "bbox_px": [
-            416.0,
-            703.0,
-            462.0,
-            721.0
+            214.0,
+            686.0,
+            260.0,
+            704.0
           ],
           "entity_id": "tax_amount:label",
           "entity_type": "document_field_label",
@@ -948,23 +1116,23 @@
         {
           "bbox_id": "tax_amount:value",
           "bbox_px": [
-            781.0,
-            698.5,
-            864.0,
-            725.5
+            214.0,
+            722.5,
+            297.0,
+            749.5
           ],
           "entity_id": "tax_amount:value",
           "entity_type": "document_field_value",
           "field_id": "tax_amount",
-          "text": "$5.46"
+          "text": "$7.51"
         },
         {
           "bbox_id": "discount_amount",
           "bbox_px": [
-            406.0,
-            752.0,
-            874.0,
-            812.0
+            651.0,
+            672.0,
+            1080.0,
+            776.0
           ],
           "entity_id": "discount_amount:field",
           "entity_type": "document_field_box",
@@ -973,10 +1141,10 @@
         {
           "bbox_id": "discount_amount:label",
           "bbox_px": [
-            416.0,
-            772.5,
-            528.0,
-            791.5
+            665.0,
+            685.5,
+            777.0,
+            704.5
           ],
           "entity_id": "discount_amount:label",
           "entity_type": "document_field_label",
@@ -986,70 +1154,83 @@
         {
           "bbox_id": "discount_amount:value",
           "bbox_px": [
-            781.0,
-            768.5,
-            864.0,
-            795.5
+            665.0,
+            722.5,
+            748.0,
+            749.5
           ],
           "entity_id": "discount_amount:value",
           "entity_type": "document_field_value",
           "field_id": "discount_amount",
-          "text": "$4.83"
+          "text": "$8.63"
         },
         {
-          "bbox_id": "store_details:label",
+          "bbox_id": "parties:label",
           "bbox_px": [
-            410.0,
-            169.5,
-            600.0,
-            187.5
+            204.0,
+            176.0,
+            319.0,
+            198.0
           ],
-          "entity_id": "store_details:label",
+          "entity_id": "parties:label",
           "entity_type": "document_section_label",
-          "section_id": "store_details",
-          "text": "Store Details"
+          "section_id": "parties",
+          "text": "Parties"
         },
         {
-          "bbox_id": "purchase_info:label",
+          "bbox_id": "account:label",
           "bbox_px": [
-            410.0,
-            372.0,
-            608.0,
-            394.0
+            502.667,
+            292.0,
+            629.667,
+            314.0
           ],
-          "entity_id": "purchase_info:label",
+          "entity_id": "account:label",
           "entity_type": "document_section_label",
-          "section_id": "purchase_info",
-          "text": "Purchase Info"
+          "section_id": "account",
+          "text": "Account"
         },
         {
-          "bbox_id": "totals:label",
+          "bbox_id": "dates:label",
           "bbox_px": [
-            410.0,
-            582.0,
-            513.0,
-            604.0
+            204.0,
+            408.0,
+            302.0,
+            430.0
           ],
-          "entity_id": "totals:label",
+          "entity_id": "dates:label",
           "entity_type": "document_section_label",
-          "section_id": "totals",
-          "text": "Totals"
+          "section_id": "dates",
+          "text": "Dates"
+        },
+        {
+          "bbox_id": "billing_summary:label",
+          "bbox_px": [
+            204.0,
+            524.0,
+            437.0,
+            546.0
+          ],
+          "entity_id": "billing_summary:label",
+          "entity_type": "document_section_label",
+          "section_id": "billing_summary",
+          "text": "Billing Summary"
         }
       ],
       "relations": {
-        "query_section_id": "purchase_info",
-        "query_section_label": "Purchase Info",
-        "scene_variant": "receipt_sheet",
+        "query_section_id": "billing_summary",
+        "query_section_label": "Billing Summary",
+        "scene_variant": "invoice_sheet",
         "task_variant": "section_of_label_value_pair",
         "view_family": "structured_document"
       },
-      "scene_kind": "document_receipt_sheet"
+      "scene_kind": "document_invoice_sheet"
     },
     "witness_symbolic": {
       "bbox_id_sequence": [
-        "purchase_info"
+        "billing_summary"
       ],
-      "field_id": "member_id"
+      "field_id": "discount_amount"
     }
   },
   "versions": {

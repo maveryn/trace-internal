@@ -1,61 +1,63 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 2
+    "value": 4
   },
   "evidence_gt": {
     "type": "label_set",
     "value": [
-      "C",
-      "M"
+      "A",
+      "J",
+      "W",
+      "Y"
     ]
   },
   "image": {
     "format": "png",
     "path": "charts/task_charts_multiseries_pairwise_comparison_count/images/series_a_lt_b_count/0023.png"
   },
-  "instance_seed": 7003430124823246,
-  "prompt": "Work from the multiseries chart shown in the image: a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Compare the two queried series category by category. Find how many category labels show Roy lower than Eboh.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+  "instance_seed": 1519306021476566,
+  "prompt": "You are given a multiseries chart: a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Compare the two queried series category by category. Count the category labels where Ezra is below Hagi.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer requirement: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
   "prompt_variants": {
-    "answer_and_evidence": "Work from the multiseries chart shown in the image: a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Compare the two queried series category by category. Find how many category labels show Roy lower than Eboh.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
-    "answer_only": "Work from the multiseries chart shown in the image: a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Compare the two queried series category by category. Find how many category labels show Roy lower than Eboh.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
+    "answer_and_evidence": "You are given a multiseries chart: a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Compare the two queried series category by category. Count the category labels where Ezra is below Hagi.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer requirement: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+    "answer_only": "You are given a multiseries chart: a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Compare the two queried series category by category. Count the category labels where Ezra is below Hagi.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
   },
   "task": "task_charts_multiseries_pairwise_comparison_count",
   "task_variant": "series_a_lt_b_count",
   "trace_payload": {
     "execution_trace": {
-      "answer_value": 2,
-      "category_count": 9,
+      "answer_value": 4,
+      "category_count": 7,
       "category_count_range": [
         5,
         10
       ],
       "category_labels": [
-        "D",
+        "V",
         "N",
-        "C",
-        "Y",
+        "A",
         "J",
-        "S",
-        "L",
-        "M",
-        "T"
+        "W",
+        "P",
+        "Y"
       ],
       "comparison": "less_than",
       "evidence_labels": [
-        "C",
-        "M"
+        "A",
+        "J",
+        "W",
+        "Y"
       ],
-      "left_series_label": "Roy",
+      "left_series_label": "Ezra",
       "mark_color_distance_space": "lab",
       "mark_color_min_distance": 40.0,
       "mark_color_sampling_policy": "random_rgb_palette",
       "queried_series_labels": [
-        "Roy",
-        "Eboh"
+        "Ezra",
+        "Hagi"
       ],
       "question_format": "numeric_open",
-      "right_series_label": "Eboh",
+      "right_series_label": "Hagi",
       "scene_variant": "grouped_horizontal_bar",
       "scene_variant_probabilities": {
         "grouped_bar": 0.25,
@@ -70,152 +72,172 @@
       ],
       "series_fill_palette_rgb": [
         [
-          102,
-          199,
-          30
-        ],
-        [
-          91,
-          15,
-          14
-        ],
-        [
-          106,
-          121,
-          149
-        ]
-      ],
-      "series_labels": [
-        "Boyt",
-        "Roy",
-        "Eboh"
-      ],
-      "series_outline_palette_rgb": [
-        [
-          56,
-          109,
-          16
-        ],
-        [
-          50,
-          8,
-          8
+          87,
+          100,
+          216
         ],
         [
           58,
-          67,
-          82
+          205,
+          53
+        ],
+        [
+          184,
+          71,
+          19
         ]
       ],
-      "target_answer": 2,
+      "series_labels": [
+        "Ezra",
+        "Neri",
+        "Hagi"
+      ],
+      "series_outline_palette_rgb": [
+        [
+          48,
+          55,
+          119
+        ],
+        [
+          32,
+          113,
+          29
+        ],
+        [
+          101,
+          39,
+          10
+        ]
+      ],
+      "target_answer": 4,
       "target_answer_range": [
         0,
         8
       ],
       "task_variant": "series_a_lt_b_count",
       "task_variant_probabilities": {
-        "series_a_gt_b_count": 0.5,
-        "series_a_lt_b_count": 0.5
+        "series_a_gt_b_count": 0.0,
+        "series_a_lt_b_count": 1.0
       },
       "values_by_category": {
-        "C": {
-          "Boyt": 19,
-          "Eboh": 20,
-          "Roy": 6
-        },
-        "D": {
-          "Boyt": 13,
-          "Eboh": 7,
-          "Roy": 19
+        "A": {
+          "Ezra": 1,
+          "Hagi": 15,
+          "Neri": 12
         },
         "J": {
-          "Boyt": 5,
-          "Eboh": 4,
-          "Roy": 13
-        },
-        "L": {
-          "Boyt": 11,
-          "Eboh": 7,
-          "Roy": 17
-        },
-        "M": {
-          "Boyt": 13,
-          "Eboh": 16,
-          "Roy": 11
+          "Ezra": 2,
+          "Hagi": 6,
+          "Neri": 5
         },
         "N": {
-          "Boyt": 14,
-          "Eboh": 1,
-          "Roy": 16
+          "Ezra": 20,
+          "Hagi": 10,
+          "Neri": 19
         },
-        "S": {
-          "Boyt": 10,
-          "Eboh": 7,
-          "Roy": 15
+        "P": {
+          "Ezra": 19,
+          "Hagi": 2,
+          "Neri": 17
         },
-        "T": {
-          "Boyt": 15,
-          "Eboh": 7,
-          "Roy": 17
+        "V": {
+          "Ezra": 14,
+          "Hagi": 2,
+          "Neri": 9
+        },
+        "W": {
+          "Ezra": 1,
+          "Hagi": 16,
+          "Neri": 5
         },
         "Y": {
-          "Boyt": 13,
-          "Eboh": 1,
-          "Roy": 17
+          "Ezra": 12,
+          "Hagi": 18,
+          "Neri": 16
         }
       }
     },
     "projected_evidence": {
       "bbox_set": [
         [
-          54.0,
-          163.689,
-          817.714,
-          193.2
+          53.5,
+          198.05,
+          636.286,
+          235.664
         ],
         [
-          51.0,
-          432.578,
+          57.0,
+          267.193,
+          309.714,
+          304.807
+        ],
+        [
+          50.0,
+          336.336,
           672.571,
-          462.089
+          373.95
+        ],
+        [
+          53.0,
+          474.622,
+          745.143,
+          512.235
         ]
       ],
       "label_set": [
-        "C",
-        "M"
+        "A",
+        "J",
+        "W",
+        "Y"
       ],
       "pixel_point_map": {
-        "C": [
+        "A": [
           62.0,
-          178.444
+          216.857
         ],
-        "M": [
+        "J": [
           62.0,
-          447.333
+          286.0
+        ],
+        "W": [
+          62.0,
+          355.143
+        ],
+        "Y": [
+          62.0,
+          493.429
         ]
       },
       "pixel_point_set": [
         [
           62.0,
-          178.444
+          216.857
         ],
         [
           62.0,
-          447.333
+          286.0
+        ],
+        [
+          62.0,
+          355.143
+        ],
+        [
+          62.0,
+          493.429
         ]
       ]
     },
     "query_spec": {
       "params": {
-        "category_count": 9,
+        "category_count": 7,
         "category_count_range": [
           5,
           10
         ],
         "comparison": "less_than",
         "queried_series_labels": [
-          "Roy",
-          "Eboh"
+          "Ezra",
+          "Hagi"
         ],
         "scene_variant": "grouped_horizontal_bar",
         "scene_variant_probabilities": {
@@ -229,20 +251,20 @@
           2,
           3
         ],
-        "target_answer": 2,
+        "target_answer": 4,
         "target_answer_range": [
           0,
           8
         ],
         "task_variant": "series_a_lt_b_count",
         "task_variant_probabilities": {
-          "series_a_gt_b_count": 0.5,
-          "series_a_lt_b_count": 0.5
+          "series_a_gt_b_count": 0.0,
+          "series_a_lt_b_count": 1.0
         }
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 0,
+        "answer_or_evidence_variant_index": 2,
         "prompt_bundle_id": "charts_multiseries_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -252,16 +274,16 @@
           "json_example_answer_only": "{\"answer\":2}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "left_series": "Roy",
+          "left_series": "Ezra",
           "object_description": "a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category",
-          "right_series": "Eboh"
+          "right_series": "Hagi"
         },
         "task_family_key": "multiseries_chart_comparison",
-        "task_family_variant_index": 2,
+        "task_family_variant_index": 4,
         "task_key": "pairwise_comparison_count_query",
         "task_variant_index": 0,
         "task_variant_key": "series_a_lt_b_count",
-        "task_variant_template_index": 4,
+        "task_variant_template_index": 1,
         "template_paths": [
           "charts/multiseries/charts_multiseries_v1.json"
         ],
@@ -277,7 +299,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 0,
+            "answer_or_evidence_variant_index": 2,
             "prompt_bundle_id": "charts_multiseries_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -287,16 +309,16 @@
               "json_example_answer_only": "{\"answer\":2}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "left_series": "Roy",
+              "left_series": "Ezra",
               "object_description": "a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category",
-              "right_series": "Eboh"
+              "right_series": "Hagi"
             },
             "task_family_key": "multiseries_chart_comparison",
-            "task_family_variant_index": 2,
+            "task_family_variant_index": 4,
             "task_key": "pairwise_comparison_count_query",
             "task_variant_index": 0,
             "task_variant_key": "series_a_lt_b_count",
-            "task_variant_template_index": 4,
+            "task_variant_template_index": 1,
             "template_paths": [
               "charts/multiseries/charts_multiseries_v1.json"
             ],
@@ -307,7 +329,7 @@
               "task_variant:series_a_lt_b_count": 5
             }
           },
-          "prompt": "Work from the multiseries chart shown in the image: a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Compare the two queried series category by category. Find how many category labels show Roy lower than Eboh.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}"
+          "prompt": "You are given a multiseries chart: a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Compare the two queried series category by category. Count the category labels where Ezra is below Hagi.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer requirement: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}"
         },
         "answer_only": {
           "metadata": {
@@ -322,16 +344,16 @@
               "json_example_answer_only": "{\"answer\":2}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "left_series": "Roy",
+              "left_series": "Ezra",
               "object_description": "a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category",
-              "right_series": "Eboh"
+              "right_series": "Hagi"
             },
             "task_family_key": "multiseries_chart_comparison",
-            "task_family_variant_index": 2,
+            "task_family_variant_index": 4,
             "task_key": "pairwise_comparison_count_query",
             "task_variant_index": 0,
             "task_variant_key": "series_a_lt_b_count",
-            "task_variant_template_index": 4,
+            "task_variant_template_index": 1,
             "template_paths": [
               "charts/multiseries/charts_multiseries_v1.json"
             ],
@@ -342,7 +364,7 @@
               "task_variant:series_a_lt_b_count": 5
             }
           },
-          "prompt": "Work from the multiseries chart shown in the image: a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Compare the two queried series category by category. Find how many category labels show Roy lower than Eboh.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
+          "prompt": "You are given a multiseries chart: a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Compare the two queried series category by category. Count the category labels where Ezra is below Hagi.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
         }
       },
       "task_variant": "series_a_lt_b_count",
@@ -350,41 +372,33 @@
     },
     "render_map": {
       "category_label_centers_px": {
-        "C": [
+        "A": [
           62.0,
-          178.444
-        ],
-        "D": [
-          62.0,
-          70.889
+          216.857
         ],
         "J": [
           62.0,
           286.0
         ],
-        "L": [
-          62.0,
-          393.556
-        ],
-        "M": [
-          62.0,
-          447.333
-        ],
         "N": [
           62.0,
-          124.667
+          147.714
         ],
-        "S": [
+        "P": [
           62.0,
-          339.778
+          424.286
         ],
-        "T": [
+        "V": [
           62.0,
-          501.111
+          78.571
+        ],
+        "W": [
+          62.0,
+          355.143
         ],
         "Y": [
           62.0,
-          232.222
+          493.429
         ]
       },
       "image_id": "img0",
@@ -425,36 +439,36 @@
         "sampling_policy": "random_rgb_palette",
         "series_fill_palette_rgb": [
           [
-            102,
-            199,
-            30
+            87,
+            100,
+            216
           ],
           [
-            91,
-            15,
-            14
+            58,
+            205,
+            53
           ],
           [
-            106,
-            121,
-            149
+            184,
+            71,
+            19
           ]
         ],
         "series_outline_palette_rgb": [
           [
-            56,
-            109,
-            16
+            48,
+            55,
+            119
           ],
           [
-            50,
-            8,
-            8
+            32,
+            113,
+            29
           ],
           [
-            58,
-            67,
-            82
+            101,
+            39,
+            10
           ]
         ]
       },
@@ -517,1147 +531,897 @@
         {
           "attrs": {
             "category_group_bbox_px": [
-              53.0,
-              56.133,
-              781.429,
-              85.644
-            ],
-            "category_label": "D",
-            "category_label_center_px": [
-              62.0,
-              70.889
-            ],
-            "category_rank": 0,
-            "mark_bbox_px": [
-              92.0,
-              56.133,
-              563.714,
-              64.133
-            ],
-            "mark_center_px": [
-              327.857,
-              60.133
-            ],
-            "mark_fill_rgb": [
-              102,
-              199,
-              30
-            ],
-            "mark_outline_rgb": [
-              56,
-              109,
-              16
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Boyt",
-            "series_rank": 0,
-            "value": 13
-          },
-          "entity_id": "mark_D_Boyt",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              53.0,
-              56.133,
-              781.429,
-              85.644
-            ],
-            "category_label": "D",
-            "category_label_center_px": [
-              62.0,
-              70.889
-            ],
-            "category_rank": 0,
-            "mark_bbox_px": [
-              92.0,
-              66.889,
-              781.429,
-              74.889
-            ],
-            "mark_center_px": [
-              436.714,
-              70.889
-            ],
-            "mark_fill_rgb": [
-              91,
-              15,
-              14
-            ],
-            "mark_outline_rgb": [
-              50,
-              8,
-              8
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Roy",
-            "series_rank": 1,
-            "value": 19
-          },
-          "entity_id": "mark_D_Roy",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              53.0,
-              56.133,
-              781.429,
-              85.644
-            ],
-            "category_label": "D",
-            "category_label_center_px": [
-              62.0,
-              70.889
-            ],
-            "category_rank": 0,
-            "mark_bbox_px": [
-              92.0,
-              77.644,
-              346.0,
-              85.644
-            ],
-            "mark_center_px": [
-              219.0,
-              81.644
-            ],
-            "mark_fill_rgb": [
-              106,
-              121,
-              149
-            ],
-            "mark_outline_rgb": [
-              58,
-              67,
-              82
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Eboh",
-            "series_rank": 2,
-            "value": 7
-          },
-          "entity_id": "mark_D_Eboh",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              53.0,
-              109.911,
-              672.571,
-              139.422
-            ],
-            "category_label": "N",
-            "category_label_center_px": [
-              62.0,
-              124.667
-            ],
-            "category_rank": 1,
-            "mark_bbox_px": [
-              92.0,
-              109.911,
+              53.5,
+              59.765,
               600.0,
-              117.911
+              97.378
+            ],
+            "category_label": "V",
+            "category_label_center_px": [
+              62.0,
+              78.571
+            ],
+            "category_rank": 0,
+            "mark_bbox_px": [
+              92.0,
+              59.765,
+              600.0,
+              69.721
             ],
             "mark_center_px": [
               346.0,
-              113.911
+              64.743
             ],
             "mark_fill_rgb": [
-              102,
-              199,
-              30
+              87,
+              100,
+              216
             ],
             "mark_outline_rgb": [
-              56,
-              109,
-              16
+              48,
+              55,
+              119
             ],
             "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Boyt",
+            "series_label": "Ezra",
             "series_rank": 0,
             "value": 14
           },
-          "entity_id": "mark_N_Boyt",
+          "entity_id": "mark_V_Ezra",
           "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              53.0,
-              109.911,
-              672.571,
-              139.422
+              53.5,
+              59.765,
+              600.0,
+              97.378
             ],
-            "category_label": "N",
+            "category_label": "V",
             "category_label_center_px": [
               62.0,
-              124.667
+              78.571
             ],
-            "category_rank": 1,
+            "category_rank": 0,
             "mark_bbox_px": [
               92.0,
-              120.667,
-              672.571,
-              128.667
+              73.593,
+              418.571,
+              83.55
             ],
             "mark_center_px": [
-              382.286,
-              124.667
+              255.286,
+              78.571
             ],
             "mark_fill_rgb": [
-              91,
-              15,
-              14
-            ],
-            "mark_outline_rgb": [
-              50,
-              8,
-              8
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Roy",
-            "series_rank": 1,
-            "value": 16
-          },
-          "entity_id": "mark_N_Roy",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              53.0,
-              109.911,
-              672.571,
-              139.422
-            ],
-            "category_label": "N",
-            "category_label_center_px": [
-              62.0,
-              124.667
-            ],
-            "category_rank": 1,
-            "mark_bbox_px": [
-              92.0,
-              131.422,
-              128.286,
-              139.422
-            ],
-            "mark_center_px": [
-              110.143,
-              135.422
-            ],
-            "mark_fill_rgb": [
-              106,
-              121,
-              149
-            ],
-            "mark_outline_rgb": [
               58,
-              67,
-              82
+              205,
+              53
+            ],
+            "mark_outline_rgb": [
+              32,
+              113,
+              29
             ],
             "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Eboh",
-            "series_rank": 2,
-            "value": 1
+            "series_label": "Neri",
+            "series_rank": 1,
+            "value": 9
           },
-          "entity_id": "mark_N_Eboh",
+          "entity_id": "mark_V_Neri",
           "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              54.0,
-              163.689,
-              817.714,
-              193.2
+              53.5,
+              59.765,
+              600.0,
+              97.378
             ],
-            "category_label": "C",
+            "category_label": "V",
             "category_label_center_px": [
               62.0,
-              178.444
+              78.571
             ],
-            "category_rank": 2,
+            "category_rank": 0,
             "mark_bbox_px": [
               92.0,
-              163.689,
+              87.422,
+              164.571,
+              97.378
+            ],
+            "mark_center_px": [
+              128.286,
+              92.4
+            ],
+            "mark_fill_rgb": [
+              184,
+              71,
+              19
+            ],
+            "mark_outline_rgb": [
+              101,
+              39,
+              10
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Hagi",
+            "series_rank": 2,
+            "value": 2
+          },
+          "entity_id": "mark_V_Hagi",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.0,
+              128.907,
+              817.714,
+              166.521
+            ],
+            "category_label": "N",
+            "category_label_center_px": [
+              62.0,
+              147.714
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              92.0,
+              128.907,
+              817.714,
+              138.864
+            ],
+            "mark_center_px": [
+              454.857,
+              133.886
+            ],
+            "mark_fill_rgb": [
+              87,
+              100,
+              216
+            ],
+            "mark_outline_rgb": [
+              48,
+              55,
+              119
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Ezra",
+            "series_rank": 0,
+            "value": 20
+          },
+          "entity_id": "mark_N_Ezra",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.0,
+              128.907,
+              817.714,
+              166.521
+            ],
+            "category_label": "N",
+            "category_label_center_px": [
+              62.0,
+              147.714
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              92.0,
+              142.736,
               781.429,
-              171.689
+              152.693
             ],
             "mark_center_px": [
               436.714,
-              167.689
+              147.714
             ],
             "mark_fill_rgb": [
-              102,
-              199,
-              30
+              58,
+              205,
+              53
             ],
             "mark_outline_rgb": [
-              56,
-              109,
-              16
+              32,
+              113,
+              29
             ],
             "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Boyt",
-            "series_rank": 0,
+            "series_label": "Neri",
+            "series_rank": 1,
             "value": 19
           },
-          "entity_id": "mark_C_Boyt",
+          "entity_id": "mark_N_Neri",
           "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              54.0,
-              163.689,
+              53.0,
+              128.907,
               817.714,
-              193.2
+              166.521
             ],
-            "category_label": "C",
+            "category_label": "N",
             "category_label_center_px": [
               62.0,
-              178.444
+              147.714
             ],
-            "category_rank": 2,
+            "category_rank": 1,
             "mark_bbox_px": [
               92.0,
-              174.444,
-              309.714,
-              182.444
-            ],
-            "mark_center_px": [
-              200.857,
-              178.444
-            ],
-            "mark_fill_rgb": [
-              91,
-              15,
-              14
-            ],
-            "mark_outline_rgb": [
-              50,
-              8,
-              8
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Roy",
-            "series_rank": 1,
-            "value": 6
-          },
-          "entity_id": "mark_C_Roy",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              54.0,
-              163.689,
-              817.714,
-              193.2
-            ],
-            "category_label": "C",
-            "category_label_center_px": [
-              62.0,
-              178.444
-            ],
-            "category_rank": 2,
-            "mark_bbox_px": [
-              92.0,
-              185.2,
-              817.714,
-              193.2
-            ],
-            "mark_center_px": [
+              156.565,
               454.857,
-              189.2
+              166.521
+            ],
+            "mark_center_px": [
+              273.429,
+              161.543
             ],
             "mark_fill_rgb": [
-              106,
-              121,
-              149
+              184,
+              71,
+              19
             ],
             "mark_outline_rgb": [
-              58,
-              67,
-              82
+              101,
+              39,
+              10
             ],
             "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Eboh",
+            "series_label": "Hagi",
             "series_rank": 2,
-            "value": 20
+            "value": 10
           },
-          "entity_id": "mark_C_Eboh",
+          "entity_id": "mark_N_Hagi",
           "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              53.0,
-              217.467,
-              708.857,
-              246.978
+              53.5,
+              198.05,
+              636.286,
+              235.664
             ],
-            "category_label": "Y",
+            "category_label": "A",
             "category_label_center_px": [
               62.0,
-              232.222
+              216.857
             ],
-            "category_rank": 3,
+            "category_rank": 2,
             "mark_bbox_px": [
               92.0,
-              217.467,
-              563.714,
-              225.467
-            ],
-            "mark_center_px": [
-              327.857,
-              221.467
-            ],
-            "mark_fill_rgb": [
-              102,
-              199,
-              30
-            ],
-            "mark_outline_rgb": [
-              56,
-              109,
-              16
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Boyt",
-            "series_rank": 0,
-            "value": 13
-          },
-          "entity_id": "mark_Y_Boyt",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              53.0,
-              217.467,
-              708.857,
-              246.978
-            ],
-            "category_label": "Y",
-            "category_label_center_px": [
-              62.0,
-              232.222
-            ],
-            "category_rank": 3,
-            "mark_bbox_px": [
-              92.0,
-              228.222,
-              708.857,
-              236.222
-            ],
-            "mark_center_px": [
-              400.429,
-              232.222
-            ],
-            "mark_fill_rgb": [
-              91,
-              15,
-              14
-            ],
-            "mark_outline_rgb": [
-              50,
-              8,
-              8
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Roy",
-            "series_rank": 1,
-            "value": 17
-          },
-          "entity_id": "mark_Y_Roy",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              53.0,
-              217.467,
-              708.857,
-              246.978
-            ],
-            "category_label": "Y",
-            "category_label_center_px": [
-              62.0,
-              232.222
-            ],
-            "category_rank": 3,
-            "mark_bbox_px": [
-              92.0,
-              238.978,
+              198.05,
               128.286,
-              246.978
+              208.007
             ],
             "mark_center_px": [
               110.143,
-              242.978
+              203.029
             ],
             "mark_fill_rgb": [
-              106,
-              121,
-              149
+              87,
+              100,
+              216
             ],
             "mark_outline_rgb": [
-              58,
-              67,
-              82
+              48,
+              55,
+              119
             ],
             "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Eboh",
-            "series_rank": 2,
+            "series_label": "Ezra",
+            "series_rank": 0,
             "value": 1
           },
-          "entity_id": "mark_Y_Eboh",
+          "entity_id": "mark_A_Ezra",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.5,
+              198.05,
+              636.286,
+              235.664
+            ],
+            "category_label": "A",
+            "category_label_center_px": [
+              62.0,
+              216.857
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              92.0,
+              211.879,
+              527.429,
+              221.835
+            ],
+            "mark_center_px": [
+              309.714,
+              216.857
+            ],
+            "mark_fill_rgb": [
+              58,
+              205,
+              53
+            ],
+            "mark_outline_rgb": [
+              32,
+              113,
+              29
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Neri",
+            "series_rank": 1,
+            "value": 12
+          },
+          "entity_id": "mark_A_Neri",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.5,
+              198.05,
+              636.286,
+              235.664
+            ],
+            "category_label": "A",
+            "category_label_center_px": [
+              62.0,
+              216.857
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              92.0,
+              225.707,
+              636.286,
+              235.664
+            ],
+            "mark_center_px": [
+              364.143,
+              230.686
+            ],
+            "mark_fill_rgb": [
+              184,
+              71,
+              19
+            ],
+            "mark_outline_rgb": [
+              101,
+              39,
+              10
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Hagi",
+            "series_rank": 2,
+            "value": 15
+          },
+          "entity_id": "mark_A_Hagi",
           "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
               57.0,
-              271.244,
-              563.714,
-              300.756
+              267.193,
+              309.714,
+              304.807
             ],
             "category_label": "J",
             "category_label_center_px": [
               62.0,
               286.0
             ],
-            "category_rank": 4,
+            "category_rank": 3,
             "mark_bbox_px": [
               92.0,
-              271.244,
+              267.193,
+              164.571,
+              277.15
+            ],
+            "mark_center_px": [
+              128.286,
+              272.171
+            ],
+            "mark_fill_rgb": [
+              87,
+              100,
+              216
+            ],
+            "mark_outline_rgb": [
+              48,
+              55,
+              119
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Ezra",
+            "series_rank": 0,
+            "value": 2
+          },
+          "entity_id": "mark_J_Ezra",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              57.0,
+              267.193,
+              309.714,
+              304.807
+            ],
+            "category_label": "J",
+            "category_label_center_px": [
+              62.0,
+              286.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              92.0,
+              281.022,
               273.429,
-              279.244
+              290.978
             ],
             "mark_center_px": [
               182.714,
-              275.244
+              286.0
             ],
             "mark_fill_rgb": [
-              102,
-              199,
-              30
+              58,
+              205,
+              53
             ],
             "mark_outline_rgb": [
-              56,
-              109,
-              16
+              32,
+              113,
+              29
             ],
             "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Boyt",
-            "series_rank": 0,
+            "series_label": "Neri",
+            "series_rank": 1,
             "value": 5
           },
-          "entity_id": "mark_J_Boyt",
+          "entity_id": "mark_J_Neri",
           "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
               57.0,
-              271.244,
-              563.714,
-              300.756
+              267.193,
+              309.714,
+              304.807
             ],
             "category_label": "J",
             "category_label_center_px": [
               62.0,
               286.0
             ],
-            "category_rank": 4,
+            "category_rank": 3,
             "mark_bbox_px": [
               92.0,
-              282.0,
-              563.714,
-              290.0
+              294.85,
+              309.714,
+              304.807
             ],
             "mark_center_px": [
-              327.857,
-              286.0
+              200.857,
+              299.829
             ],
             "mark_fill_rgb": [
-              91,
-              15,
-              14
+              184,
+              71,
+              19
             ],
             "mark_outline_rgb": [
-              50,
-              8,
-              8
+              101,
+              39,
+              10
             ],
             "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Roy",
-            "series_rank": 1,
-            "value": 13
-          },
-          "entity_id": "mark_J_Roy",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              57.0,
-              271.244,
-              563.714,
-              300.756
-            ],
-            "category_label": "J",
-            "category_label_center_px": [
-              62.0,
-              286.0
-            ],
-            "category_rank": 4,
-            "mark_bbox_px": [
-              92.0,
-              292.756,
-              237.143,
-              300.756
-            ],
-            "mark_center_px": [
-              164.571,
-              296.756
-            ],
-            "mark_fill_rgb": [
-              106,
-              121,
-              149
-            ],
-            "mark_outline_rgb": [
-              58,
-              67,
-              82
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Eboh",
+            "series_label": "Hagi",
             "series_rank": 2,
-            "value": 4
+            "value": 6
           },
-          "entity_id": "mark_J_Eboh",
+          "entity_id": "mark_J_Hagi",
           "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              54.0,
-              325.022,
-              636.286,
-              354.533
+              50.0,
+              336.336,
+              672.571,
+              373.95
             ],
-            "category_label": "S",
+            "category_label": "W",
             "category_label_center_px": [
               62.0,
-              339.778
+              355.143
             ],
-            "category_rank": 5,
+            "category_rank": 4,
             "mark_bbox_px": [
               92.0,
-              325.022,
-              454.857,
-              333.022
+              336.336,
+              128.286,
+              346.293
             ],
             "mark_center_px": [
+              110.143,
+              341.314
+            ],
+            "mark_fill_rgb": [
+              87,
+              100,
+              216
+            ],
+            "mark_outline_rgb": [
+              48,
+              55,
+              119
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Ezra",
+            "series_rank": 0,
+            "value": 1
+          },
+          "entity_id": "mark_W_Ezra",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              50.0,
+              336.336,
+              672.571,
+              373.95
+            ],
+            "category_label": "W",
+            "category_label_center_px": [
+              62.0,
+              355.143
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              92.0,
+              350.165,
               273.429,
-              329.022
-            ],
-            "mark_fill_rgb": [
-              102,
-              199,
-              30
-            ],
-            "mark_outline_rgb": [
-              56,
-              109,
-              16
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Boyt",
-            "series_rank": 0,
-            "value": 10
-          },
-          "entity_id": "mark_S_Boyt",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              54.0,
-              325.022,
-              636.286,
-              354.533
-            ],
-            "category_label": "S",
-            "category_label_center_px": [
-              62.0,
-              339.778
-            ],
-            "category_rank": 5,
-            "mark_bbox_px": [
-              92.0,
-              335.778,
-              636.286,
-              343.778
+              360.121
             ],
             "mark_center_px": [
-              364.143,
-              339.778
+              182.714,
+              355.143
             ],
             "mark_fill_rgb": [
-              91,
-              15,
-              14
-            ],
-            "mark_outline_rgb": [
-              50,
-              8,
-              8
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Roy",
-            "series_rank": 1,
-            "value": 15
-          },
-          "entity_id": "mark_S_Roy",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              54.0,
-              325.022,
-              636.286,
-              354.533
-            ],
-            "category_label": "S",
-            "category_label_center_px": [
-              62.0,
-              339.778
-            ],
-            "category_rank": 5,
-            "mark_bbox_px": [
-              92.0,
-              346.533,
-              346.0,
-              354.533
-            ],
-            "mark_center_px": [
-              219.0,
-              350.533
-            ],
-            "mark_fill_rgb": [
-              106,
-              121,
-              149
-            ],
-            "mark_outline_rgb": [
               58,
-              67,
-              82
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Eboh",
-            "series_rank": 2,
-            "value": 7
-          },
-          "entity_id": "mark_S_Eboh",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              55.0,
-              378.8,
-              708.857,
-              408.311
-            ],
-            "category_label": "L",
-            "category_label_center_px": [
-              62.0,
-              393.556
-            ],
-            "category_rank": 6,
-            "mark_bbox_px": [
-              92.0,
-              378.8,
-              491.143,
-              386.8
-            ],
-            "mark_center_px": [
-              291.571,
-              382.8
-            ],
-            "mark_fill_rgb": [
-              102,
-              199,
-              30
+              205,
+              53
             ],
             "mark_outline_rgb": [
-              56,
-              109,
-              16
+              32,
+              113,
+              29
             ],
             "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Boyt",
-            "series_rank": 0,
-            "value": 11
-          },
-          "entity_id": "mark_L_Boyt",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              55.0,
-              378.8,
-              708.857,
-              408.311
-            ],
-            "category_label": "L",
-            "category_label_center_px": [
-              62.0,
-              393.556
-            ],
-            "category_rank": 6,
-            "mark_bbox_px": [
-              92.0,
-              389.556,
-              708.857,
-              397.556
-            ],
-            "mark_center_px": [
-              400.429,
-              393.556
-            ],
-            "mark_fill_rgb": [
-              91,
-              15,
-              14
-            ],
-            "mark_outline_rgb": [
-              50,
-              8,
-              8
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Roy",
+            "series_label": "Neri",
             "series_rank": 1,
-            "value": 17
+            "value": 5
           },
-          "entity_id": "mark_L_Roy",
+          "entity_id": "mark_W_Neri",
           "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              55.0,
-              378.8,
-              708.857,
-              408.311
+              50.0,
+              336.336,
+              672.571,
+              373.95
             ],
-            "category_label": "L",
+            "category_label": "W",
             "category_label_center_px": [
               62.0,
-              393.556
+              355.143
             ],
-            "category_rank": 6,
+            "category_rank": 4,
             "mark_bbox_px": [
               92.0,
-              400.311,
-              346.0,
-              408.311
-            ],
-            "mark_center_px": [
-              219.0,
-              404.311
-            ],
-            "mark_fill_rgb": [
-              106,
-              121,
-              149
-            ],
-            "mark_outline_rgb": [
-              58,
-              67,
-              82
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Eboh",
-            "series_rank": 2,
-            "value": 7
-          },
-          "entity_id": "mark_L_Eboh",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              51.0,
-              432.578,
+              363.993,
               672.571,
-              462.089
-            ],
-            "category_label": "M",
-            "category_label_center_px": [
-              62.0,
-              447.333
-            ],
-            "category_rank": 7,
-            "mark_bbox_px": [
-              92.0,
-              432.578,
-              563.714,
-              440.578
-            ],
-            "mark_center_px": [
-              327.857,
-              436.578
-            ],
-            "mark_fill_rgb": [
-              102,
-              199,
-              30
-            ],
-            "mark_outline_rgb": [
-              56,
-              109,
-              16
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Boyt",
-            "series_rank": 0,
-            "value": 13
-          },
-          "entity_id": "mark_M_Boyt",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              51.0,
-              432.578,
-              672.571,
-              462.089
-            ],
-            "category_label": "M",
-            "category_label_center_px": [
-              62.0,
-              447.333
-            ],
-            "category_rank": 7,
-            "mark_bbox_px": [
-              92.0,
-              443.333,
-              491.143,
-              451.333
-            ],
-            "mark_center_px": [
-              291.571,
-              447.333
-            ],
-            "mark_fill_rgb": [
-              91,
-              15,
-              14
-            ],
-            "mark_outline_rgb": [
-              50,
-              8,
-              8
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Roy",
-            "series_rank": 1,
-            "value": 11
-          },
-          "entity_id": "mark_M_Roy",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              51.0,
-              432.578,
-              672.571,
-              462.089
-            ],
-            "category_label": "M",
-            "category_label_center_px": [
-              62.0,
-              447.333
-            ],
-            "category_rank": 7,
-            "mark_bbox_px": [
-              92.0,
-              454.089,
-              672.571,
-              462.089
+              373.95
             ],
             "mark_center_px": [
               382.286,
-              458.089
+              368.971
             ],
             "mark_fill_rgb": [
-              106,
-              121,
-              149
+              184,
+              71,
+              19
             ],
             "mark_outline_rgb": [
-              58,
-              67,
-              82
+              101,
+              39,
+              10
             ],
             "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Eboh",
+            "series_label": "Hagi",
             "series_rank": 2,
             "value": 16
           },
-          "entity_id": "mark_M_Eboh",
+          "entity_id": "mark_W_Hagi",
           "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              54.5,
-              486.356,
-              708.857,
-              515.867
+              54.0,
+              405.479,
+              781.429,
+              443.093
             ],
-            "category_label": "T",
+            "category_label": "P",
             "category_label_center_px": [
               62.0,
-              501.111
+              424.286
             ],
-            "category_rank": 8,
+            "category_rank": 5,
             "mark_bbox_px": [
               92.0,
-              486.356,
-              636.286,
-              494.356
+              405.479,
+              781.429,
+              415.435
             ],
             "mark_center_px": [
-              364.143,
-              490.356
+              436.714,
+              410.457
             ],
             "mark_fill_rgb": [
-              102,
-              199,
-              30
+              87,
+              100,
+              216
             ],
             "mark_outline_rgb": [
-              56,
-              109,
-              16
+              48,
+              55,
+              119
             ],
             "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Boyt",
+            "series_label": "Ezra",
             "series_rank": 0,
-            "value": 15
+            "value": 19
           },
-          "entity_id": "mark_T_Boyt",
+          "entity_id": "mark_P_Ezra",
           "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              54.5,
-              486.356,
-              708.857,
-              515.867
+              54.0,
+              405.479,
+              781.429,
+              443.093
             ],
-            "category_label": "T",
+            "category_label": "P",
             "category_label_center_px": [
               62.0,
-              501.111
+              424.286
             ],
-            "category_rank": 8,
+            "category_rank": 5,
             "mark_bbox_px": [
               92.0,
-              497.111,
+              419.307,
               708.857,
-              505.111
+              429.264
             ],
             "mark_center_px": [
               400.429,
-              501.111
+              424.286
             ],
             "mark_fill_rgb": [
-              91,
-              15,
-              14
+              58,
+              205,
+              53
             ],
             "mark_outline_rgb": [
-              50,
-              8,
-              8
+              32,
+              113,
+              29
             ],
             "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Roy",
+            "series_label": "Neri",
             "series_rank": 1,
             "value": 17
           },
-          "entity_id": "mark_T_Roy",
+          "entity_id": "mark_P_Neri",
           "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              54.5,
-              486.356,
-              708.857,
-              515.867
+              54.0,
+              405.479,
+              781.429,
+              443.093
             ],
-            "category_label": "T",
+            "category_label": "P",
             "category_label_center_px": [
               62.0,
-              501.111
+              424.286
             ],
-            "category_rank": 8,
+            "category_rank": 5,
             "mark_bbox_px": [
               92.0,
-              507.867,
-              346.0,
-              515.867
+              433.136,
+              164.571,
+              443.093
             ],
             "mark_center_px": [
-              219.0,
-              511.867
+              128.286,
+              438.114
             ],
             "mark_fill_rgb": [
-              106,
-              121,
-              149
+              184,
+              71,
+              19
             ],
             "mark_outline_rgb": [
-              58,
-              67,
-              82
+              101,
+              39,
+              10
             ],
             "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Eboh",
+            "series_label": "Hagi",
             "series_rank": 2,
-            "value": 7
+            "value": 2
           },
-          "entity_id": "mark_T_Eboh",
+          "entity_id": "mark_P_Hagi",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.0,
+              474.622,
+              745.143,
+              512.235
+            ],
+            "category_label": "Y",
+            "category_label_center_px": [
+              62.0,
+              493.429
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              92.0,
+              474.622,
+              527.429,
+              484.578
+            ],
+            "mark_center_px": [
+              309.714,
+              479.6
+            ],
+            "mark_fill_rgb": [
+              87,
+              100,
+              216
+            ],
+            "mark_outline_rgb": [
+              48,
+              55,
+              119
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Ezra",
+            "series_rank": 0,
+            "value": 12
+          },
+          "entity_id": "mark_Y_Ezra",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.0,
+              474.622,
+              745.143,
+              512.235
+            ],
+            "category_label": "Y",
+            "category_label_center_px": [
+              62.0,
+              493.429
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              92.0,
+              488.45,
+              672.571,
+              498.407
+            ],
+            "mark_center_px": [
+              382.286,
+              493.429
+            ],
+            "mark_fill_rgb": [
+              58,
+              205,
+              53
+            ],
+            "mark_outline_rgb": [
+              32,
+              113,
+              29
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Neri",
+            "series_rank": 1,
+            "value": 16
+          },
+          "entity_id": "mark_Y_Neri",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.0,
+              474.622,
+              745.143,
+              512.235
+            ],
+            "category_label": "Y",
+            "category_label_center_px": [
+              62.0,
+              493.429
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              92.0,
+              502.279,
+              745.143,
+              512.235
+            ],
+            "mark_center_px": [
+              418.571,
+              507.257
+            ],
+            "mark_fill_rgb": [
+              184,
+              71,
+              19
+            ],
+            "mark_outline_rgb": [
+              101,
+              39,
+              10
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Hagi",
+            "series_rank": 2,
+            "value": 18
+          },
+          "entity_id": "mark_Y_Hagi",
           "entity_type": "bar"
         }
       ],
       "relations": {
         "comparison": "less_than",
         "evidence_labels": [
-          "C",
-          "M"
+          "A",
+          "J",
+          "W",
+          "Y"
         ],
         "queried_series_labels": [
-          "Roy",
-          "Eboh"
+          "Ezra",
+          "Hagi"
         ],
         "scene_variant": "grouped_horizontal_bar",
         "task_variant": "series_a_lt_b_count"
@@ -1666,8 +1430,10 @@
     },
     "witness_symbolic": {
       "labels": [
-        "C",
-        "M"
+        "A",
+        "J",
+        "W",
+        "Y"
       ],
       "type": "label_set"
     }

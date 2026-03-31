@@ -1,53 +1,41 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 9
+    "value": 5
   },
   "evidence_gt": {
     "type": "label_set",
     "value": [
-      "B",
-      "C",
-      "F",
-      "G",
-      "M",
+      "H",
+      "L",
+      "N",
       "Q",
-      "S",
-      "U",
-      "W"
+      "S"
     ]
   },
   "image": {
     "format": "png",
     "path": "charts/task_charts_trend_structure_value/images/longest_decreasing_streak/0012.png"
   },
-  "instance_seed": 2189990725190663,
-  "prompt": "You are given an ordered chart: an ordered labeled lollipop chart with points arranged from left to right. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Reason over the labels in the order they appear in the chart. Answer this question. Compute the length of the longest strictly decreasing run of consecutive labels.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing all labels in the unique longest strictly decreasing streak.\nAnswer requirement: set \"answer\" to the requested count or streak length as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"C\",\"F\"],\"answer\":3}",
+  "instance_seed": 7580350040941555,
+  "prompt": "You are given an ordered chart: an ordered labeled horizontal bar chart with bars arranged from top to bottom. Each bar's numeric length can be read from the horizontal axis. Reason over the labels in the order they appear in the chart. Read the chart order carefully and compute the requested trend value. What is the length of the longest strictly decreasing streak of consecutive labels in displayed order? Count labels in the streak.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing all labels in the unique longest strictly decreasing streak.\nAnswer rule: set \"answer\" to the requested count or streak length as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"C\",\"F\"],\"answer\":3}",
   "prompt_variants": {
-    "answer_and_evidence": "You are given an ordered chart: an ordered labeled lollipop chart with points arranged from left to right. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Reason over the labels in the order they appear in the chart. Answer this question. Compute the length of the longest strictly decreasing run of consecutive labels.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing all labels in the unique longest strictly decreasing streak.\nAnswer requirement: set \"answer\" to the requested count or streak length as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"C\",\"F\"],\"answer\":3}",
-    "answer_only": "You are given an ordered chart: an ordered labeled lollipop chart with points arranged from left to right. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Reason over the labels in the order they appear in the chart. Answer this question. Compute the length of the longest strictly decreasing run of consecutive labels.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the requested count or streak length as an integer.\nExample JSON:\n{\"answer\":3}"
+    "answer_and_evidence": "You are given an ordered chart: an ordered labeled horizontal bar chart with bars arranged from top to bottom. Each bar's numeric length can be read from the horizontal axis. Reason over the labels in the order they appear in the chart. Read the chart order carefully and compute the requested trend value. What is the length of the longest strictly decreasing streak of consecutive labels in displayed order? Count labels in the streak.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing all labels in the unique longest strictly decreasing streak.\nAnswer rule: set \"answer\" to the requested count or streak length as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"C\",\"F\"],\"answer\":3}",
+    "answer_only": "You are given an ordered chart: an ordered labeled horizontal bar chart with bars arranged from top to bottom. Each bar's numeric length can be read from the horizontal axis. Reason over the labels in the order they appear in the chart. Read the chart order carefully and compute the requested trend value. What is the length of the longest strictly decreasing streak of consecutive labels in displayed order? Count labels in the streak.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the requested count or streak length as an integer.\nExample JSON:\n{\"answer\":3}"
   },
   "task": "task_charts_trend_structure_value",
   "task_variant": "longest_decreasing_streak",
   "trace_payload": {
     "execution_trace": {
-      "answer_value": 9,
+      "answer_value": 5,
       "evidence_labels": [
-        "B",
-        "C",
-        "F",
-        "G",
-        "M",
+        "H",
+        "L",
+        "N",
         "Q",
-        "S",
-        "U",
-        "W"
+        "S"
       ],
       "evidence_point_indices": [
-        1,
-        2,
-        3,
-        4,
         5,
         6,
         7,
@@ -55,16 +43,16 @@
         9
       ],
       "labels": [
-        "Z",
-        "U",
-        "B",
-        "Q",
-        "F",
-        "C",
-        "G",
+        "W",
         "M",
+        "Y",
+        "G",
+        "D",
+        "Q",
+        "N",
+        "H",
         "S",
-        "W"
+        "L"
       ],
       "mark_color_distance_space": "lab",
       "mark_color_min_distance": 40.0,
@@ -75,28 +63,24 @@
         10
       ],
       "mark_fill_rgb": [
-        153,
-        183,
-        43
+        114,
+        91,
+        152
       ],
       "mark_outline_rgb": [
-        84,
-        101,
-        24
+        63,
+        50,
+        84
       ],
       "ordered_evidence_labels": [
-        "U",
-        "B",
         "Q",
-        "F",
-        "C",
-        "G",
-        "M",
+        "N",
+        "H",
         "S",
-        "W"
+        "L"
       ],
       "question_format": "numeric_open",
-      "scene_variant": "lollipop",
+      "scene_variant": "horizontal_bar",
       "scene_variant_probabilities": {
         "area": 0.16666666666666666,
         "bar": 0.16666666666666666,
@@ -107,10 +91,10 @@
       },
       "step_directions": [
         "up",
+        "up",
+        "up",
         "down",
-        "down",
-        "down",
-        "down",
+        "up",
         "down",
         "down",
         "down",
@@ -118,204 +102,144 @@
       ],
       "step_signs": [
         1,
+        1,
+        1,
         -1,
-        -1,
-        -1,
-        -1,
+        1,
         -1,
         -1,
         -1,
         -1
       ],
       "streak_direction": "decreasing",
-      "target_answer": 9,
+      "target_answer": 5,
       "target_answer_range": [
         2,
         10
       ],
       "task_variant": "longest_decreasing_streak",
       "task_variant_probabilities": {
-        "longest_decreasing_streak": 0.25,
-        "longest_increasing_streak": 0.25,
-        "peak_count": 0.25,
-        "trough_count": 0.25
+        "longest_decreasing_streak": 1.0,
+        "longest_increasing_streak": 0.0,
+        "peak_count": 0.0,
+        "trough_count": 0.0
       },
       "value_max": 20,
       "value_min": 1,
       "values": [
-        15,
-        17,
-        15,
+        7,
+        9,
+        11,
+        13,
+        11,
         13,
         11,
         9,
         7,
-        5,
-        3,
-        1
+        5
       ],
       "values_by_label": {
-        "B": 15,
-        "C": 9,
-        "F": 11,
-        "G": 7,
-        "M": 5,
+        "D": 11,
+        "G": 13,
+        "H": 9,
+        "L": 5,
+        "M": 9,
+        "N": 11,
         "Q": 13,
-        "S": 3,
-        "U": 17,
-        "W": 1,
-        "Z": 15
+        "S": 7,
+        "W": 7,
+        "Y": 11
       }
     },
     "projected_evidence": {
       "bbox_set": [
         [
-          249.5,
-          113.333,
-          265.5,
-          129.333
+          92.0,
+          378.544,
+          517.571,
+          405.456
         ],
         [
-          448.1,
-          268.0,
-          464.1,
-          284.0
+          92.0,
+          471.344,
+          328.429,
+          498.256
         ],
         [
-          381.9,
-          216.444,
-          397.9,
-          232.444
+          92.0,
+          332.144,
+          612.143,
+          359.056
         ],
         [
-          514.3,
-          319.556,
-          530.3,
-          335.556
+          92.0,
+          285.744,
+          706.714,
+          312.656
         ],
         [
-          580.5,
-          371.111,
-          596.5,
-          387.111
-        ],
-        [
-          315.7,
-          164.889,
-          331.7,
-          180.889
-        ],
-        [
-          646.7,
-          422.667,
-          662.7,
-          438.667
-        ],
-        [
-          183.3,
-          61.778,
-          199.3,
-          77.778
-        ],
-        [
-          712.9,
-          474.222,
-          728.9,
-          490.222
+          92.0,
+          424.944,
+          423.0,
+          451.856
         ]
       ],
       "label_set": [
-        "B",
-        "C",
-        "F",
-        "G",
-        "M",
+        "H",
+        "L",
+        "N",
         "Q",
-        "S",
-        "U",
-        "W"
+        "S"
       ],
       "pixel_point_map": {
-        "B": [
-          257.5,
-          121.333
+        "H": [
+          304.786,
+          392.0
         ],
-        "C": [
-          456.1,
-          276.0
+        "L": [
+          210.214,
+          484.8
         ],
-        "F": [
-          389.9,
-          224.444
-        ],
-        "G": [
-          522.3,
-          327.556
-        ],
-        "M": [
-          588.5,
-          379.111
+        "N": [
+          352.071,
+          345.6
         ],
         "Q": [
-          323.7,
-          172.889
+          399.357,
+          299.2
         ],
         "S": [
-          654.7,
-          430.667
-        ],
-        "U": [
-          191.3,
-          69.778
-        ],
-        "W": [
-          720.9,
-          482.222
+          257.5,
+          438.4
         ]
       },
       "pixel_point_set": [
         [
+          304.786,
+          392.0
+        ],
+        [
+          210.214,
+          484.8
+        ],
+        [
+          352.071,
+          345.6
+        ],
+        [
+          399.357,
+          299.2
+        ],
+        [
           257.5,
-          121.333
-        ],
-        [
-          456.1,
-          276.0
-        ],
-        [
-          389.9,
-          224.444
-        ],
-        [
-          522.3,
-          327.556
-        ],
-        [
-          588.5,
-          379.111
-        ],
-        [
-          323.7,
-          172.889
-        ],
-        [
-          654.7,
-          430.667
-        ],
-        [
-          191.3,
-          69.778
-        ],
-        [
-          720.9,
-          482.222
+          438.4
         ]
       ]
     },
     "query_spec": {
       "params": {
         "mark_count": 10,
-        "scene_variant": "lollipop",
+        "scene_variant": "horizontal_bar",
         "scene_variant_probabilities": {
           "area": 0.16666666666666666,
           "bar": 0.16666666666666666,
@@ -324,22 +248,22 @@
           "line": 0.16666666666666666,
           "lollipop": 0.16666666666666666
         },
-        "target_answer": 9,
+        "target_answer": 5,
         "target_answer_range": [
           2,
           10
         ],
         "task_variant": "longest_decreasing_streak",
         "task_variant_probabilities": {
-          "longest_decreasing_streak": 0.25,
-          "longest_increasing_streak": 0.25,
-          "peak_count": 0.25,
-          "trough_count": 0.25
+          "longest_decreasing_streak": 1.0,
+          "longest_increasing_streak": 0.0,
+          "peak_count": 0.0,
+          "trough_count": 0.0
         }
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 2,
+        "answer_or_evidence_variant_index": 4,
         "prompt_bundle_id": "charts_trend_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -349,14 +273,14 @@
           "json_example_answer_only": "{\"answer\":3}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "object_description": "an ordered labeled lollipop chart with points arranged from left to right. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis"
+          "object_description": "an ordered labeled horizontal bar chart with bars arranged from top to bottom. Each bar's numeric length can be read from the horizontal axis"
         },
         "task_family_key": "ordered_chart_trend",
         "task_family_variant_index": 4,
         "task_key": "structure_value_query",
-        "task_variant_index": 0,
+        "task_variant_index": 3,
         "task_variant_key": "longest_decreasing_streak",
-        "task_variant_template_index": 4,
+        "task_variant_template_index": 0,
         "template_paths": [
           "charts/trend/charts_trend_v1.json"
         ],
@@ -372,39 +296,6 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 2,
-            "prompt_bundle_id": "charts_trend_v1",
-            "schema_version": "v1",
-            "slot_values": {
-              "answer_hint": "set \"answer\" to the requested count or streak length as an integer",
-              "evidence_hint": "set \"evidence\" to an array containing all labels in the unique longest strictly decreasing streak",
-              "json_example": "{\"evidence\":[\"A\",\"C\",\"F\"],\"answer\":3}",
-              "json_example_answer_only": "{\"answer\":3}",
-              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
-              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "an ordered labeled lollipop chart with points arranged from left to right. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis"
-            },
-            "task_family_key": "ordered_chart_trend",
-            "task_family_variant_index": 4,
-            "task_key": "structure_value_query",
-            "task_variant_index": 0,
-            "task_variant_key": "longest_decreasing_streak",
-            "task_variant_template_index": 4,
-            "template_paths": [
-              "charts/trend/charts_trend_v1.json"
-            ],
-            "variant_count_by_key": {
-              "answer_or_evidence:answer_and_evidence": 5,
-              "task:structure_value_query": 5,
-              "task_family:ordered_chart_trend": 5,
-              "task_variant:longest_decreasing_streak": 5
-            }
-          },
-          "prompt": "You are given an ordered chart: an ordered labeled lollipop chart with points arranged from left to right. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Reason over the labels in the order they appear in the chart. Answer this question. Compute the length of the longest strictly decreasing run of consecutive labels.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing all labels in the unique longest strictly decreasing streak.\nAnswer requirement: set \"answer\" to the requested count or streak length as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"C\",\"F\"],\"answer\":3}"
-        },
-        "answer_only": {
-          "metadata": {
-            "answer_or_evidence_key": "answer_only",
             "answer_or_evidence_variant_index": 4,
             "prompt_bundle_id": "charts_trend_v1",
             "schema_version": "v1",
@@ -415,14 +306,47 @@
               "json_example_answer_only": "{\"answer\":3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "an ordered labeled lollipop chart with points arranged from left to right. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis"
+              "object_description": "an ordered labeled horizontal bar chart with bars arranged from top to bottom. Each bar's numeric length can be read from the horizontal axis"
             },
             "task_family_key": "ordered_chart_trend",
             "task_family_variant_index": 4,
             "task_key": "structure_value_query",
-            "task_variant_index": 0,
+            "task_variant_index": 3,
             "task_variant_key": "longest_decreasing_streak",
-            "task_variant_template_index": 4,
+            "task_variant_template_index": 0,
+            "template_paths": [
+              "charts/trend/charts_trend_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:structure_value_query": 5,
+              "task_family:ordered_chart_trend": 5,
+              "task_variant:longest_decreasing_streak": 5
+            }
+          },
+          "prompt": "You are given an ordered chart: an ordered labeled horizontal bar chart with bars arranged from top to bottom. Each bar's numeric length can be read from the horizontal axis. Reason over the labels in the order they appear in the chart. Read the chart order carefully and compute the requested trend value. What is the length of the longest strictly decreasing streak of consecutive labels in displayed order? Count labels in the streak.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing all labels in the unique longest strictly decreasing streak.\nAnswer rule: set \"answer\" to the requested count or streak length as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"C\",\"F\"],\"answer\":3}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "charts_trend_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the requested count or streak length as an integer",
+              "evidence_hint": "set \"evidence\" to an array containing all labels in the unique longest strictly decreasing streak",
+              "json_example": "{\"evidence\":[\"A\",\"C\",\"F\"],\"answer\":3}",
+              "json_example_answer_only": "{\"answer\":3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "an ordered labeled horizontal bar chart with bars arranged from top to bottom. Each bar's numeric length can be read from the horizontal axis"
+            },
+            "task_family_key": "ordered_chart_trend",
+            "task_family_variant_index": 4,
+            "task_key": "structure_value_query",
+            "task_variant_index": 3,
+            "task_variant_key": "longest_decreasing_streak",
+            "task_variant_template_index": 0,
             "template_paths": [
               "charts/trend/charts_trend_v1.json"
             ],
@@ -433,7 +357,7 @@
               "task_variant:longest_decreasing_streak": 5
             }
           },
-          "prompt": "You are given an ordered chart: an ordered labeled lollipop chart with points arranged from left to right. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Reason over the labels in the order they appear in the chart. Answer this question. Compute the length of the longest strictly decreasing run of consecutive labels.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the requested count or streak length as an integer.\nExample JSON:\n{\"answer\":3}"
+          "prompt": "You are given an ordered chart: an ordered labeled horizontal bar chart with bars arranged from top to bottom. Each bar's numeric length can be read from the horizontal axis. Reason over the labels in the order they appear in the chart. Read the chart order carefully and compute the requested trend value. What is the length of the longest strictly decreasing streak of consecutive labels in displayed order? Count labels in the streak.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the requested count or streak length as an integer.\nExample JSON:\n{\"answer\":3}"
         }
       },
       "task_variant": "longest_decreasing_streak",
@@ -442,45 +366,45 @@
     "render_map": {
       "image_id": "img0",
       "label_centers_px": {
-        "B": [
-          257.5,
-          99.333
-        ],
-        "C": [
-          456.1,
-          254.0
-        ],
-        "F": [
-          389.9,
-          202.444
+        "D": [
+          62.0,
+          252.8
         ],
         "G": [
-          522.3,
-          305.556
+          62.0,
+          206.4
+        ],
+        "H": [
+          62.0,
+          392.0
+        ],
+        "L": [
+          62.0,
+          484.8
         ],
         "M": [
-          588.5,
-          357.111
+          62.0,
+          113.6
+        ],
+        "N": [
+          62.0,
+          345.6
         ],
         "Q": [
-          323.7,
-          150.889
+          62.0,
+          299.2
         ],
         "S": [
-          654.7,
-          408.667
-        ],
-        "U": [
-          191.3,
-          47.778
+          62.0,
+          438.4
         ],
         "W": [
-          720.9,
-          460.222
+          62.0,
+          67.2
         ],
-        "Z": [
-          125.1,
-          99.333
+        "Y": [
+          62.0,
+          160.0
         ]
       },
       "plot_bbox_px": [
@@ -518,14 +442,14 @@
         "mark_color_distance_space": "lab",
         "mark_color_min_distance": 40.0,
         "mark_fill_rgb": [
-          153,
-          183,
-          43
+          114,
+          91,
+          152
         ],
         "mark_outline_rgb": [
-          84,
-          101,
-          24
+          63,
+          50,
+          84
         ],
         "sampling_policy": "random_rgb"
       },
@@ -551,13 +475,13 @@
         "edits": [],
         "enabled": false
       },
-      "scene_variant": "lollipop",
+      "scene_variant": "horizontal_bar",
       "text_style": {
         "label_font_size_px": 22,
         "label_stroke_width_px": 2,
         "tick_font_size_px": 18
       },
-      "y_axis_max": 18,
+      "y_axis_max": 14,
       "y_ticks": [
         0,
         1,
@@ -573,373 +497,361 @@
         11,
         12,
         13,
-        14,
-        15,
-        16,
-        17,
-        18
+        14
       ]
     },
     "scene_ir": {
       "entities": [
         {
           "attrs": {
-            "label": "Z",
+            "label": "W",
             "label_center_px": [
-              125.1,
-              99.333
+              62.0,
+              67.2
             ],
             "mark_bbox_px": [
-              117.1,
-              113.333,
-              133.1,
-              129.333
+              92.0,
+              53.744,
+              423.0,
+              80.656
             ],
             "mark_center_px": [
-              125.1,
-              121.333
+              257.5,
+              67.2
             ],
             "mark_fill_rgb": [
-              153,
-              183,
-              43
+              114,
+              91,
+              152
             ],
             "mark_outline_rgb": [
-              84,
-              101,
-              24
+              63,
+              50,
+              84
             ],
-            "scene_variant": "lollipop",
-            "value": 15,
+            "scene_variant": "horizontal_bar",
+            "value": 7,
             "x_rank": 0
           },
-          "entity_id": "mark_Z",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "label": "U",
-            "label_center_px": [
-              191.3,
-              47.778
-            ],
-            "mark_bbox_px": [
-              183.3,
-              61.778,
-              199.3,
-              77.778
-            ],
-            "mark_center_px": [
-              191.3,
-              69.778
-            ],
-            "mark_fill_rgb": [
-              153,
-              183,
-              43
-            ],
-            "mark_outline_rgb": [
-              84,
-              101,
-              24
-            ],
-            "scene_variant": "lollipop",
-            "value": 17,
-            "x_rank": 1
-          },
-          "entity_id": "mark_U",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "label": "B",
-            "label_center_px": [
-              257.5,
-              99.333
-            ],
-            "mark_bbox_px": [
-              249.5,
-              113.333,
-              265.5,
-              129.333
-            ],
-            "mark_center_px": [
-              257.5,
-              121.333
-            ],
-            "mark_fill_rgb": [
-              153,
-              183,
-              43
-            ],
-            "mark_outline_rgb": [
-              84,
-              101,
-              24
-            ],
-            "scene_variant": "lollipop",
-            "value": 15,
-            "x_rank": 2
-          },
-          "entity_id": "mark_B",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "label": "Q",
-            "label_center_px": [
-              323.7,
-              150.889
-            ],
-            "mark_bbox_px": [
-              315.7,
-              164.889,
-              331.7,
-              180.889
-            ],
-            "mark_center_px": [
-              323.7,
-              172.889
-            ],
-            "mark_fill_rgb": [
-              153,
-              183,
-              43
-            ],
-            "mark_outline_rgb": [
-              84,
-              101,
-              24
-            ],
-            "scene_variant": "lollipop",
-            "value": 13,
-            "x_rank": 3
-          },
-          "entity_id": "mark_Q",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "label": "F",
-            "label_center_px": [
-              389.9,
-              202.444
-            ],
-            "mark_bbox_px": [
-              381.9,
-              216.444,
-              397.9,
-              232.444
-            ],
-            "mark_center_px": [
-              389.9,
-              224.444
-            ],
-            "mark_fill_rgb": [
-              153,
-              183,
-              43
-            ],
-            "mark_outline_rgb": [
-              84,
-              101,
-              24
-            ],
-            "scene_variant": "lollipop",
-            "value": 11,
-            "x_rank": 4
-          },
-          "entity_id": "mark_F",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "label": "C",
-            "label_center_px": [
-              456.1,
-              254.0
-            ],
-            "mark_bbox_px": [
-              448.1,
-              268.0,
-              464.1,
-              284.0
-            ],
-            "mark_center_px": [
-              456.1,
-              276.0
-            ],
-            "mark_fill_rgb": [
-              153,
-              183,
-              43
-            ],
-            "mark_outline_rgb": [
-              84,
-              101,
-              24
-            ],
-            "scene_variant": "lollipop",
-            "value": 9,
-            "x_rank": 5
-          },
-          "entity_id": "mark_C",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "label": "G",
-            "label_center_px": [
-              522.3,
-              305.556
-            ],
-            "mark_bbox_px": [
-              514.3,
-              319.556,
-              530.3,
-              335.556
-            ],
-            "mark_center_px": [
-              522.3,
-              327.556
-            ],
-            "mark_fill_rgb": [
-              153,
-              183,
-              43
-            ],
-            "mark_outline_rgb": [
-              84,
-              101,
-              24
-            ],
-            "scene_variant": "lollipop",
-            "value": 7,
-            "x_rank": 6
-          },
-          "entity_id": "mark_G",
-          "entity_type": "point"
+          "entity_id": "mark_W",
+          "entity_type": "bar"
         },
         {
           "attrs": {
             "label": "M",
             "label_center_px": [
-              588.5,
-              357.111
+              62.0,
+              113.6
             ],
             "mark_bbox_px": [
-              580.5,
-              371.111,
-              596.5,
-              387.111
+              92.0,
+              100.144,
+              517.571,
+              127.056
             ],
             "mark_center_px": [
-              588.5,
-              379.111
+              304.786,
+              113.6
             ],
             "mark_fill_rgb": [
-              153,
-              183,
-              43
+              114,
+              91,
+              152
             ],
             "mark_outline_rgb": [
-              84,
-              101,
-              24
+              63,
+              50,
+              84
             ],
-            "scene_variant": "lollipop",
-            "value": 5,
-            "x_rank": 7
+            "scene_variant": "horizontal_bar",
+            "value": 9,
+            "x_rank": 1
           },
           "entity_id": "mark_M",
-          "entity_type": "point"
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "label": "Y",
+            "label_center_px": [
+              62.0,
+              160.0
+            ],
+            "mark_bbox_px": [
+              92.0,
+              146.544,
+              612.143,
+              173.456
+            ],
+            "mark_center_px": [
+              352.071,
+              160.0
+            ],
+            "mark_fill_rgb": [
+              114,
+              91,
+              152
+            ],
+            "mark_outline_rgb": [
+              63,
+              50,
+              84
+            ],
+            "scene_variant": "horizontal_bar",
+            "value": 11,
+            "x_rank": 2
+          },
+          "entity_id": "mark_Y",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "label": "G",
+            "label_center_px": [
+              62.0,
+              206.4
+            ],
+            "mark_bbox_px": [
+              92.0,
+              192.944,
+              706.714,
+              219.856
+            ],
+            "mark_center_px": [
+              399.357,
+              206.4
+            ],
+            "mark_fill_rgb": [
+              114,
+              91,
+              152
+            ],
+            "mark_outline_rgb": [
+              63,
+              50,
+              84
+            ],
+            "scene_variant": "horizontal_bar",
+            "value": 13,
+            "x_rank": 3
+          },
+          "entity_id": "mark_G",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "label": "D",
+            "label_center_px": [
+              62.0,
+              252.8
+            ],
+            "mark_bbox_px": [
+              92.0,
+              239.344,
+              612.143,
+              266.256
+            ],
+            "mark_center_px": [
+              352.071,
+              252.8
+            ],
+            "mark_fill_rgb": [
+              114,
+              91,
+              152
+            ],
+            "mark_outline_rgb": [
+              63,
+              50,
+              84
+            ],
+            "scene_variant": "horizontal_bar",
+            "value": 11,
+            "x_rank": 4
+          },
+          "entity_id": "mark_D",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "label": "Q",
+            "label_center_px": [
+              62.0,
+              299.2
+            ],
+            "mark_bbox_px": [
+              92.0,
+              285.744,
+              706.714,
+              312.656
+            ],
+            "mark_center_px": [
+              399.357,
+              299.2
+            ],
+            "mark_fill_rgb": [
+              114,
+              91,
+              152
+            ],
+            "mark_outline_rgb": [
+              63,
+              50,
+              84
+            ],
+            "scene_variant": "horizontal_bar",
+            "value": 13,
+            "x_rank": 5
+          },
+          "entity_id": "mark_Q",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "label": "N",
+            "label_center_px": [
+              62.0,
+              345.6
+            ],
+            "mark_bbox_px": [
+              92.0,
+              332.144,
+              612.143,
+              359.056
+            ],
+            "mark_center_px": [
+              352.071,
+              345.6
+            ],
+            "mark_fill_rgb": [
+              114,
+              91,
+              152
+            ],
+            "mark_outline_rgb": [
+              63,
+              50,
+              84
+            ],
+            "scene_variant": "horizontal_bar",
+            "value": 11,
+            "x_rank": 6
+          },
+          "entity_id": "mark_N",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "label": "H",
+            "label_center_px": [
+              62.0,
+              392.0
+            ],
+            "mark_bbox_px": [
+              92.0,
+              378.544,
+              517.571,
+              405.456
+            ],
+            "mark_center_px": [
+              304.786,
+              392.0
+            ],
+            "mark_fill_rgb": [
+              114,
+              91,
+              152
+            ],
+            "mark_outline_rgb": [
+              63,
+              50,
+              84
+            ],
+            "scene_variant": "horizontal_bar",
+            "value": 9,
+            "x_rank": 7
+          },
+          "entity_id": "mark_H",
+          "entity_type": "bar"
         },
         {
           "attrs": {
             "label": "S",
             "label_center_px": [
-              654.7,
-              408.667
+              62.0,
+              438.4
             ],
             "mark_bbox_px": [
-              646.7,
-              422.667,
-              662.7,
-              438.667
+              92.0,
+              424.944,
+              423.0,
+              451.856
             ],
             "mark_center_px": [
-              654.7,
-              430.667
+              257.5,
+              438.4
             ],
             "mark_fill_rgb": [
-              153,
-              183,
-              43
+              114,
+              91,
+              152
             ],
             "mark_outline_rgb": [
-              84,
-              101,
-              24
+              63,
+              50,
+              84
             ],
-            "scene_variant": "lollipop",
-            "value": 3,
+            "scene_variant": "horizontal_bar",
+            "value": 7,
             "x_rank": 8
           },
           "entity_id": "mark_S",
-          "entity_type": "point"
+          "entity_type": "bar"
         },
         {
           "attrs": {
-            "label": "W",
+            "label": "L",
             "label_center_px": [
-              720.9,
-              460.222
+              62.0,
+              484.8
             ],
             "mark_bbox_px": [
-              712.9,
-              474.222,
-              728.9,
-              490.222
+              92.0,
+              471.344,
+              328.429,
+              498.256
             ],
             "mark_center_px": [
-              720.9,
-              482.222
+              210.214,
+              484.8
             ],
             "mark_fill_rgb": [
-              153,
-              183,
-              43
+              114,
+              91,
+              152
             ],
             "mark_outline_rgb": [
-              84,
-              101,
-              24
+              63,
+              50,
+              84
             ],
-            "scene_variant": "lollipop",
-            "value": 1,
+            "scene_variant": "horizontal_bar",
+            "value": 5,
             "x_rank": 9
           },
-          "entity_id": "mark_W",
-          "entity_type": "point"
+          "entity_id": "mark_L",
+          "entity_type": "bar"
         }
       ],
       "relations": {
         "evidence_labels": [
-          "B",
-          "C",
-          "F",
-          "G",
-          "M",
+          "H",
+          "L",
+          "N",
           "Q",
-          "S",
-          "U",
-          "W"
+          "S"
         ],
         "evidence_point_indices": [
-          1,
-          2,
-          3,
-          4,
           5,
           6,
           7,
@@ -947,23 +859,19 @@
           9
         ],
         "ordered_evidence_labels": [
-          "U",
-          "B",
           "Q",
-          "F",
-          "C",
-          "G",
-          "M",
+          "N",
+          "H",
           "S",
-          "W"
+          "L"
         ],
-        "scene_variant": "lollipop",
+        "scene_variant": "horizontal_bar",
         "step_directions": [
           "up",
+          "up",
+          "up",
           "down",
-          "down",
-          "down",
-          "down",
+          "up",
           "down",
           "down",
           "down",
@@ -971,10 +879,10 @@
         ],
         "step_signs": [
           1,
+          1,
+          1,
           -1,
-          -1,
-          -1,
-          -1,
+          1,
           -1,
           -1,
           -1,
@@ -983,19 +891,15 @@
         "streak_direction": "decreasing",
         "task_variant": "longest_decreasing_streak"
       },
-      "scene_kind": "chart_lollipop_trend"
+      "scene_kind": "chart_horizontal_bar_trend"
     },
     "witness_symbolic": {
       "labels": [
-        "B",
-        "C",
-        "F",
-        "G",
-        "M",
+        "H",
+        "L",
+        "N",
         "Q",
-        "S",
-        "U",
-        "W"
+        "S"
       ],
       "type": "label_set"
     }

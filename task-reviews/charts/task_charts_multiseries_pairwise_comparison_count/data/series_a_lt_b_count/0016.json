@@ -6,97 +6,105 @@
   "evidence_gt": {
     "type": "label_set",
     "value": [
-      "L",
-      "T",
-      "X",
-      "Y"
+      "A",
+      "G",
+      "N",
+      "P"
     ]
   },
   "image": {
     "format": "png",
     "path": "charts/task_charts_multiseries_pairwise_comparison_count/images/series_a_lt_b_count/0016.png"
   },
-  "instance_seed": 8399798380741671,
-  "prompt": "Work from the multiseries chart shown in the image: a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Work category by category and count the labels where the requested series comparison is true. How many labeled categories have Iow under Lana?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer format: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+  "instance_seed": 5744194003039202,
+  "prompt": "Work from the multiseries chart shown in the image: a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Compare the two queried series category by category. Determine the number of categories where Han is less than Behl.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
   "prompt_variants": {
-    "answer_and_evidence": "Work from the multiseries chart shown in the image: a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Work category by category and count the labels where the requested series comparison is true. How many labeled categories have Iow under Lana?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer format: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
-    "answer_only": "Work from the multiseries chart shown in the image: a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Work category by category and count the labels where the requested series comparison is true. How many labeled categories have Iow under Lana?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
+    "answer_and_evidence": "Work from the multiseries chart shown in the image: a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Compare the two queried series category by category. Determine the number of categories where Han is less than Behl.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+    "answer_only": "Work from the multiseries chart shown in the image: a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Compare the two queried series category by category. Determine the number of categories where Han is less than Behl.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
   },
   "task": "task_charts_multiseries_pairwise_comparison_count",
   "task_variant": "series_a_lt_b_count",
   "trace_payload": {
     "execution_trace": {
       "answer_value": 4,
-      "category_count": 8,
+      "category_count": 5,
       "category_count_range": [
         5,
         10
       ],
       "category_labels": [
-        "Y",
-        "M",
-        "T",
-        "U",
-        "F",
-        "L",
-        "X",
-        "H"
+        "P",
+        "G",
+        "A",
+        "N",
+        "B"
       ],
       "comparison": "less_than",
       "evidence_labels": [
-        "L",
-        "T",
-        "X",
-        "Y"
+        "A",
+        "G",
+        "N",
+        "P"
       ],
-      "left_series_label": "Iow",
+      "left_series_label": "Han",
       "mark_color_distance_space": "lab",
       "mark_color_min_distance": 40.0,
       "mark_color_sampling_policy": "random_rgb_palette",
       "queried_series_labels": [
-        "Iow",
-        "Lana"
+        "Han",
+        "Behl"
       ],
       "question_format": "numeric_open",
-      "right_series_label": "Lana",
-      "scene_variant": "grouped_lollipop",
+      "right_series_label": "Behl",
+      "scene_variant": "multi_line",
       "scene_variant_probabilities": {
         "grouped_bar": 0.25,
         "grouped_horizontal_bar": 0.25,
         "grouped_lollipop": 0.25,
         "multi_line": 0.25
       },
-      "series_count": 2,
+      "series_count": 3,
       "series_count_range": [
         2,
         3
       ],
       "series_fill_palette_rgb": [
         [
-          85,
-          168,
-          131
+          1,
+          112,
+          161
         ],
         [
-          204,
-          2,
-          84
+          30,
+          206,
+          39
+        ],
+        [
+          124,
+          33,
+          59
         ]
       ],
       "series_labels": [
-        "Iow",
-        "Lana"
+        "Han",
+        "Baal",
+        "Behl"
       ],
       "series_outline_palette_rgb": [
         [
-          47,
-          92,
-          72
+          1,
+          62,
+          89
         ],
         [
-          112,
-          1,
-          46
+          16,
+          113,
+          21
+        ],
+        [
+          68,
+          18,
+          32
         ]
       ],
       "target_answer": 4,
@@ -106,134 +114,127 @@
       ],
       "task_variant": "series_a_lt_b_count",
       "task_variant_probabilities": {
-        "series_a_gt_b_count": 0.5,
-        "series_a_lt_b_count": 0.5
+        "series_a_gt_b_count": 0.0,
+        "series_a_lt_b_count": 1.0
       },
       "values_by_category": {
-        "F": {
-          "Iow": 18,
-          "Lana": 3
+        "A": {
+          "Baal": 11,
+          "Behl": 14,
+          "Han": 5
         },
-        "H": {
-          "Iow": 8,
-          "Lana": 3
+        "B": {
+          "Baal": 9,
+          "Behl": 7,
+          "Han": 17
         },
-        "L": {
-          "Iow": 6,
-          "Lana": 20
+        "G": {
+          "Baal": 14,
+          "Behl": 20,
+          "Han": 12
         },
-        "M": {
-          "Iow": 6,
-          "Lana": 1
+        "N": {
+          "Baal": 11,
+          "Behl": 18,
+          "Han": 6
         },
-        "T": {
-          "Iow": 4,
-          "Lana": 10
-        },
-        "U": {
-          "Iow": 8,
-          "Lana": 6
-        },
-        "X": {
-          "Iow": 3,
-          "Lana": 20
-        },
-        "Y": {
-          "Iow": 9,
-          "Lana": 15
+        "P": {
+          "Baal": 3,
+          "Behl": 17,
+          "Han": 2
         }
       }
     },
     "projected_evidence": {
       "bbox_set": [
         [
-          593.587,
+          464.5,
+          197.333,
+          481.5,
+          562.0
+        ],
+        [
+          311.6,
           59.048,
-          638.162,
+          329.6,
           562.0
         ],
         [
-          307.838,
-          289.524,
-          352.413,
+          616.4,
+          105.143,
+          634.4,
           562.0
         ],
         [
-          688.837,
-          59.048,
-          733.412,
-          562.0
-        ],
-        [
-          117.337,
-          174.286,
-          161.912,
+          160.2,
+          128.19,
+          176.2,
           562.0
         ]
       ],
       "label_set": [
-        "L",
-        "T",
-        "X",
-        "Y"
+        "A",
+        "G",
+        "N",
+        "P"
       ],
       "pixel_point_map": {
-        "L": [
-          615.875,
+        "A": [
+          473.0,
           554.0
         ],
-        "T": [
-          330.125,
+        "G": [
+          320.6,
           554.0
         ],
-        "X": [
-          711.125,
+        "N": [
+          625.4,
           554.0
         ],
-        "Y": [
-          139.625,
+        "P": [
+          168.2,
           554.0
         ]
       },
       "pixel_point_set": [
         [
-          615.875,
+          473.0,
           554.0
         ],
         [
-          330.125,
+          320.6,
           554.0
         ],
         [
-          711.125,
+          625.4,
           554.0
         ],
         [
-          139.625,
+          168.2,
           554.0
         ]
       ]
     },
     "query_spec": {
       "params": {
-        "category_count": 8,
+        "category_count": 5,
         "category_count_range": [
           5,
           10
         ],
         "comparison": "less_than",
         "queried_series_labels": [
-          "Iow",
-          "Lana"
+          "Han",
+          "Behl"
         ],
-        "scene_variant": "grouped_lollipop",
+        "scene_variant": "multi_line",
         "scene_variant_probabilities": {
           "grouped_bar": 0.25,
           "grouped_horizontal_bar": 0.25,
           "grouped_lollipop": 0.25,
           "multi_line": 0.25
         },
-        "series_count": 2,
+        "series_count": 3,
         "series_count_range": [
           2,
           3
@@ -245,13 +246,13 @@
         ],
         "task_variant": "series_a_lt_b_count",
         "task_variant_probabilities": {
-          "series_a_gt_b_count": 0.5,
-          "series_a_lt_b_count": 0.5
+          "series_a_gt_b_count": 0.0,
+          "series_a_lt_b_count": 1.0
         }
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 1,
+        "answer_or_evidence_variant_index": 4,
         "prompt_bundle_id": "charts_multiseries_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -261,16 +262,16 @@
           "json_example_answer_only": "{\"answer\":2}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "left_series": "Iow",
-          "object_description": "a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis",
-          "right_series": "Lana"
+          "left_series": "Han",
+          "object_description": "a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis",
+          "right_series": "Behl"
         },
         "task_family_key": "multiseries_chart_comparison",
         "task_family_variant_index": 2,
         "task_key": "pairwise_comparison_count_query",
-        "task_variant_index": 4,
+        "task_variant_index": 0,
         "task_variant_key": "series_a_lt_b_count",
-        "task_variant_template_index": 2,
+        "task_variant_template_index": 3,
         "template_paths": [
           "charts/multiseries/charts_multiseries_v1.json"
         ],
@@ -286,41 +287,6 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 1,
-            "prompt_bundle_id": "charts_multiseries_v1",
-            "schema_version": "v1",
-            "slot_values": {
-              "answer_hint": "set \"answer\" to the number of category labels satisfying the requested series comparison as an integer",
-              "evidence_hint": "set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series",
-              "json_example": "{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
-              "json_example_answer_only": "{\"answer\":2}",
-              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
-              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "left_series": "Iow",
-              "object_description": "a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis",
-              "right_series": "Lana"
-            },
-            "task_family_key": "multiseries_chart_comparison",
-            "task_family_variant_index": 2,
-            "task_key": "pairwise_comparison_count_query",
-            "task_variant_index": 4,
-            "task_variant_key": "series_a_lt_b_count",
-            "task_variant_template_index": 2,
-            "template_paths": [
-              "charts/multiseries/charts_multiseries_v1.json"
-            ],
-            "variant_count_by_key": {
-              "answer_or_evidence:answer_and_evidence": 5,
-              "task:pairwise_comparison_count_query": 5,
-              "task_family:multiseries_chart_comparison": 5,
-              "task_variant:series_a_lt_b_count": 5
-            }
-          },
-          "prompt": "Work from the multiseries chart shown in the image: a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Work category by category and count the labels where the requested series comparison is true. How many labeled categories have Iow under Lana?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer format: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}"
-        },
-        "answer_only": {
-          "metadata": {
-            "answer_or_evidence_key": "answer_only",
             "answer_or_evidence_variant_index": 4,
             "prompt_bundle_id": "charts_multiseries_v1",
             "schema_version": "v1",
@@ -331,16 +297,51 @@
               "json_example_answer_only": "{\"answer\":2}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "left_series": "Iow",
-              "object_description": "a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis",
-              "right_series": "Lana"
+              "left_series": "Han",
+              "object_description": "a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis",
+              "right_series": "Behl"
             },
             "task_family_key": "multiseries_chart_comparison",
             "task_family_variant_index": 2,
             "task_key": "pairwise_comparison_count_query",
-            "task_variant_index": 4,
+            "task_variant_index": 0,
             "task_variant_key": "series_a_lt_b_count",
-            "task_variant_template_index": 2,
+            "task_variant_template_index": 3,
+            "template_paths": [
+              "charts/multiseries/charts_multiseries_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:pairwise_comparison_count_query": 5,
+              "task_family:multiseries_chart_comparison": 5,
+              "task_variant:series_a_lt_b_count": 5
+            }
+          },
+          "prompt": "Work from the multiseries chart shown in the image: a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Compare the two queried series category by category. Determine the number of categories where Han is less than Behl.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "charts_multiseries_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the number of category labels satisfying the requested series comparison as an integer",
+              "evidence_hint": "set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series",
+              "json_example": "{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "left_series": "Han",
+              "object_description": "a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis",
+              "right_series": "Behl"
+            },
+            "task_family_key": "multiseries_chart_comparison",
+            "task_family_variant_index": 2,
+            "task_key": "pairwise_comparison_count_query",
+            "task_variant_index": 0,
+            "task_variant_key": "series_a_lt_b_count",
+            "task_variant_template_index": 3,
             "template_paths": [
               "charts/multiseries/charts_multiseries_v1.json"
             ],
@@ -351,7 +352,7 @@
               "task_variant:series_a_lt_b_count": 5
             }
           },
-          "prompt": "Work from the multiseries chart shown in the image: a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Work category by category and count the labels where the requested series comparison is true. How many labeled categories have Iow under Lana?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
+          "prompt": "Work from the multiseries chart shown in the image: a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Compare the two queried series category by category. Determine the number of categories where Han is less than Behl.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
         }
       },
       "task_variant": "series_a_lt_b_count",
@@ -359,36 +360,24 @@
     },
     "render_map": {
       "category_label_centers_px": {
-        "F": [
-          520.625,
+        "A": [
+          473.0,
           554.0
         ],
-        "H": [
-          806.375,
+        "B": [
+          777.8,
           554.0
         ],
-        "L": [
-          615.875,
+        "G": [
+          320.6,
           554.0
         ],
-        "M": [
-          234.875,
+        "N": [
+          625.4,
           554.0
         ],
-        "T": [
-          330.125,
-          554.0
-        ],
-        "U": [
-          425.375,
-          554.0
-        ],
-        "X": [
-          711.125,
-          554.0
-        ],
-        "Y": [
-          139.625,
+        "P": [
+          168.2,
           554.0
         ]
       },
@@ -430,26 +419,36 @@
         "sampling_policy": "random_rgb_palette",
         "series_fill_palette_rgb": [
           [
-            85,
-            168,
-            131
+            1,
+            112,
+            161
           ],
           [
-            204,
-            2,
-            84
+            30,
+            206,
+            39
+          ],
+          [
+            124,
+            33,
+            59
           ]
         ],
         "series_outline_palette_rgb": [
           [
-            47,
-            92,
-            72
+            1,
+            62,
+            89
           ],
           [
-            112,
-            1,
-            46
+            16,
+            113,
+            21
+          ],
+          [
+            68,
+            18,
+            32
           ]
         ]
       },
@@ -475,7 +474,7 @@
         "edits": [],
         "enabled": false
       },
-      "scene_variant": "grouped_lollipop",
+      "scene_variant": "multi_line",
       "text_style": {
         "label_font_size_px": 22,
         "label_stroke_width_px": 2,
@@ -512,699 +511,657 @@
         {
           "attrs": {
             "category_group_bbox_px": [
-              117.337,
-              174.286,
-              161.912,
+              160.2,
+              128.19,
+              176.2,
               562.0
             ],
-            "category_label": "Y",
+            "category_label": "P",
             "category_label_center_px": [
-              139.625,
+              168.2,
               554.0
             ],
             "category_rank": 0,
             "mark_bbox_px": [
-              117.337,
-              312.571,
-              133.337,
-              328.571
+              160.2,
+              473.905,
+              176.2,
+              489.905
             ],
             "mark_center_px": [
-              125.337,
-              320.571
+              168.2,
+              481.905
             ],
             "mark_fill_rgb": [
-              85,
-              168,
-              131
+              1,
+              112,
+              161
             ],
             "mark_outline_rgb": [
-              47,
-              92,
-              72
+              1,
+              62,
+              89
             ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Iow",
+            "scene_variant": "multi_line",
+            "series_label": "Han",
             "series_rank": 0,
-            "value": 9
+            "value": 2
           },
-          "entity_id": "mark_Y_Iow",
+          "entity_id": "mark_P_Han",
           "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              117.337,
-              174.286,
-              161.912,
+              160.2,
+              128.19,
+              176.2,
               562.0
             ],
-            "category_label": "Y",
+            "category_label": "P",
             "category_label_center_px": [
-              139.625,
+              168.2,
               554.0
             ],
             "category_rank": 0,
             "mark_bbox_px": [
-              145.912,
-              174.286,
-              161.912,
-              190.286
+              160.2,
+              450.857,
+              176.2,
+              466.857
             ],
             "mark_center_px": [
-              153.912,
-              182.286
+              168.2,
+              458.857
             ],
             "mark_fill_rgb": [
-              204,
-              2,
-              84
+              30,
+              206,
+              39
             ],
             "mark_outline_rgb": [
-              112,
-              1,
-              46
+              16,
+              113,
+              21
             ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Lana",
+            "scene_variant": "multi_line",
+            "series_label": "Baal",
             "series_rank": 1,
-            "value": 15
+            "value": 3
           },
-          "entity_id": "mark_Y_Lana",
+          "entity_id": "mark_P_Baal",
           "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              212.588,
-              381.714,
-              257.163,
+              160.2,
+              128.19,
+              176.2,
               562.0
             ],
-            "category_label": "M",
+            "category_label": "P",
             "category_label_center_px": [
-              234.875,
+              168.2,
+              554.0
+            ],
+            "category_rank": 0,
+            "mark_bbox_px": [
+              160.2,
+              128.19,
+              176.2,
+              144.19
+            ],
+            "mark_center_px": [
+              168.2,
+              136.19
+            ],
+            "mark_fill_rgb": [
+              124,
+              33,
+              59
+            ],
+            "mark_outline_rgb": [
+              68,
+              18,
+              32
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Behl",
+            "series_rank": 2,
+            "value": 17
+          },
+          "entity_id": "mark_P_Behl",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              311.6,
+              59.048,
+              329.6,
+              562.0
+            ],
+            "category_label": "G",
+            "category_label_center_px": [
+              320.6,
               554.0
             ],
             "category_rank": 1,
             "mark_bbox_px": [
-              212.588,
-              381.714,
-              228.588,
-              397.714
+              312.6,
+              243.429,
+              328.6,
+              259.429
             ],
             "mark_center_px": [
-              220.588,
-              389.714
+              320.6,
+              251.429
             ],
             "mark_fill_rgb": [
-              85,
-              168,
-              131
+              1,
+              112,
+              161
             ],
             "mark_outline_rgb": [
-              47,
-              92,
-              72
+              1,
+              62,
+              89
             ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Iow",
+            "scene_variant": "multi_line",
+            "series_label": "Han",
             "series_rank": 0,
-            "value": 6
+            "value": 12
           },
-          "entity_id": "mark_M_Iow",
+          "entity_id": "mark_G_Han",
           "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              212.588,
-              381.714,
-              257.163,
+              311.6,
+              59.048,
+              329.6,
               562.0
             ],
-            "category_label": "M",
+            "category_label": "G",
             "category_label_center_px": [
-              234.875,
+              320.6,
               554.0
             ],
             "category_rank": 1,
             "mark_bbox_px": [
-              241.163,
-              496.952,
-              257.163,
-              512.952
+              312.6,
+              197.333,
+              328.6,
+              213.333
             ],
             "mark_center_px": [
-              249.163,
-              504.952
+              320.6,
+              205.333
             ],
             "mark_fill_rgb": [
-              204,
-              2,
-              84
+              30,
+              206,
+              39
             ],
             "mark_outline_rgb": [
-              112,
-              1,
-              46
+              16,
+              113,
+              21
             ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Lana",
+            "scene_variant": "multi_line",
+            "series_label": "Baal",
             "series_rank": 1,
-            "value": 1
+            "value": 14
           },
-          "entity_id": "mark_M_Lana",
+          "entity_id": "mark_G_Baal",
           "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              307.838,
-              289.524,
-              352.413,
+              311.6,
+              59.048,
+              329.6,
               562.0
             ],
-            "category_label": "T",
+            "category_label": "G",
             "category_label_center_px": [
-              330.125,
+              320.6,
+              554.0
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              312.6,
+              59.048,
+              328.6,
+              75.048
+            ],
+            "mark_center_px": [
+              320.6,
+              67.048
+            ],
+            "mark_fill_rgb": [
+              124,
+              33,
+              59
+            ],
+            "mark_outline_rgb": [
+              68,
+              18,
+              32
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Behl",
+            "series_rank": 2,
+            "value": 20
+          },
+          "entity_id": "mark_G_Behl",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              464.5,
+              197.333,
+              481.5,
+              562.0
+            ],
+            "category_label": "A",
+            "category_label_center_px": [
+              473.0,
               554.0
             ],
             "category_rank": 2,
             "mark_bbox_px": [
-              307.838,
-              427.81,
-              323.838,
-              443.81
+              465.0,
+              404.762,
+              481.0,
+              420.762
             ],
             "mark_center_px": [
-              315.838,
-              435.81
+              473.0,
+              412.762
             ],
             "mark_fill_rgb": [
-              85,
-              168,
-              131
+              1,
+              112,
+              161
             ],
             "mark_outline_rgb": [
-              47,
-              92,
-              72
+              1,
+              62,
+              89
             ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Iow",
+            "scene_variant": "multi_line",
+            "series_label": "Han",
             "series_rank": 0,
-            "value": 4
+            "value": 5
           },
-          "entity_id": "mark_T_Iow",
+          "entity_id": "mark_A_Han",
           "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              307.838,
-              289.524,
-              352.413,
+              464.5,
+              197.333,
+              481.5,
               562.0
             ],
-            "category_label": "T",
+            "category_label": "A",
             "category_label_center_px": [
-              330.125,
+              473.0,
               554.0
             ],
             "category_rank": 2,
             "mark_bbox_px": [
-              336.413,
-              289.524,
-              352.413,
-              305.524
+              465.0,
+              266.476,
+              481.0,
+              282.476
             ],
             "mark_center_px": [
-              344.413,
-              297.524
+              473.0,
+              274.476
             ],
             "mark_fill_rgb": [
-              204,
-              2,
-              84
+              30,
+              206,
+              39
             ],
             "mark_outline_rgb": [
-              112,
-              1,
-              46
+              16,
+              113,
+              21
             ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Lana",
+            "scene_variant": "multi_line",
+            "series_label": "Baal",
             "series_rank": 1,
-            "value": 10
+            "value": 11
           },
-          "entity_id": "mark_T_Lana",
+          "entity_id": "mark_A_Baal",
           "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              403.088,
-              335.619,
-              447.663,
+              464.5,
+              197.333,
+              481.5,
               562.0
             ],
-            "category_label": "U",
+            "category_label": "A",
             "category_label_center_px": [
-              425.375,
+              473.0,
               554.0
             ],
-            "category_rank": 3,
+            "category_rank": 2,
             "mark_bbox_px": [
-              403.088,
-              335.619,
-              419.088,
-              351.619
+              465.0,
+              197.333,
+              481.0,
+              213.333
             ],
             "mark_center_px": [
-              411.088,
-              343.619
+              473.0,
+              205.333
             ],
             "mark_fill_rgb": [
-              85,
-              168,
-              131
+              124,
+              33,
+              59
             ],
             "mark_outline_rgb": [
-              47,
-              92,
-              72
+              68,
+              18,
+              32
             ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Iow",
-            "series_rank": 0,
-            "value": 8
+            "scene_variant": "multi_line",
+            "series_label": "Behl",
+            "series_rank": 2,
+            "value": 14
           },
-          "entity_id": "mark_U_Iow",
+          "entity_id": "mark_A_Behl",
           "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              403.088,
-              335.619,
-              447.663,
+              616.4,
+              105.143,
+              634.4,
               562.0
             ],
-            "category_label": "U",
+            "category_label": "N",
             "category_label_center_px": [
-              425.375,
+              625.4,
               554.0
             ],
             "category_rank": 3,
             "mark_bbox_px": [
-              431.663,
+              617.4,
               381.714,
-              447.663,
+              633.4,
               397.714
             ],
             "mark_center_px": [
-              439.663,
+              625.4,
               389.714
             ],
             "mark_fill_rgb": [
-              204,
-              2,
-              84
+              1,
+              112,
+              161
             ],
             "mark_outline_rgb": [
-              112,
               1,
-              46
+              62,
+              89
             ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Lana",
-            "series_rank": 1,
+            "scene_variant": "multi_line",
+            "series_label": "Han",
+            "series_rank": 0,
             "value": 6
           },
-          "entity_id": "mark_U_Lana",
+          "entity_id": "mark_N_Han",
           "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              498.338,
+              616.4,
               105.143,
-              542.913,
+              634.4,
               562.0
             ],
-            "category_label": "F",
+            "category_label": "N",
             "category_label_center_px": [
-              520.625,
+              625.4,
               554.0
             ],
-            "category_rank": 4,
+            "category_rank": 3,
             "mark_bbox_px": [
-              498.338,
+              617.4,
+              266.476,
+              633.4,
+              282.476
+            ],
+            "mark_center_px": [
+              625.4,
+              274.476
+            ],
+            "mark_fill_rgb": [
+              30,
+              206,
+              39
+            ],
+            "mark_outline_rgb": [
+              16,
+              113,
+              21
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Baal",
+            "series_rank": 1,
+            "value": 11
+          },
+          "entity_id": "mark_N_Baal",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              616.4,
               105.143,
-              514.338,
+              634.4,
+              562.0
+            ],
+            "category_label": "N",
+            "category_label_center_px": [
+              625.4,
+              554.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              617.4,
+              105.143,
+              633.4,
               121.143
             ],
             "mark_center_px": [
-              506.338,
+              625.4,
               113.143
             ],
             "mark_fill_rgb": [
-              85,
-              168,
-              131
+              124,
+              33,
+              59
             ],
             "mark_outline_rgb": [
-              47,
-              92,
-              72
+              68,
+              18,
+              32
             ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Iow",
-            "series_rank": 0,
+            "scene_variant": "multi_line",
+            "series_label": "Behl",
+            "series_rank": 2,
             "value": 18
           },
-          "entity_id": "mark_F_Iow",
+          "entity_id": "mark_N_Behl",
           "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              498.338,
-              105.143,
-              542.913,
+              769.3,
+              128.19,
+              786.3,
               562.0
             ],
-            "category_label": "F",
+            "category_label": "B",
             "category_label_center_px": [
-              520.625,
+              777.8,
               554.0
             ],
             "category_rank": 4,
             "mark_bbox_px": [
-              526.913,
-              450.857,
-              542.913,
-              466.857
+              769.8,
+              128.19,
+              785.8,
+              144.19
             ],
             "mark_center_px": [
-              534.913,
-              458.857
+              777.8,
+              136.19
             ],
             "mark_fill_rgb": [
-              204,
-              2,
-              84
-            ],
-            "mark_outline_rgb": [
-              112,
               1,
-              46
-            ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Lana",
-            "series_rank": 1,
-            "value": 3
-          },
-          "entity_id": "mark_F_Lana",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              593.587,
-              59.048,
-              638.162,
-              562.0
-            ],
-            "category_label": "L",
-            "category_label_center_px": [
-              615.875,
-              554.0
-            ],
-            "category_rank": 5,
-            "mark_bbox_px": [
-              593.587,
-              381.714,
-              609.587,
-              397.714
-            ],
-            "mark_center_px": [
-              601.587,
-              389.714
-            ],
-            "mark_fill_rgb": [
-              85,
-              168,
-              131
+              112,
+              161
             ],
             "mark_outline_rgb": [
-              47,
-              92,
-              72
+              1,
+              62,
+              89
             ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Iow",
+            "scene_variant": "multi_line",
+            "series_label": "Han",
             "series_rank": 0,
-            "value": 6
+            "value": 17
           },
-          "entity_id": "mark_L_Iow",
+          "entity_id": "mark_B_Han",
           "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              593.587,
-              59.048,
-              638.162,
+              769.3,
+              128.19,
+              786.3,
               562.0
             ],
-            "category_label": "L",
+            "category_label": "B",
             "category_label_center_px": [
-              615.875,
+              777.8,
               554.0
             ],
-            "category_rank": 5,
+            "category_rank": 4,
             "mark_bbox_px": [
-              622.162,
-              59.048,
-              638.162,
-              75.048
+              769.8,
+              312.571,
+              785.8,
+              328.571
             ],
             "mark_center_px": [
-              630.162,
-              67.048
+              777.8,
+              320.571
             ],
             "mark_fill_rgb": [
-              204,
-              2,
-              84
+              30,
+              206,
+              39
             ],
             "mark_outline_rgb": [
-              112,
-              1,
-              46
+              16,
+              113,
+              21
             ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Lana",
+            "scene_variant": "multi_line",
+            "series_label": "Baal",
             "series_rank": 1,
-            "value": 20
+            "value": 9
           },
-          "entity_id": "mark_L_Lana",
+          "entity_id": "mark_B_Baal",
           "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              688.837,
-              59.048,
-              733.412,
+              769.3,
+              128.19,
+              786.3,
               562.0
             ],
-            "category_label": "X",
+            "category_label": "B",
             "category_label_center_px": [
-              711.125,
+              777.8,
               554.0
             ],
-            "category_rank": 6,
+            "category_rank": 4,
             "mark_bbox_px": [
-              688.837,
-              450.857,
-              704.837,
-              466.857
+              769.8,
+              358.667,
+              785.8,
+              374.667
             ],
             "mark_center_px": [
-              696.837,
-              458.857
+              777.8,
+              366.667
             ],
             "mark_fill_rgb": [
-              85,
-              168,
-              131
+              124,
+              33,
+              59
             ],
             "mark_outline_rgb": [
-              47,
-              92,
-              72
+              68,
+              18,
+              32
             ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Iow",
-            "series_rank": 0,
-            "value": 3
+            "scene_variant": "multi_line",
+            "series_label": "Behl",
+            "series_rank": 2,
+            "value": 7
           },
-          "entity_id": "mark_X_Iow",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              688.837,
-              59.048,
-              733.412,
-              562.0
-            ],
-            "category_label": "X",
-            "category_label_center_px": [
-              711.125,
-              554.0
-            ],
-            "category_rank": 6,
-            "mark_bbox_px": [
-              717.412,
-              59.048,
-              733.412,
-              75.048
-            ],
-            "mark_center_px": [
-              725.412,
-              67.048
-            ],
-            "mark_fill_rgb": [
-              204,
-              2,
-              84
-            ],
-            "mark_outline_rgb": [
-              112,
-              1,
-              46
-            ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Lana",
-            "series_rank": 1,
-            "value": 20
-          },
-          "entity_id": "mark_X_Lana",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              784.087,
-              335.619,
-              828.662,
-              562.0
-            ],
-            "category_label": "H",
-            "category_label_center_px": [
-              806.375,
-              554.0
-            ],
-            "category_rank": 7,
-            "mark_bbox_px": [
-              784.087,
-              335.619,
-              800.087,
-              351.619
-            ],
-            "mark_center_px": [
-              792.087,
-              343.619
-            ],
-            "mark_fill_rgb": [
-              85,
-              168,
-              131
-            ],
-            "mark_outline_rgb": [
-              47,
-              92,
-              72
-            ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Iow",
-            "series_rank": 0,
-            "value": 8
-          },
-          "entity_id": "mark_H_Iow",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              784.087,
-              335.619,
-              828.662,
-              562.0
-            ],
-            "category_label": "H",
-            "category_label_center_px": [
-              806.375,
-              554.0
-            ],
-            "category_rank": 7,
-            "mark_bbox_px": [
-              812.662,
-              450.857,
-              828.662,
-              466.857
-            ],
-            "mark_center_px": [
-              820.662,
-              458.857
-            ],
-            "mark_fill_rgb": [
-              204,
-              2,
-              84
-            ],
-            "mark_outline_rgb": [
-              112,
-              1,
-              46
-            ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Lana",
-            "series_rank": 1,
-            "value": 3
-          },
-          "entity_id": "mark_H_Lana",
+          "entity_id": "mark_B_Behl",
           "entity_type": "point"
         }
       ],
       "relations": {
         "comparison": "less_than",
         "evidence_labels": [
-          "L",
-          "T",
-          "X",
-          "Y"
+          "A",
+          "G",
+          "N",
+          "P"
         ],
         "queried_series_labels": [
-          "Iow",
-          "Lana"
+          "Han",
+          "Behl"
         ],
-        "scene_variant": "grouped_lollipop",
+        "scene_variant": "multi_line",
         "task_variant": "series_a_lt_b_count"
       },
-      "scene_kind": "chart_grouped_lollipop_multiseries"
+      "scene_kind": "chart_multi_line_multiseries"
     },
     "witness_symbolic": {
       "labels": [
-        "L",
-        "T",
-        "X",
-        "Y"
+        "A",
+        "G",
+        "N",
+        "P"
       ],
       "type": "label_set"
     }

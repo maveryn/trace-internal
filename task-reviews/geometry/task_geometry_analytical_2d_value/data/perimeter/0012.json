@@ -1,23 +1,24 @@
 {
   "answer_gt": {
     "type": "number",
-    "value": 45.3
+    "value": 139.9
   },
   "evidence_gt": {
     "type": "measurement_ref_map",
     "value": {
-      "QO": 16
+      "HJ": 39,
+      "IJ": 58
     }
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_2d_value/images/perimeter/0012.png"
   },
-  "instance_seed": 7143796477367504,
-  "prompt": "Look at the annotated image showing a geometric scene with measurement annotations. Task: The square is inscribed in the circle, and a diameter is annotated. What is the perimeter of the square?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: QO.\nAnswer requirement: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"QO\":2},\"answer\":42.3}",
+  "instance_seed": 913068522663825,
+  "prompt": "The image shows a geometric scene with measurement annotations. The right triangle shows one leg and the hypotenuse. What is the perimeter of the triangle?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: HJ, IJ.\nAnswer format: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"HJ\":2,\"IJ\":3},\"answer\":42.3}",
   "prompt_variants": {
-    "answer_and_evidence": "Look at the annotated image showing a geometric scene with measurement annotations. Task: The square is inscribed in the circle, and a diameter is annotated. What is the perimeter of the square?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: QO.\nAnswer requirement: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"QO\":2},\"answer\":42.3}",
-    "answer_only": "Look at the annotated image showing a geometric scene with measurement annotations. Task: The square is inscribed in the circle, and a diameter is annotated. What is the perimeter of the square?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"answer\":42.3}"
+    "answer_and_evidence": "The image shows a geometric scene with measurement annotations. The right triangle shows one leg and the hypotenuse. What is the perimeter of the triangle?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: HJ, IJ.\nAnswer format: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"HJ\":2,\"IJ\":3},\"answer\":42.3}",
+    "answer_only": "The image shows a geometric scene with measurement annotations. The right triangle shows one leg and the hypotenuse. What is the perimeter of the triangle?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"answer\":42.3}"
   },
   "task": "task_geometry_analytical_2d_value",
   "task_variant": "perimeter",
@@ -25,24 +26,28 @@
     "execution_trace": {
       "answer_max": 250,
       "answer_min": 8,
-      "answer_scalar": 453,
+      "answer_scalar": 1399,
       "answer_type": "number",
-      "answer_value": 45.3,
+      "answer_value": 139.9,
       "evidence_map": {
-        "QO": 16
+        "HJ": 39,
+        "IJ": 58
       },
       "evidence_role_tokens": {
-        "diameter": "QO"
+        "hypotenuse": "IJ",
+        "known_leg": "HJ"
       },
       "evidence_role_values": {
-        "diameter": 16
+        "hypotenuse": 58,
+        "known_leg": 39
       },
       "evidence_roles": [
-        "diameter"
+        "known_leg",
+        "hypotenuse"
       ],
-      "formula_expression": "2 * sqrt(2) * diameter",
-      "legacy_query_variant": "inscribed_square_diameter",
-      "legacy_scene_variant": "circle",
+      "formula_expression": "known_leg + hypotenuse + sqrt(hypotenuse^2 - known_leg^2)",
+      "legacy_query_variant": "right_triangle_leg_hypotenuse",
+      "legacy_scene_variant": "triangle",
       "legacy_task_id": "task_geometry_analytical_2d_perimeter",
       "query_variant": "perimeter",
       "query_variant_probabilities": {
@@ -51,11 +56,12 @@
         "length": 0.0,
         "perimeter": 1.0
       },
-      "raw_answer_value": 45.254833995939045,
+      "raw_answer_value": 139.93017586733137,
       "required_annotations": [
-        "QO"
+        "HJ",
+        "IJ"
       ],
-      "scene_variant": "circle",
+      "scene_variant": "triangle",
       "scene_variant_probabilities": {
         "circle": 0.2,
         "composite_region": 0.0,
@@ -75,33 +81,44 @@
         "perimeter": 1.0
       },
       "variant_probabilities": {
-        "inscribed_square_diameter": 1.0,
+        "inscribed_square_diameter": 0.0,
         "isosceles_trapezoid_bases_height": 0.0,
         "rectangle_side_diagonal": 0.0,
         "rhombus_diagonals": 0.0,
-        "right_triangle_leg_hypotenuse": 0.0
+        "right_triangle_leg_hypotenuse": 1.0
       }
     },
     "projected_evidence": {
       "annotation_labels": {
-        "diameter": "QO"
+        "hypotenuse": "IJ",
+        "known_leg": "HJ"
       },
       "id_set": [
-        "QO"
+        "HJ",
+        "IJ"
       ],
       "measurement_ref_map": {
-        "QO": 16
+        "HJ": 39,
+        "IJ": 58
       },
       "pixel_annotation_centers": {
-        "QO": [
-          349.5,
-          320.8666666666667
+        "HJ": [
+          69.05333333333333,
+          335.4082341204132
+        ],
+        "IJ": [
+          336.4103448275862,
+          314.04183624621265
         ]
       },
       "pixel_point_set": [
         [
-          349.5,
-          320.8666666666667
+          69.05333333333333,
+          335.4082341204132
+        ],
+        [
+          336.4103448275862,
+          314.04183624621265
         ]
       ]
     },
@@ -109,8 +126,8 @@
       "params": {
         "answer_max": 250,
         "answer_min": 8,
-        "legacy_query_variant": "inscribed_square_diameter",
-        "legacy_scene_variant": "circle",
+        "legacy_query_variant": "right_triangle_leg_hypotenuse",
+        "legacy_scene_variant": "triangle",
         "legacy_task_id": "task_geometry_analytical_2d_perimeter",
         "query_variant": "perimeter",
         "query_variant_probabilities": {
@@ -119,7 +136,7 @@
           "length": 0.0,
           "perimeter": 1.0
         },
-        "scene_variant": "circle",
+        "scene_variant": "triangle",
         "scene_variant_probabilities": {
           "circle": 0.2,
           "composite_region": 0.0,
@@ -130,7 +147,7 @@
           "trapezoid": 0.2,
           "triangle": 0.2
         },
-        "task_variant": "inscribed_square_diameter",
+        "task_variant": "right_triangle_leg_hypotenuse",
         "variant_probabilities": {
           "area": 0.0,
           "composite_area": 0.0,
@@ -140,23 +157,23 @@
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 2,
+        "answer_or_evidence_variant_index": 1,
         "prompt_bundle_id": "geometry_analytical_perimeter_v1",
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the perimeter value rounded to one decimal place",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: QO",
-          "json_example": "{\"evidence\":{\"QO\":2},\"answer\":42.3}",
+          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: HJ, IJ",
+          "json_example": "{\"evidence\":{\"HJ\":2,\"IJ\":3},\"answer\":42.3}",
           "json_example_answer_only": "{\"answer\":42.3}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
           "object_description": "a geometric scene with measurement annotations",
-          "question_text": "The square is inscribed in the circle, and a diameter is annotated. What is the perimeter of the square?"
+          "question_text": "The right triangle shows one leg and the hypotenuse. What is the perimeter of the triangle?"
         },
         "task_family_key": "analytical_perimeter_scene",
-        "task_family_variant_index": 2,
+        "task_family_variant_index": 1,
         "task_key": "analytical_perimeter_query",
-        "task_variant_index": 2,
+        "task_variant_index": 0,
         "task_variant_key": null,
         "task_variant_template_index": null,
         "template_paths": [
@@ -173,23 +190,23 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 2,
+            "answer_or_evidence_variant_index": 1,
             "prompt_bundle_id": "geometry_analytical_perimeter_v1",
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the perimeter value rounded to one decimal place",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: QO",
-              "json_example": "{\"evidence\":{\"QO\":2},\"answer\":42.3}",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: HJ, IJ",
+              "json_example": "{\"evidence\":{\"HJ\":2,\"IJ\":3},\"answer\":42.3}",
               "json_example_answer_only": "{\"answer\":42.3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a geometric scene with measurement annotations",
-              "question_text": "The square is inscribed in the circle, and a diameter is annotated. What is the perimeter of the square?"
+              "question_text": "The right triangle shows one leg and the hypotenuse. What is the perimeter of the triangle?"
             },
             "task_family_key": "analytical_perimeter_scene",
-            "task_family_variant_index": 2,
+            "task_family_variant_index": 1,
             "task_key": "analytical_perimeter_query",
-            "task_variant_index": 2,
+            "task_variant_index": 0,
             "task_variant_key": null,
             "task_variant_template_index": null,
             "template_paths": [
@@ -201,7 +218,7 @@
               "task_family:analytical_perimeter_scene": 5
             }
           },
-          "prompt": "Look at the annotated image showing a geometric scene with measurement annotations. Task: The square is inscribed in the circle, and a diameter is annotated. What is the perimeter of the square?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: QO.\nAnswer requirement: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"QO\":2},\"answer\":42.3}"
+          "prompt": "The image shows a geometric scene with measurement annotations. The right triangle shows one leg and the hypotenuse. What is the perimeter of the triangle?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: HJ, IJ.\nAnswer format: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"HJ\":2,\"IJ\":3},\"answer\":42.3}"
         },
         "answer_only": {
           "metadata": {
@@ -211,18 +228,18 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the perimeter value rounded to one decimal place",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: QO",
-              "json_example": "{\"evidence\":{\"QO\":2},\"answer\":42.3}",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: HJ, IJ",
+              "json_example": "{\"evidence\":{\"HJ\":2,\"IJ\":3},\"answer\":42.3}",
               "json_example_answer_only": "{\"answer\":42.3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a geometric scene with measurement annotations",
-              "question_text": "The square is inscribed in the circle, and a diameter is annotated. What is the perimeter of the square?"
+              "question_text": "The right triangle shows one leg and the hypotenuse. What is the perimeter of the triangle?"
             },
             "task_family_key": "analytical_perimeter_scene",
-            "task_family_variant_index": 2,
+            "task_family_variant_index": 1,
             "task_key": "analytical_perimeter_query",
-            "task_variant_index": 2,
+            "task_variant_index": 0,
             "task_variant_key": null,
             "task_variant_template_index": null,
             "template_paths": [
@@ -234,7 +251,7 @@
               "task_family:analytical_perimeter_scene": 5
             }
           },
-          "prompt": "Look at the annotated image showing a geometric scene with measurement annotations. Task: The square is inscribed in the circle, and a diameter is annotated. What is the perimeter of the square?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"answer\":42.3}"
+          "prompt": "The image shows a geometric scene with measurement annotations. The right triangle shows one leg and the hypotenuse. What is the perimeter of the triangle?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"answer\":42.3}"
         }
       },
       "task_variant": "perimeter",
@@ -242,21 +259,26 @@
     },
     "render_map": {
       "annotation_centers": {
-        "QO": [
-          349.5,
-          320.8666666666667
+        "HJ": [
+          69.05333333333333,
+          335.4082341204132
+        ],
+        "IJ": [
+          336.4103448275862,
+          314.04183624621265
         ]
       },
       "annotation_labels": {
-        "diameter": "QO"
+        "hypotenuse": "IJ",
+        "known_leg": "HJ"
       },
       "coord_space": "pixel",
       "instance_anchor": {
         "bbox": [
-          105.67000000000002,
-          105.67000000000002,
-          593.3299999999999,
-          593.3299999999999
+          97.22,
+          135.74867468863823,
+          536.78,
+          535.0677935521883
         ],
         "coord_space": "pixel"
       }
@@ -281,33 +303,35 @@
           "kind": "solid"
         }
       },
-      "canvas_size": 699,
+      "canvas_size": 634,
       "coord_space": "pixel",
       "graph_coordinate_frame": {
         "coord_space": "graph_unit",
-        "full_cells_x": 10,
-        "full_cells_y": 10,
+        "full_cells_x": 4,
+        "full_cells_y": 4,
+        "origin_fraction_x": 0.5,
+        "origin_fraction_y": 0.5,
         "origin_pixel": [
-          349,
-          349
+          316,
+          316
         ],
         "outer_margin_px": 16,
         "partial_edge_cells": true,
-        "spacing_px": 58,
-        "target_cells_x": 12,
-        "target_cells_y": 12,
+        "spacing_px": 106,
+        "target_cells_x": 6,
+        "target_cells_y": 6,
         "x_positive": "right",
         "y_positive": "up"
       },
       "graph_paper_grid": {
-        "full_cells_x": 10,
-        "full_cells_y": 10,
+        "full_cells_x": 4,
+        "full_cells_y": 4,
         "partial_edge_cells": true,
-        "spacing_px": 58,
-        "target_cells_x": 12,
-        "target_cells_y": 12
+        "spacing_px": 106,
+        "target_cells_x": 6,
+        "target_cells_y": 6
       },
-      "legacy_scene_variant": "circle",
+      "legacy_scene_variant": "triangle",
       "post_image_noise": {
         "applied": false,
         "apply_prob": 0.5,
@@ -325,22 +349,22 @@
         "enabled": true
       },
       "query_variant": "perimeter",
-      "scene_variant": "circle",
+      "scene_variant": "triangle",
       "shape_style": {
         "label_color": [
-          32,
-          94,
-          96
+          125,
+          13,
+          69
         ],
         "label_stroke_color": [
+          249,
           251,
-          254,
-          254
+          249
         ],
         "line_color": [
-          32,
-          94,
-          96
+          125,
+          13,
+          69
         ]
       }
     },
@@ -351,60 +375,30 @@
             "fill_kind": "none",
             "vertices": [
               [
-                349.5,
-                105.67000000000002
+                97.22,
+                535.0677935521883
               ],
               [
-                593.3299999999999,
-                349.5
+                536.78,
+                535.0677935521883
               ],
               [
-                349.5,
-                593.3299999999999
-              ],
-              [
-                105.67000000000002,
-                349.5
+                97.22,
+                135.74867468863823
               ]
             ]
           },
-          "entity_id": "square_1",
-          "entity_type": "square"
-        },
-        {
-          "attrs": {
-            "center": [
-              349.5,
-              349.5
-            ],
-            "radius_px": 244
-          },
-          "entity_id": "circle_1",
-          "entity_type": "circle"
-        },
-        {
-          "attrs": {
-            "helper": true,
-            "point_a": [
-              105.67000000000002,
-              349.5
-            ],
-            "point_b": [
-              593.3299999999999,
-              349.5
-            ]
-          },
-          "entity_id": "diameter_1",
-          "entity_type": "diameter"
+          "entity_id": "triangle_1",
+          "entity_type": "right_triangle"
         }
       ],
       "frames": {
         "graph_unit": {
           "origin_pixel": [
-            349,
-            349
+            316,
+            316
           ],
-          "spacing_px": 58,
+          "spacing_px": 106,
           "x_positive": "right",
           "y_positive": "up"
         },
@@ -418,29 +412,33 @@
         }
       },
       "relations": {
-        "legacy_query_variant": "inscribed_square_diameter",
-        "legacy_scene_variant": "circle",
+        "legacy_query_variant": "right_triangle_leg_hypotenuse",
+        "legacy_scene_variant": "triangle",
         "legacy_task_id": "task_geometry_analytical_2d_perimeter",
         "query_variant": "perimeter",
-        "scene_variant": "circle"
+        "scene_variant": "triangle"
       },
       "scene_kind": "geometry_2d_analytical_perimeter"
     },
     "witness_symbolic": {
       "annotation_ids": [
-        "QO"
+        "HJ",
+        "IJ"
       ],
       "annotation_labels": {
-        "diameter": "QO"
+        "hypotenuse": "IJ",
+        "known_leg": "HJ"
       },
       "annotation_values": {
-        "QO": 16
+        "HJ": 39,
+        "IJ": 58
       },
-      "formula_expression": "2 * sqrt(2) * diameter",
+      "formula_expression": "known_leg + hypotenuse + sqrt(hypotenuse^2 - known_leg^2)",
       "measurement_ref_map": {
-        "QO": 16
+        "HJ": 39,
+        "IJ": 58
       },
-      "task_variant": "inscribed_square_diameter",
+      "task_variant": "right_triangle_leg_hypotenuse",
       "type": "annotation_measurement_map"
     }
   },

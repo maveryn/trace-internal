@@ -1,71 +1,74 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 10
+    "value": 17
   },
   "evidence_gt": {
     "type": "integer_list",
     "value": [
-      10,
-      11,
-      5
+      6,
+      16,
+      17,
+      6,
+      15
     ]
   },
   "image": {
     "format": "png",
     "path": "charts/task_charts_composition_subset_value/images/stack_segment_value/0012.png"
   },
-  "instance_seed": 713705873211731,
-  "prompt": "Use the composition chart in the image. It shows a stacked horizontal bar chart. Each category has one horizontal bar divided into differently colored segments, a legend on the right maps segment colors to segment labels, and the integer segment values are printed inside the segments. Answer the question using the printed values shown in the composition chart. Read the Ethe segment at category H. What value does it have?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array [v1, v2, ...] listing the segment values in legend order for the queried stack.\nAnswer field: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[6,9,5],\"answer\":9}",
+  "instance_seed": 5412506454524322,
+  "prompt": "Work from the chart shown in the image: a stacked horizontal bar chart. Each category has one horizontal bar divided into differently colored segments, a legend on the right maps segment colors to segment labels, and the integer segment values are printed inside the segments. Use the chart's printed segment or slice values to compute the answer. Using category C, what value belongs to the Ruff segment?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array [v1, v2, ...] listing the segment values in legend order for the queried stack.\nAnswer format: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[6,9,5],\"answer\":9}",
   "prompt_variants": {
-    "answer_and_evidence": "Use the composition chart in the image. It shows a stacked horizontal bar chart. Each category has one horizontal bar divided into differently colored segments, a legend on the right maps segment colors to segment labels, and the integer segment values are printed inside the segments. Answer the question using the printed values shown in the composition chart. Read the Ethe segment at category H. What value does it have?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array [v1, v2, ...] listing the segment values in legend order for the queried stack.\nAnswer field: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[6,9,5],\"answer\":9}",
-    "answer_only": "Use the composition chart in the image. It shows a stacked horizontal bar chart. Each category has one horizontal bar divided into differently colored segments, a legend on the right maps segment colors to segment labels, and the integer segment values are printed inside the segments. Answer the question using the printed values shown in the composition chart. Read the Ethe segment at category H. What value does it have?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":9}"
+    "answer_and_evidence": "Work from the chart shown in the image: a stacked horizontal bar chart. Each category has one horizontal bar divided into differently colored segments, a legend on the right maps segment colors to segment labels, and the integer segment values are printed inside the segments. Use the chart's printed segment or slice values to compute the answer. Using category C, what value belongs to the Ruff segment?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array [v1, v2, ...] listing the segment values in legend order for the queried stack.\nAnswer format: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[6,9,5],\"answer\":9}",
+    "answer_only": "Work from the chart shown in the image: a stacked horizontal bar chart. Each category has one horizontal bar divided into differently colored segments, a legend on the right maps segment colors to segment labels, and the integer segment values are printed inside the segments. Use the chart's printed segment or slice values to compute the answer. Using category C, what value belongs to the Ruff segment?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":9}"
   },
   "task": "task_charts_composition_subset_value",
   "task_variant": "stack_segment_value",
   "trace_payload": {
     "execution_trace": {
-      "answer_value": 10,
-      "category_count": 7,
+      "answer_value": 17,
+      "category_count": 4,
       "category_count_range": [
         4,
         7
       ],
       "category_labels": [
-        "L",
-        "K",
-        "H",
-        "C",
         "M",
-        "X",
+        "C",
+        "Z",
         "F"
       ],
       "composition_scope": "stack",
       "evidence_labels": [
-        "Ethe",
-        "Vial",
-        "Durr"
+        "Wall",
+        "Livy",
+        "Ruff",
+        "Alic",
+        "Puff"
       ],
       "evidence_values": [
-        10,
-        11,
-        5
+        6,
+        16,
+        17,
+        6,
+        15
       ],
       "mark_color_distance_space": "lab",
       "mark_color_min_distance": 40.0,
       "mark_color_sampling_policy": "random_rgb_palette",
       "mark_fill_rgb": [
-        116,
-        21,
-        107
+        52,
+        84,
+        43
       ],
       "mark_outline_rgb": [
-        64,
-        12,
-        59
+        29,
+        46,
+        24
       ],
-      "query_category_label": "H",
-      "query_series_label": "Ethe",
+      "query_category_label": "C",
+      "query_series_label": "Ruff",
       "query_subset_labels": [],
       "question_format": "numeric_open",
       "scene_mode": "stacked",
@@ -74,195 +77,242 @@
         "stacked_bar": 0.5,
         "stacked_horizontal_bar": 0.5
       },
-      "series_count": 3,
+      "series_count": 5,
       "series_count_range": [
         3,
         5
       ],
       "series_fill_palette_rgb": [
         [
-          116,
-          21,
-          107
+          52,
+          84,
+          43
         ],
         [
-          79,
-          101,
-          73
+          58,
+          47,
+          207
         ],
         [
-          166,
-          93,
-          18
+          96,
+          43,
+          75
+        ],
+        [
+          144,
+          127,
+          19
+        ],
+        [
+          115,
+          218,
+          139
         ]
       ],
       "series_labels": [
-        "Ethe",
-        "Vial",
-        "Durr"
+        "Wall",
+        "Livy",
+        "Ruff",
+        "Alic",
+        "Puff"
       ],
       "series_outline_palette_rgb": [
         [
-          64,
-          12,
-          59
+          29,
+          46,
+          24
         ],
         [
-          43,
-          56,
-          40
+          32,
+          26,
+          114
         ],
         [
-          91,
-          51,
+          53,
+          24,
+          41
+        ],
+        [
+          79,
+          70,
           10
+        ],
+        [
+          63,
+          120,
+          76
         ]
       ],
-      "target_answer": 10,
+      "target_answer": 17,
       "target_answer_range": [
         4,
         18
       ],
       "task_variant": "stack_segment_value",
       "task_variant_probabilities": {
-        "combined_share_subset": 0.3333333333333333,
-        "stack_segment_value": 0.3333333333333333,
-        "stack_total_at_label": 0.3333333333333333
+        "combined_share_subset": 0.0,
+        "stack_segment_value": 1.0,
+        "stack_total_at_label": 0.0
       },
       "value_semantics": "integer",
       "values_by_category": {
         "C": {
-          "Durr": 11,
-          "Ethe": 12,
-          "Vial": 7
+          "Alic": 6,
+          "Livy": 16,
+          "Puff": 15,
+          "Ruff": 17,
+          "Wall": 6
         },
         "F": {
-          "Durr": 4,
-          "Ethe": 7,
-          "Vial": 4
-        },
-        "H": {
-          "Durr": 5,
-          "Ethe": 10,
-          "Vial": 11
-        },
-        "K": {
-          "Durr": 17,
-          "Ethe": 8,
-          "Vial": 14
-        },
-        "L": {
-          "Durr": 7,
-          "Ethe": 16,
-          "Vial": 16
+          "Alic": 8,
+          "Livy": 12,
+          "Puff": 15,
+          "Ruff": 11,
+          "Wall": 18
         },
         "M": {
-          "Durr": 14,
-          "Ethe": 18,
-          "Vial": 14
+          "Alic": 17,
+          "Livy": 16,
+          "Puff": 16,
+          "Ruff": 8,
+          "Wall": 15
         },
-        "X": {
-          "Durr": 5,
-          "Ethe": 7,
-          "Vial": 8
+        "Z": {
+          "Alic": 9,
+          "Livy": 8,
+          "Puff": 11,
+          "Ruff": 18,
+          "Wall": 15
         }
       },
       "values_by_label": {
-        "Durr": 5,
-        "Ethe": 10,
-        "Vial": 11
+        "Alic": 6,
+        "Livy": 16,
+        "Puff": 15,
+        "Ruff": 17,
+        "Wall": 6
       }
     },
     "projected_evidence": {
       "bbox_set": [
         [
           120.0,
-          220.451,
-          276.809,
-          270.406
+          211.79,
+          180.575,
+          299.21
         ],
         [
-          276.809,
-          220.451,
-          449.298,
-          270.406
+          180.575,
+          211.79,
+          342.11,
+          299.21
         ],
         [
-          449.298,
-          220.451,
-          527.702,
-          270.406
+          342.11,
+          211.79,
+          513.74,
+          299.21
+        ],
+        [
+          513.74,
+          211.79,
+          574.315,
+          299.21
+        ],
+        [
+          574.315,
+          211.79,
+          725.753,
+          299.21
         ]
       ],
       "integer_list": [
-        10,
-        11,
-        5
+        6,
+        16,
+        17,
+        6,
+        15
       ],
       "pixel_point_map": {
-        "Durr": [
-          488.5,
-          245.429
+        "Alic": [
+          544.027,
+          255.5
         ],
-        "Ethe": [
-          198.404,
-          245.429
+        "Livy": [
+          261.342,
+          255.5
         ],
-        "Vial": [
-          363.053,
-          245.429
+        "Puff": [
+          650.034,
+          255.5
+        ],
+        "Ruff": [
+          427.925,
+          255.5
+        ],
+        "Wall": [
+          150.288,
+          255.5
         ]
       },
       "pixel_point_set": [
         [
-          198.404,
-          245.429
+          150.288,
+          255.5
         ],
         [
-          363.053,
-          245.429
+          261.342,
+          255.5
         ],
         [
-          488.5,
-          245.429
+          427.925,
+          255.5
+        ],
+        [
+          544.027,
+          255.5
+        ],
+        [
+          650.034,
+          255.5
         ]
       ]
     },
     "query_spec": {
       "params": {
-        "category_count": 7,
+        "category_count": 4,
         "category_count_range": [
           4,
           7
         ],
-        "query_category_label": "H",
-        "query_series_label": "Ethe",
+        "query_category_label": "C",
+        "query_series_label": "Ruff",
         "query_subset_labels": [],
         "scene_variant": "stacked_horizontal_bar",
         "scene_variant_probabilities": {
           "stacked_bar": 0.5,
           "stacked_horizontal_bar": 0.5
         },
-        "series_count": 3,
+        "series_count": 5,
         "series_count_range": [
           3,
           5
         ],
-        "target_answer": 10,
+        "target_answer": 17,
         "target_answer_range": [
           4,
           18
         ],
         "task_variant": "stack_segment_value",
         "task_variant_probabilities": {
-          "combined_share_subset": 0.3333333333333333,
-          "stack_segment_value": 0.3333333333333333,
-          "stack_total_at_label": 0.3333333333333333
+          "combined_share_subset": 0.0,
+          "stack_segment_value": 1.0,
+          "stack_total_at_label": 0.0
         }
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 3,
+        "answer_or_evidence_variant_index": 1,
         "prompt_bundle_id": "charts_composition_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -273,17 +323,17 @@
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
           "object_description": "a stacked horizontal bar chart. Each category has one horizontal bar divided into differently colored segments, a legend on the right maps segment colors to segment labels, and the integer segment values are printed inside the segments",
-          "query_category_label": "H",
+          "query_category_label": "C",
           "query_label_a": "",
           "query_label_b": "",
-          "query_series_label": "Ethe"
+          "query_series_label": "Ruff"
         },
         "task_family_key": "composition_chart_value",
-        "task_family_variant_index": 1,
+        "task_family_variant_index": 2,
         "task_key": "subset_value_query",
-        "task_variant_index": 4,
+        "task_variant_index": 2,
         "task_variant_key": "stack_segment_value",
-        "task_variant_template_index": 2,
+        "task_variant_template_index": 4,
         "template_paths": [
           "charts/composition/charts_composition_v1.json"
         ],
@@ -299,7 +349,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 3,
+            "answer_or_evidence_variant_index": 1,
             "prompt_bundle_id": "charts_composition_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -310,17 +360,17 @@
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a stacked horizontal bar chart. Each category has one horizontal bar divided into differently colored segments, a legend on the right maps segment colors to segment labels, and the integer segment values are printed inside the segments",
-              "query_category_label": "H",
+              "query_category_label": "C",
               "query_label_a": "",
               "query_label_b": "",
-              "query_series_label": "Ethe"
+              "query_series_label": "Ruff"
             },
             "task_family_key": "composition_chart_value",
-            "task_family_variant_index": 1,
+            "task_family_variant_index": 2,
             "task_key": "subset_value_query",
-            "task_variant_index": 4,
+            "task_variant_index": 2,
             "task_variant_key": "stack_segment_value",
-            "task_variant_template_index": 2,
+            "task_variant_template_index": 4,
             "template_paths": [
               "charts/composition/charts_composition_v1.json"
             ],
@@ -331,7 +381,7 @@
               "task_variant:stack_segment_value": 5
             }
           },
-          "prompt": "Use the composition chart in the image. It shows a stacked horizontal bar chart. Each category has one horizontal bar divided into differently colored segments, a legend on the right maps segment colors to segment labels, and the integer segment values are printed inside the segments. Answer the question using the printed values shown in the composition chart. Read the Ethe segment at category H. What value does it have?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array [v1, v2, ...] listing the segment values in legend order for the queried stack.\nAnswer field: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[6,9,5],\"answer\":9}"
+          "prompt": "Work from the chart shown in the image: a stacked horizontal bar chart. Each category has one horizontal bar divided into differently colored segments, a legend on the right maps segment colors to segment labels, and the integer segment values are printed inside the segments. Use the chart's printed segment or slice values to compute the answer. Using category C, what value belongs to the Ruff segment?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array [v1, v2, ...] listing the segment values in legend order for the queried stack.\nAnswer format: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[6,9,5],\"answer\":9}"
         },
         "answer_only": {
           "metadata": {
@@ -347,17 +397,17 @@
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a stacked horizontal bar chart. Each category has one horizontal bar divided into differently colored segments, a legend on the right maps segment colors to segment labels, and the integer segment values are printed inside the segments",
-              "query_category_label": "H",
+              "query_category_label": "C",
               "query_label_a": "",
               "query_label_b": "",
-              "query_series_label": "Ethe"
+              "query_series_label": "Ruff"
             },
             "task_family_key": "composition_chart_value",
-            "task_family_variant_index": 1,
+            "task_family_variant_index": 2,
             "task_key": "subset_value_query",
-            "task_variant_index": 4,
+            "task_variant_index": 2,
             "task_variant_key": "stack_segment_value",
-            "task_variant_template_index": 2,
+            "task_variant_template_index": 4,
             "template_paths": [
               "charts/composition/charts_composition_v1.json"
             ],
@@ -368,7 +418,7 @@
               "task_variant:stack_segment_value": 5
             }
           },
-          "prompt": "Use the composition chart in the image. It shows a stacked horizontal bar chart. Each category has one horizontal bar divided into differently colored segments, a legend on the right maps segment colors to segment labels, and the integer segment values are printed inside the segments. Answer the question using the printed values shown in the composition chart. Read the Ethe segment at category H. What value does it have?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":9}"
+          "prompt": "Work from the chart shown in the image: a stacked horizontal bar chart. Each category has one horizontal bar divided into differently colored segments, a legend on the right maps segment colors to segment labels, and the integer segment values are printed inside the segments. Use the chart's printed segment or slice values to compute the answer. Using category C, what value belongs to the Ruff segment?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":9}"
         }
       },
       "task_variant": "stack_segment_value",
@@ -379,31 +429,19 @@
       "label_centers_px": {
         "C": [
           86.0,
-          326.0
+          255.5
         ],
         "F": [
           86.0,
-          567.714
-        ],
-        "H": [
-          86.0,
-          245.429
-        ],
-        "K": [
-          86.0,
-          164.857
-        ],
-        "L": [
-          86.0,
-          84.286
+          537.5
         ],
         "M": [
           86.0,
-          406.571
+          114.5
         ],
-        "X": [
+        "Z": [
           86.0,
-          487.143
+          396.5
         ]
       },
       "plot_bbox_px": [
@@ -441,48 +479,68 @@
         "mark_color_distance_space": "lab",
         "mark_color_min_distance": 40.0,
         "mark_fill_rgb": [
-          116,
-          21,
-          107
+          52,
+          84,
+          43
         ],
         "mark_outline_rgb": [
-          64,
-          12,
-          59
+          29,
+          46,
+          24
         ],
         "sampling_policy": "random_rgb_palette",
         "series_fill_palette_rgb": [
           [
-            116,
-            21,
-            107
+            52,
+            84,
+            43
           ],
           [
-            79,
-            101,
-            73
+            58,
+            47,
+            207
           ],
           [
-            166,
-            93,
-            18
+            96,
+            43,
+            75
+          ],
+          [
+            144,
+            127,
+            19
+          ],
+          [
+            115,
+            218,
+            139
           ]
         ],
         "series_outline_palette_rgb": [
           [
-            64,
-            12,
-            59
+            29,
+            46,
+            24
           ],
           [
-            43,
-            56,
-            40
+            32,
+            26,
+            114
           ],
           [
-            91,
-            51,
+            53,
+            24,
+            41
+          ],
+          [
+            79,
+            70,
             10
+          ],
+          [
+            63,
+            120,
+            76
           ]
         ]
       },
@@ -514,7 +572,7 @@
         "label_stroke_width_px": 2,
         "tick_font_size_px": 20
       },
-      "y_axis_max": 47,
+      "y_axis_max": 73,
       "y_ticks": [
         0,
         1,
@@ -563,7 +621,33 @@
         44,
         45,
         46,
-        47
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60,
+        61,
+        62,
+        63,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69,
+        70,
+        71,
+        72,
+        73
       ]
     },
     "scene_ir": {
@@ -571,17 +655,17 @@
         {
           "attrs": {
             "category_group_bbox_px": [
-              78.5,
-              59.309,
-              731.553,
-              109.263
+              74.0,
+              70.79,
+              846.904,
+              158.21
             ],
-            "category_label": "L",
+            "category_label": "M",
             "category_rank": 0,
             "legend_label_bbox_px": [
               931.0,
               65.0,
-              991.0,
+              989.0,
               83.0
             ],
             "legend_swatch_bbox_px": [
@@ -592,51 +676,51 @@
             ],
             "mark_bbox_px": [
               120.0,
-              59.309,
-              370.894,
-              109.263
+              70.79,
+              271.438,
+              158.21
             ],
             "mark_center_px": [
-              245.447,
-              84.286
+              195.719,
+              114.5
             ],
             "mark_fill_rgb": [
-              116,
-              21,
-              107
+              52,
+              84,
+              43
             ],
             "mark_outline_rgb": [
-              64,
-              12,
-              59
+              29,
+              46,
+              24
             ],
             "scene_variant": "stacked_horizontal_bar",
-            "series_label": "Ethe",
+            "series_label": "Wall",
             "series_rank": 0,
-            "value": 16,
+            "value": 15,
             "value_center_px": [
-              245.447,
-              84.286
+              195.719,
+              114.5
             ]
           },
-          "entity_id": "segment_L_Ethe",
+          "entity_id": "segment_M_Wall",
           "entity_type": "segment"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              78.5,
-              59.309,
-              731.553,
-              109.263
+              74.0,
+              70.79,
+              846.904,
+              158.21
             ],
-            "category_label": "L",
+            "category_label": "M",
             "category_rank": 0,
             "legend_label_bbox_px": [
               931.0,
-              107.0,
-              982.0,
-              125.0
+              104.5,
+              986.0,
+              127.5
             ],
             "legend_swatch_bbox_px": [
               881.0,
@@ -645,51 +729,51 @@
               130.0
             ],
             "mark_bbox_px": [
-              370.894,
-              59.309,
-              621.787,
-              109.263
+              271.438,
+              70.79,
+              432.973,
+              158.21
             ],
             "mark_center_px": [
-              496.34,
-              84.286
+              352.205,
+              114.5
             ],
             "mark_fill_rgb": [
-              79,
-              101,
-              73
+              58,
+              47,
+              207
             ],
             "mark_outline_rgb": [
-              43,
-              56,
-              40
+              32,
+              26,
+              114
             ],
             "scene_variant": "stacked_horizontal_bar",
-            "series_label": "Vial",
+            "series_label": "Livy",
             "series_rank": 1,
             "value": 16,
             "value_center_px": [
-              496.34,
-              84.286
+              352.205,
+              114.5
             ]
           },
-          "entity_id": "segment_L_Vial",
+          "entity_id": "segment_M_Livy",
           "entity_type": "segment"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              78.5,
-              59.309,
-              731.553,
-              109.263
+              74.0,
+              70.79,
+              846.904,
+              158.21
             ],
-            "category_label": "L",
+            "category_label": "M",
             "category_rank": 0,
             "legend_label_bbox_px": [
               931.0,
               149.0,
-              992.0,
+              987.0,
               167.0
             ],
             "legend_swatch_bbox_px": [
@@ -699,106 +783,214 @@
               172.0
             ],
             "mark_bbox_px": [
-              621.787,
-              59.309,
-              731.553,
-              109.263
+              432.973,
+              70.79,
+              513.74,
+              158.21
             ],
             "mark_center_px": [
-              676.67,
-              84.286
+              473.356,
+              114.5
             ],
             "mark_fill_rgb": [
-              166,
-              93,
-              18
+              96,
+              43,
+              75
             ],
             "mark_outline_rgb": [
-              91,
-              51,
-              10
+              53,
+              24,
+              41
             ],
             "scene_variant": "stacked_horizontal_bar",
-            "series_label": "Durr",
+            "series_label": "Ruff",
             "series_rank": 2,
-            "value": 7,
-            "value_center_px": [
-              676.67,
-              84.286
-            ]
-          },
-          "entity_id": "segment_L_Durr",
-          "entity_type": "segment"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              76.0,
-              139.88,
-              731.553,
-              189.834
-            ],
-            "category_label": "K",
-            "category_rank": 1,
-            "legend_label_bbox_px": [
-              931.0,
-              65.0,
-              991.0,
-              83.0
-            ],
-            "legend_swatch_bbox_px": [
-              881.0,
-              60.0,
-              909.0,
-              88.0
-            ],
-            "mark_bbox_px": [
-              120.0,
-              139.88,
-              245.447,
-              189.834
-            ],
-            "mark_center_px": [
-              182.723,
-              164.857
-            ],
-            "mark_fill_rgb": [
-              116,
-              21,
-              107
-            ],
-            "mark_outline_rgb": [
-              64,
-              12,
-              59
-            ],
-            "scene_variant": "stacked_horizontal_bar",
-            "series_label": "Ethe",
-            "series_rank": 0,
             "value": 8,
             "value_center_px": [
-              182.723,
-              164.857
+              473.356,
+              114.5
             ]
           },
-          "entity_id": "segment_K_Ethe",
+          "entity_id": "segment_M_Ruff",
           "entity_type": "segment"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              76.0,
-              139.88,
-              731.553,
-              189.834
+              74.0,
+              70.79,
+              846.904,
+              158.21
             ],
-            "category_label": "K",
+            "category_label": "M",
+            "category_rank": 0,
+            "legend_label_bbox_px": [
+              931.0,
+              191.0,
+              980.0,
+              209.0
+            ],
+            "legend_swatch_bbox_px": [
+              881.0,
+              186.0,
+              909.0,
+              214.0
+            ],
+            "mark_bbox_px": [
+              513.74,
+              70.79,
+              685.37,
+              158.21
+            ],
+            "mark_center_px": [
+              599.555,
+              114.5
+            ],
+            "mark_fill_rgb": [
+              144,
+              127,
+              19
+            ],
+            "mark_outline_rgb": [
+              79,
+              70,
+              10
+            ],
+            "scene_variant": "stacked_horizontal_bar",
+            "series_label": "Alic",
+            "series_rank": 3,
+            "value": 17,
+            "value_center_px": [
+              599.555,
+              114.5
+            ]
+          },
+          "entity_id": "segment_M_Alic",
+          "entity_type": "segment"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              74.0,
+              70.79,
+              846.904,
+              158.21
+            ],
+            "category_label": "M",
+            "category_rank": 0,
+            "legend_label_bbox_px": [
+              931.0,
+              233.0,
+              987.0,
+              251.0
+            ],
+            "legend_swatch_bbox_px": [
+              881.0,
+              228.0,
+              909.0,
+              256.0
+            ],
+            "mark_bbox_px": [
+              685.37,
+              70.79,
+              846.904,
+              158.21
+            ],
+            "mark_center_px": [
+              766.137,
+              114.5
+            ],
+            "mark_fill_rgb": [
+              115,
+              218,
+              139
+            ],
+            "mark_outline_rgb": [
+              63,
+              120,
+              76
+            ],
+            "scene_variant": "stacked_horizontal_bar",
+            "series_label": "Puff",
+            "series_rank": 4,
+            "value": 16,
+            "value_center_px": [
+              766.137,
+              114.5
+            ]
+          },
+          "entity_id": "segment_M_Puff",
+          "entity_type": "segment"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              77.0,
+              211.79,
+              725.753,
+              299.21
+            ],
+            "category_label": "C",
             "category_rank": 1,
             "legend_label_bbox_px": [
               931.0,
-              107.0,
-              982.0,
-              125.0
+              65.0,
+              989.0,
+              83.0
+            ],
+            "legend_swatch_bbox_px": [
+              881.0,
+              60.0,
+              909.0,
+              88.0
+            ],
+            "mark_bbox_px": [
+              120.0,
+              211.79,
+              180.575,
+              299.21
+            ],
+            "mark_center_px": [
+              150.288,
+              255.5
+            ],
+            "mark_fill_rgb": [
+              52,
+              84,
+              43
+            ],
+            "mark_outline_rgb": [
+              29,
+              46,
+              24
+            ],
+            "scene_variant": "stacked_horizontal_bar",
+            "series_label": "Wall",
+            "series_rank": 0,
+            "value": 6,
+            "value_center_px": [
+              150.288,
+              255.5
+            ]
+          },
+          "entity_id": "segment_C_Wall",
+          "entity_type": "segment"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              77.0,
+              211.79,
+              725.753,
+              299.21
+            ],
+            "category_label": "C",
+            "category_rank": 1,
+            "legend_label_bbox_px": [
+              931.0,
+              104.5,
+              986.0,
+              127.5
             ],
             "legend_swatch_bbox_px": [
               881.0,
@@ -807,51 +999,51 @@
               130.0
             ],
             "mark_bbox_px": [
-              245.447,
-              139.88,
-              464.979,
-              189.834
+              180.575,
+              211.79,
+              342.11,
+              299.21
             ],
             "mark_center_px": [
-              355.213,
-              164.857
+              261.342,
+              255.5
             ],
             "mark_fill_rgb": [
-              79,
-              101,
-              73
+              58,
+              47,
+              207
             ],
             "mark_outline_rgb": [
-              43,
-              56,
-              40
+              32,
+              26,
+              114
             ],
             "scene_variant": "stacked_horizontal_bar",
-            "series_label": "Vial",
+            "series_label": "Livy",
             "series_rank": 1,
-            "value": 14,
+            "value": 16,
             "value_center_px": [
-              355.213,
-              164.857
+              261.342,
+              255.5
             ]
           },
-          "entity_id": "segment_K_Vial",
+          "entity_id": "segment_C_Livy",
           "entity_type": "segment"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              76.0,
-              139.88,
-              731.553,
-              189.834
+              77.0,
+              211.79,
+              725.753,
+              299.21
             ],
-            "category_label": "K",
+            "category_label": "C",
             "category_rank": 1,
             "legend_label_bbox_px": [
               931.0,
               149.0,
-              992.0,
+              987.0,
               167.0
             ],
             "legend_swatch_bbox_px": [
@@ -861,375 +1053,159 @@
               172.0
             ],
             "mark_bbox_px": [
-              464.979,
-              139.88,
-              731.553,
-              189.834
+              342.11,
+              211.79,
+              513.74,
+              299.21
             ],
             "mark_center_px": [
-              598.266,
-              164.857
+              427.925,
+              255.5
             ],
             "mark_fill_rgb": [
-              166,
-              93,
-              18
+              96,
+              43,
+              75
             ],
             "mark_outline_rgb": [
-              91,
-              51,
-              10
+              53,
+              24,
+              41
             ],
             "scene_variant": "stacked_horizontal_bar",
-            "series_label": "Durr",
+            "series_label": "Ruff",
             "series_rank": 2,
             "value": 17,
             "value_center_px": [
-              598.266,
-              164.857
+              427.925,
+              255.5
             ]
           },
-          "entity_id": "segment_K_Durr",
-          "entity_type": "segment"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              76.0,
-              220.451,
-              527.702,
-              270.406
-            ],
-            "category_label": "H",
-            "category_rank": 2,
-            "legend_label_bbox_px": [
-              931.0,
-              65.0,
-              991.0,
-              83.0
-            ],
-            "legend_swatch_bbox_px": [
-              881.0,
-              60.0,
-              909.0,
-              88.0
-            ],
-            "mark_bbox_px": [
-              120.0,
-              220.451,
-              276.809,
-              270.406
-            ],
-            "mark_center_px": [
-              198.404,
-              245.429
-            ],
-            "mark_fill_rgb": [
-              116,
-              21,
-              107
-            ],
-            "mark_outline_rgb": [
-              64,
-              12,
-              59
-            ],
-            "scene_variant": "stacked_horizontal_bar",
-            "series_label": "Ethe",
-            "series_rank": 0,
-            "value": 10,
-            "value_center_px": [
-              198.404,
-              245.429
-            ]
-          },
-          "entity_id": "segment_H_Ethe",
-          "entity_type": "segment"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              76.0,
-              220.451,
-              527.702,
-              270.406
-            ],
-            "category_label": "H",
-            "category_rank": 2,
-            "legend_label_bbox_px": [
-              931.0,
-              107.0,
-              982.0,
-              125.0
-            ],
-            "legend_swatch_bbox_px": [
-              881.0,
-              102.0,
-              909.0,
-              130.0
-            ],
-            "mark_bbox_px": [
-              276.809,
-              220.451,
-              449.298,
-              270.406
-            ],
-            "mark_center_px": [
-              363.053,
-              245.429
-            ],
-            "mark_fill_rgb": [
-              79,
-              101,
-              73
-            ],
-            "mark_outline_rgb": [
-              43,
-              56,
-              40
-            ],
-            "scene_variant": "stacked_horizontal_bar",
-            "series_label": "Vial",
-            "series_rank": 1,
-            "value": 11,
-            "value_center_px": [
-              363.053,
-              245.429
-            ]
-          },
-          "entity_id": "segment_H_Vial",
-          "entity_type": "segment"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              76.0,
-              220.451,
-              527.702,
-              270.406
-            ],
-            "category_label": "H",
-            "category_rank": 2,
-            "legend_label_bbox_px": [
-              931.0,
-              149.0,
-              992.0,
-              167.0
-            ],
-            "legend_swatch_bbox_px": [
-              881.0,
-              144.0,
-              909.0,
-              172.0
-            ],
-            "mark_bbox_px": [
-              449.298,
-              220.451,
-              527.702,
-              270.406
-            ],
-            "mark_center_px": [
-              488.5,
-              245.429
-            ],
-            "mark_fill_rgb": [
-              166,
-              93,
-              18
-            ],
-            "mark_outline_rgb": [
-              91,
-              51,
-              10
-            ],
-            "scene_variant": "stacked_horizontal_bar",
-            "series_label": "Durr",
-            "series_rank": 2,
-            "value": 5,
-            "value_center_px": [
-              488.5,
-              245.429
-            ]
-          },
-          "entity_id": "segment_H_Durr",
+          "entity_id": "segment_C_Ruff",
           "entity_type": "segment"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
               77.0,
-              301.023,
-              590.426,
-              350.977
+              211.79,
+              725.753,
+              299.21
             ],
             "category_label": "C",
-            "category_rank": 3,
+            "category_rank": 1,
             "legend_label_bbox_px": [
               931.0,
-              65.0,
-              991.0,
-              83.0
+              191.0,
+              980.0,
+              209.0
             ],
             "legend_swatch_bbox_px": [
               881.0,
-              60.0,
+              186.0,
               909.0,
-              88.0
+              214.0
             ],
             "mark_bbox_px": [
-              120.0,
-              301.023,
-              308.17,
-              350.977
+              513.74,
+              211.79,
+              574.315,
+              299.21
             ],
             "mark_center_px": [
-              214.085,
-              326.0
+              544.027,
+              255.5
             ],
             "mark_fill_rgb": [
-              116,
-              21,
-              107
+              144,
+              127,
+              19
             ],
             "mark_outline_rgb": [
-              64,
-              12,
-              59
+              79,
+              70,
+              10
             ],
             "scene_variant": "stacked_horizontal_bar",
-            "series_label": "Ethe",
-            "series_rank": 0,
-            "value": 12,
+            "series_label": "Alic",
+            "series_rank": 3,
+            "value": 6,
             "value_center_px": [
-              214.085,
-              326.0
+              544.027,
+              255.5
             ]
           },
-          "entity_id": "segment_C_Ethe",
+          "entity_id": "segment_C_Alic",
           "entity_type": "segment"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
               77.0,
-              301.023,
-              590.426,
-              350.977
+              211.79,
+              725.753,
+              299.21
             ],
             "category_label": "C",
-            "category_rank": 3,
+            "category_rank": 1,
             "legend_label_bbox_px": [
               931.0,
-              107.0,
-              982.0,
-              125.0
+              233.0,
+              987.0,
+              251.0
             ],
             "legend_swatch_bbox_px": [
               881.0,
-              102.0,
+              228.0,
               909.0,
-              130.0
+              256.0
             ],
             "mark_bbox_px": [
-              308.17,
-              301.023,
-              417.936,
-              350.977
+              574.315,
+              211.79,
+              725.753,
+              299.21
             ],
             "mark_center_px": [
-              363.053,
-              326.0
+              650.034,
+              255.5
             ],
             "mark_fill_rgb": [
-              79,
-              101,
-              73
+              115,
+              218,
+              139
             ],
             "mark_outline_rgb": [
-              43,
-              56,
-              40
+              63,
+              120,
+              76
             ],
             "scene_variant": "stacked_horizontal_bar",
-            "series_label": "Vial",
-            "series_rank": 1,
-            "value": 7,
+            "series_label": "Puff",
+            "series_rank": 4,
+            "value": 15,
             "value_center_px": [
-              363.053,
-              326.0
+              650.034,
+              255.5
             ]
           },
-          "entity_id": "segment_C_Vial",
+          "entity_id": "segment_C_Puff",
           "entity_type": "segment"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              77.0,
-              301.023,
-              590.426,
-              350.977
+              77.5,
+              352.79,
+              735.849,
+              440.21
             ],
-            "category_label": "C",
-            "category_rank": 3,
-            "legend_label_bbox_px": [
-              931.0,
-              149.0,
-              992.0,
-              167.0
-            ],
-            "legend_swatch_bbox_px": [
-              881.0,
-              144.0,
-              909.0,
-              172.0
-            ],
-            "mark_bbox_px": [
-              417.936,
-              301.023,
-              590.426,
-              350.977
-            ],
-            "mark_center_px": [
-              504.181,
-              326.0
-            ],
-            "mark_fill_rgb": [
-              166,
-              93,
-              18
-            ],
-            "mark_outline_rgb": [
-              91,
-              51,
-              10
-            ],
-            "scene_variant": "stacked_horizontal_bar",
-            "series_label": "Durr",
-            "series_rank": 2,
-            "value": 11,
-            "value_center_px": [
-              504.181,
-              326.0
-            ]
-          },
-          "entity_id": "segment_C_Durr",
-          "entity_type": "segment"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              74.0,
-              381.594,
-              841.319,
-              431.549
-            ],
-            "category_label": "M",
-            "category_rank": 4,
+            "category_label": "Z",
+            "category_rank": 2,
             "legend_label_bbox_px": [
               931.0,
               65.0,
-              991.0,
+              989.0,
               83.0
             ],
             "legend_swatch_bbox_px": [
@@ -1240,51 +1216,51 @@
             ],
             "mark_bbox_px": [
               120.0,
-              381.594,
-              402.255,
-              431.549
+              352.79,
+              271.438,
+              440.21
             ],
             "mark_center_px": [
-              261.128,
-              406.571
+              195.719,
+              396.5
             ],
             "mark_fill_rgb": [
-              116,
-              21,
-              107
+              52,
+              84,
+              43
             ],
             "mark_outline_rgb": [
-              64,
-              12,
-              59
+              29,
+              46,
+              24
             ],
             "scene_variant": "stacked_horizontal_bar",
-            "series_label": "Ethe",
+            "series_label": "Wall",
             "series_rank": 0,
-            "value": 18,
+            "value": 15,
             "value_center_px": [
-              261.128,
-              406.571
+              195.719,
+              396.5
             ]
           },
-          "entity_id": "segment_M_Ethe",
+          "entity_id": "segment_Z_Wall",
           "entity_type": "segment"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              74.0,
-              381.594,
-              841.319,
-              431.549
+              77.5,
+              352.79,
+              735.849,
+              440.21
             ],
-            "category_label": "M",
-            "category_rank": 4,
+            "category_label": "Z",
+            "category_rank": 2,
             "legend_label_bbox_px": [
               931.0,
-              107.0,
-              982.0,
-              125.0
+              104.5,
+              986.0,
+              127.5
             ],
             "legend_swatch_bbox_px": [
               881.0,
@@ -1293,213 +1269,51 @@
               130.0
             ],
             "mark_bbox_px": [
-              402.255,
-              381.594,
-              621.787,
-              431.549
+              271.438,
+              352.79,
+              352.205,
+              440.21
             ],
             "mark_center_px": [
-              512.021,
-              406.571
+              311.822,
+              396.5
             ],
             "mark_fill_rgb": [
-              79,
-              101,
-              73
+              58,
+              47,
+              207
             ],
             "mark_outline_rgb": [
-              43,
-              56,
-              40
+              32,
+              26,
+              114
             ],
             "scene_variant": "stacked_horizontal_bar",
-            "series_label": "Vial",
-            "series_rank": 1,
-            "value": 14,
-            "value_center_px": [
-              512.021,
-              406.571
-            ]
-          },
-          "entity_id": "segment_M_Vial",
-          "entity_type": "segment"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              74.0,
-              381.594,
-              841.319,
-              431.549
-            ],
-            "category_label": "M",
-            "category_rank": 4,
-            "legend_label_bbox_px": [
-              931.0,
-              149.0,
-              992.0,
-              167.0
-            ],
-            "legend_swatch_bbox_px": [
-              881.0,
-              144.0,
-              909.0,
-              172.0
-            ],
-            "mark_bbox_px": [
-              621.787,
-              381.594,
-              841.319,
-              431.549
-            ],
-            "mark_center_px": [
-              731.553,
-              406.571
-            ],
-            "mark_fill_rgb": [
-              166,
-              93,
-              18
-            ],
-            "mark_outline_rgb": [
-              91,
-              51,
-              10
-            ],
-            "scene_variant": "stacked_horizontal_bar",
-            "series_label": "Durr",
-            "series_rank": 2,
-            "value": 14,
-            "value_center_px": [
-              731.553,
-              406.571
-            ]
-          },
-          "entity_id": "segment_M_Durr",
-          "entity_type": "segment"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              76.5,
-              462.166,
-              433.617,
-              512.12
-            ],
-            "category_label": "X",
-            "category_rank": 5,
-            "legend_label_bbox_px": [
-              931.0,
-              65.0,
-              991.0,
-              83.0
-            ],
-            "legend_swatch_bbox_px": [
-              881.0,
-              60.0,
-              909.0,
-              88.0
-            ],
-            "mark_bbox_px": [
-              120.0,
-              462.166,
-              229.766,
-              512.12
-            ],
-            "mark_center_px": [
-              174.883,
-              487.143
-            ],
-            "mark_fill_rgb": [
-              116,
-              21,
-              107
-            ],
-            "mark_outline_rgb": [
-              64,
-              12,
-              59
-            ],
-            "scene_variant": "stacked_horizontal_bar",
-            "series_label": "Ethe",
-            "series_rank": 0,
-            "value": 7,
-            "value_center_px": [
-              174.883,
-              487.143
-            ]
-          },
-          "entity_id": "segment_X_Ethe",
-          "entity_type": "segment"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              76.5,
-              462.166,
-              433.617,
-              512.12
-            ],
-            "category_label": "X",
-            "category_rank": 5,
-            "legend_label_bbox_px": [
-              931.0,
-              107.0,
-              982.0,
-              125.0
-            ],
-            "legend_swatch_bbox_px": [
-              881.0,
-              102.0,
-              909.0,
-              130.0
-            ],
-            "mark_bbox_px": [
-              229.766,
-              462.166,
-              355.213,
-              512.12
-            ],
-            "mark_center_px": [
-              292.489,
-              487.143
-            ],
-            "mark_fill_rgb": [
-              79,
-              101,
-              73
-            ],
-            "mark_outline_rgb": [
-              43,
-              56,
-              40
-            ],
-            "scene_variant": "stacked_horizontal_bar",
-            "series_label": "Vial",
+            "series_label": "Livy",
             "series_rank": 1,
             "value": 8,
             "value_center_px": [
-              292.489,
-              487.143
+              311.822,
+              396.5
             ]
           },
-          "entity_id": "segment_X_Vial",
+          "entity_id": "segment_Z_Livy",
           "entity_type": "segment"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              76.5,
-              462.166,
-              433.617,
-              512.12
+              77.5,
+              352.79,
+              735.849,
+              440.21
             ],
-            "category_label": "X",
-            "category_rank": 5,
+            "category_label": "Z",
+            "category_rank": 2,
             "legend_label_bbox_px": [
               931.0,
               149.0,
-              992.0,
+              987.0,
               167.0
             ],
             "legend_swatch_bbox_px": [
@@ -1509,51 +1323,159 @@
               172.0
             ],
             "mark_bbox_px": [
-              355.213,
-              462.166,
-              433.617,
-              512.12
+              352.205,
+              352.79,
+              533.932,
+              440.21
             ],
             "mark_center_px": [
-              394.415,
-              487.143
+              443.068,
+              396.5
             ],
             "mark_fill_rgb": [
-              166,
-              93,
-              18
+              96,
+              43,
+              75
             ],
             "mark_outline_rgb": [
-              91,
-              51,
+              53,
+              24,
+              41
+            ],
+            "scene_variant": "stacked_horizontal_bar",
+            "series_label": "Ruff",
+            "series_rank": 2,
+            "value": 18,
+            "value_center_px": [
+              443.068,
+              396.5
+            ]
+          },
+          "entity_id": "segment_Z_Ruff",
+          "entity_type": "segment"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              77.5,
+              352.79,
+              735.849,
+              440.21
+            ],
+            "category_label": "Z",
+            "category_rank": 2,
+            "legend_label_bbox_px": [
+              931.0,
+              191.0,
+              980.0,
+              209.0
+            ],
+            "legend_swatch_bbox_px": [
+              881.0,
+              186.0,
+              909.0,
+              214.0
+            ],
+            "mark_bbox_px": [
+              533.932,
+              352.79,
+              624.795,
+              440.21
+            ],
+            "mark_center_px": [
+              579.363,
+              396.5
+            ],
+            "mark_fill_rgb": [
+              144,
+              127,
+              19
+            ],
+            "mark_outline_rgb": [
+              79,
+              70,
               10
             ],
             "scene_variant": "stacked_horizontal_bar",
-            "series_label": "Durr",
-            "series_rank": 2,
-            "value": 5,
+            "series_label": "Alic",
+            "series_rank": 3,
+            "value": 9,
             "value_center_px": [
-              394.415,
-              487.143
+              579.363,
+              396.5
             ]
           },
-          "entity_id": "segment_X_Durr",
+          "entity_id": "segment_Z_Alic",
+          "entity_type": "segment"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              77.5,
+              352.79,
+              735.849,
+              440.21
+            ],
+            "category_label": "Z",
+            "category_rank": 2,
+            "legend_label_bbox_px": [
+              931.0,
+              233.0,
+              987.0,
+              251.0
+            ],
+            "legend_swatch_bbox_px": [
+              881.0,
+              228.0,
+              909.0,
+              256.0
+            ],
+            "mark_bbox_px": [
+              624.795,
+              352.79,
+              735.849,
+              440.21
+            ],
+            "mark_center_px": [
+              680.322,
+              396.5
+            ],
+            "mark_fill_rgb": [
+              115,
+              218,
+              139
+            ],
+            "mark_outline_rgb": [
+              63,
+              120,
+              76
+            ],
+            "scene_variant": "stacked_horizontal_bar",
+            "series_label": "Puff",
+            "series_rank": 4,
+            "value": 11,
+            "value_center_px": [
+              680.322,
+              396.5
+            ]
+          },
+          "entity_id": "segment_Z_Puff",
           "entity_type": "segment"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
               78.0,
-              542.737,
-              355.213,
-              592.691
+              493.79,
+              766.137,
+              581.21
             ],
             "category_label": "F",
-            "category_rank": 6,
+            "category_rank": 3,
             "legend_label_bbox_px": [
               931.0,
               65.0,
-              991.0,
+              989.0,
               83.0
             ],
             "legend_swatch_bbox_px": [
@@ -1564,51 +1486,51 @@
             ],
             "mark_bbox_px": [
               120.0,
-              542.737,
-              229.766,
-              592.691
+              493.79,
+              301.726,
+              581.21
             ],
             "mark_center_px": [
-              174.883,
-              567.714
+              210.863,
+              537.5
             ],
             "mark_fill_rgb": [
-              116,
-              21,
-              107
+              52,
+              84,
+              43
             ],
             "mark_outline_rgb": [
-              64,
-              12,
-              59
+              29,
+              46,
+              24
             ],
             "scene_variant": "stacked_horizontal_bar",
-            "series_label": "Ethe",
+            "series_label": "Wall",
             "series_rank": 0,
-            "value": 7,
+            "value": 18,
             "value_center_px": [
-              174.883,
-              567.714
+              210.863,
+              537.5
             ]
           },
-          "entity_id": "segment_F_Ethe",
+          "entity_id": "segment_F_Wall",
           "entity_type": "segment"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
               78.0,
-              542.737,
-              355.213,
-              592.691
+              493.79,
+              766.137,
+              581.21
             ],
             "category_label": "F",
-            "category_rank": 6,
+            "category_rank": 3,
             "legend_label_bbox_px": [
               931.0,
-              107.0,
-              982.0,
-              125.0
+              104.5,
+              986.0,
+              127.5
             ],
             "legend_swatch_bbox_px": [
               881.0,
@@ -1617,51 +1539,51 @@
               130.0
             ],
             "mark_bbox_px": [
-              229.766,
-              542.737,
-              292.489,
-              592.691
+              301.726,
+              493.79,
+              422.877,
+              581.21
             ],
             "mark_center_px": [
-              261.128,
-              567.714
+              362.301,
+              537.5
             ],
             "mark_fill_rgb": [
-              79,
-              101,
-              73
+              58,
+              47,
+              207
             ],
             "mark_outline_rgb": [
-              43,
-              56,
-              40
+              32,
+              26,
+              114
             ],
             "scene_variant": "stacked_horizontal_bar",
-            "series_label": "Vial",
+            "series_label": "Livy",
             "series_rank": 1,
-            "value": 4,
+            "value": 12,
             "value_center_px": [
-              261.128,
-              567.714
+              362.301,
+              537.5
             ]
           },
-          "entity_id": "segment_F_Vial",
+          "entity_id": "segment_F_Livy",
           "entity_type": "segment"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
               78.0,
-              542.737,
-              355.213,
-              592.691
+              493.79,
+              766.137,
+              581.21
             ],
             "category_label": "F",
-            "category_rank": 6,
+            "category_rank": 3,
             "legend_label_bbox_px": [
               931.0,
               149.0,
-              992.0,
+              987.0,
               167.0
             ],
             "legend_swatch_bbox_px": [
@@ -1671,47 +1593,157 @@
               172.0
             ],
             "mark_bbox_px": [
-              292.489,
-              542.737,
-              355.213,
-              592.691
+              422.877,
+              493.79,
+              533.932,
+              581.21
             ],
             "mark_center_px": [
-              323.851,
-              567.714
+              478.404,
+              537.5
             ],
             "mark_fill_rgb": [
-              166,
-              93,
-              18
+              96,
+              43,
+              75
             ],
             "mark_outline_rgb": [
-              91,
-              51,
+              53,
+              24,
+              41
+            ],
+            "scene_variant": "stacked_horizontal_bar",
+            "series_label": "Ruff",
+            "series_rank": 2,
+            "value": 11,
+            "value_center_px": [
+              478.404,
+              537.5
+            ]
+          },
+          "entity_id": "segment_F_Ruff",
+          "entity_type": "segment"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              78.0,
+              493.79,
+              766.137,
+              581.21
+            ],
+            "category_label": "F",
+            "category_rank": 3,
+            "legend_label_bbox_px": [
+              931.0,
+              191.0,
+              980.0,
+              209.0
+            ],
+            "legend_swatch_bbox_px": [
+              881.0,
+              186.0,
+              909.0,
+              214.0
+            ],
+            "mark_bbox_px": [
+              533.932,
+              493.79,
+              614.699,
+              581.21
+            ],
+            "mark_center_px": [
+              574.315,
+              537.5
+            ],
+            "mark_fill_rgb": [
+              144,
+              127,
+              19
+            ],
+            "mark_outline_rgb": [
+              79,
+              70,
               10
             ],
             "scene_variant": "stacked_horizontal_bar",
-            "series_label": "Durr",
-            "series_rank": 2,
-            "value": 4,
+            "series_label": "Alic",
+            "series_rank": 3,
+            "value": 8,
             "value_center_px": [
-              323.851,
-              567.714
+              574.315,
+              537.5
             ]
           },
-          "entity_id": "segment_F_Durr",
+          "entity_id": "segment_F_Alic",
+          "entity_type": "segment"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              78.0,
+              493.79,
+              766.137,
+              581.21
+            ],
+            "category_label": "F",
+            "category_rank": 3,
+            "legend_label_bbox_px": [
+              931.0,
+              233.0,
+              987.0,
+              251.0
+            ],
+            "legend_swatch_bbox_px": [
+              881.0,
+              228.0,
+              909.0,
+              256.0
+            ],
+            "mark_bbox_px": [
+              614.699,
+              493.79,
+              766.137,
+              581.21
+            ],
+            "mark_center_px": [
+              690.418,
+              537.5
+            ],
+            "mark_fill_rgb": [
+              115,
+              218,
+              139
+            ],
+            "mark_outline_rgb": [
+              63,
+              120,
+              76
+            ],
+            "scene_variant": "stacked_horizontal_bar",
+            "series_label": "Puff",
+            "series_rank": 4,
+            "value": 15,
+            "value_center_px": [
+              690.418,
+              537.5
+            ]
+          },
+          "entity_id": "segment_F_Puff",
           "entity_type": "segment"
         }
       ],
       "relations": {
-        "answer_value": 10,
+        "answer_value": 17,
         "evidence_labels": [
-          "Ethe",
-          "Vial",
-          "Durr"
+          "Wall",
+          "Livy",
+          "Ruff",
+          "Alic",
+          "Puff"
         ],
-        "query_category_label": "H",
-        "query_series_label": "Ethe",
+        "query_category_label": "C",
+        "query_series_label": "Ruff",
         "query_subset_labels": [],
         "scene_variant": "stacked_horizontal_bar",
         "task_variant": "stack_segment_value"
@@ -1720,15 +1752,19 @@
     },
     "witness_symbolic": {
       "labels": [
-        "Ethe",
-        "Vial",
-        "Durr"
+        "Wall",
+        "Livy",
+        "Ruff",
+        "Alic",
+        "Puff"
       ],
       "type": "integer_list",
       "values": [
-        10,
-        11,
-        5
+        6,
+        16,
+        17,
+        6,
+        15
       ]
     }
   },

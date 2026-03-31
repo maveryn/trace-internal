@@ -1,71 +1,74 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 46
+    "value": 122
   },
   "evidence_gt": {
     "type": "label_set",
     "value": [
+      "A",
       "C",
+      "D",
       "G",
-      "K",
-      "Q",
-      "X",
-      "Z"
+      "H",
+      "S",
+      "Y"
     ]
   },
   "image": {
     "format": "png",
     "path": "charts/task_charts_statistics_summary_value/images/sum/0005.png"
   },
-  "instance_seed": 5909576274753803,
-  "prompt": "The image shows a labeled dot plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Use the chart values to answer the question. Determine the sum of all displayed values.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing all chart labels used in the sum calculation.\nAnswer field: set \"answer\" to the requested statistic as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"C\",\"F\",\"M\",\"Q\"],\"answer\":35}",
+  "instance_seed": 3076339959110738,
+  "prompt": "You are given a labeled chart: a labeled line chart with visible point markers. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Read the chart values and answer the question. Find the total of the labeled chart values.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing all chart labels used in the sum calculation.\nAnswer rule: set \"answer\" to the requested statistic as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"C\",\"F\",\"M\",\"Q\"],\"answer\":35}",
   "prompt_variants": {
-    "answer_and_evidence": "The image shows a labeled dot plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Use the chart values to answer the question. Determine the sum of all displayed values.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing all chart labels used in the sum calculation.\nAnswer field: set \"answer\" to the requested statistic as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"C\",\"F\",\"M\",\"Q\"],\"answer\":35}",
-    "answer_only": "The image shows a labeled dot plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Use the chart values to answer the question. Determine the sum of all displayed values.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the requested statistic as an integer.\nExample JSON:\n{\"answer\":35}"
+    "answer_and_evidence": "You are given a labeled chart: a labeled line chart with visible point markers. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Read the chart values and answer the question. Find the total of the labeled chart values.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing all chart labels used in the sum calculation.\nAnswer rule: set \"answer\" to the requested statistic as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"C\",\"F\",\"M\",\"Q\"],\"answer\":35}",
+    "answer_only": "You are given a labeled chart: a labeled line chart with visible point markers. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Read the chart values and answer the question. Find the total of the labeled chart values.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the requested statistic as an integer.\nExample JSON:\n{\"answer\":35}"
   },
   "task": "task_charts_statistics_summary_value",
   "task_variant": "sum",
   "trace_payload": {
     "execution_trace": {
-      "answer_value": 46,
-      "computed_sum": 46,
+      "answer_value": 122,
+      "computed_sum": 122,
       "evidence_labels": [
+        "A",
         "C",
+        "D",
         "G",
-        "K",
-        "Q",
-        "X",
-        "Z"
+        "H",
+        "S",
+        "Y"
       ],
       "labels": [
-        "K",
-        "Z",
-        "Q",
+        "Y",
+        "S",
+        "D",
+        "A",
+        "H",
         "G",
-        "C",
-        "X"
+        "C"
       ],
       "mark_color_distance_space": "lab",
       "mark_color_min_distance": 40.0,
       "mark_color_sampling_policy": "random_rgb",
-      "mark_count": 6,
+      "mark_count": 7,
       "mark_count_range": [
         5,
         10
       ],
       "mark_fill_rgb": [
-        65,
-        169,
-        217
+        71,
+        66,
+        156
       ],
       "mark_outline_rgb": [
+        39,
         36,
-        93,
-        119
+        86
       ],
       "question_format": "numeric_open",
-      "scene_variant": "dot_plot",
+      "scene_variant": "line",
       "scene_variant_probabilities": {
         "area": 0.14285714285714285,
         "bar": 0.14285714285714285,
@@ -75,144 +78,161 @@
         "lollipop": 0.14285714285714285,
         "scatter": 0.14285714285714285
       },
-      "target_answer": 46,
+      "target_answer": 122,
       "target_answer_range": [
         5,
         200
       ],
       "task_variant": "sum",
       "task_variant_probabilities": {
-        "max": 0.14285714285714285,
-        "mean": 0.14285714285714285,
-        "median": 0.14285714285714285,
-        "min": 0.14285714285714285,
-        "mode": 0.14285714285714285,
-        "range": 0.14285714285714285,
-        "sum": 0.14285714285714285
+        "max": 0.0,
+        "mean": 0.0,
+        "median": 0.0,
+        "min": 0.0,
+        "mode": 0.0,
+        "range": 0.0,
+        "sum": 1.0
       },
       "value_max": 20,
       "value_min": 1,
       "values": [
-        8,
-        13,
-        11,
-        3,
-        7,
-        4
+        19,
+        20,
+        14,
+        19,
+        15,
+        20,
+        15
       ],
       "values_by_label": {
-        "C": 7,
-        "G": 3,
-        "K": 8,
-        "Q": 11,
-        "X": 4,
-        "Z": 13
+        "A": 19,
+        "C": 15,
+        "D": 14,
+        "G": 20,
+        "H": 15,
+        "S": 20,
+        "Y": 19
       }
     },
     "projected_evidence": {
       "bbox_set": [
         [
-          580.5,
-          268.0,
-          596.5,
-          284.0
+          415.0,
+          80.19,
+          431.0,
+          96.19
         ],
         [
-          470.167,
-          400.571,
-          486.167,
-          416.571
+          698.714,
+          168.571,
+          714.714,
+          184.571
         ],
         [
-          139.167,
-          234.857,
-          155.167,
-          250.857
+          320.429,
+          190.667,
+          336.429,
+          206.667
         ],
         [
-          359.833,
-          135.429,
-          375.833,
-          151.429
+          604.143,
+          58.095,
+          620.143,
+          74.095
         ],
         [
-          690.833,
-          367.429,
-          706.833,
-          383.429
+          509.571,
+          168.571,
+          525.571,
+          184.571
         ],
         [
-          249.5,
-          69.143,
-          265.5,
-          85.143
+          225.857,
+          58.095,
+          241.857,
+          74.095
+        ],
+        [
+          131.286,
+          80.19,
+          147.286,
+          96.19
         ]
       ],
       "label_set": [
+        "A",
         "C",
+        "D",
         "G",
-        "K",
-        "Q",
-        "X",
-        "Z"
+        "H",
+        "S",
+        "Y"
       ],
       "pixel_point_map": {
+        "A": [
+          423.0,
+          88.19
+        ],
         "C": [
-          588.5,
-          276.0
+          706.714,
+          176.571
+        ],
+        "D": [
+          328.429,
+          198.667
         ],
         "G": [
-          478.167,
-          408.571
+          612.143,
+          66.095
         ],
-        "K": [
-          147.167,
-          242.857
+        "H": [
+          517.571,
+          176.571
         ],
-        "Q": [
-          367.833,
-          143.429
+        "S": [
+          233.857,
+          66.095
         ],
-        "X": [
-          698.833,
-          375.429
-        ],
-        "Z": [
-          257.5,
-          77.143
+        "Y": [
+          139.286,
+          88.19
         ]
       },
       "pixel_point_set": [
         [
-          588.5,
-          276.0
+          423.0,
+          88.19
         ],
         [
-          478.167,
-          408.571
+          706.714,
+          176.571
         ],
         [
-          147.167,
-          242.857
+          328.429,
+          198.667
         ],
         [
-          367.833,
-          143.429
+          612.143,
+          66.095
         ],
         [
-          698.833,
-          375.429
+          517.571,
+          176.571
         ],
         [
-          257.5,
-          77.143
+          233.857,
+          66.095
+        ],
+        [
+          139.286,
+          88.19
         ]
       ]
     },
     "query_spec": {
       "params": {
-        "mark_count": 6,
-        "scene_variant": "dot_plot",
+        "mark_count": 7,
+        "scene_variant": "line",
         "scene_variant_probabilities": {
           "area": 0.14285714285714285,
           "bar": 0.14285714285714285,
@@ -222,25 +242,25 @@
           "lollipop": 0.14285714285714285,
           "scatter": 0.14285714285714285
         },
-        "target_answer": 46,
+        "target_answer": 122,
         "target_answer_range": [
           5,
           200
         ],
         "task_variant": "sum",
         "task_variant_probabilities": {
-          "max": 0.14285714285714285,
-          "mean": 0.14285714285714285,
-          "median": 0.14285714285714285,
-          "min": 0.14285714285714285,
-          "mode": 0.14285714285714285,
-          "range": 0.14285714285714285,
-          "sum": 0.14285714285714285
+          "max": 0.0,
+          "mean": 0.0,
+          "median": 0.0,
+          "min": 0.0,
+          "mode": 0.0,
+          "range": 0.0,
+          "sum": 1.0
         }
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 3,
+        "answer_or_evidence_variant_index": 4,
         "prompt_bundle_id": "charts_statistics_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -250,14 +270,14 @@
           "json_example_answer_only": "{\"answer\":35}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "object_description": "a labeled dot plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis"
+          "object_description": "a labeled line chart with visible point markers. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis"
         },
         "task_family_key": "labeled_chart_statistics",
-        "task_family_variant_index": 0,
+        "task_family_variant_index": 4,
         "task_key": "summary_value_query",
-        "task_variant_index": 2,
+        "task_variant_index": 4,
         "task_variant_key": "sum",
-        "task_variant_template_index": 2,
+        "task_variant_template_index": 1,
         "template_paths": [
           "charts/statistics/charts_statistics_v1.json"
         ],
@@ -273,39 +293,6 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 3,
-            "prompt_bundle_id": "charts_statistics_v1",
-            "schema_version": "v1",
-            "slot_values": {
-              "answer_hint": "set \"answer\" to the requested statistic as an integer",
-              "evidence_hint": "set \"evidence\" to an array containing all chart labels used in the sum calculation",
-              "json_example": "{\"evidence\":[\"A\",\"C\",\"F\",\"M\",\"Q\"],\"answer\":35}",
-              "json_example_answer_only": "{\"answer\":35}",
-              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
-              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a labeled dot plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis"
-            },
-            "task_family_key": "labeled_chart_statistics",
-            "task_family_variant_index": 0,
-            "task_key": "summary_value_query",
-            "task_variant_index": 2,
-            "task_variant_key": "sum",
-            "task_variant_template_index": 2,
-            "template_paths": [
-              "charts/statistics/charts_statistics_v1.json"
-            ],
-            "variant_count_by_key": {
-              "answer_or_evidence:answer_and_evidence": 5,
-              "task:summary_value_query": 5,
-              "task_family:labeled_chart_statistics": 5,
-              "task_variant:sum": 5
-            }
-          },
-          "prompt": "The image shows a labeled dot plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Use the chart values to answer the question. Determine the sum of all displayed values.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing all chart labels used in the sum calculation.\nAnswer field: set \"answer\" to the requested statistic as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"C\",\"F\",\"M\",\"Q\"],\"answer\":35}"
-        },
-        "answer_only": {
-          "metadata": {
-            "answer_or_evidence_key": "answer_only",
             "answer_or_evidence_variant_index": 4,
             "prompt_bundle_id": "charts_statistics_v1",
             "schema_version": "v1",
@@ -316,14 +303,47 @@
               "json_example_answer_only": "{\"answer\":35}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a labeled dot plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis"
+              "object_description": "a labeled line chart with visible point markers. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis"
             },
             "task_family_key": "labeled_chart_statistics",
-            "task_family_variant_index": 0,
+            "task_family_variant_index": 4,
             "task_key": "summary_value_query",
-            "task_variant_index": 2,
+            "task_variant_index": 4,
             "task_variant_key": "sum",
-            "task_variant_template_index": 2,
+            "task_variant_template_index": 1,
+            "template_paths": [
+              "charts/statistics/charts_statistics_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:summary_value_query": 5,
+              "task_family:labeled_chart_statistics": 5,
+              "task_variant:sum": 5
+            }
+          },
+          "prompt": "You are given a labeled chart: a labeled line chart with visible point markers. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Read the chart values and answer the question. Find the total of the labeled chart values.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing all chart labels used in the sum calculation.\nAnswer rule: set \"answer\" to the requested statistic as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"C\",\"F\",\"M\",\"Q\"],\"answer\":35}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "charts_statistics_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the requested statistic as an integer",
+              "evidence_hint": "set \"evidence\" to an array containing all chart labels used in the sum calculation",
+              "json_example": "{\"evidence\":[\"A\",\"C\",\"F\",\"M\",\"Q\"],\"answer\":35}",
+              "json_example_answer_only": "{\"answer\":35}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a labeled line chart with visible point markers. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis"
+            },
+            "task_family_key": "labeled_chart_statistics",
+            "task_family_variant_index": 4,
+            "task_key": "summary_value_query",
+            "task_variant_index": 4,
+            "task_variant_key": "sum",
+            "task_variant_template_index": 1,
             "template_paths": [
               "charts/statistics/charts_statistics_v1.json"
             ],
@@ -334,7 +354,7 @@
               "task_variant:sum": 5
             }
           },
-          "prompt": "The image shows a labeled dot plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Use the chart values to answer the question. Determine the sum of all displayed values.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the requested statistic as an integer.\nExample JSON:\n{\"answer\":35}"
+          "prompt": "You are given a labeled chart: a labeled line chart with visible point markers. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Read the chart values and answer the question. Find the total of the labeled chart values.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the requested statistic as an integer.\nExample JSON:\n{\"answer\":35}"
         }
       },
       "task_variant": "sum",
@@ -343,29 +363,33 @@
     "render_map": {
       "image_id": "img0",
       "label_centers_px": {
+        "A": [
+          423.0,
+          66.19
+        ],
         "C": [
-          588.5,
-          254.0
+          706.714,
+          154.571
+        ],
+        "D": [
+          328.429,
+          176.667
         ],
         "G": [
-          478.167,
-          386.571
+          612.143,
+          44.095
         ],
-        "K": [
-          147.167,
-          220.857
+        "H": [
+          517.571,
+          154.571
         ],
-        "Q": [
-          367.833,
-          121.429
+        "S": [
+          233.857,
+          44.095
         ],
-        "X": [
-          698.833,
-          353.429
-        ],
-        "Z": [
-          257.5,
-          55.143
+        "Y": [
+          139.286,
+          66.19
         ]
       },
       "plot_bbox_px": [
@@ -403,14 +427,14 @@
         "mark_color_distance_space": "lab",
         "mark_color_min_distance": 40.0,
         "mark_fill_rgb": [
-          65,
-          169,
-          217
+          71,
+          66,
+          156
         ],
         "mark_outline_rgb": [
+          39,
           36,
-          93,
-          119
+          86
         ],
         "sampling_policy": "random_rgb"
       },
@@ -436,13 +460,13 @@
         "edits": [],
         "enabled": false
       },
-      "scene_variant": "dot_plot",
+      "scene_variant": "line",
       "text_style": {
         "label_font_size_px": 22,
         "label_stroke_width_px": 2,
         "tick_font_size_px": 18
       },
-      "y_axis_max": 14,
+      "y_axis_max": 21,
       "y_ticks": [
         0,
         1,
@@ -458,143 +482,218 @@
         11,
         12,
         13,
-        14
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21
       ]
     },
     "scene_ir": {
       "entities": [
         {
           "attrs": {
-            "label": "K",
+            "label": "Y",
             "label_center_px": [
-              147.167,
-              220.857
+              139.286,
+              66.19
             ],
             "mark_bbox_px": [
-              139.167,
-              234.857,
-              155.167,
-              250.857
+              131.286,
+              80.19,
+              147.286,
+              96.19
             ],
             "mark_center_px": [
-              147.167,
-              242.857
+              139.286,
+              88.19
             ],
             "mark_fill_rgb": [
-              65,
-              169,
-              217
+              71,
+              66,
+              156
             ],
             "mark_outline_rgb": [
+              39,
               36,
-              93,
-              119
+              86
             ],
-            "scene_variant": "dot_plot",
-            "value": 8,
+            "scene_variant": "line",
+            "value": 19,
             "x_rank": 0
           },
-          "entity_id": "mark_K",
+          "entity_id": "mark_Y",
           "entity_type": "point"
         },
         {
           "attrs": {
-            "label": "Z",
+            "label": "S",
             "label_center_px": [
-              257.5,
-              55.143
+              233.857,
+              44.095
             ],
             "mark_bbox_px": [
-              249.5,
-              69.143,
-              265.5,
-              85.143
+              225.857,
+              58.095,
+              241.857,
+              74.095
             ],
             "mark_center_px": [
-              257.5,
-              77.143
+              233.857,
+              66.095
             ],
             "mark_fill_rgb": [
-              65,
-              169,
-              217
+              71,
+              66,
+              156
             ],
             "mark_outline_rgb": [
+              39,
               36,
-              93,
-              119
+              86
             ],
-            "scene_variant": "dot_plot",
-            "value": 13,
+            "scene_variant": "line",
+            "value": 20,
             "x_rank": 1
           },
-          "entity_id": "mark_Z",
+          "entity_id": "mark_S",
           "entity_type": "point"
         },
         {
           "attrs": {
-            "label": "Q",
+            "label": "D",
             "label_center_px": [
-              367.833,
-              121.429
+              328.429,
+              176.667
             ],
             "mark_bbox_px": [
-              359.833,
-              135.429,
-              375.833,
-              151.429
+              320.429,
+              190.667,
+              336.429,
+              206.667
             ],
             "mark_center_px": [
-              367.833,
-              143.429
+              328.429,
+              198.667
             ],
             "mark_fill_rgb": [
-              65,
-              169,
-              217
+              71,
+              66,
+              156
             ],
             "mark_outline_rgb": [
+              39,
               36,
-              93,
-              119
+              86
             ],
-            "scene_variant": "dot_plot",
-            "value": 11,
+            "scene_variant": "line",
+            "value": 14,
             "x_rank": 2
           },
-          "entity_id": "mark_Q",
+          "entity_id": "mark_D",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "A",
+            "label_center_px": [
+              423.0,
+              66.19
+            ],
+            "mark_bbox_px": [
+              415.0,
+              80.19,
+              431.0,
+              96.19
+            ],
+            "mark_center_px": [
+              423.0,
+              88.19
+            ],
+            "mark_fill_rgb": [
+              71,
+              66,
+              156
+            ],
+            "mark_outline_rgb": [
+              39,
+              36,
+              86
+            ],
+            "scene_variant": "line",
+            "value": 19,
+            "x_rank": 3
+          },
+          "entity_id": "mark_A",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "H",
+            "label_center_px": [
+              517.571,
+              154.571
+            ],
+            "mark_bbox_px": [
+              509.571,
+              168.571,
+              525.571,
+              184.571
+            ],
+            "mark_center_px": [
+              517.571,
+              176.571
+            ],
+            "mark_fill_rgb": [
+              71,
+              66,
+              156
+            ],
+            "mark_outline_rgb": [
+              39,
+              36,
+              86
+            ],
+            "scene_variant": "line",
+            "value": 15,
+            "x_rank": 4
+          },
+          "entity_id": "mark_H",
           "entity_type": "point"
         },
         {
           "attrs": {
             "label": "G",
             "label_center_px": [
-              478.167,
-              386.571
+              612.143,
+              44.095
             ],
             "mark_bbox_px": [
-              470.167,
-              400.571,
-              486.167,
-              416.571
+              604.143,
+              58.095,
+              620.143,
+              74.095
             ],
             "mark_center_px": [
-              478.167,
-              408.571
+              612.143,
+              66.095
             ],
             "mark_fill_rgb": [
-              65,
-              169,
-              217
+              71,
+              66,
+              156
             ],
             "mark_outline_rgb": [
+              39,
               36,
-              93,
-              119
+              86
             ],
-            "scene_variant": "dot_plot",
-            "value": 3,
-            "x_rank": 3
+            "scene_variant": "line",
+            "value": 20,
+            "x_rank": 5
           },
           "entity_id": "mark_G",
           "entity_type": "point"
@@ -603,93 +702,61 @@
           "attrs": {
             "label": "C",
             "label_center_px": [
-              588.5,
-              254.0
+              706.714,
+              154.571
             ],
             "mark_bbox_px": [
-              580.5,
-              268.0,
-              596.5,
-              284.0
+              698.714,
+              168.571,
+              714.714,
+              184.571
             ],
             "mark_center_px": [
-              588.5,
-              276.0
+              706.714,
+              176.571
             ],
             "mark_fill_rgb": [
-              65,
-              169,
-              217
+              71,
+              66,
+              156
             ],
             "mark_outline_rgb": [
+              39,
               36,
-              93,
-              119
+              86
             ],
-            "scene_variant": "dot_plot",
-            "value": 7,
-            "x_rank": 4
+            "scene_variant": "line",
+            "value": 15,
+            "x_rank": 6
           },
           "entity_id": "mark_C",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "label": "X",
-            "label_center_px": [
-              698.833,
-              353.429
-            ],
-            "mark_bbox_px": [
-              690.833,
-              367.429,
-              706.833,
-              383.429
-            ],
-            "mark_center_px": [
-              698.833,
-              375.429
-            ],
-            "mark_fill_rgb": [
-              65,
-              169,
-              217
-            ],
-            "mark_outline_rgb": [
-              36,
-              93,
-              119
-            ],
-            "scene_variant": "dot_plot",
-            "value": 4,
-            "x_rank": 5
-          },
-          "entity_id": "mark_X",
           "entity_type": "point"
         }
       ],
       "relations": {
         "evidence_labels": [
+          "A",
           "C",
+          "D",
           "G",
-          "K",
-          "Q",
-          "X",
-          "Z"
+          "H",
+          "S",
+          "Y"
         ],
-        "scene_variant": "dot_plot",
+        "scene_variant": "line",
         "task_variant": "sum"
       },
-      "scene_kind": "chart_dot_plot_statistics"
+      "scene_kind": "chart_line_statistics"
     },
     "witness_symbolic": {
       "labels": [
+        "A",
         "C",
+        "D",
         "G",
-        "K",
-        "Q",
-        "X",
-        "Z"
+        "H",
+        "S",
+        "Y"
       ],
       "type": "label_set"
     }

@@ -1,16 +1,16 @@
 {
   "answer_gt": {
     "type": "string",
-    "value": "Lea"
+    "value": "Ier"
   },
   "evidence_gt": {
     "type": "bbox_set",
     "value": [
       [
-        190.0,
-        352.0,
-        354.0,
-        424.0
+        213.0,
+        307.5,
+        377.0,
+        379.5
       ]
     ]
   },
@@ -18,11 +18,11 @@
     "format": "png",
     "path": "diagrams/task_diagrams_hierarchy_ancestor_label/images/lowest_common_ancestor_of_two_nodes/0004.png"
   },
-  "instance_seed": 7651181528767617,
-  "prompt": "You are given a hierarchical org chart with labeled boxes and parent-child connector lines. Read the labeled org chart and answer: What is the lowest common ancestor of Berk and Atul? Return the exact label shown. Respond with the exact label from the diagram.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct ancestor box.\nAnswer requirement: set \"answer\" to the exact visible ancestor label.\nExample JSON:\n{\"evidence\":[[558,530,722,602]],\"answer\":\"Cott\"}",
+  "instance_seed": 5090339116762723,
+  "prompt": "Look at the hierarchy diagram in the image: a hierarchical org chart with labeled boxes and parent-child connector lines. Use the hierarchy to answer: What is the lowest common ancestor of Rodi and Algy? Return the exact label shown. Return the exact visible label.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct ancestor box.\nAnswer rule: set \"answer\" to the exact visible ancestor label.\nExample JSON:\n{\"evidence\":[[558,530,722,602]],\"answer\":\"Cott\"}",
   "prompt_variants": {
-    "answer_and_evidence": "You are given a hierarchical org chart with labeled boxes and parent-child connector lines. Read the labeled org chart and answer: What is the lowest common ancestor of Berk and Atul? Return the exact label shown. Respond with the exact label from the diagram.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct ancestor box.\nAnswer requirement: set \"answer\" to the exact visible ancestor label.\nExample JSON:\n{\"evidence\":[[558,530,722,602]],\"answer\":\"Cott\"}",
-    "answer_only": "You are given a hierarchical org chart with labeled boxes and parent-child connector lines. Read the labeled org chart and answer: What is the lowest common ancestor of Berk and Atul? Return the exact label shown. Respond with the exact label from the diagram.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the exact visible ancestor label.\nExample JSON:\n{\"answer\":\"Cott\"}"
+    "answer_and_evidence": "Look at the hierarchy diagram in the image: a hierarchical org chart with labeled boxes and parent-child connector lines. Use the hierarchy to answer: What is the lowest common ancestor of Rodi and Algy? Return the exact label shown. Return the exact visible label.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct ancestor box.\nAnswer rule: set \"answer\" to the exact visible ancestor label.\nExample JSON:\n{\"evidence\":[[558,530,722,602]],\"answer\":\"Cott\"}",
+    "answer_only": "Look at the hierarchy diagram in the image: a hierarchical org chart with labeled boxes and parent-child connector lines. Use the hierarchy to answer: What is the lowest common ancestor of Rodi and Algy? Return the exact label shown. Return the exact visible label.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the exact visible ancestor label.\nExample JSON:\n{\"answer\":\"Cott\"}"
   },
   "task": "task_diagrams_hierarchy_ancestor_label",
   "task_variant": "lowest_common_ancestor_of_two_nodes",
@@ -46,7 +46,7 @@
       "answer_node_bbox_id": "node_bbox_1",
       "answer_node_depth": 1,
       "answer_node_id": "node_1",
-      "answer_node_label": "Lea",
+      "answer_node_label": "Ier",
       "edge_specs": [
         {
           "edge_id": "edge_0",
@@ -85,12 +85,12 @@
         },
         {
           "edge_id": "edge_7",
-          "source_node_id": "node_6",
+          "source_node_id": "node_7",
           "target_node_id": "node_8"
         },
         {
           "edge_id": "edge_8",
-          "source_node_id": "node_3",
+          "source_node_id": "node_7",
           "target_node_id": "node_9"
         },
         {
@@ -100,14 +100,14 @@
         }
       ],
       "lca_span": 2,
-      "leaf_count": 6,
+      "leaf_count": 5,
       "node_specs": [
         {
           "depth": 0,
           "is_leaf": false,
           "node_bbox_id": "node_bbox_0",
           "node_id": "node_0",
-          "node_label": "Jojo",
+          "node_label": "Rolo",
           "node_label_bbox_id": "node_label_bbox_0",
           "parent_node_id": null
         },
@@ -116,7 +116,7 @@
           "is_leaf": false,
           "node_bbox_id": "node_bbox_1",
           "node_id": "node_1",
-          "node_label": "Lea",
+          "node_label": "Ier",
           "node_label_bbox_id": "node_label_bbox_1",
           "parent_node_id": "node_0"
         },
@@ -125,7 +125,7 @@
           "is_leaf": false,
           "node_bbox_id": "node_bbox_2",
           "node_id": "node_2",
-          "node_label": "Lowe",
+          "node_label": "Ladd",
           "node_label_bbox_id": "node_label_bbox_2",
           "parent_node_id": "node_0"
         },
@@ -134,7 +134,7 @@
           "is_leaf": false,
           "node_bbox_id": "node_bbox_3",
           "node_id": "node_3",
-          "node_label": "Pugh",
+          "node_label": "Thea",
           "node_label_bbox_id": "node_label_bbox_3",
           "parent_node_id": "node_0"
         },
@@ -143,7 +143,7 @@
           "is_leaf": true,
           "node_bbox_id": "node_bbox_4",
           "node_id": "node_4",
-          "node_label": "Berk",
+          "node_label": "Rodi",
           "node_label_bbox_id": "node_label_bbox_4",
           "parent_node_id": "node_1"
         },
@@ -152,7 +152,7 @@
           "is_leaf": true,
           "node_bbox_id": "node_bbox_5",
           "node_id": "node_5",
-          "node_label": "Atul",
+          "node_label": "Algy",
           "node_label_bbox_id": "node_label_bbox_5",
           "parent_node_id": "node_1"
         },
@@ -161,43 +161,43 @@
           "is_leaf": false,
           "node_bbox_id": "node_bbox_6",
           "node_id": "node_6",
-          "node_label": "Juli",
+          "node_label": "Glyn",
           "node_label_bbox_id": "node_label_bbox_6",
           "parent_node_id": "node_2"
         },
         {
           "depth": 3,
-          "is_leaf": true,
+          "is_leaf": false,
           "node_bbox_id": "node_bbox_7",
           "node_id": "node_7",
-          "node_label": "Kuth",
+          "node_label": "Tarr",
           "node_label_bbox_id": "node_label_bbox_7",
           "parent_node_id": "node_6"
         },
         {
-          "depth": 3,
+          "depth": 4,
           "is_leaf": true,
           "node_bbox_id": "node_bbox_8",
           "node_id": "node_8",
-          "node_label": "Mil",
+          "node_label": "Faro",
           "node_label_bbox_id": "node_label_bbox_8",
-          "parent_node_id": "node_6"
+          "parent_node_id": "node_7"
         },
         {
-          "depth": 2,
+          "depth": 4,
           "is_leaf": true,
           "node_bbox_id": "node_bbox_9",
           "node_id": "node_9",
-          "node_label": "Joli",
+          "node_label": "Cori",
           "node_label_bbox_id": "node_label_bbox_9",
-          "parent_node_id": "node_3"
+          "parent_node_id": "node_7"
         },
         {
           "depth": 2,
           "is_leaf": true,
           "node_bbox_id": "node_bbox_10",
           "node_id": "node_10",
-          "node_label": "Graf",
+          "node_label": "Taam",
           "node_label_bbox_id": "node_label_bbox_10",
           "parent_node_id": "node_3"
         }
@@ -211,21 +211,21 @@
         "node_5"
       ],
       "query_node_labels": [
-        "Berk",
-        "Atul"
+        "Rodi",
+        "Algy"
       ],
       "query_relationship": "lowest_common_ancestor",
       "question_format": "hierarchy_ancestor_label",
-      "question_text": "What is the lowest common ancestor of Berk and Atul? Return the exact label shown.",
+      "question_text": "What is the lowest common ancestor of Rodi and Algy? Return the exact label shown.",
       "root_node_id": "node_0",
-      "scene_title": "Department Hierarchy",
+      "scene_title": "Organization Chart",
       "scene_variant": "org_chart",
       "supporting_node_bbox_ids": [
         "node_bbox_1"
       ],
       "task_variant": "lowest_common_ancestor_of_two_nodes",
-      "template_id": "mixed_depth_branch",
-      "tree_depth": 3,
+      "template_id": "deep_escalation_branch",
+      "tree_depth": 4,
       "tree_node_count": 11,
       "view_family": "org_chart_diagram"
     },
@@ -248,16 +248,16 @@
     "projected_evidence": {
       "bbox_set": [
         [
-          190.0,
-          352.0,
-          354.0,
-          424.0
+          213.0,
+          307.5,
+          377.0,
+          379.5
         ]
       ]
     },
     "query_spec": {
       "params": {
-        "leaf_count": 6,
+        "leaf_count": 5,
         "query_relationship": "lowest_common_ancestor",
         "scene_variant": "org_chart",
         "scene_variant_probabilities": {
@@ -268,12 +268,12 @@
           "lowest_common_ancestor_of_two_nodes": 1.0,
           "parent_of_node": 0.0
         },
-        "tree_depth": 3,
+        "tree_depth": 4,
         "tree_node_count": 11
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 2,
+        "answer_or_evidence_variant_index": 4,
         "prompt_bundle_id": "diagrams_hierarchy_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -284,14 +284,14 @@
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
           "object_description": "a hierarchical org chart with labeled boxes and parent-child connector lines",
-          "question_text": "What is the lowest common ancestor of Berk and Atul? Return the exact label shown."
+          "question_text": "What is the lowest common ancestor of Rodi and Algy? Return the exact label shown."
         },
         "task_family_key": "hierarchy_diagram",
-        "task_family_variant_index": 2,
+        "task_family_variant_index": 1,
         "task_key": "ancestor_query",
-        "task_variant_index": 2,
+        "task_variant_index": 1,
         "task_variant_key": "lowest_common_ancestor_of_two_nodes",
-        "task_variant_template_index": 2,
+        "task_variant_template_index": 1,
         "template_paths": [
           "diagrams/hierarchy/diagrams_hierarchy_v1.json"
         ],
@@ -307,7 +307,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 2,
+            "answer_or_evidence_variant_index": 4,
             "prompt_bundle_id": "diagrams_hierarchy_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -318,14 +318,14 @@
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a hierarchical org chart with labeled boxes and parent-child connector lines",
-              "question_text": "What is the lowest common ancestor of Berk and Atul? Return the exact label shown."
+              "question_text": "What is the lowest common ancestor of Rodi and Algy? Return the exact label shown."
             },
             "task_family_key": "hierarchy_diagram",
-            "task_family_variant_index": 2,
+            "task_family_variant_index": 1,
             "task_key": "ancestor_query",
-            "task_variant_index": 2,
+            "task_variant_index": 1,
             "task_variant_key": "lowest_common_ancestor_of_two_nodes",
-            "task_variant_template_index": 2,
+            "task_variant_template_index": 1,
             "template_paths": [
               "diagrams/hierarchy/diagrams_hierarchy_v1.json"
             ],
@@ -336,7 +336,7 @@
               "task_variant:lowest_common_ancestor_of_two_nodes": 5
             }
           },
-          "prompt": "You are given a hierarchical org chart with labeled boxes and parent-child connector lines. Read the labeled org chart and answer: What is the lowest common ancestor of Berk and Atul? Return the exact label shown. Respond with the exact label from the diagram.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct ancestor box.\nAnswer requirement: set \"answer\" to the exact visible ancestor label.\nExample JSON:\n{\"evidence\":[[558,530,722,602]],\"answer\":\"Cott\"}"
+          "prompt": "Look at the hierarchy diagram in the image: a hierarchical org chart with labeled boxes and parent-child connector lines. Use the hierarchy to answer: What is the lowest common ancestor of Rodi and Algy? Return the exact label shown. Return the exact visible label.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct ancestor box.\nAnswer rule: set \"answer\" to the exact visible ancestor label.\nExample JSON:\n{\"evidence\":[[558,530,722,602]],\"answer\":\"Cott\"}"
         },
         "answer_only": {
           "metadata": {
@@ -352,14 +352,14 @@
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a hierarchical org chart with labeled boxes and parent-child connector lines",
-              "question_text": "What is the lowest common ancestor of Berk and Atul? Return the exact label shown."
+              "question_text": "What is the lowest common ancestor of Rodi and Algy? Return the exact label shown."
             },
             "task_family_key": "hierarchy_diagram",
-            "task_family_variant_index": 2,
+            "task_family_variant_index": 1,
             "task_key": "ancestor_query",
-            "task_variant_index": 2,
+            "task_variant_index": 1,
             "task_variant_key": "lowest_common_ancestor_of_two_nodes",
-            "task_variant_template_index": 2,
+            "task_variant_template_index": 1,
             "template_paths": [
               "diagrams/hierarchy/diagrams_hierarchy_v1.json"
             ],
@@ -370,7 +370,7 @@
               "task_variant:lowest_common_ancestor_of_two_nodes": 5
             }
           },
-          "prompt": "You are given a hierarchical org chart with labeled boxes and parent-child connector lines. Read the labeled org chart and answer: What is the lowest common ancestor of Berk and Atul? Return the exact label shown. Respond with the exact label from the diagram.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the exact visible ancestor label.\nExample JSON:\n{\"answer\":\"Cott\"}"
+          "prompt": "Look at the hierarchy diagram in the image: a hierarchical org chart with labeled boxes and parent-child connector lines. Use the hierarchy to answer: What is the lowest common ancestor of Rodi and Algy? Return the exact label shown. Return the exact visible label.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the exact visible ancestor label.\nExample JSON:\n{\"answer\":\"Cott\"}"
         }
       },
       "task_variant": "lowest_common_ancestor_of_two_nodes",
@@ -379,200 +379,200 @@
     "render_map": {
       "edge_bboxes_px": {
         "edge_0": [
-          272.0,
+          295.0,
           246.0,
-          640.0,
-          352.0
+          716.667,
+          307.5
         ],
         "edge_1": [
-          640.0,
+          716.667,
           246.0,
-          640.0,
-          352.0
+          755.0,
+          307.5
         ],
         "edge_2": [
-          640.0,
+          716.667,
           246.0,
-          1008.0,
-          352.0
+          1100.0,
+          307.5
         ],
         "edge_3": [
           180.0,
-          424.0,
-          272.0,
-          530.0
+          379.5,
+          295.0,
+          441.0
         ],
         "edge_4": [
-          272.0,
-          424.0,
-          364.0,
-          530.0
+          295.0,
+          379.5,
+          410.0,
+          441.0
         ],
         "edge_5": [
-          640.0,
-          424.0,
-          640.0,
-          530.0
+          755.0,
+          379.5,
+          755.0,
+          441.0
         ],
         "edge_6": [
-          548.0,
-          602.0,
-          640.0,
-          708.0
+          755.0,
+          513.0,
+          755.0,
+          574.5
         ],
         "edge_7": [
           640.0,
-          602.0,
-          732.0,
+          646.5,
+          755.0,
           708.0
         ],
         "edge_8": [
-          916.0,
-          424.0,
-          1008.0,
-          530.0
+          755.0,
+          646.5,
+          870.0,
+          708.0
         ],
         "edge_9": [
-          1008.0,
-          424.0,
           1100.0,
-          530.0
+          379.5,
+          1100.0,
+          441.0
         ]
       },
       "node_bboxes_px": {
         "node_bbox_0": [
-          558.0,
+          634.667,
           174.0,
-          722.0,
+          798.667,
           246.0
         ],
         "node_bbox_1": [
-          190.0,
-          352.0,
-          354.0,
-          424.0
+          213.0,
+          307.5,
+          377.0,
+          379.5
         ],
         "node_bbox_10": [
           1018.0,
-          530.0,
+          441.0,
           1182.0,
-          602.0
+          513.0
         ],
         "node_bbox_2": [
-          558.0,
-          352.0,
-          722.0,
-          424.0
+          673.0,
+          307.5,
+          837.0,
+          379.5
         ],
         "node_bbox_3": [
-          926.0,
-          352.0,
-          1090.0,
-          424.0
+          1018.0,
+          307.5,
+          1182.0,
+          379.5
         ],
         "node_bbox_4": [
           98.0,
-          530.0,
+          441.0,
           262.0,
-          602.0
+          513.0
         ],
         "node_bbox_5": [
-          282.0,
-          530.0,
-          446.0,
-          602.0
+          328.0,
+          441.0,
+          492.0,
+          513.0
         ],
         "node_bbox_6": [
-          558.0,
-          530.0,
-          722.0,
-          602.0
+          673.0,
+          441.0,
+          837.0,
+          513.0
         ],
         "node_bbox_7": [
-          466.0,
-          708.0,
-          630.0,
-          780.0
+          673.0,
+          574.5,
+          837.0,
+          646.5
         ],
         "node_bbox_8": [
-          650.0,
+          558.0,
           708.0,
-          814.0,
+          722.0,
           780.0
         ],
         "node_bbox_9": [
-          834.0,
-          530.0,
-          998.0,
-          602.0
+          788.0,
+          708.0,
+          952.0,
+          780.0
         ]
       },
       "node_label_bboxes_px": {
         "node_label_bbox_0": [
-          613.5,
-          197.5,
-          666.5,
-          222.5
+          686.667,
+          200.0,
+          746.667,
+          220.0
         ],
         "node_label_bbox_1": [
-          247.5,
-          378.0,
-          296.5,
-          398.0
+          275.5,
+          333.5,
+          314.5,
+          353.5
         ],
         "node_label_bbox_10": [
-          1069.5,
-          556.0,
-          1130.5,
-          576.0
+          1062.5,
+          467.0,
+          1137.5,
+          487.0
         ],
         "node_label_bbox_2": [
-          604.5,
-          378.0,
-          675.5,
-          398.0
+          721.5,
+          333.5,
+          788.5,
+          353.5
         ],
         "node_label_bbox_3": [
-          972.5,
-          375.5,
-          1043.5,
-          400.5
+          1066.5,
+          333.5,
+          1133.5,
+          353.5
         ],
         "node_label_bbox_4": [
-          147.5,
-          556.0,
-          212.5,
-          576.0
+          149.5,
+          467.0,
+          210.5,
+          487.0
         ],
         "node_label_bbox_5": [
-          335.5,
-          556.0,
-          392.5,
-          576.0
+          379.0,
+          464.5,
+          441.0,
+          489.5
         ],
         "node_label_bbox_6": [
-          617.0,
-          553.5,
-          663.0,
-          578.5
+          723.5,
+          464.5,
+          786.5,
+          489.5
         ],
         "node_label_bbox_7": [
-          515.0,
-          734.0,
-          581.0,
-          754.0
+          726.0,
+          600.5,
+          784.0,
+          620.5
         ],
         "node_label_bbox_8": [
-          711.0,
+          609.0,
           734.0,
-          753.0,
+          671.0,
           754.0
         ],
         "node_label_bbox_9": [
-          893.5,
-          553.5,
-          938.5,
-          578.5
+          842.0,
+          734.0,
+          898.0,
+          754.0
         ]
       },
       "panel_bbox_px": [
@@ -582,9 +582,9 @@
         828.0
       ],
       "title_bbox_px": [
-        436.0,
+        467.0,
         74.5,
-        844.0,
+        813.0,
         107.5
       ]
     },
@@ -592,7 +592,7 @@
       "canvas_height": 880,
       "canvas_width": 1280,
       "connector_width_px": 5,
-      "geometry_seed": 7651181528767617,
+      "geometry_seed": 5090339116762723,
       "node_height_px": 72,
       "node_width_px": 164,
       "scene_variant": "org_chart"
@@ -611,21 +611,21 @@
         },
         {
           "bbox_xyxy": [
-            436.0,
+            467.0,
             74.5,
-            844.0,
+            813.0,
             107.5
           ],
           "entity_id": "diagram_title",
           "entity_type": "diagram_title",
-          "text": "Department Hierarchy"
+          "text": "Organization Chart"
         },
         {
           "bbox_xyxy": [
-            272.0,
+            295.0,
             246.0,
-            640.0,
-            352.0
+            716.667,
+            307.5
           ],
           "entity_id": "edge_0",
           "entity_type": "diagram_edge",
@@ -634,10 +634,10 @@
         },
         {
           "bbox_xyxy": [
-            640.0,
+            716.667,
             246.0,
-            640.0,
-            352.0
+            755.0,
+            307.5
           ],
           "entity_id": "edge_1",
           "entity_type": "diagram_edge",
@@ -646,10 +646,10 @@
         },
         {
           "bbox_xyxy": [
-            640.0,
+            716.667,
             246.0,
-            1008.0,
-            352.0
+            1100.0,
+            307.5
           ],
           "entity_id": "edge_2",
           "entity_type": "diagram_edge",
@@ -659,9 +659,9 @@
         {
           "bbox_xyxy": [
             180.0,
-            424.0,
-            272.0,
-            530.0
+            379.5,
+            295.0,
+            441.0
           ],
           "entity_id": "edge_3",
           "entity_type": "diagram_edge",
@@ -670,10 +670,10 @@
         },
         {
           "bbox_xyxy": [
-            272.0,
-            424.0,
-            364.0,
-            530.0
+            295.0,
+            379.5,
+            410.0,
+            441.0
           ],
           "entity_id": "edge_4",
           "entity_type": "diagram_edge",
@@ -682,10 +682,10 @@
         },
         {
           "bbox_xyxy": [
-            640.0,
-            424.0,
-            640.0,
-            530.0
+            755.0,
+            379.5,
+            755.0,
+            441.0
           ],
           "entity_id": "edge_5",
           "entity_type": "diagram_edge",
@@ -694,22 +694,10 @@
         },
         {
           "bbox_xyxy": [
-            916.0,
-            424.0,
-            1008.0,
-            530.0
-          ],
-          "entity_id": "edge_8",
-          "entity_type": "diagram_edge",
-          "source_node_id": "node_3",
-          "target_node_id": "node_9"
-        },
-        {
-          "bbox_xyxy": [
-            1008.0,
-            424.0,
             1100.0,
-            530.0
+            379.5,
+            1100.0,
+            441.0
           ],
           "entity_id": "edge_9",
           "entity_type": "diagram_edge",
@@ -718,10 +706,10 @@
         },
         {
           "bbox_xyxy": [
-            548.0,
-            602.0,
-            640.0,
-            708.0
+            755.0,
+            513.0,
+            755.0,
+            574.5
           ],
           "entity_id": "edge_6",
           "entity_type": "diagram_edge",
@@ -731,289 +719,301 @@
         {
           "bbox_xyxy": [
             640.0,
-            602.0,
-            732.0,
+            646.5,
+            755.0,
             708.0
           ],
           "entity_id": "edge_7",
           "entity_type": "diagram_edge",
-          "source_node_id": "node_6",
+          "source_node_id": "node_7",
           "target_node_id": "node_8"
         },
         {
           "bbox_xyxy": [
-            558.0,
+            755.0,
+            646.5,
+            870.0,
+            708.0
+          ],
+          "entity_id": "edge_8",
+          "entity_type": "diagram_edge",
+          "source_node_id": "node_7",
+          "target_node_id": "node_9"
+        },
+        {
+          "bbox_xyxy": [
+            634.667,
             174.0,
-            722.0,
+            798.667,
             246.0
           ],
           "depth": 0,
           "entity_id": "node_bbox_0",
           "entity_type": "diagram_node",
           "node_id": "node_0",
-          "text": "Jojo"
+          "text": "Rolo"
         },
         {
           "bbox_xyxy": [
-            613.5,
-            197.5,
-            666.5,
-            222.5
+            686.667,
+            200.0,
+            746.667,
+            220.0
           ],
           "entity_id": "node_label_bbox_0",
           "entity_type": "diagram_node_label",
           "node_id": "node_0",
-          "text": "Jojo"
+          "text": "Rolo"
         },
         {
           "bbox_xyxy": [
-            190.0,
-            352.0,
-            354.0,
-            424.0
+            213.0,
+            307.5,
+            377.0,
+            379.5
           ],
           "depth": 1,
           "entity_id": "node_bbox_1",
           "entity_type": "diagram_node",
           "node_id": "node_1",
-          "text": "Lea"
+          "text": "Ier"
         },
         {
           "bbox_xyxy": [
-            247.5,
-            378.0,
-            296.5,
-            398.0
+            275.5,
+            333.5,
+            314.5,
+            353.5
           ],
           "entity_id": "node_label_bbox_1",
           "entity_type": "diagram_node_label",
           "node_id": "node_1",
-          "text": "Lea"
+          "text": "Ier"
         },
         {
           "bbox_xyxy": [
-            558.0,
-            352.0,
-            722.0,
-            424.0
+            673.0,
+            307.5,
+            837.0,
+            379.5
           ],
           "depth": 1,
           "entity_id": "node_bbox_2",
           "entity_type": "diagram_node",
           "node_id": "node_2",
-          "text": "Lowe"
+          "text": "Ladd"
         },
         {
           "bbox_xyxy": [
-            604.5,
-            378.0,
-            675.5,
-            398.0
+            721.5,
+            333.5,
+            788.5,
+            353.5
           ],
           "entity_id": "node_label_bbox_2",
           "entity_type": "diagram_node_label",
           "node_id": "node_2",
-          "text": "Lowe"
+          "text": "Ladd"
         },
         {
           "bbox_xyxy": [
-            926.0,
-            352.0,
-            1090.0,
-            424.0
+            1018.0,
+            307.5,
+            1182.0,
+            379.5
           ],
           "depth": 1,
           "entity_id": "node_bbox_3",
           "entity_type": "diagram_node",
           "node_id": "node_3",
-          "text": "Pugh"
+          "text": "Thea"
         },
         {
           "bbox_xyxy": [
-            972.5,
-            375.5,
-            1043.5,
-            400.5
+            1066.5,
+            333.5,
+            1133.5,
+            353.5
           ],
           "entity_id": "node_label_bbox_3",
           "entity_type": "diagram_node_label",
           "node_id": "node_3",
-          "text": "Pugh"
+          "text": "Thea"
         },
         {
           "bbox_xyxy": [
             98.0,
-            530.0,
+            441.0,
             262.0,
-            602.0
+            513.0
           ],
           "depth": 2,
           "entity_id": "node_bbox_4",
           "entity_type": "diagram_node",
           "node_id": "node_4",
-          "text": "Berk"
+          "text": "Rodi"
         },
         {
           "bbox_xyxy": [
-            147.5,
-            556.0,
-            212.5,
-            576.0
+            149.5,
+            467.0,
+            210.5,
+            487.0
           ],
           "entity_id": "node_label_bbox_4",
           "entity_type": "diagram_node_label",
           "node_id": "node_4",
-          "text": "Berk"
+          "text": "Rodi"
         },
         {
           "bbox_xyxy": [
-            282.0,
-            530.0,
-            446.0,
-            602.0
+            328.0,
+            441.0,
+            492.0,
+            513.0
           ],
           "depth": 2,
           "entity_id": "node_bbox_5",
           "entity_type": "diagram_node",
           "node_id": "node_5",
-          "text": "Atul"
+          "text": "Algy"
         },
         {
           "bbox_xyxy": [
-            335.5,
-            556.0,
-            392.5,
-            576.0
+            379.0,
+            464.5,
+            441.0,
+            489.5
           ],
           "entity_id": "node_label_bbox_5",
           "entity_type": "diagram_node_label",
           "node_id": "node_5",
-          "text": "Atul"
+          "text": "Algy"
         },
         {
           "bbox_xyxy": [
-            558.0,
-            530.0,
-            722.0,
-            602.0
+            673.0,
+            441.0,
+            837.0,
+            513.0
           ],
           "depth": 2,
           "entity_id": "node_bbox_6",
           "entity_type": "diagram_node",
           "node_id": "node_6",
-          "text": "Juli"
+          "text": "Glyn"
         },
         {
           "bbox_xyxy": [
-            617.0,
-            553.5,
-            663.0,
-            578.5
+            723.5,
+            464.5,
+            786.5,
+            489.5
           ],
           "entity_id": "node_label_bbox_6",
           "entity_type": "diagram_node_label",
           "node_id": "node_6",
-          "text": "Juli"
+          "text": "Glyn"
         },
         {
           "bbox_xyxy": [
-            466.0,
-            708.0,
-            630.0,
-            780.0
+            673.0,
+            574.5,
+            837.0,
+            646.5
           ],
           "depth": 3,
           "entity_id": "node_bbox_7",
           "entity_type": "diagram_node",
           "node_id": "node_7",
-          "text": "Kuth"
+          "text": "Tarr"
         },
         {
           "bbox_xyxy": [
-            515.0,
-            734.0,
-            581.0,
-            754.0
+            726.0,
+            600.5,
+            784.0,
+            620.5
           ],
           "entity_id": "node_label_bbox_7",
           "entity_type": "diagram_node_label",
           "node_id": "node_7",
-          "text": "Kuth"
+          "text": "Tarr"
         },
         {
           "bbox_xyxy": [
-            650.0,
+            558.0,
             708.0,
-            814.0,
+            722.0,
             780.0
           ],
-          "depth": 3,
+          "depth": 4,
           "entity_id": "node_bbox_8",
           "entity_type": "diagram_node",
           "node_id": "node_8",
-          "text": "Mil"
+          "text": "Faro"
         },
         {
           "bbox_xyxy": [
-            711.0,
+            609.0,
             734.0,
-            753.0,
+            671.0,
             754.0
           ],
           "entity_id": "node_label_bbox_8",
           "entity_type": "diagram_node_label",
           "node_id": "node_8",
-          "text": "Mil"
+          "text": "Faro"
         },
         {
           "bbox_xyxy": [
-            834.0,
-            530.0,
-            998.0,
-            602.0
+            788.0,
+            708.0,
+            952.0,
+            780.0
           ],
-          "depth": 2,
+          "depth": 4,
           "entity_id": "node_bbox_9",
           "entity_type": "diagram_node",
           "node_id": "node_9",
-          "text": "Joli"
+          "text": "Cori"
         },
         {
           "bbox_xyxy": [
-            893.5,
-            553.5,
-            938.5,
-            578.5
+            842.0,
+            734.0,
+            898.0,
+            754.0
           ],
           "entity_id": "node_label_bbox_9",
           "entity_type": "diagram_node_label",
           "node_id": "node_9",
-          "text": "Joli"
+          "text": "Cori"
         },
         {
           "bbox_xyxy": [
             1018.0,
-            530.0,
+            441.0,
             1182.0,
-            602.0
+            513.0
           ],
           "depth": 2,
           "entity_id": "node_bbox_10",
           "entity_type": "diagram_node",
           "node_id": "node_10",
-          "text": "Graf"
+          "text": "Taam"
         },
         {
           "bbox_xyxy": [
-            1069.5,
-            556.0,
-            1130.5,
-            576.0
+            1062.5,
+            467.0,
+            1137.5,
+            487.0
           ],
           "entity_id": "node_label_bbox_10",
           "entity_type": "diagram_node_label",
           "node_id": "node_10",
-          "text": "Graf"
+          "text": "Taam"
         }
       ],
       "relations": {

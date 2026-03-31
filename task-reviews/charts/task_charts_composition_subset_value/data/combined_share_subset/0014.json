@@ -1,32 +1,32 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 81
+    "value": 39
   },
   "evidence_gt": {
     "type": "integer_list",
     "value": [
-      50,
-      3,
       31,
-      16
+      44,
+      8,
+      17
     ]
   },
   "image": {
     "format": "png",
     "path": "charts/task_charts_composition_subset_value/images/combined_share_subset/0014.png"
   },
-  "instance_seed": 6562305556961494,
-  "prompt": "Look at the chart in the image. It shows a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Read the relevant composition values directly from the chart and answer the question. What total percentage do labels Bull and Huei contribute together?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array [v1, v2, ...] listing the slice percentages in legend order for the whole chart.\nAnswer field: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[18,27,22,33],\"answer\":45}",
+  "instance_seed": 7416873348043157,
+  "prompt": "You are given a composition chart: a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Read the relevant composition values directly from the chart and answer the question. Using labels Boys and Phox, what combined share of the chart do they make up?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array [v1, v2, ...] listing the slice percentages in legend order for the whole chart.\nAnswer format: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[18,27,22,33],\"answer\":45}",
   "prompt_variants": {
-    "answer_and_evidence": "Look at the chart in the image. It shows a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Read the relevant composition values directly from the chart and answer the question. What total percentage do labels Bull and Huei contribute together?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array [v1, v2, ...] listing the slice percentages in legend order for the whole chart.\nAnswer field: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[18,27,22,33],\"answer\":45}",
-    "answer_only": "Look at the chart in the image. It shows a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Read the relevant composition values directly from the chart and answer the question. What total percentage do labels Bull and Huei contribute together?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":45}"
+    "answer_and_evidence": "You are given a composition chart: a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Read the relevant composition values directly from the chart and answer the question. Using labels Boys and Phox, what combined share of the chart do they make up?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array [v1, v2, ...] listing the slice percentages in legend order for the whole chart.\nAnswer format: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[18,27,22,33],\"answer\":45}",
+    "answer_only": "You are given a composition chart: a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Read the relevant composition values directly from the chart and answer the question. Using labels Boys and Phox, what combined share of the chart do they make up?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":45}"
   },
   "task": "task_charts_composition_subset_value",
   "task_variant": "combined_share_subset",
   "trace_payload": {
     "execution_trace": {
-      "answer_value": 81,
+      "answer_value": 39,
       "category_count": 0,
       "category_count_range": [
         0,
@@ -36,40 +36,40 @@
       "composition_scope": "chart",
       "composition_total": 100,
       "evidence_labels": [
-        "Bull",
-        "Jen",
-        "Huei",
-        "Jule"
+        "Boys",
+        "Maia",
+        "Phox",
+        "Tati"
       ],
       "evidence_values": [
-        50,
-        3,
         31,
-        16
+        44,
+        8,
+        17
       ],
       "mark_color_distance_space": "lab",
       "mark_color_min_distance": 58.0,
       "mark_color_sampling_policy": "random_rgb_palette",
       "mark_fill_rgb": [
-        150,
-        86,
-        8
+        51,
+        12,
+        30
       ],
       "mark_outline_rgb": [
-        82,
-        47,
-        4
+        28,
+        7,
+        16
       ],
       "pie_like_mark_color_channel_max": 200,
       "query_category_label": "",
       "query_series_label": "",
       "query_subset_labels": [
-        "Bull",
-        "Huei"
+        "Boys",
+        "Phox"
       ],
       "question_format": "numeric_open",
       "scene_mode": "pie_like",
-      "scene_variant": "donut",
+      "scene_variant": "pie",
       "scene_variant_probabilities": {
         "donut": 0.5,
         "pie": 0.5
@@ -80,78 +80,78 @@
         5
       ],
       "series_labels": [
-        "Bull",
-        "Jen",
-        "Huei",
-        "Jule"
+        "Boys",
+        "Maia",
+        "Phox",
+        "Tati"
       ],
       "slice_fill_palette_rgb": [
         [
-          150,
-          86,
-          8
+          51,
+          12,
+          30
         ],
         [
-          15,
-          120,
-          181
+          138,
+          159,
+          43
         ],
         [
-          173,
-          69,
-          188
+          5,
+          101,
+          86
         ],
         [
-          10,
-          173,
-          102
+          9,
+          27,
+          196
         ]
       ],
       "slice_outline_palette_rgb": [
         [
-          82,
-          47,
-          4
+          28,
+          7,
+          16
         ],
         [
-          8,
-          66,
-          100
+          76,
+          87,
+          24
         ],
         [
-          95,
-          38,
-          103
+          3,
+          56,
+          47
         ],
         [
-          6,
-          95,
-          56
+          5,
+          15,
+          108
         ]
       ],
-      "target_answer": 81,
+      "target_answer": 39,
       "target_answer_range": [
         5,
         95
       ],
       "task_variant": "combined_share_subset",
       "task_variant_probabilities": {
-        "combined_share_subset": 0.3333333333333333,
-        "stack_segment_value": 0.3333333333333333,
-        "stack_total_at_label": 0.3333333333333333
+        "combined_share_subset": 1.0,
+        "stack_segment_value": 0.0,
+        "stack_total_at_label": 0.0
       },
       "value_semantics": "percentage",
       "values": [
-        50,
-        3,
         31,
-        16
+        44,
+        8,
+        17
       ],
       "values_by_label": {
-        "Bull": 50,
-        "Huei": 31,
-        "Jen": 3,
-        "Jule": 16
+        "Boys": 31,
+        "Maia": 44,
+        "Phox": 8,
+        "Tati": 17
       }
     },
     "projected_evidence": {
@@ -159,68 +159,68 @@
         [
           442.08,
           65.6,
-          702.48,
-          586.4
+          701.212,
+          421.86
         ],
         [
-          393.286,
+          181.68,
           326.0,
-          442.08,
-          586.4
+          684.194,
+          586.241
         ],
         [
-          181.69,
-          186.471,
+          181.68,
+          200.551,
           442.08,
-          581.788
+          326.0
         ],
         [
-          222.217,
+          213.89,
           65.6,
           442.08,
           326.0
         ]
       ],
       "integer_list": [
-        50,
-        3,
         31,
-        16
+        44,
+        8,
+        17
       ],
       "pixel_point_map": {
-        "Bull": [
-          626.964,
-          326.0
+        "Boys": [
+          571.303,
+          238.18
         ],
-        "Huei": [
-          272.402,
-          399.426
+        "Maia": [
+          412.804,
+          479.473
         ],
-        "Jen": [
-          424.681,
-          510.063
+        "Phox": [
+          290.749,
+          287.145
         ],
-        "Jule": [
-          353.011,
-          163.985
+        "Tati": [
+          362.547,
+          191.518
         ]
       },
       "pixel_point_set": [
         [
-          626.964,
-          326.0
+          571.303,
+          238.18
         ],
         [
-          424.681,
-          510.063
+          412.804,
+          479.473
         ],
         [
-          272.402,
-          399.426
+          290.749,
+          287.145
         ],
         [
-          353.011,
-          163.985
+          362.547,
+          191.518
         ]
       ]
     },
@@ -234,10 +234,10 @@
         "query_category_label": "",
         "query_series_label": "",
         "query_subset_labels": [
-          "Bull",
-          "Huei"
+          "Boys",
+          "Phox"
         ],
-        "scene_variant": "donut",
+        "scene_variant": "pie",
         "scene_variant_probabilities": {
           "donut": 0.5,
           "pie": 0.5
@@ -247,21 +247,21 @@
           3,
           5
         ],
-        "target_answer": 81,
+        "target_answer": 39,
         "target_answer_range": [
           5,
           95
         ],
         "task_variant": "combined_share_subset",
         "task_variant_probabilities": {
-          "combined_share_subset": 0.3333333333333333,
-          "stack_segment_value": 0.3333333333333333,
-          "stack_total_at_label": 0.3333333333333333
+          "combined_share_subset": 1.0,
+          "stack_segment_value": 0.0,
+          "stack_total_at_label": 0.0
         }
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 3,
+        "answer_or_evidence_variant_index": 1,
         "prompt_bundle_id": "charts_composition_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -271,18 +271,18 @@
           "json_example_answer_only": "{\"answer\":45}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "object_description": "a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices",
+          "object_description": "a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices",
           "query_category_label": "",
-          "query_label_a": "Bull",
-          "query_label_b": "Huei",
+          "query_label_a": "Boys",
+          "query_label_b": "Phox",
           "query_series_label": ""
         },
         "task_family_key": "composition_chart_value",
-        "task_family_variant_index": 3,
+        "task_family_variant_index": 4,
         "task_key": "subset_value_query",
         "task_variant_index": 3,
         "task_variant_key": "combined_share_subset",
-        "task_variant_template_index": 4,
+        "task_variant_template_index": 3,
         "template_paths": [
           "charts/composition/charts_composition_v1.json"
         ],
@@ -298,7 +298,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 3,
+            "answer_or_evidence_variant_index": 1,
             "prompt_bundle_id": "charts_composition_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -308,18 +308,18 @@
               "json_example_answer_only": "{\"answer\":45}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices",
+              "object_description": "a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices",
               "query_category_label": "",
-              "query_label_a": "Bull",
-              "query_label_b": "Huei",
+              "query_label_a": "Boys",
+              "query_label_b": "Phox",
               "query_series_label": ""
             },
             "task_family_key": "composition_chart_value",
-            "task_family_variant_index": 3,
+            "task_family_variant_index": 4,
             "task_key": "subset_value_query",
             "task_variant_index": 3,
             "task_variant_key": "combined_share_subset",
-            "task_variant_template_index": 4,
+            "task_variant_template_index": 3,
             "template_paths": [
               "charts/composition/charts_composition_v1.json"
             ],
@@ -330,12 +330,12 @@
               "task_variant:combined_share_subset": 5
             }
           },
-          "prompt": "Look at the chart in the image. It shows a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Read the relevant composition values directly from the chart and answer the question. What total percentage do labels Bull and Huei contribute together?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array [v1, v2, ...] listing the slice percentages in legend order for the whole chart.\nAnswer field: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[18,27,22,33],\"answer\":45}"
+          "prompt": "You are given a composition chart: a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Read the relevant composition values directly from the chart and answer the question. Using labels Boys and Phox, what combined share of the chart do they make up?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array [v1, v2, ...] listing the slice percentages in legend order for the whole chart.\nAnswer format: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[18,27,22,33],\"answer\":45}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 2,
+            "answer_or_evidence_variant_index": 1,
             "prompt_bundle_id": "charts_composition_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -345,18 +345,18 @@
               "json_example_answer_only": "{\"answer\":45}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices",
+              "object_description": "a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices",
               "query_category_label": "",
-              "query_label_a": "Bull",
-              "query_label_b": "Huei",
+              "query_label_a": "Boys",
+              "query_label_b": "Phox",
               "query_series_label": ""
             },
             "task_family_key": "composition_chart_value",
-            "task_family_variant_index": 3,
+            "task_family_variant_index": 4,
             "task_key": "subset_value_query",
             "task_variant_index": 3,
             "task_variant_key": "combined_share_subset",
-            "task_variant_template_index": 4,
+            "task_variant_template_index": 3,
             "template_paths": [
               "charts/composition/charts_composition_v1.json"
             ],
@@ -367,7 +367,7 @@
               "task_variant:combined_share_subset": 5
             }
           },
-          "prompt": "Look at the chart in the image. It shows a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Read the relevant composition values directly from the chart and answer the question. What total percentage do labels Bull and Huei contribute together?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":45}"
+          "prompt": "You are given a composition chart: a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Read the relevant composition values directly from the chart and answer the question. Using labels Boys and Phox, what combined share of the chart do they make up?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":45}"
         }
       },
       "task_variant": "combined_share_subset",
@@ -376,20 +376,20 @@
     "render_map": {
       "image_id": "img0",
       "label_centers_px": {
-        "Bull": [
-          863.66,
+        "Boys": [
+          870.16,
           256.0
         ],
-        "Huei": [
-          868.66,
-          340.0
-        ],
-        "Jen": [
-          860.16,
+        "Maia": [
+          870.16,
           298.0
         ],
-        "Jule": [
-          864.16,
+        "Phox": [
+          871.66,
+          340.0
+        ],
+        "Tati": [
+          863.66,
           382.0
         ]
       },
@@ -428,59 +428,59 @@
         "mark_color_distance_space": "lab",
         "mark_color_min_distance": 58.0,
         "mark_fill_rgb": [
-          150,
-          86,
-          8
+          51,
+          12,
+          30
         ],
         "mark_outline_rgb": [
-          82,
-          47,
-          4
+          28,
+          7,
+          16
         ],
         "pie_like_mark_color_channel_max": 200,
         "sampling_policy": "random_rgb_palette",
         "slice_fill_palette_rgb": [
           [
-            150,
-            86,
-            8
+            51,
+            12,
+            30
           ],
           [
-            15,
-            120,
-            181
+            138,
+            159,
+            43
           ],
           [
-            173,
-            69,
-            188
+            5,
+            101,
+            86
           ],
           [
-            10,
-            173,
-            102
+            9,
+            27,
+            196
           ]
         ],
         "slice_outline_palette_rgb": [
           [
-            82,
-            47,
-            4
+            28,
+            7,
+            16
           ],
           [
-            8,
-            66,
-            100
+            76,
+            87,
+            24
           ],
           [
-            95,
-            38,
-            103
+            3,
+            56,
+            47
           ],
           [
-            6,
-            95,
-            56
+            5,
+            15,
+            108
           ]
         ]
       },
@@ -506,13 +506,13 @@
         "edits": [],
         "enabled": false
       },
-      "scene_variant": "donut",
+      "scene_variant": "pie",
       "text_style": {
         "label_font_size_px": 24,
         "label_stroke_width_px": 2,
         "tick_font_size_px": 20
       },
-      "y_axis_max": 51,
+      "y_axis_max": 45,
       "y_ticks": [
         0,
         1,
@@ -559,29 +559,23 @@
         42,
         43,
         44,
-        45,
-        46,
-        47,
-        48,
-        49,
-        50,
-        51
+        45
       ]
     },
     "scene_ir": {
       "entities": [
         {
           "attrs": {
-            "end_angle_deg": 90.0,
-            "label": "Bull",
+            "end_angle_deg": 21.6,
+            "label": "Boys",
             "label_bbox_px": [
               838.16,
-              247.0,
-              889.16,
-              265.0
+              244.5,
+              902.16,
+              267.5
             ],
             "label_center_px": [
-              863.66,
+              870.16,
               256.0
             ],
             "legend_swatch_bbox_px": [
@@ -593,53 +587,53 @@
             "mark_bbox_px": [
               442.08,
               65.6,
-              702.48,
-              586.4
+              701.212,
+              421.86
             ],
             "mark_center_px": [
-              626.964,
-              326.0
+              571.303,
+              238.18
             ],
             "mark_fill_rgb": [
-              150,
-              86,
-              8
+              51,
+              12,
+              30
             ],
             "mark_outline_rgb": [
-              82,
-              47,
-              4
+              28,
+              7,
+              16
             ],
             "percentage_bbox_px": [
-              597.964,
-              317.0,
-              655.964,
-              335.0
+              542.303,
+              229.18,
+              600.303,
+              247.18
             ],
             "percentage_center_px": [
-              626.964,
-              326.0
+              571.303,
+              238.18
             ],
-            "scene_variant": "donut",
+            "scene_variant": "pie",
             "start_angle_deg": -90.0,
-            "value": 50,
+            "value": 31,
             "x_rank": 0
           },
-          "entity_id": "mark_Bull",
+          "entity_id": "mark_Boys",
           "entity_type": "slice"
         },
         {
           "attrs": {
-            "end_angle_deg": 100.8,
-            "label": "Jen",
+            "end_angle_deg": 180.0,
+            "label": "Maia",
             "label_bbox_px": [
               838.16,
-              286.5,
-              882.16,
-              309.5
+              289.0,
+              902.16,
+              307.0
             ],
             "label_center_px": [
-              860.16,
+              870.16,
               298.0
             ],
             "legend_swatch_bbox_px": [
@@ -649,55 +643,55 @@
               312.0
             ],
             "mark_bbox_px": [
-              393.286,
+              181.68,
               326.0,
-              442.08,
-              586.4
+              684.194,
+              586.241
             ],
             "mark_center_px": [
-              424.681,
-              510.063
+              412.804,
+              479.473
             ],
             "mark_fill_rgb": [
-              15,
-              120,
-              181
+              138,
+              159,
+              43
             ],
             "mark_outline_rgb": [
-              8,
-              66,
-              100
+              76,
+              87,
+              24
             ],
             "percentage_bbox_px": [
-              395.568,
-              592.173,
-              436.568,
-              610.173
+              383.804,
+              470.473,
+              441.804,
+              488.473
             ],
             "percentage_center_px": [
-              416.068,
-              601.173
+              412.804,
+              479.473
             ],
-            "scene_variant": "donut",
-            "start_angle_deg": 90.0,
-            "value": 3,
+            "scene_variant": "pie",
+            "start_angle_deg": 21.6,
+            "value": 44,
             "x_rank": 1
           },
-          "entity_id": "mark_Jen",
+          "entity_id": "mark_Maia",
           "entity_type": "slice"
         },
         {
           "attrs": {
-            "end_angle_deg": 212.4,
-            "label": "Huei",
+            "end_angle_deg": 208.8,
+            "label": "Phox",
             "label_bbox_px": [
               838.16,
               331.0,
-              899.16,
+              905.16,
               349.0
             ],
             "label_center_px": [
-              868.66,
+              871.66,
               340.0
             ],
             "legend_swatch_bbox_px": [
@@ -707,55 +701,55 @@
               354.0
             ],
             "mark_bbox_px": [
-              181.69,
-              186.471,
+              181.68,
+              200.551,
               442.08,
-              581.788
+              326.0
             ],
             "mark_center_px": [
-              272.402,
-              399.426
+              290.749,
+              287.145
             ],
             "mark_fill_rgb": [
-              173,
-              69,
-              188
+              5,
+              101,
+              86
             ],
             "mark_outline_rgb": [
-              95,
-              38,
-              103
+              3,
+              56,
+              47
             ],
             "percentage_bbox_px": [
-              243.402,
-              390.426,
-              301.402,
-              408.426
+              270.249,
+              278.145,
+              311.249,
+              296.145
             ],
             "percentage_center_px": [
-              272.402,
-              399.426
+              290.749,
+              287.145
             ],
-            "scene_variant": "donut",
-            "start_angle_deg": 100.8,
-            "value": 31,
+            "scene_variant": "pie",
+            "start_angle_deg": 180.0,
+            "value": 8,
             "x_rank": 2
           },
-          "entity_id": "mark_Huei",
+          "entity_id": "mark_Phox",
           "entity_type": "slice"
         },
         {
           "attrs": {
             "end_angle_deg": 270.0,
-            "label": "Jule",
+            "label": "Tati",
             "label_bbox_px": [
               838.16,
-              370.5,
-              890.16,
-              393.5
+              373.0,
+              889.16,
+              391.0
             ],
             "label_center_px": [
-              864.16,
+              863.66,
               382.0
             ],
             "legend_swatch_bbox_px": [
@@ -765,76 +759,76 @@
               396.0
             ],
             "mark_bbox_px": [
-              222.217,
+              213.89,
               65.6,
               442.08,
               326.0
             ],
             "mark_center_px": [
-              353.011,
-              163.985
+              362.547,
+              191.518
             ],
             "mark_fill_rgb": [
-              10,
-              173,
-              102
+              9,
+              27,
+              196
             ],
             "mark_outline_rgb": [
-              6,
-              95,
-              56
+              5,
+              15,
+              108
             ],
             "percentage_bbox_px": [
-              324.011,
-              154.985,
-              382.011,
-              172.985
+              333.547,
+              182.518,
+              391.547,
+              200.518
             ],
             "percentage_center_px": [
-              353.011,
-              163.985
+              362.547,
+              191.518
             ],
-            "scene_variant": "donut",
-            "start_angle_deg": 212.4,
-            "value": 16,
+            "scene_variant": "pie",
+            "start_angle_deg": 208.8,
+            "value": 17,
             "x_rank": 3
           },
-          "entity_id": "mark_Jule",
+          "entity_id": "mark_Tati",
           "entity_type": "slice"
         }
       ],
       "relations": {
-        "answer_value": 81,
+        "answer_value": 39,
         "evidence_labels": [
-          "Bull",
-          "Jen",
-          "Huei",
-          "Jule"
+          "Boys",
+          "Maia",
+          "Phox",
+          "Tati"
         ],
         "query_category_label": "",
         "query_series_label": "",
         "query_subset_labels": [
-          "Bull",
-          "Huei"
+          "Boys",
+          "Phox"
         ],
-        "scene_variant": "donut",
+        "scene_variant": "pie",
         "task_variant": "combined_share_subset"
       },
-      "scene_kind": "chart_donut_composition"
+      "scene_kind": "chart_pie_composition"
     },
     "witness_symbolic": {
       "labels": [
-        "Bull",
-        "Jen",
-        "Huei",
-        "Jule"
+        "Boys",
+        "Maia",
+        "Phox",
+        "Tati"
       ],
       "type": "integer_list",
       "values": [
-        50,
-        3,
         31,
-        16
+        44,
+        8,
+        17
       ]
     }
   },

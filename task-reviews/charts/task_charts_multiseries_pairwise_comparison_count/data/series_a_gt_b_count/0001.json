@@ -1,213 +1,271 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 2
+    "value": 3
   },
   "evidence_gt": {
     "type": "label_set",
     "value": [
-      "C",
-      "K"
+      "J",
+      "P",
+      "S"
     ]
   },
   "image": {
     "format": "png",
     "path": "charts/task_charts_multiseries_pairwise_comparison_count/images/series_a_gt_b_count/0001.png"
   },
-  "instance_seed": 6758902099128700,
-  "prompt": "Use the chart in the image. It shows a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Use the chart to compare the queried pair of series across the category labels. Count the category labels where Maxa exceeds Shah.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer format: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
+  "instance_seed": 6896608543149809,
+  "prompt": "You are given a multiseries chart: a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Read the chart values and count the categories where the stated series relation holds. Across the labeled categories, in how many categories is Cord higher than Tera?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
   "prompt_variants": {
-    "answer_and_evidence": "Use the chart in the image. It shows a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Use the chart to compare the queried pair of series across the category labels. Count the category labels where Maxa exceeds Shah.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer format: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
-    "answer_only": "Use the chart in the image. It shows a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Use the chart to compare the queried pair of series across the category labels. Count the category labels where Maxa exceeds Shah.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":3}"
+    "answer_and_evidence": "You are given a multiseries chart: a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Read the chart values and count the categories where the stated series relation holds. Across the labeled categories, in how many categories is Cord higher than Tera?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
+    "answer_only": "You are given a multiseries chart: a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Read the chart values and count the categories where the stated series relation holds. Across the labeled categories, in how many categories is Cord higher than Tera?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":3}"
   },
   "task": "task_charts_multiseries_pairwise_comparison_count",
   "task_variant": "series_a_gt_b_count",
   "trace_payload": {
     "execution_trace": {
-      "answer_value": 2,
-      "category_count": 6,
+      "answer_value": 3,
+      "category_count": 10,
       "category_count_range": [
         5,
         10
       ],
       "category_labels": [
-        "A",
-        "C",
-        "J",
-        "U",
+        "Y",
         "S",
-        "K"
+        "P",
+        "W",
+        "C",
+        "G",
+        "U",
+        "Q",
+        "J",
+        "M"
       ],
       "comparison": "greater_than",
       "evidence_labels": [
-        "C",
-        "K"
+        "J",
+        "P",
+        "S"
       ],
-      "left_series_label": "Maxa",
+      "left_series_label": "Cord",
       "mark_color_distance_space": "lab",
       "mark_color_min_distance": 40.0,
       "mark_color_sampling_policy": "random_rgb_palette",
       "queried_series_labels": [
-        "Maxa",
-        "Shah"
+        "Cord",
+        "Tera"
       ],
       "question_format": "numeric_open",
-      "right_series_label": "Shah",
-      "scene_variant": "multi_line",
+      "right_series_label": "Tera",
+      "scene_variant": "grouped_horizontal_bar",
       "scene_variant_probabilities": {
         "grouped_bar": 0.25,
         "grouped_horizontal_bar": 0.25,
         "grouped_lollipop": 0.25,
         "multi_line": 0.25
       },
-      "series_count": 2,
+      "series_count": 3,
       "series_count_range": [
         2,
         3
       ],
       "series_fill_palette_rgb": [
         [
-          10,
-          142,
-          41
+          176,
+          1,
+          219
         ],
         [
-          211,
-          155,
-          116
+          88,
+          113,
+          51
+        ],
+        [
+          178,
+          28,
+          105
         ]
       ],
       "series_labels": [
-        "Maxa",
-        "Shah"
+        "Reo",
+        "Cord",
+        "Tera"
       ],
       "series_outline_palette_rgb": [
         [
-          6,
-          78,
-          23
+          97,
+          1,
+          120
         ],
         [
-          116,
-          85,
-          64
+          48,
+          62,
+          28
+        ],
+        [
+          98,
+          15,
+          58
         ]
       ],
-      "target_answer": 2,
+      "target_answer": 3,
       "target_answer_range": [
         0,
         8
       ],
       "task_variant": "series_a_gt_b_count",
       "task_variant_probabilities": {
-        "series_a_gt_b_count": 0.5,
-        "series_a_lt_b_count": 0.5
+        "series_a_gt_b_count": 1.0,
+        "series_a_lt_b_count": 0.0
       },
       "values_by_category": {
-        "A": {
-          "Maxa": 2,
-          "Shah": 13
-        },
         "C": {
-          "Maxa": 17,
-          "Shah": 4
+          "Cord": 9,
+          "Reo": 13,
+          "Tera": 20
+        },
+        "G": {
+          "Cord": 5,
+          "Reo": 8,
+          "Tera": 16
         },
         "J": {
-          "Maxa": 1,
-          "Shah": 20
+          "Cord": 19,
+          "Reo": 16,
+          "Tera": 9
         },
-        "K": {
-          "Maxa": 12,
-          "Shah": 5
+        "M": {
+          "Cord": 1,
+          "Reo": 10,
+          "Tera": 14
+        },
+        "P": {
+          "Cord": 15,
+          "Reo": 3,
+          "Tera": 1
+        },
+        "Q": {
+          "Cord": 6,
+          "Reo": 7,
+          "Tera": 12
         },
         "S": {
-          "Maxa": 5,
-          "Shah": 9
+          "Cord": 17,
+          "Reo": 6,
+          "Tera": 4
         },
         "U": {
-          "Maxa": 5,
-          "Shah": 15
+          "Cord": 4,
+          "Reo": 13,
+          "Tera": 18
+        },
+        "W": {
+          "Cord": 11,
+          "Reo": 16,
+          "Tera": 18
+        },
+        "Y": {
+          "Cord": 2,
+          "Reo": 12,
+          "Tera": 15
         }
       }
     },
     "projected_evidence": {
       "bbox_set": [
         [
-          274.5,
-          128.19,
-          290.5,
-          562.0
+          57.0,
+          441.72,
+          781.429,
+          469.08
         ],
         [
-          781.5,
-          243.429,
-          799.5,
-          562.0
+          54.0,
+          151.32,
+          636.286,
+          178.68
+        ],
+        [
+          54.0,
+          102.92,
+          708.857,
+          130.28
         ]
       ],
       "label_set": [
-        "C",
-        "K"
+        "J",
+        "P",
+        "S"
       ],
       "pixel_point_map": {
-        "C": [
-          282.5,
-          554.0
+        "J": [
+          62.0,
+          455.4
         ],
-        "K": [
-          790.5,
-          554.0
+        "P": [
+          62.0,
+          165.0
+        ],
+        "S": [
+          62.0,
+          116.6
         ]
       },
       "pixel_point_set": [
         [
-          282.5,
-          554.0
+          62.0,
+          455.4
         ],
         [
-          790.5,
-          554.0
+          62.0,
+          165.0
+        ],
+        [
+          62.0,
+          116.6
         ]
       ]
     },
     "query_spec": {
       "params": {
-        "category_count": 6,
+        "category_count": 10,
         "category_count_range": [
           5,
           10
         ],
         "comparison": "greater_than",
         "queried_series_labels": [
-          "Maxa",
-          "Shah"
+          "Cord",
+          "Tera"
         ],
-        "scene_variant": "multi_line",
+        "scene_variant": "grouped_horizontal_bar",
         "scene_variant_probabilities": {
           "grouped_bar": 0.25,
           "grouped_horizontal_bar": 0.25,
           "grouped_lollipop": 0.25,
           "multi_line": 0.25
         },
-        "series_count": 2,
+        "series_count": 3,
         "series_count_range": [
           2,
           3
         ],
-        "target_answer": 2,
+        "target_answer": 3,
         "target_answer_range": [
           0,
           8
         ],
         "task_variant": "series_a_gt_b_count",
         "task_variant_probabilities": {
-          "series_a_gt_b_count": 0.5,
-          "series_a_lt_b_count": 0.5
+          "series_a_gt_b_count": 1.0,
+          "series_a_lt_b_count": 0.0
         }
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 1,
+        "answer_or_evidence_variant_index": 0,
         "prompt_bundle_id": "charts_multiseries_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -217,16 +275,16 @@
           "json_example_answer_only": "{\"answer\":3}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "left_series": "Maxa",
-          "object_description": "a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis",
-          "right_series": "Shah"
+          "left_series": "Cord",
+          "object_description": "a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category",
+          "right_series": "Tera"
         },
         "task_family_key": "multiseries_chart_comparison",
-        "task_family_variant_index": 1,
+        "task_family_variant_index": 4,
         "task_key": "pairwise_comparison_count_query",
-        "task_variant_index": 1,
+        "task_variant_index": 3,
         "task_variant_key": "series_a_gt_b_count",
-        "task_variant_template_index": 1,
+        "task_variant_template_index": 0,
         "template_paths": [
           "charts/multiseries/charts_multiseries_v1.json"
         ],
@@ -242,7 +300,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 1,
+            "answer_or_evidence_variant_index": 0,
             "prompt_bundle_id": "charts_multiseries_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -252,16 +310,16 @@
               "json_example_answer_only": "{\"answer\":3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "left_series": "Maxa",
-              "object_description": "a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis",
-              "right_series": "Shah"
+              "left_series": "Cord",
+              "object_description": "a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category",
+              "right_series": "Tera"
             },
             "task_family_key": "multiseries_chart_comparison",
-            "task_family_variant_index": 1,
+            "task_family_variant_index": 4,
             "task_key": "pairwise_comparison_count_query",
-            "task_variant_index": 1,
+            "task_variant_index": 3,
             "task_variant_key": "series_a_gt_b_count",
-            "task_variant_template_index": 1,
+            "task_variant_template_index": 0,
             "template_paths": [
               "charts/multiseries/charts_multiseries_v1.json"
             ],
@@ -272,12 +330,12 @@
               "task_variant:series_a_gt_b_count": 5
             }
           },
-          "prompt": "Use the chart in the image. It shows a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Use the chart to compare the queried pair of series across the category labels. Count the category labels where Maxa exceeds Shah.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer format: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}"
+          "prompt": "You are given a multiseries chart: a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Read the chart values and count the categories where the stated series relation holds. Across the labeled categories, in how many categories is Cord higher than Tera?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 2,
+            "answer_or_evidence_variant_index": 4,
             "prompt_bundle_id": "charts_multiseries_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -287,16 +345,16 @@
               "json_example_answer_only": "{\"answer\":3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "left_series": "Maxa",
-              "object_description": "a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis",
-              "right_series": "Shah"
+              "left_series": "Cord",
+              "object_description": "a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category",
+              "right_series": "Tera"
             },
             "task_family_key": "multiseries_chart_comparison",
-            "task_family_variant_index": 1,
+            "task_family_variant_index": 4,
             "task_key": "pairwise_comparison_count_query",
-            "task_variant_index": 1,
+            "task_variant_index": 3,
             "task_variant_key": "series_a_gt_b_count",
-            "task_variant_template_index": 1,
+            "task_variant_template_index": 0,
             "template_paths": [
               "charts/multiseries/charts_multiseries_v1.json"
             ],
@@ -307,7 +365,7 @@
               "task_variant:series_a_gt_b_count": 5
             }
           },
-          "prompt": "Use the chart in the image. It shows a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Use the chart to compare the queried pair of series across the category labels. Count the category labels where Maxa exceeds Shah.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":3}"
+          "prompt": "You are given a multiseries chart: a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Read the chart values and count the categories where the stated series relation holds. Across the labeled categories, in how many categories is Cord higher than Tera?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":3}"
         }
       },
       "task_variant": "series_a_gt_b_count",
@@ -315,29 +373,45 @@
     },
     "render_map": {
       "category_label_centers_px": {
-        "A": [
-          155.5,
-          554.0
-        ],
         "C": [
-          282.5,
-          554.0
+          62.0,
+          261.8
+        ],
+        "G": [
+          62.0,
+          310.2
         ],
         "J": [
-          409.5,
-          554.0
+          62.0,
+          455.4
         ],
-        "K": [
-          790.5,
-          554.0
+        "M": [
+          62.0,
+          503.8
+        ],
+        "P": [
+          62.0,
+          165.0
+        ],
+        "Q": [
+          62.0,
+          407.0
         ],
         "S": [
-          663.5,
-          554.0
+          62.0,
+          116.6
         ],
         "U": [
-          536.5,
-          554.0
+          62.0,
+          358.6
+        ],
+        "W": [
+          62.0,
+          213.4
+        ],
+        "Y": [
+          62.0,
+          68.2
         ]
       },
       "image_id": "img0",
@@ -378,26 +452,36 @@
         "sampling_policy": "random_rgb_palette",
         "series_fill_palette_rgb": [
           [
-            10,
-            142,
-            41
+            176,
+            1,
+            219
           ],
           [
-            211,
-            155,
-            116
+            88,
+            113,
+            51
+          ],
+          [
+            178,
+            28,
+            105
           ]
         ],
         "series_outline_palette_rgb": [
           [
-            6,
-            78,
-            23
+            97,
+            1,
+            120
           ],
           [
-            116,
-            85,
-            64
+            48,
+            62,
+            28
+          ],
+          [
+            98,
+            15,
+            58
           ]
         ]
       },
@@ -423,7 +507,7 @@
         "edits": [],
         "enabled": false
       },
-      "scene_variant": "multi_line",
+      "scene_variant": "grouped_horizontal_bar",
       "text_style": {
         "label_font_size_px": 22,
         "label_stroke_width_px": 2,
@@ -460,527 +544,1285 @@
         {
           "attrs": {
             "category_group_bbox_px": [
-              147.0,
-              220.381,
-              164.0,
-              562.0
+              53.0,
+              54.52,
+              636.286,
+              81.88
             ],
-            "category_label": "A",
+            "category_label": "Y",
             "category_label_center_px": [
-              155.5,
-              554.0
+              62.0,
+              68.2
             ],
             "category_rank": 0,
             "mark_bbox_px": [
-              147.5,
-              473.905,
-              163.5,
-              489.905
+              92.0,
+              54.52,
+              527.429,
+              62.52
             ],
             "mark_center_px": [
-              155.5,
-              481.905
+              309.714,
+              58.52
             ],
             "mark_fill_rgb": [
-              10,
-              142,
-              41
+              176,
+              1,
+              219
             ],
             "mark_outline_rgb": [
-              6,
-              78,
-              23
+              97,
+              1,
+              120
             ],
-            "scene_variant": "multi_line",
-            "series_label": "Maxa",
-            "series_rank": 0,
-            "value": 2
-          },
-          "entity_id": "mark_A_Maxa",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              147.0,
-              220.381,
-              164.0,
-              562.0
-            ],
-            "category_label": "A",
-            "category_label_center_px": [
-              155.5,
-              554.0
-            ],
-            "category_rank": 0,
-            "mark_bbox_px": [
-              147.5,
-              220.381,
-              163.5,
-              236.381
-            ],
-            "mark_center_px": [
-              155.5,
-              228.381
-            ],
-            "mark_fill_rgb": [
-              211,
-              155,
-              116
-            ],
-            "mark_outline_rgb": [
-              116,
-              85,
-              64
-            ],
-            "scene_variant": "multi_line",
-            "series_label": "Shah",
-            "series_rank": 1,
-            "value": 13
-          },
-          "entity_id": "mark_A_Shah",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              274.5,
-              128.19,
-              290.5,
-              562.0
-            ],
-            "category_label": "C",
-            "category_label_center_px": [
-              282.5,
-              554.0
-            ],
-            "category_rank": 1,
-            "mark_bbox_px": [
-              274.5,
-              128.19,
-              290.5,
-              144.19
-            ],
-            "mark_center_px": [
-              282.5,
-              136.19
-            ],
-            "mark_fill_rgb": [
-              10,
-              142,
-              41
-            ],
-            "mark_outline_rgb": [
-              6,
-              78,
-              23
-            ],
-            "scene_variant": "multi_line",
-            "series_label": "Maxa",
-            "series_rank": 0,
-            "value": 17
-          },
-          "entity_id": "mark_C_Maxa",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              274.5,
-              128.19,
-              290.5,
-              562.0
-            ],
-            "category_label": "C",
-            "category_label_center_px": [
-              282.5,
-              554.0
-            ],
-            "category_rank": 1,
-            "mark_bbox_px": [
-              274.5,
-              427.81,
-              290.5,
-              443.81
-            ],
-            "mark_center_px": [
-              282.5,
-              435.81
-            ],
-            "mark_fill_rgb": [
-              211,
-              155,
-              116
-            ],
-            "mark_outline_rgb": [
-              116,
-              85,
-              64
-            ],
-            "scene_variant": "multi_line",
-            "series_label": "Shah",
-            "series_rank": 1,
-            "value": 4
-          },
-          "entity_id": "mark_C_Shah",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              401.5,
-              59.048,
-              417.5,
-              564.0
-            ],
-            "category_label": "J",
-            "category_label_center_px": [
-              409.5,
-              554.0
-            ],
-            "category_rank": 2,
-            "mark_bbox_px": [
-              401.5,
-              496.952,
-              417.5,
-              512.952
-            ],
-            "mark_center_px": [
-              409.5,
-              504.952
-            ],
-            "mark_fill_rgb": [
-              10,
-              142,
-              41
-            ],
-            "mark_outline_rgb": [
-              6,
-              78,
-              23
-            ],
-            "scene_variant": "multi_line",
-            "series_label": "Maxa",
-            "series_rank": 0,
-            "value": 1
-          },
-          "entity_id": "mark_J_Maxa",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              401.5,
-              59.048,
-              417.5,
-              564.0
-            ],
-            "category_label": "J",
-            "category_label_center_px": [
-              409.5,
-              554.0
-            ],
-            "category_rank": 2,
-            "mark_bbox_px": [
-              401.5,
-              59.048,
-              417.5,
-              75.048
-            ],
-            "mark_center_px": [
-              409.5,
-              67.048
-            ],
-            "mark_fill_rgb": [
-              211,
-              155,
-              116
-            ],
-            "mark_outline_rgb": [
-              116,
-              85,
-              64
-            ],
-            "scene_variant": "multi_line",
-            "series_label": "Shah",
-            "series_rank": 1,
-            "value": 20
-          },
-          "entity_id": "mark_J_Shah",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              527.5,
-              174.286,
-              545.5,
-              562.0
-            ],
-            "category_label": "U",
-            "category_label_center_px": [
-              536.5,
-              554.0
-            ],
-            "category_rank": 3,
-            "mark_bbox_px": [
-              528.5,
-              404.762,
-              544.5,
-              420.762
-            ],
-            "mark_center_px": [
-              536.5,
-              412.762
-            ],
-            "mark_fill_rgb": [
-              10,
-              142,
-              41
-            ],
-            "mark_outline_rgb": [
-              6,
-              78,
-              23
-            ],
-            "scene_variant": "multi_line",
-            "series_label": "Maxa",
-            "series_rank": 0,
-            "value": 5
-          },
-          "entity_id": "mark_U_Maxa",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              527.5,
-              174.286,
-              545.5,
-              562.0
-            ],
-            "category_label": "U",
-            "category_label_center_px": [
-              536.5,
-              554.0
-            ],
-            "category_rank": 3,
-            "mark_bbox_px": [
-              528.5,
-              174.286,
-              544.5,
-              190.286
-            ],
-            "mark_center_px": [
-              536.5,
-              182.286
-            ],
-            "mark_fill_rgb": [
-              211,
-              155,
-              116
-            ],
-            "mark_outline_rgb": [
-              116,
-              85,
-              64
-            ],
-            "scene_variant": "multi_line",
-            "series_label": "Shah",
-            "series_rank": 1,
-            "value": 15
-          },
-          "entity_id": "mark_U_Shah",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              655.5,
-              312.571,
-              671.5,
-              562.0
-            ],
-            "category_label": "S",
-            "category_label_center_px": [
-              663.5,
-              554.0
-            ],
-            "category_rank": 4,
-            "mark_bbox_px": [
-              655.5,
-              404.762,
-              671.5,
-              420.762
-            ],
-            "mark_center_px": [
-              663.5,
-              412.762
-            ],
-            "mark_fill_rgb": [
-              10,
-              142,
-              41
-            ],
-            "mark_outline_rgb": [
-              6,
-              78,
-              23
-            ],
-            "scene_variant": "multi_line",
-            "series_label": "Maxa",
-            "series_rank": 0,
-            "value": 5
-          },
-          "entity_id": "mark_S_Maxa",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              655.5,
-              312.571,
-              671.5,
-              562.0
-            ],
-            "category_label": "S",
-            "category_label_center_px": [
-              663.5,
-              554.0
-            ],
-            "category_rank": 4,
-            "mark_bbox_px": [
-              655.5,
-              312.571,
-              671.5,
-              328.571
-            ],
-            "mark_center_px": [
-              663.5,
-              320.571
-            ],
-            "mark_fill_rgb": [
-              211,
-              155,
-              116
-            ],
-            "mark_outline_rgb": [
-              116,
-              85,
-              64
-            ],
-            "scene_variant": "multi_line",
-            "series_label": "Shah",
-            "series_rank": 1,
-            "value": 9
-          },
-          "entity_id": "mark_S_Shah",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              781.5,
-              243.429,
-              799.5,
-              562.0
-            ],
-            "category_label": "K",
-            "category_label_center_px": [
-              790.5,
-              554.0
-            ],
-            "category_rank": 5,
-            "mark_bbox_px": [
-              782.5,
-              243.429,
-              798.5,
-              259.429
-            ],
-            "mark_center_px": [
-              790.5,
-              251.429
-            ],
-            "mark_fill_rgb": [
-              10,
-              142,
-              41
-            ],
-            "mark_outline_rgb": [
-              6,
-              78,
-              23
-            ],
-            "scene_variant": "multi_line",
-            "series_label": "Maxa",
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Reo",
             "series_rank": 0,
             "value": 12
           },
-          "entity_id": "mark_K_Maxa",
-          "entity_type": "point"
+          "entity_id": "mark_Y_Reo",
+          "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              781.5,
-              243.429,
-              799.5,
-              562.0
+              53.0,
+              54.52,
+              636.286,
+              81.88
             ],
-            "category_label": "K",
+            "category_label": "Y",
             "category_label_center_px": [
-              790.5,
-              554.0
+              62.0,
+              68.2
+            ],
+            "category_rank": 0,
+            "mark_bbox_px": [
+              92.0,
+              64.2,
+              164.571,
+              72.2
+            ],
+            "mark_center_px": [
+              128.286,
+              68.2
+            ],
+            "mark_fill_rgb": [
+              88,
+              113,
+              51
+            ],
+            "mark_outline_rgb": [
+              48,
+              62,
+              28
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Cord",
+            "series_rank": 1,
+            "value": 2
+          },
+          "entity_id": "mark_Y_Cord",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.0,
+              54.52,
+              636.286,
+              81.88
+            ],
+            "category_label": "Y",
+            "category_label_center_px": [
+              62.0,
+              68.2
+            ],
+            "category_rank": 0,
+            "mark_bbox_px": [
+              92.0,
+              73.88,
+              636.286,
+              81.88
+            ],
+            "mark_center_px": [
+              364.143,
+              77.88
+            ],
+            "mark_fill_rgb": [
+              178,
+              28,
+              105
+            ],
+            "mark_outline_rgb": [
+              98,
+              15,
+              58
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Tera",
+            "series_rank": 2,
+            "value": 15
+          },
+          "entity_id": "mark_Y_Tera",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              54.0,
+              102.92,
+              708.857,
+              130.28
+            ],
+            "category_label": "S",
+            "category_label_center_px": [
+              62.0,
+              116.6
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              92.0,
+              102.92,
+              309.714,
+              110.92
+            ],
+            "mark_center_px": [
+              200.857,
+              106.92
+            ],
+            "mark_fill_rgb": [
+              176,
+              1,
+              219
+            ],
+            "mark_outline_rgb": [
+              97,
+              1,
+              120
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Reo",
+            "series_rank": 0,
+            "value": 6
+          },
+          "entity_id": "mark_S_Reo",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              54.0,
+              102.92,
+              708.857,
+              130.28
+            ],
+            "category_label": "S",
+            "category_label_center_px": [
+              62.0,
+              116.6
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              92.0,
+              112.6,
+              708.857,
+              120.6
+            ],
+            "mark_center_px": [
+              400.429,
+              116.6
+            ],
+            "mark_fill_rgb": [
+              88,
+              113,
+              51
+            ],
+            "mark_outline_rgb": [
+              48,
+              62,
+              28
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Cord",
+            "series_rank": 1,
+            "value": 17
+          },
+          "entity_id": "mark_S_Cord",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              54.0,
+              102.92,
+              708.857,
+              130.28
+            ],
+            "category_label": "S",
+            "category_label_center_px": [
+              62.0,
+              116.6
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              92.0,
+              122.28,
+              237.143,
+              130.28
+            ],
+            "mark_center_px": [
+              164.571,
+              126.28
+            ],
+            "mark_fill_rgb": [
+              178,
+              28,
+              105
+            ],
+            "mark_outline_rgb": [
+              98,
+              15,
+              58
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Tera",
+            "series_rank": 2,
+            "value": 4
+          },
+          "entity_id": "mark_S_Tera",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              54.0,
+              151.32,
+              636.286,
+              178.68
+            ],
+            "category_label": "P",
+            "category_label_center_px": [
+              62.0,
+              165.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              92.0,
+              151.32,
+              200.857,
+              159.32
+            ],
+            "mark_center_px": [
+              146.429,
+              155.32
+            ],
+            "mark_fill_rgb": [
+              176,
+              1,
+              219
+            ],
+            "mark_outline_rgb": [
+              97,
+              1,
+              120
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Reo",
+            "series_rank": 0,
+            "value": 3
+          },
+          "entity_id": "mark_P_Reo",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              54.0,
+              151.32,
+              636.286,
+              178.68
+            ],
+            "category_label": "P",
+            "category_label_center_px": [
+              62.0,
+              165.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              92.0,
+              161.0,
+              636.286,
+              169.0
+            ],
+            "mark_center_px": [
+              364.143,
+              165.0
+            ],
+            "mark_fill_rgb": [
+              88,
+              113,
+              51
+            ],
+            "mark_outline_rgb": [
+              48,
+              62,
+              28
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Cord",
+            "series_rank": 1,
+            "value": 15
+          },
+          "entity_id": "mark_P_Cord",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              54.0,
+              151.32,
+              636.286,
+              178.68
+            ],
+            "category_label": "P",
+            "category_label_center_px": [
+              62.0,
+              165.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              92.0,
+              170.68,
+              128.286,
+              178.68
+            ],
+            "mark_center_px": [
+              110.143,
+              174.68
+            ],
+            "mark_fill_rgb": [
+              178,
+              28,
+              105
+            ],
+            "mark_outline_rgb": [
+              98,
+              15,
+              58
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Tera",
+            "series_rank": 2,
+            "value": 1
+          },
+          "entity_id": "mark_P_Tera",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              50.0,
+              199.72,
+              745.143,
+              227.08
+            ],
+            "category_label": "W",
+            "category_label_center_px": [
+              62.0,
+              213.4
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              92.0,
+              199.72,
+              672.571,
+              207.72
+            ],
+            "mark_center_px": [
+              382.286,
+              203.72
+            ],
+            "mark_fill_rgb": [
+              176,
+              1,
+              219
+            ],
+            "mark_outline_rgb": [
+              97,
+              1,
+              120
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Reo",
+            "series_rank": 0,
+            "value": 16
+          },
+          "entity_id": "mark_W_Reo",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              50.0,
+              199.72,
+              745.143,
+              227.08
+            ],
+            "category_label": "W",
+            "category_label_center_px": [
+              62.0,
+              213.4
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              92.0,
+              209.4,
+              491.143,
+              217.4
+            ],
+            "mark_center_px": [
+              291.571,
+              213.4
+            ],
+            "mark_fill_rgb": [
+              88,
+              113,
+              51
+            ],
+            "mark_outline_rgb": [
+              48,
+              62,
+              28
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Cord",
+            "series_rank": 1,
+            "value": 11
+          },
+          "entity_id": "mark_W_Cord",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              50.0,
+              199.72,
+              745.143,
+              227.08
+            ],
+            "category_label": "W",
+            "category_label_center_px": [
+              62.0,
+              213.4
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              92.0,
+              219.08,
+              745.143,
+              227.08
+            ],
+            "mark_center_px": [
+              418.571,
+              223.08
+            ],
+            "mark_fill_rgb": [
+              178,
+              28,
+              105
+            ],
+            "mark_outline_rgb": [
+              98,
+              15,
+              58
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Tera",
+            "series_rank": 2,
+            "value": 18
+          },
+          "entity_id": "mark_W_Tera",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              54.0,
+              248.12,
+              817.714,
+              275.48
+            ],
+            "category_label": "C",
+            "category_label_center_px": [
+              62.0,
+              261.8
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              92.0,
+              248.12,
+              563.714,
+              256.12
+            ],
+            "mark_center_px": [
+              327.857,
+              252.12
+            ],
+            "mark_fill_rgb": [
+              176,
+              1,
+              219
+            ],
+            "mark_outline_rgb": [
+              97,
+              1,
+              120
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Reo",
+            "series_rank": 0,
+            "value": 13
+          },
+          "entity_id": "mark_C_Reo",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              54.0,
+              248.12,
+              817.714,
+              275.48
+            ],
+            "category_label": "C",
+            "category_label_center_px": [
+              62.0,
+              261.8
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              92.0,
+              257.8,
+              418.571,
+              265.8
+            ],
+            "mark_center_px": [
+              255.286,
+              261.8
+            ],
+            "mark_fill_rgb": [
+              88,
+              113,
+              51
+            ],
+            "mark_outline_rgb": [
+              48,
+              62,
+              28
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Cord",
+            "series_rank": 1,
+            "value": 9
+          },
+          "entity_id": "mark_C_Cord",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              54.0,
+              248.12,
+              817.714,
+              275.48
+            ],
+            "category_label": "C",
+            "category_label_center_px": [
+              62.0,
+              261.8
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              92.0,
+              267.48,
+              817.714,
+              275.48
+            ],
+            "mark_center_px": [
+              454.857,
+              271.48
+            ],
+            "mark_fill_rgb": [
+              178,
+              28,
+              105
+            ],
+            "mark_outline_rgb": [
+              98,
+              15,
+              58
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Tera",
+            "series_rank": 2,
+            "value": 20
+          },
+          "entity_id": "mark_C_Tera",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.0,
+              296.52,
+              672.571,
+              323.88
+            ],
+            "category_label": "G",
+            "category_label_center_px": [
+              62.0,
+              310.2
             ],
             "category_rank": 5,
             "mark_bbox_px": [
-              782.5,
-              404.762,
-              798.5,
-              420.762
+              92.0,
+              296.52,
+              382.286,
+              304.52
             ],
             "mark_center_px": [
-              790.5,
-              412.762
+              237.143,
+              300.52
             ],
             "mark_fill_rgb": [
-              211,
-              155,
-              116
+              176,
+              1,
+              219
             ],
             "mark_outline_rgb": [
-              116,
-              85,
-              64
+              97,
+              1,
+              120
             ],
-            "scene_variant": "multi_line",
-            "series_label": "Shah",
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Reo",
+            "series_rank": 0,
+            "value": 8
+          },
+          "entity_id": "mark_G_Reo",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.0,
+              296.52,
+              672.571,
+              323.88
+            ],
+            "category_label": "G",
+            "category_label_center_px": [
+              62.0,
+              310.2
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              92.0,
+              306.2,
+              273.429,
+              314.2
+            ],
+            "mark_center_px": [
+              182.714,
+              310.2
+            ],
+            "mark_fill_rgb": [
+              88,
+              113,
+              51
+            ],
+            "mark_outline_rgb": [
+              48,
+              62,
+              28
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Cord",
             "series_rank": 1,
             "value": 5
           },
-          "entity_id": "mark_K_Shah",
-          "entity_type": "point"
+          "entity_id": "mark_G_Cord",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.0,
+              296.52,
+              672.571,
+              323.88
+            ],
+            "category_label": "G",
+            "category_label_center_px": [
+              62.0,
+              310.2
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              92.0,
+              315.88,
+              672.571,
+              323.88
+            ],
+            "mark_center_px": [
+              382.286,
+              319.88
+            ],
+            "mark_fill_rgb": [
+              178,
+              28,
+              105
+            ],
+            "mark_outline_rgb": [
+              98,
+              15,
+              58
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Tera",
+            "series_rank": 2,
+            "value": 16
+          },
+          "entity_id": "mark_G_Tera",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.0,
+              344.92,
+              745.143,
+              372.28
+            ],
+            "category_label": "U",
+            "category_label_center_px": [
+              62.0,
+              358.6
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              92.0,
+              344.92,
+              563.714,
+              352.92
+            ],
+            "mark_center_px": [
+              327.857,
+              348.92
+            ],
+            "mark_fill_rgb": [
+              176,
+              1,
+              219
+            ],
+            "mark_outline_rgb": [
+              97,
+              1,
+              120
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Reo",
+            "series_rank": 0,
+            "value": 13
+          },
+          "entity_id": "mark_U_Reo",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.0,
+              344.92,
+              745.143,
+              372.28
+            ],
+            "category_label": "U",
+            "category_label_center_px": [
+              62.0,
+              358.6
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              92.0,
+              354.6,
+              237.143,
+              362.6
+            ],
+            "mark_center_px": [
+              164.571,
+              358.6
+            ],
+            "mark_fill_rgb": [
+              88,
+              113,
+              51
+            ],
+            "mark_outline_rgb": [
+              48,
+              62,
+              28
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Cord",
+            "series_rank": 1,
+            "value": 4
+          },
+          "entity_id": "mark_U_Cord",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.0,
+              344.92,
+              745.143,
+              372.28
+            ],
+            "category_label": "U",
+            "category_label_center_px": [
+              62.0,
+              358.6
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              92.0,
+              364.28,
+              745.143,
+              372.28
+            ],
+            "mark_center_px": [
+              418.571,
+              368.28
+            ],
+            "mark_fill_rgb": [
+              178,
+              28,
+              105
+            ],
+            "mark_outline_rgb": [
+              98,
+              15,
+              58
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Tera",
+            "series_rank": 2,
+            "value": 18
+          },
+          "entity_id": "mark_U_Tera",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              52.5,
+              393.32,
+              527.429,
+              420.68
+            ],
+            "category_label": "Q",
+            "category_label_center_px": [
+              62.0,
+              407.0
+            ],
+            "category_rank": 7,
+            "mark_bbox_px": [
+              92.0,
+              393.32,
+              346.0,
+              401.32
+            ],
+            "mark_center_px": [
+              219.0,
+              397.32
+            ],
+            "mark_fill_rgb": [
+              176,
+              1,
+              219
+            ],
+            "mark_outline_rgb": [
+              97,
+              1,
+              120
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Reo",
+            "series_rank": 0,
+            "value": 7
+          },
+          "entity_id": "mark_Q_Reo",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              52.5,
+              393.32,
+              527.429,
+              420.68
+            ],
+            "category_label": "Q",
+            "category_label_center_px": [
+              62.0,
+              407.0
+            ],
+            "category_rank": 7,
+            "mark_bbox_px": [
+              92.0,
+              403.0,
+              309.714,
+              411.0
+            ],
+            "mark_center_px": [
+              200.857,
+              407.0
+            ],
+            "mark_fill_rgb": [
+              88,
+              113,
+              51
+            ],
+            "mark_outline_rgb": [
+              48,
+              62,
+              28
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Cord",
+            "series_rank": 1,
+            "value": 6
+          },
+          "entity_id": "mark_Q_Cord",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              52.5,
+              393.32,
+              527.429,
+              420.68
+            ],
+            "category_label": "Q",
+            "category_label_center_px": [
+              62.0,
+              407.0
+            ],
+            "category_rank": 7,
+            "mark_bbox_px": [
+              92.0,
+              412.68,
+              527.429,
+              420.68
+            ],
+            "mark_center_px": [
+              309.714,
+              416.68
+            ],
+            "mark_fill_rgb": [
+              178,
+              28,
+              105
+            ],
+            "mark_outline_rgb": [
+              98,
+              15,
+              58
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Tera",
+            "series_rank": 2,
+            "value": 12
+          },
+          "entity_id": "mark_Q_Tera",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              57.0,
+              441.72,
+              781.429,
+              469.08
+            ],
+            "category_label": "J",
+            "category_label_center_px": [
+              62.0,
+              455.4
+            ],
+            "category_rank": 8,
+            "mark_bbox_px": [
+              92.0,
+              441.72,
+              672.571,
+              449.72
+            ],
+            "mark_center_px": [
+              382.286,
+              445.72
+            ],
+            "mark_fill_rgb": [
+              176,
+              1,
+              219
+            ],
+            "mark_outline_rgb": [
+              97,
+              1,
+              120
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Reo",
+            "series_rank": 0,
+            "value": 16
+          },
+          "entity_id": "mark_J_Reo",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              57.0,
+              441.72,
+              781.429,
+              469.08
+            ],
+            "category_label": "J",
+            "category_label_center_px": [
+              62.0,
+              455.4
+            ],
+            "category_rank": 8,
+            "mark_bbox_px": [
+              92.0,
+              451.4,
+              781.429,
+              459.4
+            ],
+            "mark_center_px": [
+              436.714,
+              455.4
+            ],
+            "mark_fill_rgb": [
+              88,
+              113,
+              51
+            ],
+            "mark_outline_rgb": [
+              48,
+              62,
+              28
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Cord",
+            "series_rank": 1,
+            "value": 19
+          },
+          "entity_id": "mark_J_Cord",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              57.0,
+              441.72,
+              781.429,
+              469.08
+            ],
+            "category_label": "J",
+            "category_label_center_px": [
+              62.0,
+              455.4
+            ],
+            "category_rank": 8,
+            "mark_bbox_px": [
+              92.0,
+              461.08,
+              418.571,
+              469.08
+            ],
+            "mark_center_px": [
+              255.286,
+              465.08
+            ],
+            "mark_fill_rgb": [
+              178,
+              28,
+              105
+            ],
+            "mark_outline_rgb": [
+              98,
+              15,
+              58
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Tera",
+            "series_rank": 2,
+            "value": 9
+          },
+          "entity_id": "mark_J_Tera",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              51.0,
+              490.12,
+              600.0,
+              517.48
+            ],
+            "category_label": "M",
+            "category_label_center_px": [
+              62.0,
+              503.8
+            ],
+            "category_rank": 9,
+            "mark_bbox_px": [
+              92.0,
+              490.12,
+              454.857,
+              498.12
+            ],
+            "mark_center_px": [
+              273.429,
+              494.12
+            ],
+            "mark_fill_rgb": [
+              176,
+              1,
+              219
+            ],
+            "mark_outline_rgb": [
+              97,
+              1,
+              120
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Reo",
+            "series_rank": 0,
+            "value": 10
+          },
+          "entity_id": "mark_M_Reo",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              51.0,
+              490.12,
+              600.0,
+              517.48
+            ],
+            "category_label": "M",
+            "category_label_center_px": [
+              62.0,
+              503.8
+            ],
+            "category_rank": 9,
+            "mark_bbox_px": [
+              92.0,
+              499.8,
+              128.286,
+              507.8
+            ],
+            "mark_center_px": [
+              110.143,
+              503.8
+            ],
+            "mark_fill_rgb": [
+              88,
+              113,
+              51
+            ],
+            "mark_outline_rgb": [
+              48,
+              62,
+              28
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Cord",
+            "series_rank": 1,
+            "value": 1
+          },
+          "entity_id": "mark_M_Cord",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              51.0,
+              490.12,
+              600.0,
+              517.48
+            ],
+            "category_label": "M",
+            "category_label_center_px": [
+              62.0,
+              503.8
+            ],
+            "category_rank": 9,
+            "mark_bbox_px": [
+              92.0,
+              509.48,
+              600.0,
+              517.48
+            ],
+            "mark_center_px": [
+              346.0,
+              513.48
+            ],
+            "mark_fill_rgb": [
+              178,
+              28,
+              105
+            ],
+            "mark_outline_rgb": [
+              98,
+              15,
+              58
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Tera",
+            "series_rank": 2,
+            "value": 14
+          },
+          "entity_id": "mark_M_Tera",
+          "entity_type": "bar"
         }
       ],
       "relations": {
         "comparison": "greater_than",
         "evidence_labels": [
-          "C",
-          "K"
+          "J",
+          "P",
+          "S"
         ],
         "queried_series_labels": [
-          "Maxa",
-          "Shah"
+          "Cord",
+          "Tera"
         ],
-        "scene_variant": "multi_line",
+        "scene_variant": "grouped_horizontal_bar",
         "task_variant": "series_a_gt_b_count"
       },
-      "scene_kind": "chart_multi_line_multiseries"
+      "scene_kind": "chart_grouped_horizontal_bar_multiseries"
     },
     "witness_symbolic": {
       "labels": [
-        "C",
-        "K"
+        "J",
+        "P",
+        "S"
       ],
       "type": "label_set"
     }

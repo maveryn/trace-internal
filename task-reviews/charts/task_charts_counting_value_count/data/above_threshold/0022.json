@@ -1,71 +1,67 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 5
+    "value": 3
   },
   "evidence_gt": {
     "type": "label_set",
     "value": [
-      "E",
-      "H",
-      "M",
-      "R",
-      "S"
+      "C",
+      "T",
+      "V"
     ]
   },
   "image": {
     "format": "png",
     "path": "charts/task_charts_counting_value_count/images/above_threshold/0022.png"
   },
-  "instance_seed": 905577208865466,
-  "prompt": "Use the chart in the image. It shows a labeled lollipop chart. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Determine how many labeled marks meet the stated value condition. What number of labeled marks have values higher than 7?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing the labels of all marks with values greater than the threshold.\nAnswer field: set \"answer\" to the number of matching marks as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"K\",\"T\"],\"answer\":3}",
+  "instance_seed": 6744749301374069,
+  "prompt": "Use the chart in the image. It shows a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Count the labeled marks that satisfy the requested value condition. What number of labeled marks have values higher than 8?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing the labels of all marks with values greater than the threshold.\nAnswer rule: set \"answer\" to the number of matching marks as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"K\",\"T\"],\"answer\":3}",
   "prompt_variants": {
-    "answer_and_evidence": "Use the chart in the image. It shows a labeled lollipop chart. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Determine how many labeled marks meet the stated value condition. What number of labeled marks have values higher than 7?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing the labels of all marks with values greater than the threshold.\nAnswer field: set \"answer\" to the number of matching marks as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"K\",\"T\"],\"answer\":3}",
-    "answer_only": "Use the chart in the image. It shows a labeled lollipop chart. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Determine how many labeled marks meet the stated value condition. What number of labeled marks have values higher than 7?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the number of matching marks as an integer.\nExample JSON:\n{\"answer\":3}"
+    "answer_and_evidence": "Use the chart in the image. It shows a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Count the labeled marks that satisfy the requested value condition. What number of labeled marks have values higher than 8?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing the labels of all marks with values greater than the threshold.\nAnswer rule: set \"answer\" to the number of matching marks as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"K\",\"T\"],\"answer\":3}",
+    "answer_only": "Use the chart in the image. It shows a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Count the labeled marks that satisfy the requested value condition. What number of labeled marks have values higher than 8?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the number of matching marks as an integer.\nExample JSON:\n{\"answer\":3}"
   },
   "task": "task_charts_counting_value_count",
   "task_variant": "above_threshold",
   "trace_payload": {
     "execution_trace": {
-      "answer_value": 5,
+      "answer_value": 3,
       "comparison": "greater_than",
+      "composition_total": 100,
       "evidence_labels": [
-        "E",
-        "H",
-        "M",
-        "R",
-        "S"
+        "C",
+        "T",
+        "V"
       ],
       "labels": [
-        "M",
-        "H",
-        "N",
-        "R",
-        "G",
-        "U",
-        "E",
-        "S"
+        "P",
+        "C",
+        "V",
+        "T",
+        "Y",
+        "U"
       ],
       "mark_color_distance_space": "lab",
-      "mark_color_min_distance": 40.0,
-      "mark_color_sampling_policy": "random_rgb",
-      "mark_count": 8,
+      "mark_color_min_distance": 58.0,
+      "mark_color_sampling_policy": "random_rgb_palette",
+      "mark_count": 6,
       "mark_count_range": [
         5,
-        10
-      ],
-      "mark_fill_rgb": [
-        104,
-        174,
-        15
-      ],
-      "mark_outline_rgb": [
-        57,
-        96,
         8
       ],
+      "mark_fill_rgb": [
+        193,
+        5,
+        29
+      ],
+      "mark_outline_rgb": [
+        106,
+        3,
+        16
+      ],
+      "pie_like_mark_color_channel_max": 200,
       "question_format": "numeric_open",
-      "scene_variant": "lollipop",
+      "scene_variant": "pie",
       "scene_variant_probabilities": {
         "area": 0.1,
         "bar": 0.1,
@@ -78,131 +74,162 @@
         "radar": 0.1,
         "scatter": 0.1
       },
-      "target_answer": 5,
+      "slice_fill_palette_rgb": [
+        [
+          193,
+          5,
+          29
+        ],
+        [
+          15,
+          1,
+          139
+        ],
+        [
+          121,
+          135,
+          28
+        ],
+        [
+          110,
+          71,
+          97
+        ],
+        [
+          0,
+          130,
+          118
+        ],
+        [
+          199,
+          4,
+          140
+        ]
+      ],
+      "slice_outline_palette_rgb": [
+        [
+          106,
+          3,
+          16
+        ],
+        [
+          8,
+          1,
+          76
+        ],
+        [
+          67,
+          74,
+          15
+        ],
+        [
+          61,
+          39,
+          53
+        ],
+        [
+          0,
+          72,
+          65
+        ],
+        [
+          109,
+          2,
+          77
+        ]
+      ],
+      "target_answer": 3,
       "target_answer_range": [
         0,
         10
       ],
       "task_variant": "above_threshold",
       "task_variant_probabilities": {
-        "above_threshold": 0.3333333333333333,
-        "below_threshold": 0.3333333333333333,
-        "in_interval": 0.3333333333333333
+        "above_threshold": 1.0,
+        "below_threshold": 0.0,
+        "in_interval": 0.0
       },
-      "threshold": 7,
-      "value_max": 20,
+      "threshold": 8,
+      "value_max": 99,
       "value_min": 1,
+      "value_semantics": "percentage",
       "values": [
-        17,
+        4,
+        27,
         14,
-        1,
-        20,
-        5,
-        2,
-        18,
-        20
+        39,
+        8,
+        8
       ],
       "values_by_label": {
-        "E": 18,
-        "G": 5,
-        "H": 14,
-        "M": 17,
-        "N": 1,
-        "R": 20,
-        "S": 20,
-        "U": 2
+        "C": 27,
+        "P": 4,
+        "T": 39,
+        "U": 8,
+        "V": 14,
+        "Y": 8
       }
     },
     "projected_evidence": {
       "bbox_set": [
         [
-          621.875,
-          102.286,
-          637.875,
-          118.286
+          319.32,
+          75.0,
+          525.919,
+          352.393
         ],
         [
-          208.125,
-          190.667,
-          224.125,
-          206.667
+          112.03,
+          164.805,
+          383.447,
+          483.514
         ],
         [
-          125.375,
-          124.381,
-          141.375,
-          140.381
-        ],
-        [
-          373.625,
-          58.095,
-          389.625,
-          74.095
-        ],
-        [
-          704.625,
-          58.095,
-          720.625,
-          74.095
+          319.32,
+          276.0,
+          512.267,
+          473.363
         ]
       ],
       "label_set": [
-        "E",
-        "H",
-        "M",
-        "R",
-        "S"
+        "C",
+        "T",
+        "V"
       ],
       "pixel_point_map": {
-        "E": [
-          629.875,
-          110.286
+        "C": [
+          430.261,
+          219.473
         ],
-        "H": [
-          216.125,
-          198.667
+        "T": [
+          220.936,
+          352.314
         ],
-        "M": [
-          133.375,
-          132.381
-        ],
-        "R": [
-          381.625,
-          66.095
-        ],
-        "S": [
-          712.625,
-          66.095
+        "V": [
+          404.554,
+          366.765
         ]
       },
       "pixel_point_set": [
         [
-          629.875,
-          110.286
+          430.261,
+          219.473
         ],
         [
-          216.125,
-          198.667
+          220.936,
+          352.314
         ],
         [
-          133.375,
-          132.381
-        ],
-        [
-          381.625,
-          66.095
-        ],
-        [
-          712.625,
-          66.095
+          404.554,
+          366.765
         ]
       ]
     },
     "query_spec": {
       "params": {
         "comparison": "greater_than",
-        "mark_count": 8,
-        "scene_variant": "lollipop",
+        "mark_count": 6,
+        "scene_variant": "pie",
         "scene_variant_probabilities": {
           "area": 0.1,
           "bar": 0.1,
@@ -215,22 +242,22 @@
           "radar": 0.1,
           "scatter": 0.1
         },
-        "target_answer": 5,
+        "target_answer": 3,
         "target_answer_range": [
           0,
           10
         ],
         "task_variant": "above_threshold",
         "task_variant_probabilities": {
-          "above_threshold": 0.3333333333333333,
-          "below_threshold": 0.3333333333333333,
-          "in_interval": 0.3333333333333333
+          "above_threshold": 1.0,
+          "below_threshold": 0.0,
+          "in_interval": 0.0
         },
-        "threshold": 7
+        "threshold": 8
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 3,
+        "answer_or_evidence_variant_index": 4,
         "prompt_bundle_id": "charts_counting_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -242,13 +269,13 @@
           "json_example_answer_only": "{\"answer\":3}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "object_description": "a labeled lollipop chart. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis",
-          "threshold": "7"
+          "object_description": "a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices",
+          "threshold": "8"
         },
         "task_family_key": "labeled_chart_counting",
         "task_family_variant_index": 1,
         "task_key": "value_count_query",
-        "task_variant_index": 3,
+        "task_variant_index": 1,
         "task_variant_key": "above_threshold",
         "task_variant_template_index": 3,
         "template_paths": [
@@ -266,7 +293,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 3,
+            "answer_or_evidence_variant_index": 4,
             "prompt_bundle_id": "charts_counting_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -278,13 +305,13 @@
               "json_example_answer_only": "{\"answer\":3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a labeled lollipop chart. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis",
-              "threshold": "7"
+              "object_description": "a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices",
+              "threshold": "8"
             },
             "task_family_key": "labeled_chart_counting",
             "task_family_variant_index": 1,
             "task_key": "value_count_query",
-            "task_variant_index": 3,
+            "task_variant_index": 1,
             "task_variant_key": "above_threshold",
             "task_variant_template_index": 3,
             "template_paths": [
@@ -297,12 +324,12 @@
               "task_variant:above_threshold": 5
             }
           },
-          "prompt": "Use the chart in the image. It shows a labeled lollipop chart. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Determine how many labeled marks meet the stated value condition. What number of labeled marks have values higher than 7?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing the labels of all marks with values greater than the threshold.\nAnswer field: set \"answer\" to the number of matching marks as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"K\",\"T\"],\"answer\":3}"
+          "prompt": "Use the chart in the image. It shows a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Count the labeled marks that satisfy the requested value condition. What number of labeled marks have values higher than 8?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing the labels of all marks with values greater than the threshold.\nAnswer rule: set \"answer\" to the number of matching marks as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"K\",\"T\"],\"answer\":3}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 1,
+            "answer_or_evidence_variant_index": 4,
             "prompt_bundle_id": "charts_counting_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -314,13 +341,13 @@
               "json_example_answer_only": "{\"answer\":3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a labeled lollipop chart. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis",
-              "threshold": "7"
+              "object_description": "a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices",
+              "threshold": "8"
             },
             "task_family_key": "labeled_chart_counting",
             "task_family_variant_index": 1,
             "task_key": "value_count_query",
-            "task_variant_index": 3,
+            "task_variant_index": 1,
             "task_variant_key": "above_threshold",
             "task_variant_template_index": 3,
             "template_paths": [
@@ -333,7 +360,7 @@
               "task_variant:above_threshold": 5
             }
           },
-          "prompt": "Use the chart in the image. It shows a labeled lollipop chart. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Determine how many labeled marks meet the stated value condition. What number of labeled marks have values higher than 7?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the number of matching marks as an integer.\nExample JSON:\n{\"answer\":3}"
+          "prompt": "Use the chart in the image. It shows a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Count the labeled marks that satisfy the requested value condition. What number of labeled marks have values higher than 8?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the number of matching marks as an integer.\nExample JSON:\n{\"answer\":3}"
         }
       },
       "task_variant": "above_threshold",
@@ -342,37 +369,29 @@
     "render_map": {
       "image_id": "img0",
       "label_centers_px": {
-        "E": [
-          629.875,
-          88.286
+        "C": [
+          624.64,
+          206.0
         ],
-        "G": [
-          464.375,
-          375.524
+        "P": [
+          624.64,
+          164.0
         ],
-        "H": [
-          216.125,
-          176.667
-        ],
-        "M": [
-          133.375,
-          110.381
-        ],
-        "N": [
-          298.875,
-          463.905
-        ],
-        "R": [
-          381.625,
-          44.095
-        ],
-        "S": [
-          712.625,
-          44.095
+        "T": [
+          624.14,
+          290.0
         ],
         "U": [
-          547.125,
-          441.81
+          625.64,
+          374.0
+        ],
+        "V": [
+          625.14,
+          248.0
+        ],
+        "Y": [
+          625.64,
+          332.0
         ]
       },
       "plot_bbox_px": [
@@ -408,18 +427,83 @@
       "coord_space": "pixel",
       "mark_style": {
         "mark_color_distance_space": "lab",
-        "mark_color_min_distance": 40.0,
+        "mark_color_min_distance": 58.0,
         "mark_fill_rgb": [
-          104,
-          174,
-          15
+          193,
+          5,
+          29
         ],
         "mark_outline_rgb": [
-          57,
-          96,
-          8
+          106,
+          3,
+          16
         ],
-        "sampling_policy": "random_rgb"
+        "pie_like_mark_color_channel_max": 200,
+        "sampling_policy": "random_rgb_palette",
+        "slice_fill_palette_rgb": [
+          [
+            193,
+            5,
+            29
+          ],
+          [
+            15,
+            1,
+            139
+          ],
+          [
+            121,
+            135,
+            28
+          ],
+          [
+            110,
+            71,
+            97
+          ],
+          [
+            0,
+            130,
+            118
+          ],
+          [
+            199,
+            4,
+            140
+          ]
+        ],
+        "slice_outline_palette_rgb": [
+          [
+            106,
+            3,
+            16
+          ],
+          [
+            8,
+            1,
+            76
+          ],
+          [
+            67,
+            74,
+            15
+          ],
+          [
+            61,
+            39,
+            53
+          ],
+          [
+            0,
+            72,
+            65
+          ],
+          [
+            109,
+            2,
+            77
+          ]
+        ]
       },
       "plot_bbox_px": [
         92,
@@ -443,13 +527,13 @@
         "edits": [],
         "enabled": false
       },
-      "scene_variant": "lollipop",
+      "scene_variant": "pie",
       "text_style": {
         "label_font_size_px": 22,
         "label_stroke_width_px": 2,
         "tick_font_size_px": 18
       },
-      "y_axis_max": 21,
+      "y_axis_max": 40,
       "y_ticks": [
         0,
         1,
@@ -472,306 +556,397 @@
         18,
         19,
         20,
-        21
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40
       ]
     },
     "scene_ir": {
       "entities": [
         {
           "attrs": {
-            "label": "M",
+            "end_angle_deg": -75.6,
+            "label": "P",
+            "label_bbox_px": [
+              616.64,
+              156.0,
+              632.64,
+              172.0
+            ],
             "label_center_px": [
-              133.375,
-              110.381
+              624.64,
+              164.0
+            ],
+            "legend_swatch_bbox_px": [
+              568.64,
+              150.0,
+              596.64,
+              178.0
             ],
             "mark_bbox_px": [
-              125.375,
-              124.381,
-              141.375,
-              140.381
+              319.32,
+              68.48,
+              370.928,
+              276.0
             ],
             "mark_center_px": [
-              133.375,
-              132.381
+              334.925,
+              152.47
             ],
             "mark_fill_rgb": [
-              104,
-              174,
-              15
+              193,
+              5,
+              29
             ],
             "mark_outline_rgb": [
-              57,
-              96,
-              8
+              106,
+              3,
+              16
             ],
-            "scene_variant": "lollipop",
-            "value": 17,
+            "percentage_bbox_px": [
+              328.834,
+              46.243,
+              365.834,
+              62.243
+            ],
+            "percentage_center_px": [
+              347.334,
+              54.243
+            ],
+            "scene_variant": "pie",
+            "start_angle_deg": -90.0,
+            "value": 4,
             "x_rank": 0
           },
-          "entity_id": "mark_M",
-          "entity_type": "point"
+          "entity_id": "mark_P",
+          "entity_type": "slice"
         },
         {
           "attrs": {
-            "label": "H",
+            "end_angle_deg": 21.6,
+            "label": "C",
+            "label_bbox_px": [
+              616.64,
+              198.0,
+              632.64,
+              214.0
+            ],
             "label_center_px": [
-              216.125,
-              176.667
+              624.64,
+              206.0
+            ],
+            "legend_swatch_bbox_px": [
+              568.64,
+              192.0,
+              596.64,
+              220.0
             ],
             "mark_bbox_px": [
-              208.125,
-              190.667,
-              224.125,
-              206.667
+              319.32,
+              75.0,
+              525.919,
+              352.393
             ],
             "mark_center_px": [
-              216.125,
-              198.667
+              430.261,
+              219.473
             ],
             "mark_fill_rgb": [
-              104,
-              174,
-              15
+              15,
+              1,
+              139
             ],
             "mark_outline_rgb": [
-              57,
-              96,
-              8
+              8,
+              1,
+              76
             ],
-            "scene_variant": "lollipop",
-            "value": 14,
+            "percentage_bbox_px": [
+              404.261,
+              211.473,
+              456.261,
+              227.473
+            ],
+            "percentage_center_px": [
+              430.261,
+              219.473
+            ],
+            "scene_variant": "pie",
+            "start_angle_deg": -75.6,
+            "value": 27,
             "x_rank": 1
           },
-          "entity_id": "mark_H",
-          "entity_type": "point"
+          "entity_id": "mark_C",
+          "entity_type": "slice"
         },
         {
           "attrs": {
-            "label": "N",
+            "end_angle_deg": 72.0,
+            "label": "V",
+            "label_bbox_px": [
+              616.64,
+              240.0,
+              633.64,
+              256.0
+            ],
             "label_center_px": [
-              298.875,
-              463.905
+              625.14,
+              248.0
+            ],
+            "legend_swatch_bbox_px": [
+              568.64,
+              234.0,
+              596.64,
+              262.0
             ],
             "mark_bbox_px": [
-              290.875,
-              477.905,
-              306.875,
-              493.905
+              319.32,
+              276.0,
+              512.267,
+              473.363
             ],
             "mark_center_px": [
-              298.875,
-              485.905
+              404.554,
+              366.765
             ],
             "mark_fill_rgb": [
-              104,
-              174,
-              15
+              121,
+              135,
+              28
             ],
             "mark_outline_rgb": [
-              57,
-              96,
-              8
+              67,
+              74,
+              15
             ],
-            "scene_variant": "lollipop",
-            "value": 1,
+            "percentage_bbox_px": [
+              378.554,
+              358.765,
+              430.554,
+              374.765
+            ],
+            "percentage_center_px": [
+              404.554,
+              366.765
+            ],
+            "scene_variant": "pie",
+            "start_angle_deg": 21.6,
+            "value": 14,
             "x_rank": 2
           },
-          "entity_id": "mark_N",
-          "entity_type": "point"
+          "entity_id": "mark_V",
+          "entity_type": "slice"
         },
         {
           "attrs": {
-            "label": "R",
+            "end_angle_deg": 212.4,
+            "label": "T",
+            "label_bbox_px": [
+              616.64,
+              282.0,
+              631.64,
+              298.0
+            ],
             "label_center_px": [
-              381.625,
-              44.095
+              624.14,
+              290.0
+            ],
+            "legend_swatch_bbox_px": [
+              568.64,
+              276.0,
+              596.64,
+              304.0
             ],
             "mark_bbox_px": [
-              373.625,
-              58.095,
-              389.625,
-              74.095
+              112.03,
+              164.805,
+              383.447,
+              483.514
             ],
             "mark_center_px": [
-              381.625,
-              66.095
+              220.936,
+              352.314
             ],
             "mark_fill_rgb": [
-              104,
-              174,
-              15
+              110,
+              71,
+              97
             ],
             "mark_outline_rgb": [
-              57,
-              96,
-              8
+              61,
+              39,
+              53
             ],
-            "scene_variant": "lollipop",
-            "value": 20,
+            "percentage_bbox_px": [
+              194.936,
+              344.314,
+              246.936,
+              360.314
+            ],
+            "percentage_center_px": [
+              220.936,
+              352.314
+            ],
+            "scene_variant": "pie",
+            "start_angle_deg": 72.0,
+            "value": 39,
             "x_rank": 3
           },
-          "entity_id": "mark_R",
-          "entity_type": "point"
+          "entity_id": "mark_T",
+          "entity_type": "slice"
         },
         {
           "attrs": {
-            "label": "G",
+            "end_angle_deg": 241.2,
+            "label": "Y",
+            "label_bbox_px": [
+              616.64,
+              324.0,
+              634.64,
+              340.0
+            ],
             "label_center_px": [
-              464.375,
-              375.524
+              625.64,
+              332.0
+            ],
+            "legend_swatch_bbox_px": [
+              568.64,
+              318.0,
+              596.64,
+              346.0
             ],
             "mark_bbox_px": [
-              456.375,
-              389.524,
-              472.375,
-              405.524
+              144.105,
+              94.149,
+              319.32,
+              276.0
             ],
             "mark_center_px": [
-              464.375,
-              397.524
+              234.086,
+              185.235
             ],
             "mark_fill_rgb": [
-              104,
-              174,
-              15
+              0,
+              130,
+              118
             ],
             "mark_outline_rgb": [
-              57,
-              96,
-              8
+              0,
+              72,
+              65
             ],
-            "scene_variant": "lollipop",
-            "value": 5,
+            "percentage_bbox_px": [
+              215.586,
+              177.235,
+              252.586,
+              193.235
+            ],
+            "percentage_center_px": [
+              234.086,
+              185.235
+            ],
+            "scene_variant": "pie",
+            "start_angle_deg": 212.4,
+            "value": 8,
             "x_rank": 4
           },
-          "entity_id": "mark_G",
-          "entity_type": "point"
+          "entity_id": "mark_Y",
+          "entity_type": "slice"
         },
         {
           "attrs": {
+            "end_angle_deg": 270.0,
             "label": "U",
+            "label_bbox_px": [
+              616.64,
+              366.0,
+              634.64,
+              382.0
+            ],
             "label_center_px": [
-              547.125,
-              441.81
+              625.64,
+              374.0
+            ],
+            "legend_swatch_bbox_px": [
+              568.64,
+              360.0,
+              596.64,
+              388.0
             ],
             "mark_bbox_px": [
-              539.125,
-              455.81,
-              555.125,
-              471.81
+              219.346,
+              68.48,
+              319.32,
+              276.0
             ],
             "mark_center_px": [
-              547.125,
-              463.81
+              288.355,
+              155.4
             ],
             "mark_fill_rgb": [
-              104,
-              174,
-              15
+              199,
+              4,
+              140
             ],
             "mark_outline_rgb": [
-              57,
-              96,
-              8
+              109,
+              2,
+              77
             ],
-            "scene_variant": "lollipop",
-            "value": 2,
+            "percentage_bbox_px": [
+              269.855,
+              147.4,
+              306.855,
+              163.4
+            ],
+            "percentage_center_px": [
+              288.355,
+              155.4
+            ],
+            "scene_variant": "pie",
+            "start_angle_deg": 241.2,
+            "value": 8,
             "x_rank": 5
           },
           "entity_id": "mark_U",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "label": "E",
-            "label_center_px": [
-              629.875,
-              88.286
-            ],
-            "mark_bbox_px": [
-              621.875,
-              102.286,
-              637.875,
-              118.286
-            ],
-            "mark_center_px": [
-              629.875,
-              110.286
-            ],
-            "mark_fill_rgb": [
-              104,
-              174,
-              15
-            ],
-            "mark_outline_rgb": [
-              57,
-              96,
-              8
-            ],
-            "scene_variant": "lollipop",
-            "value": 18,
-            "x_rank": 6
-          },
-          "entity_id": "mark_E",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "label": "S",
-            "label_center_px": [
-              712.625,
-              44.095
-            ],
-            "mark_bbox_px": [
-              704.625,
-              58.095,
-              720.625,
-              74.095
-            ],
-            "mark_center_px": [
-              712.625,
-              66.095
-            ],
-            "mark_fill_rgb": [
-              104,
-              174,
-              15
-            ],
-            "mark_outline_rgb": [
-              57,
-              96,
-              8
-            ],
-            "scene_variant": "lollipop",
-            "value": 20,
-            "x_rank": 7
-          },
-          "entity_id": "mark_S",
-          "entity_type": "point"
+          "entity_type": "slice"
         }
       ],
       "relations": {
         "comparison": "greater_than",
         "evidence_labels": [
-          "E",
-          "H",
-          "M",
-          "R",
-          "S"
+          "C",
+          "T",
+          "V"
         ],
-        "scene_variant": "lollipop",
+        "scene_variant": "pie",
         "task_variant": "above_threshold",
-        "threshold": 7
+        "threshold": 8
       },
-      "scene_kind": "chart_lollipop_counting"
+      "scene_kind": "chart_pie_counting"
     },
     "witness_symbolic": {
       "labels": [
-        "E",
-        "H",
-        "M",
-        "R",
-        "S"
+        "C",
+        "T",
+        "V"
       ],
       "type": "label_set"
     }

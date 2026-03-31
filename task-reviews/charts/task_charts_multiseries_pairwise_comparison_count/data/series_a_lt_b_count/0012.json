@@ -6,9 +6,9 @@
   "evidence_gt": {
     "type": "label_set",
     "value": [
-      "A",
       "D",
-      "F",
+      "G",
+      "K",
       "U"
     ]
   },
@@ -16,50 +16,47 @@
     "format": "png",
     "path": "charts/task_charts_multiseries_pairwise_comparison_count/images/series_a_lt_b_count/0012.png"
   },
-  "instance_seed": 7597915438691554,
-  "prompt": "Work from the multiseries chart shown in the image: a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Work category by category and count the labels where the requested series comparison is true. Across the labeled categories, in how many categories is Chi lower than Gee?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer requirement: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+  "instance_seed": 6667546697900128,
+  "prompt": "You are given a multiseries chart: a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Work category by category and count the labels where the requested series comparison is true. Across the labeled categories, in how many categories is Dibb lower than Zia?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
   "prompt_variants": {
-    "answer_and_evidence": "Work from the multiseries chart shown in the image: a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Work category by category and count the labels where the requested series comparison is true. Across the labeled categories, in how many categories is Chi lower than Gee?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer requirement: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
-    "answer_only": "Work from the multiseries chart shown in the image: a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Work category by category and count the labels where the requested series comparison is true. Across the labeled categories, in how many categories is Chi lower than Gee?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
+    "answer_and_evidence": "You are given a multiseries chart: a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Work category by category and count the labels where the requested series comparison is true. Across the labeled categories, in how many categories is Dibb lower than Zia?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+    "answer_only": "You are given a multiseries chart: a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Work category by category and count the labels where the requested series comparison is true. Across the labeled categories, in how many categories is Dibb lower than Zia?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
   },
   "task": "task_charts_multiseries_pairwise_comparison_count",
   "task_variant": "series_a_lt_b_count",
   "trace_payload": {
     "execution_trace": {
       "answer_value": 4,
-      "category_count": 8,
+      "category_count": 5,
       "category_count_range": [
         5,
         10
       ],
       "category_labels": [
-        "D",
-        "U",
+        "M",
         "K",
-        "L",
-        "F",
-        "V",
-        "A",
-        "X"
+        "U",
+        "G",
+        "D"
       ],
       "comparison": "less_than",
       "evidence_labels": [
-        "A",
         "D",
-        "F",
+        "G",
+        "K",
         "U"
       ],
-      "left_series_label": "Chi",
+      "left_series_label": "Dibb",
       "mark_color_distance_space": "lab",
       "mark_color_min_distance": 40.0,
       "mark_color_sampling_policy": "random_rgb_palette",
       "queried_series_labels": [
-        "Chi",
-        "Gee"
+        "Dibb",
+        "Zia"
       ],
       "question_format": "numeric_open",
-      "right_series_label": "Gee",
-      "scene_variant": "multi_line",
+      "right_series_label": "Zia",
+      "scene_variant": "grouped_horizontal_bar",
       "scene_variant_probabilities": {
         "grouped_bar": 0.25,
         "grouped_horizontal_bar": 0.25,
@@ -73,30 +70,30 @@
       ],
       "series_fill_palette_rgb": [
         [
-          186,
-          127,
-          119
+          60,
+          39,
+          37
         ],
         [
-          57,
-          14,
-          4
+          98,
+          192,
+          122
         ]
       ],
       "series_labels": [
-        "Chi",
-        "Gee"
+        "Dibb",
+        "Zia"
       ],
       "series_outline_palette_rgb": [
         [
-          102,
-          70,
-          65
+          33,
+          21,
+          20
         ],
         [
-          31,
-          8,
-          2
+          54,
+          106,
+          67
         ]
       ],
       "target_answer": 4,
@@ -106,127 +103,115 @@
       ],
       "task_variant": "series_a_lt_b_count",
       "task_variant_probabilities": {
-        "series_a_gt_b_count": 0.5,
-        "series_a_lt_b_count": 0.5
+        "series_a_gt_b_count": 0.0,
+        "series_a_lt_b_count": 1.0
       },
       "values_by_category": {
-        "A": {
-          "Chi": 12,
-          "Gee": 16
-        },
         "D": {
-          "Chi": 1,
-          "Gee": 2
+          "Dibb": 1,
+          "Zia": 11
         },
-        "F": {
-          "Chi": 17,
-          "Gee": 18
+        "G": {
+          "Dibb": 17,
+          "Zia": 18
         },
         "K": {
-          "Chi": 5,
-          "Gee": 3
+          "Dibb": 8,
+          "Zia": 9
         },
-        "L": {
-          "Chi": 7,
-          "Gee": 2
+        "M": {
+          "Dibb": 20,
+          "Zia": 16
         },
         "U": {
-          "Chi": 5,
-          "Gee": 11
-        },
-        "V": {
-          "Chi": 15,
-          "Gee": 8
-        },
-        "X": {
-          "Chi": 14,
-          "Gee": 6
+          "Dibb": 2,
+          "Zia": 4
         }
       }
     },
     "projected_evidence": {
       "bbox_set": [
         [
-          702.625,
-          112.421,
-          719.625,
-          562.0
+          53.0,
+          454.626,
+          491.143,
+          504.574
         ],
         [
-          130.625,
-          469.053,
-          148.625,
-          562.0
+          53.0,
+          357.826,
+          745.143,
+          407.774
         ],
         [
-          512.625,
-          61.474,
-          528.625,
-          562.0
+          53.0,
+          164.226,
+          418.571,
+          214.174
         ],
         [
-          225.875,
-          239.789,
-          243.875,
-          562.0
+          53.0,
+          261.026,
+          237.143,
+          310.974
         ]
       ],
       "label_set": [
-        "A",
         "D",
-        "F",
+        "G",
+        "K",
         "U"
       ],
       "pixel_point_map": {
-        "A": [
-          711.125,
-          554.0
-        ],
         "D": [
-          139.625,
-          554.0
+          62.0,
+          479.6
         ],
-        "F": [
-          520.625,
-          554.0
+        "G": [
+          62.0,
+          382.8
+        ],
+        "K": [
+          62.0,
+          189.2
         ],
         "U": [
-          234.875,
-          554.0
+          62.0,
+          286.0
         ]
       },
       "pixel_point_set": [
         [
-          711.125,
-          554.0
+          62.0,
+          479.6
         ],
         [
-          139.625,
-          554.0
+          62.0,
+          382.8
         ],
         [
-          520.625,
-          554.0
+          62.0,
+          189.2
         ],
         [
-          234.875,
-          554.0
+          62.0,
+          286.0
         ]
       ]
     },
     "query_spec": {
       "params": {
-        "category_count": 8,
+        "category_count": 5,
         "category_count_range": [
           5,
           10
         ],
         "comparison": "less_than",
         "queried_series_labels": [
-          "Chi",
-          "Gee"
+          "Dibb",
+          "Zia"
         ],
-        "scene_variant": "multi_line",
+        "scene_variant": "grouped_horizontal_bar",
         "scene_variant_probabilities": {
           "grouped_bar": 0.25,
           "grouped_horizontal_bar": 0.25,
@@ -245,13 +230,13 @@
         ],
         "task_variant": "series_a_lt_b_count",
         "task_variant_probabilities": {
-          "series_a_gt_b_count": 0.5,
-          "series_a_lt_b_count": 0.5
+          "series_a_gt_b_count": 0.0,
+          "series_a_lt_b_count": 1.0
         }
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 2,
+        "answer_or_evidence_variant_index": 4,
         "prompt_bundle_id": "charts_multiseries_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -261,12 +246,12 @@
           "json_example_answer_only": "{\"answer\":2}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "left_series": "Chi",
-          "object_description": "a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis",
-          "right_series": "Gee"
+          "left_series": "Dibb",
+          "object_description": "a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category",
+          "right_series": "Zia"
         },
         "task_family_key": "multiseries_chart_comparison",
-        "task_family_variant_index": 2,
+        "task_family_variant_index": 4,
         "task_key": "pairwise_comparison_count_query",
         "task_variant_index": 4,
         "task_variant_key": "series_a_lt_b_count",
@@ -286,7 +271,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 2,
+            "answer_or_evidence_variant_index": 4,
             "prompt_bundle_id": "charts_multiseries_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -296,12 +281,12 @@
               "json_example_answer_only": "{\"answer\":2}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "left_series": "Chi",
-              "object_description": "a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis",
-              "right_series": "Gee"
+              "left_series": "Dibb",
+              "object_description": "a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category",
+              "right_series": "Zia"
             },
             "task_family_key": "multiseries_chart_comparison",
-            "task_family_variant_index": 2,
+            "task_family_variant_index": 4,
             "task_key": "pairwise_comparison_count_query",
             "task_variant_index": 4,
             "task_variant_key": "series_a_lt_b_count",
@@ -316,7 +301,7 @@
               "task_variant:series_a_lt_b_count": 5
             }
           },
-          "prompt": "Work from the multiseries chart shown in the image: a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Work category by category and count the labels where the requested series comparison is true. Across the labeled categories, in how many categories is Chi lower than Gee?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer requirement: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}"
+          "prompt": "You are given a multiseries chart: a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Work category by category and count the labels where the requested series comparison is true. Across the labeled categories, in how many categories is Dibb lower than Zia?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}"
         },
         "answer_only": {
           "metadata": {
@@ -331,12 +316,12 @@
               "json_example_answer_only": "{\"answer\":2}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "left_series": "Chi",
-              "object_description": "a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis",
-              "right_series": "Gee"
+              "left_series": "Dibb",
+              "object_description": "a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category",
+              "right_series": "Zia"
             },
             "task_family_key": "multiseries_chart_comparison",
-            "task_family_variant_index": 2,
+            "task_family_variant_index": 4,
             "task_key": "pairwise_comparison_count_query",
             "task_variant_index": 4,
             "task_variant_key": "series_a_lt_b_count",
@@ -351,7 +336,7 @@
               "task_variant:series_a_lt_b_count": 5
             }
           },
-          "prompt": "Work from the multiseries chart shown in the image: a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Work category by category and count the labels where the requested series comparison is true. Across the labeled categories, in how many categories is Chi lower than Gee?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
+          "prompt": "You are given a multiseries chart: a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Work category by category and count the labels where the requested series comparison is true. Across the labeled categories, in how many categories is Dibb lower than Zia?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
         }
       },
       "task_variant": "series_a_lt_b_count",
@@ -359,37 +344,25 @@
     },
     "render_map": {
       "category_label_centers_px": {
-        "A": [
-          711.125,
-          554.0
-        ],
         "D": [
-          139.625,
-          554.0
+          62.0,
+          479.6
         ],
-        "F": [
-          520.625,
-          554.0
+        "G": [
+          62.0,
+          382.8
         ],
         "K": [
-          330.125,
-          554.0
+          62.0,
+          189.2
         ],
-        "L": [
-          425.375,
-          554.0
+        "M": [
+          62.0,
+          92.4
         ],
         "U": [
-          234.875,
-          554.0
-        ],
-        "V": [
-          615.875,
-          554.0
-        ],
-        "X": [
-          806.375,
-          554.0
+          62.0,
+          286.0
         ]
       },
       "image_id": "img0",
@@ -430,26 +403,26 @@
         "sampling_policy": "random_rgb_palette",
         "series_fill_palette_rgb": [
           [
-            186,
-            127,
-            119
+            60,
+            39,
+            37
           ],
           [
-            57,
-            14,
-            4
+            98,
+            192,
+            122
           ]
         ],
         "series_outline_palette_rgb": [
           [
-            102,
-            70,
-            65
+            33,
+            21,
+            20
           ],
           [
-            31,
-            8,
-            2
+            54,
+            106,
+            67
           ]
         ]
       },
@@ -475,13 +448,13 @@
         "edits": [],
         "enabled": false
       },
-      "scene_variant": "multi_line",
+      "scene_variant": "grouped_horizontal_bar",
       "text_style": {
         "label_font_size_px": 22,
         "label_stroke_width_px": 2,
         "tick_font_size_px": 18
       },
-      "y_axis_max": 19,
+      "y_axis_max": 21,
       "y_ticks": [
         0,
         1,
@@ -502,7 +475,9 @@
         16,
         17,
         18,
-        19
+        19,
+        20,
+        21
       ]
     },
     "scene_ir": {
@@ -510,698 +485,446 @@
         {
           "attrs": {
             "category_group_bbox_px": [
-              130.625,
-              469.053,
-              148.625,
-              562.0
+              51.0,
+              67.426,
+              817.714,
+              117.374
             ],
-            "category_label": "D",
+            "category_label": "M",
             "category_label_center_px": [
-              139.625,
-              554.0
+              62.0,
+              92.4
             ],
             "category_rank": 0,
             "mark_bbox_px": [
-              131.625,
-              494.526,
-              147.625,
-              510.526
+              92.0,
+              67.426,
+              817.714,
+              88.334
             ],
             "mark_center_px": [
-              139.625,
-              502.526
+              454.857,
+              77.88
             ],
             "mark_fill_rgb": [
-              186,
-              127,
-              119
+              60,
+              39,
+              37
             ],
             "mark_outline_rgb": [
-              102,
-              70,
-              65
+              33,
+              21,
+              20
             ],
-            "scene_variant": "multi_line",
-            "series_label": "Chi",
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Dibb",
             "series_rank": 0,
-            "value": 1
+            "value": 20
           },
-          "entity_id": "mark_D_Chi",
-          "entity_type": "point"
+          "entity_id": "mark_M_Dibb",
+          "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              130.625,
-              469.053,
-              148.625,
-              562.0
+              51.0,
+              67.426,
+              817.714,
+              117.374
             ],
-            "category_label": "D",
+            "category_label": "M",
             "category_label_center_px": [
-              139.625,
-              554.0
+              62.0,
+              92.4
             ],
             "category_rank": 0,
             "mark_bbox_px": [
-              131.625,
-              469.053,
-              147.625,
-              485.053
+              92.0,
+              96.466,
+              672.571,
+              117.374
             ],
             "mark_center_px": [
-              139.625,
-              477.053
+              382.286,
+              106.92
             ],
             "mark_fill_rgb": [
-              57,
-              14,
-              4
+              98,
+              192,
+              122
             ],
             "mark_outline_rgb": [
-              31,
-              8,
-              2
-            ],
-            "scene_variant": "multi_line",
-            "series_label": "Gee",
-            "series_rank": 1,
-            "value": 2
-          },
-          "entity_id": "mark_D_Gee",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              225.875,
-              239.789,
-              243.875,
-              562.0
-            ],
-            "category_label": "U",
-            "category_label_center_px": [
-              234.875,
-              554.0
-            ],
-            "category_rank": 1,
-            "mark_bbox_px": [
-              226.875,
-              392.632,
-              242.875,
-              408.632
-            ],
-            "mark_center_px": [
-              234.875,
-              400.632
-            ],
-            "mark_fill_rgb": [
-              186,
-              127,
-              119
-            ],
-            "mark_outline_rgb": [
-              102,
-              70,
-              65
-            ],
-            "scene_variant": "multi_line",
-            "series_label": "Chi",
-            "series_rank": 0,
-            "value": 5
-          },
-          "entity_id": "mark_U_Chi",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              225.875,
-              239.789,
-              243.875,
-              562.0
-            ],
-            "category_label": "U",
-            "category_label_center_px": [
-              234.875,
-              554.0
-            ],
-            "category_rank": 1,
-            "mark_bbox_px": [
-              226.875,
-              239.789,
-              242.875,
-              255.789
-            ],
-            "mark_center_px": [
-              234.875,
-              247.789
-            ],
-            "mark_fill_rgb": [
-              57,
-              14,
-              4
-            ],
-            "mark_outline_rgb": [
-              31,
-              8,
-              2
-            ],
-            "scene_variant": "multi_line",
-            "series_label": "Gee",
-            "series_rank": 1,
-            "value": 11
-          },
-          "entity_id": "mark_U_Gee",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              321.125,
-              392.632,
-              339.125,
-              562.0
-            ],
-            "category_label": "K",
-            "category_label_center_px": [
-              330.125,
-              554.0
-            ],
-            "category_rank": 2,
-            "mark_bbox_px": [
-              322.125,
-              392.632,
-              338.125,
-              408.632
-            ],
-            "mark_center_px": [
-              330.125,
-              400.632
-            ],
-            "mark_fill_rgb": [
-              186,
-              127,
-              119
-            ],
-            "mark_outline_rgb": [
-              102,
-              70,
-              65
-            ],
-            "scene_variant": "multi_line",
-            "series_label": "Chi",
-            "series_rank": 0,
-            "value": 5
-          },
-          "entity_id": "mark_K_Chi",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              321.125,
-              392.632,
-              339.125,
-              562.0
-            ],
-            "category_label": "K",
-            "category_label_center_px": [
-              330.125,
-              554.0
-            ],
-            "category_rank": 2,
-            "mark_bbox_px": [
-              322.125,
-              443.579,
-              338.125,
-              459.579
-            ],
-            "mark_center_px": [
-              330.125,
-              451.579
-            ],
-            "mark_fill_rgb": [
-              57,
-              14,
-              4
-            ],
-            "mark_outline_rgb": [
-              31,
-              8,
-              2
-            ],
-            "scene_variant": "multi_line",
-            "series_label": "Gee",
-            "series_rank": 1,
-            "value": 3
-          },
-          "entity_id": "mark_K_Gee",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              417.375,
-              341.684,
-              433.375,
-              562.0
-            ],
-            "category_label": "L",
-            "category_label_center_px": [
-              425.375,
-              554.0
-            ],
-            "category_rank": 3,
-            "mark_bbox_px": [
-              417.375,
-              341.684,
-              433.375,
-              357.684
-            ],
-            "mark_center_px": [
-              425.375,
-              349.684
-            ],
-            "mark_fill_rgb": [
-              186,
-              127,
-              119
-            ],
-            "mark_outline_rgb": [
-              102,
-              70,
-              65
-            ],
-            "scene_variant": "multi_line",
-            "series_label": "Chi",
-            "series_rank": 0,
-            "value": 7
-          },
-          "entity_id": "mark_L_Chi",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              417.375,
-              341.684,
-              433.375,
-              562.0
-            ],
-            "category_label": "L",
-            "category_label_center_px": [
-              425.375,
-              554.0
-            ],
-            "category_rank": 3,
-            "mark_bbox_px": [
-              417.375,
-              469.053,
-              433.375,
-              485.053
-            ],
-            "mark_center_px": [
-              425.375,
-              477.053
-            ],
-            "mark_fill_rgb": [
-              57,
-              14,
-              4
-            ],
-            "mark_outline_rgb": [
-              31,
-              8,
-              2
-            ],
-            "scene_variant": "multi_line",
-            "series_label": "Gee",
-            "series_rank": 1,
-            "value": 2
-          },
-          "entity_id": "mark_L_Gee",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              512.625,
-              61.474,
-              528.625,
-              562.0
-            ],
-            "category_label": "F",
-            "category_label_center_px": [
-              520.625,
-              554.0
-            ],
-            "category_rank": 4,
-            "mark_bbox_px": [
-              512.625,
-              86.947,
-              528.625,
-              102.947
-            ],
-            "mark_center_px": [
-              520.625,
-              94.947
-            ],
-            "mark_fill_rgb": [
-              186,
-              127,
-              119
-            ],
-            "mark_outline_rgb": [
-              102,
-              70,
-              65
-            ],
-            "scene_variant": "multi_line",
-            "series_label": "Chi",
-            "series_rank": 0,
-            "value": 17
-          },
-          "entity_id": "mark_F_Chi",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              512.625,
-              61.474,
-              528.625,
-              562.0
-            ],
-            "category_label": "F",
-            "category_label_center_px": [
-              520.625,
-              554.0
-            ],
-            "category_rank": 4,
-            "mark_bbox_px": [
-              512.625,
-              61.474,
-              528.625,
-              77.474
-            ],
-            "mark_center_px": [
-              520.625,
-              69.474
-            ],
-            "mark_fill_rgb": [
-              57,
-              14,
-              4
-            ],
-            "mark_outline_rgb": [
-              31,
-              8,
-              2
-            ],
-            "scene_variant": "multi_line",
-            "series_label": "Gee",
-            "series_rank": 1,
-            "value": 18
-          },
-          "entity_id": "mark_F_Gee",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              607.375,
-              137.895,
-              624.375,
-              562.0
-            ],
-            "category_label": "V",
-            "category_label_center_px": [
-              615.875,
-              554.0
-            ],
-            "category_rank": 5,
-            "mark_bbox_px": [
-              607.875,
-              137.895,
-              623.875,
-              153.895
-            ],
-            "mark_center_px": [
-              615.875,
-              145.895
-            ],
-            "mark_fill_rgb": [
-              186,
-              127,
-              119
-            ],
-            "mark_outline_rgb": [
-              102,
-              70,
-              65
-            ],
-            "scene_variant": "multi_line",
-            "series_label": "Chi",
-            "series_rank": 0,
-            "value": 15
-          },
-          "entity_id": "mark_V_Chi",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              607.375,
-              137.895,
-              624.375,
-              562.0
-            ],
-            "category_label": "V",
-            "category_label_center_px": [
-              615.875,
-              554.0
-            ],
-            "category_rank": 5,
-            "mark_bbox_px": [
-              607.875,
-              316.211,
-              623.875,
-              332.211
-            ],
-            "mark_center_px": [
-              615.875,
-              324.211
-            ],
-            "mark_fill_rgb": [
-              57,
-              14,
-              4
-            ],
-            "mark_outline_rgb": [
-              31,
-              8,
-              2
-            ],
-            "scene_variant": "multi_line",
-            "series_label": "Gee",
-            "series_rank": 1,
-            "value": 8
-          },
-          "entity_id": "mark_V_Gee",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              702.625,
-              112.421,
-              719.625,
-              562.0
-            ],
-            "category_label": "A",
-            "category_label_center_px": [
-              711.125,
-              554.0
-            ],
-            "category_rank": 6,
-            "mark_bbox_px": [
-              703.125,
-              214.316,
-              719.125,
-              230.316
-            ],
-            "mark_center_px": [
-              711.125,
-              222.316
-            ],
-            "mark_fill_rgb": [
-              186,
-              127,
-              119
-            ],
-            "mark_outline_rgb": [
-              102,
-              70,
-              65
-            ],
-            "scene_variant": "multi_line",
-            "series_label": "Chi",
-            "series_rank": 0,
-            "value": 12
-          },
-          "entity_id": "mark_A_Chi",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              702.625,
-              112.421,
-              719.625,
-              562.0
-            ],
-            "category_label": "A",
-            "category_label_center_px": [
-              711.125,
-              554.0
-            ],
-            "category_rank": 6,
-            "mark_bbox_px": [
-              703.125,
-              112.421,
-              719.125,
-              128.421
-            ],
-            "mark_center_px": [
-              711.125,
-              120.421
-            ],
-            "mark_fill_rgb": [
-              57,
-              14,
-              4
-            ],
-            "mark_outline_rgb": [
-              31,
-              8,
-              2
-            ],
-            "scene_variant": "multi_line",
-            "series_label": "Gee",
+              54,
+              106,
+              67
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Zia",
             "series_rank": 1,
             "value": 16
           },
-          "entity_id": "mark_A_Gee",
-          "entity_type": "point"
+          "entity_id": "mark_M_Zia",
+          "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              797.875,
-              163.368,
-              814.875,
-              562.0
+              53.0,
+              164.226,
+              418.571,
+              214.174
             ],
-            "category_label": "X",
+            "category_label": "K",
             "category_label_center_px": [
-              806.375,
-              554.0
+              62.0,
+              189.2
             ],
-            "category_rank": 7,
+            "category_rank": 1,
             "mark_bbox_px": [
-              798.375,
-              163.368,
-              814.375,
-              179.368
+              92.0,
+              164.226,
+              382.286,
+              185.134
             ],
             "mark_center_px": [
-              806.375,
-              171.368
+              237.143,
+              174.68
             ],
             "mark_fill_rgb": [
-              186,
-              127,
-              119
+              60,
+              39,
+              37
             ],
             "mark_outline_rgb": [
-              102,
-              70,
-              65
+              33,
+              21,
+              20
             ],
-            "scene_variant": "multi_line",
-            "series_label": "Chi",
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Dibb",
             "series_rank": 0,
-            "value": 14
+            "value": 8
           },
-          "entity_id": "mark_X_Chi",
-          "entity_type": "point"
+          "entity_id": "mark_K_Dibb",
+          "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              797.875,
-              163.368,
-              814.875,
-              562.0
+              53.0,
+              164.226,
+              418.571,
+              214.174
             ],
-            "category_label": "X",
+            "category_label": "K",
             "category_label_center_px": [
-              806.375,
-              554.0
+              62.0,
+              189.2
             ],
-            "category_rank": 7,
+            "category_rank": 1,
             "mark_bbox_px": [
-              798.375,
-              367.158,
-              814.375,
-              383.158
+              92.0,
+              193.266,
+              418.571,
+              214.174
             ],
             "mark_center_px": [
-              806.375,
-              375.158
+              255.286,
+              203.72
             ],
             "mark_fill_rgb": [
-              57,
-              14,
-              4
+              98,
+              192,
+              122
             ],
             "mark_outline_rgb": [
-              31,
-              8,
-              2
+              54,
+              106,
+              67
             ],
-            "scene_variant": "multi_line",
-            "series_label": "Gee",
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Zia",
             "series_rank": 1,
-            "value": 6
+            "value": 9
           },
-          "entity_id": "mark_X_Gee",
-          "entity_type": "point"
+          "entity_id": "mark_K_Zia",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.0,
+              261.026,
+              237.143,
+              310.974
+            ],
+            "category_label": "U",
+            "category_label_center_px": [
+              62.0,
+              286.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              92.0,
+              261.026,
+              164.571,
+              281.934
+            ],
+            "mark_center_px": [
+              128.286,
+              271.48
+            ],
+            "mark_fill_rgb": [
+              60,
+              39,
+              37
+            ],
+            "mark_outline_rgb": [
+              33,
+              21,
+              20
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Dibb",
+            "series_rank": 0,
+            "value": 2
+          },
+          "entity_id": "mark_U_Dibb",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.0,
+              261.026,
+              237.143,
+              310.974
+            ],
+            "category_label": "U",
+            "category_label_center_px": [
+              62.0,
+              286.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              92.0,
+              290.066,
+              237.143,
+              310.974
+            ],
+            "mark_center_px": [
+              164.571,
+              300.52
+            ],
+            "mark_fill_rgb": [
+              98,
+              192,
+              122
+            ],
+            "mark_outline_rgb": [
+              54,
+              106,
+              67
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Zia",
+            "series_rank": 1,
+            "value": 4
+          },
+          "entity_id": "mark_U_Zia",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.0,
+              357.826,
+              745.143,
+              407.774
+            ],
+            "category_label": "G",
+            "category_label_center_px": [
+              62.0,
+              382.8
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              92.0,
+              357.826,
+              708.857,
+              378.734
+            ],
+            "mark_center_px": [
+              400.429,
+              368.28
+            ],
+            "mark_fill_rgb": [
+              60,
+              39,
+              37
+            ],
+            "mark_outline_rgb": [
+              33,
+              21,
+              20
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Dibb",
+            "series_rank": 0,
+            "value": 17
+          },
+          "entity_id": "mark_G_Dibb",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.0,
+              357.826,
+              745.143,
+              407.774
+            ],
+            "category_label": "G",
+            "category_label_center_px": [
+              62.0,
+              382.8
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              92.0,
+              386.866,
+              745.143,
+              407.774
+            ],
+            "mark_center_px": [
+              418.571,
+              397.32
+            ],
+            "mark_fill_rgb": [
+              98,
+              192,
+              122
+            ],
+            "mark_outline_rgb": [
+              54,
+              106,
+              67
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Zia",
+            "series_rank": 1,
+            "value": 18
+          },
+          "entity_id": "mark_G_Zia",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.0,
+              454.626,
+              491.143,
+              504.574
+            ],
+            "category_label": "D",
+            "category_label_center_px": [
+              62.0,
+              479.6
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              92.0,
+              454.626,
+              128.286,
+              475.534
+            ],
+            "mark_center_px": [
+              110.143,
+              465.08
+            ],
+            "mark_fill_rgb": [
+              60,
+              39,
+              37
+            ],
+            "mark_outline_rgb": [
+              33,
+              21,
+              20
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Dibb",
+            "series_rank": 0,
+            "value": 1
+          },
+          "entity_id": "mark_D_Dibb",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.0,
+              454.626,
+              491.143,
+              504.574
+            ],
+            "category_label": "D",
+            "category_label_center_px": [
+              62.0,
+              479.6
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              92.0,
+              483.666,
+              491.143,
+              504.574
+            ],
+            "mark_center_px": [
+              291.571,
+              494.12
+            ],
+            "mark_fill_rgb": [
+              98,
+              192,
+              122
+            ],
+            "mark_outline_rgb": [
+              54,
+              106,
+              67
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Zia",
+            "series_rank": 1,
+            "value": 11
+          },
+          "entity_id": "mark_D_Zia",
+          "entity_type": "bar"
         }
       ],
       "relations": {
         "comparison": "less_than",
         "evidence_labels": [
-          "A",
           "D",
-          "F",
+          "G",
+          "K",
           "U"
         ],
         "queried_series_labels": [
-          "Chi",
-          "Gee"
+          "Dibb",
+          "Zia"
         ],
-        "scene_variant": "multi_line",
+        "scene_variant": "grouped_horizontal_bar",
         "task_variant": "series_a_lt_b_count"
       },
-      "scene_kind": "chart_multi_line_multiseries"
+      "scene_kind": "chart_grouped_horizontal_bar_multiseries"
     },
     "witness_symbolic": {
       "labels": [
-        "A",
         "D",
-        "F",
+        "G",
+        "K",
         "U"
       ],
       "type": "label_set"

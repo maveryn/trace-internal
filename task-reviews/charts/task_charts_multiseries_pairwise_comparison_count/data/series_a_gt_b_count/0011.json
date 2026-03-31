@@ -1,66 +1,73 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 5
+    "value": 7
   },
   "evidence_gt": {
     "type": "label_set",
     "value": [
-      "E",
+      "F",
       "J",
-      "K",
-      "L",
-      "M"
+      "P",
+      "Q",
+      "T",
+      "W",
+      "X"
     ]
   },
   "image": {
     "format": "png",
     "path": "charts/task_charts_multiseries_pairwise_comparison_count/images/series_a_gt_b_count/0011.png"
   },
-  "instance_seed": 5268754895498691,
-  "prompt": "Work from the multiseries chart shown in the image: a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Use the chart to compare the queried pair of series across the category labels. Count the category labels where Ely exceeds Mora.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer format: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
+  "instance_seed": 2193253056171865,
+  "prompt": "Use the chart in the image. It shows a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Work category by category and count the labels where the requested series comparison is true. Across the labeled categories, in how many categories is Tews higher than Swan?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
   "prompt_variants": {
-    "answer_and_evidence": "Work from the multiseries chart shown in the image: a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Use the chart to compare the queried pair of series across the category labels. Count the category labels where Ely exceeds Mora.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer format: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
-    "answer_only": "Work from the multiseries chart shown in the image: a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Use the chart to compare the queried pair of series across the category labels. Count the category labels where Ely exceeds Mora.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":3}"
+    "answer_and_evidence": "Use the chart in the image. It shows a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Work category by category and count the labels where the requested series comparison is true. Across the labeled categories, in how many categories is Tews higher than Swan?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
+    "answer_only": "Use the chart in the image. It shows a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Work category by category and count the labels where the requested series comparison is true. Across the labeled categories, in how many categories is Tews higher than Swan?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":3}"
   },
   "task": "task_charts_multiseries_pairwise_comparison_count",
   "task_variant": "series_a_gt_b_count",
   "trace_payload": {
     "execution_trace": {
-      "answer_value": 5,
-      "category_count": 7,
+      "answer_value": 7,
+      "category_count": 10,
       "category_count_range": [
         5,
         10
       ],
       "category_labels": [
-        "E",
-        "K",
-        "R",
-        "L",
+        "T",
+        "W",
+        "H",
         "J",
-        "A",
-        "M"
+        "Y",
+        "F",
+        "X",
+        "G",
+        "Q",
+        "P"
       ],
       "comparison": "greater_than",
       "evidence_labels": [
-        "E",
+        "F",
         "J",
-        "K",
-        "L",
-        "M"
+        "P",
+        "Q",
+        "T",
+        "W",
+        "X"
       ],
-      "left_series_label": "Ely",
+      "left_series_label": "Tews",
       "mark_color_distance_space": "lab",
       "mark_color_min_distance": 40.0,
       "mark_color_sampling_policy": "random_rgb_palette",
       "queried_series_labels": [
-        "Ely",
-        "Mora"
+        "Tews",
+        "Swan"
       ],
       "question_format": "numeric_open",
-      "right_series_label": "Mora",
-      "scene_variant": "grouped_horizontal_bar",
+      "right_series_label": "Swan",
+      "scene_variant": "grouped_lollipop",
       "scene_variant_probabilities": {
         "grouped_bar": 0.25,
         "grouped_horizontal_bar": 0.25,
@@ -74,189 +81,234 @@
       ],
       "series_fill_palette_rgb": [
         [
-          219,
-          161,
-          209
+          64,
+          211,
+          17
         ],
         [
-          194,
           30,
-          79
+          71,
+          128
         ],
         [
-          85,
-          2,
-          199
+          198,
+          6,
+          168
         ]
       ],
       "series_labels": [
-        "Ely",
-        "Mora",
-        "Addy"
+        "Tews",
+        "Swan",
+        "Chu"
       ],
       "series_outline_palette_rgb": [
         [
-          120,
-          89,
-          115
+          35,
+          116,
+          9
         ],
         [
-          107,
           16,
-          43
+          39,
+          70
         ],
         [
-          47,
-          1,
-          109
+          109,
+          3,
+          92
         ]
       ],
-      "target_answer": 5,
+      "target_answer": 7,
       "target_answer_range": [
         0,
         8
       ],
       "task_variant": "series_a_gt_b_count",
       "task_variant_probabilities": {
-        "series_a_gt_b_count": 0.5,
-        "series_a_lt_b_count": 0.5
+        "series_a_gt_b_count": 1.0,
+        "series_a_lt_b_count": 0.0
       },
       "values_by_category": {
-        "A": {
-          "Addy": 8,
-          "Ely": 1,
-          "Mora": 19
+        "F": {
+          "Chu": 17,
+          "Swan": 4,
+          "Tews": 18
         },
-        "E": {
-          "Addy": 5,
-          "Ely": 6,
-          "Mora": 3
+        "G": {
+          "Chu": 6,
+          "Swan": 8,
+          "Tews": 5
+        },
+        "H": {
+          "Chu": 15,
+          "Swan": 19,
+          "Tews": 10
         },
         "J": {
-          "Addy": 7,
-          "Ely": 17,
-          "Mora": 2
+          "Chu": 18,
+          "Swan": 16,
+          "Tews": 19
         },
-        "K": {
-          "Addy": 15,
-          "Ely": 18,
-          "Mora": 2
+        "P": {
+          "Chu": 17,
+          "Swan": 15,
+          "Tews": 18
         },
-        "L": {
-          "Addy": 10,
-          "Ely": 18,
-          "Mora": 3
+        "Q": {
+          "Chu": 15,
+          "Swan": 3,
+          "Tews": 20
         },
-        "M": {
-          "Addy": 13,
-          "Ely": 14,
-          "Mora": 7
+        "T": {
+          "Chu": 9,
+          "Swan": 5,
+          "Tews": 13
         },
-        "R": {
-          "Addy": 11,
-          "Ely": 1,
-          "Mora": 18
+        "W": {
+          "Chu": 13,
+          "Swan": 11,
+          "Tews": 19
+        },
+        "X": {
+          "Chu": 11,
+          "Swan": 5,
+          "Tews": 14
+        },
+        "Y": {
+          "Chu": 17,
+          "Swan": 19,
+          "Tews": 10
         }
       }
     },
     "projected_evidence": {
       "bbox_set": [
         [
-          54.5,
-          59.765,
-          320.6,
-          97.378
+          487.86,
+          105.143,
+          534.34,
+          562.0
         ],
         [
-          57.0,
-          336.336,
-          739.7,
-          373.95
+          335.46,
+          82.095,
+          381.94,
+          564.0
         ],
         [
-          53.0,
-          128.907,
-          777.8,
-          166.521
+          792.66,
+          105.143,
+          839.14,
+          562.0
         ],
         [
-          55.0,
-          267.193,
-          777.8,
-          304.807
+          716.46,
+          59.048,
+          762.94,
+          563.5
         ],
         [
-          51.0,
-          474.622,
-          625.4,
-          512.235
+          106.86,
+          220.381,
+          153.34,
+          562.0
+        ],
+        [
+          183.06,
+          82.095,
+          229.54,
+          562.0
+        ],
+        [
+          564.06,
+          197.333,
+          610.54,
+          562.0
         ]
       ],
       "label_set": [
-        "E",
+        "F",
         "J",
-        "K",
-        "L",
-        "M"
+        "P",
+        "Q",
+        "T",
+        "W",
+        "X"
       ],
       "pixel_point_map": {
-        "E": [
-          62.0,
-          78.571
+        "F": [
+          511.1,
+          554.0
         ],
         "J": [
-          62.0,
-          355.143
+          358.7,
+          554.0
         ],
-        "K": [
-          62.0,
-          147.714
+        "P": [
+          815.9,
+          554.0
         ],
-        "L": [
-          62.0,
-          286.0
+        "Q": [
+          739.7,
+          554.0
         ],
-        "M": [
-          62.0,
-          493.429
+        "T": [
+          130.1,
+          554.0
+        ],
+        "W": [
+          206.3,
+          554.0
+        ],
+        "X": [
+          587.3,
+          554.0
         ]
       },
       "pixel_point_set": [
         [
-          62.0,
-          78.571
+          511.1,
+          554.0
         ],
         [
-          62.0,
-          355.143
+          358.7,
+          554.0
         ],
         [
-          62.0,
-          147.714
+          815.9,
+          554.0
         ],
         [
-          62.0,
-          286.0
+          739.7,
+          554.0
         ],
         [
-          62.0,
-          493.429
+          130.1,
+          554.0
+        ],
+        [
+          206.3,
+          554.0
+        ],
+        [
+          587.3,
+          554.0
         ]
       ]
     },
     "query_spec": {
       "params": {
-        "category_count": 7,
+        "category_count": 10,
         "category_count_range": [
           5,
           10
         ],
         "comparison": "greater_than",
         "queried_series_labels": [
-          "Ely",
-          "Mora"
+          "Tews",
+          "Swan"
         ],
-        "scene_variant": "grouped_horizontal_bar",
+        "scene_variant": "grouped_lollipop",
         "scene_variant_probabilities": {
           "grouped_bar": 0.25,
           "grouped_horizontal_bar": 0.25,
@@ -268,20 +320,20 @@
           2,
           3
         ],
-        "target_answer": 5,
+        "target_answer": 7,
         "target_answer_range": [
           0,
           8
         ],
         "task_variant": "series_a_gt_b_count",
         "task_variant_probabilities": {
-          "series_a_gt_b_count": 0.5,
-          "series_a_lt_b_count": 0.5
+          "series_a_gt_b_count": 1.0,
+          "series_a_lt_b_count": 0.0
         }
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 1,
+        "answer_or_evidence_variant_index": 0,
         "prompt_bundle_id": "charts_multiseries_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -291,16 +343,16 @@
           "json_example_answer_only": "{\"answer\":3}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "left_series": "Ely",
-          "object_description": "a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category",
-          "right_series": "Mora"
+          "left_series": "Tews",
+          "object_description": "a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis",
+          "right_series": "Swan"
         },
         "task_family_key": "multiseries_chart_comparison",
-        "task_family_variant_index": 2,
+        "task_family_variant_index": 1,
         "task_key": "pairwise_comparison_count_query",
-        "task_variant_index": 1,
+        "task_variant_index": 4,
         "task_variant_key": "series_a_gt_b_count",
-        "task_variant_template_index": 1,
+        "task_variant_template_index": 0,
         "template_paths": [
           "charts/multiseries/charts_multiseries_v1.json"
         ],
@@ -316,7 +368,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 1,
+            "answer_or_evidence_variant_index": 0,
             "prompt_bundle_id": "charts_multiseries_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -326,16 +378,16 @@
               "json_example_answer_only": "{\"answer\":3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "left_series": "Ely",
-              "object_description": "a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category",
-              "right_series": "Mora"
+              "left_series": "Tews",
+              "object_description": "a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis",
+              "right_series": "Swan"
             },
             "task_family_key": "multiseries_chart_comparison",
-            "task_family_variant_index": 2,
+            "task_family_variant_index": 1,
             "task_key": "pairwise_comparison_count_query",
-            "task_variant_index": 1,
+            "task_variant_index": 4,
             "task_variant_key": "series_a_gt_b_count",
-            "task_variant_template_index": 1,
+            "task_variant_template_index": 0,
             "template_paths": [
               "charts/multiseries/charts_multiseries_v1.json"
             ],
@@ -346,12 +398,12 @@
               "task_variant:series_a_gt_b_count": 5
             }
           },
-          "prompt": "Work from the multiseries chart shown in the image: a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Use the chart to compare the queried pair of series across the category labels. Count the category labels where Ely exceeds Mora.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer format: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}"
+          "prompt": "Use the chart in the image. It shows a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Work category by category and count the labels where the requested series comparison is true. Across the labeled categories, in how many categories is Tews higher than Swan?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 1,
+            "answer_or_evidence_variant_index": 0,
             "prompt_bundle_id": "charts_multiseries_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -361,16 +413,16 @@
               "json_example_answer_only": "{\"answer\":3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "left_series": "Ely",
-              "object_description": "a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category",
-              "right_series": "Mora"
+              "left_series": "Tews",
+              "object_description": "a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis",
+              "right_series": "Swan"
             },
             "task_family_key": "multiseries_chart_comparison",
-            "task_family_variant_index": 2,
+            "task_family_variant_index": 1,
             "task_key": "pairwise_comparison_count_query",
-            "task_variant_index": 1,
+            "task_variant_index": 4,
             "task_variant_key": "series_a_gt_b_count",
-            "task_variant_template_index": 1,
+            "task_variant_template_index": 0,
             "template_paths": [
               "charts/multiseries/charts_multiseries_v1.json"
             ],
@@ -381,7 +433,7 @@
               "task_variant:series_a_gt_b_count": 5
             }
           },
-          "prompt": "Work from the multiseries chart shown in the image: a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Use the chart to compare the queried pair of series across the category labels. Count the category labels where Ely exceeds Mora.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":3}"
+          "prompt": "Use the chart in the image. It shows a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Work category by category and count the labels where the requested series comparison is true. Across the labeled categories, in how many categories is Tews higher than Swan?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":3}"
         }
       },
       "task_variant": "series_a_gt_b_count",
@@ -389,33 +441,45 @@
     },
     "render_map": {
       "category_label_centers_px": {
-        "A": [
-          62.0,
-          424.286
+        "F": [
+          511.1,
+          554.0
         ],
-        "E": [
-          62.0,
-          78.571
+        "G": [
+          663.5,
+          554.0
+        ],
+        "H": [
+          282.5,
+          554.0
         ],
         "J": [
-          62.0,
-          355.143
+          358.7,
+          554.0
         ],
-        "K": [
-          62.0,
-          147.714
+        "P": [
+          815.9,
+          554.0
         ],
-        "L": [
-          62.0,
-          286.0
+        "Q": [
+          739.7,
+          554.0
         ],
-        "M": [
-          62.0,
-          493.429
+        "T": [
+          130.1,
+          554.0
         ],
-        "R": [
-          62.0,
-          216.857
+        "W": [
+          206.3,
+          554.0
+        ],
+        "X": [
+          587.3,
+          554.0
+        ],
+        "Y": [
+          434.9,
+          554.0
         ]
       },
       "image_id": "img0",
@@ -456,36 +520,36 @@
         "sampling_policy": "random_rgb_palette",
         "series_fill_palette_rgb": [
           [
-            219,
-            161,
-            209
+            64,
+            211,
+            17
           ],
           [
-            194,
             30,
-            79
+            71,
+            128
           ],
           [
-            85,
-            2,
-            199
+            198,
+            6,
+            168
           ]
         ],
         "series_outline_palette_rgb": [
           [
-            120,
-            89,
-            115
+            35,
+            116,
+            9
           ],
           [
-            107,
             16,
-            43
+            39,
+            70
           ],
           [
-            47,
-            1,
-            109
+            109,
+            3,
+            92
           ]
         ]
       },
@@ -511,13 +575,13 @@
         "edits": [],
         "enabled": false
       },
-      "scene_variant": "grouped_horizontal_bar",
+      "scene_variant": "grouped_lollipop",
       "text_style": {
         "label_font_size_px": 22,
         "label_stroke_width_px": 2,
         "tick_font_size_px": 18
       },
-      "y_axis_max": 20,
+      "y_axis_max": 21,
       "y_ticks": [
         0,
         1,
@@ -539,7 +603,8 @@
         17,
         18,
         19,
-        20
+        20,
+        21
       ]
     },
     "scene_ir": {
@@ -547,911 +612,1293 @@
         {
           "attrs": {
             "category_group_bbox_px": [
-              54.5,
-              59.765,
-              320.6,
-              97.378
+              106.86,
+              220.381,
+              153.34,
+              562.0
             ],
-            "category_label": "E",
+            "category_label": "T",
             "category_label_center_px": [
-              62.0,
-              78.571
+              130.1,
+              554.0
             ],
             "category_rank": 0,
             "mark_bbox_px": [
-              92.0,
-              59.765,
-              320.6,
-              69.721
+              106.86,
+              220.381,
+              122.86,
+              236.381
             ],
             "mark_center_px": [
-              206.3,
-              64.743
+              114.86,
+              228.381
             ],
             "mark_fill_rgb": [
-              219,
-              161,
-              209
+              64,
+              211,
+              17
             ],
             "mark_outline_rgb": [
-              120,
-              89,
-              115
+              35,
+              116,
+              9
             ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Ely",
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Tews",
             "series_rank": 0,
-            "value": 6
+            "value": 13
           },
-          "entity_id": "mark_E_Ely",
-          "entity_type": "bar"
+          "entity_id": "mark_T_Tews",
+          "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              54.5,
-              59.765,
-              320.6,
-              97.378
+              106.86,
+              220.381,
+              153.34,
+              562.0
             ],
-            "category_label": "E",
+            "category_label": "T",
             "category_label_center_px": [
-              62.0,
-              78.571
+              130.1,
+              554.0
             ],
             "category_rank": 0,
             "mark_bbox_px": [
-              92.0,
-              73.593,
-              206.3,
-              83.55
+              122.1,
+              404.762,
+              138.1,
+              420.762
             ],
             "mark_center_px": [
-              149.15,
-              78.571
+              130.1,
+              412.762
             ],
             "mark_fill_rgb": [
-              194,
               30,
-              79
+              71,
+              128
             ],
             "mark_outline_rgb": [
-              107,
               16,
-              43
+              39,
+              70
             ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Mora",
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Swan",
             "series_rank": 1,
-            "value": 3
-          },
-          "entity_id": "mark_E_Mora",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              54.5,
-              59.765,
-              320.6,
-              97.378
-            ],
-            "category_label": "E",
-            "category_label_center_px": [
-              62.0,
-              78.571
-            ],
-            "category_rank": 0,
-            "mark_bbox_px": [
-              92.0,
-              87.422,
-              282.5,
-              97.378
-            ],
-            "mark_center_px": [
-              187.25,
-              92.4
-            ],
-            "mark_fill_rgb": [
-              85,
-              2,
-              199
-            ],
-            "mark_outline_rgb": [
-              47,
-              1,
-              109
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Addy",
-            "series_rank": 2,
             "value": 5
           },
-          "entity_id": "mark_E_Addy",
-          "entity_type": "bar"
+          "entity_id": "mark_T_Swan",
+          "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              53.0,
-              128.907,
-              777.8,
-              166.521
+              106.86,
+              220.381,
+              153.34,
+              562.0
             ],
-            "category_label": "K",
+            "category_label": "T",
             "category_label_center_px": [
-              62.0,
-              147.714
-            ],
-            "category_rank": 1,
-            "mark_bbox_px": [
-              92.0,
-              128.907,
-              777.8,
-              138.864
-            ],
-            "mark_center_px": [
-              434.9,
-              133.886
-            ],
-            "mark_fill_rgb": [
-              219,
-              161,
-              209
-            ],
-            "mark_outline_rgb": [
-              120,
-              89,
-              115
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Ely",
-            "series_rank": 0,
-            "value": 18
-          },
-          "entity_id": "mark_K_Ely",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              53.0,
-              128.907,
-              777.8,
-              166.521
-            ],
-            "category_label": "K",
-            "category_label_center_px": [
-              62.0,
-              147.714
-            ],
-            "category_rank": 1,
-            "mark_bbox_px": [
-              92.0,
-              142.736,
-              168.2,
-              152.693
-            ],
-            "mark_center_px": [
               130.1,
-              147.714
+              554.0
             ],
-            "mark_fill_rgb": [
-              194,
-              30,
-              79
-            ],
-            "mark_outline_rgb": [
-              107,
-              16,
-              43
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Mora",
-            "series_rank": 1,
-            "value": 2
-          },
-          "entity_id": "mark_K_Mora",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              53.0,
-              128.907,
-              777.8,
-              166.521
-            ],
-            "category_label": "K",
-            "category_label_center_px": [
-              62.0,
-              147.714
-            ],
-            "category_rank": 1,
+            "category_rank": 0,
             "mark_bbox_px": [
-              92.0,
-              156.565,
-              663.5,
-              166.521
+              137.34,
+              312.571,
+              153.34,
+              328.571
             ],
             "mark_center_px": [
-              377.75,
-              161.543
+              145.34,
+              320.571
             ],
             "mark_fill_rgb": [
-              85,
-              2,
-              199
+              198,
+              6,
+              168
             ],
             "mark_outline_rgb": [
-              47,
-              1,
-              109
+              109,
+              3,
+              92
             ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Addy",
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Chu",
             "series_rank": 2,
-            "value": 15
+            "value": 9
           },
-          "entity_id": "mark_K_Addy",
-          "entity_type": "bar"
+          "entity_id": "mark_T_Chu",
+          "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              53.5,
-              198.05,
-              777.8,
-              235.664
+              183.06,
+              82.095,
+              229.54,
+              562.0
             ],
-            "category_label": "R",
+            "category_label": "W",
             "category_label_center_px": [
-              62.0,
-              216.857
-            ],
-            "category_rank": 2,
-            "mark_bbox_px": [
-              92.0,
-              198.05,
-              130.1,
-              208.007
-            ],
-            "mark_center_px": [
-              111.05,
-              203.029
-            ],
-            "mark_fill_rgb": [
-              219,
-              161,
-              209
-            ],
-            "mark_outline_rgb": [
-              120,
-              89,
-              115
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Ely",
-            "series_rank": 0,
-            "value": 1
-          },
-          "entity_id": "mark_R_Ely",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              53.5,
-              198.05,
-              777.8,
-              235.664
-            ],
-            "category_label": "R",
-            "category_label_center_px": [
-              62.0,
-              216.857
-            ],
-            "category_rank": 2,
-            "mark_bbox_px": [
-              92.0,
-              211.879,
-              777.8,
-              221.835
-            ],
-            "mark_center_px": [
-              434.9,
-              216.857
-            ],
-            "mark_fill_rgb": [
-              194,
-              30,
-              79
-            ],
-            "mark_outline_rgb": [
-              107,
-              16,
-              43
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Mora",
-            "series_rank": 1,
-            "value": 18
-          },
-          "entity_id": "mark_R_Mora",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              53.5,
-              198.05,
-              777.8,
-              235.664
-            ],
-            "category_label": "R",
-            "category_label_center_px": [
-              62.0,
-              216.857
-            ],
-            "category_rank": 2,
-            "mark_bbox_px": [
-              92.0,
-              225.707,
-              511.1,
-              235.664
-            ],
-            "mark_center_px": [
-              301.55,
-              230.686
-            ],
-            "mark_fill_rgb": [
-              85,
-              2,
-              199
-            ],
-            "mark_outline_rgb": [
-              47,
-              1,
-              109
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Addy",
-            "series_rank": 2,
-            "value": 11
-          },
-          "entity_id": "mark_R_Addy",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              55.0,
-              267.193,
-              777.8,
-              304.807
-            ],
-            "category_label": "L",
-            "category_label_center_px": [
-              62.0,
-              286.0
-            ],
-            "category_rank": 3,
-            "mark_bbox_px": [
-              92.0,
-              267.193,
-              777.8,
-              277.15
-            ],
-            "mark_center_px": [
-              434.9,
-              272.171
-            ],
-            "mark_fill_rgb": [
-              219,
-              161,
-              209
-            ],
-            "mark_outline_rgb": [
-              120,
-              89,
-              115
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Ely",
-            "series_rank": 0,
-            "value": 18
-          },
-          "entity_id": "mark_L_Ely",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              55.0,
-              267.193,
-              777.8,
-              304.807
-            ],
-            "category_label": "L",
-            "category_label_center_px": [
-              62.0,
-              286.0
-            ],
-            "category_rank": 3,
-            "mark_bbox_px": [
-              92.0,
-              281.022,
               206.3,
-              290.978
+              554.0
             ],
-            "mark_center_px": [
-              149.15,
-              286.0
-            ],
-            "mark_fill_rgb": [
-              194,
-              30,
-              79
-            ],
-            "mark_outline_rgb": [
-              107,
-              16,
-              43
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Mora",
-            "series_rank": 1,
-            "value": 3
-          },
-          "entity_id": "mark_L_Mora",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              55.0,
-              267.193,
-              777.8,
-              304.807
-            ],
-            "category_label": "L",
-            "category_label_center_px": [
-              62.0,
-              286.0
-            ],
-            "category_rank": 3,
+            "category_rank": 1,
             "mark_bbox_px": [
-              92.0,
-              294.85,
-              473.0,
-              304.807
+              183.06,
+              82.095,
+              199.06,
+              98.095
             ],
             "mark_center_px": [
-              282.5,
-              299.829
+              191.06,
+              90.095
             ],
             "mark_fill_rgb": [
-              85,
-              2,
-              199
+              64,
+              211,
+              17
             ],
             "mark_outline_rgb": [
-              47,
-              1,
-              109
+              35,
+              116,
+              9
             ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Addy",
-            "series_rank": 2,
-            "value": 10
-          },
-          "entity_id": "mark_L_Addy",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              57.0,
-              336.336,
-              739.7,
-              373.95
-            ],
-            "category_label": "J",
-            "category_label_center_px": [
-              62.0,
-              355.143
-            ],
-            "category_rank": 4,
-            "mark_bbox_px": [
-              92.0,
-              336.336,
-              739.7,
-              346.293
-            ],
-            "mark_center_px": [
-              415.85,
-              341.314
-            ],
-            "mark_fill_rgb": [
-              219,
-              161,
-              209
-            ],
-            "mark_outline_rgb": [
-              120,
-              89,
-              115
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Ely",
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Tews",
             "series_rank": 0,
-            "value": 17
-          },
-          "entity_id": "mark_J_Ely",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              57.0,
-              336.336,
-              739.7,
-              373.95
-            ],
-            "category_label": "J",
-            "category_label_center_px": [
-              62.0,
-              355.143
-            ],
-            "category_rank": 4,
-            "mark_bbox_px": [
-              92.0,
-              350.165,
-              168.2,
-              360.121
-            ],
-            "mark_center_px": [
-              130.1,
-              355.143
-            ],
-            "mark_fill_rgb": [
-              194,
-              30,
-              79
-            ],
-            "mark_outline_rgb": [
-              107,
-              16,
-              43
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Mora",
-            "series_rank": 1,
-            "value": 2
-          },
-          "entity_id": "mark_J_Mora",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              57.0,
-              336.336,
-              739.7,
-              373.95
-            ],
-            "category_label": "J",
-            "category_label_center_px": [
-              62.0,
-              355.143
-            ],
-            "category_rank": 4,
-            "mark_bbox_px": [
-              92.0,
-              363.993,
-              358.7,
-              373.95
-            ],
-            "mark_center_px": [
-              225.35,
-              368.971
-            ],
-            "mark_fill_rgb": [
-              85,
-              2,
-              199
-            ],
-            "mark_outline_rgb": [
-              47,
-              1,
-              109
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Addy",
-            "series_rank": 2,
-            "value": 7
-          },
-          "entity_id": "mark_J_Addy",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              53.5,
-              405.479,
-              815.9,
-              443.093
-            ],
-            "category_label": "A",
-            "category_label_center_px": [
-              62.0,
-              424.286
-            ],
-            "category_rank": 5,
-            "mark_bbox_px": [
-              92.0,
-              405.479,
-              130.1,
-              415.435
-            ],
-            "mark_center_px": [
-              111.05,
-              410.457
-            ],
-            "mark_fill_rgb": [
-              219,
-              161,
-              209
-            ],
-            "mark_outline_rgb": [
-              120,
-              89,
-              115
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Ely",
-            "series_rank": 0,
-            "value": 1
-          },
-          "entity_id": "mark_A_Ely",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              53.5,
-              405.479,
-              815.9,
-              443.093
-            ],
-            "category_label": "A",
-            "category_label_center_px": [
-              62.0,
-              424.286
-            ],
-            "category_rank": 5,
-            "mark_bbox_px": [
-              92.0,
-              419.307,
-              815.9,
-              429.264
-            ],
-            "mark_center_px": [
-              453.95,
-              424.286
-            ],
-            "mark_fill_rgb": [
-              194,
-              30,
-              79
-            ],
-            "mark_outline_rgb": [
-              107,
-              16,
-              43
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Mora",
-            "series_rank": 1,
             "value": 19
           },
-          "entity_id": "mark_A_Mora",
-          "entity_type": "bar"
+          "entity_id": "mark_W_Tews",
+          "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              53.5,
-              405.479,
-              815.9,
-              443.093
+              183.06,
+              82.095,
+              229.54,
+              562.0
             ],
-            "category_label": "A",
+            "category_label": "W",
             "category_label_center_px": [
-              62.0,
-              424.286
+              206.3,
+              554.0
             ],
-            "category_rank": 5,
+            "category_rank": 1,
             "mark_bbox_px": [
-              92.0,
-              433.136,
-              396.8,
-              443.093
+              198.3,
+              266.476,
+              214.3,
+              282.476
             ],
             "mark_center_px": [
-              244.4,
-              438.114
+              206.3,
+              274.476
             ],
             "mark_fill_rgb": [
-              85,
-              2,
-              199
-            ],
-            "mark_outline_rgb": [
-              47,
-              1,
-              109
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Addy",
-            "series_rank": 2,
-            "value": 8
-          },
-          "entity_id": "mark_A_Addy",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              51.0,
-              474.622,
-              625.4,
-              512.235
-            ],
-            "category_label": "M",
-            "category_label_center_px": [
-              62.0,
-              493.429
-            ],
-            "category_rank": 6,
-            "mark_bbox_px": [
-              92.0,
-              474.622,
-              625.4,
-              484.578
-            ],
-            "mark_center_px": [
-              358.7,
-              479.6
-            ],
-            "mark_fill_rgb": [
-              219,
-              161,
-              209
-            ],
-            "mark_outline_rgb": [
-              120,
-              89,
-              115
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Ely",
-            "series_rank": 0,
-            "value": 14
-          },
-          "entity_id": "mark_M_Ely",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              51.0,
-              474.622,
-              625.4,
-              512.235
-            ],
-            "category_label": "M",
-            "category_label_center_px": [
-              62.0,
-              493.429
-            ],
-            "category_rank": 6,
-            "mark_bbox_px": [
-              92.0,
-              488.45,
-              358.7,
-              498.407
-            ],
-            "mark_center_px": [
-              225.35,
-              493.429
-            ],
-            "mark_fill_rgb": [
-              194,
               30,
-              79
+              71,
+              128
             ],
             "mark_outline_rgb": [
-              107,
               16,
-              43
+              39,
+              70
             ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Mora",
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Swan",
             "series_rank": 1,
-            "value": 7
+            "value": 11
           },
-          "entity_id": "mark_M_Mora",
-          "entity_type": "bar"
+          "entity_id": "mark_W_Swan",
+          "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              51.0,
-              474.622,
-              625.4,
-              512.235
+              183.06,
+              82.095,
+              229.54,
+              562.0
             ],
-            "category_label": "M",
+            "category_label": "W",
             "category_label_center_px": [
-              62.0,
-              493.429
+              206.3,
+              554.0
             ],
-            "category_rank": 6,
+            "category_rank": 1,
             "mark_bbox_px": [
-              92.0,
-              502.279,
-              587.3,
-              512.235
+              213.54,
+              220.381,
+              229.54,
+              236.381
             ],
             "mark_center_px": [
-              339.65,
-              507.257
+              221.54,
+              228.381
             ],
             "mark_fill_rgb": [
-              85,
-              2,
-              199
+              198,
+              6,
+              168
             ],
             "mark_outline_rgb": [
-              47,
-              1,
-              109
+              109,
+              3,
+              92
             ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Addy",
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Chu",
             "series_rank": 2,
             "value": 13
           },
-          "entity_id": "mark_M_Addy",
-          "entity_type": "bar"
+          "entity_id": "mark_W_Chu",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              259.26,
+              82.095,
+              305.74,
+              562.0
+            ],
+            "category_label": "H",
+            "category_label_center_px": [
+              282.5,
+              554.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              259.26,
+              289.524,
+              275.26,
+              305.524
+            ],
+            "mark_center_px": [
+              267.26,
+              297.524
+            ],
+            "mark_fill_rgb": [
+              64,
+              211,
+              17
+            ],
+            "mark_outline_rgb": [
+              35,
+              116,
+              9
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Tews",
+            "series_rank": 0,
+            "value": 10
+          },
+          "entity_id": "mark_H_Tews",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              259.26,
+              82.095,
+              305.74,
+              562.0
+            ],
+            "category_label": "H",
+            "category_label_center_px": [
+              282.5,
+              554.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              274.5,
+              82.095,
+              290.5,
+              98.095
+            ],
+            "mark_center_px": [
+              282.5,
+              90.095
+            ],
+            "mark_fill_rgb": [
+              30,
+              71,
+              128
+            ],
+            "mark_outline_rgb": [
+              16,
+              39,
+              70
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Swan",
+            "series_rank": 1,
+            "value": 19
+          },
+          "entity_id": "mark_H_Swan",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              259.26,
+              82.095,
+              305.74,
+              562.0
+            ],
+            "category_label": "H",
+            "category_label_center_px": [
+              282.5,
+              554.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              289.74,
+              174.286,
+              305.74,
+              190.286
+            ],
+            "mark_center_px": [
+              297.74,
+              182.286
+            ],
+            "mark_fill_rgb": [
+              198,
+              6,
+              168
+            ],
+            "mark_outline_rgb": [
+              109,
+              3,
+              92
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Chu",
+            "series_rank": 2,
+            "value": 15
+          },
+          "entity_id": "mark_H_Chu",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              335.46,
+              82.095,
+              381.94,
+              564.0
+            ],
+            "category_label": "J",
+            "category_label_center_px": [
+              358.7,
+              554.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              335.46,
+              82.095,
+              351.46,
+              98.095
+            ],
+            "mark_center_px": [
+              343.46,
+              90.095
+            ],
+            "mark_fill_rgb": [
+              64,
+              211,
+              17
+            ],
+            "mark_outline_rgb": [
+              35,
+              116,
+              9
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Tews",
+            "series_rank": 0,
+            "value": 19
+          },
+          "entity_id": "mark_J_Tews",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              335.46,
+              82.095,
+              381.94,
+              564.0
+            ],
+            "category_label": "J",
+            "category_label_center_px": [
+              358.7,
+              554.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              350.7,
+              151.238,
+              366.7,
+              167.238
+            ],
+            "mark_center_px": [
+              358.7,
+              159.238
+            ],
+            "mark_fill_rgb": [
+              30,
+              71,
+              128
+            ],
+            "mark_outline_rgb": [
+              16,
+              39,
+              70
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Swan",
+            "series_rank": 1,
+            "value": 16
+          },
+          "entity_id": "mark_J_Swan",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              335.46,
+              82.095,
+              381.94,
+              564.0
+            ],
+            "category_label": "J",
+            "category_label_center_px": [
+              358.7,
+              554.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              365.94,
+              105.143,
+              381.94,
+              121.143
+            ],
+            "mark_center_px": [
+              373.94,
+              113.143
+            ],
+            "mark_fill_rgb": [
+              198,
+              6,
+              168
+            ],
+            "mark_outline_rgb": [
+              109,
+              3,
+              92
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Chu",
+            "series_rank": 2,
+            "value": 18
+          },
+          "entity_id": "mark_J_Chu",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              411.66,
+              82.095,
+              458.14,
+              562.0
+            ],
+            "category_label": "Y",
+            "category_label_center_px": [
+              434.9,
+              554.0
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              411.66,
+              289.524,
+              427.66,
+              305.524
+            ],
+            "mark_center_px": [
+              419.66,
+              297.524
+            ],
+            "mark_fill_rgb": [
+              64,
+              211,
+              17
+            ],
+            "mark_outline_rgb": [
+              35,
+              116,
+              9
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Tews",
+            "series_rank": 0,
+            "value": 10
+          },
+          "entity_id": "mark_Y_Tews",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              411.66,
+              82.095,
+              458.14,
+              562.0
+            ],
+            "category_label": "Y",
+            "category_label_center_px": [
+              434.9,
+              554.0
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              426.9,
+              82.095,
+              442.9,
+              98.095
+            ],
+            "mark_center_px": [
+              434.9,
+              90.095
+            ],
+            "mark_fill_rgb": [
+              30,
+              71,
+              128
+            ],
+            "mark_outline_rgb": [
+              16,
+              39,
+              70
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Swan",
+            "series_rank": 1,
+            "value": 19
+          },
+          "entity_id": "mark_Y_Swan",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              411.66,
+              82.095,
+              458.14,
+              562.0
+            ],
+            "category_label": "Y",
+            "category_label_center_px": [
+              434.9,
+              554.0
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              442.14,
+              128.19,
+              458.14,
+              144.19
+            ],
+            "mark_center_px": [
+              450.14,
+              136.19
+            ],
+            "mark_fill_rgb": [
+              198,
+              6,
+              168
+            ],
+            "mark_outline_rgb": [
+              109,
+              3,
+              92
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Chu",
+            "series_rank": 2,
+            "value": 17
+          },
+          "entity_id": "mark_Y_Chu",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              487.86,
+              105.143,
+              534.34,
+              562.0
+            ],
+            "category_label": "F",
+            "category_label_center_px": [
+              511.1,
+              554.0
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              487.86,
+              105.143,
+              503.86,
+              121.143
+            ],
+            "mark_center_px": [
+              495.86,
+              113.143
+            ],
+            "mark_fill_rgb": [
+              64,
+              211,
+              17
+            ],
+            "mark_outline_rgb": [
+              35,
+              116,
+              9
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Tews",
+            "series_rank": 0,
+            "value": 18
+          },
+          "entity_id": "mark_F_Tews",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              487.86,
+              105.143,
+              534.34,
+              562.0
+            ],
+            "category_label": "F",
+            "category_label_center_px": [
+              511.1,
+              554.0
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              503.1,
+              427.81,
+              519.1,
+              443.81
+            ],
+            "mark_center_px": [
+              511.1,
+              435.81
+            ],
+            "mark_fill_rgb": [
+              30,
+              71,
+              128
+            ],
+            "mark_outline_rgb": [
+              16,
+              39,
+              70
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Swan",
+            "series_rank": 1,
+            "value": 4
+          },
+          "entity_id": "mark_F_Swan",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              487.86,
+              105.143,
+              534.34,
+              562.0
+            ],
+            "category_label": "F",
+            "category_label_center_px": [
+              511.1,
+              554.0
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              518.34,
+              128.19,
+              534.34,
+              144.19
+            ],
+            "mark_center_px": [
+              526.34,
+              136.19
+            ],
+            "mark_fill_rgb": [
+              198,
+              6,
+              168
+            ],
+            "mark_outline_rgb": [
+              109,
+              3,
+              92
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Chu",
+            "series_rank": 2,
+            "value": 17
+          },
+          "entity_id": "mark_F_Chu",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              564.06,
+              197.333,
+              610.54,
+              562.0
+            ],
+            "category_label": "X",
+            "category_label_center_px": [
+              587.3,
+              554.0
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              564.06,
+              197.333,
+              580.06,
+              213.333
+            ],
+            "mark_center_px": [
+              572.06,
+              205.333
+            ],
+            "mark_fill_rgb": [
+              64,
+              211,
+              17
+            ],
+            "mark_outline_rgb": [
+              35,
+              116,
+              9
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Tews",
+            "series_rank": 0,
+            "value": 14
+          },
+          "entity_id": "mark_X_Tews",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              564.06,
+              197.333,
+              610.54,
+              562.0
+            ],
+            "category_label": "X",
+            "category_label_center_px": [
+              587.3,
+              554.0
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              579.3,
+              404.762,
+              595.3,
+              420.762
+            ],
+            "mark_center_px": [
+              587.3,
+              412.762
+            ],
+            "mark_fill_rgb": [
+              30,
+              71,
+              128
+            ],
+            "mark_outline_rgb": [
+              16,
+              39,
+              70
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Swan",
+            "series_rank": 1,
+            "value": 5
+          },
+          "entity_id": "mark_X_Swan",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              564.06,
+              197.333,
+              610.54,
+              562.0
+            ],
+            "category_label": "X",
+            "category_label_center_px": [
+              587.3,
+              554.0
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              594.54,
+              266.476,
+              610.54,
+              282.476
+            ],
+            "mark_center_px": [
+              602.54,
+              274.476
+            ],
+            "mark_fill_rgb": [
+              198,
+              6,
+              168
+            ],
+            "mark_outline_rgb": [
+              109,
+              3,
+              92
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Chu",
+            "series_rank": 2,
+            "value": 11
+          },
+          "entity_id": "mark_X_Chu",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              640.26,
+              335.619,
+              686.74,
+              562.0
+            ],
+            "category_label": "G",
+            "category_label_center_px": [
+              663.5,
+              554.0
+            ],
+            "category_rank": 7,
+            "mark_bbox_px": [
+              640.26,
+              404.762,
+              656.26,
+              420.762
+            ],
+            "mark_center_px": [
+              648.26,
+              412.762
+            ],
+            "mark_fill_rgb": [
+              64,
+              211,
+              17
+            ],
+            "mark_outline_rgb": [
+              35,
+              116,
+              9
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Tews",
+            "series_rank": 0,
+            "value": 5
+          },
+          "entity_id": "mark_G_Tews",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              640.26,
+              335.619,
+              686.74,
+              562.0
+            ],
+            "category_label": "G",
+            "category_label_center_px": [
+              663.5,
+              554.0
+            ],
+            "category_rank": 7,
+            "mark_bbox_px": [
+              655.5,
+              335.619,
+              671.5,
+              351.619
+            ],
+            "mark_center_px": [
+              663.5,
+              343.619
+            ],
+            "mark_fill_rgb": [
+              30,
+              71,
+              128
+            ],
+            "mark_outline_rgb": [
+              16,
+              39,
+              70
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Swan",
+            "series_rank": 1,
+            "value": 8
+          },
+          "entity_id": "mark_G_Swan",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              640.26,
+              335.619,
+              686.74,
+              562.0
+            ],
+            "category_label": "G",
+            "category_label_center_px": [
+              663.5,
+              554.0
+            ],
+            "category_rank": 7,
+            "mark_bbox_px": [
+              670.74,
+              381.714,
+              686.74,
+              397.714
+            ],
+            "mark_center_px": [
+              678.74,
+              389.714
+            ],
+            "mark_fill_rgb": [
+              198,
+              6,
+              168
+            ],
+            "mark_outline_rgb": [
+              109,
+              3,
+              92
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Chu",
+            "series_rank": 2,
+            "value": 6
+          },
+          "entity_id": "mark_G_Chu",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              716.46,
+              59.048,
+              762.94,
+              563.5
+            ],
+            "category_label": "Q",
+            "category_label_center_px": [
+              739.7,
+              554.0
+            ],
+            "category_rank": 8,
+            "mark_bbox_px": [
+              716.46,
+              59.048,
+              732.46,
+              75.048
+            ],
+            "mark_center_px": [
+              724.46,
+              67.048
+            ],
+            "mark_fill_rgb": [
+              64,
+              211,
+              17
+            ],
+            "mark_outline_rgb": [
+              35,
+              116,
+              9
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Tews",
+            "series_rank": 0,
+            "value": 20
+          },
+          "entity_id": "mark_Q_Tews",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              716.46,
+              59.048,
+              762.94,
+              563.5
+            ],
+            "category_label": "Q",
+            "category_label_center_px": [
+              739.7,
+              554.0
+            ],
+            "category_rank": 8,
+            "mark_bbox_px": [
+              731.7,
+              450.857,
+              747.7,
+              466.857
+            ],
+            "mark_center_px": [
+              739.7,
+              458.857
+            ],
+            "mark_fill_rgb": [
+              30,
+              71,
+              128
+            ],
+            "mark_outline_rgb": [
+              16,
+              39,
+              70
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Swan",
+            "series_rank": 1,
+            "value": 3
+          },
+          "entity_id": "mark_Q_Swan",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              716.46,
+              59.048,
+              762.94,
+              563.5
+            ],
+            "category_label": "Q",
+            "category_label_center_px": [
+              739.7,
+              554.0
+            ],
+            "category_rank": 8,
+            "mark_bbox_px": [
+              746.94,
+              174.286,
+              762.94,
+              190.286
+            ],
+            "mark_center_px": [
+              754.94,
+              182.286
+            ],
+            "mark_fill_rgb": [
+              198,
+              6,
+              168
+            ],
+            "mark_outline_rgb": [
+              109,
+              3,
+              92
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Chu",
+            "series_rank": 2,
+            "value": 15
+          },
+          "entity_id": "mark_Q_Chu",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              792.66,
+              105.143,
+              839.14,
+              562.0
+            ],
+            "category_label": "P",
+            "category_label_center_px": [
+              815.9,
+              554.0
+            ],
+            "category_rank": 9,
+            "mark_bbox_px": [
+              792.66,
+              105.143,
+              808.66,
+              121.143
+            ],
+            "mark_center_px": [
+              800.66,
+              113.143
+            ],
+            "mark_fill_rgb": [
+              64,
+              211,
+              17
+            ],
+            "mark_outline_rgb": [
+              35,
+              116,
+              9
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Tews",
+            "series_rank": 0,
+            "value": 18
+          },
+          "entity_id": "mark_P_Tews",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              792.66,
+              105.143,
+              839.14,
+              562.0
+            ],
+            "category_label": "P",
+            "category_label_center_px": [
+              815.9,
+              554.0
+            ],
+            "category_rank": 9,
+            "mark_bbox_px": [
+              807.9,
+              174.286,
+              823.9,
+              190.286
+            ],
+            "mark_center_px": [
+              815.9,
+              182.286
+            ],
+            "mark_fill_rgb": [
+              30,
+              71,
+              128
+            ],
+            "mark_outline_rgb": [
+              16,
+              39,
+              70
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Swan",
+            "series_rank": 1,
+            "value": 15
+          },
+          "entity_id": "mark_P_Swan",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              792.66,
+              105.143,
+              839.14,
+              562.0
+            ],
+            "category_label": "P",
+            "category_label_center_px": [
+              815.9,
+              554.0
+            ],
+            "category_rank": 9,
+            "mark_bbox_px": [
+              823.14,
+              128.19,
+              839.14,
+              144.19
+            ],
+            "mark_center_px": [
+              831.14,
+              136.19
+            ],
+            "mark_fill_rgb": [
+              198,
+              6,
+              168
+            ],
+            "mark_outline_rgb": [
+              109,
+              3,
+              92
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Chu",
+            "series_rank": 2,
+            "value": 17
+          },
+          "entity_id": "mark_P_Chu",
+          "entity_type": "point"
         }
       ],
       "relations": {
         "comparison": "greater_than",
         "evidence_labels": [
-          "E",
+          "F",
           "J",
-          "K",
-          "L",
-          "M"
+          "P",
+          "Q",
+          "T",
+          "W",
+          "X"
         ],
         "queried_series_labels": [
-          "Ely",
-          "Mora"
+          "Tews",
+          "Swan"
         ],
-        "scene_variant": "grouped_horizontal_bar",
+        "scene_variant": "grouped_lollipop",
         "task_variant": "series_a_gt_b_count"
       },
-      "scene_kind": "chart_grouped_horizontal_bar_multiseries"
+      "scene_kind": "chart_grouped_lollipop_multiseries"
     },
     "witness_symbolic": {
       "labels": [
-        "E",
+        "F",
         "J",
-        "K",
-        "L",
-        "M"
+        "P",
+        "Q",
+        "T",
+        "W",
+        "X"
       ],
       "type": "label_set"
     }

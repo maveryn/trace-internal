@@ -161,22 +161,21 @@ Use this document for the active `games` domain contract.
 1. Cross-domain integer-support balancing now lives in `trace/tasks/shared/support_sampling.py`.
 2. Games-domain visual defaults belong in `trace/tasks/games/shared/visual_defaults.py`.
 3. Games-domain shared axis-sampling helpers belong in `trace/tasks/games/shared/sampling.py`.
-4. Games-domain shared axis-sampling helpers belong in `trace/tasks/games/shared/sampling.py`.
-5. Games-domain card / domino / bingo / dots-and-boxes / Reversi / Connect Four / Checkers / Mancala / Morris theming belongs in `trace/tasks/games/shared/style.py`.
-6. Games-domain dots-and-boxes rules helpers belong in `trace/tasks/games/shared/dots_boxes_common.py`.
-7. Games-domain dots-and-boxes board rendering helpers belong in `trace/tasks/games/shared/dots_boxes_scene.py`.
-8. Games-domain bingo-card construction helpers belong in `trace/tasks/games/shared/bingo_common.py`.
-9. Games-domain bingo-card rendering helpers belong in `trace/tasks/games/shared/bingo_scene.py`.
-10. Games-domain card-hand rendering helpers belong in `trace/tasks/games/shared/card_scene.py`.
-11. Games-domain domino-chain rendering helpers belong in `trace/tasks/games/shared/domino_scene.py`.
-12. Games-domain Reversi rules helpers belong in `trace/tasks/games/shared/reversi_common.py`.
-13. Games-domain Reversi board rendering helpers belong in `trace/tasks/games/shared/reversi_scene.py`.
-14. Games-domain Connect Four rules helpers belong in `trace/tasks/games/shared/connect_four_common.py`.
-15. Games-domain Connect Four board rendering helpers belong in `trace/tasks/games/shared/connect_four_scene.py`.
-16. Games-domain Checkers rules helpers belong in `trace/tasks/games/shared/checkers_common.py`.
-17. Games-domain Checkers board rendering helpers belong in `trace/tasks/games/shared/checkers_scene.py`.
-18. Games-domain Mancala rules helpers belong in `trace/tasks/games/shared/mancala_common.py`.
-19. Games-domain Mancala board rendering helpers belong in `trace/tasks/games/shared/mancala_scene.py`.
-20. Games-domain Morris rules helpers belong in `trace/tasks/games/shared/morris_common.py`.
-21. Games-domain Morris board rendering helpers belong in `trace/tasks/games/shared/morris_scene.py`.
-22. Games-domain normalized complexity helpers belong in `trace/tasks/games/shared/complexity.py`.
+4. Games-domain card / domino / bingo / dots-and-boxes / Reversi / Connect Four / Checkers / Mancala / Morris theming belongs in `trace/tasks/games/shared/style.py`.
+5. Games-domain dots-and-boxes rules helpers belong in `trace/tasks/games/shared/dots_boxes_common.py`.
+6. Games-domain dots-and-boxes board rendering helpers belong in `trace/tasks/games/shared/dots_boxes_scene.py`.
+7. Games-domain bingo-card construction helpers belong in `trace/tasks/games/shared/bingo_common.py`.
+8. Games-domain bingo-card rendering helpers belong in `trace/tasks/games/shared/bingo_scene.py`.
+9. Games-domain card-hand rendering helpers belong in `trace/tasks/games/shared/card_scene.py`.
+10. Games-domain domino-chain rendering helpers belong in `trace/tasks/games/shared/domino_scene.py`.
+11. Games-domain Reversi rules helpers belong in `trace/tasks/games/shared/reversi_common.py`.
+12. Games-domain Reversi board rendering helpers belong in `trace/tasks/games/shared/reversi_scene.py`.
+13. Games-domain Connect Four rules helpers belong in `trace/tasks/games/shared/connect_four_common.py`.
+14. Games-domain Connect Four board rendering helpers belong in `trace/tasks/games/shared/connect_four_scene.py`.
+15. Games-domain Checkers rules helpers belong in `trace/tasks/games/shared/checkers_common.py`.
+16. Games-domain Checkers board rendering helpers belong in `trace/tasks/games/shared/checkers_scene.py`.
+17. Games-domain Mancala rules helpers belong in `trace/tasks/games/shared/mancala_common.py`.
+18. Games-domain Mancala board rendering helpers belong in `trace/tasks/games/shared/mancala_scene.py`.
+19. Games-domain Morris rules helpers belong in `trace/tasks/games/shared/morris_common.py`.
+20. Games-domain Morris board rendering helpers belong in `trace/tasks/games/shared/morris_scene.py`.
+21. Games-domain normalized complexity helpers belong in `trace/tasks/games/shared/complexity.py`.

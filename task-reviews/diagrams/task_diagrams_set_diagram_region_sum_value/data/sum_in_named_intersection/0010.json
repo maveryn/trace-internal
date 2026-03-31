@@ -1,7 +1,7 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 11
+    "value": 16
   },
   "evidence_gt": {
     "type": "bbox_set",
@@ -14,9 +14,9 @@
       ],
       [
         687.25,
-        523.11,
+        524.11,
         728.75,
-        568.61
+        567.61
       ]
     ]
   },
@@ -24,11 +24,11 @@
     "format": "png",
     "path": "diagrams/task_diagrams_set_diagram_region_sum_value/images/sum_in_named_intersection/0010.png"
   },
-  "instance_seed": 598934226019522,
-  "prompt": "Look at the set diagram in the image: a 3-set overlap diagram with one single-digit number placed in each visible region. Use the numbers in the set diagram and answer: What is the sum of the numbers in both Set B and Set C, including the center overlap if present? Return the integer sum. Return the integer sum.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every digit used in the sum, ordered from top to bottom and then left to right.\nAnswer requirement: set \"answer\" to the integer sum of the contributing digits.\nExample JSON:\n{\"evidence\":[[559,267,589,309],[559,420,589,462]],\"answer\":12}",
+  "instance_seed": 263576704506209,
+  "prompt": "Use the numeric set-overlap diagram in the image: a 3-set overlap diagram with one single-digit number placed in each visible region. Read the overlap regions and answer: What is the sum of the numbers in both Set B and Set C, including the center overlap if present? Return the integer sum. Return the integer sum.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every digit used in the sum, ordered from top to bottom and then left to right.\nAnswer field: set \"answer\" to the integer sum of the contributing digits.\nExample JSON:\n{\"evidence\":[[559,267,589,309],[559,420,589,462]],\"answer\":12}",
   "prompt_variants": {
-    "answer_and_evidence": "Look at the set diagram in the image: a 3-set overlap diagram with one single-digit number placed in each visible region. Use the numbers in the set diagram and answer: What is the sum of the numbers in both Set B and Set C, including the center overlap if present? Return the integer sum. Return the integer sum.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every digit used in the sum, ordered from top to bottom and then left to right.\nAnswer requirement: set \"answer\" to the integer sum of the contributing digits.\nExample JSON:\n{\"evidence\":[[559,267,589,309],[559,420,589,462]],\"answer\":12}",
-    "answer_only": "Look at the set diagram in the image: a 3-set overlap diagram with one single-digit number placed in each visible region. Use the numbers in the set diagram and answer: What is the sum of the numbers in both Set B and Set C, including the center overlap if present? Return the integer sum. Return the integer sum.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the integer sum of the contributing digits.\nExample JSON:\n{\"answer\":12}"
+    "answer_and_evidence": "Use the numeric set-overlap diagram in the image: a 3-set overlap diagram with one single-digit number placed in each visible region. Read the overlap regions and answer: What is the sum of the numbers in both Set B and Set C, including the center overlap if present? Return the integer sum. Return the integer sum.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every digit used in the sum, ordered from top to bottom and then left to right.\nAnswer field: set \"answer\" to the integer sum of the contributing digits.\nExample JSON:\n{\"evidence\":[[559,267,589,309],[559,420,589,462]],\"answer\":12}",
+    "answer_only": "Use the numeric set-overlap diagram in the image: a 3-set overlap diagram with one single-digit number placed in each visible region. Read the overlap regions and answer: What is the sum of the numbers in both Set B and Set C, including the center overlap if present? Return the integer sum. Return the integer sum.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the integer sum of the contributing digits.\nExample JSON:\n{\"answer\":12}"
   },
   "task": "task_diagrams_set_diagram_region_sum_value",
   "task_variant": "sum_in_named_intersection",
@@ -49,7 +49,7 @@
       }
     },
     "execution_trace": {
-      "answer_value": 11,
+      "answer_value": 16,
       "color_distance_space": "lab",
       "contributing_region_ids": [
         "BC_only",
@@ -61,7 +61,7 @@
         {
           "number_bbox_id": "number_bbox_0",
           "number_id": "number_0",
-          "number_value": 2,
+          "number_value": 1,
           "region_id": "A_only",
           "set_memberships": [
             "A"
@@ -70,7 +70,7 @@
         {
           "number_bbox_id": "number_bbox_1",
           "number_id": "number_1",
-          "number_value": 4,
+          "number_value": 3,
           "region_id": "B_only",
           "set_memberships": [
             "B"
@@ -79,7 +79,7 @@
         {
           "number_bbox_id": "number_bbox_2",
           "number_id": "number_2",
-          "number_value": 9,
+          "number_value": 8,
           "region_id": "C_only",
           "set_memberships": [
             "C"
@@ -88,7 +88,7 @@
         {
           "number_bbox_id": "number_bbox_3",
           "number_id": "number_3",
-          "number_value": 6,
+          "number_value": 4,
           "region_id": "AB_only",
           "set_memberships": [
             "A",
@@ -98,7 +98,7 @@
         {
           "number_bbox_id": "number_bbox_4",
           "number_id": "number_4",
-          "number_value": 1,
+          "number_value": 2,
           "region_id": "AC_only",
           "set_memberships": [
             "A",
@@ -108,7 +108,7 @@
         {
           "number_bbox_id": "number_bbox_5",
           "number_id": "number_5",
-          "number_value": 3,
+          "number_value": 7,
           "region_id": "BC_only",
           "set_memberships": [
             "B",
@@ -118,7 +118,7 @@
         {
           "number_bbox_id": "number_bbox_6",
           "number_id": "number_6",
-          "number_value": 8,
+          "number_value": 9,
           "region_id": "ABC",
           "set_memberships": [
             "A",
@@ -140,32 +140,32 @@
         "ABC"
       ],
       "region_number_map": {
-        "ABC": 8,
-        "AB_only": 6,
-        "AC_only": 1,
-        "A_only": 2,
-        "BC_only": 3,
-        "B_only": 4,
-        "C_only": 9
+        "ABC": 9,
+        "AB_only": 4,
+        "AC_only": 2,
+        "A_only": 1,
+        "BC_only": 7,
+        "B_only": 3,
+        "C_only": 8
       },
       "scene_title": "Numbered Sets",
       "scene_variant": "set_diagram",
       "set_count": 3,
       "set_fill_rgb_map": {
         "A": [
-          108,
-          138,
-          91
+          126,
+          105,
+          87
         ],
         "B": [
-          216,
-          114,
-          200
+          166,
+          208,
+          124
         ],
         "C": [
-          103,
-          142,
-          197
+          108,
+          136,
+          200
         ]
       },
       "set_ids": [
@@ -210,9 +210,9 @@
         ],
         [
           687.25,
-          523.11,
+          524.11,
           728.75,
-          568.61
+          567.61
         ]
       ]
     },
@@ -237,7 +237,7 @@
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 2,
+        "answer_or_evidence_variant_index": 3,
         "prompt_bundle_id": "diagrams_set_diagram_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -251,9 +251,9 @@
           "question_text": "What is the sum of the numbers in both Set B and Set C, including the center overlap if present? Return the integer sum."
         },
         "task_family_key": "numeric_set_overlap_diagram",
-        "task_family_variant_index": 1,
+        "task_family_variant_index": 3,
         "task_key": "region_sum_query",
-        "task_variant_index": 3,
+        "task_variant_index": 2,
         "task_variant_key": "sum_in_named_intersection",
         "task_variant_template_index": 0,
         "template_paths": [
@@ -271,7 +271,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 2,
+            "answer_or_evidence_variant_index": 3,
             "prompt_bundle_id": "diagrams_set_diagram_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -285,9 +285,9 @@
               "question_text": "What is the sum of the numbers in both Set B and Set C, including the center overlap if present? Return the integer sum."
             },
             "task_family_key": "numeric_set_overlap_diagram",
-            "task_family_variant_index": 1,
+            "task_family_variant_index": 3,
             "task_key": "region_sum_query",
-            "task_variant_index": 3,
+            "task_variant_index": 2,
             "task_variant_key": "sum_in_named_intersection",
             "task_variant_template_index": 0,
             "template_paths": [
@@ -300,12 +300,12 @@
               "task_variant:sum_in_named_intersection": 5
             }
           },
-          "prompt": "Look at the set diagram in the image: a 3-set overlap diagram with one single-digit number placed in each visible region. Use the numbers in the set diagram and answer: What is the sum of the numbers in both Set B and Set C, including the center overlap if present? Return the integer sum. Return the integer sum.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every digit used in the sum, ordered from top to bottom and then left to right.\nAnswer requirement: set \"answer\" to the integer sum of the contributing digits.\nExample JSON:\n{\"evidence\":[[559,267,589,309],[559,420,589,462]],\"answer\":12}"
+          "prompt": "Use the numeric set-overlap diagram in the image: a 3-set overlap diagram with one single-digit number placed in each visible region. Read the overlap regions and answer: What is the sum of the numbers in both Set B and Set C, including the center overlap if present? Return the integer sum. Return the integer sum.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every digit used in the sum, ordered from top to bottom and then left to right.\nAnswer field: set \"answer\" to the integer sum of the contributing digits.\nExample JSON:\n{\"evidence\":[[559,267,589,309],[559,420,589,462]],\"answer\":12}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 1,
+            "answer_or_evidence_variant_index": 0,
             "prompt_bundle_id": "diagrams_set_diagram_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -319,9 +319,9 @@
               "question_text": "What is the sum of the numbers in both Set B and Set C, including the center overlap if present? Return the integer sum."
             },
             "task_family_key": "numeric_set_overlap_diagram",
-            "task_family_variant_index": 1,
+            "task_family_variant_index": 3,
             "task_key": "region_sum_query",
-            "task_variant_index": 3,
+            "task_variant_index": 2,
             "task_variant_key": "sum_in_named_intersection",
             "task_variant_template_index": 0,
             "template_paths": [
@@ -334,7 +334,7 @@
               "task_variant:sum_in_named_intersection": 5
             }
           },
-          "prompt": "Look at the set diagram in the image: a 3-set overlap diagram with one single-digit number placed in each visible region. Use the numbers in the set diagram and answer: What is the sum of the numbers in both Set B and Set C, including the center overlap if present? Return the integer sum. Return the integer sum.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the integer sum of the contributing digits.\nExample JSON:\n{\"answer\":12}"
+          "prompt": "Use the numeric set-overlap diagram in the image: a 3-set overlap diagram with one single-digit number placed in each visible region. Read the overlap regions and answer: What is the sum of the numbers in both Set B and Set C, including the center overlap if present? Return the integer sum. Return the integer sum.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the integer sum of the contributing digits.\nExample JSON:\n{\"answer\":12}"
         }
       },
       "task_variant": "sum_in_named_intersection",
@@ -344,15 +344,15 @@
       "number_bboxes_px": {
         "number_bbox_0": [
           346.85,
-          374.99,
+          375.49,
           388.35,
-          419.49
+          418.99
         ],
         "number_bbox_1": [
           811.65,
-          375.49,
+          374.49,
           853.15,
-          418.99
+          419.99
         ],
         "number_bbox_2": [
           579.25,
@@ -362,21 +362,21 @@
         ],
         "number_bbox_3": [
           579.25,
-          332.49,
+          333.49,
           620.75,
-          377.99
+          376.99
         ],
         "number_bbox_4": [
           471.25,
-          524.11,
+          523.61,
           512.75,
-          567.61
+          568.11
         ],
         "number_bbox_5": [
           687.25,
-          523.11,
+          524.11,
           728.75,
-          568.61
+          567.61
         ],
         "number_bbox_6": [
           579.25,
@@ -486,7 +486,7 @@
       "canvas_height": 860,
       "canvas_width": 1200,
       "color_distance_space": "lab",
-      "geometry_seed": 598934226019522,
+      "geometry_seed": 263576704506209,
       "min_set_color_distance": 50.0,
       "number_slot_height_px": 76,
       "number_slot_width_px": 76,
@@ -495,19 +495,19 @@
       "set_fill_alpha": 96,
       "set_fill_rgb_map": {
         "A": [
-          108,
-          138,
-          91
+          126,
+          105,
+          87
         ],
         "B": [
-          216,
-          114,
-          200
+          166,
+          208,
+          124
         ],
         "C": [
-          103,
-          142,
-          197
+          108,
+          136,
+          200
         ]
       }
     },
@@ -603,28 +603,28 @@
         {
           "bbox_xyxy": [
             346.85,
-            374.99,
+            375.49,
             388.35,
-            419.49
+            418.99
           ],
           "entity_id": "number_bbox_0",
           "entity_type": "diagram_set_number",
           "number_id": "number_0",
           "region_id": "A_only",
-          "text": "2"
+          "text": "1"
         },
         {
           "bbox_xyxy": [
             811.65,
-            375.49,
+            374.49,
             853.15,
-            418.99
+            419.99
           ],
           "entity_id": "number_bbox_1",
           "entity_type": "diagram_set_number",
           "number_id": "number_1",
           "region_id": "B_only",
-          "text": "4"
+          "text": "3"
         },
         {
           "bbox_xyxy": [
@@ -637,46 +637,46 @@
           "entity_type": "diagram_set_number",
           "number_id": "number_2",
           "region_id": "C_only",
-          "text": "9"
+          "text": "8"
         },
         {
           "bbox_xyxy": [
             579.25,
-            332.49,
+            333.49,
             620.75,
-            377.99
+            376.99
           ],
           "entity_id": "number_bbox_3",
           "entity_type": "diagram_set_number",
           "number_id": "number_3",
           "region_id": "AB_only",
-          "text": "6"
+          "text": "4"
         },
         {
           "bbox_xyxy": [
             471.25,
-            524.11,
+            523.61,
             512.75,
-            567.61
+            568.11
           ],
           "entity_id": "number_bbox_4",
           "entity_type": "diagram_set_number",
           "number_id": "number_4",
           "region_id": "AC_only",
-          "text": "1"
+          "text": "2"
         },
         {
           "bbox_xyxy": [
             687.25,
-            523.11,
+            524.11,
             728.75,
-            568.61
+            567.61
           ],
           "entity_id": "number_bbox_5",
           "entity_type": "diagram_set_number",
           "number_id": "number_5",
           "region_id": "BC_only",
-          "text": "3"
+          "text": "7"
         },
         {
           "bbox_xyxy": [
@@ -689,7 +689,7 @@
           "entity_type": "diagram_set_number",
           "number_id": "number_6",
           "region_id": "ABC",
-          "text": "8"
+          "text": "9"
         }
       ],
       "relations": {

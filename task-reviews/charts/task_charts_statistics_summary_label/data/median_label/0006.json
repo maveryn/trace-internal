@@ -1,60 +1,60 @@
 {
   "answer_gt": {
     "type": "option_letter",
-    "value": "C"
+    "value": "M"
   },
   "evidence_gt": {
     "type": "integer",
-    "value": 6
+    "value": 15
   },
   "image": {
     "format": "png",
     "path": "charts/task_charts_statistics_summary_label/images/median_label/0006.png"
   },
-  "instance_seed": 8304885983087910,
-  "prompt": "Look at the chart in the image. It shows a labeled dot plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Answer this question. What label corresponds to the median value in the chart?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to the median value as an integer.\nAnswer requirement: set \"answer\" to the single uppercase label of the requested mark.\nExample JSON:\n{\"evidence\":6,\"answer\":\"M\"}",
+  "instance_seed": 6791828470032806,
+  "prompt": "Look at the chart in the image. It shows a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Find the label of the mark that satisfies the requested statistic. Find the label of the mark with the median value.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to the median value as an integer.\nAnswer requirement: set \"answer\" to the single uppercase label of the requested mark.\nExample JSON:\n{\"evidence\":6,\"answer\":\"M\"}",
   "prompt_variants": {
-    "answer_and_evidence": "Look at the chart in the image. It shows a labeled dot plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Answer this question. What label corresponds to the median value in the chart?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to the median value as an integer.\nAnswer requirement: set \"answer\" to the single uppercase label of the requested mark.\nExample JSON:\n{\"evidence\":6,\"answer\":\"M\"}",
-    "answer_only": "Look at the chart in the image. It shows a labeled dot plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Answer this question. What label corresponds to the median value in the chart?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the single uppercase label of the requested mark.\nExample JSON:\n{\"answer\":\"M\"}"
+    "answer_and_evidence": "Look at the chart in the image. It shows a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Find the label of the mark that satisfies the requested statistic. Find the label of the mark with the median value.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to the median value as an integer.\nAnswer requirement: set \"answer\" to the single uppercase label of the requested mark.\nExample JSON:\n{\"evidence\":6,\"answer\":\"M\"}",
+    "answer_only": "Look at the chart in the image. It shows a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Find the label of the mark that satisfies the requested statistic. Find the label of the mark with the median value.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the single uppercase label of the requested mark.\nExample JSON:\n{\"answer\":\"M\"}"
   },
   "task": "task_charts_statistics_summary_label",
   "task_variant": "median_label",
   "trace_payload": {
     "execution_trace": {
-      "answer_label": "C",
-      "evidence_value": 6,
+      "answer_label": "M",
+      "composition_total": 100,
+      "evidence_value": 15,
       "labels": [
-        "C",
-        "V",
-        "F",
         "M",
-        "J",
-        "B",
-        "K",
+        "P",
         "L",
-        "G"
+        "Y",
+        "F",
+        "K",
+        "W"
       ],
       "mark_color_distance_space": "lab",
-      "mark_color_min_distance": 40.0,
-      "mark_color_sampling_policy": "random_rgb",
-      "mark_count": 9,
+      "mark_color_min_distance": 58.0,
+      "mark_color_sampling_policy": "random_rgb_palette",
+      "mark_count": 7,
       "mark_count_range": [
         5,
-        10
+        8
       ],
       "mark_fill_rgb": [
-        44,
-        38,
-        124
+        23,
+        19,
+        46
       ],
       "mark_outline_rgb": [
-        24,
-        21,
-        68
+        13,
+        10,
+        25
       ],
-      "median_label": "C",
+      "median_label": "M",
+      "pie_like_mark_color_channel_max": 200,
       "question_format": "label_open",
-      "scene_variant": "dot_plot",
+      "scene_variant": "donut",
       "scene_variant_probabilities": {
         "area": 0.1,
         "bar": 0.1,
@@ -67,81 +67,150 @@
         "radar": 0.1,
         "scatter": 0.1
       },
+      "slice_fill_palette_rgb": [
+        [
+          23,
+          19,
+          46
+        ],
+        [
+          37,
+          123,
+          67
+        ],
+        [
+          92,
+          43,
+          200
+        ],
+        [
+          181,
+          13,
+          53
+        ],
+        [
+          13,
+          200,
+          7
+        ],
+        [
+          176,
+          118,
+          19
+        ],
+        [
+          192,
+          94,
+          171
+        ]
+      ],
+      "slice_outline_palette_rgb": [
+        [
+          13,
+          10,
+          25
+        ],
+        [
+          20,
+          68,
+          37
+        ],
+        [
+          51,
+          24,
+          110
+        ],
+        [
+          100,
+          7,
+          29
+        ],
+        [
+          7,
+          110,
+          4
+        ],
+        [
+          97,
+          65,
+          10
+        ],
+        [
+          106,
+          52,
+          94
+        ]
+      ],
       "sorted_values": [
         2,
         3,
-        4,
-        5,
-        6,
-        7,
-        8,
-        9,
-        10
+        14,
+        15,
+        16,
+        18,
+        32
       ],
       "statistic_kind": "median",
-      "target_answer": 6,
+      "target_answer": 15,
       "target_answer_range": [
-        3,
-        10
+        1,
+        99
       ],
       "task_variant": "median_label",
       "task_variant_probabilities": {
-        "argmax": 0.3333333333333333,
-        "argmin": 0.3333333333333333,
-        "median_label": 0.3333333333333333
+        "argmax": 0.0,
+        "argmin": 0.0,
+        "median_label": 1.0
       },
-      "value_max": 20,
+      "value_max": 99,
       "value_min": 1,
+      "value_semantics": "percentage",
       "values": [
-        6,
-        2,
-        10,
-        5,
-        9,
-        4,
+        15,
+        16,
+        18,
         3,
-        8,
-        7
+        14,
+        2,
+        32
       ],
       "values_by_label": {
-        "B": 4,
-        "C": 6,
-        "F": 10,
-        "G": 7,
-        "J": 9,
-        "K": 3,
-        "L": 8,
-        "M": 5,
-        "V": 2
+        "F": 14,
+        "K": 2,
+        "L": 18,
+        "M": 15,
+        "P": 16,
+        "W": 32,
+        "Y": 3
       }
     },
     "projected_evidence": {
       "bbox_set": [
         [
-          120.778,
-          246.909,
-          136.778,
-          262.909
+          319.32,
+          68.48,
+          487.207,
+          276.0
         ]
       ],
-      "integer": 6,
+      "integer": 15,
       "pixel_point_map": {
-        "C": [
-          128.778,
-          254.909
+        "M": [
+          386.211,
+          144.72
         ]
       },
       "pixel_point_set": [
         [
-          128.778,
-          254.909
+          386.211,
+          144.72
         ]
       ]
     },
     "query_spec": {
       "params": {
-        "mark_count": 9,
-        "scene_variant": "dot_plot",
+        "mark_count": 7,
+        "scene_variant": "donut",
         "scene_variant_probabilities": {
           "area": 0.1,
           "bar": 0.1,
@@ -155,16 +224,16 @@
           "scatter": 0.1
         },
         "statistic_kind": "median",
-        "target_answer": 6,
+        "target_answer": 15,
         "target_answer_range": [
-          3,
-          10
+          1,
+          99
         ],
         "task_variant": "median_label",
         "task_variant_probabilities": {
-          "argmax": 0.3333333333333333,
-          "argmin": 0.3333333333333333,
-          "median_label": 0.3333333333333333
+          "argmax": 0.0,
+          "argmin": 0.0,
+          "median_label": 1.0
         }
       },
       "prompt_variant": {
@@ -179,14 +248,14 @@
           "json_example_answer_only": "{\"answer\":\"M\"}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "object_description": "a labeled dot plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis"
+          "object_description": "a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices"
         },
         "task_family_key": "labeled_chart_statistics",
         "task_family_variant_index": 3,
         "task_key": "summary_label_query",
-        "task_variant_index": 0,
+        "task_variant_index": 3,
         "task_variant_key": "median_label",
-        "task_variant_template_index": 3,
+        "task_variant_template_index": 1,
         "template_paths": [
           "charts/statistics/charts_statistics_v1.json"
         ],
@@ -212,14 +281,14 @@
               "json_example_answer_only": "{\"answer\":\"M\"}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a labeled dot plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis"
+              "object_description": "a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices"
             },
             "task_family_key": "labeled_chart_statistics",
             "task_family_variant_index": 3,
             "task_key": "summary_label_query",
-            "task_variant_index": 0,
+            "task_variant_index": 3,
             "task_variant_key": "median_label",
-            "task_variant_template_index": 3,
+            "task_variant_template_index": 1,
             "template_paths": [
               "charts/statistics/charts_statistics_v1.json"
             ],
@@ -230,12 +299,12 @@
               "task_variant:median_label": 5
             }
           },
-          "prompt": "Look at the chart in the image. It shows a labeled dot plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Answer this question. What label corresponds to the median value in the chart?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to the median value as an integer.\nAnswer requirement: set \"answer\" to the single uppercase label of the requested mark.\nExample JSON:\n{\"evidence\":6,\"answer\":\"M\"}"
+          "prompt": "Look at the chart in the image. It shows a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Find the label of the mark that satisfies the requested statistic. Find the label of the mark with the median value.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to the median value as an integer.\nAnswer requirement: set \"answer\" to the single uppercase label of the requested mark.\nExample JSON:\n{\"evidence\":6,\"answer\":\"M\"}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 1,
+            "answer_or_evidence_variant_index": 0,
             "prompt_bundle_id": "charts_statistics_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -245,14 +314,14 @@
               "json_example_answer_only": "{\"answer\":\"M\"}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a labeled dot plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis"
+              "object_description": "a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices"
             },
             "task_family_key": "labeled_chart_statistics",
             "task_family_variant_index": 3,
             "task_key": "summary_label_query",
-            "task_variant_index": 0,
+            "task_variant_index": 3,
             "task_variant_key": "median_label",
-            "task_variant_template_index": 3,
+            "task_variant_template_index": 1,
             "template_paths": [
               "charts/statistics/charts_statistics_v1.json"
             ],
@@ -263,7 +332,7 @@
               "task_variant:median_label": 5
             }
           },
-          "prompt": "Look at the chart in the image. It shows a labeled dot plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Answer this question. What label corresponds to the median value in the chart?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the single uppercase label of the requested mark.\nExample JSON:\n{\"answer\":\"M\"}"
+          "prompt": "Look at the chart in the image. It shows a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Find the label of the mark that satisfies the requested statistic. Find the label of the mark with the median value.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the single uppercase label of the requested mark.\nExample JSON:\n{\"answer\":\"M\"}"
         }
       },
       "task_variant": "median_label",
@@ -272,41 +341,33 @@
     "render_map": {
       "image_id": "img0",
       "label_centers_px": {
-        "B": [
-          496.556,
-          317.273
-        ],
-        "C": [
-          128.778,
-          232.909
-        ],
         "F": [
-          275.889,
-          64.182
-        ],
-        "G": [
-          717.222,
-          190.727
-        ],
-        "J": [
-          423.0,
-          106.364
+          624.14,
+          311.0
         ],
         "K": [
-          570.111,
-          359.455
+          625.64,
+          353.0
         ],
         "L": [
-          643.667,
-          148.545
+          623.64,
+          227.0
         ],
         "M": [
-          349.444,
-          275.091
+          627.64,
+          143.0
         ],
-        "V": [
-          202.333,
-          401.636
+        "P": [
+          624.64,
+          185.0
+        ],
+        "W": [
+          628.64,
+          395.0
+        ],
+        "Y": [
+          625.64,
+          269.0
         ]
       },
       "plot_bbox_px": [
@@ -342,18 +403,93 @@
       "coord_space": "pixel",
       "mark_style": {
         "mark_color_distance_space": "lab",
-        "mark_color_min_distance": 40.0,
+        "mark_color_min_distance": 58.0,
         "mark_fill_rgb": [
-          44,
-          38,
-          124
+          23,
+          19,
+          46
         ],
         "mark_outline_rgb": [
-          24,
-          21,
-          68
+          13,
+          10,
+          25
         ],
-        "sampling_policy": "random_rgb"
+        "pie_like_mark_color_channel_max": 200,
+        "sampling_policy": "random_rgb_palette",
+        "slice_fill_palette_rgb": [
+          [
+            23,
+            19,
+            46
+          ],
+          [
+            37,
+            123,
+            67
+          ],
+          [
+            92,
+            43,
+            200
+          ],
+          [
+            181,
+            13,
+            53
+          ],
+          [
+            13,
+            200,
+            7
+          ],
+          [
+            176,
+            118,
+            19
+          ],
+          [
+            192,
+            94,
+            171
+          ]
+        ],
+        "slice_outline_palette_rgb": [
+          [
+            13,
+            10,
+            25
+          ],
+          [
+            20,
+            68,
+            37
+          ],
+          [
+            51,
+            24,
+            110
+          ],
+          [
+            100,
+            7,
+            29
+          ],
+          [
+            7,
+            110,
+            4
+          ],
+          [
+            97,
+            65,
+            10
+          ],
+          [
+            106,
+            52,
+            94
+          ]
+        ]
       },
       "plot_bbox_px": [
         92,
@@ -377,13 +513,13 @@
         "edits": [],
         "enabled": false
       },
-      "scene_variant": "dot_plot",
+      "scene_variant": "donut",
       "text_style": {
         "label_font_size_px": 22,
         "label_stroke_width_px": 2,
         "tick_font_size_px": 18
       },
-      "y_axis_max": 11,
+      "y_axis_max": 33,
       "y_ticks": [
         0,
         1,
@@ -396,330 +532,452 @@
         8,
         9,
         10,
-        11
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33
       ]
     },
     "scene_ir": {
       "entities": [
         {
           "attrs": {
-            "label": "C",
+            "end_angle_deg": -36.0,
+            "label": "M",
+            "label_bbox_px": [
+              616.64,
+              135.0,
+              638.64,
+              151.0
+            ],
             "label_center_px": [
-              128.778,
-              232.909
+              627.64,
+              143.0
+            ],
+            "legend_swatch_bbox_px": [
+              568.64,
+              129.0,
+              596.64,
+              157.0
             ],
             "mark_bbox_px": [
-              120.778,
-              246.909,
-              136.778,
-              262.909
+              319.32,
+              68.48,
+              487.207,
+              276.0
             ],
             "mark_center_px": [
-              128.778,
-              254.909
+              386.211,
+              144.72
             ],
             "mark_fill_rgb": [
-              44,
-              38,
-              124
+              23,
+              19,
+              46
             ],
             "mark_outline_rgb": [
-              24,
-              21,
-              68
+              13,
+              10,
+              25
             ],
-            "scene_variant": "dot_plot",
-            "value": 6,
+            "percentage_bbox_px": [
+              360.211,
+              136.72,
+              412.211,
+              152.72
+            ],
+            "percentage_center_px": [
+              386.211,
+              144.72
+            ],
+            "scene_variant": "donut",
+            "start_angle_deg": -90.0,
+            "value": 15,
             "x_rank": 0
           },
-          "entity_id": "mark_C",
-          "entity_type": "point"
+          "entity_id": "mark_M",
+          "entity_type": "slice"
         },
         {
           "attrs": {
-            "label": "V",
+            "end_angle_deg": 21.6,
+            "label": "P",
+            "label_bbox_px": [
+              616.64,
+              177.0,
+              632.64,
+              193.0
+            ],
             "label_center_px": [
-              202.333,
-              401.636
+              624.64,
+              185.0
+            ],
+            "legend_swatch_bbox_px": [
+              568.64,
+              171.0,
+              596.64,
+              199.0
             ],
             "mark_bbox_px": [
-              194.333,
-              415.636,
-              210.333,
-              431.636
+              319.32,
+              154.023,
+              525.204,
+              352.393
             ],
             "mark_center_px": [
-              202.333,
-              423.636
+              465.497,
+              257.534
             ],
             "mark_fill_rgb": [
-              44,
-              38,
-              124
+              37,
+              123,
+              67
             ],
             "mark_outline_rgb": [
-              24,
-              21,
-              68
+              20,
+              68,
+              37
             ],
-            "scene_variant": "dot_plot",
-            "value": 2,
+            "percentage_bbox_px": [
+              439.497,
+              249.534,
+              491.497,
+              265.534
+            ],
+            "percentage_center_px": [
+              465.497,
+              257.534
+            ],
+            "scene_variant": "donut",
+            "start_angle_deg": -36.0,
+            "value": 16,
             "x_rank": 1
           },
-          "entity_id": "mark_V",
-          "entity_type": "point"
+          "entity_id": "mark_P",
+          "entity_type": "slice"
         },
         {
           "attrs": {
-            "label": "F",
+            "end_angle_deg": 86.4,
+            "label": "L",
+            "label_bbox_px": [
+              616.64,
+              219.0,
+              630.64,
+              235.0
+            ],
             "label_center_px": [
-              275.889,
-              64.182
+              623.64,
+              227.0
+            ],
+            "legend_swatch_bbox_px": [
+              568.64,
+              213.0,
+              596.64,
+              241.0
             ],
             "mark_bbox_px": [
-              267.889,
-              78.182,
-              283.889,
-              94.182
+              319.32,
+              276.0,
+              512.267,
+              483.111
             ],
             "mark_center_px": [
-              275.889,
-              86.182
+              405.924,
+              395.2
             ],
             "mark_fill_rgb": [
-              44,
-              38,
-              124
+              92,
+              43,
+              200
             ],
             "mark_outline_rgb": [
+              51,
               24,
-              21,
-              68
+              110
             ],
-            "scene_variant": "dot_plot",
-            "value": 10,
+            "percentage_bbox_px": [
+              379.924,
+              387.2,
+              431.924,
+              403.2
+            ],
+            "percentage_center_px": [
+              405.924,
+              395.2
+            ],
+            "scene_variant": "donut",
+            "start_angle_deg": 21.6,
+            "value": 18,
             "x_rank": 2
           },
-          "entity_id": "mark_F",
-          "entity_type": "point"
+          "entity_id": "mark_L",
+          "entity_type": "slice"
         },
         {
           "attrs": {
-            "label": "M",
+            "end_angle_deg": 97.2,
+            "label": "Y",
+            "label_bbox_px": [
+              616.64,
+              261.0,
+              634.64,
+              277.0
+            ],
             "label_center_px": [
-              349.444,
-              275.091
+              625.64,
+              269.0
+            ],
+            "legend_swatch_bbox_px": [
+              568.64,
+              255.0,
+              596.64,
+              283.0
             ],
             "mark_bbox_px": [
-              341.444,
-              289.091,
-              357.444,
-              305.091
+              293.311,
+              276.0,
+              332.35,
+              483.418
             ],
             "mark_center_px": [
-              349.444,
-              297.091
+              314.692,
+              423.266
             ],
             "mark_fill_rgb": [
-              44,
-              38,
-              124
+              181,
+              13,
+              53
             ],
             "mark_outline_rgb": [
-              24,
-              21,
-              68
+              100,
+              7,
+              29
             ],
-            "scene_variant": "dot_plot",
-            "value": 5,
+            "percentage_bbox_px": [
+              293.799,
+              491.41,
+              330.799,
+              507.41
+            ],
+            "percentage_center_px": [
+              312.299,
+              499.41
+            ],
+            "scene_variant": "donut",
+            "start_angle_deg": 86.4,
+            "value": 3,
             "x_rank": 3
           },
-          "entity_id": "mark_M",
-          "entity_type": "point"
+          "entity_id": "mark_Y",
+          "entity_type": "slice"
         },
         {
           "attrs": {
-            "label": "J",
+            "end_angle_deg": 147.6,
+            "label": "F",
+            "label_bbox_px": [
+              616.64,
+              303.0,
+              631.64,
+              319.0
+            ],
             "label_center_px": [
-              423.0,
-              106.364
+              624.14,
+              311.0
+            ],
+            "legend_swatch_bbox_px": [
+              568.64,
+              297.0,
+              596.64,
+              325.0
             ],
             "mark_bbox_px": [
-              415.0,
-              120.364,
-              431.0,
-              136.364
+              144.105,
+              276.0,
+              319.32,
+              481.884
             ],
             "mark_center_px": [
-              423.0,
-              128.364
+              240.372,
+              400.403
             ],
             "mark_fill_rgb": [
-              44,
-              38,
-              124
+              13,
+              200,
+              7
             ],
             "mark_outline_rgb": [
-              24,
-              21,
-              68
+              7,
+              110,
+              4
             ],
-            "scene_variant": "dot_plot",
-            "value": 9,
+            "percentage_bbox_px": [
+              214.372,
+              392.403,
+              266.372,
+              408.403
+            ],
+            "percentage_center_px": [
+              240.372,
+              400.403
+            ],
+            "scene_variant": "donut",
+            "start_angle_deg": 97.2,
+            "value": 14,
             "x_rank": 4
           },
-          "entity_id": "mark_J",
-          "entity_type": "point"
+          "entity_id": "mark_F",
+          "entity_type": "slice"
         },
         {
           "attrs": {
-            "label": "B",
+            "end_angle_deg": 154.8,
+            "label": "K",
+            "label_bbox_px": [
+              616.64,
+              345.0,
+              634.64,
+              361.0
+            ],
             "label_center_px": [
-              496.556,
-              317.273
+              625.64,
+              353.0
+            ],
+            "legend_swatch_bbox_px": [
+              568.64,
+              339.0,
+              596.64,
+              367.0
             ],
             "mark_bbox_px": [
-              488.556,
-              331.273,
-              504.556,
-              347.273
+              131.55,
+              276.0,
+              319.32,
+              387.195
             ],
             "mark_center_px": [
-              496.556,
-              339.273
+              190.206,
+              346.981
             ],
             "mark_fill_rgb": [
-              44,
-              38,
-              124
+              176,
+              118,
+              19
             ],
             "mark_outline_rgb": [
-              24,
-              21,
-              68
+              97,
+              65,
+              10
             ],
-            "scene_variant": "dot_plot",
-            "value": 4,
+            "percentage_bbox_px": [
+              104.948,
+              375.682,
+              141.948,
+              391.682
+            ],
+            "percentage_center_px": [
+              123.448,
+              383.682
+            ],
+            "scene_variant": "donut",
+            "start_angle_deg": 147.6,
+            "value": 2,
             "x_rank": 5
           },
-          "entity_id": "mark_B",
-          "entity_type": "point"
+          "entity_id": "mark_K",
+          "entity_type": "slice"
         },
         {
           "attrs": {
-            "label": "K",
+            "end_angle_deg": 270.0,
+            "label": "W",
+            "label_bbox_px": [
+              616.64,
+              387.0,
+              640.64,
+              403.0
+            ],
             "label_center_px": [
-              570.111,
-              359.455
+              628.64,
+              395.0
+            ],
+            "legend_swatch_bbox_px": [
+              568.64,
+              381.0,
+              596.64,
+              409.0
             ],
             "mark_bbox_px": [
-              562.111,
-              373.455,
-              578.111,
-              389.455
+              113.678,
+              68.48,
+              319.32,
+              364.358
             ],
             "mark_center_px": [
-              570.111,
-              381.455
+              194.917,
+              197.052
             ],
             "mark_fill_rgb": [
-              44,
-              38,
-              124
+              192,
+              94,
+              171
             ],
             "mark_outline_rgb": [
-              24,
-              21,
-              68
+              106,
+              52,
+              94
             ],
-            "scene_variant": "dot_plot",
-            "value": 3,
+            "percentage_bbox_px": [
+              168.917,
+              189.052,
+              220.917,
+              205.052
+            ],
+            "percentage_center_px": [
+              194.917,
+              197.052
+            ],
+            "scene_variant": "donut",
+            "start_angle_deg": 154.8,
+            "value": 32,
             "x_rank": 6
           },
-          "entity_id": "mark_K",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "label": "L",
-            "label_center_px": [
-              643.667,
-              148.545
-            ],
-            "mark_bbox_px": [
-              635.667,
-              162.545,
-              651.667,
-              178.545
-            ],
-            "mark_center_px": [
-              643.667,
-              170.545
-            ],
-            "mark_fill_rgb": [
-              44,
-              38,
-              124
-            ],
-            "mark_outline_rgb": [
-              24,
-              21,
-              68
-            ],
-            "scene_variant": "dot_plot",
-            "value": 8,
-            "x_rank": 7
-          },
-          "entity_id": "mark_L",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "label": "G",
-            "label_center_px": [
-              717.222,
-              190.727
-            ],
-            "mark_bbox_px": [
-              709.222,
-              204.727,
-              725.222,
-              220.727
-            ],
-            "mark_center_px": [
-              717.222,
-              212.727
-            ],
-            "mark_fill_rgb": [
-              44,
-              38,
-              124
-            ],
-            "mark_outline_rgb": [
-              24,
-              21,
-              68
-            ],
-            "scene_variant": "dot_plot",
-            "value": 7,
-            "x_rank": 8
-          },
-          "entity_id": "mark_G",
-          "entity_type": "point"
+          "entity_id": "mark_W",
+          "entity_type": "slice"
         }
       ],
       "relations": {
-        "answer_label": "C",
-        "evidence_value": 6,
-        "scene_variant": "dot_plot",
+        "answer_label": "M",
+        "evidence_value": 15,
+        "scene_variant": "donut",
         "statistic_kind": "median",
         "task_variant": "median_label"
       },
-      "scene_kind": "chart_dot_plot_statistics"
+      "scene_kind": "chart_donut_statistics"
     },
     "witness_symbolic": {
       "type": "integer",
-      "value": 6
+      "value": 15
     }
   },
   "versions": {

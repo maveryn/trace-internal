@@ -1,56 +1,61 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 0
+    "value": 3
   },
   "evidence_gt": {
     "type": "label_set",
-    "value": []
+    "value": [
+      "K",
+      "L",
+      "W"
+    ]
   },
   "image": {
     "format": "png",
     "path": "charts/task_charts_multiseries_pairwise_comparison_count/images/series_a_gt_b_count/0004.png"
   },
-  "instance_seed": 7029981128948676,
-  "prompt": "Look at the multiseries chart in the image. It shows a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Compare the two queried series category by category. Find how many category labels show Gula higher than Weed.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
+  "instance_seed": 5143090887907230,
+  "prompt": "You are given a multiseries chart: a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Use the chart to compare the queried pair of series across the category labels. Across the labeled categories, in how many categories is Tan higher than Dun?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
   "prompt_variants": {
-    "answer_and_evidence": "Look at the multiseries chart in the image. It shows a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Compare the two queried series category by category. Find how many category labels show Gula higher than Weed.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
-    "answer_only": "Look at the multiseries chart in the image. It shows a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Compare the two queried series category by category. Find how many category labels show Gula higher than Weed.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":3}"
+    "answer_and_evidence": "You are given a multiseries chart: a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Use the chart to compare the queried pair of series across the category labels. Across the labeled categories, in how many categories is Tan higher than Dun?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
+    "answer_only": "You are given a multiseries chart: a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Use the chart to compare the queried pair of series across the category labels. Across the labeled categories, in how many categories is Tan higher than Dun?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":3}"
   },
   "task": "task_charts_multiseries_pairwise_comparison_count",
   "task_variant": "series_a_gt_b_count",
   "trace_payload": {
     "execution_trace": {
-      "answer_value": 0,
-      "category_count": 10,
+      "answer_value": 3,
+      "category_count": 7,
       "category_count_range": [
         5,
         10
       ],
       "category_labels": [
-        "T",
-        "V",
+        "Z",
+        "K",
+        "U",
         "P",
-        "C",
-        "H",
-        "J",
-        "F",
-        "B",
+        "S",
         "L",
-        "G"
+        "W"
       ],
       "comparison": "greater_than",
-      "evidence_labels": [],
-      "left_series_label": "Gula",
+      "evidence_labels": [
+        "K",
+        "L",
+        "W"
+      ],
+      "left_series_label": "Tan",
       "mark_color_distance_space": "lab",
       "mark_color_min_distance": 40.0,
       "mark_color_sampling_policy": "random_rgb_palette",
       "queried_series_labels": [
-        "Gula",
-        "Weed"
+        "Tan",
+        "Dun"
       ],
       "question_format": "numeric_open",
-      "right_series_label": "Weed",
+      "right_series_label": "Dun",
       "scene_variant": "grouped_bar",
       "scene_variant_probabilities": {
         "grouped_bar": 0.25,
@@ -65,123 +70,157 @@
       ],
       "series_fill_palette_rgb": [
         [
-          218,
-          105,
-          217
+          53,
+          5,
+          73
         ],
         [
-          43,
-          59,
-          201
+          157,
+          55,
+          189
         ],
         [
-          113,
-          215,
-          112
+          70,
+          46,
+          13
         ]
       ],
       "series_labels": [
-        "Gula",
-        "Weed",
-        "Heid"
+        "Tan",
+        "Dun",
+        "Also"
       ],
       "series_outline_palette_rgb": [
         [
-          120,
-          58,
-          119
+          29,
+          3,
+          40
         ],
         [
-          24,
-          32,
-          111
+          86,
+          30,
+          104
         ],
         [
-          62,
-          118,
-          62
+          38,
+          25,
+          7
         ]
       ],
-      "target_answer": 0,
+      "target_answer": 3,
       "target_answer_range": [
         0,
         8
       ],
       "task_variant": "series_a_gt_b_count",
       "task_variant_probabilities": {
-        "series_a_gt_b_count": 0.5,
-        "series_a_lt_b_count": 0.5
+        "series_a_gt_b_count": 1.0,
+        "series_a_lt_b_count": 0.0
       },
       "values_by_category": {
-        "B": {
-          "Gula": 7,
-          "Heid": 8,
-          "Weed": 9
-        },
-        "C": {
-          "Gula": 4,
-          "Heid": 6,
-          "Weed": 10
-        },
-        "F": {
-          "Gula": 4,
-          "Heid": 14,
-          "Weed": 15
-        },
-        "G": {
-          "Gula": 4,
-          "Heid": 9,
-          "Weed": 17
-        },
-        "H": {
-          "Gula": 1,
-          "Heid": 9,
-          "Weed": 16
-        },
-        "J": {
-          "Gula": 1,
-          "Heid": 4,
-          "Weed": 20
+        "K": {
+          "Also": 2,
+          "Dun": 1,
+          "Tan": 17
         },
         "L": {
-          "Gula": 8,
-          "Heid": 10,
-          "Weed": 17
+          "Also": 14,
+          "Dun": 11,
+          "Tan": 15
         },
         "P": {
-          "Gula": 2,
-          "Heid": 3,
-          "Weed": 18
+          "Also": 14,
+          "Dun": 20,
+          "Tan": 9
         },
-        "T": {
-          "Gula": 8,
-          "Heid": 12,
-          "Weed": 16
+        "S": {
+          "Also": 4,
+          "Dun": 16,
+          "Tan": 2
         },
-        "V": {
-          "Gula": 1,
-          "Heid": 3,
-          "Weed": 6
+        "U": {
+          "Also": 7,
+          "Dun": 9,
+          "Tan": 1
+        },
+        "W": {
+          "Also": 4,
+          "Dun": 1,
+          "Tan": 10
+        },
+        "Z": {
+          "Also": 8,
+          "Dun": 15,
+          "Tan": 5
         }
       }
     },
     "projected_evidence": {
-      "bbox_set": [],
-      "label_set": [],
-      "pixel_point_map": {},
-      "pixel_point_set": []
+      "bbox_set": [
+        [
+          225.677,
+          136.19,
+          284.895,
+          562.0
+        ],
+        [
+          661.105,
+          182.286,
+          720.323,
+          562.0
+        ],
+        [
+          769.962,
+          297.524,
+          829.181,
+          562.0
+        ]
+      ],
+      "label_set": [
+        "K",
+        "L",
+        "W"
+      ],
+      "pixel_point_map": {
+        "K": [
+          255.286,
+          554.0
+        ],
+        "L": [
+          690.714,
+          554.0
+        ],
+        "W": [
+          799.571,
+          554.0
+        ]
+      },
+      "pixel_point_set": [
+        [
+          255.286,
+          554.0
+        ],
+        [
+          690.714,
+          554.0
+        ],
+        [
+          799.571,
+          554.0
+        ]
+      ]
     },
     "query_spec": {
       "params": {
-        "category_count": 10,
+        "category_count": 7,
         "category_count_range": [
           5,
           10
         ],
         "comparison": "greater_than",
         "queried_series_labels": [
-          "Gula",
-          "Weed"
+          "Tan",
+          "Dun"
         ],
         "scene_variant": "grouped_bar",
         "scene_variant_probabilities": {
@@ -195,15 +234,15 @@
           2,
           3
         ],
-        "target_answer": 0,
+        "target_answer": 3,
         "target_answer_range": [
           0,
           8
         ],
         "task_variant": "series_a_gt_b_count",
         "task_variant_probabilities": {
-          "series_a_gt_b_count": 0.5,
-          "series_a_lt_b_count": 0.5
+          "series_a_gt_b_count": 1.0,
+          "series_a_lt_b_count": 0.0
         }
       },
       "prompt_variant": {
@@ -218,16 +257,16 @@
           "json_example_answer_only": "{\"answer\":3}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "left_series": "Gula",
+          "left_series": "Tan",
           "object_description": "a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category",
-          "right_series": "Weed"
+          "right_series": "Dun"
         },
         "task_family_key": "multiseries_chart_comparison",
-        "task_family_variant_index": 3,
+        "task_family_variant_index": 4,
         "task_key": "pairwise_comparison_count_query",
-        "task_variant_index": 0,
+        "task_variant_index": 1,
         "task_variant_key": "series_a_gt_b_count",
-        "task_variant_template_index": 4,
+        "task_variant_template_index": 0,
         "template_paths": [
           "charts/multiseries/charts_multiseries_v1.json"
         ],
@@ -253,16 +292,16 @@
               "json_example_answer_only": "{\"answer\":3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "left_series": "Gula",
+              "left_series": "Tan",
               "object_description": "a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category",
-              "right_series": "Weed"
+              "right_series": "Dun"
             },
             "task_family_key": "multiseries_chart_comparison",
-            "task_family_variant_index": 3,
+            "task_family_variant_index": 4,
             "task_key": "pairwise_comparison_count_query",
-            "task_variant_index": 0,
+            "task_variant_index": 1,
             "task_variant_key": "series_a_gt_b_count",
-            "task_variant_template_index": 4,
+            "task_variant_template_index": 0,
             "template_paths": [
               "charts/multiseries/charts_multiseries_v1.json"
             ],
@@ -273,12 +312,12 @@
               "task_variant:series_a_gt_b_count": 5
             }
           },
-          "prompt": "Look at the multiseries chart in the image. It shows a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Compare the two queried series category by category. Find how many category labels show Gula higher than Weed.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}"
+          "prompt": "You are given a multiseries chart: a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Use the chart to compare the queried pair of series across the category labels. Across the labeled categories, in how many categories is Tan higher than Dun?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 4,
+            "answer_or_evidence_variant_index": 0,
             "prompt_bundle_id": "charts_multiseries_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -288,16 +327,16 @@
               "json_example_answer_only": "{\"answer\":3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "left_series": "Gula",
+              "left_series": "Tan",
               "object_description": "a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category",
-              "right_series": "Weed"
+              "right_series": "Dun"
             },
             "task_family_key": "multiseries_chart_comparison",
-            "task_family_variant_index": 3,
+            "task_family_variant_index": 4,
             "task_key": "pairwise_comparison_count_query",
-            "task_variant_index": 0,
+            "task_variant_index": 1,
             "task_variant_key": "series_a_gt_b_count",
-            "task_variant_template_index": 4,
+            "task_variant_template_index": 0,
             "template_paths": [
               "charts/multiseries/charts_multiseries_v1.json"
             ],
@@ -308,7 +347,7 @@
               "task_variant:series_a_gt_b_count": 5
             }
           },
-          "prompt": "Look at the multiseries chart in the image. It shows a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Compare the two queried series category by category. Find how many category labels show Gula higher than Weed.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":3}"
+          "prompt": "You are given a multiseries chart: a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Use the chart to compare the queried pair of series across the category labels. Across the labeled categories, in how many categories is Tan higher than Dun?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":3}"
         }
       },
       "task_variant": "series_a_gt_b_count",
@@ -316,44 +355,32 @@
     },
     "render_map": {
       "category_label_centers_px": {
-        "B": [
-          663.5,
-          554.0
-        ],
-        "C": [
-          358.7,
-          554.0
-        ],
-        "F": [
-          587.3,
-          554.0
-        ],
-        "G": [
-          815.9,
-          554.0
-        ],
-        "H": [
-          434.9,
-          554.0
-        ],
-        "J": [
-          511.1,
+        "K": [
+          255.286,
           554.0
         ],
         "L": [
-          739.7,
+          690.714,
           554.0
         ],
         "P": [
-          282.5,
+          473.0,
           554.0
         ],
-        "T": [
-          130.1,
+        "S": [
+          581.857,
           554.0
         ],
-        "V": [
-          206.3,
+        "U": [
+          364.143,
+          554.0
+        ],
+        "W": [
+          799.571,
+          554.0
+        ],
+        "Z": [
+          146.429,
           554.0
         ]
       },
@@ -395,36 +422,36 @@
         "sampling_policy": "random_rgb_palette",
         "series_fill_palette_rgb": [
           [
-            218,
-            105,
-            217
+            53,
+            5,
+            73
           ],
           [
-            43,
-            59,
-            201
+            157,
+            55,
+            189
           ],
           [
-            113,
-            215,
-            112
+            70,
+            46,
+            13
           ]
         ],
         "series_outline_palette_rgb": [
           [
-            120,
-            58,
-            119
+            29,
+            3,
+            40
           ],
           [
-            24,
-            32,
-            111
+            86,
+            30,
+            104
           ],
           [
-            62,
-            118,
-            62
+            38,
+            25,
+            7
           ]
         ]
       },
@@ -487,1270 +514,896 @@
         {
           "attrs": {
             "category_group_bbox_px": [
-              109.374,
-              159.238,
-              150.826,
+              116.819,
+              182.286,
+              176.038,
               562.0
             ],
-            "category_label": "T",
+            "category_label": "Z",
             "category_label_center_px": [
-              130.1,
+              146.429,
               554.0
             ],
             "category_rank": 0,
             "mark_bbox_px": [
-              109.374,
-              343.619,
-              120.346,
+              116.819,
+              412.762,
+              132.495,
               528.0
             ],
             "mark_center_px": [
-              114.86,
-              343.619
+              124.657,
+              412.762
             ],
             "mark_fill_rgb": [
-              218,
-              105,
-              217
+              53,
+              5,
+              73
             ],
             "mark_outline_rgb": [
-              120,
-              58,
-              119
+              29,
+              3,
+              40
             ],
             "scene_variant": "grouped_bar",
-            "series_label": "Gula",
+            "series_label": "Tan",
             "series_rank": 0,
-            "value": 8
+            "value": 5
           },
-          "entity_id": "mark_T_Gula",
+          "entity_id": "mark_Z_Tan",
           "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              109.374,
-              159.238,
-              150.826,
+              116.819,
+              182.286,
+              176.038,
               562.0
             ],
-            "category_label": "T",
+            "category_label": "Z",
             "category_label_center_px": [
-              130.1,
+              146.429,
               554.0
             ],
             "category_rank": 0,
             "mark_bbox_px": [
-              124.614,
-              159.238,
-              135.586,
-              528.0
-            ],
-            "mark_center_px": [
-              130.1,
-              159.238
-            ],
-            "mark_fill_rgb": [
-              43,
-              59,
-              201
-            ],
-            "mark_outline_rgb": [
-              24,
-              32,
-              111
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Weed",
-            "series_rank": 1,
-            "value": 16
-          },
-          "entity_id": "mark_T_Weed",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              109.374,
-              159.238,
-              150.826,
-              562.0
-            ],
-            "category_label": "T",
-            "category_label_center_px": [
-              130.1,
-              554.0
-            ],
-            "category_rank": 0,
-            "mark_bbox_px": [
-              139.854,
-              251.429,
-              150.826,
-              528.0
-            ],
-            "mark_center_px": [
-              145.34,
-              251.429
-            ],
-            "mark_fill_rgb": [
-              113,
-              215,
-              112
-            ],
-            "mark_outline_rgb": [
-              62,
-              118,
-              62
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Heid",
-            "series_rank": 2,
-            "value": 12
-          },
-          "entity_id": "mark_T_Heid",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              185.574,
-              389.714,
-              227.026,
-              562.0
-            ],
-            "category_label": "V",
-            "category_label_center_px": [
-              206.3,
-              554.0
-            ],
-            "category_rank": 1,
-            "mark_bbox_px": [
-              185.574,
-              504.952,
-              196.546,
-              528.0
-            ],
-            "mark_center_px": [
-              191.06,
-              504.952
-            ],
-            "mark_fill_rgb": [
-              218,
-              105,
-              217
-            ],
-            "mark_outline_rgb": [
-              120,
-              58,
-              119
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Gula",
-            "series_rank": 0,
-            "value": 1
-          },
-          "entity_id": "mark_V_Gula",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              185.574,
-              389.714,
-              227.026,
-              562.0
-            ],
-            "category_label": "V",
-            "category_label_center_px": [
-              206.3,
-              554.0
-            ],
-            "category_rank": 1,
-            "mark_bbox_px": [
-              200.814,
-              389.714,
-              211.786,
-              528.0
-            ],
-            "mark_center_px": [
-              206.3,
-              389.714
-            ],
-            "mark_fill_rgb": [
-              43,
-              59,
-              201
-            ],
-            "mark_outline_rgb": [
-              24,
-              32,
-              111
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Weed",
-            "series_rank": 1,
-            "value": 6
-          },
-          "entity_id": "mark_V_Weed",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              185.574,
-              389.714,
-              227.026,
-              562.0
-            ],
-            "category_label": "V",
-            "category_label_center_px": [
-              206.3,
-              554.0
-            ],
-            "category_rank": 1,
-            "mark_bbox_px": [
-              216.054,
-              458.857,
-              227.026,
-              528.0
-            ],
-            "mark_center_px": [
-              221.54,
-              458.857
-            ],
-            "mark_fill_rgb": [
-              113,
-              215,
-              112
-            ],
-            "mark_outline_rgb": [
-              62,
-              118,
-              62
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Heid",
-            "series_rank": 2,
-            "value": 3
-          },
-          "entity_id": "mark_V_Heid",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              261.774,
-              113.143,
-              303.226,
-              562.0
-            ],
-            "category_label": "P",
-            "category_label_center_px": [
-              282.5,
-              554.0
-            ],
-            "category_rank": 2,
-            "mark_bbox_px": [
-              261.774,
-              481.905,
-              272.746,
-              528.0
-            ],
-            "mark_center_px": [
-              267.26,
-              481.905
-            ],
-            "mark_fill_rgb": [
-              218,
-              105,
-              217
-            ],
-            "mark_outline_rgb": [
-              120,
-              58,
-              119
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Gula",
-            "series_rank": 0,
-            "value": 2
-          },
-          "entity_id": "mark_P_Gula",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              261.774,
-              113.143,
-              303.226,
-              562.0
-            ],
-            "category_label": "P",
-            "category_label_center_px": [
-              282.5,
-              554.0
-            ],
-            "category_rank": 2,
-            "mark_bbox_px": [
-              277.014,
-              113.143,
-              287.986,
-              528.0
-            ],
-            "mark_center_px": [
-              282.5,
-              113.143
-            ],
-            "mark_fill_rgb": [
-              43,
-              59,
-              201
-            ],
-            "mark_outline_rgb": [
-              24,
-              32,
-              111
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Weed",
-            "series_rank": 1,
-            "value": 18
-          },
-          "entity_id": "mark_P_Weed",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              261.774,
-              113.143,
-              303.226,
-              562.0
-            ],
-            "category_label": "P",
-            "category_label_center_px": [
-              282.5,
-              554.0
-            ],
-            "category_rank": 2,
-            "mark_bbox_px": [
-              292.254,
-              458.857,
-              303.226,
-              528.0
-            ],
-            "mark_center_px": [
-              297.74,
-              458.857
-            ],
-            "mark_fill_rgb": [
-              113,
-              215,
-              112
-            ],
-            "mark_outline_rgb": [
-              62,
-              118,
-              62
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Heid",
-            "series_rank": 2,
-            "value": 3
-          },
-          "entity_id": "mark_P_Heid",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              337.974,
-              297.524,
-              379.426,
-              562.0
-            ],
-            "category_label": "C",
-            "category_label_center_px": [
-              358.7,
-              554.0
-            ],
-            "category_rank": 3,
-            "mark_bbox_px": [
-              337.974,
-              435.81,
-              348.946,
-              528.0
-            ],
-            "mark_center_px": [
-              343.46,
-              435.81
-            ],
-            "mark_fill_rgb": [
-              218,
-              105,
-              217
-            ],
-            "mark_outline_rgb": [
-              120,
-              58,
-              119
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Gula",
-            "series_rank": 0,
-            "value": 4
-          },
-          "entity_id": "mark_C_Gula",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              337.974,
-              297.524,
-              379.426,
-              562.0
-            ],
-            "category_label": "C",
-            "category_label_center_px": [
-              358.7,
-              554.0
-            ],
-            "category_rank": 3,
-            "mark_bbox_px": [
-              353.214,
-              297.524,
-              364.186,
-              528.0
-            ],
-            "mark_center_px": [
-              358.7,
-              297.524
-            ],
-            "mark_fill_rgb": [
-              43,
-              59,
-              201
-            ],
-            "mark_outline_rgb": [
-              24,
-              32,
-              111
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Weed",
-            "series_rank": 1,
-            "value": 10
-          },
-          "entity_id": "mark_C_Weed",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              337.974,
-              297.524,
-              379.426,
-              562.0
-            ],
-            "category_label": "C",
-            "category_label_center_px": [
-              358.7,
-              554.0
-            ],
-            "category_rank": 3,
-            "mark_bbox_px": [
-              368.454,
-              389.714,
-              379.426,
-              528.0
-            ],
-            "mark_center_px": [
-              373.94,
-              389.714
-            ],
-            "mark_fill_rgb": [
-              113,
-              215,
-              112
-            ],
-            "mark_outline_rgb": [
-              62,
-              118,
-              62
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Heid",
-            "series_rank": 2,
-            "value": 6
-          },
-          "entity_id": "mark_C_Heid",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              414.174,
-              159.238,
-              455.626,
-              562.0
-            ],
-            "category_label": "H",
-            "category_label_center_px": [
-              434.9,
-              554.0
-            ],
-            "category_rank": 4,
-            "mark_bbox_px": [
-              414.174,
-              504.952,
-              425.146,
-              528.0
-            ],
-            "mark_center_px": [
-              419.66,
-              504.952
-            ],
-            "mark_fill_rgb": [
-              218,
-              105,
-              217
-            ],
-            "mark_outline_rgb": [
-              120,
-              58,
-              119
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Gula",
-            "series_rank": 0,
-            "value": 1
-          },
-          "entity_id": "mark_H_Gula",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              414.174,
-              159.238,
-              455.626,
-              562.0
-            ],
-            "category_label": "H",
-            "category_label_center_px": [
-              434.9,
-              554.0
-            ],
-            "category_rank": 4,
-            "mark_bbox_px": [
-              429.414,
-              159.238,
-              440.386,
-              528.0
-            ],
-            "mark_center_px": [
-              434.9,
-              159.238
-            ],
-            "mark_fill_rgb": [
-              43,
-              59,
-              201
-            ],
-            "mark_outline_rgb": [
-              24,
-              32,
-              111
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Weed",
-            "series_rank": 1,
-            "value": 16
-          },
-          "entity_id": "mark_H_Weed",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              414.174,
-              159.238,
-              455.626,
-              562.0
-            ],
-            "category_label": "H",
-            "category_label_center_px": [
-              434.9,
-              554.0
-            ],
-            "category_rank": 4,
-            "mark_bbox_px": [
-              444.654,
-              320.571,
-              455.626,
-              528.0
-            ],
-            "mark_center_px": [
-              450.14,
-              320.571
-            ],
-            "mark_fill_rgb": [
-              113,
-              215,
-              112
-            ],
-            "mark_outline_rgb": [
-              62,
-              118,
-              62
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Heid",
-            "series_rank": 2,
-            "value": 9
-          },
-          "entity_id": "mark_H_Heid",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              490.374,
-              67.048,
-              531.826,
-              564.0
-            ],
-            "category_label": "J",
-            "category_label_center_px": [
-              511.1,
-              554.0
-            ],
-            "category_rank": 5,
-            "mark_bbox_px": [
-              490.374,
-              504.952,
-              501.346,
-              528.0
-            ],
-            "mark_center_px": [
-              495.86,
-              504.952
-            ],
-            "mark_fill_rgb": [
-              218,
-              105,
-              217
-            ],
-            "mark_outline_rgb": [
-              120,
-              58,
-              119
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Gula",
-            "series_rank": 0,
-            "value": 1
-          },
-          "entity_id": "mark_J_Gula",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              490.374,
-              67.048,
-              531.826,
-              564.0
-            ],
-            "category_label": "J",
-            "category_label_center_px": [
-              511.1,
-              554.0
-            ],
-            "category_rank": 5,
-            "mark_bbox_px": [
-              505.614,
-              67.048,
-              516.586,
-              528.0
-            ],
-            "mark_center_px": [
-              511.1,
-              67.048
-            ],
-            "mark_fill_rgb": [
-              43,
-              59,
-              201
-            ],
-            "mark_outline_rgb": [
-              24,
-              32,
-              111
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Weed",
-            "series_rank": 1,
-            "value": 20
-          },
-          "entity_id": "mark_J_Weed",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              490.374,
-              67.048,
-              531.826,
-              564.0
-            ],
-            "category_label": "J",
-            "category_label_center_px": [
-              511.1,
-              554.0
-            ],
-            "category_rank": 5,
-            "mark_bbox_px": [
-              520.854,
-              435.81,
-              531.826,
-              528.0
-            ],
-            "mark_center_px": [
-              526.34,
-              435.81
-            ],
-            "mark_fill_rgb": [
-              113,
-              215,
-              112
-            ],
-            "mark_outline_rgb": [
-              62,
-              118,
-              62
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Heid",
-            "series_rank": 2,
-            "value": 4
-          },
-          "entity_id": "mark_J_Heid",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              566.574,
+              138.591,
               182.286,
-              608.026,
-              562.0
-            ],
-            "category_label": "F",
-            "category_label_center_px": [
-              587.3,
-              554.0
-            ],
-            "category_rank": 6,
-            "mark_bbox_px": [
-              566.574,
-              435.81,
-              577.546,
+              154.266,
               528.0
             ],
             "mark_center_px": [
-              572.06,
-              435.81
-            ],
-            "mark_fill_rgb": [
-              218,
-              105,
-              217
-            ],
-            "mark_outline_rgb": [
-              120,
-              58,
-              119
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Gula",
-            "series_rank": 0,
-            "value": 4
-          },
-          "entity_id": "mark_F_Gula",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              566.574,
-              182.286,
-              608.026,
-              562.0
-            ],
-            "category_label": "F",
-            "category_label_center_px": [
-              587.3,
-              554.0
-            ],
-            "category_rank": 6,
-            "mark_bbox_px": [
-              581.814,
-              182.286,
-              592.786,
-              528.0
-            ],
-            "mark_center_px": [
-              587.3,
+              146.429,
               182.286
             ],
             "mark_fill_rgb": [
-              43,
-              59,
-              201
+              157,
+              55,
+              189
             ],
             "mark_outline_rgb": [
-              24,
-              32,
-              111
+              86,
+              30,
+              104
             ],
             "scene_variant": "grouped_bar",
-            "series_label": "Weed",
+            "series_label": "Dun",
             "series_rank": 1,
             "value": 15
           },
-          "entity_id": "mark_F_Weed",
+          "entity_id": "mark_Z_Dun",
           "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              566.574,
+              116.819,
               182.286,
-              608.026,
+              176.038,
               562.0
             ],
-            "category_label": "F",
+            "category_label": "Z",
             "category_label_center_px": [
-              587.3,
+              146.429,
+              554.0
+            ],
+            "category_rank": 0,
+            "mark_bbox_px": [
+              160.362,
+              343.619,
+              176.038,
+              528.0
+            ],
+            "mark_center_px": [
+              168.2,
+              343.619
+            ],
+            "mark_fill_rgb": [
+              70,
+              46,
+              13
+            ],
+            "mark_outline_rgb": [
+              38,
+              25,
+              7
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Also",
+            "series_rank": 2,
+            "value": 8
+          },
+          "entity_id": "mark_Z_Also",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              225.677,
+              136.19,
+              284.895,
+              562.0
+            ],
+            "category_label": "K",
+            "category_label_center_px": [
+              255.286,
+              554.0
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              225.677,
+              136.19,
+              241.352,
+              528.0
+            ],
+            "mark_center_px": [
+              233.514,
+              136.19
+            ],
+            "mark_fill_rgb": [
+              53,
+              5,
+              73
+            ],
+            "mark_outline_rgb": [
+              29,
+              3,
+              40
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Tan",
+            "series_rank": 0,
+            "value": 17
+          },
+          "entity_id": "mark_K_Tan",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              225.677,
+              136.19,
+              284.895,
+              562.0
+            ],
+            "category_label": "K",
+            "category_label_center_px": [
+              255.286,
+              554.0
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              247.448,
+              504.952,
+              263.123,
+              528.0
+            ],
+            "mark_center_px": [
+              255.286,
+              504.952
+            ],
+            "mark_fill_rgb": [
+              157,
+              55,
+              189
+            ],
+            "mark_outline_rgb": [
+              86,
+              30,
+              104
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Dun",
+            "series_rank": 1,
+            "value": 1
+          },
+          "entity_id": "mark_K_Dun",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              225.677,
+              136.19,
+              284.895,
+              562.0
+            ],
+            "category_label": "K",
+            "category_label_center_px": [
+              255.286,
+              554.0
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              269.219,
+              481.905,
+              284.895,
+              528.0
+            ],
+            "mark_center_px": [
+              277.057,
+              481.905
+            ],
+            "mark_fill_rgb": [
+              70,
+              46,
+              13
+            ],
+            "mark_outline_rgb": [
+              38,
+              25,
+              7
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Also",
+            "series_rank": 2,
+            "value": 2
+          },
+          "entity_id": "mark_K_Also",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              334.534,
+              320.571,
+              393.752,
+              562.0
+            ],
+            "category_label": "U",
+            "category_label_center_px": [
+              364.143,
+              554.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              334.534,
+              504.952,
+              350.209,
+              528.0
+            ],
+            "mark_center_px": [
+              342.371,
+              504.952
+            ],
+            "mark_fill_rgb": [
+              53,
+              5,
+              73
+            ],
+            "mark_outline_rgb": [
+              29,
+              3,
+              40
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Tan",
+            "series_rank": 0,
+            "value": 1
+          },
+          "entity_id": "mark_U_Tan",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              334.534,
+              320.571,
+              393.752,
+              562.0
+            ],
+            "category_label": "U",
+            "category_label_center_px": [
+              364.143,
+              554.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              356.305,
+              320.571,
+              371.981,
+              528.0
+            ],
+            "mark_center_px": [
+              364.143,
+              320.571
+            ],
+            "mark_fill_rgb": [
+              157,
+              55,
+              189
+            ],
+            "mark_outline_rgb": [
+              86,
+              30,
+              104
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Dun",
+            "series_rank": 1,
+            "value": 9
+          },
+          "entity_id": "mark_U_Dun",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              334.534,
+              320.571,
+              393.752,
+              562.0
+            ],
+            "category_label": "U",
+            "category_label_center_px": [
+              364.143,
+              554.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              378.077,
+              366.667,
+              393.752,
+              528.0
+            ],
+            "mark_center_px": [
+              385.914,
+              366.667
+            ],
+            "mark_fill_rgb": [
+              70,
+              46,
+              13
+            ],
+            "mark_outline_rgb": [
+              38,
+              25,
+              7
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Also",
+            "series_rank": 2,
+            "value": 7
+          },
+          "entity_id": "mark_U_Also",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              443.391,
+              67.048,
+              502.609,
+              562.0
+            ],
+            "category_label": "P",
+            "category_label_center_px": [
+              473.0,
+              554.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              443.391,
+              320.571,
+              459.066,
+              528.0
+            ],
+            "mark_center_px": [
+              451.229,
+              320.571
+            ],
+            "mark_fill_rgb": [
+              53,
+              5,
+              73
+            ],
+            "mark_outline_rgb": [
+              29,
+              3,
+              40
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Tan",
+            "series_rank": 0,
+            "value": 9
+          },
+          "entity_id": "mark_P_Tan",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              443.391,
+              67.048,
+              502.609,
+              562.0
+            ],
+            "category_label": "P",
+            "category_label_center_px": [
+              473.0,
+              554.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              465.162,
+              67.048,
+              480.838,
+              528.0
+            ],
+            "mark_center_px": [
+              473.0,
+              67.048
+            ],
+            "mark_fill_rgb": [
+              157,
+              55,
+              189
+            ],
+            "mark_outline_rgb": [
+              86,
+              30,
+              104
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Dun",
+            "series_rank": 1,
+            "value": 20
+          },
+          "entity_id": "mark_P_Dun",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              443.391,
+              67.048,
+              502.609,
+              562.0
+            ],
+            "category_label": "P",
+            "category_label_center_px": [
+              473.0,
+              554.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              486.934,
+              205.333,
+              502.609,
+              528.0
+            ],
+            "mark_center_px": [
+              494.771,
+              205.333
+            ],
+            "mark_fill_rgb": [
+              70,
+              46,
+              13
+            ],
+            "mark_outline_rgb": [
+              38,
+              25,
+              7
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Also",
+            "series_rank": 2,
+            "value": 14
+          },
+          "entity_id": "mark_P_Also",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              552.248,
+              159.238,
+              611.466,
+              562.0
+            ],
+            "category_label": "S",
+            "category_label_center_px": [
+              581.857,
+              554.0
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              552.248,
+              481.905,
+              567.923,
+              528.0
+            ],
+            "mark_center_px": [
+              560.086,
+              481.905
+            ],
+            "mark_fill_rgb": [
+              53,
+              5,
+              73
+            ],
+            "mark_outline_rgb": [
+              29,
+              3,
+              40
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Tan",
+            "series_rank": 0,
+            "value": 2
+          },
+          "entity_id": "mark_S_Tan",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              552.248,
+              159.238,
+              611.466,
+              562.0
+            ],
+            "category_label": "S",
+            "category_label_center_px": [
+              581.857,
+              554.0
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              574.019,
+              159.238,
+              589.695,
+              528.0
+            ],
+            "mark_center_px": [
+              581.857,
+              159.238
+            ],
+            "mark_fill_rgb": [
+              157,
+              55,
+              189
+            ],
+            "mark_outline_rgb": [
+              86,
+              30,
+              104
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Dun",
+            "series_rank": 1,
+            "value": 16
+          },
+          "entity_id": "mark_S_Dun",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              552.248,
+              159.238,
+              611.466,
+              562.0
+            ],
+            "category_label": "S",
+            "category_label_center_px": [
+              581.857,
+              554.0
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              595.791,
+              435.81,
+              611.466,
+              528.0
+            ],
+            "mark_center_px": [
+              603.629,
+              435.81
+            ],
+            "mark_fill_rgb": [
+              70,
+              46,
+              13
+            ],
+            "mark_outline_rgb": [
+              38,
+              25,
+              7
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Also",
+            "series_rank": 2,
+            "value": 4
+          },
+          "entity_id": "mark_S_Also",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              661.105,
+              182.286,
+              720.323,
+              562.0
+            ],
+            "category_label": "L",
+            "category_label_center_px": [
+              690.714,
+              554.0
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              661.105,
+              182.286,
+              676.781,
+              528.0
+            ],
+            "mark_center_px": [
+              668.943,
+              182.286
+            ],
+            "mark_fill_rgb": [
+              53,
+              5,
+              73
+            ],
+            "mark_outline_rgb": [
+              29,
+              3,
+              40
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Tan",
+            "series_rank": 0,
+            "value": 15
+          },
+          "entity_id": "mark_L_Tan",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              661.105,
+              182.286,
+              720.323,
+              562.0
+            ],
+            "category_label": "L",
+            "category_label_center_px": [
+              690.714,
+              554.0
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              682.877,
+              274.476,
+              698.552,
+              528.0
+            ],
+            "mark_center_px": [
+              690.714,
+              274.476
+            ],
+            "mark_fill_rgb": [
+              157,
+              55,
+              189
+            ],
+            "mark_outline_rgb": [
+              86,
+              30,
+              104
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Dun",
+            "series_rank": 1,
+            "value": 11
+          },
+          "entity_id": "mark_L_Dun",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              661.105,
+              182.286,
+              720.323,
+              562.0
+            ],
+            "category_label": "L",
+            "category_label_center_px": [
+              690.714,
+              554.0
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              704.648,
+              205.333,
+              720.323,
+              528.0
+            ],
+            "mark_center_px": [
+              712.486,
+              205.333
+            ],
+            "mark_fill_rgb": [
+              70,
+              46,
+              13
+            ],
+            "mark_outline_rgb": [
+              38,
+              25,
+              7
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Also",
+            "series_rank": 2,
+            "value": 14
+          },
+          "entity_id": "mark_L_Also",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              769.962,
+              297.524,
+              829.181,
+              562.0
+            ],
+            "category_label": "W",
+            "category_label_center_px": [
+              799.571,
               554.0
             ],
             "category_rank": 6,
             "mark_bbox_px": [
-              597.054,
-              205.333,
-              608.026,
-              528.0
-            ],
-            "mark_center_px": [
-              602.54,
-              205.333
-            ],
-            "mark_fill_rgb": [
-              113,
-              215,
-              112
-            ],
-            "mark_outline_rgb": [
-              62,
-              118,
-              62
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Heid",
-            "series_rank": 2,
-            "value": 14
-          },
-          "entity_id": "mark_F_Heid",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              642.774,
-              320.571,
-              684.226,
-              562.0
-            ],
-            "category_label": "B",
-            "category_label_center_px": [
-              663.5,
-              554.0
-            ],
-            "category_rank": 7,
-            "mark_bbox_px": [
-              642.774,
-              366.667,
-              653.746,
-              528.0
-            ],
-            "mark_center_px": [
-              648.26,
-              366.667
-            ],
-            "mark_fill_rgb": [
-              218,
-              105,
-              217
-            ],
-            "mark_outline_rgb": [
-              120,
-              58,
-              119
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Gula",
-            "series_rank": 0,
-            "value": 7
-          },
-          "entity_id": "mark_B_Gula",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              642.774,
-              320.571,
-              684.226,
-              562.0
-            ],
-            "category_label": "B",
-            "category_label_center_px": [
-              663.5,
-              554.0
-            ],
-            "category_rank": 7,
-            "mark_bbox_px": [
-              658.014,
-              320.571,
-              668.986,
-              528.0
-            ],
-            "mark_center_px": [
-              663.5,
-              320.571
-            ],
-            "mark_fill_rgb": [
-              43,
-              59,
-              201
-            ],
-            "mark_outline_rgb": [
-              24,
-              32,
-              111
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Weed",
-            "series_rank": 1,
-            "value": 9
-          },
-          "entity_id": "mark_B_Weed",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              642.774,
-              320.571,
-              684.226,
-              562.0
-            ],
-            "category_label": "B",
-            "category_label_center_px": [
-              663.5,
-              554.0
-            ],
-            "category_rank": 7,
-            "mark_bbox_px": [
-              673.254,
-              343.619,
-              684.226,
-              528.0
-            ],
-            "mark_center_px": [
-              678.74,
-              343.619
-            ],
-            "mark_fill_rgb": [
-              113,
-              215,
-              112
-            ],
-            "mark_outline_rgb": [
-              62,
-              118,
-              62
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Heid",
-            "series_rank": 2,
-            "value": 8
-          },
-          "entity_id": "mark_B_Heid",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              718.974,
-              136.19,
-              760.426,
-              562.0
-            ],
-            "category_label": "L",
-            "category_label_center_px": [
-              739.7,
-              554.0
-            ],
-            "category_rank": 8,
-            "mark_bbox_px": [
-              718.974,
-              343.619,
-              729.946,
-              528.0
-            ],
-            "mark_center_px": [
-              724.46,
-              343.619
-            ],
-            "mark_fill_rgb": [
-              218,
-              105,
-              217
-            ],
-            "mark_outline_rgb": [
-              120,
-              58,
-              119
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Gula",
-            "series_rank": 0,
-            "value": 8
-          },
-          "entity_id": "mark_L_Gula",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              718.974,
-              136.19,
-              760.426,
-              562.0
-            ],
-            "category_label": "L",
-            "category_label_center_px": [
-              739.7,
-              554.0
-            ],
-            "category_rank": 8,
-            "mark_bbox_px": [
-              734.214,
-              136.19,
-              745.186,
-              528.0
-            ],
-            "mark_center_px": [
-              739.7,
-              136.19
-            ],
-            "mark_fill_rgb": [
-              43,
-              59,
-              201
-            ],
-            "mark_outline_rgb": [
-              24,
-              32,
-              111
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Weed",
-            "series_rank": 1,
-            "value": 17
-          },
-          "entity_id": "mark_L_Weed",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              718.974,
-              136.19,
-              760.426,
-              562.0
-            ],
-            "category_label": "L",
-            "category_label_center_px": [
-              739.7,
-              554.0
-            ],
-            "category_rank": 8,
-            "mark_bbox_px": [
-              749.454,
+              769.962,
               297.524,
-              760.426,
+              785.638,
               528.0
             ],
             "mark_center_px": [
-              754.94,
+              777.8,
               297.524
             ],
             "mark_fill_rgb": [
-              113,
-              215,
-              112
+              53,
+              5,
+              73
             ],
             "mark_outline_rgb": [
-              62,
-              118,
-              62
+              29,
+              3,
+              40
             ],
             "scene_variant": "grouped_bar",
-            "series_label": "Heid",
-            "series_rank": 2,
+            "series_label": "Tan",
+            "series_rank": 0,
             "value": 10
           },
-          "entity_id": "mark_L_Heid",
+          "entity_id": "mark_W_Tan",
           "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              795.174,
-              136.19,
-              836.626,
+              769.962,
+              297.524,
+              829.181,
               562.0
             ],
-            "category_label": "G",
+            "category_label": "W",
             "category_label_center_px": [
-              815.9,
+              799.571,
               554.0
             ],
-            "category_rank": 9,
+            "category_rank": 6,
             "mark_bbox_px": [
-              795.174,
-              435.81,
-              806.146,
+              791.734,
+              504.952,
+              807.409,
               528.0
             ],
             "mark_center_px": [
-              800.66,
+              799.571,
+              504.952
+            ],
+            "mark_fill_rgb": [
+              157,
+              55,
+              189
+            ],
+            "mark_outline_rgb": [
+              86,
+              30,
+              104
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Dun",
+            "series_rank": 1,
+            "value": 1
+          },
+          "entity_id": "mark_W_Dun",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              769.962,
+              297.524,
+              829.181,
+              562.0
+            ],
+            "category_label": "W",
+            "category_label_center_px": [
+              799.571,
+              554.0
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              813.505,
+              435.81,
+              829.181,
+              528.0
+            ],
+            "mark_center_px": [
+              821.343,
               435.81
             ],
             "mark_fill_rgb": [
-              218,
-              105,
-              217
+              70,
+              46,
+              13
             ],
             "mark_outline_rgb": [
-              120,
-              58,
-              119
+              38,
+              25,
+              7
             ],
             "scene_variant": "grouped_bar",
-            "series_label": "Gula",
-            "series_rank": 0,
+            "series_label": "Also",
+            "series_rank": 2,
             "value": 4
           },
-          "entity_id": "mark_G_Gula",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              795.174,
-              136.19,
-              836.626,
-              562.0
-            ],
-            "category_label": "G",
-            "category_label_center_px": [
-              815.9,
-              554.0
-            ],
-            "category_rank": 9,
-            "mark_bbox_px": [
-              810.414,
-              136.19,
-              821.386,
-              528.0
-            ],
-            "mark_center_px": [
-              815.9,
-              136.19
-            ],
-            "mark_fill_rgb": [
-              43,
-              59,
-              201
-            ],
-            "mark_outline_rgb": [
-              24,
-              32,
-              111
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Weed",
-            "series_rank": 1,
-            "value": 17
-          },
-          "entity_id": "mark_G_Weed",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              795.174,
-              136.19,
-              836.626,
-              562.0
-            ],
-            "category_label": "G",
-            "category_label_center_px": [
-              815.9,
-              554.0
-            ],
-            "category_rank": 9,
-            "mark_bbox_px": [
-              825.654,
-              320.571,
-              836.626,
-              528.0
-            ],
-            "mark_center_px": [
-              831.14,
-              320.571
-            ],
-            "mark_fill_rgb": [
-              113,
-              215,
-              112
-            ],
-            "mark_outline_rgb": [
-              62,
-              118,
-              62
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Heid",
-            "series_rank": 2,
-            "value": 9
-          },
-          "entity_id": "mark_G_Heid",
+          "entity_id": "mark_W_Also",
           "entity_type": "bar"
         }
       ],
       "relations": {
         "comparison": "greater_than",
-        "evidence_labels": [],
+        "evidence_labels": [
+          "K",
+          "L",
+          "W"
+        ],
         "queried_series_labels": [
-          "Gula",
-          "Weed"
+          "Tan",
+          "Dun"
         ],
         "scene_variant": "grouped_bar",
         "task_variant": "series_a_gt_b_count"
@@ -1758,7 +1411,11 @@
       "scene_kind": "chart_grouped_bar_multiseries"
     },
     "witness_symbolic": {
-      "labels": [],
+      "labels": [
+        "K",
+        "L",
+        "W"
+      ],
       "type": "label_set"
     }
   },

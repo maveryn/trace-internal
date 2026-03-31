@@ -1,24 +1,24 @@
 {
   "answer_gt": {
     "type": "number",
-    "value": 41.0
+    "value": 31.9
   },
   "evidence_gt": {
     "type": "measurement_ref_map",
     "value": {
-      "BE": 28,
-      "DE": 30
+      "HK": 17,
+      "JK": 27
     }
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_2d_value/images/length/0008.png"
   },
-  "instance_seed": 8442811187003988,
-  "prompt": "Work from the annotated scene showing a geometric scene with measurement annotations. Question: The triangle includes an altitude to the base. What is the length of segment BD?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: DE, BE.\nAnswer rule: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"DE\":2,\"BE\":3},\"answer\":42.3}",
+  "instance_seed": 3337701528277021,
+  "prompt": "Work from the annotated scene showing a geometric scene with measurement annotations. Task: The triangle includes an altitude to the base. What is the length of segment HJ?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: JK, HK.\nAnswer requirement: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"JK\":2,\"HK\":3},\"answer\":42.3}",
   "prompt_variants": {
-    "answer_and_evidence": "Work from the annotated scene showing a geometric scene with measurement annotations. Question: The triangle includes an altitude to the base. What is the length of segment BD?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: DE, BE.\nAnswer rule: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"DE\":2,\"BE\":3},\"answer\":42.3}",
-    "answer_only": "Work from the annotated scene showing a geometric scene with measurement annotations. Question: The triangle includes an altitude to the base. What is the length of segment BD?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"answer\":42.3}"
+    "answer_and_evidence": "Work from the annotated scene showing a geometric scene with measurement annotations. Task: The triangle includes an altitude to the base. What is the length of segment HJ?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: JK, HK.\nAnswer requirement: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"JK\":2,\"HK\":3},\"answer\":42.3}",
+    "answer_only": "Work from the annotated scene showing a geometric scene with measurement annotations. Task: The triangle includes an altitude to the base. What is the length of segment HJ?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"answer\":42.3}"
   },
   "task": "task_geometry_analytical_2d_value",
   "task_variant": "length",
@@ -26,20 +26,20 @@
     "execution_trace": {
       "answer_max": 100,
       "answer_min": 3,
-      "answer_scalar": 410,
+      "answer_scalar": 319,
       "answer_type": "number",
-      "answer_value": 41.0,
+      "answer_value": 31.9,
       "evidence_map": {
-        "BE": 28,
-        "DE": 30
+        "HK": 17,
+        "JK": 27
       },
       "evidence_role_tokens": {
-        "base_part": "BE",
-        "height": "DE"
+        "base_part": "HK",
+        "height": "JK"
       },
       "evidence_role_values": {
-        "base_part": 28,
-        "height": 30
+        "base_part": 17,
+        "height": 27
       },
       "evidence_roles": [
         "height",
@@ -56,10 +56,10 @@
         "length": 1.0,
         "perimeter": 0.0
       },
-      "raw_answer_value": 41.036569057366385,
+      "raw_answer_value": 31.906112267087632,
       "required_annotations": [
-        "DE",
-        "BE"
+        "JK",
+        "HK"
       ],
       "scene_variant": "triangle",
       "scene_variant_probabilities": {
@@ -72,7 +72,7 @@
         "trapezoid": 0.2,
         "triangle": 0.2
       },
-      "target_annotation": "BD",
+      "target_annotation": "HJ",
       "task_variant": "length",
       "task_variant_probabilities": {
         "area": 0.0,
@@ -91,35 +91,35 @@
     },
     "projected_evidence": {
       "annotation_labels": {
-        "base_part": "BE",
-        "height": "DE"
+        "base_part": "HK",
+        "height": "JK"
       },
       "id_set": [
-        "DE",
-        "BE"
+        "JK",
+        "HK"
       ],
       "measurement_ref_map": {
-        "BE": 28,
-        "DE": 30
+        "HK": 17,
+        "JK": 27
       },
       "pixel_annotation_centers": {
-        "BE": [
-          259.56578947368416,
-          529.5428052550936
+        "HK": [
+          190.33972222222215,
+          488.6982253505487
         ],
-        "DE": [
-          450.51491228070176,
-          337.1401736761463
+        "JK": [
+          259.27611111111105,
+          315.3090586838821
         ]
       },
       "pixel_point_set": [
         [
-          450.51491228070176,
-          337.1401736761463
+          259.27611111111105,
+          315.3090586838821
         ],
         [
-          259.56578947368416,
-          529.5428052550936
+          190.33972222222215,
+          488.6982253505487
         ]
       ]
     },
@@ -158,23 +158,23 @@
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 4,
+        "answer_or_evidence_variant_index": 2,
         "prompt_bundle_id": "geometry_analytical_length_v1",
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the length value rounded to one decimal place",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: DE, BE",
-          "json_example": "{\"evidence\":{\"DE\":2,\"BE\":3},\"answer\":42.3}",
+          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: JK, HK",
+          "json_example": "{\"evidence\":{\"JK\":2,\"HK\":3},\"answer\":42.3}",
           "json_example_answer_only": "{\"answer\":42.3}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
           "object_description": "a geometric scene with measurement annotations",
-          "question_text": "The triangle includes an altitude to the base. What is the length of segment BD?"
+          "question_text": "The triangle includes an altitude to the base. What is the length of segment HJ?"
         },
         "task_family_key": "analytical_length_scene",
         "task_family_variant_index": 4,
         "task_key": "analytical_length_query",
-        "task_variant_index": 1,
+        "task_variant_index": 2,
         "task_variant_key": null,
         "task_variant_template_index": null,
         "template_paths": [
@@ -191,23 +191,23 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 4,
+            "answer_or_evidence_variant_index": 2,
             "prompt_bundle_id": "geometry_analytical_length_v1",
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the length value rounded to one decimal place",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: DE, BE",
-              "json_example": "{\"evidence\":{\"DE\":2,\"BE\":3},\"answer\":42.3}",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: JK, HK",
+              "json_example": "{\"evidence\":{\"JK\":2,\"HK\":3},\"answer\":42.3}",
               "json_example_answer_only": "{\"answer\":42.3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a geometric scene with measurement annotations",
-              "question_text": "The triangle includes an altitude to the base. What is the length of segment BD?"
+              "question_text": "The triangle includes an altitude to the base. What is the length of segment HJ?"
             },
             "task_family_key": "analytical_length_scene",
             "task_family_variant_index": 4,
             "task_key": "analytical_length_query",
-            "task_variant_index": 1,
+            "task_variant_index": 2,
             "task_variant_key": null,
             "task_variant_template_index": null,
             "template_paths": [
@@ -219,28 +219,28 @@
               "task_family:analytical_length_scene": 5
             }
           },
-          "prompt": "Work from the annotated scene showing a geometric scene with measurement annotations. Question: The triangle includes an altitude to the base. What is the length of segment BD?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: DE, BE.\nAnswer rule: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"DE\":2,\"BE\":3},\"answer\":42.3}"
+          "prompt": "Work from the annotated scene showing a geometric scene with measurement annotations. Task: The triangle includes an altitude to the base. What is the length of segment HJ?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: JK, HK.\nAnswer requirement: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"JK\":2,\"HK\":3},\"answer\":42.3}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 2,
+            "answer_or_evidence_variant_index": 4,
             "prompt_bundle_id": "geometry_analytical_length_v1",
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the length value rounded to one decimal place",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: DE, BE",
-              "json_example": "{\"evidence\":{\"DE\":2,\"BE\":3},\"answer\":42.3}",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: JK, HK",
+              "json_example": "{\"evidence\":{\"JK\":2,\"HK\":3},\"answer\":42.3}",
               "json_example_answer_only": "{\"answer\":42.3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a geometric scene with measurement annotations",
-              "question_text": "The triangle includes an altitude to the base. What is the length of segment BD?"
+              "question_text": "The triangle includes an altitude to the base. What is the length of segment HJ?"
             },
             "task_family_key": "analytical_length_scene",
             "task_family_variant_index": 4,
             "task_key": "analytical_length_query",
-            "task_variant_index": 1,
+            "task_variant_index": 2,
             "task_variant_key": null,
             "task_variant_template_index": null,
             "template_paths": [
@@ -252,7 +252,7 @@
               "task_family:analytical_length_scene": 5
             }
           },
-          "prompt": "Work from the annotated scene showing a geometric scene with measurement annotations. Question: The triangle includes an altitude to the base. What is the length of segment BD?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"answer\":42.3}"
+          "prompt": "Work from the annotated scene showing a geometric scene with measurement annotations. Task: The triangle includes an altitude to the base. What is the length of segment HJ?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"answer\":42.3}"
         }
       },
       "task_variant": "length",
@@ -260,26 +260,26 @@
     },
     "render_map": {
       "annotation_centers": {
-        "BE": [
-          259.56578947368416,
-          529.5428052550936
+        "HK": [
+          190.33972222222215,
+          488.6982253505487
         ],
-        "DE": [
-          450.51491228070176,
-          337.1401736761463
+        "JK": [
+          259.27611111111105,
+          315.3090586838821
         ]
       },
       "annotation_labels": {
-        "base_part": "BE",
-        "height": "DE"
+        "base_part": "HK",
+        "height": "JK"
       },
       "coord_space": "pixel",
       "instance_anchor": {
         "bbox": [
-          97.34999999999997,
-          163.33754209719888,
-          537.65,
-          510.9428052550937
+          92.66999999999999,
+          160.18655868388208,
+          506.3299999999999,
+          470.43155868388203
         ],
         "coord_space": "pixel"
       }
@@ -294,31 +294,33 @@
         ],
         "enabled": true,
         "render_scale": 3,
-        "selected_style": "solid_offwhite",
+        "selected_style": "solid_warm",
         "style_spec": {
           "color": [
             252,
-            252,
-            252
+            249,
+            245
           ],
           "kind": "solid"
         }
       },
-      "canvas_size": 635,
+      "canvas_size": 599,
       "coord_space": "pixel",
       "graph_coordinate_frame": {
         "coord_space": "graph_unit",
         "full_cells_x": 10,
         "full_cells_y": 10,
+        "origin_fraction_x": 0.5,
+        "origin_fraction_y": 0.5,
         "origin_pixel": [
-          317,
-          317
+          299,
+          299
         ],
         "outer_margin_px": 16,
         "partial_edge_cells": true,
-        "spacing_px": 53,
-        "target_cells_x": 12,
-        "target_cells_y": 12,
+        "spacing_px": 54,
+        "target_cells_x": 11,
+        "target_cells_y": 11,
         "x_positive": "right",
         "y_positive": "up"
       },
@@ -326,9 +328,9 @@
         "full_cells_x": 10,
         "full_cells_y": 10,
         "partial_edge_cells": true,
-        "spacing_px": 53,
-        "target_cells_x": 12,
-        "target_cells_y": 12
+        "spacing_px": 54,
+        "target_cells_x": 11,
+        "target_cells_y": 11
       },
       "legacy_scene_variant": "triangle",
       "post_image_noise": {
@@ -351,19 +353,19 @@
       "scene_variant": "triangle",
       "shape_style": {
         "label_color": [
-          87,
-          31,
-          150
+          134,
+          84,
+          31
         ],
         "label_stroke_color": [
-          255,
-          251,
-          252
+          254,
+          249,
+          253
         ],
         "line_color": [
-          87,
-          31,
-          150
+          134,
+          84,
+          31
         ]
       }
     },
@@ -373,16 +375,16 @@
           "attrs": {
             "vertices": [
               [
-                97.34999999999997,
-                510.9428052550937
+                92.66999999999999,
+                470.43155868388203
               ],
               [
-                537.65,
-                510.9428052550937
+                506.3299999999999,
+                470.43155868388203
               ],
               [
-                421.7815789473684,
-                163.33754209719888
+                288.0094444444444,
+                160.18655868388208
               ]
             ]
           },
@@ -393,12 +395,12 @@
           "attrs": {
             "helper": true,
             "point_a": [
-              421.7815789473684,
-              163.33754209719888
+              288.0094444444444,
+              160.18655868388208
             ],
             "point_b": [
-              421.7815789473684,
-              510.9428052550937
+              288.0094444444444,
+              470.43155868388203
             ]
           },
           "entity_id": "altitude_1",
@@ -408,10 +410,10 @@
       "frames": {
         "graph_unit": {
           "origin_pixel": [
-            317,
-            317
+            299,
+            299
           ],
-          "spacing_px": 53,
+          "spacing_px": 54,
           "x_positive": "right",
           "y_positive": "up"
         },
@@ -435,21 +437,21 @@
     },
     "witness_symbolic": {
       "annotation_ids": [
-        "DE",
-        "BE"
+        "JK",
+        "HK"
       ],
       "annotation_labels": {
-        "base_part": "BE",
-        "height": "DE"
+        "base_part": "HK",
+        "height": "JK"
       },
       "annotation_values": {
-        "BE": 28,
-        "DE": 30
+        "HK": 17,
+        "JK": 27
       },
       "formula_expression": "sqrt(height^2 + base_part^2)",
       "measurement_ref_map": {
-        "BE": 28,
-        "DE": 30
+        "HK": 17,
+        "JK": 27
       },
       "task_variant": "triangle_altitude_side",
       "type": "annotation_measurement_map"

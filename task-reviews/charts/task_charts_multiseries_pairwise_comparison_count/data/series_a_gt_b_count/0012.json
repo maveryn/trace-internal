@@ -6,111 +6,101 @@
   "evidence_gt": {
     "type": "label_set",
     "value": [
+      "A",
       "E",
-      "F",
-      "L",
+      "H",
       "N",
-      "P"
+      "Q"
     ]
   },
   "image": {
     "format": "png",
     "path": "charts/task_charts_multiseries_pairwise_comparison_count/images/series_a_gt_b_count/0012.png"
   },
-  "instance_seed": 3418985762887963,
-  "prompt": "Work from the multiseries chart shown in the image: a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Compare the two queried series category by category. Count the category labels where Jojo exceeds Cai.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer requirement: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
+  "instance_seed": 2823466887483938,
+  "prompt": "Work from the multiseries chart shown in the image: a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Work category by category and count the labels where the requested series comparison is true. Find how many category labels show Iris higher than Tyne.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer requirement: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
   "prompt_variants": {
-    "answer_and_evidence": "Work from the multiseries chart shown in the image: a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Compare the two queried series category by category. Count the category labels where Jojo exceeds Cai.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer requirement: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
-    "answer_only": "Work from the multiseries chart shown in the image: a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Compare the two queried series category by category. Count the category labels where Jojo exceeds Cai.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":3}"
+    "answer_and_evidence": "Work from the multiseries chart shown in the image: a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Work category by category and count the labels where the requested series comparison is true. Find how many category labels show Iris higher than Tyne.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer requirement: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
+    "answer_only": "Work from the multiseries chart shown in the image: a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Work category by category and count the labels where the requested series comparison is true. Find how many category labels show Iris higher than Tyne.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":3}"
   },
   "task": "task_charts_multiseries_pairwise_comparison_count",
   "task_variant": "series_a_gt_b_count",
   "trace_payload": {
     "execution_trace": {
       "answer_value": 5,
-      "category_count": 9,
+      "category_count": 10,
       "category_count_range": [
         5,
         10
       ],
       "category_labels": [
-        "E",
-        "C",
-        "N",
-        "F",
-        "L",
-        "P",
-        "J",
         "X",
-        "Q"
+        "V",
+        "H",
+        "Q",
+        "A",
+        "S",
+        "E",
+        "D",
+        "N",
+        "L"
       ],
       "comparison": "greater_than",
       "evidence_labels": [
+        "A",
         "E",
-        "F",
-        "L",
+        "H",
         "N",
-        "P"
+        "Q"
       ],
-      "left_series_label": "Jojo",
+      "left_series_label": "Iris",
       "mark_color_distance_space": "lab",
       "mark_color_min_distance": 40.0,
       "mark_color_sampling_policy": "random_rgb_palette",
       "queried_series_labels": [
-        "Jojo",
-        "Cai"
+        "Iris",
+        "Tyne"
       ],
       "question_format": "numeric_open",
-      "right_series_label": "Cai",
-      "scene_variant": "grouped_bar",
+      "right_series_label": "Tyne",
+      "scene_variant": "multi_line",
       "scene_variant_probabilities": {
         "grouped_bar": 0.25,
         "grouped_horizontal_bar": 0.25,
         "grouped_lollipop": 0.25,
         "multi_line": 0.25
       },
-      "series_count": 3,
+      "series_count": 2,
       "series_count_range": [
         2,
         3
       ],
       "series_fill_palette_rgb": [
         [
-          217,
-          140,
-          31
-        ],
-        [
-          53,
-          28,
-          152
-        ],
-        [
-          116,
           138,
-          99
+          83,
+          139
+        ],
+        [
+          150,
+          119,
+          73
         ]
       ],
       "series_labels": [
-        "Ko",
-        "Jojo",
-        "Cai"
+        "Iris",
+        "Tyne"
       ],
       "series_outline_palette_rgb": [
         [
-          119,
-          77,
-          17
-        ],
-        [
-          29,
-          15,
-          84
-        ],
-        [
-          64,
           76,
-          54
+          46,
+          76
+        ],
+        [
+          82,
+          65,
+          40
         ]
       ],
       "target_answer": 5,
@@ -120,162 +110,157 @@
       ],
       "task_variant": "series_a_gt_b_count",
       "task_variant_probabilities": {
-        "series_a_gt_b_count": 0.5,
-        "series_a_lt_b_count": 0.5
+        "series_a_gt_b_count": 1.0,
+        "series_a_lt_b_count": 0.0
       },
       "values_by_category": {
-        "C": {
-          "Cai": 15,
-          "Jojo": 10,
-          "Ko": 13
+        "A": {
+          "Iris": 19,
+          "Tyne": 13
+        },
+        "D": {
+          "Iris": 6,
+          "Tyne": 8
         },
         "E": {
-          "Cai": 6,
-          "Jojo": 13,
-          "Ko": 7
+          "Iris": 18,
+          "Tyne": 13
         },
-        "F": {
-          "Cai": 8,
-          "Jojo": 18,
-          "Ko": 12
-        },
-        "J": {
-          "Cai": 12,
-          "Jojo": 1,
-          "Ko": 6
+        "H": {
+          "Iris": 16,
+          "Tyne": 10
         },
         "L": {
-          "Cai": 11,
-          "Jojo": 17,
-          "Ko": 14
+          "Iris": 4,
+          "Tyne": 17
         },
         "N": {
-          "Cai": 4,
-          "Jojo": 18,
-          "Ko": 12
-        },
-        "P": {
-          "Cai": 5,
-          "Jojo": 15,
-          "Ko": 7
+          "Iris": 11,
+          "Tyne": 6
         },
         "Q": {
-          "Cai": 18,
-          "Jojo": 1,
-          "Ko": 17
+          "Iris": 13,
+          "Tyne": 2
+        },
+        "S": {
+          "Iris": 1,
+          "Tyne": 13
+        },
+        "V": {
+          "Iris": 15,
+          "Tyne": 18
         },
         "X": {
-          "Cai": 20,
-          "Jojo": 6,
-          "Ko": 7
+          "Iris": 5,
+          "Tyne": 12
         }
       }
     },
     "projected_evidence": {
       "bbox_set": [
         [
-          111.304,
-          228.381,
-          157.363,
+          426.4,
+          60.2,
+          443.4,
           562.0
         ],
         [
-          365.304,
-          113.143,
-          411.363,
+          579.3,
+          84.4,
+          595.3,
           562.0
         ],
         [
-          449.971,
-          136.19,
-          496.029,
+          273.5,
+          132.8,
+          291.5,
           562.0
         ],
         [
-          280.637,
-          113.143,
-          326.696,
+          730.7,
+          253.8,
+          748.7,
           562.0
         ],
         [
-          534.637,
-          182.286,
-          580.696,
-          562.0
+          349.2,
+          205.4,
+          368.2,
+          563.5
         ]
       ],
       "label_set": [
+        "A",
         "E",
-        "F",
-        "L",
+        "H",
         "N",
-        "P"
+        "Q"
       ],
       "pixel_point_map": {
+        "A": [
+          434.9,
+          554.0
+        ],
         "E": [
-          134.333,
+          587.3,
           554.0
         ],
-        "F": [
-          388.333,
-          554.0
-        ],
-        "L": [
-          473.0,
+        "H": [
+          282.5,
           554.0
         ],
         "N": [
-          303.667,
+          739.7,
           554.0
         ],
-        "P": [
-          557.667,
+        "Q": [
+          358.7,
           554.0
         ]
       },
       "pixel_point_set": [
         [
-          134.333,
+          434.9,
           554.0
         ],
         [
-          388.333,
+          587.3,
           554.0
         ],
         [
-          473.0,
+          282.5,
           554.0
         ],
         [
-          303.667,
+          739.7,
           554.0
         ],
         [
-          557.667,
+          358.7,
           554.0
         ]
       ]
     },
     "query_spec": {
       "params": {
-        "category_count": 9,
+        "category_count": 10,
         "category_count_range": [
           5,
           10
         ],
         "comparison": "greater_than",
         "queried_series_labels": [
-          "Jojo",
-          "Cai"
+          "Iris",
+          "Tyne"
         ],
-        "scene_variant": "grouped_bar",
+        "scene_variant": "multi_line",
         "scene_variant_probabilities": {
           "grouped_bar": 0.25,
           "grouped_horizontal_bar": 0.25,
           "grouped_lollipop": 0.25,
           "multi_line": 0.25
         },
-        "series_count": 3,
+        "series_count": 2,
         "series_count_range": [
           2,
           3
@@ -287,8 +272,8 @@
         ],
         "task_variant": "series_a_gt_b_count",
         "task_variant_probabilities": {
-          "series_a_gt_b_count": 0.5,
-          "series_a_lt_b_count": 0.5
+          "series_a_gt_b_count": 1.0,
+          "series_a_lt_b_count": 0.0
         }
       },
       "prompt_variant": {
@@ -303,16 +288,16 @@
           "json_example_answer_only": "{\"answer\":3}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "left_series": "Jojo",
-          "object_description": "a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category",
-          "right_series": "Cai"
+          "left_series": "Iris",
+          "object_description": "a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis",
+          "right_series": "Tyne"
         },
         "task_family_key": "multiseries_chart_comparison",
         "task_family_variant_index": 2,
         "task_key": "pairwise_comparison_count_query",
-        "task_variant_index": 0,
+        "task_variant_index": 4,
         "task_variant_key": "series_a_gt_b_count",
-        "task_variant_template_index": 1,
+        "task_variant_template_index": 4,
         "template_paths": [
           "charts/multiseries/charts_multiseries_v1.json"
         ],
@@ -338,16 +323,16 @@
               "json_example_answer_only": "{\"answer\":3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "left_series": "Jojo",
-              "object_description": "a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category",
-              "right_series": "Cai"
+              "left_series": "Iris",
+              "object_description": "a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis",
+              "right_series": "Tyne"
             },
             "task_family_key": "multiseries_chart_comparison",
             "task_family_variant_index": 2,
             "task_key": "pairwise_comparison_count_query",
-            "task_variant_index": 0,
+            "task_variant_index": 4,
             "task_variant_key": "series_a_gt_b_count",
-            "task_variant_template_index": 1,
+            "task_variant_template_index": 4,
             "template_paths": [
               "charts/multiseries/charts_multiseries_v1.json"
             ],
@@ -358,12 +343,12 @@
               "task_variant:series_a_gt_b_count": 5
             }
           },
-          "prompt": "Work from the multiseries chart shown in the image: a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Compare the two queried series category by category. Count the category labels where Jojo exceeds Cai.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer requirement: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}"
+          "prompt": "Work from the multiseries chart shown in the image: a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Work category by category and count the labels where the requested series comparison is true. Find how many category labels show Iris higher than Tyne.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer requirement: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 4,
+            "answer_or_evidence_variant_index": 0,
             "prompt_bundle_id": "charts_multiseries_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -373,16 +358,16 @@
               "json_example_answer_only": "{\"answer\":3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "left_series": "Jojo",
-              "object_description": "a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category",
-              "right_series": "Cai"
+              "left_series": "Iris",
+              "object_description": "a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis",
+              "right_series": "Tyne"
             },
             "task_family_key": "multiseries_chart_comparison",
             "task_family_variant_index": 2,
             "task_key": "pairwise_comparison_count_query",
-            "task_variant_index": 0,
+            "task_variant_index": 4,
             "task_variant_key": "series_a_gt_b_count",
-            "task_variant_template_index": 1,
+            "task_variant_template_index": 4,
             "template_paths": [
               "charts/multiseries/charts_multiseries_v1.json"
             ],
@@ -393,7 +378,7 @@
               "task_variant:series_a_gt_b_count": 5
             }
           },
-          "prompt": "Work from the multiseries chart shown in the image: a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Compare the two queried series category by category. Count the category labels where Jojo exceeds Cai.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":3}"
+          "prompt": "Work from the multiseries chart shown in the image: a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Work category by category and count the labels where the requested series comparison is true. Find how many category labels show Iris higher than Tyne.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":3}"
         }
       },
       "task_variant": "series_a_gt_b_count",
@@ -401,40 +386,44 @@
     },
     "render_map": {
       "category_label_centers_px": {
-        "C": [
-          219.0,
+        "A": [
+          434.9,
+          554.0
+        ],
+        "D": [
+          663.5,
           554.0
         ],
         "E": [
-          134.333,
+          587.3,
           554.0
         ],
-        "F": [
-          388.333,
-          554.0
-        ],
-        "J": [
-          642.333,
+        "H": [
+          282.5,
           554.0
         ],
         "L": [
-          473.0,
+          815.9,
           554.0
         ],
         "N": [
-          303.667,
-          554.0
-        ],
-        "P": [
-          557.667,
+          739.7,
           554.0
         ],
         "Q": [
-          811.667,
+          358.7,
+          554.0
+        ],
+        "S": [
+          511.1,
+          554.0
+        ],
+        "V": [
+          206.3,
           554.0
         ],
         "X": [
-          727.0,
+          130.1,
           554.0
         ]
       },
@@ -476,36 +465,26 @@
         "sampling_policy": "random_rgb_palette",
         "series_fill_palette_rgb": [
           [
-            217,
-            140,
-            31
-          ],
-          [
-            53,
-            28,
-            152
-          ],
-          [
-            116,
             138,
-            99
+            83,
+            139
+          ],
+          [
+            150,
+            119,
+            73
           ]
         ],
         "series_outline_palette_rgb": [
           [
-            119,
-            77,
-            17
-          ],
-          [
-            29,
-            15,
-            84
-          ],
-          [
-            64,
             76,
-            54
+            46,
+            76
+          ],
+          [
+            82,
+            65,
+            40
           ]
         ]
       },
@@ -531,13 +510,13 @@
         "edits": [],
         "enabled": false
       },
-      "scene_variant": "grouped_bar",
+      "scene_variant": "multi_line",
       "text_style": {
         "label_font_size_px": 22,
         "label_stroke_width_px": 2,
         "tick_font_size_px": 18
       },
-      "y_axis_max": 21,
+      "y_axis_max": 20,
       "y_ticks": [
         0,
         1,
@@ -559,8 +538,7 @@
         17,
         18,
         19,
-        20,
-        21
+        20
       ]
     },
     "scene_ir": {
@@ -568,1163 +546,869 @@
         {
           "attrs": {
             "category_group_bbox_px": [
-              111.304,
-              228.381,
-              157.363,
+              121.6,
+              229.6,
+              138.6,
               562.0
             ],
-            "category_label": "E",
+            "category_label": "X",
             "category_label_center_px": [
-              134.333,
+              130.1,
               554.0
             ],
             "category_rank": 0,
             "mark_bbox_px": [
-              111.304,
-              366.667,
-              123.496,
-              528.0
+              122.1,
+              399.0,
+              138.1,
+              415.0
             ],
             "mark_center_px": [
-              117.4,
-              366.667
+              130.1,
+              407.0
             ],
             "mark_fill_rgb": [
-              217,
-              140,
-              31
-            ],
-            "mark_outline_rgb": [
-              119,
-              77,
-              17
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Ko",
-            "series_rank": 0,
-            "value": 7
-          },
-          "entity_id": "mark_E_Ko",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              111.304,
-              228.381,
-              157.363,
-              562.0
-            ],
-            "category_label": "E",
-            "category_label_center_px": [
-              134.333,
-              554.0
-            ],
-            "category_rank": 0,
-            "mark_bbox_px": [
-              128.237,
-              228.381,
-              140.429,
-              528.0
-            ],
-            "mark_center_px": [
-              134.333,
-              228.381
-            ],
-            "mark_fill_rgb": [
-              53,
-              28,
-              152
-            ],
-            "mark_outline_rgb": [
-              29,
-              15,
-              84
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Jojo",
-            "series_rank": 1,
-            "value": 13
-          },
-          "entity_id": "mark_E_Jojo",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              111.304,
-              228.381,
-              157.363,
-              562.0
-            ],
-            "category_label": "E",
-            "category_label_center_px": [
-              134.333,
-              554.0
-            ],
-            "category_rank": 0,
-            "mark_bbox_px": [
-              145.171,
-              389.714,
-              157.363,
-              528.0
-            ],
-            "mark_center_px": [
-              151.267,
-              389.714
-            ],
-            "mark_fill_rgb": [
-              116,
               138,
-              99
+              83,
+              139
             ],
             "mark_outline_rgb": [
-              64,
               76,
-              54
+              46,
+              76
             ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Cai",
-            "series_rank": 2,
-            "value": 6
-          },
-          "entity_id": "mark_E_Cai",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              195.971,
-              182.286,
-              242.029,
-              562.0
-            ],
-            "category_label": "C",
-            "category_label_center_px": [
-              219.0,
-              554.0
-            ],
-            "category_rank": 1,
-            "mark_bbox_px": [
-              195.971,
-              228.381,
-              208.163,
-              528.0
-            ],
-            "mark_center_px": [
-              202.067,
-              228.381
-            ],
-            "mark_fill_rgb": [
-              217,
-              140,
-              31
-            ],
-            "mark_outline_rgb": [
-              119,
-              77,
-              17
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Ko",
+            "scene_variant": "multi_line",
+            "series_label": "Iris",
             "series_rank": 0,
-            "value": 13
+            "value": 5
           },
-          "entity_id": "mark_C_Ko",
-          "entity_type": "bar"
+          "entity_id": "mark_X_Iris",
+          "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              195.971,
-              182.286,
-              242.029,
+              121.6,
+              229.6,
+              138.6,
               562.0
             ],
-            "category_label": "C",
+            "category_label": "X",
             "category_label_center_px": [
-              219.0,
+              130.1,
+              554.0
+            ],
+            "category_rank": 0,
+            "mark_bbox_px": [
+              122.1,
+              229.6,
+              138.1,
+              245.6
+            ],
+            "mark_center_px": [
+              130.1,
+              237.6
+            ],
+            "mark_fill_rgb": [
+              150,
+              119,
+              73
+            ],
+            "mark_outline_rgb": [
+              82,
+              65,
+              40
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Tyne",
+            "series_rank": 1,
+            "value": 12
+          },
+          "entity_id": "mark_X_Tyne",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              197.8,
+              84.4,
+              214.8,
+              562.0
+            ],
+            "category_label": "V",
+            "category_label_center_px": [
+              206.3,
               554.0
             ],
             "category_rank": 1,
             "mark_bbox_px": [
-              212.904,
-              297.524,
-              225.096,
-              528.0
+              198.3,
+              157.0,
+              214.3,
+              173.0
             ],
             "mark_center_px": [
-              219.0,
-              297.524
+              206.3,
+              165.0
             ],
             "mark_fill_rgb": [
-              53,
-              28,
-              152
+              138,
+              83,
+              139
             ],
             "mark_outline_rgb": [
-              29,
-              15,
-              84
+              76,
+              46,
+              76
             ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Jojo",
+            "scene_variant": "multi_line",
+            "series_label": "Iris",
+            "series_rank": 0,
+            "value": 15
+          },
+          "entity_id": "mark_V_Iris",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              197.8,
+              84.4,
+              214.8,
+              562.0
+            ],
+            "category_label": "V",
+            "category_label_center_px": [
+              206.3,
+              554.0
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              198.3,
+              84.4,
+              214.3,
+              100.4
+            ],
+            "mark_center_px": [
+              206.3,
+              92.4
+            ],
+            "mark_fill_rgb": [
+              150,
+              119,
+              73
+            ],
+            "mark_outline_rgb": [
+              82,
+              65,
+              40
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Tyne",
+            "series_rank": 1,
+            "value": 18
+          },
+          "entity_id": "mark_V_Tyne",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              273.5,
+              132.8,
+              291.5,
+              562.0
+            ],
+            "category_label": "H",
+            "category_label_center_px": [
+              282.5,
+              554.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              274.5,
+              132.8,
+              290.5,
+              148.8
+            ],
+            "mark_center_px": [
+              282.5,
+              140.8
+            ],
+            "mark_fill_rgb": [
+              138,
+              83,
+              139
+            ],
+            "mark_outline_rgb": [
+              76,
+              46,
+              76
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Iris",
+            "series_rank": 0,
+            "value": 16
+          },
+          "entity_id": "mark_H_Iris",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              273.5,
+              132.8,
+              291.5,
+              562.0
+            ],
+            "category_label": "H",
+            "category_label_center_px": [
+              282.5,
+              554.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              274.5,
+              278.0,
+              290.5,
+              294.0
+            ],
+            "mark_center_px": [
+              282.5,
+              286.0
+            ],
+            "mark_fill_rgb": [
+              150,
+              119,
+              73
+            ],
+            "mark_outline_rgb": [
+              82,
+              65,
+              40
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Tyne",
             "series_rank": 1,
             "value": 10
           },
-          "entity_id": "mark_C_Jojo",
-          "entity_type": "bar"
+          "entity_id": "mark_H_Tyne",
+          "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              195.971,
-              182.286,
-              242.029,
-              562.0
+              349.2,
+              205.4,
+              368.2,
+              563.5
             ],
-            "category_label": "C",
+            "category_label": "Q",
             "category_label_center_px": [
-              219.0,
+              358.7,
               554.0
             ],
-            "category_rank": 1,
+            "category_rank": 3,
             "mark_bbox_px": [
-              229.837,
-              182.286,
-              242.029,
-              528.0
+              350.7,
+              205.4,
+              366.7,
+              221.4
             ],
             "mark_center_px": [
-              235.933,
-              182.286
+              358.7,
+              213.4
             ],
             "mark_fill_rgb": [
-              116,
               138,
-              99
+              83,
+              139
             ],
             "mark_outline_rgb": [
-              64,
               76,
-              54
+              46,
+              76
             ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Cai",
-            "series_rank": 2,
-            "value": 15
-          },
-          "entity_id": "mark_C_Cai",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              280.637,
-              113.143,
-              326.696,
-              562.0
-            ],
-            "category_label": "N",
-            "category_label_center_px": [
-              303.667,
-              554.0
-            ],
-            "category_rank": 2,
-            "mark_bbox_px": [
-              280.637,
-              251.429,
-              292.829,
-              528.0
-            ],
-            "mark_center_px": [
-              286.733,
-              251.429
-            ],
-            "mark_fill_rgb": [
-              217,
-              140,
-              31
-            ],
-            "mark_outline_rgb": [
-              119,
-              77,
-              17
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Ko",
+            "scene_variant": "multi_line",
+            "series_label": "Iris",
             "series_rank": 0,
-            "value": 12
+            "value": 13
           },
-          "entity_id": "mark_N_Ko",
-          "entity_type": "bar"
+          "entity_id": "mark_Q_Iris",
+          "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              280.637,
-              113.143,
-              326.696,
-              562.0
+              349.2,
+              205.4,
+              368.2,
+              563.5
             ],
-            "category_label": "N",
+            "category_label": "Q",
             "category_label_center_px": [
-              303.667,
+              358.7,
               554.0
             ],
-            "category_rank": 2,
+            "category_rank": 3,
             "mark_bbox_px": [
-              297.571,
-              113.143,
-              309.763,
-              528.0
+              350.7,
+              471.6,
+              366.7,
+              487.6
             ],
             "mark_center_px": [
-              303.667,
-              113.143
+              358.7,
+              479.6
             ],
             "mark_fill_rgb": [
-              53,
-              28,
-              152
+              150,
+              119,
+              73
             ],
             "mark_outline_rgb": [
-              29,
-              15,
-              84
+              82,
+              65,
+              40
             ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Jojo",
+            "scene_variant": "multi_line",
+            "series_label": "Tyne",
             "series_rank": 1,
+            "value": 2
+          },
+          "entity_id": "mark_Q_Tyne",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              426.4,
+              60.2,
+              443.4,
+              562.0
+            ],
+            "category_label": "A",
+            "category_label_center_px": [
+              434.9,
+              554.0
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              426.9,
+              60.2,
+              442.9,
+              76.2
+            ],
+            "mark_center_px": [
+              434.9,
+              68.2
+            ],
+            "mark_fill_rgb": [
+              138,
+              83,
+              139
+            ],
+            "mark_outline_rgb": [
+              76,
+              46,
+              76
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Iris",
+            "series_rank": 0,
+            "value": 19
+          },
+          "entity_id": "mark_A_Iris",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              426.4,
+              60.2,
+              443.4,
+              562.0
+            ],
+            "category_label": "A",
+            "category_label_center_px": [
+              434.9,
+              554.0
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              426.9,
+              205.4,
+              442.9,
+              221.4
+            ],
+            "mark_center_px": [
+              434.9,
+              213.4
+            ],
+            "mark_fill_rgb": [
+              150,
+              119,
+              73
+            ],
+            "mark_outline_rgb": [
+              82,
+              65,
+              40
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Tyne",
+            "series_rank": 1,
+            "value": 13
+          },
+          "entity_id": "mark_A_Tyne",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              503.1,
+              205.4,
+              519.1,
+              562.0
+            ],
+            "category_label": "S",
+            "category_label_center_px": [
+              511.1,
+              554.0
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              503.1,
+              495.8,
+              519.1,
+              511.8
+            ],
+            "mark_center_px": [
+              511.1,
+              503.8
+            ],
+            "mark_fill_rgb": [
+              138,
+              83,
+              139
+            ],
+            "mark_outline_rgb": [
+              76,
+              46,
+              76
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Iris",
+            "series_rank": 0,
+            "value": 1
+          },
+          "entity_id": "mark_S_Iris",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              503.1,
+              205.4,
+              519.1,
+              562.0
+            ],
+            "category_label": "S",
+            "category_label_center_px": [
+              511.1,
+              554.0
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              503.1,
+              205.4,
+              519.1,
+              221.4
+            ],
+            "mark_center_px": [
+              511.1,
+              213.4
+            ],
+            "mark_fill_rgb": [
+              150,
+              119,
+              73
+            ],
+            "mark_outline_rgb": [
+              82,
+              65,
+              40
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Tyne",
+            "series_rank": 1,
+            "value": 13
+          },
+          "entity_id": "mark_S_Tyne",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              579.3,
+              84.4,
+              595.3,
+              562.0
+            ],
+            "category_label": "E",
+            "category_label_center_px": [
+              587.3,
+              554.0
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              579.3,
+              84.4,
+              595.3,
+              100.4
+            ],
+            "mark_center_px": [
+              587.3,
+              92.4
+            ],
+            "mark_fill_rgb": [
+              138,
+              83,
+              139
+            ],
+            "mark_outline_rgb": [
+              76,
+              46,
+              76
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Iris",
+            "series_rank": 0,
             "value": 18
           },
-          "entity_id": "mark_N_Jojo",
-          "entity_type": "bar"
+          "entity_id": "mark_E_Iris",
+          "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              280.637,
-              113.143,
-              326.696,
+              579.3,
+              84.4,
+              595.3,
               562.0
             ],
-            "category_label": "N",
+            "category_label": "E",
             "category_label_center_px": [
-              303.667,
+              587.3,
               554.0
             ],
-            "category_rank": 2,
+            "category_rank": 6,
             "mark_bbox_px": [
-              314.504,
-              435.81,
-              326.696,
-              528.0
+              579.3,
+              205.4,
+              595.3,
+              221.4
             ],
             "mark_center_px": [
-              320.6,
-              435.81
+              587.3,
+              213.4
             ],
             "mark_fill_rgb": [
-              116,
-              138,
-              99
-            ],
-            "mark_outline_rgb": [
-              64,
-              76,
-              54
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Cai",
-            "series_rank": 2,
-            "value": 4
-          },
-          "entity_id": "mark_N_Cai",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              365.304,
-              113.143,
-              411.363,
-              562.0
-            ],
-            "category_label": "F",
-            "category_label_center_px": [
-              388.333,
-              554.0
-            ],
-            "category_rank": 3,
-            "mark_bbox_px": [
-              365.304,
-              251.429,
-              377.496,
-              528.0
-            ],
-            "mark_center_px": [
-              371.4,
-              251.429
-            ],
-            "mark_fill_rgb": [
-              217,
-              140,
-              31
-            ],
-            "mark_outline_rgb": [
+              150,
               119,
-              77,
-              17
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Ko",
-            "series_rank": 0,
-            "value": 12
-          },
-          "entity_id": "mark_F_Ko",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              365.304,
-              113.143,
-              411.363,
-              562.0
-            ],
-            "category_label": "F",
-            "category_label_center_px": [
-              388.333,
-              554.0
-            ],
-            "category_rank": 3,
-            "mark_bbox_px": [
-              382.237,
-              113.143,
-              394.429,
-              528.0
-            ],
-            "mark_center_px": [
-              388.333,
-              113.143
-            ],
-            "mark_fill_rgb": [
-              53,
-              28,
-              152
+              73
             ],
             "mark_outline_rgb": [
-              29,
-              15,
-              84
+              82,
+              65,
+              40
             ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Jojo",
+            "scene_variant": "multi_line",
+            "series_label": "Tyne",
             "series_rank": 1,
-            "value": 18
+            "value": 13
           },
-          "entity_id": "mark_F_Jojo",
-          "entity_type": "bar"
+          "entity_id": "mark_E_Tyne",
+          "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              365.304,
-              113.143,
-              411.363,
+              654.5,
+              326.4,
+              672.5,
               562.0
             ],
-            "category_label": "F",
+            "category_label": "D",
             "category_label_center_px": [
-              388.333,
+              663.5,
               554.0
             ],
-            "category_rank": 3,
+            "category_rank": 7,
             "mark_bbox_px": [
-              399.171,
-              343.619,
-              411.363,
-              528.0
+              655.5,
+              374.8,
+              671.5,
+              390.8
             ],
             "mark_center_px": [
-              405.267,
-              343.619
+              663.5,
+              382.8
             ],
             "mark_fill_rgb": [
-              116,
               138,
-              99
+              83,
+              139
             ],
             "mark_outline_rgb": [
-              64,
               76,
-              54
+              46,
+              76
             ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Cai",
-            "series_rank": 2,
+            "scene_variant": "multi_line",
+            "series_label": "Iris",
+            "series_rank": 0,
+            "value": 6
+          },
+          "entity_id": "mark_D_Iris",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              654.5,
+              326.4,
+              672.5,
+              562.0
+            ],
+            "category_label": "D",
+            "category_label_center_px": [
+              663.5,
+              554.0
+            ],
+            "category_rank": 7,
+            "mark_bbox_px": [
+              655.5,
+              326.4,
+              671.5,
+              342.4
+            ],
+            "mark_center_px": [
+              663.5,
+              334.4
+            ],
+            "mark_fill_rgb": [
+              150,
+              119,
+              73
+            ],
+            "mark_outline_rgb": [
+              82,
+              65,
+              40
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Tyne",
+            "series_rank": 1,
             "value": 8
           },
-          "entity_id": "mark_F_Cai",
-          "entity_type": "bar"
+          "entity_id": "mark_D_Tyne",
+          "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              449.971,
-              136.19,
-              496.029,
+              730.7,
+              253.8,
+              748.7,
               562.0
             ],
-            "category_label": "L",
+            "category_label": "N",
             "category_label_center_px": [
-              473.0,
+              739.7,
               554.0
             ],
-            "category_rank": 4,
+            "category_rank": 8,
             "mark_bbox_px": [
-              449.971,
-              205.333,
-              462.163,
-              528.0
+              731.7,
+              253.8,
+              747.7,
+              269.8
             ],
             "mark_center_px": [
-              456.067,
-              205.333
+              739.7,
+              261.8
             ],
             "mark_fill_rgb": [
-              217,
-              140,
-              31
-            ],
-            "mark_outline_rgb": [
-              119,
-              77,
-              17
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Ko",
-            "series_rank": 0,
-            "value": 14
-          },
-          "entity_id": "mark_L_Ko",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              449.971,
-              136.19,
-              496.029,
-              562.0
-            ],
-            "category_label": "L",
-            "category_label_center_px": [
-              473.0,
-              554.0
-            ],
-            "category_rank": 4,
-            "mark_bbox_px": [
-              466.904,
-              136.19,
-              479.096,
-              528.0
-            ],
-            "mark_center_px": [
-              473.0,
-              136.19
-            ],
-            "mark_fill_rgb": [
-              53,
-              28,
-              152
-            ],
-            "mark_outline_rgb": [
-              29,
-              15,
-              84
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Jojo",
-            "series_rank": 1,
-            "value": 17
-          },
-          "entity_id": "mark_L_Jojo",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              449.971,
-              136.19,
-              496.029,
-              562.0
-            ],
-            "category_label": "L",
-            "category_label_center_px": [
-              473.0,
-              554.0
-            ],
-            "category_rank": 4,
-            "mark_bbox_px": [
-              483.837,
-              274.476,
-              496.029,
-              528.0
-            ],
-            "mark_center_px": [
-              489.933,
-              274.476
-            ],
-            "mark_fill_rgb": [
-              116,
               138,
-              99
+              83,
+              139
             ],
             "mark_outline_rgb": [
-              64,
               76,
-              54
+              46,
+              76
             ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Cai",
-            "series_rank": 2,
+            "scene_variant": "multi_line",
+            "series_label": "Iris",
+            "series_rank": 0,
             "value": 11
           },
-          "entity_id": "mark_L_Cai",
-          "entity_type": "bar"
+          "entity_id": "mark_N_Iris",
+          "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              534.637,
-              182.286,
-              580.696,
+              730.7,
+              253.8,
+              748.7,
               562.0
             ],
-            "category_label": "P",
+            "category_label": "N",
             "category_label_center_px": [
-              557.667,
-              554.0
-            ],
-            "category_rank": 5,
-            "mark_bbox_px": [
-              534.637,
-              366.667,
-              546.829,
-              528.0
-            ],
-            "mark_center_px": [
-              540.733,
-              366.667
-            ],
-            "mark_fill_rgb": [
-              217,
-              140,
-              31
-            ],
-            "mark_outline_rgb": [
-              119,
-              77,
-              17
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Ko",
-            "series_rank": 0,
-            "value": 7
-          },
-          "entity_id": "mark_P_Ko",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              534.637,
-              182.286,
-              580.696,
-              562.0
-            ],
-            "category_label": "P",
-            "category_label_center_px": [
-              557.667,
-              554.0
-            ],
-            "category_rank": 5,
-            "mark_bbox_px": [
-              551.571,
-              182.286,
-              563.763,
-              528.0
-            ],
-            "mark_center_px": [
-              557.667,
-              182.286
-            ],
-            "mark_fill_rgb": [
-              53,
-              28,
-              152
-            ],
-            "mark_outline_rgb": [
-              29,
-              15,
-              84
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Jojo",
-            "series_rank": 1,
-            "value": 15
-          },
-          "entity_id": "mark_P_Jojo",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              534.637,
-              182.286,
-              580.696,
-              562.0
-            ],
-            "category_label": "P",
-            "category_label_center_px": [
-              557.667,
-              554.0
-            ],
-            "category_rank": 5,
-            "mark_bbox_px": [
-              568.504,
-              412.762,
-              580.696,
-              528.0
-            ],
-            "mark_center_px": [
-              574.6,
-              412.762
-            ],
-            "mark_fill_rgb": [
-              116,
-              138,
-              99
-            ],
-            "mark_outline_rgb": [
-              64,
-              76,
-              54
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Cai",
-            "series_rank": 2,
-            "value": 5
-          },
-          "entity_id": "mark_P_Cai",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              619.304,
-              251.429,
-              665.363,
-              564.0
-            ],
-            "category_label": "J",
-            "category_label_center_px": [
-              642.333,
-              554.0
-            ],
-            "category_rank": 6,
-            "mark_bbox_px": [
-              619.304,
-              389.714,
-              631.496,
-              528.0
-            ],
-            "mark_center_px": [
-              625.4,
-              389.714
-            ],
-            "mark_fill_rgb": [
-              217,
-              140,
-              31
-            ],
-            "mark_outline_rgb": [
-              119,
-              77,
-              17
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Ko",
-            "series_rank": 0,
-            "value": 6
-          },
-          "entity_id": "mark_J_Ko",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              619.304,
-              251.429,
-              665.363,
-              564.0
-            ],
-            "category_label": "J",
-            "category_label_center_px": [
-              642.333,
-              554.0
-            ],
-            "category_rank": 6,
-            "mark_bbox_px": [
-              636.237,
-              504.952,
-              648.429,
-              528.0
-            ],
-            "mark_center_px": [
-              642.333,
-              504.952
-            ],
-            "mark_fill_rgb": [
-              53,
-              28,
-              152
-            ],
-            "mark_outline_rgb": [
-              29,
-              15,
-              84
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Jojo",
-            "series_rank": 1,
-            "value": 1
-          },
-          "entity_id": "mark_J_Jojo",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              619.304,
-              251.429,
-              665.363,
-              564.0
-            ],
-            "category_label": "J",
-            "category_label_center_px": [
-              642.333,
-              554.0
-            ],
-            "category_rank": 6,
-            "mark_bbox_px": [
-              653.171,
-              251.429,
-              665.363,
-              528.0
-            ],
-            "mark_center_px": [
-              659.267,
-              251.429
-            ],
-            "mark_fill_rgb": [
-              116,
-              138,
-              99
-            ],
-            "mark_outline_rgb": [
-              64,
-              76,
-              54
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Cai",
-            "series_rank": 2,
-            "value": 12
-          },
-          "entity_id": "mark_J_Cai",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              703.971,
-              67.048,
-              750.029,
-              562.0
-            ],
-            "category_label": "X",
-            "category_label_center_px": [
-              727.0,
-              554.0
-            ],
-            "category_rank": 7,
-            "mark_bbox_px": [
-              703.971,
-              366.667,
-              716.163,
-              528.0
-            ],
-            "mark_center_px": [
-              710.067,
-              366.667
-            ],
-            "mark_fill_rgb": [
-              217,
-              140,
-              31
-            ],
-            "mark_outline_rgb": [
-              119,
-              77,
-              17
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Ko",
-            "series_rank": 0,
-            "value": 7
-          },
-          "entity_id": "mark_X_Ko",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              703.971,
-              67.048,
-              750.029,
-              562.0
-            ],
-            "category_label": "X",
-            "category_label_center_px": [
-              727.0,
-              554.0
-            ],
-            "category_rank": 7,
-            "mark_bbox_px": [
-              720.904,
-              389.714,
-              733.096,
-              528.0
-            ],
-            "mark_center_px": [
-              727.0,
-              389.714
-            ],
-            "mark_fill_rgb": [
-              53,
-              28,
-              152
-            ],
-            "mark_outline_rgb": [
-              29,
-              15,
-              84
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Jojo",
-            "series_rank": 1,
-            "value": 6
-          },
-          "entity_id": "mark_X_Jojo",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              703.971,
-              67.048,
-              750.029,
-              562.0
-            ],
-            "category_label": "X",
-            "category_label_center_px": [
-              727.0,
-              554.0
-            ],
-            "category_rank": 7,
-            "mark_bbox_px": [
-              737.837,
-              67.048,
-              750.029,
-              528.0
-            ],
-            "mark_center_px": [
-              743.933,
-              67.048
-            ],
-            "mark_fill_rgb": [
-              116,
-              138,
-              99
-            ],
-            "mark_outline_rgb": [
-              64,
-              76,
-              54
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Cai",
-            "series_rank": 2,
-            "value": 20
-          },
-          "entity_id": "mark_X_Cai",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              788.637,
-              113.143,
-              834.696,
-              563.5
-            ],
-            "category_label": "Q",
-            "category_label_center_px": [
-              811.667,
+              739.7,
               554.0
             ],
             "category_rank": 8,
             "mark_bbox_px": [
-              788.637,
-              136.19,
-              800.829,
-              528.0
+              731.7,
+              374.8,
+              747.7,
+              390.8
             ],
             "mark_center_px": [
-              794.733,
-              136.19
+              739.7,
+              382.8
             ],
             "mark_fill_rgb": [
-              217,
-              140,
-              31
+              150,
+              119,
+              73
             ],
             "mark_outline_rgb": [
-              119,
-              77,
-              17
+              82,
+              65,
+              40
             ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Ko",
+            "scene_variant": "multi_line",
+            "series_label": "Tyne",
+            "series_rank": 1,
+            "value": 6
+          },
+          "entity_id": "mark_N_Tyne",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              807.9,
+              108.6,
+              823.9,
+              562.0
+            ],
+            "category_label": "L",
+            "category_label_center_px": [
+              815.9,
+              554.0
+            ],
+            "category_rank": 9,
+            "mark_bbox_px": [
+              807.9,
+              423.2,
+              823.9,
+              439.2
+            ],
+            "mark_center_px": [
+              815.9,
+              431.2
+            ],
+            "mark_fill_rgb": [
+              138,
+              83,
+              139
+            ],
+            "mark_outline_rgb": [
+              76,
+              46,
+              76
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Iris",
             "series_rank": 0,
+            "value": 4
+          },
+          "entity_id": "mark_L_Iris",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              807.9,
+              108.6,
+              823.9,
+              562.0
+            ],
+            "category_label": "L",
+            "category_label_center_px": [
+              815.9,
+              554.0
+            ],
+            "category_rank": 9,
+            "mark_bbox_px": [
+              807.9,
+              108.6,
+              823.9,
+              124.6
+            ],
+            "mark_center_px": [
+              815.9,
+              116.6
+            ],
+            "mark_fill_rgb": [
+              150,
+              119,
+              73
+            ],
+            "mark_outline_rgb": [
+              82,
+              65,
+              40
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Tyne",
+            "series_rank": 1,
             "value": 17
           },
-          "entity_id": "mark_Q_Ko",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              788.637,
-              113.143,
-              834.696,
-              563.5
-            ],
-            "category_label": "Q",
-            "category_label_center_px": [
-              811.667,
-              554.0
-            ],
-            "category_rank": 8,
-            "mark_bbox_px": [
-              805.571,
-              504.952,
-              817.763,
-              528.0
-            ],
-            "mark_center_px": [
-              811.667,
-              504.952
-            ],
-            "mark_fill_rgb": [
-              53,
-              28,
-              152
-            ],
-            "mark_outline_rgb": [
-              29,
-              15,
-              84
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Jojo",
-            "series_rank": 1,
-            "value": 1
-          },
-          "entity_id": "mark_Q_Jojo",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              788.637,
-              113.143,
-              834.696,
-              563.5
-            ],
-            "category_label": "Q",
-            "category_label_center_px": [
-              811.667,
-              554.0
-            ],
-            "category_rank": 8,
-            "mark_bbox_px": [
-              822.504,
-              113.143,
-              834.696,
-              528.0
-            ],
-            "mark_center_px": [
-              828.6,
-              113.143
-            ],
-            "mark_fill_rgb": [
-              116,
-              138,
-              99
-            ],
-            "mark_outline_rgb": [
-              64,
-              76,
-              54
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Cai",
-            "series_rank": 2,
-            "value": 18
-          },
-          "entity_id": "mark_Q_Cai",
-          "entity_type": "bar"
+          "entity_id": "mark_L_Tyne",
+          "entity_type": "point"
         }
       ],
       "relations": {
         "comparison": "greater_than",
         "evidence_labels": [
+          "A",
           "E",
-          "F",
-          "L",
+          "H",
           "N",
-          "P"
+          "Q"
         ],
         "queried_series_labels": [
-          "Jojo",
-          "Cai"
+          "Iris",
+          "Tyne"
         ],
-        "scene_variant": "grouped_bar",
+        "scene_variant": "multi_line",
         "task_variant": "series_a_gt_b_count"
       },
-      "scene_kind": "chart_grouped_bar_multiseries"
+      "scene_kind": "chart_multi_line_multiseries"
     },
     "witness_symbolic": {
       "labels": [
+        "A",
         "E",
-        "F",
-        "L",
+        "H",
         "N",
-        "P"
+        "Q"
       ],
       "type": "label_set"
     }

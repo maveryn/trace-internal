@@ -193,6 +193,7 @@ Define how we split tasks into reusable families so each dataset slice stays com
    - uses query variants `total_resistance|missing_resistor_value`
    - keeps integer answers with unordered `bbox_set` evidence over either the full asked resistor set (`total_resistance`) or the marked red `?` resistor in the left circuit (`missing_resistor_value`)
    - requires every scene to contain at least one parallel bank; the single-circuit readout uses `3..4` parallel branches or `4..5` total resistors, while the paired missing-resistor variant uses smaller side-by-side circuits with equal total resistance
+   - when `scene_variant` is not fixed for `total_resistance`, samples the target answer from the query-level feasible union support first and then chooses a compatible scene family for that answer
    - samples one non-semantic `accent_color_name` palette for the wires, terminals, and resistor boxes
 7. `task_physics_optics_ray_trace`
    - uses scene variants `single_mirror|double_mirror|triple_mirror|quad_mirror`

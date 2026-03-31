@@ -60,6 +60,7 @@ Use this document for the active `physics` domain contract.
    - keep resistor labels as plain integers in the boxes and leave units to the prompt text,
    - keep prompt-facing evidence on the resistor boxes rather than on the wires,
    - require every active scene to contain a real parallel section rather than a pure series chain,
+   - when `scene_variant` is not fixed for `total_resistance`, resolve the target resistance from the query-level feasible union support first and then choose a compatible scene family for that target so the per-variant answer distribution remains healthy,
    - filter configured answer supports down to the constructively feasible subset for the chosen scene/query family before balanced sampling,
    - for `missing_resistor_value`, use two side-by-side circuits with an equality cue and keep the missing resistor visibly red in the left circuit.
 ### `optics`

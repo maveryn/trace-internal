@@ -1,22 +1,22 @@
 {
   "answer_gt": {
     "type": "string",
-    "value": "09:50"
+    "value": "05:45"
   },
   "evidence_gt": {
     "type": "bbox_set",
     "value": [
       [
-        201.674,
-        233.55,
+        268.968,
+        308.0,
         332.0,
-        332.0
+        455.792
       ],
       [
-        310.0,
         213.24,
-        497.593,
-        330.0
+        310.0,
+        330.0,
+        497.593
       ]
     ]
   },
@@ -24,11 +24,11 @@
     "format": "png",
     "path": "temporal/task_temporal_clock_readout/images/minutes_before/0015.png"
   },
-  "instance_seed": 2032744657137911,
-  "prompt": "Work from the clock shown in the image: one clean analog clock with hour numerals and two visible hands. Work from the shown clock face to answer the question. Move backward 20 minutes from the shown time. What time do you get? Answer in HH:MM 12-hour format with leading zeros.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing exactly two bounding boxes [x1, y1, x2, y2] for the clock hands.\nAnswer rule: set \"answer\" to the exact time in HH:MM 12-hour format with leading zeros.\nExample JSON:\n{\"evidence\":[[298,270,322,405],[314,148,330,406]],\"answer\":\"03:05\"}",
+  "instance_seed": 6506584933100376,
+  "prompt": "Use the analog clock in the image. It shows one clean analog clock with hour numerals and two visible hands. Determine the requested time from the shown clock. Starting from the displayed time, what time is 50 minutes earlier? Answer in HH:MM 12-hour format with leading zeros.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing exactly two bounding boxes [x1, y1, x2, y2] for the clock hands.\nAnswer rule: set \"answer\" to the exact time in HH:MM 12-hour format with leading zeros.\nExample JSON:\n{\"evidence\":[[298,270,322,405],[314,148,330,406]],\"answer\":\"02:35\"}",
   "prompt_variants": {
-    "answer_and_evidence": "Work from the clock shown in the image: one clean analog clock with hour numerals and two visible hands. Work from the shown clock face to answer the question. Move backward 20 minutes from the shown time. What time do you get? Answer in HH:MM 12-hour format with leading zeros.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing exactly two bounding boxes [x1, y1, x2, y2] for the clock hands.\nAnswer rule: set \"answer\" to the exact time in HH:MM 12-hour format with leading zeros.\nExample JSON:\n{\"evidence\":[[298,270,322,405],[314,148,330,406]],\"answer\":\"03:05\"}",
-    "answer_only": "Work from the clock shown in the image: one clean analog clock with hour numerals and two visible hands. Work from the shown clock face to answer the question. Move backward 20 minutes from the shown time. What time do you get? Answer in HH:MM 12-hour format with leading zeros.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the exact time in HH:MM 12-hour format with leading zeros.\nExample JSON:\n{\"answer\":\"03:05\"}"
+    "answer_and_evidence": "Use the analog clock in the image. It shows one clean analog clock with hour numerals and two visible hands. Determine the requested time from the shown clock. Starting from the displayed time, what time is 50 minutes earlier? Answer in HH:MM 12-hour format with leading zeros.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing exactly two bounding boxes [x1, y1, x2, y2] for the clock hands.\nAnswer rule: set \"answer\" to the exact time in HH:MM 12-hour format with leading zeros.\nExample JSON:\n{\"evidence\":[[298,270,322,405],[314,148,330,406]],\"answer\":\"02:35\"}",
+    "answer_only": "Use the analog clock in the image. It shows one clean analog clock with hour numerals and two visible hands. Determine the requested time from the shown clock. Starting from the displayed time, what time is 50 minutes earlier? Answer in HH:MM 12-hour format with leading zeros.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the exact time in HH:MM 12-hour format with leading zeros.\nExample JSON:\n{\"answer\":\"02:35\"}"
   },
   "task": "task_temporal_clock_readout",
   "task_variant": "minutes_before",
@@ -47,8 +47,8 @@
         "red": 0.1,
         "yellow": 0.1
       },
-      "answer_time_text": "09:50",
-      "delta_minutes": 20,
+      "answer_time_text": "05:45",
+      "delta_minutes": 50,
       "delta_minutes_support": [
         5,
         10,
@@ -79,11 +79,11 @@
         "minimal": 0.3333333333333333,
         "outline": 0.3333333333333333
       },
-      "shown_hour": 10,
-      "shown_minute": 10,
-      "shown_time_text": "10:10",
-      "shown_total_minutes": 610,
-      "style_variant": "studio",
+      "shown_hour": 6,
+      "shown_minute": 35,
+      "shown_time_text": "06:35",
+      "shown_total_minutes": 395,
+      "style_variant": "accented",
       "style_variant_probabilities": {
         "accented": 0.3333333333333333,
         "marker": 0.3333333333333333,
@@ -103,16 +103,16 @@
     "projected_evidence": {
       "bbox_set": [
         [
-          201.674,
-          233.55,
+          268.968,
+          308.0,
           332.0,
-          332.0
+          455.792
         ],
         [
-          310.0,
           213.24,
-          497.593,
-          330.0
+          310.0,
+          330.0,
+          497.593
         ]
       ],
       "pixel_point_map": {
@@ -121,12 +121,12 @@
           320.0
         ],
         "hour_hand_tip": [
-          213.674,
-          245.55
+          280.968,
+          443.792
         ],
         "minute_hand_tip": [
-          487.593,
-          223.24
+          223.24,
+          487.593
         ]
       }
     },
@@ -174,7 +174,7 @@
           "minimal": 0.3333333333333333,
           "outline": 0.3333333333333333
         },
-        "style_variant": "studio",
+        "style_variant": "accented",
         "style_variant_probabilities": {
           "accented": 0.3333333333333333,
           "marker": 0.3333333333333333,
@@ -194,20 +194,20 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the exact time in HH:MM 12-hour format with leading zeros",
-          "delta_minutes": "20",
+          "delta_minutes": "50",
           "evidence_hint": "set \"evidence\" to an array containing exactly two bounding boxes [x1, y1, x2, y2] for the clock hands",
-          "json_example": "{\"evidence\":[[298,270,322,405],[314,148,330,406]],\"answer\":\"03:05\"}",
-          "json_example_answer_only": "{\"answer\":\"03:05\"}",
+          "json_example": "{\"evidence\":[[298,270,322,405],[314,148,330,406]],\"answer\":\"02:35\"}",
+          "json_example_answer_only": "{\"answer\":\"02:35\"}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
           "object_description": "one clean analog clock with hour numerals and two visible hands"
         },
         "task_family_key": "single_analog_clock",
-        "task_family_variant_index": 3,
+        "task_family_variant_index": 4,
         "task_key": "clock_readout_query",
-        "task_variant_index": 4,
+        "task_variant_index": 1,
         "task_variant_key": "minutes_before",
-        "task_variant_template_index": 2,
+        "task_variant_template_index": 1,
         "template_paths": [
           "temporal/clock/temporal_clock_v1.json"
         ],
@@ -228,20 +228,20 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the exact time in HH:MM 12-hour format with leading zeros",
-              "delta_minutes": "20",
+              "delta_minutes": "50",
               "evidence_hint": "set \"evidence\" to an array containing exactly two bounding boxes [x1, y1, x2, y2] for the clock hands",
-              "json_example": "{\"evidence\":[[298,270,322,405],[314,148,330,406]],\"answer\":\"03:05\"}",
-              "json_example_answer_only": "{\"answer\":\"03:05\"}",
+              "json_example": "{\"evidence\":[[298,270,322,405],[314,148,330,406]],\"answer\":\"02:35\"}",
+              "json_example_answer_only": "{\"answer\":\"02:35\"}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "one clean analog clock with hour numerals and two visible hands"
             },
             "task_family_key": "single_analog_clock",
-            "task_family_variant_index": 3,
+            "task_family_variant_index": 4,
             "task_key": "clock_readout_query",
-            "task_variant_index": 4,
+            "task_variant_index": 1,
             "task_variant_key": "minutes_before",
-            "task_variant_template_index": 2,
+            "task_variant_template_index": 1,
             "template_paths": [
               "temporal/clock/temporal_clock_v1.json"
             ],
@@ -252,30 +252,30 @@
               "task_variant:minutes_before": 5
             }
           },
-          "prompt": "Work from the clock shown in the image: one clean analog clock with hour numerals and two visible hands. Work from the shown clock face to answer the question. Move backward 20 minutes from the shown time. What time do you get? Answer in HH:MM 12-hour format with leading zeros.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing exactly two bounding boxes [x1, y1, x2, y2] for the clock hands.\nAnswer rule: set \"answer\" to the exact time in HH:MM 12-hour format with leading zeros.\nExample JSON:\n{\"evidence\":[[298,270,322,405],[314,148,330,406]],\"answer\":\"03:05\"}"
+          "prompt": "Use the analog clock in the image. It shows one clean analog clock with hour numerals and two visible hands. Determine the requested time from the shown clock. Starting from the displayed time, what time is 50 minutes earlier? Answer in HH:MM 12-hour format with leading zeros.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing exactly two bounding boxes [x1, y1, x2, y2] for the clock hands.\nAnswer rule: set \"answer\" to the exact time in HH:MM 12-hour format with leading zeros.\nExample JSON:\n{\"evidence\":[[298,270,322,405],[314,148,330,406]],\"answer\":\"02:35\"}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 2,
+            "answer_or_evidence_variant_index": 1,
             "prompt_bundle_id": "temporal_clock_v1",
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the exact time in HH:MM 12-hour format with leading zeros",
-              "delta_minutes": "20",
+              "delta_minutes": "50",
               "evidence_hint": "set \"evidence\" to an array containing exactly two bounding boxes [x1, y1, x2, y2] for the clock hands",
-              "json_example": "{\"evidence\":[[298,270,322,405],[314,148,330,406]],\"answer\":\"03:05\"}",
-              "json_example_answer_only": "{\"answer\":\"03:05\"}",
+              "json_example": "{\"evidence\":[[298,270,322,405],[314,148,330,406]],\"answer\":\"02:35\"}",
+              "json_example_answer_only": "{\"answer\":\"02:35\"}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "one clean analog clock with hour numerals and two visible hands"
             },
             "task_family_key": "single_analog_clock",
-            "task_family_variant_index": 3,
+            "task_family_variant_index": 4,
             "task_key": "clock_readout_query",
-            "task_variant_index": 4,
+            "task_variant_index": 1,
             "task_variant_key": "minutes_before",
-            "task_variant_template_index": 2,
+            "task_variant_template_index": 1,
             "template_paths": [
               "temporal/clock/temporal_clock_v1.json"
             ],
@@ -286,7 +286,7 @@
               "task_variant:minutes_before": 5
             }
           },
-          "prompt": "Work from the clock shown in the image: one clean analog clock with hour numerals and two visible hands. Work from the shown clock face to answer the question. Move backward 20 minutes from the shown time. What time do you get? Answer in HH:MM 12-hour format with leading zeros.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the exact time in HH:MM 12-hour format with leading zeros.\nExample JSON:\n{\"answer\":\"03:05\"}"
+          "prompt": "Use the analog clock in the image. It shows one clean analog clock with hour numerals and two visible hands. Determine the requested time from the shown clock. Starting from the displayed time, what time is 50 minutes earlier? Answer in HH:MM 12-hour format with leading zeros.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the exact time in HH:MM 12-hour format with leading zeros.\nExample JSON:\n{\"answer\":\"02:35\"}"
         }
       },
       "task_variant": "minutes_before",
@@ -305,26 +305,26 @@
       ],
       "hand_bboxes_px": {
         "hour": [
-          201.674,
-          233.55,
+          268.968,
+          308.0,
           332.0,
-          332.0
+          455.792
         ],
         "minute": [
-          310.0,
           213.24,
-          497.593,
-          330.0
+          310.0,
+          330.0,
+          497.593
         ]
       },
       "hand_tips_px": {
         "hour": [
-          213.674,
-          245.55
+          280.968,
+          443.792
         ],
         "minute": [
-          487.593,
-          223.24
+          223.24,
+          487.593
         ]
       },
       "image_id": "img0",
@@ -371,24 +371,24 @@
             145
           ],
           "face_fill": [
-            255,
-            255,
-            255
+            250,
+            234,
+            244
           ],
           "face_outline": [
-            184,
-            155,
-            174
+            121,
+            26,
+            84
           ],
           "hour_hand": [
-            42,
-            48,
-            58
+            87,
+            18,
+            61
           ],
           "inner_ring": [
-            247,
-            217,
-            235
+            229,
+            137,
+            193
           ],
           "minute_hand": [
             208,
@@ -406,7 +406,7 @@
             84
           ]
         },
-        "style_variant": "studio"
+        "style_variant": "accented"
       },
       "coord_space": "pixel",
       "post_image_noise": {
@@ -439,8 +439,8 @@
           "attrs": {
             "accent_color_name": "magenta",
             "scene_variant": "minimal",
-            "shown_total_minutes": 610,
-            "style_variant": "studio"
+            "shown_total_minutes": 395,
+            "style_variant": "accented"
           },
           "bbox_px": [
             84.0,
@@ -453,55 +453,55 @@
         },
         {
           "attrs": {
-            "angle_deg": 215.0,
+            "angle_deg": 107.49999999999997,
             "center_px": [
               320.0,
               320.0
             ],
             "hand_kind": "hour",
             "tip_px": [
-              213.67406465128886,
-              245.54977856163418
+              280.9683872243454,
+              443.7924602071199
             ]
           },
           "bbox_px": [
-            201.67406465128886,
-            233.54977856163418,
+            268.9683872243454,
+            308.0,
             332.0,
-            332.0
+            455.7924602071199
           ],
           "entity_id": "hour_hand",
           "entity_kind": "clock_hand"
         },
         {
           "attrs": {
-            "angle_deg": -30.0,
+            "angle_deg": 120.0,
             "center_px": [
               320.0,
               320.0
             ],
             "hand_kind": "minute",
             "tip_px": [
-              487.5932361403645,
-              223.24
+              223.24000000000007,
+              487.5932361403645
             ]
           },
           "bbox_px": [
+            213.24000000000007,
             310.0,
-            213.24,
-            497.5932361403645,
-            330.0
+            330.0,
+            497.5932361403645
           ],
           "entity_id": "minute_hand",
           "entity_kind": "clock_hand"
         }
       ],
       "relations": {
-        "answer_time_text": "09:50",
-        "delta_minutes": 20,
+        "answer_time_text": "05:45",
+        "delta_minutes": 50,
         "scene_variant": "minimal",
-        "shown_time_text": "10:10",
-        "shown_total_minutes": 610,
+        "shown_time_text": "06:35",
+        "shown_total_minutes": 395,
         "task_variant": "minutes_before"
       },
       "scene_kind": "temporal_clock_single"
@@ -510,16 +510,16 @@
       "type": "bbox_set",
       "value": [
         [
-          201.674,
-          233.55,
+          268.968,
+          308.0,
           332.0,
-          332.0
+          455.792
         ],
         [
-          310.0,
           213.24,
-          497.593,
-          330.0
+          310.0,
+          330.0,
+          497.593
         ]
       ]
     }

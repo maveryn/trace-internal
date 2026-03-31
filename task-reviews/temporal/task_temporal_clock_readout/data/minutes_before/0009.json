@@ -1,22 +1,22 @@
 {
   "answer_gt": {
     "type": "string",
-    "value": "03:35"
+    "value": "01:15"
   },
   "evidence_gt": {
     "type": "bbox_set",
     "value": [
       [
         308.0,
-        308.0,
-        444.41,
-        396.9
+        224.566,
+        431.433,
+        332.0
       ],
       [
+        142.407,
         310.0,
-        116.48,
         330.0,
-        330.0
+        426.76
       ]
     ]
   },
@@ -24,17 +24,17 @@
     "format": "png",
     "path": "temporal/task_temporal_clock_readout/images/minutes_before/0009.png"
   },
-  "instance_seed": 2295115404737413,
-  "prompt": "Look at the clock in the image. It shows one outline-style analog clock with hour numerals and two visible hands. Use the displayed clock to answer the question. Subtract 25 minutes from the shown time. What is the result? Answer in HH:MM 12-hour format with leading zeros.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing exactly two bounding boxes [x1, y1, x2, y2] for the clock hands.\nAnswer rule: set \"answer\" to the exact time in HH:MM 12-hour format with leading zeros.\nExample JSON:\n{\"evidence\":[[298,270,322,405],[314,148,330,406]],\"answer\":\"03:00\"}",
+  "instance_seed": 5752467979881348,
+  "prompt": "The image shows one outline-style analog clock with hour numerals and two visible hands. Determine the requested time from the shown clock. Subtract 25 minutes from the shown time. What is the result? Answer in HH:MM 12-hour format with leading zeros.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly two bounding boxes [x1, y1, x2, y2] for the clock hands.\nAnswer requirement: set \"answer\" to the exact time in HH:MM 12-hour format with leading zeros.\nExample JSON:\n{\"evidence\":[[298,270,322,405],[314,148,330,406]],\"answer\":\"03:00\"}",
   "prompt_variants": {
-    "answer_and_evidence": "Look at the clock in the image. It shows one outline-style analog clock with hour numerals and two visible hands. Use the displayed clock to answer the question. Subtract 25 minutes from the shown time. What is the result? Answer in HH:MM 12-hour format with leading zeros.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing exactly two bounding boxes [x1, y1, x2, y2] for the clock hands.\nAnswer rule: set \"answer\" to the exact time in HH:MM 12-hour format with leading zeros.\nExample JSON:\n{\"evidence\":[[298,270,322,405],[314,148,330,406]],\"answer\":\"03:00\"}",
-    "answer_only": "Look at the clock in the image. It shows one outline-style analog clock with hour numerals and two visible hands. Use the displayed clock to answer the question. Subtract 25 minutes from the shown time. What is the result? Answer in HH:MM 12-hour format with leading zeros.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the exact time in HH:MM 12-hour format with leading zeros.\nExample JSON:\n{\"answer\":\"03:00\"}"
+    "answer_and_evidence": "The image shows one outline-style analog clock with hour numerals and two visible hands. Determine the requested time from the shown clock. Subtract 25 minutes from the shown time. What is the result? Answer in HH:MM 12-hour format with leading zeros.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly two bounding boxes [x1, y1, x2, y2] for the clock hands.\nAnswer requirement: set \"answer\" to the exact time in HH:MM 12-hour format with leading zeros.\nExample JSON:\n{\"evidence\":[[298,270,322,405],[314,148,330,406]],\"answer\":\"03:00\"}",
+    "answer_only": "The image shows one outline-style analog clock with hour numerals and two visible hands. Determine the requested time from the shown clock. Subtract 25 minutes from the shown time. What is the result? Answer in HH:MM 12-hour format with leading zeros.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the exact time in HH:MM 12-hour format with leading zeros.\nExample JSON:\n{\"answer\":\"03:00\"}"
   },
   "task": "task_temporal_clock_readout",
   "task_variant": "minutes_before",
   "trace_payload": {
     "execution_trace": {
-      "accent_color_name": "blue",
+      "accent_color_name": "brown",
       "accent_color_name_probabilities": {
         "blue": 0.1,
         "brown": 0.1,
@@ -47,7 +47,7 @@
         "red": 0.1,
         "yellow": 0.1
       },
-      "answer_time_text": "03:35",
+      "answer_time_text": "01:15",
       "delta_minutes": 25,
       "delta_minutes_support": [
         5,
@@ -79,11 +79,11 @@
         "minimal": 0.3333333333333333,
         "outline": 0.3333333333333333
       },
-      "shown_hour": 4,
-      "shown_minute": 0,
-      "shown_time_text": "04:00",
-      "shown_total_minutes": 240,
-      "style_variant": "studio",
+      "shown_hour": 1,
+      "shown_minute": 40,
+      "shown_time_text": "01:40",
+      "shown_total_minutes": 100,
+      "style_variant": "accented",
       "style_variant_probabilities": {
         "accented": 0.3333333333333333,
         "marker": 0.3333333333333333,
@@ -104,15 +104,15 @@
       "bbox_set": [
         [
           308.0,
-          308.0,
-          444.41,
-          396.9
+          224.566,
+          431.433,
+          332.0
         ],
         [
+          142.407,
           310.0,
-          116.48,
           330.0,
-          330.0
+          426.76
         ]
       ],
       "pixel_point_map": {
@@ -121,18 +121,18 @@
           320.0
         ],
         "hour_hand_tip": [
-          432.41,
-          384.9
+          419.433,
+          236.566
         ],
         "minute_hand_tip": [
-          320.0,
-          126.48
+          152.407,
+          416.76
         ]
       }
     },
     "query_spec": {
       "params": {
-        "accent_color_name": "blue",
+        "accent_color_name": "brown",
         "accent_color_name_probabilities": {
           "blue": 0.1,
           "brown": 0.1,
@@ -174,7 +174,7 @@
           "minimal": 0.3333333333333333,
           "outline": 0.3333333333333333
         },
-        "style_variant": "studio",
+        "style_variant": "accented",
         "style_variant_probabilities": {
           "accented": 0.3333333333333333,
           "marker": 0.3333333333333333,
@@ -189,7 +189,7 @@
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 4,
+        "answer_or_evidence_variant_index": 2,
         "prompt_bundle_id": "temporal_clock_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -203,9 +203,9 @@
           "object_description": "one outline-style analog clock with hour numerals and two visible hands"
         },
         "task_family_key": "single_analog_clock",
-        "task_family_variant_index": 1,
+        "task_family_variant_index": 0,
         "task_key": "clock_readout_query",
-        "task_variant_index": 2,
+        "task_variant_index": 1,
         "task_variant_key": "minutes_before",
         "task_variant_template_index": 4,
         "template_paths": [
@@ -223,6 +223,40 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 2,
+            "prompt_bundle_id": "temporal_clock_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the exact time in HH:MM 12-hour format with leading zeros",
+              "delta_minutes": "25",
+              "evidence_hint": "set \"evidence\" to an array containing exactly two bounding boxes [x1, y1, x2, y2] for the clock hands",
+              "json_example": "{\"evidence\":[[298,270,322,405],[314,148,330,406]],\"answer\":\"03:00\"}",
+              "json_example_answer_only": "{\"answer\":\"03:00\"}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "one outline-style analog clock with hour numerals and two visible hands"
+            },
+            "task_family_key": "single_analog_clock",
+            "task_family_variant_index": 0,
+            "task_key": "clock_readout_query",
+            "task_variant_index": 1,
+            "task_variant_key": "minutes_before",
+            "task_variant_template_index": 4,
+            "template_paths": [
+              "temporal/clock/temporal_clock_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:clock_readout_query": 5,
+              "task_family:single_analog_clock": 5,
+              "task_variant:minutes_before": 5
+            }
+          },
+          "prompt": "The image shows one outline-style analog clock with hour numerals and two visible hands. Determine the requested time from the shown clock. Subtract 25 minutes from the shown time. What is the result? Answer in HH:MM 12-hour format with leading zeros.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly two bounding boxes [x1, y1, x2, y2] for the clock hands.\nAnswer requirement: set \"answer\" to the exact time in HH:MM 12-hour format with leading zeros.\nExample JSON:\n{\"evidence\":[[298,270,322,405],[314,148,330,406]],\"answer\":\"03:00\"}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
             "answer_or_evidence_variant_index": 4,
             "prompt_bundle_id": "temporal_clock_v1",
             "schema_version": "v1",
@@ -237,43 +271,9 @@
               "object_description": "one outline-style analog clock with hour numerals and two visible hands"
             },
             "task_family_key": "single_analog_clock",
-            "task_family_variant_index": 1,
+            "task_family_variant_index": 0,
             "task_key": "clock_readout_query",
-            "task_variant_index": 2,
-            "task_variant_key": "minutes_before",
-            "task_variant_template_index": 4,
-            "template_paths": [
-              "temporal/clock/temporal_clock_v1.json"
-            ],
-            "variant_count_by_key": {
-              "answer_or_evidence:answer_and_evidence": 5,
-              "task:clock_readout_query": 5,
-              "task_family:single_analog_clock": 5,
-              "task_variant:minutes_before": 5
-            }
-          },
-          "prompt": "Look at the clock in the image. It shows one outline-style analog clock with hour numerals and two visible hands. Use the displayed clock to answer the question. Subtract 25 minutes from the shown time. What is the result? Answer in HH:MM 12-hour format with leading zeros.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing exactly two bounding boxes [x1, y1, x2, y2] for the clock hands.\nAnswer rule: set \"answer\" to the exact time in HH:MM 12-hour format with leading zeros.\nExample JSON:\n{\"evidence\":[[298,270,322,405],[314,148,330,406]],\"answer\":\"03:00\"}"
-        },
-        "answer_only": {
-          "metadata": {
-            "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 0,
-            "prompt_bundle_id": "temporal_clock_v1",
-            "schema_version": "v1",
-            "slot_values": {
-              "answer_hint": "set \"answer\" to the exact time in HH:MM 12-hour format with leading zeros",
-              "delta_minutes": "25",
-              "evidence_hint": "set \"evidence\" to an array containing exactly two bounding boxes [x1, y1, x2, y2] for the clock hands",
-              "json_example": "{\"evidence\":[[298,270,322,405],[314,148,330,406]],\"answer\":\"03:00\"}",
-              "json_example_answer_only": "{\"answer\":\"03:00\"}",
-              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
-              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "one outline-style analog clock with hour numerals and two visible hands"
-            },
-            "task_family_key": "single_analog_clock",
-            "task_family_variant_index": 1,
-            "task_key": "clock_readout_query",
-            "task_variant_index": 2,
+            "task_variant_index": 1,
             "task_variant_key": "minutes_before",
             "task_variant_template_index": 4,
             "template_paths": [
@@ -286,7 +286,7 @@
               "task_variant:minutes_before": 5
             }
           },
-          "prompt": "Look at the clock in the image. It shows one outline-style analog clock with hour numerals and two visible hands. Use the displayed clock to answer the question. Subtract 25 minutes from the shown time. What is the result? Answer in HH:MM 12-hour format with leading zeros.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the exact time in HH:MM 12-hour format with leading zeros.\nExample JSON:\n{\"answer\":\"03:00\"}"
+          "prompt": "The image shows one outline-style analog clock with hour numerals and two visible hands. Determine the requested time from the shown clock. Subtract 25 minutes from the shown time. What is the result? Answer in HH:MM 12-hour format with leading zeros.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the exact time in HH:MM 12-hour format with leading zeros.\nExample JSON:\n{\"answer\":\"03:00\"}"
         }
       },
       "task_variant": "minutes_before",
@@ -306,25 +306,25 @@
       "hand_bboxes_px": {
         "hour": [
           308.0,
-          308.0,
-          444.41,
-          396.9
+          224.566,
+          431.433,
+          332.0
         ],
         "minute": [
+          142.407,
           310.0,
-          116.48,
           330.0,
-          330.0
+          426.76
         ]
       },
       "hand_tips_px": {
         "hour": [
-          432.41,
-          384.9
+          419.433,
+          236.566
         ],
         "minute": [
-          320.0,
-          126.48
+          152.407,
+          416.76
         ]
       },
       "image_id": "img0",
@@ -354,7 +354,7 @@
       "canvas_height": 640,
       "canvas_width": 640,
       "clock_style": {
-        "accent_color_name": "blue",
+        "accent_color_name": "brown",
         "bezel_width_px": 10,
         "face_radius_px": 236,
         "hour_hand_width_px": 12,
@@ -366,47 +366,47 @@
         "numeral_font_size_px": 28,
         "resolved_colors_rgb": {
           "center_dot": [
-            45,
-            117,
-            230
+            136,
+            112,
+            68
           ],
           "face_fill": [
-            255,
-            255,
-            255
+            243,
+            241,
+            236
           ],
           "face_outline": [
-            156,
-            168,
-            189
+            79,
+            65,
+            39
           ],
           "hour_hand": [
-            42,
-            48,
-            58
+            57,
+            47,
+            29
           ],
           "inner_ring": [
-            217,
-            230,
-            251
+            188,
+            175,
+            150
           ],
           "minute_hand": [
-            45,
-            117,
-            230
+            136,
+            112,
+            68
           ],
           "numerals": [
-            19,
-            49,
-            97
+            57,
+            47,
+            29
           ],
           "ticks": [
-            26,
-            68,
-            133
+            79,
+            65,
+            39
           ]
         },
-        "style_variant": "studio"
+        "style_variant": "accented"
       },
       "coord_space": "pixel",
       "post_image_noise": {
@@ -437,10 +437,10 @@
       "entities": [
         {
           "attrs": {
-            "accent_color_name": "blue",
+            "accent_color_name": "brown",
             "scene_variant": "outline",
-            "shown_total_minutes": 240,
-            "style_variant": "studio"
+            "shown_total_minutes": 100,
+            "style_variant": "accented"
           },
           "bbox_px": [
             84.0,
@@ -453,55 +453,55 @@
         },
         {
           "attrs": {
-            "angle_deg": 30.0,
+            "angle_deg": -40.00000000000001,
             "center_px": [
               320.0,
               320.0
             ],
             "hand_kind": "hour",
             "tip_px": [
-              432.41009741122014,
-              384.9
+              419.4325687168433,
+              236.5661682626872
             ]
           },
           "bbox_px": [
             308.0,
-            308.0,
-            444.41009741122014,
-            396.9
+            224.5661682626872,
+            431.4325687168433,
+            332.0
           ],
           "entity_id": "hour_hand",
           "entity_kind": "clock_hand"
         },
         {
           "attrs": {
-            "angle_deg": -90.0,
+            "angle_deg": 150.0,
             "center_px": [
               320.0,
               320.0
             ],
             "hand_kind": "minute",
             "tip_px": [
-              320.0,
-              126.48000000000002
+              152.40676385963545,
+              416.76
             ]
           },
           "bbox_px": [
+            142.40676385963545,
             310.0,
-            116.48000000000002,
             330.0,
-            330.0
+            426.76
           ],
           "entity_id": "minute_hand",
           "entity_kind": "clock_hand"
         }
       ],
       "relations": {
-        "answer_time_text": "03:35",
+        "answer_time_text": "01:15",
         "delta_minutes": 25,
         "scene_variant": "outline",
-        "shown_time_text": "04:00",
-        "shown_total_minutes": 240,
+        "shown_time_text": "01:40",
+        "shown_total_minutes": 100,
         "task_variant": "minutes_before"
       },
       "scene_kind": "temporal_clock_single"
@@ -511,15 +511,15 @@
       "value": [
         [
           308.0,
-          308.0,
-          444.41,
-          396.9
+          224.566,
+          431.433,
+          332.0
         ],
         [
+          142.407,
           310.0,
-          116.48,
           330.0,
-          330.0
+          426.76
         ]
       ]
     }

@@ -1,73 +1,72 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 8
+    "value": 7
   },
   "evidence_gt": {
     "type": "label_set",
     "value": [
-      "A",
       "D",
       "F",
       "G",
       "H",
-      "L",
+      "N",
       "R",
-      "T"
+      "W"
     ]
   },
   "image": {
     "format": "png",
     "path": "charts/task_charts_multiseries_pairwise_comparison_count/images/series_a_lt_b_count/0017.png"
   },
-  "instance_seed": 5480769873525435,
-  "prompt": "Work from the multiseries chart shown in the image: a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Determine how many category labels satisfy the requested pairwise series comparison. Count the category labels where Joey is below Blau.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer format: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+  "instance_seed": 5953750681240271,
+  "prompt": "Work from the multiseries chart shown in the image: a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Use the chart to compare the queried pair of series across the category labels. How many labeled categories have Josy under Tavy?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer format: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
   "prompt_variants": {
-    "answer_and_evidence": "Work from the multiseries chart shown in the image: a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Determine how many category labels satisfy the requested pairwise series comparison. Count the category labels where Joey is below Blau.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer format: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
-    "answer_only": "Work from the multiseries chart shown in the image: a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Determine how many category labels satisfy the requested pairwise series comparison. Count the category labels where Joey is below Blau.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
+    "answer_and_evidence": "Work from the multiseries chart shown in the image: a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Use the chart to compare the queried pair of series across the category labels. How many labeled categories have Josy under Tavy?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer format: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+    "answer_only": "Work from the multiseries chart shown in the image: a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Use the chart to compare the queried pair of series across the category labels. How many labeled categories have Josy under Tavy?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
   },
   "task": "task_charts_multiseries_pairwise_comparison_count",
   "task_variant": "series_a_lt_b_count",
   "trace_payload": {
     "execution_trace": {
-      "answer_value": 8,
-      "category_count": 8,
+      "answer_value": 7,
+      "category_count": 9,
       "category_count_range": [
         5,
         10
       ],
       "category_labels": [
+        "F",
+        "L",
+        "D",
+        "W",
+        "R",
         "G",
         "H",
-        "A",
-        "T",
-        "L",
-        "R",
-        "D",
-        "F"
+        "N",
+        "X"
       ],
       "comparison": "less_than",
       "evidence_labels": [
-        "A",
         "D",
         "F",
         "G",
         "H",
-        "L",
+        "N",
         "R",
-        "T"
+        "W"
       ],
-      "left_series_label": "Joey",
+      "left_series_label": "Josy",
       "mark_color_distance_space": "lab",
       "mark_color_min_distance": 40.0,
       "mark_color_sampling_policy": "random_rgb_palette",
       "queried_series_labels": [
-        "Joey",
-        "Blau"
+        "Josy",
+        "Tavy"
       ],
       "question_format": "numeric_open",
-      "right_series_label": "Blau",
-      "scene_variant": "grouped_horizontal_bar",
+      "right_series_label": "Tavy",
+      "scene_variant": "grouped_lollipop",
       "scene_variant_probabilities": {
         "grouped_bar": 0.25,
         "grouped_horizontal_bar": 0.25,
@@ -81,239 +80,229 @@
       ],
       "series_fill_palette_rgb": [
         [
-          100,
-          57,
-          194
+          58,
+          167,
+          179
         ],
         [
-          216,
-          125,
-          162
+          217,
+          99,
+          32
         ],
         [
           110,
-          20,
-          35
+          0,
+          53
         ]
       ],
       "series_labels": [
-        "On",
-        "Joey",
-        "Blau"
+        "Josy",
+        "Tavy",
+        "Karl"
       ],
       "series_outline_palette_rgb": [
         [
-          55,
-          31,
-          107
+          32,
+          92,
+          98
         ],
         [
           119,
-          69,
-          89
+          54,
+          18
         ],
         [
           61,
-          11,
-          19
+          0,
+          29
         ]
       ],
-      "target_answer": 8,
+      "target_answer": 7,
       "target_answer_range": [
         0,
         8
       ],
       "task_variant": "series_a_lt_b_count",
       "task_variant_probabilities": {
-        "series_a_gt_b_count": 0.5,
-        "series_a_lt_b_count": 0.5
+        "series_a_gt_b_count": 0.0,
+        "series_a_lt_b_count": 1.0
       },
       "values_by_category": {
-        "A": {
-          "Blau": 20,
-          "Joey": 10,
-          "On": 11
-        },
         "D": {
-          "Blau": 18,
-          "Joey": 8,
-          "On": 14
+          "Josy": 4,
+          "Karl": 10,
+          "Tavy": 20
         },
         "F": {
-          "Blau": 20,
-          "Joey": 8,
-          "On": 9
+          "Josy": 6,
+          "Karl": 14,
+          "Tavy": 15
         },
         "G": {
-          "Blau": 4,
-          "Joey": 1,
-          "On": 3
+          "Josy": 2,
+          "Karl": 4,
+          "Tavy": 12
         },
         "H": {
-          "Blau": 17,
-          "Joey": 2,
-          "On": 16
+          "Josy": 1,
+          "Karl": 4,
+          "Tavy": 18
         },
         "L": {
-          "Blau": 18,
-          "Joey": 12,
-          "On": 17
+          "Josy": 12,
+          "Karl": 11,
+          "Tavy": 9
+        },
+        "N": {
+          "Josy": 4,
+          "Karl": 7,
+          "Tavy": 19
         },
         "R": {
-          "Blau": 15,
-          "Joey": 5,
-          "On": 11
+          "Josy": 1,
+          "Karl": 5,
+          "Tavy": 12
         },
-        "T": {
-          "Blau": 20,
-          "Joey": 4,
-          "On": 19
+        "W": {
+          "Josy": 3,
+          "Karl": 4,
+          "Tavy": 8
+        },
+        "X": {
+          "Josy": 19,
+          "Karl": 17,
+          "Tavy": 7
         }
       }
     },
     "projected_evidence": {
       "bbox_set": [
         [
-          53.5,
-          178.794,
-          817.714,
-          211.706
+          278.733,
+          59.048,
+          328.6,
+          562.0
         ],
         [
-          53.0,
-          420.794,
-          745.143,
-          453.706
+          109.4,
+          174.286,
+          159.267,
+          562.0
         ],
         [
-          54.5,
-          481.294,
-          817.714,
-          514.206
+          532.733,
+          243.429,
+          582.6,
+          562.0
         ],
         [
-          53.0,
-          57.794,
-          237.143,
-          90.706
+          617.4,
+          105.143,
+          667.267,
+          562.0
         ],
         [
-          53.0,
-          118.294,
-          708.857,
-          151.206
+          702.067,
+          82.095,
+          751.933,
+          562.0
         ],
         [
-          55.0,
-          299.794,
-          745.143,
-          332.706
+          448.067,
+          243.429,
+          497.933,
+          562.0
         ],
         [
-          53.5,
-          360.294,
-          636.286,
-          393.206
-        ],
-        [
-          54.5,
-          239.294,
-          817.714,
-          272.206
+          363.4,
+          335.619,
+          413.267,
+          562.0
         ]
       ],
       "label_set": [
-        "A",
         "D",
         "F",
         "G",
         "H",
-        "L",
+        "N",
         "R",
-        "T"
+        "W"
       ],
       "pixel_point_map": {
-        "A": [
-          62.0,
-          195.25
-        ],
         "D": [
-          62.0,
-          437.25
+          303.667,
+          554.0
         ],
         "F": [
-          62.0,
-          497.75
+          134.333,
+          554.0
         ],
         "G": [
-          62.0,
-          74.25
+          557.667,
+          554.0
         ],
         "H": [
-          62.0,
-          134.75
+          642.333,
+          554.0
         ],
-        "L": [
-          62.0,
-          316.25
+        "N": [
+          727.0,
+          554.0
         ],
         "R": [
-          62.0,
-          376.75
+          473.0,
+          554.0
         ],
-        "T": [
-          62.0,
-          255.75
+        "W": [
+          388.333,
+          554.0
         ]
       },
       "pixel_point_set": [
         [
-          62.0,
-          195.25
+          303.667,
+          554.0
         ],
         [
-          62.0,
-          437.25
+          134.333,
+          554.0
         ],
         [
-          62.0,
-          497.75
+          557.667,
+          554.0
         ],
         [
-          62.0,
-          74.25
+          642.333,
+          554.0
         ],
         [
-          62.0,
-          134.75
+          727.0,
+          554.0
         ],
         [
-          62.0,
-          316.25
+          473.0,
+          554.0
         ],
         [
-          62.0,
-          376.75
-        ],
-        [
-          62.0,
-          255.75
+          388.333,
+          554.0
         ]
       ]
     },
     "query_spec": {
       "params": {
-        "category_count": 8,
+        "category_count": 9,
         "category_count_range": [
           5,
           10
         ],
         "comparison": "less_than",
         "queried_series_labels": [
-          "Joey",
-          "Blau"
+          "Josy",
+          "Tavy"
         ],
-        "scene_variant": "grouped_horizontal_bar",
+        "scene_variant": "grouped_lollipop",
         "scene_variant_probabilities": {
           "grouped_bar": 0.25,
           "grouped_horizontal_bar": 0.25,
@@ -325,15 +314,15 @@
           2,
           3
         ],
-        "target_answer": 8,
+        "target_answer": 7,
         "target_answer_range": [
           0,
           8
         ],
         "task_variant": "series_a_lt_b_count",
         "task_variant_probabilities": {
-          "series_a_gt_b_count": 0.5,
-          "series_a_lt_b_count": 0.5
+          "series_a_gt_b_count": 0.0,
+          "series_a_lt_b_count": 1.0
         }
       },
       "prompt_variant": {
@@ -348,16 +337,16 @@
           "json_example_answer_only": "{\"answer\":2}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "left_series": "Joey",
-          "object_description": "a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category",
-          "right_series": "Blau"
+          "left_series": "Josy",
+          "object_description": "a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis",
+          "right_series": "Tavy"
         },
         "task_family_key": "multiseries_chart_comparison",
         "task_family_variant_index": 2,
         "task_key": "pairwise_comparison_count_query",
-        "task_variant_index": 2,
+        "task_variant_index": 1,
         "task_variant_key": "series_a_lt_b_count",
-        "task_variant_template_index": 1,
+        "task_variant_template_index": 2,
         "template_paths": [
           "charts/multiseries/charts_multiseries_v1.json"
         ],
@@ -383,16 +372,16 @@
               "json_example_answer_only": "{\"answer\":2}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "left_series": "Joey",
-              "object_description": "a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category",
-              "right_series": "Blau"
+              "left_series": "Josy",
+              "object_description": "a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis",
+              "right_series": "Tavy"
             },
             "task_family_key": "multiseries_chart_comparison",
             "task_family_variant_index": 2,
             "task_key": "pairwise_comparison_count_query",
-            "task_variant_index": 2,
+            "task_variant_index": 1,
             "task_variant_key": "series_a_lt_b_count",
-            "task_variant_template_index": 1,
+            "task_variant_template_index": 2,
             "template_paths": [
               "charts/multiseries/charts_multiseries_v1.json"
             ],
@@ -403,12 +392,12 @@
               "task_variant:series_a_lt_b_count": 5
             }
           },
-          "prompt": "Work from the multiseries chart shown in the image: a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Determine how many category labels satisfy the requested pairwise series comparison. Count the category labels where Joey is below Blau.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer format: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}"
+          "prompt": "Work from the multiseries chart shown in the image: a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Use the chart to compare the queried pair of series across the category labels. How many labeled categories have Josy under Tavy?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer format: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 0,
+            "answer_or_evidence_variant_index": 4,
             "prompt_bundle_id": "charts_multiseries_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -418,16 +407,16 @@
               "json_example_answer_only": "{\"answer\":2}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "left_series": "Joey",
-              "object_description": "a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category",
-              "right_series": "Blau"
+              "left_series": "Josy",
+              "object_description": "a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis",
+              "right_series": "Tavy"
             },
             "task_family_key": "multiseries_chart_comparison",
             "task_family_variant_index": 2,
             "task_key": "pairwise_comparison_count_query",
-            "task_variant_index": 2,
+            "task_variant_index": 1,
             "task_variant_key": "series_a_lt_b_count",
-            "task_variant_template_index": 1,
+            "task_variant_template_index": 2,
             "template_paths": [
               "charts/multiseries/charts_multiseries_v1.json"
             ],
@@ -438,7 +427,7 @@
               "task_variant:series_a_lt_b_count": 5
             }
           },
-          "prompt": "Work from the multiseries chart shown in the image: a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Determine how many category labels satisfy the requested pairwise series comparison. Count the category labels where Joey is below Blau.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
+          "prompt": "Work from the multiseries chart shown in the image: a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Use the chart to compare the queried pair of series across the category labels. How many labeled categories have Josy under Tavy?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
         }
       },
       "task_variant": "series_a_lt_b_count",
@@ -446,37 +435,41 @@
     },
     "render_map": {
       "category_label_centers_px": {
-        "A": [
-          62.0,
-          195.25
-        ],
         "D": [
-          62.0,
-          437.25
+          303.667,
+          554.0
         ],
         "F": [
-          62.0,
-          497.75
+          134.333,
+          554.0
         ],
         "G": [
-          62.0,
-          74.25
+          557.667,
+          554.0
         ],
         "H": [
-          62.0,
-          134.75
+          642.333,
+          554.0
         ],
         "L": [
-          62.0,
-          316.25
+          219.0,
+          554.0
+        ],
+        "N": [
+          727.0,
+          554.0
         ],
         "R": [
-          62.0,
-          376.75
+          473.0,
+          554.0
         ],
-        "T": [
-          62.0,
-          255.75
+        "W": [
+          388.333,
+          554.0
+        ],
+        "X": [
+          811.667,
+          554.0
         ]
       },
       "image_id": "img0",
@@ -517,36 +510,36 @@
         "sampling_policy": "random_rgb_palette",
         "series_fill_palette_rgb": [
           [
-            100,
-            57,
-            194
+            58,
+            167,
+            179
           ],
           [
-            216,
-            125,
-            162
+            217,
+            99,
+            32
           ],
           [
             110,
-            20,
-            35
+            0,
+            53
           ]
         ],
         "series_outline_palette_rgb": [
           [
-            55,
-            31,
-            107
+            32,
+            92,
+            98
           ],
           [
             119,
-            69,
-            89
+            54,
+            18
           ],
           [
             61,
-            11,
-            19
+            0,
+            29
           ]
         ]
       },
@@ -572,7 +565,7 @@
         "edits": [],
         "enabled": false
       },
-      "scene_variant": "grouped_horizontal_bar",
+      "scene_variant": "grouped_lollipop",
       "text_style": {
         "label_font_size_px": 22,
         "label_stroke_width_px": 2,
@@ -609,1043 +602,1167 @@
         {
           "attrs": {
             "category_group_bbox_px": [
-              53.0,
-              57.794,
-              237.143,
-              90.706
+              109.4,
+              174.286,
+              159.267,
+              562.0
             ],
-            "category_label": "G",
+            "category_label": "F",
             "category_label_center_px": [
-              62.0,
-              74.25
+              134.333,
+              554.0
             ],
             "category_rank": 0,
             "mark_bbox_px": [
-              92.0,
-              57.794,
-              200.857,
-              66.506
+              109.4,
+              381.714,
+              125.4,
+              397.714
             ],
             "mark_center_px": [
-              146.429,
-              62.15
+              117.4,
+              389.714
             ],
             "mark_fill_rgb": [
-              100,
-              57,
-              194
+              58,
+              167,
+              179
             ],
             "mark_outline_rgb": [
-              55,
-              31,
-              107
+              32,
+              92,
+              98
             ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "On",
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Josy",
+            "series_rank": 0,
+            "value": 6
+          },
+          "entity_id": "mark_F_Josy",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              109.4,
+              174.286,
+              159.267,
+              562.0
+            ],
+            "category_label": "F",
+            "category_label_center_px": [
+              134.333,
+              554.0
+            ],
+            "category_rank": 0,
+            "mark_bbox_px": [
+              126.333,
+              174.286,
+              142.333,
+              190.286
+            ],
+            "mark_center_px": [
+              134.333,
+              182.286
+            ],
+            "mark_fill_rgb": [
+              217,
+              99,
+              32
+            ],
+            "mark_outline_rgb": [
+              119,
+              54,
+              18
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Tavy",
+            "series_rank": 1,
+            "value": 15
+          },
+          "entity_id": "mark_F_Tavy",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              109.4,
+              174.286,
+              159.267,
+              562.0
+            ],
+            "category_label": "F",
+            "category_label_center_px": [
+              134.333,
+              554.0
+            ],
+            "category_rank": 0,
+            "mark_bbox_px": [
+              143.267,
+              197.333,
+              159.267,
+              213.333
+            ],
+            "mark_center_px": [
+              151.267,
+              205.333
+            ],
+            "mark_fill_rgb": [
+              110,
+              0,
+              53
+            ],
+            "mark_outline_rgb": [
+              61,
+              0,
+              29
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Karl",
+            "series_rank": 2,
+            "value": 14
+          },
+          "entity_id": "mark_F_Karl",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              194.067,
+              243.429,
+              243.933,
+              562.0
+            ],
+            "category_label": "L",
+            "category_label_center_px": [
+              219.0,
+              554.0
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              194.067,
+              243.429,
+              210.067,
+              259.429
+            ],
+            "mark_center_px": [
+              202.067,
+              251.429
+            ],
+            "mark_fill_rgb": [
+              58,
+              167,
+              179
+            ],
+            "mark_outline_rgb": [
+              32,
+              92,
+              98
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Josy",
+            "series_rank": 0,
+            "value": 12
+          },
+          "entity_id": "mark_L_Josy",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              194.067,
+              243.429,
+              243.933,
+              562.0
+            ],
+            "category_label": "L",
+            "category_label_center_px": [
+              219.0,
+              554.0
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              211.0,
+              312.571,
+              227.0,
+              328.571
+            ],
+            "mark_center_px": [
+              219.0,
+              320.571
+            ],
+            "mark_fill_rgb": [
+              217,
+              99,
+              32
+            ],
+            "mark_outline_rgb": [
+              119,
+              54,
+              18
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Tavy",
+            "series_rank": 1,
+            "value": 9
+          },
+          "entity_id": "mark_L_Tavy",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              194.067,
+              243.429,
+              243.933,
+              562.0
+            ],
+            "category_label": "L",
+            "category_label_center_px": [
+              219.0,
+              554.0
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              227.933,
+              266.476,
+              243.933,
+              282.476
+            ],
+            "mark_center_px": [
+              235.933,
+              274.476
+            ],
+            "mark_fill_rgb": [
+              110,
+              0,
+              53
+            ],
+            "mark_outline_rgb": [
+              61,
+              0,
+              29
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Karl",
+            "series_rank": 2,
+            "value": 11
+          },
+          "entity_id": "mark_L_Karl",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              278.733,
+              59.048,
+              328.6,
+              562.0
+            ],
+            "category_label": "D",
+            "category_label_center_px": [
+              303.667,
+              554.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              278.733,
+              427.81,
+              294.733,
+              443.81
+            ],
+            "mark_center_px": [
+              286.733,
+              435.81
+            ],
+            "mark_fill_rgb": [
+              58,
+              167,
+              179
+            ],
+            "mark_outline_rgb": [
+              32,
+              92,
+              98
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Josy",
+            "series_rank": 0,
+            "value": 4
+          },
+          "entity_id": "mark_D_Josy",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              278.733,
+              59.048,
+              328.6,
+              562.0
+            ],
+            "category_label": "D",
+            "category_label_center_px": [
+              303.667,
+              554.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              295.667,
+              59.048,
+              311.667,
+              75.048
+            ],
+            "mark_center_px": [
+              303.667,
+              67.048
+            ],
+            "mark_fill_rgb": [
+              217,
+              99,
+              32
+            ],
+            "mark_outline_rgb": [
+              119,
+              54,
+              18
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Tavy",
+            "series_rank": 1,
+            "value": 20
+          },
+          "entity_id": "mark_D_Tavy",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              278.733,
+              59.048,
+              328.6,
+              562.0
+            ],
+            "category_label": "D",
+            "category_label_center_px": [
+              303.667,
+              554.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              312.6,
+              289.524,
+              328.6,
+              305.524
+            ],
+            "mark_center_px": [
+              320.6,
+              297.524
+            ],
+            "mark_fill_rgb": [
+              110,
+              0,
+              53
+            ],
+            "mark_outline_rgb": [
+              61,
+              0,
+              29
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Karl",
+            "series_rank": 2,
+            "value": 10
+          },
+          "entity_id": "mark_D_Karl",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              363.4,
+              335.619,
+              413.267,
+              562.0
+            ],
+            "category_label": "W",
+            "category_label_center_px": [
+              388.333,
+              554.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              363.4,
+              450.857,
+              379.4,
+              466.857
+            ],
+            "mark_center_px": [
+              371.4,
+              458.857
+            ],
+            "mark_fill_rgb": [
+              58,
+              167,
+              179
+            ],
+            "mark_outline_rgb": [
+              32,
+              92,
+              98
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Josy",
             "series_rank": 0,
             "value": 3
           },
-          "entity_id": "mark_G_On",
-          "entity_type": "bar"
+          "entity_id": "mark_W_Josy",
+          "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              53.0,
-              57.794,
-              237.143,
-              90.706
+              363.4,
+              335.619,
+              413.267,
+              562.0
             ],
-            "category_label": "G",
+            "category_label": "W",
             "category_label_center_px": [
-              62.0,
-              74.25
+              388.333,
+              554.0
             ],
-            "category_rank": 0,
+            "category_rank": 3,
             "mark_bbox_px": [
-              92.0,
-              69.894,
-              128.286,
-              78.606
+              380.333,
+              335.619,
+              396.333,
+              351.619
             ],
             "mark_center_px": [
-              110.143,
-              74.25
+              388.333,
+              343.619
             ],
             "mark_fill_rgb": [
-              216,
-              125,
-              162
+              217,
+              99,
+              32
             ],
             "mark_outline_rgb": [
               119,
-              69,
-              89
+              54,
+              18
             ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Joey",
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Tavy",
             "series_rank": 1,
+            "value": 8
+          },
+          "entity_id": "mark_W_Tavy",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              363.4,
+              335.619,
+              413.267,
+              562.0
+            ],
+            "category_label": "W",
+            "category_label_center_px": [
+              388.333,
+              554.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              397.267,
+              427.81,
+              413.267,
+              443.81
+            ],
+            "mark_center_px": [
+              405.267,
+              435.81
+            ],
+            "mark_fill_rgb": [
+              110,
+              0,
+              53
+            ],
+            "mark_outline_rgb": [
+              61,
+              0,
+              29
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Karl",
+            "series_rank": 2,
+            "value": 4
+          },
+          "entity_id": "mark_W_Karl",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              448.067,
+              243.429,
+              497.933,
+              562.0
+            ],
+            "category_label": "R",
+            "category_label_center_px": [
+              473.0,
+              554.0
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              448.067,
+              496.952,
+              464.067,
+              512.952
+            ],
+            "mark_center_px": [
+              456.067,
+              504.952
+            ],
+            "mark_fill_rgb": [
+              58,
+              167,
+              179
+            ],
+            "mark_outline_rgb": [
+              32,
+              92,
+              98
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Josy",
+            "series_rank": 0,
             "value": 1
           },
-          "entity_id": "mark_G_Joey",
-          "entity_type": "bar"
+          "entity_id": "mark_R_Josy",
+          "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              53.0,
-              57.794,
-              237.143,
-              90.706
+              448.067,
+              243.429,
+              497.933,
+              562.0
             ],
-            "category_label": "G",
+            "category_label": "R",
             "category_label_center_px": [
-              62.0,
-              74.25
-            ],
-            "category_rank": 0,
-            "mark_bbox_px": [
-              92.0,
-              81.994,
-              237.143,
-              90.706
-            ],
-            "mark_center_px": [
-              164.571,
-              86.35
-            ],
-            "mark_fill_rgb": [
-              110,
-              20,
-              35
-            ],
-            "mark_outline_rgb": [
-              61,
-              11,
-              19
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Blau",
-            "series_rank": 2,
-            "value": 4
-          },
-          "entity_id": "mark_G_Blau",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              53.0,
-              118.294,
-              708.857,
-              151.206
-            ],
-            "category_label": "H",
-            "category_label_center_px": [
-              62.0,
-              134.75
-            ],
-            "category_rank": 1,
-            "mark_bbox_px": [
-              92.0,
-              118.294,
-              672.571,
-              127.006
-            ],
-            "mark_center_px": [
-              382.286,
-              122.65
-            ],
-            "mark_fill_rgb": [
-              100,
-              57,
-              194
-            ],
-            "mark_outline_rgb": [
-              55,
-              31,
-              107
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "On",
-            "series_rank": 0,
-            "value": 16
-          },
-          "entity_id": "mark_H_On",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              53.0,
-              118.294,
-              708.857,
-              151.206
-            ],
-            "category_label": "H",
-            "category_label_center_px": [
-              62.0,
-              134.75
-            ],
-            "category_rank": 1,
-            "mark_bbox_px": [
-              92.0,
-              130.394,
-              164.571,
-              139.106
-            ],
-            "mark_center_px": [
-              128.286,
-              134.75
-            ],
-            "mark_fill_rgb": [
-              216,
-              125,
-              162
-            ],
-            "mark_outline_rgb": [
-              119,
-              69,
-              89
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Joey",
-            "series_rank": 1,
-            "value": 2
-          },
-          "entity_id": "mark_H_Joey",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              53.0,
-              118.294,
-              708.857,
-              151.206
-            ],
-            "category_label": "H",
-            "category_label_center_px": [
-              62.0,
-              134.75
-            ],
-            "category_rank": 1,
-            "mark_bbox_px": [
-              92.0,
-              142.494,
-              708.857,
-              151.206
-            ],
-            "mark_center_px": [
-              400.429,
-              146.85
-            ],
-            "mark_fill_rgb": [
-              110,
-              20,
-              35
-            ],
-            "mark_outline_rgb": [
-              61,
-              11,
-              19
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Blau",
-            "series_rank": 2,
-            "value": 17
-          },
-          "entity_id": "mark_H_Blau",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              53.5,
-              178.794,
-              817.714,
-              211.706
-            ],
-            "category_label": "A",
-            "category_label_center_px": [
-              62.0,
-              195.25
-            ],
-            "category_rank": 2,
-            "mark_bbox_px": [
-              92.0,
-              178.794,
-              491.143,
-              187.506
-            ],
-            "mark_center_px": [
-              291.571,
-              183.15
-            ],
-            "mark_fill_rgb": [
-              100,
-              57,
-              194
-            ],
-            "mark_outline_rgb": [
-              55,
-              31,
-              107
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "On",
-            "series_rank": 0,
-            "value": 11
-          },
-          "entity_id": "mark_A_On",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              53.5,
-              178.794,
-              817.714,
-              211.706
-            ],
-            "category_label": "A",
-            "category_label_center_px": [
-              62.0,
-              195.25
-            ],
-            "category_rank": 2,
-            "mark_bbox_px": [
-              92.0,
-              190.894,
-              454.857,
-              199.606
-            ],
-            "mark_center_px": [
-              273.429,
-              195.25
-            ],
-            "mark_fill_rgb": [
-              216,
-              125,
-              162
-            ],
-            "mark_outline_rgb": [
-              119,
-              69,
-              89
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Joey",
-            "series_rank": 1,
-            "value": 10
-          },
-          "entity_id": "mark_A_Joey",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              53.5,
-              178.794,
-              817.714,
-              211.706
-            ],
-            "category_label": "A",
-            "category_label_center_px": [
-              62.0,
-              195.25
-            ],
-            "category_rank": 2,
-            "mark_bbox_px": [
-              92.0,
-              202.994,
-              817.714,
-              211.706
-            ],
-            "mark_center_px": [
-              454.857,
-              207.35
-            ],
-            "mark_fill_rgb": [
-              110,
-              20,
-              35
-            ],
-            "mark_outline_rgb": [
-              61,
-              11,
-              19
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Blau",
-            "series_rank": 2,
-            "value": 20
-          },
-          "entity_id": "mark_A_Blau",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              54.5,
-              239.294,
-              817.714,
-              272.206
-            ],
-            "category_label": "T",
-            "category_label_center_px": [
-              62.0,
-              255.75
-            ],
-            "category_rank": 3,
-            "mark_bbox_px": [
-              92.0,
-              239.294,
-              781.429,
-              248.006
-            ],
-            "mark_center_px": [
-              436.714,
-              243.65
-            ],
-            "mark_fill_rgb": [
-              100,
-              57,
-              194
-            ],
-            "mark_outline_rgb": [
-              55,
-              31,
-              107
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "On",
-            "series_rank": 0,
-            "value": 19
-          },
-          "entity_id": "mark_T_On",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              54.5,
-              239.294,
-              817.714,
-              272.206
-            ],
-            "category_label": "T",
-            "category_label_center_px": [
-              62.0,
-              255.75
-            ],
-            "category_rank": 3,
-            "mark_bbox_px": [
-              92.0,
-              251.394,
-              237.143,
-              260.106
-            ],
-            "mark_center_px": [
-              164.571,
-              255.75
-            ],
-            "mark_fill_rgb": [
-              216,
-              125,
-              162
-            ],
-            "mark_outline_rgb": [
-              119,
-              69,
-              89
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Joey",
-            "series_rank": 1,
-            "value": 4
-          },
-          "entity_id": "mark_T_Joey",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              54.5,
-              239.294,
-              817.714,
-              272.206
-            ],
-            "category_label": "T",
-            "category_label_center_px": [
-              62.0,
-              255.75
-            ],
-            "category_rank": 3,
-            "mark_bbox_px": [
-              92.0,
-              263.494,
-              817.714,
-              272.206
-            ],
-            "mark_center_px": [
-              454.857,
-              267.85
-            ],
-            "mark_fill_rgb": [
-              110,
-              20,
-              35
-            ],
-            "mark_outline_rgb": [
-              61,
-              11,
-              19
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Blau",
-            "series_rank": 2,
-            "value": 20
-          },
-          "entity_id": "mark_T_Blau",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              55.0,
-              299.794,
-              745.143,
-              332.706
-            ],
-            "category_label": "L",
-            "category_label_center_px": [
-              62.0,
-              316.25
+              473.0,
+              554.0
             ],
             "category_rank": 4,
             "mark_bbox_px": [
-              92.0,
-              299.794,
-              708.857,
-              308.506
+              465.0,
+              243.429,
+              481.0,
+              259.429
             ],
             "mark_center_px": [
-              400.429,
-              304.15
+              473.0,
+              251.429
             ],
             "mark_fill_rgb": [
-              100,
-              57,
-              194
-            ],
-            "mark_outline_rgb": [
-              55,
-              31,
-              107
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "On",
-            "series_rank": 0,
-            "value": 17
-          },
-          "entity_id": "mark_L_On",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              55.0,
-              299.794,
-              745.143,
-              332.706
-            ],
-            "category_label": "L",
-            "category_label_center_px": [
-              62.0,
-              316.25
-            ],
-            "category_rank": 4,
-            "mark_bbox_px": [
-              92.0,
-              311.894,
-              527.429,
-              320.606
-            ],
-            "mark_center_px": [
-              309.714,
-              316.25
-            ],
-            "mark_fill_rgb": [
-              216,
-              125,
-              162
+              217,
+              99,
+              32
             ],
             "mark_outline_rgb": [
               119,
-              69,
-              89
+              54,
+              18
             ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Joey",
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Tavy",
             "series_rank": 1,
             "value": 12
           },
-          "entity_id": "mark_L_Joey",
-          "entity_type": "bar"
+          "entity_id": "mark_R_Tavy",
+          "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              55.0,
-              299.794,
-              745.143,
-              332.706
+              448.067,
+              243.429,
+              497.933,
+              562.0
             ],
-            "category_label": "L",
+            "category_label": "R",
             "category_label_center_px": [
-              62.0,
-              316.25
+              473.0,
+              554.0
             ],
             "category_rank": 4,
             "mark_bbox_px": [
-              92.0,
-              323.994,
-              745.143,
-              332.706
+              481.933,
+              404.762,
+              497.933,
+              420.762
             ],
             "mark_center_px": [
-              418.571,
-              328.35
+              489.933,
+              412.762
             ],
             "mark_fill_rgb": [
               110,
-              20,
-              35
+              0,
+              53
             ],
             "mark_outline_rgb": [
               61,
-              11,
-              19
+              0,
+              29
             ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Blau",
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Karl",
             "series_rank": 2,
-            "value": 18
-          },
-          "entity_id": "mark_L_Blau",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              53.5,
-              360.294,
-              636.286,
-              393.206
-            ],
-            "category_label": "R",
-            "category_label_center_px": [
-              62.0,
-              376.75
-            ],
-            "category_rank": 5,
-            "mark_bbox_px": [
-              92.0,
-              360.294,
-              491.143,
-              369.006
-            ],
-            "mark_center_px": [
-              291.571,
-              364.65
-            ],
-            "mark_fill_rgb": [
-              100,
-              57,
-              194
-            ],
-            "mark_outline_rgb": [
-              55,
-              31,
-              107
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "On",
-            "series_rank": 0,
-            "value": 11
-          },
-          "entity_id": "mark_R_On",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              53.5,
-              360.294,
-              636.286,
-              393.206
-            ],
-            "category_label": "R",
-            "category_label_center_px": [
-              62.0,
-              376.75
-            ],
-            "category_rank": 5,
-            "mark_bbox_px": [
-              92.0,
-              372.394,
-              273.429,
-              381.106
-            ],
-            "mark_center_px": [
-              182.714,
-              376.75
-            ],
-            "mark_fill_rgb": [
-              216,
-              125,
-              162
-            ],
-            "mark_outline_rgb": [
-              119,
-              69,
-              89
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Joey",
-            "series_rank": 1,
             "value": 5
           },
-          "entity_id": "mark_R_Joey",
-          "entity_type": "bar"
+          "entity_id": "mark_R_Karl",
+          "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              53.5,
-              360.294,
-              636.286,
-              393.206
+              532.733,
+              243.429,
+              582.6,
+              562.0
             ],
-            "category_label": "R",
+            "category_label": "G",
             "category_label_center_px": [
-              62.0,
-              376.75
+              557.667,
+              554.0
             ],
             "category_rank": 5,
             "mark_bbox_px": [
-              92.0,
-              384.494,
-              636.286,
-              393.206
+              532.733,
+              473.905,
+              548.733,
+              489.905
             ],
             "mark_center_px": [
-              364.143,
-              388.85
+              540.733,
+              481.905
             ],
             "mark_fill_rgb": [
-              110,
-              20,
-              35
+              58,
+              167,
+              179
             ],
             "mark_outline_rgb": [
-              61,
-              11,
-              19
+              32,
+              92,
+              98
             ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Blau",
-            "series_rank": 2,
-            "value": 15
-          },
-          "entity_id": "mark_R_Blau",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              53.0,
-              420.794,
-              745.143,
-              453.706
-            ],
-            "category_label": "D",
-            "category_label_center_px": [
-              62.0,
-              437.25
-            ],
-            "category_rank": 6,
-            "mark_bbox_px": [
-              92.0,
-              420.794,
-              600.0,
-              429.506
-            ],
-            "mark_center_px": [
-              346.0,
-              425.15
-            ],
-            "mark_fill_rgb": [
-              100,
-              57,
-              194
-            ],
-            "mark_outline_rgb": [
-              55,
-              31,
-              107
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "On",
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Josy",
             "series_rank": 0,
-            "value": 14
+            "value": 2
           },
-          "entity_id": "mark_D_On",
-          "entity_type": "bar"
+          "entity_id": "mark_G_Josy",
+          "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              53.0,
-              420.794,
-              745.143,
-              453.706
+              532.733,
+              243.429,
+              582.6,
+              562.0
             ],
-            "category_label": "D",
+            "category_label": "G",
             "category_label_center_px": [
-              62.0,
-              437.25
+              557.667,
+              554.0
             ],
-            "category_rank": 6,
+            "category_rank": 5,
             "mark_bbox_px": [
-              92.0,
-              432.894,
-              382.286,
-              441.606
+              549.667,
+              243.429,
+              565.667,
+              259.429
             ],
             "mark_center_px": [
-              237.143,
-              437.25
+              557.667,
+              251.429
             ],
             "mark_fill_rgb": [
-              216,
-              125,
-              162
+              217,
+              99,
+              32
             ],
             "mark_outline_rgb": [
               119,
-              69,
-              89
+              54,
+              18
             ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Joey",
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Tavy",
             "series_rank": 1,
-            "value": 8
+            "value": 12
           },
-          "entity_id": "mark_D_Joey",
-          "entity_type": "bar"
+          "entity_id": "mark_G_Tavy",
+          "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              53.0,
-              420.794,
-              745.143,
-              453.706
+              532.733,
+              243.429,
+              582.6,
+              562.0
             ],
-            "category_label": "D",
+            "category_label": "G",
             "category_label_center_px": [
-              62.0,
-              437.25
+              557.667,
+              554.0
             ],
-            "category_rank": 6,
+            "category_rank": 5,
             "mark_bbox_px": [
-              92.0,
-              444.994,
-              745.143,
-              453.706
+              566.6,
+              427.81,
+              582.6,
+              443.81
             ],
             "mark_center_px": [
-              418.571,
-              449.35
+              574.6,
+              435.81
             ],
             "mark_fill_rgb": [
               110,
-              20,
-              35
+              0,
+              53
             ],
             "mark_outline_rgb": [
               61,
-              11,
-              19
+              0,
+              29
             ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Blau",
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Karl",
             "series_rank": 2,
+            "value": 4
+          },
+          "entity_id": "mark_G_Karl",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              617.4,
+              105.143,
+              667.267,
+              562.0
+            ],
+            "category_label": "H",
+            "category_label_center_px": [
+              642.333,
+              554.0
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              617.4,
+              496.952,
+              633.4,
+              512.952
+            ],
+            "mark_center_px": [
+              625.4,
+              504.952
+            ],
+            "mark_fill_rgb": [
+              58,
+              167,
+              179
+            ],
+            "mark_outline_rgb": [
+              32,
+              92,
+              98
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Josy",
+            "series_rank": 0,
+            "value": 1
+          },
+          "entity_id": "mark_H_Josy",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              617.4,
+              105.143,
+              667.267,
+              562.0
+            ],
+            "category_label": "H",
+            "category_label_center_px": [
+              642.333,
+              554.0
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              634.333,
+              105.143,
+              650.333,
+              121.143
+            ],
+            "mark_center_px": [
+              642.333,
+              113.143
+            ],
+            "mark_fill_rgb": [
+              217,
+              99,
+              32
+            ],
+            "mark_outline_rgb": [
+              119,
+              54,
+              18
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Tavy",
+            "series_rank": 1,
             "value": 18
           },
-          "entity_id": "mark_D_Blau",
-          "entity_type": "bar"
+          "entity_id": "mark_H_Tavy",
+          "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              54.5,
-              481.294,
-              817.714,
-              514.206
+              617.4,
+              105.143,
+              667.267,
+              562.0
             ],
-            "category_label": "F",
+            "category_label": "H",
             "category_label_center_px": [
-              62.0,
-              497.75
+              642.333,
+              554.0
             ],
-            "category_rank": 7,
+            "category_rank": 6,
             "mark_bbox_px": [
-              92.0,
-              481.294,
-              418.571,
-              490.006
+              651.267,
+              427.81,
+              667.267,
+              443.81
             ],
             "mark_center_px": [
-              255.286,
-              485.65
-            ],
-            "mark_fill_rgb": [
-              100,
-              57,
-              194
-            ],
-            "mark_outline_rgb": [
-              55,
-              31,
-              107
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "On",
-            "series_rank": 0,
-            "value": 9
-          },
-          "entity_id": "mark_F_On",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              54.5,
-              481.294,
-              817.714,
-              514.206
-            ],
-            "category_label": "F",
-            "category_label_center_px": [
-              62.0,
-              497.75
-            ],
-            "category_rank": 7,
-            "mark_bbox_px": [
-              92.0,
-              493.394,
-              382.286,
-              502.106
-            ],
-            "mark_center_px": [
-              237.143,
-              497.75
-            ],
-            "mark_fill_rgb": [
-              216,
-              125,
-              162
-            ],
-            "mark_outline_rgb": [
-              119,
-              69,
-              89
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Joey",
-            "series_rank": 1,
-            "value": 8
-          },
-          "entity_id": "mark_F_Joey",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              54.5,
-              481.294,
-              817.714,
-              514.206
-            ],
-            "category_label": "F",
-            "category_label_center_px": [
-              62.0,
-              497.75
-            ],
-            "category_rank": 7,
-            "mark_bbox_px": [
-              92.0,
-              505.494,
-              817.714,
-              514.206
-            ],
-            "mark_center_px": [
-              454.857,
-              509.85
+              659.267,
+              435.81
             ],
             "mark_fill_rgb": [
               110,
-              20,
-              35
+              0,
+              53
             ],
             "mark_outline_rgb": [
               61,
-              11,
-              19
+              0,
+              29
             ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Blau",
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Karl",
             "series_rank": 2,
-            "value": 20
+            "value": 4
           },
-          "entity_id": "mark_F_Blau",
-          "entity_type": "bar"
+          "entity_id": "mark_H_Karl",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              702.067,
+              82.095,
+              751.933,
+              562.0
+            ],
+            "category_label": "N",
+            "category_label_center_px": [
+              727.0,
+              554.0
+            ],
+            "category_rank": 7,
+            "mark_bbox_px": [
+              702.067,
+              427.81,
+              718.067,
+              443.81
+            ],
+            "mark_center_px": [
+              710.067,
+              435.81
+            ],
+            "mark_fill_rgb": [
+              58,
+              167,
+              179
+            ],
+            "mark_outline_rgb": [
+              32,
+              92,
+              98
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Josy",
+            "series_rank": 0,
+            "value": 4
+          },
+          "entity_id": "mark_N_Josy",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              702.067,
+              82.095,
+              751.933,
+              562.0
+            ],
+            "category_label": "N",
+            "category_label_center_px": [
+              727.0,
+              554.0
+            ],
+            "category_rank": 7,
+            "mark_bbox_px": [
+              719.0,
+              82.095,
+              735.0,
+              98.095
+            ],
+            "mark_center_px": [
+              727.0,
+              90.095
+            ],
+            "mark_fill_rgb": [
+              217,
+              99,
+              32
+            ],
+            "mark_outline_rgb": [
+              119,
+              54,
+              18
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Tavy",
+            "series_rank": 1,
+            "value": 19
+          },
+          "entity_id": "mark_N_Tavy",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              702.067,
+              82.095,
+              751.933,
+              562.0
+            ],
+            "category_label": "N",
+            "category_label_center_px": [
+              727.0,
+              554.0
+            ],
+            "category_rank": 7,
+            "mark_bbox_px": [
+              735.933,
+              358.667,
+              751.933,
+              374.667
+            ],
+            "mark_center_px": [
+              743.933,
+              366.667
+            ],
+            "mark_fill_rgb": [
+              110,
+              0,
+              53
+            ],
+            "mark_outline_rgb": [
+              61,
+              0,
+              29
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Karl",
+            "series_rank": 2,
+            "value": 7
+          },
+          "entity_id": "mark_N_Karl",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              786.733,
+              82.095,
+              836.6,
+              562.0
+            ],
+            "category_label": "X",
+            "category_label_center_px": [
+              811.667,
+              554.0
+            ],
+            "category_rank": 8,
+            "mark_bbox_px": [
+              786.733,
+              82.095,
+              802.733,
+              98.095
+            ],
+            "mark_center_px": [
+              794.733,
+              90.095
+            ],
+            "mark_fill_rgb": [
+              58,
+              167,
+              179
+            ],
+            "mark_outline_rgb": [
+              32,
+              92,
+              98
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Josy",
+            "series_rank": 0,
+            "value": 19
+          },
+          "entity_id": "mark_X_Josy",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              786.733,
+              82.095,
+              836.6,
+              562.0
+            ],
+            "category_label": "X",
+            "category_label_center_px": [
+              811.667,
+              554.0
+            ],
+            "category_rank": 8,
+            "mark_bbox_px": [
+              803.667,
+              358.667,
+              819.667,
+              374.667
+            ],
+            "mark_center_px": [
+              811.667,
+              366.667
+            ],
+            "mark_fill_rgb": [
+              217,
+              99,
+              32
+            ],
+            "mark_outline_rgb": [
+              119,
+              54,
+              18
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Tavy",
+            "series_rank": 1,
+            "value": 7
+          },
+          "entity_id": "mark_X_Tavy",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              786.733,
+              82.095,
+              836.6,
+              562.0
+            ],
+            "category_label": "X",
+            "category_label_center_px": [
+              811.667,
+              554.0
+            ],
+            "category_rank": 8,
+            "mark_bbox_px": [
+              820.6,
+              128.19,
+              836.6,
+              144.19
+            ],
+            "mark_center_px": [
+              828.6,
+              136.19
+            ],
+            "mark_fill_rgb": [
+              110,
+              0,
+              53
+            ],
+            "mark_outline_rgb": [
+              61,
+              0,
+              29
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Karl",
+            "series_rank": 2,
+            "value": 17
+          },
+          "entity_id": "mark_X_Karl",
+          "entity_type": "point"
         }
       ],
       "relations": {
         "comparison": "less_than",
         "evidence_labels": [
-          "A",
           "D",
           "F",
           "G",
           "H",
-          "L",
+          "N",
           "R",
-          "T"
+          "W"
         ],
         "queried_series_labels": [
-          "Joey",
-          "Blau"
+          "Josy",
+          "Tavy"
         ],
-        "scene_variant": "grouped_horizontal_bar",
+        "scene_variant": "grouped_lollipop",
         "task_variant": "series_a_lt_b_count"
       },
-      "scene_kind": "chart_grouped_horizontal_bar_multiseries"
+      "scene_kind": "chart_grouped_lollipop_multiseries"
     },
     "witness_symbolic": {
       "labels": [
-        "A",
         "D",
         "F",
         "G",
         "H",
-        "L",
+        "N",
         "R",
-        "T"
+        "W"
       ],
       "type": "label_set"
     }

@@ -1,71 +1,68 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 3
+    "value": 2
   },
   "evidence_gt": {
     "type": "label_set",
     "value": [
-      "F",
-      "Q",
-      "R"
+      "C",
+      "J"
     ]
   },
   "image": {
     "format": "png",
     "path": "charts/task_charts_trend_structure_value/images/longest_decreasing_streak/0023.png"
   },
-  "instance_seed": 6866331285548226,
-  "prompt": "Work from the ordered chart shown in the image: an ordered labeled horizontal bar chart with bars arranged from top to bottom. Each bar's numeric length can be read from the horizontal axis. Treat consecutive labels in displayed order as adjacent. Answer this question. Determine the length of the longest streak where each consecutive label decreases in value. Count labels, not gaps.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing all labels in the unique longest strictly decreasing streak.\nAnswer requirement: set \"answer\" to the requested count or streak length as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"C\",\"F\"],\"answer\":3}",
+  "instance_seed": 3532318767539092,
+  "prompt": "You are given an ordered chart: an ordered labeled horizontal bar chart with bars arranged from top to bottom. Each bar's numeric length can be read from the horizontal axis. Reason over the labels in the order they appear in the chart. Use the chart's displayed order to answer the question. Determine the length of the longest streak where each consecutive label decreases in value. Count labels, not gaps.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing all labels in the unique longest strictly decreasing streak.\nAnswer field: set \"answer\" to the requested count or streak length as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"C\",\"F\"],\"answer\":3}",
   "prompt_variants": {
-    "answer_and_evidence": "Work from the ordered chart shown in the image: an ordered labeled horizontal bar chart with bars arranged from top to bottom. Each bar's numeric length can be read from the horizontal axis. Treat consecutive labels in displayed order as adjacent. Answer this question. Determine the length of the longest streak where each consecutive label decreases in value. Count labels, not gaps.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing all labels in the unique longest strictly decreasing streak.\nAnswer requirement: set \"answer\" to the requested count or streak length as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"C\",\"F\"],\"answer\":3}",
-    "answer_only": "Work from the ordered chart shown in the image: an ordered labeled horizontal bar chart with bars arranged from top to bottom. Each bar's numeric length can be read from the horizontal axis. Treat consecutive labels in displayed order as adjacent. Answer this question. Determine the length of the longest streak where each consecutive label decreases in value. Count labels, not gaps.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the requested count or streak length as an integer.\nExample JSON:\n{\"answer\":3}"
+    "answer_and_evidence": "You are given an ordered chart: an ordered labeled horizontal bar chart with bars arranged from top to bottom. Each bar's numeric length can be read from the horizontal axis. Reason over the labels in the order they appear in the chart. Use the chart's displayed order to answer the question. Determine the length of the longest streak where each consecutive label decreases in value. Count labels, not gaps.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing all labels in the unique longest strictly decreasing streak.\nAnswer field: set \"answer\" to the requested count or streak length as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"C\",\"F\"],\"answer\":3}",
+    "answer_only": "You are given an ordered chart: an ordered labeled horizontal bar chart with bars arranged from top to bottom. Each bar's numeric length can be read from the horizontal axis. Reason over the labels in the order they appear in the chart. Use the chart's displayed order to answer the question. Determine the length of the longest streak where each consecutive label decreases in value. Count labels, not gaps.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the requested count or streak length as an integer.\nExample JSON:\n{\"answer\":3}"
   },
   "task": "task_charts_trend_structure_value",
   "task_variant": "longest_decreasing_streak",
   "trace_payload": {
     "execution_trace": {
-      "answer_value": 3,
+      "answer_value": 2,
       "evidence_labels": [
-        "F",
-        "Q",
-        "R"
+        "C",
+        "J"
       ],
       "evidence_point_indices": [
-        3,
         4,
         5
       ],
       "labels": [
-        "Z",
-        "D",
-        "B",
-        "Q",
-        "R",
-        "F"
+        "L",
+        "U",
+        "P",
+        "S",
+        "J",
+        "C",
+        "K"
       ],
       "mark_color_distance_space": "lab",
       "mark_color_min_distance": 40.0,
       "mark_color_sampling_policy": "random_rgb",
-      "mark_count": 6,
+      "mark_count": 7,
       "mark_count_range": [
         6,
         10
       ],
       "mark_fill_rgb": [
-        193,
-        93,
-        78
+        132,
+        47,
+        105
       ],
       "mark_outline_rgb": [
-        106,
-        51,
-        43
+        73,
+        26,
+        58
       ],
       "ordered_evidence_labels": [
-        "Q",
-        "R",
-        "F"
+        "J",
+        "C"
       ],
       "question_format": "numeric_open",
       "scene_variant": "horizontal_bar",
@@ -81,106 +78,95 @@
         "up",
         "up",
         "up",
+        "up",
         "down",
-        "down"
+        "up"
       ],
       "step_signs": [
         1,
         1,
         1,
+        1,
         -1,
-        -1
+        1
       ],
       "streak_direction": "decreasing",
-      "target_answer": 3,
+      "target_answer": 2,
       "target_answer_range": [
         2,
         10
       ],
       "task_variant": "longest_decreasing_streak",
       "task_variant_probabilities": {
-        "longest_decreasing_streak": 0.25,
-        "longest_increasing_streak": 0.25,
-        "peak_count": 0.25,
-        "trough_count": 0.25
+        "longest_decreasing_streak": 1.0,
+        "longest_increasing_streak": 0.0,
+        "peak_count": 0.0,
+        "trough_count": 0.0
       },
       "value_max": 20,
       "value_min": 1,
       "values": [
+        10,
         12,
         14,
         16,
         18,
         16,
-        14
+        18
       ],
       "values_by_label": {
-        "B": 16,
-        "D": 14,
-        "F": 14,
-        "Q": 18,
-        "R": 16,
-        "Z": 12
+        "C": 16,
+        "J": 18,
+        "K": 18,
+        "L": 10,
+        "P": 14,
+        "S": 16,
+        "U": 12
       }
     },
     "projected_evidence": {
       "bbox_set": [
         [
           92.0,
-          446.907,
-          579.789,
-          491.76
-        ],
-        [
-          92.0,
-          292.24,
-          719.158,
-          337.093
-        ],
-        [
-          92.0,
-          369.573,
+          389.349,
           649.474,
-          414.427
+          427.794
+        ],
+        [
+          92.0,
+          323.063,
+          719.158,
+          361.509
         ]
       ],
       "label_set": [
-        "F",
-        "Q",
-        "R"
+        "C",
+        "J"
       ],
       "pixel_point_map": {
-        "F": [
-          335.895,
-          469.333
-        ],
-        "Q": [
-          405.579,
-          314.667
-        ],
-        "R": [
+        "C": [
           370.737,
-          392.0
+          408.571
+        ],
+        "J": [
+          405.579,
+          342.286
         ]
       },
       "pixel_point_set": [
         [
-          335.895,
-          469.333
+          370.737,
+          408.571
         ],
         [
           405.579,
-          314.667
-        ],
-        [
-          370.737,
-          392.0
+          342.286
         ]
       ]
     },
     "query_spec": {
       "params": {
-        "mark_count": 6,
+        "mark_count": 7,
         "scene_variant": "horizontal_bar",
         "scene_variant_probabilities": {
           "area": 0.16666666666666666,
@@ -190,22 +176,22 @@
           "line": 0.16666666666666666,
           "lollipop": 0.16666666666666666
         },
-        "target_answer": 3,
+        "target_answer": 2,
         "target_answer_range": [
           2,
           10
         ],
         "task_variant": "longest_decreasing_streak",
         "task_variant_probabilities": {
-          "longest_decreasing_streak": 0.25,
-          "longest_increasing_streak": 0.25,
-          "peak_count": 0.25,
-          "trough_count": 0.25
+          "longest_decreasing_streak": 1.0,
+          "longest_increasing_streak": 0.0,
+          "peak_count": 0.0,
+          "trough_count": 0.0
         }
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 2,
+        "answer_or_evidence_variant_index": 3,
         "prompt_bundle_id": "charts_trend_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -218,9 +204,9 @@
           "object_description": "an ordered labeled horizontal bar chart with bars arranged from top to bottom. Each bar's numeric length can be read from the horizontal axis"
         },
         "task_family_key": "ordered_chart_trend",
-        "task_family_variant_index": 2,
+        "task_family_variant_index": 4,
         "task_key": "structure_value_query",
-        "task_variant_index": 0,
+        "task_variant_index": 4,
         "task_variant_key": "longest_decreasing_streak",
         "task_variant_template_index": 2,
         "template_paths": [
@@ -238,6 +224,39 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 3,
+            "prompt_bundle_id": "charts_trend_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the requested count or streak length as an integer",
+              "evidence_hint": "set \"evidence\" to an array containing all labels in the unique longest strictly decreasing streak",
+              "json_example": "{\"evidence\":[\"A\",\"C\",\"F\"],\"answer\":3}",
+              "json_example_answer_only": "{\"answer\":3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "an ordered labeled horizontal bar chart with bars arranged from top to bottom. Each bar's numeric length can be read from the horizontal axis"
+            },
+            "task_family_key": "ordered_chart_trend",
+            "task_family_variant_index": 4,
+            "task_key": "structure_value_query",
+            "task_variant_index": 4,
+            "task_variant_key": "longest_decreasing_streak",
+            "task_variant_template_index": 2,
+            "template_paths": [
+              "charts/trend/charts_trend_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:structure_value_query": 5,
+              "task_family:ordered_chart_trend": 5,
+              "task_variant:longest_decreasing_streak": 5
+            }
+          },
+          "prompt": "You are given an ordered chart: an ordered labeled horizontal bar chart with bars arranged from top to bottom. Each bar's numeric length can be read from the horizontal axis. Reason over the labels in the order they appear in the chart. Use the chart's displayed order to answer the question. Determine the length of the longest streak where each consecutive label decreases in value. Count labels, not gaps.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing all labels in the unique longest strictly decreasing streak.\nAnswer field: set \"answer\" to the requested count or streak length as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"C\",\"F\"],\"answer\":3}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
             "answer_or_evidence_variant_index": 2,
             "prompt_bundle_id": "charts_trend_v1",
             "schema_version": "v1",
@@ -251,42 +270,9 @@
               "object_description": "an ordered labeled horizontal bar chart with bars arranged from top to bottom. Each bar's numeric length can be read from the horizontal axis"
             },
             "task_family_key": "ordered_chart_trend",
-            "task_family_variant_index": 2,
+            "task_family_variant_index": 4,
             "task_key": "structure_value_query",
-            "task_variant_index": 0,
-            "task_variant_key": "longest_decreasing_streak",
-            "task_variant_template_index": 2,
-            "template_paths": [
-              "charts/trend/charts_trend_v1.json"
-            ],
-            "variant_count_by_key": {
-              "answer_or_evidence:answer_and_evidence": 5,
-              "task:structure_value_query": 5,
-              "task_family:ordered_chart_trend": 5,
-              "task_variant:longest_decreasing_streak": 5
-            }
-          },
-          "prompt": "Work from the ordered chart shown in the image: an ordered labeled horizontal bar chart with bars arranged from top to bottom. Each bar's numeric length can be read from the horizontal axis. Treat consecutive labels in displayed order as adjacent. Answer this question. Determine the length of the longest streak where each consecutive label decreases in value. Count labels, not gaps.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing all labels in the unique longest strictly decreasing streak.\nAnswer requirement: set \"answer\" to the requested count or streak length as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"C\",\"F\"],\"answer\":3}"
-        },
-        "answer_only": {
-          "metadata": {
-            "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 1,
-            "prompt_bundle_id": "charts_trend_v1",
-            "schema_version": "v1",
-            "slot_values": {
-              "answer_hint": "set \"answer\" to the requested count or streak length as an integer",
-              "evidence_hint": "set \"evidence\" to an array containing all labels in the unique longest strictly decreasing streak",
-              "json_example": "{\"evidence\":[\"A\",\"C\",\"F\"],\"answer\":3}",
-              "json_example_answer_only": "{\"answer\":3}",
-              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
-              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "an ordered labeled horizontal bar chart with bars arranged from top to bottom. Each bar's numeric length can be read from the horizontal axis"
-            },
-            "task_family_key": "ordered_chart_trend",
-            "task_family_variant_index": 2,
-            "task_key": "structure_value_query",
-            "task_variant_index": 0,
+            "task_variant_index": 4,
             "task_variant_key": "longest_decreasing_streak",
             "task_variant_template_index": 2,
             "template_paths": [
@@ -299,7 +285,7 @@
               "task_variant:longest_decreasing_streak": 5
             }
           },
-          "prompt": "Work from the ordered chart shown in the image: an ordered labeled horizontal bar chart with bars arranged from top to bottom. Each bar's numeric length can be read from the horizontal axis. Treat consecutive labels in displayed order as adjacent. Answer this question. Determine the length of the longest streak where each consecutive label decreases in value. Count labels, not gaps.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the requested count or streak length as an integer.\nExample JSON:\n{\"answer\":3}"
+          "prompt": "You are given an ordered chart: an ordered labeled horizontal bar chart with bars arranged from top to bottom. Each bar's numeric length can be read from the horizontal axis. Reason over the labels in the order they appear in the chart. Use the chart's displayed order to answer the question. Determine the length of the longest streak where each consecutive label decreases in value. Count labels, not gaps.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the requested count or streak length as an integer.\nExample JSON:\n{\"answer\":3}"
         }
       },
       "task_variant": "longest_decreasing_streak",
@@ -308,29 +294,33 @@
     "render_map": {
       "image_id": "img0",
       "label_centers_px": {
-        "B": [
+        "C": [
           62.0,
-          237.333
+          408.571
         ],
-        "D": [
+        "J": [
           62.0,
-          160.0
+          342.286
         ],
-        "F": [
+        "K": [
           62.0,
-          469.333
+          474.857
         ],
-        "Q": [
+        "L": [
           62.0,
-          314.667
+          77.143
         ],
-        "R": [
+        "P": [
           62.0,
-          392.0
+          209.714
         ],
-        "Z": [
+        "S": [
           62.0,
-          82.667
+          276.0
+        ],
+        "U": [
+          62.0,
+          143.429
         ]
       },
       "plot_bbox_px": [
@@ -368,14 +358,14 @@
         "mark_color_distance_space": "lab",
         "mark_color_min_distance": 40.0,
         "mark_fill_rgb": [
-          193,
-          93,
-          78
+          132,
+          47,
+          105
         ],
         "mark_outline_rgb": [
-          106,
-          51,
-          43
+          73,
+          26,
+          58
         ],
         "sampling_policy": "random_rgb"
       },
@@ -435,239 +425,272 @@
       "entities": [
         {
           "attrs": {
-            "label": "Z",
+            "label": "L",
             "label_center_px": [
               62.0,
-              82.667
+              77.143
             ],
             "mark_bbox_px": [
               92.0,
-              60.24,
+              57.92,
+              440.421,
+              96.366
+            ],
+            "mark_center_px": [
+              266.211,
+              77.143
+            ],
+            "mark_fill_rgb": [
+              132,
+              47,
+              105
+            ],
+            "mark_outline_rgb": [
+              73,
+              26,
+              58
+            ],
+            "scene_variant": "horizontal_bar",
+            "value": 10,
+            "x_rank": 0
+          },
+          "entity_id": "mark_L",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "label": "U",
+            "label_center_px": [
+              62.0,
+              143.429
+            ],
+            "mark_bbox_px": [
+              92.0,
+              124.206,
               510.105,
-              105.093
+              162.651
             ],
             "mark_center_px": [
               301.053,
-              82.667
+              143.429
             ],
             "mark_fill_rgb": [
-              193,
-              93,
-              78
+              132,
+              47,
+              105
             ],
             "mark_outline_rgb": [
-              106,
-              51,
-              43
+              73,
+              26,
+              58
             ],
             "scene_variant": "horizontal_bar",
             "value": 12,
-            "x_rank": 0
+            "x_rank": 1
           },
-          "entity_id": "mark_Z",
+          "entity_id": "mark_U",
           "entity_type": "bar"
         },
         {
           "attrs": {
-            "label": "D",
+            "label": "P",
             "label_center_px": [
               62.0,
-              160.0
+              209.714
             ],
             "mark_bbox_px": [
               92.0,
-              137.573,
+              190.491,
               579.789,
-              182.427
+              228.937
             ],
             "mark_center_px": [
               335.895,
-              160.0
+              209.714
             ],
             "mark_fill_rgb": [
-              193,
-              93,
-              78
+              132,
+              47,
+              105
             ],
             "mark_outline_rgb": [
-              106,
-              51,
-              43
+              73,
+              26,
+              58
             ],
             "scene_variant": "horizontal_bar",
             "value": 14,
-            "x_rank": 1
+            "x_rank": 2
           },
-          "entity_id": "mark_D",
+          "entity_id": "mark_P",
           "entity_type": "bar"
         },
         {
           "attrs": {
-            "label": "B",
+            "label": "S",
             "label_center_px": [
               62.0,
-              237.333
+              276.0
             ],
             "mark_bbox_px": [
               92.0,
-              214.907,
+              256.777,
               649.474,
-              259.76
+              295.223
             ],
             "mark_center_px": [
               370.737,
-              237.333
+              276.0
             ],
             "mark_fill_rgb": [
-              193,
-              93,
-              78
+              132,
+              47,
+              105
             ],
             "mark_outline_rgb": [
-              106,
-              51,
-              43
+              73,
+              26,
+              58
             ],
             "scene_variant": "horizontal_bar",
             "value": 16,
-            "x_rank": 2
+            "x_rank": 3
           },
-          "entity_id": "mark_B",
+          "entity_id": "mark_S",
           "entity_type": "bar"
         },
         {
           "attrs": {
-            "label": "Q",
+            "label": "J",
             "label_center_px": [
               62.0,
-              314.667
+              342.286
             ],
             "mark_bbox_px": [
               92.0,
-              292.24,
+              323.063,
               719.158,
-              337.093
+              361.509
             ],
             "mark_center_px": [
               405.579,
-              314.667
+              342.286
             ],
             "mark_fill_rgb": [
-              193,
-              93,
-              78
+              132,
+              47,
+              105
             ],
             "mark_outline_rgb": [
-              106,
-              51,
-              43
+              73,
+              26,
+              58
             ],
             "scene_variant": "horizontal_bar",
             "value": 18,
-            "x_rank": 3
+            "x_rank": 4
           },
-          "entity_id": "mark_Q",
+          "entity_id": "mark_J",
           "entity_type": "bar"
         },
         {
           "attrs": {
-            "label": "R",
+            "label": "C",
             "label_center_px": [
               62.0,
-              392.0
+              408.571
             ],
             "mark_bbox_px": [
               92.0,
-              369.573,
+              389.349,
               649.474,
-              414.427
+              427.794
             ],
             "mark_center_px": [
               370.737,
-              392.0
+              408.571
             ],
             "mark_fill_rgb": [
-              193,
-              93,
-              78
+              132,
+              47,
+              105
             ],
             "mark_outline_rgb": [
-              106,
-              51,
-              43
+              73,
+              26,
+              58
             ],
             "scene_variant": "horizontal_bar",
             "value": 16,
-            "x_rank": 4
+            "x_rank": 5
           },
-          "entity_id": "mark_R",
+          "entity_id": "mark_C",
           "entity_type": "bar"
         },
         {
           "attrs": {
-            "label": "F",
+            "label": "K",
             "label_center_px": [
               62.0,
-              469.333
+              474.857
             ],
             "mark_bbox_px": [
               92.0,
-              446.907,
-              579.789,
-              491.76
+              455.634,
+              719.158,
+              494.08
             ],
             "mark_center_px": [
-              335.895,
-              469.333
+              405.579,
+              474.857
             ],
             "mark_fill_rgb": [
-              193,
-              93,
-              78
+              132,
+              47,
+              105
             ],
             "mark_outline_rgb": [
-              106,
-              51,
-              43
+              73,
+              26,
+              58
             ],
             "scene_variant": "horizontal_bar",
-            "value": 14,
-            "x_rank": 5
+            "value": 18,
+            "x_rank": 6
           },
-          "entity_id": "mark_F",
+          "entity_id": "mark_K",
           "entity_type": "bar"
         }
       ],
       "relations": {
         "evidence_labels": [
-          "F",
-          "Q",
-          "R"
+          "C",
+          "J"
         ],
         "evidence_point_indices": [
-          3,
           4,
           5
         ],
         "ordered_evidence_labels": [
-          "Q",
-          "R",
-          "F"
+          "J",
+          "C"
         ],
         "scene_variant": "horizontal_bar",
         "step_directions": [
           "up",
           "up",
           "up",
+          "up",
           "down",
-          "down"
+          "up"
         ],
         "step_signs": [
           1,
           1,
           1,
+          1,
           -1,
-          -1
+          1
         ],
         "streak_direction": "decreasing",
         "task_variant": "longest_decreasing_streak"
@@ -676,9 +699,8 @@
     },
     "witness_symbolic": {
       "labels": [
-        "F",
-        "Q",
-        "R"
+        "C",
+        "J"
       ],
       "type": "label_set"
     }

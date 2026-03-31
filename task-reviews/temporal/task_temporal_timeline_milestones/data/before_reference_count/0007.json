@@ -1,7 +1,7 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 7
+    "value": 1
   },
   "evidence_gt": {
     "type": "bbox_set",
@@ -11,42 +11,6 @@
         304.16,
         153.0,
         374.16
-      ],
-      [
-        173.786,
-        494.16,
-        274.786,
-        564.16
-      ],
-      [
-        308.071,
-        304.16,
-        409.071,
-        374.16
-      ],
-      [
-        442.357,
-        304.16,
-        543.357,
-        374.16
-      ],
-      [
-        576.643,
-        494.16,
-        677.643,
-        564.16
-      ],
-      [
-        710.929,
-        304.16,
-        811.929,
-        374.16
-      ],
-      [
-        845.214,
-        304.16,
-        946.214,
-        374.16
       ]
     ]
   },
@@ -54,17 +18,17 @@
     "format": "png",
     "path": "temporal/task_temporal_timeline_milestones/images/before_reference_count/0007.png"
   },
-  "instance_seed": 778966253196130,
-  "prompt": "Look at the milestone timeline in the image. It shows one labeled milestone timeline for June 2030 with dated event cards and one highlighted reference event. Work from the full timeline view to answer the question. Count the milestones that occur before the highlighted reference event.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for all event cards before the highlighted reference event.\nAnswer: set \"answer\" to the integer count of events before the highlighted reference event.\nExample JSON:\n{\"evidence\":[[160,158,264,228],[286,158,390,228]],\"answer\":2}",
+  "instance_seed": 4220930378727909,
+  "prompt": "Work from the milestone timeline shown in the image: one labeled milestone timeline for August 2029 with dated event cards and one highlighted reference event. Read the timeline carefully and answer the question. Among the labeled events, how many come before the highlighted reference event?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for all event cards before the highlighted reference event.\nAnswer field: set \"answer\" to the integer count of events before the highlighted reference event.\nExample JSON:\n{\"evidence\":[[160,158,264,228],[286,158,390,228]],\"answer\":2}",
   "prompt_variants": {
-    "answer_and_evidence": "Look at the milestone timeline in the image. It shows one labeled milestone timeline for June 2030 with dated event cards and one highlighted reference event. Work from the full timeline view to answer the question. Count the milestones that occur before the highlighted reference event.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for all event cards before the highlighted reference event.\nAnswer: set \"answer\" to the integer count of events before the highlighted reference event.\nExample JSON:\n{\"evidence\":[[160,158,264,228],[286,158,390,228]],\"answer\":2}",
-    "answer_only": "Look at the milestone timeline in the image. It shows one labeled milestone timeline for June 2030 with dated event cards and one highlighted reference event. Work from the full timeline view to answer the question. Count the milestones that occur before the highlighted reference event.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the integer count of events before the highlighted reference event.\nExample JSON:\n{\"answer\":2}"
+    "answer_and_evidence": "Work from the milestone timeline shown in the image: one labeled milestone timeline for August 2029 with dated event cards and one highlighted reference event. Read the timeline carefully and answer the question. Among the labeled events, how many come before the highlighted reference event?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for all event cards before the highlighted reference event.\nAnswer field: set \"answer\" to the integer count of events before the highlighted reference event.\nExample JSON:\n{\"evidence\":[[160,158,264,228],[286,158,390,228]],\"answer\":2}",
+    "answer_only": "Work from the milestone timeline shown in the image: one labeled milestone timeline for August 2029 with dated event cards and one highlighted reference event. Read the timeline carefully and answer the question. Among the labeled events, how many come before the highlighted reference event?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the integer count of events before the highlighted reference event.\nExample JSON:\n{\"answer\":2}"
   },
   "task": "task_temporal_timeline_milestones",
   "task_variant": "before_reference_count",
   "trace_payload": {
     "execution_trace": {
-      "accent_color_name": "orange",
+      "accent_color_name": "purple",
       "accent_color_name_probabilities": {
         "blue": 0.1,
         "brown": 0.1,
@@ -78,21 +42,15 @@
         "yellow": 0.1
       },
       "answer_event_ids": [
-        "event_a",
-        "event_b",
-        "event_c",
-        "event_d",
-        "event_e",
-        "event_f",
-        "event_g"
+        "event_a"
       ],
-      "answer_value": 7,
+      "answer_value": 1,
       "event_count": 8,
       "events": [
         {
           "card_side": "above",
-          "date_text": "Jun 02",
-          "day_of_month": 2,
+          "date_text": "Aug 03",
+          "day_of_month": 3,
           "event_id": "event_a",
           "label": "A",
           "order_index": 0,
@@ -100,17 +58,17 @@
         },
         {
           "card_side": "below",
-          "date_text": "Jun 04",
-          "day_of_month": 4,
+          "date_text": "Aug 08",
+          "day_of_month": 8,
           "event_id": "event_b",
           "label": "B",
           "order_index": 1,
-          "reference_kind": "none"
+          "reference_kind": "primary"
         },
         {
           "card_side": "above",
-          "date_text": "Jun 06",
-          "day_of_month": 6,
+          "date_text": "Aug 12",
+          "day_of_month": 12,
           "event_id": "event_c",
           "label": "C",
           "order_index": 2,
@@ -118,8 +76,8 @@
         },
         {
           "card_side": "above",
-          "date_text": "Jun 07",
-          "day_of_month": 7,
+          "date_text": "Aug 14",
+          "day_of_month": 14,
           "event_id": "event_d",
           "label": "D",
           "order_index": 3,
@@ -127,8 +85,8 @@
         },
         {
           "card_side": "below",
-          "date_text": "Jun 10",
-          "day_of_month": 10,
+          "date_text": "Aug 15",
+          "day_of_month": 15,
           "event_id": "event_e",
           "label": "E",
           "order_index": 4,
@@ -136,8 +94,8 @@
         },
         {
           "card_side": "above",
-          "date_text": "Jun 18",
-          "day_of_month": 18,
+          "date_text": "Aug 16",
+          "day_of_month": 16,
           "event_id": "event_f",
           "label": "F",
           "order_index": 5,
@@ -145,8 +103,8 @@
         },
         {
           "card_side": "above",
-          "date_text": "Jun 20",
-          "day_of_month": 20,
+          "date_text": "Aug 18",
+          "day_of_month": 18,
           "event_id": "event_g",
           "label": "G",
           "order_index": 6,
@@ -154,18 +112,18 @@
         },
         {
           "card_side": "below",
-          "date_text": "Jun 29",
-          "day_of_month": 29,
+          "date_text": "Aug 28",
+          "day_of_month": 28,
           "event_id": "event_h",
           "label": "H",
           "order_index": 7,
-          "reference_kind": "primary"
+          "reference_kind": "none"
         }
       ],
-      "month": 6,
-      "month_name": "June",
+      "month": 8,
+      "month_name": "August",
       "reference_event_ids": [
-        "event_h"
+        "event_b"
       ],
       "scene_variant": "roadmap",
       "scene_variant_probabilities": {
@@ -185,7 +143,7 @@
         "between_reference_events_count": 0.0,
         "position_of_reference": 0.0
       },
-      "year": 2030
+      "year": 2029
     },
     "projected_evidence": {
       "bbox_set": [
@@ -194,48 +152,12 @@
           304.16,
           153.0,
           374.16
-        ],
-        [
-          173.786,
-          494.16,
-          274.786,
-          564.16
-        ],
-        [
-          308.071,
-          304.16,
-          409.071,
-          374.16
-        ],
-        [
-          442.357,
-          304.16,
-          543.357,
-          374.16
-        ],
-        [
-          576.643,
-          494.16,
-          677.643,
-          564.16
-        ],
-        [
-          710.929,
-          304.16,
-          811.929,
-          374.16
-        ],
-        [
-          845.214,
-          304.16,
-          946.214,
-          374.16
         ]
       ]
     },
     "query_spec": {
       "params": {
-        "accent_color_name": "orange",
+        "accent_color_name": "purple",
         "accent_color_name_probabilities": {
           "blue": 0.1,
           "brown": 0.1,
@@ -272,8 +194,8 @@
           8,
           9
         ],
-        "month": 6,
-        "month_name": "June",
+        "month": 8,
+        "month_name": "August",
         "position_support": [
           1,
           2,
@@ -302,11 +224,11 @@
           "between_reference_events_count": 0.0,
           "position_of_reference": 0.0
         },
-        "year": 2030
+        "year": 2029
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 0,
+        "answer_or_evidence_variant_index": 3,
         "prompt_bundle_id": "temporal_timeline_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -316,14 +238,14 @@
           "json_example_answer_only": "{\"answer\":2}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "object_description": "one labeled milestone timeline for June 2030 with dated event cards and one highlighted reference event"
+          "object_description": "one labeled milestone timeline for August 2029 with dated event cards and one highlighted reference event"
         },
         "task_family_key": "milestone_timeline",
-        "task_family_variant_index": 1,
+        "task_family_variant_index": 3,
         "task_key": "timeline_milestone_query",
-        "task_variant_index": 3,
+        "task_variant_index": 2,
         "task_variant_key": "before_reference_count",
-        "task_variant_template_index": 4,
+        "task_variant_template_index": 2,
         "template_paths": [
           "temporal/timeline/temporal_timeline_v1.json"
         ],
@@ -339,7 +261,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 0,
+            "answer_or_evidence_variant_index": 3,
             "prompt_bundle_id": "temporal_timeline_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -349,14 +271,14 @@
               "json_example_answer_only": "{\"answer\":2}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "one labeled milestone timeline for June 2030 with dated event cards and one highlighted reference event"
+              "object_description": "one labeled milestone timeline for August 2029 with dated event cards and one highlighted reference event"
             },
             "task_family_key": "milestone_timeline",
-            "task_family_variant_index": 1,
+            "task_family_variant_index": 3,
             "task_key": "timeline_milestone_query",
-            "task_variant_index": 3,
+            "task_variant_index": 2,
             "task_variant_key": "before_reference_count",
-            "task_variant_template_index": 4,
+            "task_variant_template_index": 2,
             "template_paths": [
               "temporal/timeline/temporal_timeline_v1.json"
             ],
@@ -367,12 +289,12 @@
               "task_variant:before_reference_count": 5
             }
           },
-          "prompt": "Look at the milestone timeline in the image. It shows one labeled milestone timeline for June 2030 with dated event cards and one highlighted reference event. Work from the full timeline view to answer the question. Count the milestones that occur before the highlighted reference event.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for all event cards before the highlighted reference event.\nAnswer: set \"answer\" to the integer count of events before the highlighted reference event.\nExample JSON:\n{\"evidence\":[[160,158,264,228],[286,158,390,228]],\"answer\":2}"
+          "prompt": "Work from the milestone timeline shown in the image: one labeled milestone timeline for August 2029 with dated event cards and one highlighted reference event. Read the timeline carefully and answer the question. Among the labeled events, how many come before the highlighted reference event?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for all event cards before the highlighted reference event.\nAnswer field: set \"answer\" to the integer count of events before the highlighted reference event.\nExample JSON:\n{\"evidence\":[[160,158,264,228],[286,158,390,228]],\"answer\":2}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 0,
+            "answer_or_evidence_variant_index": 2,
             "prompt_bundle_id": "temporal_timeline_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -382,14 +304,14 @@
               "json_example_answer_only": "{\"answer\":2}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "one labeled milestone timeline for June 2030 with dated event cards and one highlighted reference event"
+              "object_description": "one labeled milestone timeline for August 2029 with dated event cards and one highlighted reference event"
             },
             "task_family_key": "milestone_timeline",
-            "task_family_variant_index": 1,
+            "task_family_variant_index": 3,
             "task_key": "timeline_milestone_query",
-            "task_variant_index": 3,
+            "task_variant_index": 2,
             "task_variant_key": "before_reference_count",
-            "task_variant_template_index": 4,
+            "task_variant_template_index": 2,
             "template_paths": [
               "temporal/timeline/temporal_timeline_v1.json"
             ],
@@ -400,7 +322,7 @@
               "task_variant:before_reference_count": 5
             }
           },
-          "prompt": "Look at the milestone timeline in the image. It shows one labeled milestone timeline for June 2030 with dated event cards and one highlighted reference event. Work from the full timeline view to answer the question. Count the milestones that occur before the highlighted reference event.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the integer count of events before the highlighted reference event.\nExample JSON:\n{\"answer\":2}"
+          "prompt": "Work from the milestone timeline shown in the image: one labeled milestone timeline for August 2029 with dated event cards and one highlighted reference event. Read the timeline carefully and answer the question. Among the labeled events, how many come before the highlighted reference event?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the integer count of events before the highlighted reference event.\nExample JSON:\n{\"answer\":2}"
         }
       },
       "task_variant": "before_reference_count",
@@ -408,13 +330,7 @@
     },
     "render_map": {
       "answer_event_ids": [
-        "event_a",
-        "event_b",
-        "event_c",
-        "event_d",
-        "event_e",
-        "event_f",
-        "event_g"
+        "event_a"
       ],
       "axis_bbox_px": [
         90.0,
@@ -480,7 +396,7 @@
         666.0
       ],
       "reference_event_ids": [
-        "event_h"
+        "event_b"
       ],
       "scene_bbox_px": [
         34.0,
@@ -488,7 +404,7 @@
         1086.0,
         666.0
       ],
-      "subtitle_text": "June 2030",
+      "subtitle_text": "August 2029",
       "title_text": "Milestone timeline"
     },
     "render_spec": {
@@ -534,46 +450,46 @@
       ],
       "scene_variant": "roadmap",
       "timeline_style": {
-        "accent_color_name": "orange",
+        "accent_color_name": "purple",
         "resolved_colors_rgb": {
           "axis_line": [
-            220,
-            202,
-            183
-          ],
-          "event_fill": [
-            252,
-            234,
+            205,
+            189,
             214
           ],
+          "event_fill": [
+            236,
+            220,
+            245
+          ],
           "event_outline": [
-            138,
-            79,
-            15
+            87,
+            34,
+            117
           ],
           "panel_fill": [
-            254,
-            247,
-            239
+            248,
+            241,
+            251
           ],
           "panel_outline": [
-            138,
-            79,
-            15
+            87,
+            34,
+            117
           ],
           "primary_reference_fill": [
-            238,
-            136,
-            26
+            150,
+            58,
+            202
           ],
           "secondary_reference_fill": [
-            238,
-            136,
-            26
+            150,
+            58,
+            202
           ]
         },
         "style_variant": "accented",
-        "subtitle_text": "June 2030",
+        "subtitle_text": "August 2029",
         "title_text": "Milestone timeline"
       }
     },
@@ -587,7 +503,7 @@
             374.16
           ],
           "card_side": "above",
-          "date_text": "Jun 02",
+          "date_text": "Aug 03",
           "event_id": "event_a",
           "label": "A",
           "marker_center_px": [
@@ -606,7 +522,7 @@
             564.16
           ],
           "card_side": "below",
-          "date_text": "Jun 04",
+          "date_text": "Aug 08",
           "event_id": "event_b",
           "label": "B",
           "marker_center_px": [
@@ -614,7 +530,7 @@
             434.16
           ],
           "order_index": 1,
-          "reference_kind": "none",
+          "reference_kind": "primary",
           "type": "timeline_event_card"
         },
         {
@@ -625,7 +541,7 @@
             374.16
           ],
           "card_side": "above",
-          "date_text": "Jun 06",
+          "date_text": "Aug 12",
           "event_id": "event_c",
           "label": "C",
           "marker_center_px": [
@@ -644,7 +560,7 @@
             374.16
           ],
           "card_side": "above",
-          "date_text": "Jun 07",
+          "date_text": "Aug 14",
           "event_id": "event_d",
           "label": "D",
           "marker_center_px": [
@@ -663,7 +579,7 @@
             564.16
           ],
           "card_side": "below",
-          "date_text": "Jun 10",
+          "date_text": "Aug 15",
           "event_id": "event_e",
           "label": "E",
           "marker_center_px": [
@@ -682,7 +598,7 @@
             374.16
           ],
           "card_side": "above",
-          "date_text": "Jun 18",
+          "date_text": "Aug 16",
           "event_id": "event_f",
           "label": "F",
           "marker_center_px": [
@@ -701,7 +617,7 @@
             374.16
           ],
           "card_side": "above",
-          "date_text": "Jun 20",
+          "date_text": "Aug 18",
           "event_id": "event_g",
           "label": "G",
           "marker_center_px": [
@@ -720,7 +636,7 @@
             564.16
           ],
           "card_side": "below",
-          "date_text": "Jun 29",
+          "date_text": "Aug 28",
           "event_id": "event_h",
           "label": "H",
           "marker_center_px": [
@@ -728,21 +644,21 @@
             434.16
           ],
           "order_index": 7,
-          "reference_kind": "primary",
+          "reference_kind": "none",
           "type": "timeline_event_card"
         }
       ],
       "relations": {
-        "accent_color_name": "orange",
-        "month": 6,
-        "month_name": "June",
+        "accent_color_name": "purple",
+        "month": 8,
+        "month_name": "August",
         "reference_event_ids": [
-          "event_h"
+          "event_b"
         ],
         "scene_variant": "roadmap",
         "style_variant": "accented",
         "task_variant": "before_reference_count",
-        "year": 2030
+        "year": 2029
       },
       "scene_kind": "temporal_milestone_timeline"
     },
@@ -753,42 +669,6 @@
           52.0,
           304.16,
           153.0,
-          374.16
-        ],
-        [
-          173.786,
-          494.16,
-          274.786,
-          564.16
-        ],
-        [
-          308.071,
-          304.16,
-          409.071,
-          374.16
-        ],
-        [
-          442.357,
-          304.16,
-          543.357,
-          374.16
-        ],
-        [
-          576.643,
-          494.16,
-          677.643,
-          564.16
-        ],
-        [
-          710.929,
-          304.16,
-          811.929,
-          374.16
-        ],
-        [
-          845.214,
-          304.16,
-          946.214,
           374.16
         ]
       ]

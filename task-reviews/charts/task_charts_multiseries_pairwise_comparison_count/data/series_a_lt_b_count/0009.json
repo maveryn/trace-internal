@@ -1,61 +1,67 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 3
+    "value": 6
   },
   "evidence_gt": {
     "type": "label_set",
     "value": [
-      "N",
-      "T",
-      "Z"
+      "G",
+      "J",
+      "K",
+      "Q",
+      "R",
+      "T"
     ]
   },
   "image": {
     "format": "png",
     "path": "charts/task_charts_multiseries_pairwise_comparison_count/images/series_a_lt_b_count/0009.png"
   },
-  "instance_seed": 3771623842852389,
-  "prompt": "The image shows a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Determine how many category labels satisfy the requested pairwise series comparison. Find how many category labels show Euh lower than Sig.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+  "instance_seed": 3896412174276733,
+  "prompt": "The image shows a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Compare the two queried series category by category. Count the category labels where Flyn is below Tecu.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer requirement: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
   "prompt_variants": {
-    "answer_and_evidence": "The image shows a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Determine how many category labels satisfy the requested pairwise series comparison. Find how many category labels show Euh lower than Sig.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
-    "answer_only": "The image shows a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Determine how many category labels satisfy the requested pairwise series comparison. Find how many category labels show Euh lower than Sig.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
+    "answer_and_evidence": "The image shows a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Compare the two queried series category by category. Count the category labels where Flyn is below Tecu.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer requirement: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+    "answer_only": "The image shows a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Compare the two queried series category by category. Count the category labels where Flyn is below Tecu.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
   },
   "task": "task_charts_multiseries_pairwise_comparison_count",
   "task_variant": "series_a_lt_b_count",
   "trace_payload": {
     "execution_trace": {
-      "answer_value": 3,
+      "answer_value": 6,
       "category_count": 7,
       "category_count_range": [
         5,
         10
       ],
       "category_labels": [
-        "Z",
-        "M",
-        "N",
-        "A",
-        "D",
+        "T",
+        "Q",
+        "K",
         "G",
-        "T"
+        "P",
+        "R",
+        "J"
       ],
       "comparison": "less_than",
       "evidence_labels": [
-        "N",
-        "T",
-        "Z"
+        "G",
+        "J",
+        "K",
+        "Q",
+        "R",
+        "T"
       ],
-      "left_series_label": "Euh",
+      "left_series_label": "Flyn",
       "mark_color_distance_space": "lab",
       "mark_color_min_distance": 40.0,
       "mark_color_sampling_policy": "random_rgb_palette",
       "queried_series_labels": [
-        "Euh",
-        "Sig"
+        "Flyn",
+        "Tecu"
       ],
       "question_format": "numeric_open",
-      "right_series_label": "Sig",
+      "right_series_label": "Tecu",
       "scene_variant": "grouped_lollipop",
       "scene_variant_probabilities": {
         "grouped_bar": 0.25,
@@ -63,127 +69,190 @@
         "grouped_lollipop": 0.25,
         "multi_line": 0.25
       },
-      "series_count": 2,
+      "series_count": 3,
       "series_count_range": [
         2,
         3
       ],
       "series_fill_palette_rgb": [
         [
-          47,
-          37,
-          160
-        ],
-        [
-          167,
-          106,
-          187
-        ]
-      ],
-      "series_labels": [
-        "Euh",
-        "Sig"
-      ],
-      "series_outline_palette_rgb": [
-        [
-          26,
-          20,
-          88
+          140,
+          1,
+          128
         ],
         [
           92,
-          58,
-          103
+          197,
+          176
+        ],
+        [
+          182,
+          157,
+          42
         ]
       ],
-      "target_answer": 3,
+      "series_labels": [
+        "Flyn",
+        "Ong",
+        "Tecu"
+      ],
+      "series_outline_palette_rgb": [
+        [
+          77,
+          1,
+          70
+        ],
+        [
+          51,
+          108,
+          97
+        ],
+        [
+          100,
+          86,
+          23
+        ]
+      ],
+      "target_answer": 6,
       "target_answer_range": [
         0,
         8
       ],
       "task_variant": "series_a_lt_b_count",
       "task_variant_probabilities": {
-        "series_a_gt_b_count": 0.5,
-        "series_a_lt_b_count": 0.5
+        "series_a_gt_b_count": 0.0,
+        "series_a_lt_b_count": 1.0
       },
       "values_by_category": {
-        "A": {
-          "Euh": 20,
-          "Sig": 11
-        },
-        "D": {
-          "Euh": 13,
-          "Sig": 9
-        },
         "G": {
-          "Euh": 17,
-          "Sig": 11
+          "Flyn": 4,
+          "Ong": 18,
+          "Tecu": 20
         },
-        "M": {
-          "Euh": 16,
-          "Sig": 14
+        "J": {
+          "Flyn": 1,
+          "Ong": 6,
+          "Tecu": 9
         },
-        "N": {
-          "Euh": 1,
-          "Sig": 6
+        "K": {
+          "Flyn": 7,
+          "Ong": 9,
+          "Tecu": 17
+        },
+        "P": {
+          "Flyn": 16,
+          "Ong": 14,
+          "Tecu": 2
+        },
+        "Q": {
+          "Flyn": 5,
+          "Ong": 15,
+          "Tecu": 17
+        },
+        "R": {
+          "Flyn": 1,
+          "Ong": 5,
+          "Tecu": 20
         },
         "T": {
-          "Euh": 4,
-          "Sig": 9
-        },
-        "Z": {
-          "Euh": 6,
-          "Sig": 7
+          "Flyn": 1,
+          "Ong": 11,
+          "Tecu": 15
         }
       }
     },
     "projected_evidence": {
       "bbox_set": [
         [
-          339.814,
-          381.714,
-          388.471,
+          443.229,
+          59.048,
+          502.771,
           562.0
         ],
         [
-          775.243,
+          769.8,
           312.571,
-          823.9,
+          829.343,
+          564.0
+        ],
+        [
+          334.371,
+          128.19,
+          393.914,
           562.0
         ],
         [
-          122.1,
-          358.667,
-          170.757,
+          225.514,
+          128.19,
+          285.057,
+          563.5
+        ],
+        [
+          660.943,
+          59.048,
+          720.486,
+          562.0
+        ],
+        [
+          116.657,
+          174.286,
+          176.2,
           562.0
         ]
       ],
       "label_set": [
-        "N",
-        "T",
-        "Z"
+        "G",
+        "J",
+        "K",
+        "Q",
+        "R",
+        "T"
       ],
       "pixel_point_map": {
-        "N": [
-          364.143,
+        "G": [
+          473.0,
           554.0
         ],
-        "T": [
+        "J": [
           799.571,
           554.0
         ],
-        "Z": [
+        "K": [
+          364.143,
+          554.0
+        ],
+        "Q": [
+          255.286,
+          554.0
+        ],
+        "R": [
+          690.714,
+          554.0
+        ],
+        "T": [
           146.429,
           554.0
         ]
       },
       "pixel_point_set": [
         [
-          364.143,
+          473.0,
           554.0
         ],
         [
           799.571,
+          554.0
+        ],
+        [
+          364.143,
+          554.0
+        ],
+        [
+          255.286,
+          554.0
+        ],
+        [
+          690.714,
           554.0
         ],
         [
@@ -201,8 +270,8 @@
         ],
         "comparison": "less_than",
         "queried_series_labels": [
-          "Euh",
-          "Sig"
+          "Flyn",
+          "Tecu"
         ],
         "scene_variant": "grouped_lollipop",
         "scene_variant_probabilities": {
@@ -211,25 +280,25 @@
           "grouped_lollipop": 0.25,
           "multi_line": 0.25
         },
-        "series_count": 2,
+        "series_count": 3,
         "series_count_range": [
           2,
           3
         ],
-        "target_answer": 3,
+        "target_answer": 6,
         "target_answer_range": [
           0,
           8
         ],
         "task_variant": "series_a_lt_b_count",
         "task_variant_probabilities": {
-          "series_a_gt_b_count": 0.5,
-          "series_a_lt_b_count": 0.5
+          "series_a_gt_b_count": 0.0,
+          "series_a_lt_b_count": 1.0
         }
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 4,
+        "answer_or_evidence_variant_index": 2,
         "prompt_bundle_id": "charts_multiseries_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -239,16 +308,16 @@
           "json_example_answer_only": "{\"answer\":2}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "left_series": "Euh",
+          "left_series": "Flyn",
           "object_description": "a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis",
-          "right_series": "Sig"
+          "right_series": "Tecu"
         },
         "task_family_key": "multiseries_chart_comparison",
         "task_family_variant_index": 0,
         "task_key": "pairwise_comparison_count_query",
-        "task_variant_index": 2,
+        "task_variant_index": 0,
         "task_variant_key": "series_a_lt_b_count",
-        "task_variant_template_index": 4,
+        "task_variant_template_index": 1,
         "template_paths": [
           "charts/multiseries/charts_multiseries_v1.json"
         ],
@@ -264,7 +333,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 4,
+            "answer_or_evidence_variant_index": 2,
             "prompt_bundle_id": "charts_multiseries_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -274,16 +343,16 @@
               "json_example_answer_only": "{\"answer\":2}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "left_series": "Euh",
+              "left_series": "Flyn",
               "object_description": "a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis",
-              "right_series": "Sig"
+              "right_series": "Tecu"
             },
             "task_family_key": "multiseries_chart_comparison",
             "task_family_variant_index": 0,
             "task_key": "pairwise_comparison_count_query",
-            "task_variant_index": 2,
+            "task_variant_index": 0,
             "task_variant_key": "series_a_lt_b_count",
-            "task_variant_template_index": 4,
+            "task_variant_template_index": 1,
             "template_paths": [
               "charts/multiseries/charts_multiseries_v1.json"
             ],
@@ -294,12 +363,12 @@
               "task_variant:series_a_lt_b_count": 5
             }
           },
-          "prompt": "The image shows a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Determine how many category labels satisfy the requested pairwise series comparison. Find how many category labels show Euh lower than Sig.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}"
+          "prompt": "The image shows a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Compare the two queried series category by category. Count the category labels where Flyn is below Tecu.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer requirement: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 4,
+            "answer_or_evidence_variant_index": 1,
             "prompt_bundle_id": "charts_multiseries_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -309,16 +378,16 @@
               "json_example_answer_only": "{\"answer\":2}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "left_series": "Euh",
+              "left_series": "Flyn",
               "object_description": "a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis",
-              "right_series": "Sig"
+              "right_series": "Tecu"
             },
             "task_family_key": "multiseries_chart_comparison",
             "task_family_variant_index": 0,
             "task_key": "pairwise_comparison_count_query",
-            "task_variant_index": 2,
+            "task_variant_index": 0,
             "task_variant_key": "series_a_lt_b_count",
-            "task_variant_template_index": 4,
+            "task_variant_template_index": 1,
             "template_paths": [
               "charts/multiseries/charts_multiseries_v1.json"
             ],
@@ -329,7 +398,7 @@
               "task_variant:series_a_lt_b_count": 5
             }
           },
-          "prompt": "The image shows a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Determine how many category labels satisfy the requested pairwise series comparison. Find how many category labels show Euh lower than Sig.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
+          "prompt": "The image shows a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Compare the two queried series category by category. Count the category labels where Flyn is below Tecu.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
         }
       },
       "task_variant": "series_a_lt_b_count",
@@ -337,31 +406,31 @@
     },
     "render_map": {
       "category_label_centers_px": {
-        "A": [
+        "G": [
           473.0,
           554.0
         ],
-        "D": [
-          581.857,
-          554.0
-        ],
-        "G": [
-          690.714,
-          554.0
-        ],
-        "M": [
-          255.286,
-          554.0
-        ],
-        "N": [
-          364.143,
-          554.0
-        ],
-        "T": [
+        "J": [
           799.571,
           554.0
         ],
-        "Z": [
+        "K": [
+          364.143,
+          554.0
+        ],
+        "P": [
+          581.857,
+          554.0
+        ],
+        "Q": [
+          255.286,
+          554.0
+        ],
+        "R": [
+          690.714,
+          554.0
+        ],
+        "T": [
           146.429,
           554.0
         ]
@@ -404,26 +473,36 @@
         "sampling_policy": "random_rgb_palette",
         "series_fill_palette_rgb": [
           [
-            47,
-            37,
-            160
+            140,
+            1,
+            128
           ],
           [
-            167,
-            106,
-            187
+            92,
+            197,
+            176
+          ],
+          [
+            182,
+            157,
+            42
           ]
         ],
         "series_outline_palette_rgb": [
           [
-            26,
-            20,
-            88
+            77,
+            1,
+            70
           ],
           [
-            92,
-            58,
-            103
+            51,
+            108,
+            97
+          ],
+          [
+            100,
+            86,
+            23
           ]
         ]
       },
@@ -486,602 +565,899 @@
         {
           "attrs": {
             "category_group_bbox_px": [
-              122.1,
-              358.667,
-              170.757,
+              116.657,
+              174.286,
+              176.2,
               562.0
             ],
-            "category_label": "Z",
+            "category_label": "T",
             "category_label_center_px": [
               146.429,
               554.0
             ],
             "category_rank": 0,
             "mark_bbox_px": [
-              122.1,
-              381.714,
-              138.1,
-              397.714
-            ],
-            "mark_center_px": [
-              130.1,
-              389.714
-            ],
-            "mark_fill_rgb": [
-              47,
-              37,
-              160
-            ],
-            "mark_outline_rgb": [
-              26,
-              20,
-              88
-            ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Euh",
-            "series_rank": 0,
-            "value": 6
-          },
-          "entity_id": "mark_Z_Euh",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              122.1,
-              358.667,
-              170.757,
-              562.0
-            ],
-            "category_label": "Z",
-            "category_label_center_px": [
-              146.429,
-              554.0
-            ],
-            "category_rank": 0,
-            "mark_bbox_px": [
-              154.757,
-              358.667,
-              170.757,
-              374.667
-            ],
-            "mark_center_px": [
-              162.757,
-              366.667
-            ],
-            "mark_fill_rgb": [
-              167,
-              106,
-              187
-            ],
-            "mark_outline_rgb": [
-              92,
-              58,
-              103
-            ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Sig",
-            "series_rank": 1,
-            "value": 7
-          },
-          "entity_id": "mark_Z_Sig",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              230.957,
-              151.238,
-              279.614,
-              562.0
-            ],
-            "category_label": "M",
-            "category_label_center_px": [
-              255.286,
-              554.0
-            ],
-            "category_rank": 1,
-            "mark_bbox_px": [
-              230.957,
-              151.238,
-              246.957,
-              167.238
-            ],
-            "mark_center_px": [
-              238.957,
-              159.238
-            ],
-            "mark_fill_rgb": [
-              47,
-              37,
-              160
-            ],
-            "mark_outline_rgb": [
-              26,
-              20,
-              88
-            ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Euh",
-            "series_rank": 0,
-            "value": 16
-          },
-          "entity_id": "mark_M_Euh",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              230.957,
-              151.238,
-              279.614,
-              562.0
-            ],
-            "category_label": "M",
-            "category_label_center_px": [
-              255.286,
-              554.0
-            ],
-            "category_rank": 1,
-            "mark_bbox_px": [
-              263.614,
-              197.333,
-              279.614,
-              213.333
-            ],
-            "mark_center_px": [
-              271.614,
-              205.333
-            ],
-            "mark_fill_rgb": [
-              167,
-              106,
-              187
-            ],
-            "mark_outline_rgb": [
-              92,
-              58,
-              103
-            ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Sig",
-            "series_rank": 1,
-            "value": 14
-          },
-          "entity_id": "mark_M_Sig",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              339.814,
-              381.714,
-              388.471,
-              562.0
-            ],
-            "category_label": "N",
-            "category_label_center_px": [
-              364.143,
-              554.0
-            ],
-            "category_rank": 2,
-            "mark_bbox_px": [
-              339.814,
+              116.657,
               496.952,
-              355.814,
+              132.657,
               512.952
             ],
             "mark_center_px": [
-              347.814,
+              124.657,
               504.952
             ],
             "mark_fill_rgb": [
-              47,
-              37,
-              160
+              140,
+              1,
+              128
             ],
             "mark_outline_rgb": [
-              26,
-              20,
-              88
+              77,
+              1,
+              70
             ],
             "scene_variant": "grouped_lollipop",
-            "series_label": "Euh",
+            "series_label": "Flyn",
             "series_rank": 0,
             "value": 1
           },
-          "entity_id": "mark_N_Euh",
+          "entity_id": "mark_T_Flyn",
           "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              339.814,
-              381.714,
-              388.471,
+              116.657,
+              174.286,
+              176.2,
               562.0
             ],
-            "category_label": "N",
+            "category_label": "T",
+            "category_label_center_px": [
+              146.429,
+              554.0
+            ],
+            "category_rank": 0,
+            "mark_bbox_px": [
+              138.429,
+              266.476,
+              154.429,
+              282.476
+            ],
+            "mark_center_px": [
+              146.429,
+              274.476
+            ],
+            "mark_fill_rgb": [
+              92,
+              197,
+              176
+            ],
+            "mark_outline_rgb": [
+              51,
+              108,
+              97
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Ong",
+            "series_rank": 1,
+            "value": 11
+          },
+          "entity_id": "mark_T_Ong",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              116.657,
+              174.286,
+              176.2,
+              562.0
+            ],
+            "category_label": "T",
+            "category_label_center_px": [
+              146.429,
+              554.0
+            ],
+            "category_rank": 0,
+            "mark_bbox_px": [
+              160.2,
+              174.286,
+              176.2,
+              190.286
+            ],
+            "mark_center_px": [
+              168.2,
+              182.286
+            ],
+            "mark_fill_rgb": [
+              182,
+              157,
+              42
+            ],
+            "mark_outline_rgb": [
+              100,
+              86,
+              23
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Tecu",
+            "series_rank": 2,
+            "value": 15
+          },
+          "entity_id": "mark_T_Tecu",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              225.514,
+              128.19,
+              285.057,
+              563.5
+            ],
+            "category_label": "Q",
+            "category_label_center_px": [
+              255.286,
+              554.0
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              225.514,
+              404.762,
+              241.514,
+              420.762
+            ],
+            "mark_center_px": [
+              233.514,
+              412.762
+            ],
+            "mark_fill_rgb": [
+              140,
+              1,
+              128
+            ],
+            "mark_outline_rgb": [
+              77,
+              1,
+              70
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Flyn",
+            "series_rank": 0,
+            "value": 5
+          },
+          "entity_id": "mark_Q_Flyn",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              225.514,
+              128.19,
+              285.057,
+              563.5
+            ],
+            "category_label": "Q",
+            "category_label_center_px": [
+              255.286,
+              554.0
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              247.286,
+              174.286,
+              263.286,
+              190.286
+            ],
+            "mark_center_px": [
+              255.286,
+              182.286
+            ],
+            "mark_fill_rgb": [
+              92,
+              197,
+              176
+            ],
+            "mark_outline_rgb": [
+              51,
+              108,
+              97
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Ong",
+            "series_rank": 1,
+            "value": 15
+          },
+          "entity_id": "mark_Q_Ong",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              225.514,
+              128.19,
+              285.057,
+              563.5
+            ],
+            "category_label": "Q",
+            "category_label_center_px": [
+              255.286,
+              554.0
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              269.057,
+              128.19,
+              285.057,
+              144.19
+            ],
+            "mark_center_px": [
+              277.057,
+              136.19
+            ],
+            "mark_fill_rgb": [
+              182,
+              157,
+              42
+            ],
+            "mark_outline_rgb": [
+              100,
+              86,
+              23
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Tecu",
+            "series_rank": 2,
+            "value": 17
+          },
+          "entity_id": "mark_Q_Tecu",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              334.371,
+              128.19,
+              393.914,
+              562.0
+            ],
+            "category_label": "K",
             "category_label_center_px": [
               364.143,
               554.0
             ],
             "category_rank": 2,
             "mark_bbox_px": [
-              372.471,
-              381.714,
-              388.471,
-              397.714
+              334.371,
+              358.667,
+              350.371,
+              374.667
             ],
             "mark_center_px": [
-              380.471,
-              389.714
+              342.371,
+              366.667
             ],
             "mark_fill_rgb": [
-              167,
-              106,
-              187
+              140,
+              1,
+              128
             ],
             "mark_outline_rgb": [
-              92,
-              58,
-              103
+              77,
+              1,
+              70
             ],
             "scene_variant": "grouped_lollipop",
-            "series_label": "Sig",
-            "series_rank": 1,
-            "value": 6
-          },
-          "entity_id": "mark_N_Sig",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              448.671,
-              59.048,
-              497.329,
-              562.0
-            ],
-            "category_label": "A",
-            "category_label_center_px": [
-              473.0,
-              554.0
-            ],
-            "category_rank": 3,
-            "mark_bbox_px": [
-              448.671,
-              59.048,
-              464.671,
-              75.048
-            ],
-            "mark_center_px": [
-              456.671,
-              67.048
-            ],
-            "mark_fill_rgb": [
-              47,
-              37,
-              160
-            ],
-            "mark_outline_rgb": [
-              26,
-              20,
-              88
-            ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Euh",
+            "series_label": "Flyn",
             "series_rank": 0,
-            "value": 20
+            "value": 7
           },
-          "entity_id": "mark_A_Euh",
+          "entity_id": "mark_K_Flyn",
           "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              448.671,
-              59.048,
-              497.329,
+              334.371,
+              128.19,
+              393.914,
               562.0
             ],
-            "category_label": "A",
+            "category_label": "K",
             "category_label_center_px": [
-              473.0,
+              364.143,
               554.0
             ],
-            "category_rank": 3,
+            "category_rank": 2,
             "mark_bbox_px": [
-              481.329,
-              266.476,
-              497.329,
-              282.476
-            ],
-            "mark_center_px": [
-              489.329,
-              274.476
-            ],
-            "mark_fill_rgb": [
-              167,
-              106,
-              187
-            ],
-            "mark_outline_rgb": [
-              92,
-              58,
-              103
-            ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Sig",
-            "series_rank": 1,
-            "value": 11
-          },
-          "entity_id": "mark_A_Sig",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              557.529,
-              220.381,
-              606.186,
-              562.0
-            ],
-            "category_label": "D",
-            "category_label_center_px": [
-              581.857,
-              554.0
-            ],
-            "category_rank": 4,
-            "mark_bbox_px": [
-              557.529,
-              220.381,
-              573.529,
-              236.381
-            ],
-            "mark_center_px": [
-              565.529,
-              228.381
-            ],
-            "mark_fill_rgb": [
-              47,
-              37,
-              160
-            ],
-            "mark_outline_rgb": [
-              26,
-              20,
-              88
-            ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Euh",
-            "series_rank": 0,
-            "value": 13
-          },
-          "entity_id": "mark_D_Euh",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              557.529,
-              220.381,
-              606.186,
-              562.0
-            ],
-            "category_label": "D",
-            "category_label_center_px": [
-              581.857,
-              554.0
-            ],
-            "category_rank": 4,
-            "mark_bbox_px": [
-              590.186,
+              356.143,
               312.571,
-              606.186,
+              372.143,
               328.571
             ],
             "mark_center_px": [
-              598.186,
+              364.143,
               320.571
             ],
             "mark_fill_rgb": [
-              167,
-              106,
-              187
+              92,
+              197,
+              176
             ],
             "mark_outline_rgb": [
-              92,
-              58,
-              103
+              51,
+              108,
+              97
             ],
             "scene_variant": "grouped_lollipop",
-            "series_label": "Sig",
+            "series_label": "Ong",
             "series_rank": 1,
             "value": 9
           },
-          "entity_id": "mark_D_Sig",
+          "entity_id": "mark_K_Ong",
           "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              666.386,
+              334.371,
               128.19,
-              715.043,
+              393.914,
               562.0
             ],
-            "category_label": "G",
+            "category_label": "K",
             "category_label_center_px": [
-              690.714,
+              364.143,
               554.0
             ],
-            "category_rank": 5,
+            "category_rank": 2,
             "mark_bbox_px": [
-              666.386,
+              377.914,
               128.19,
-              682.386,
+              393.914,
               144.19
             ],
             "mark_center_px": [
-              674.386,
+              385.914,
               136.19
             ],
             "mark_fill_rgb": [
-              47,
-              37,
-              160
+              182,
+              157,
+              42
             ],
             "mark_outline_rgb": [
-              26,
-              20,
-              88
+              100,
+              86,
+              23
             ],
             "scene_variant": "grouped_lollipop",
-            "series_label": "Euh",
-            "series_rank": 0,
+            "series_label": "Tecu",
+            "series_rank": 2,
             "value": 17
           },
-          "entity_id": "mark_G_Euh",
+          "entity_id": "mark_K_Tecu",
           "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              666.386,
-              128.19,
-              715.043,
+              443.229,
+              59.048,
+              502.771,
               562.0
             ],
             "category_label": "G",
+            "category_label_center_px": [
+              473.0,
+              554.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              443.229,
+              427.81,
+              459.229,
+              443.81
+            ],
+            "mark_center_px": [
+              451.229,
+              435.81
+            ],
+            "mark_fill_rgb": [
+              140,
+              1,
+              128
+            ],
+            "mark_outline_rgb": [
+              77,
+              1,
+              70
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Flyn",
+            "series_rank": 0,
+            "value": 4
+          },
+          "entity_id": "mark_G_Flyn",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              443.229,
+              59.048,
+              502.771,
+              562.0
+            ],
+            "category_label": "G",
+            "category_label_center_px": [
+              473.0,
+              554.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              465.0,
+              105.143,
+              481.0,
+              121.143
+            ],
+            "mark_center_px": [
+              473.0,
+              113.143
+            ],
+            "mark_fill_rgb": [
+              92,
+              197,
+              176
+            ],
+            "mark_outline_rgb": [
+              51,
+              108,
+              97
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Ong",
+            "series_rank": 1,
+            "value": 18
+          },
+          "entity_id": "mark_G_Ong",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              443.229,
+              59.048,
+              502.771,
+              562.0
+            ],
+            "category_label": "G",
+            "category_label_center_px": [
+              473.0,
+              554.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              486.771,
+              59.048,
+              502.771,
+              75.048
+            ],
+            "mark_center_px": [
+              494.771,
+              67.048
+            ],
+            "mark_fill_rgb": [
+              182,
+              157,
+              42
+            ],
+            "mark_outline_rgb": [
+              100,
+              86,
+              23
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Tecu",
+            "series_rank": 2,
+            "value": 20
+          },
+          "entity_id": "mark_G_Tecu",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              552.086,
+              151.238,
+              611.629,
+              562.0
+            ],
+            "category_label": "P",
+            "category_label_center_px": [
+              581.857,
+              554.0
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              552.086,
+              151.238,
+              568.086,
+              167.238
+            ],
+            "mark_center_px": [
+              560.086,
+              159.238
+            ],
+            "mark_fill_rgb": [
+              140,
+              1,
+              128
+            ],
+            "mark_outline_rgb": [
+              77,
+              1,
+              70
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Flyn",
+            "series_rank": 0,
+            "value": 16
+          },
+          "entity_id": "mark_P_Flyn",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              552.086,
+              151.238,
+              611.629,
+              562.0
+            ],
+            "category_label": "P",
+            "category_label_center_px": [
+              581.857,
+              554.0
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              573.857,
+              197.333,
+              589.857,
+              213.333
+            ],
+            "mark_center_px": [
+              581.857,
+              205.333
+            ],
+            "mark_fill_rgb": [
+              92,
+              197,
+              176
+            ],
+            "mark_outline_rgb": [
+              51,
+              108,
+              97
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Ong",
+            "series_rank": 1,
+            "value": 14
+          },
+          "entity_id": "mark_P_Ong",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              552.086,
+              151.238,
+              611.629,
+              562.0
+            ],
+            "category_label": "P",
+            "category_label_center_px": [
+              581.857,
+              554.0
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              595.629,
+              473.905,
+              611.629,
+              489.905
+            ],
+            "mark_center_px": [
+              603.629,
+              481.905
+            ],
+            "mark_fill_rgb": [
+              182,
+              157,
+              42
+            ],
+            "mark_outline_rgb": [
+              100,
+              86,
+              23
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Tecu",
+            "series_rank": 2,
+            "value": 2
+          },
+          "entity_id": "mark_P_Tecu",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              660.943,
+              59.048,
+              720.486,
+              562.0
+            ],
+            "category_label": "R",
             "category_label_center_px": [
               690.714,
               554.0
             ],
             "category_rank": 5,
             "mark_bbox_px": [
-              699.043,
-              266.476,
-              715.043,
-              282.476
+              660.943,
+              496.952,
+              676.943,
+              512.952
             ],
             "mark_center_px": [
-              707.043,
-              274.476
+              668.943,
+              504.952
             ],
             "mark_fill_rgb": [
-              167,
-              106,
-              187
+              140,
+              1,
+              128
             ],
             "mark_outline_rgb": [
-              92,
-              58,
-              103
+              77,
+              1,
+              70
             ],
             "scene_variant": "grouped_lollipop",
-            "series_label": "Sig",
-            "series_rank": 1,
-            "value": 11
-          },
-          "entity_id": "mark_G_Sig",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              775.243,
-              312.571,
-              823.9,
-              562.0
-            ],
-            "category_label": "T",
-            "category_label_center_px": [
-              799.571,
-              554.0
-            ],
-            "category_rank": 6,
-            "mark_bbox_px": [
-              775.243,
-              427.81,
-              791.243,
-              443.81
-            ],
-            "mark_center_px": [
-              783.243,
-              435.81
-            ],
-            "mark_fill_rgb": [
-              47,
-              37,
-              160
-            ],
-            "mark_outline_rgb": [
-              26,
-              20,
-              88
-            ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Euh",
+            "series_label": "Flyn",
             "series_rank": 0,
-            "value": 4
+            "value": 1
           },
-          "entity_id": "mark_T_Euh",
+          "entity_id": "mark_R_Flyn",
           "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              775.243,
-              312.571,
-              823.9,
+              660.943,
+              59.048,
+              720.486,
               562.0
             ],
-            "category_label": "T",
+            "category_label": "R",
+            "category_label_center_px": [
+              690.714,
+              554.0
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              682.714,
+              404.762,
+              698.714,
+              420.762
+            ],
+            "mark_center_px": [
+              690.714,
+              412.762
+            ],
+            "mark_fill_rgb": [
+              92,
+              197,
+              176
+            ],
+            "mark_outline_rgb": [
+              51,
+              108,
+              97
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Ong",
+            "series_rank": 1,
+            "value": 5
+          },
+          "entity_id": "mark_R_Ong",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              660.943,
+              59.048,
+              720.486,
+              562.0
+            ],
+            "category_label": "R",
+            "category_label_center_px": [
+              690.714,
+              554.0
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              704.486,
+              59.048,
+              720.486,
+              75.048
+            ],
+            "mark_center_px": [
+              712.486,
+              67.048
+            ],
+            "mark_fill_rgb": [
+              182,
+              157,
+              42
+            ],
+            "mark_outline_rgb": [
+              100,
+              86,
+              23
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Tecu",
+            "series_rank": 2,
+            "value": 20
+          },
+          "entity_id": "mark_R_Tecu",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              769.8,
+              312.571,
+              829.343,
+              564.0
+            ],
+            "category_label": "J",
             "category_label_center_px": [
               799.571,
               554.0
             ],
             "category_rank": 6,
             "mark_bbox_px": [
-              807.9,
+              769.8,
+              496.952,
+              785.8,
+              512.952
+            ],
+            "mark_center_px": [
+              777.8,
+              504.952
+            ],
+            "mark_fill_rgb": [
+              140,
+              1,
+              128
+            ],
+            "mark_outline_rgb": [
+              77,
+              1,
+              70
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Flyn",
+            "series_rank": 0,
+            "value": 1
+          },
+          "entity_id": "mark_J_Flyn",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              769.8,
               312.571,
-              823.9,
+              829.343,
+              564.0
+            ],
+            "category_label": "J",
+            "category_label_center_px": [
+              799.571,
+              554.0
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              791.571,
+              381.714,
+              807.571,
+              397.714
+            ],
+            "mark_center_px": [
+              799.571,
+              389.714
+            ],
+            "mark_fill_rgb": [
+              92,
+              197,
+              176
+            ],
+            "mark_outline_rgb": [
+              51,
+              108,
+              97
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Ong",
+            "series_rank": 1,
+            "value": 6
+          },
+          "entity_id": "mark_J_Ong",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              769.8,
+              312.571,
+              829.343,
+              564.0
+            ],
+            "category_label": "J",
+            "category_label_center_px": [
+              799.571,
+              554.0
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              813.343,
+              312.571,
+              829.343,
               328.571
             ],
             "mark_center_px": [
-              815.9,
+              821.343,
               320.571
             ],
             "mark_fill_rgb": [
-              167,
-              106,
-              187
+              182,
+              157,
+              42
             ],
             "mark_outline_rgb": [
-              92,
-              58,
-              103
+              100,
+              86,
+              23
             ],
             "scene_variant": "grouped_lollipop",
-            "series_label": "Sig",
-            "series_rank": 1,
+            "series_label": "Tecu",
+            "series_rank": 2,
             "value": 9
           },
-          "entity_id": "mark_T_Sig",
+          "entity_id": "mark_J_Tecu",
           "entity_type": "point"
         }
       ],
       "relations": {
         "comparison": "less_than",
         "evidence_labels": [
-          "N",
-          "T",
-          "Z"
+          "G",
+          "J",
+          "K",
+          "Q",
+          "R",
+          "T"
         ],
         "queried_series_labels": [
-          "Euh",
-          "Sig"
+          "Flyn",
+          "Tecu"
         ],
         "scene_variant": "grouped_lollipop",
         "task_variant": "series_a_lt_b_count"
@@ -1090,9 +1466,12 @@
     },
     "witness_symbolic": {
       "labels": [
-        "N",
-        "T",
-        "Z"
+        "G",
+        "J",
+        "K",
+        "Q",
+        "R",
+        "T"
       ],
       "type": "label_set"
     }

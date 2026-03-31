@@ -1,256 +1,284 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 10
+    "value": 16
   },
   "evidence_gt": {
     "type": "integer_list",
     "value": [
-      10,
-      7,
-      10
+      6,
+      16,
+      16,
+      4
     ]
   },
   "image": {
     "format": "png",
     "path": "charts/task_charts_composition_subset_value/images/stack_segment_value/0003.png"
   },
-  "instance_seed": 7238002415902219,
-  "prompt": "The image shows a stacked bar chart. Each category has one bar divided into differently colored segments, a legend on the right maps segment colors to segment labels, and the integer segment values are printed inside the segments. Use the printed segment or slice values to answer the composition question. At category W, what is the value of the Hans segment?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array [v1, v2, ...] listing the segment values in legend order for the queried stack.\nAnswer: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[6,9,5],\"answer\":9}",
+  "instance_seed": 8580060706942177,
+  "prompt": "You are given a composition chart: a stacked horizontal bar chart. Each category has one horizontal bar divided into differently colored segments, a legend on the right maps segment colors to segment labels, and the integer segment values are printed inside the segments. Use the printed segment or slice values to answer the composition question. Read the Rivy segment at category Q. What value does it have?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array [v1, v2, ...] listing the segment values in legend order for the queried stack.\nAnswer rule: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[6,9,5],\"answer\":9}",
   "prompt_variants": {
-    "answer_and_evidence": "The image shows a stacked bar chart. Each category has one bar divided into differently colored segments, a legend on the right maps segment colors to segment labels, and the integer segment values are printed inside the segments. Use the printed segment or slice values to answer the composition question. At category W, what is the value of the Hans segment?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array [v1, v2, ...] listing the segment values in legend order for the queried stack.\nAnswer: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[6,9,5],\"answer\":9}",
-    "answer_only": "The image shows a stacked bar chart. Each category has one bar divided into differently colored segments, a legend on the right maps segment colors to segment labels, and the integer segment values are printed inside the segments. Use the printed segment or slice values to answer the composition question. At category W, what is the value of the Hans segment?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":9}"
+    "answer_and_evidence": "You are given a composition chart: a stacked horizontal bar chart. Each category has one horizontal bar divided into differently colored segments, a legend on the right maps segment colors to segment labels, and the integer segment values are printed inside the segments. Use the printed segment or slice values to answer the composition question. Read the Rivy segment at category Q. What value does it have?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array [v1, v2, ...] listing the segment values in legend order for the queried stack.\nAnswer rule: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[6,9,5],\"answer\":9}",
+    "answer_only": "You are given a composition chart: a stacked horizontal bar chart. Each category has one horizontal bar divided into differently colored segments, a legend on the right maps segment colors to segment labels, and the integer segment values are printed inside the segments. Use the printed segment or slice values to answer the composition question. Read the Rivy segment at category Q. What value does it have?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":9}"
   },
   "task": "task_charts_composition_subset_value",
   "task_variant": "stack_segment_value",
   "trace_payload": {
     "execution_trace": {
-      "answer_value": 10,
-      "category_count": 5,
+      "answer_value": 16,
+      "category_count": 4,
       "category_count_range": [
         4,
         7
       ],
       "category_labels": [
-        "D",
-        "C",
         "Q",
-        "W",
-        "Z"
+        "A",
+        "Y",
+        "P"
       ],
       "composition_scope": "stack",
       "evidence_labels": [
-        "Hans",
-        "Jaan",
-        "Riti"
+        "Bock",
+        "Rivy",
+        "Dyke",
+        "Demb"
       ],
       "evidence_values": [
-        10,
-        7,
-        10
+        6,
+        16,
+        16,
+        4
       ],
       "mark_color_distance_space": "lab",
       "mark_color_min_distance": 40.0,
       "mark_color_sampling_policy": "random_rgb_palette",
       "mark_fill_rgb": [
-        128,
-        142,
-        183
+        35,
+        59,
+        111
       ],
       "mark_outline_rgb": [
-        70,
-        78,
-        101
+        19,
+        32,
+        61
       ],
-      "query_category_label": "W",
-      "query_series_label": "Hans",
+      "query_category_label": "Q",
+      "query_series_label": "Rivy",
       "query_subset_labels": [],
       "question_format": "numeric_open",
       "scene_mode": "stacked",
-      "scene_variant": "stacked_bar",
+      "scene_variant": "stacked_horizontal_bar",
       "scene_variant_probabilities": {
         "stacked_bar": 0.5,
         "stacked_horizontal_bar": 0.5
       },
-      "series_count": 3,
+      "series_count": 4,
       "series_count_range": [
         3,
         5
       ],
       "series_fill_palette_rgb": [
         [
-          128,
-          142,
-          183
+          35,
+          59,
+          111
         ],
         [
-          70,
-          66,
-          197
+          149,
+          169,
+          124
         ],
         [
-          198,
-          21,
-          44
+          138,
+          43,
+          199
+        ],
+        [
+          205,
+          38,
+          106
         ]
       ],
       "series_labels": [
-        "Hans",
-        "Jaan",
-        "Riti"
+        "Bock",
+        "Rivy",
+        "Dyke",
+        "Demb"
       ],
       "series_outline_palette_rgb": [
         [
-          70,
-          78,
-          101
+          19,
+          32,
+          61
         ],
         [
-          38,
-          36,
-          108
+          82,
+          93,
+          68
         ],
         [
-          109,
-          12,
-          24
+          76,
+          24,
+          109
+        ],
+        [
+          113,
+          21,
+          58
         ]
       ],
-      "target_answer": 10,
+      "target_answer": 16,
       "target_answer_range": [
         4,
         18
       ],
       "task_variant": "stack_segment_value",
       "task_variant_probabilities": {
-        "combined_share_subset": 0.3333333333333333,
-        "stack_segment_value": 0.3333333333333333,
-        "stack_total_at_label": 0.3333333333333333
+        "combined_share_subset": 0.0,
+        "stack_segment_value": 1.0,
+        "stack_total_at_label": 0.0
       },
       "value_semantics": "integer",
       "values_by_category": {
-        "C": {
-          "Hans": 11,
-          "Jaan": 13,
-          "Riti": 18
+        "A": {
+          "Bock": 16,
+          "Demb": 5,
+          "Dyke": 10,
+          "Rivy": 11
         },
-        "D": {
-          "Hans": 18,
-          "Jaan": 12,
-          "Riti": 17
+        "P": {
+          "Bock": 11,
+          "Demb": 16,
+          "Dyke": 15,
+          "Rivy": 9
         },
         "Q": {
-          "Hans": 6,
-          "Jaan": 9,
-          "Riti": 17
+          "Bock": 6,
+          "Demb": 4,
+          "Dyke": 16,
+          "Rivy": 16
         },
-        "W": {
-          "Hans": 10,
-          "Jaan": 7,
-          "Riti": 10
-        },
-        "Z": {
-          "Hans": 12,
-          "Jaan": 5,
-          "Riti": 15
+        "Y": {
+          "Bock": 6,
+          "Demb": 17,
+          "Dyke": 4,
+          "Rivy": 16
         }
       },
       "values_by_label": {
-        "Hans": 10,
-        "Jaan": 7,
-        "Riti": 10
+        "Bock": 6,
+        "Demb": 4,
+        "Dyke": 16,
+        "Rivy": 16
       }
     },
     "projected_evidence": {
       "bbox_set": [
         [
-          590.206,
-          490.5,
-          681.594,
-          608.0
+          120.0,
+          70.79,
+          205.038,
+          158.21
         ],
         [
-          590.206,
-          408.25,
-          681.594,
-          490.5
+          205.038,
+          70.79,
+          431.808,
+          158.21
         ],
         [
-          590.206,
-          290.75,
-          681.594,
-          408.25
+          431.808,
+          70.79,
+          658.577,
+          158.21
+        ],
+        [
+          658.577,
+          70.79,
+          715.269,
+          158.21
         ]
       ],
       "integer_list": [
-        10,
-        7,
-        10
+        6,
+        16,
+        16,
+        4
       ],
       "pixel_point_map": {
-        "Hans": [
-          635.9,
-          549.25
+        "Bock": [
+          162.519,
+          114.5
         ],
-        "Jaan": [
-          635.9,
-          449.375
+        "Demb": [
+          686.923,
+          114.5
         ],
-        "Riti": [
-          635.9,
-          349.5
+        "Dyke": [
+          545.192,
+          114.5
+        ],
+        "Rivy": [
+          318.423,
+          114.5
         ]
       },
       "pixel_point_set": [
         [
-          635.9,
-          549.25
+          162.519,
+          114.5
         ],
         [
-          635.9,
-          449.375
+          318.423,
+          114.5
         ],
         [
-          635.9,
-          349.5
+          545.192,
+          114.5
+        ],
+        [
+          686.923,
+          114.5
         ]
       ]
     },
     "query_spec": {
       "params": {
-        "category_count": 5,
+        "category_count": 4,
         "category_count_range": [
           4,
           7
         ],
-        "query_category_label": "W",
-        "query_series_label": "Hans",
+        "query_category_label": "Q",
+        "query_series_label": "Rivy",
         "query_subset_labels": [],
-        "scene_variant": "stacked_bar",
+        "scene_variant": "stacked_horizontal_bar",
         "scene_variant_probabilities": {
           "stacked_bar": 0.5,
           "stacked_horizontal_bar": 0.5
         },
-        "series_count": 3,
+        "series_count": 4,
         "series_count_range": [
           3,
           5
         ],
-        "target_answer": 10,
+        "target_answer": 16,
         "target_answer_range": [
           4,
           18
         ],
         "task_variant": "stack_segment_value",
         "task_variant_probabilities": {
-          "combined_share_subset": 0.3333333333333333,
-          "stack_segment_value": 0.3333333333333333,
-          "stack_total_at_label": 0.3333333333333333
+          "combined_share_subset": 0.0,
+          "stack_segment_value": 1.0,
+          "stack_total_at_label": 0.0
         }
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 0,
+        "answer_or_evidence_variant_index": 4,
         "prompt_bundle_id": "charts_composition_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -260,18 +288,18 @@
           "json_example_answer_only": "{\"answer\":9}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "object_description": "a stacked bar chart. Each category has one bar divided into differently colored segments, a legend on the right maps segment colors to segment labels, and the integer segment values are printed inside the segments",
-          "query_category_label": "W",
+          "object_description": "a stacked horizontal bar chart. Each category has one horizontal bar divided into differently colored segments, a legend on the right maps segment colors to segment labels, and the integer segment values are printed inside the segments",
+          "query_category_label": "Q",
           "query_label_a": "",
           "query_label_b": "",
-          "query_series_label": "Hans"
+          "query_series_label": "Rivy"
         },
         "task_family_key": "composition_chart_value",
-        "task_family_variant_index": 0,
+        "task_family_variant_index": 4,
         "task_key": "subset_value_query",
         "task_variant_index": 0,
         "task_variant_key": "stack_segment_value",
-        "task_variant_template_index": 0,
+        "task_variant_template_index": 2,
         "template_paths": [
           "charts/composition/charts_composition_v1.json"
         ],
@@ -287,7 +315,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 0,
+            "answer_or_evidence_variant_index": 4,
             "prompt_bundle_id": "charts_composition_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -297,18 +325,18 @@
               "json_example_answer_only": "{\"answer\":9}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a stacked bar chart. Each category has one bar divided into differently colored segments, a legend on the right maps segment colors to segment labels, and the integer segment values are printed inside the segments",
-              "query_category_label": "W",
+              "object_description": "a stacked horizontal bar chart. Each category has one horizontal bar divided into differently colored segments, a legend on the right maps segment colors to segment labels, and the integer segment values are printed inside the segments",
+              "query_category_label": "Q",
               "query_label_a": "",
               "query_label_b": "",
-              "query_series_label": "Hans"
+              "query_series_label": "Rivy"
             },
             "task_family_key": "composition_chart_value",
-            "task_family_variant_index": 0,
+            "task_family_variant_index": 4,
             "task_key": "subset_value_query",
             "task_variant_index": 0,
             "task_variant_key": "stack_segment_value",
-            "task_variant_template_index": 0,
+            "task_variant_template_index": 2,
             "template_paths": [
               "charts/composition/charts_composition_v1.json"
             ],
@@ -319,12 +347,12 @@
               "task_variant:stack_segment_value": 5
             }
           },
-          "prompt": "The image shows a stacked bar chart. Each category has one bar divided into differently colored segments, a legend on the right maps segment colors to segment labels, and the integer segment values are printed inside the segments. Use the printed segment or slice values to answer the composition question. At category W, what is the value of the Hans segment?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array [v1, v2, ...] listing the segment values in legend order for the queried stack.\nAnswer: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[6,9,5],\"answer\":9}"
+          "prompt": "You are given a composition chart: a stacked horizontal bar chart. Each category has one horizontal bar divided into differently colored segments, a legend on the right maps segment colors to segment labels, and the integer segment values are printed inside the segments. Use the printed segment or slice values to answer the composition question. Read the Rivy segment at category Q. What value does it have?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array [v1, v2, ...] listing the segment values in legend order for the queried stack.\nAnswer rule: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[6,9,5],\"answer\":9}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 1,
+            "answer_or_evidence_variant_index": 3,
             "prompt_bundle_id": "charts_composition_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -334,18 +362,18 @@
               "json_example_answer_only": "{\"answer\":9}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a stacked bar chart. Each category has one bar divided into differently colored segments, a legend on the right maps segment colors to segment labels, and the integer segment values are printed inside the segments",
-              "query_category_label": "W",
+              "object_description": "a stacked horizontal bar chart. Each category has one horizontal bar divided into differently colored segments, a legend on the right maps segment colors to segment labels, and the integer segment values are printed inside the segments",
+              "query_category_label": "Q",
               "query_label_a": "",
               "query_label_b": "",
-              "query_series_label": "Hans"
+              "query_series_label": "Rivy"
             },
             "task_family_key": "composition_chart_value",
-            "task_family_variant_index": 0,
+            "task_family_variant_index": 4,
             "task_key": "subset_value_query",
             "task_variant_index": 0,
             "task_variant_key": "stack_segment_value",
-            "task_variant_template_index": 0,
+            "task_variant_template_index": 2,
             "template_paths": [
               "charts/composition/charts_composition_v1.json"
             ],
@@ -356,7 +384,7 @@
               "task_variant:stack_segment_value": 5
             }
           },
-          "prompt": "The image shows a stacked bar chart. Each category has one bar divided into differently colored segments, a legend on the right maps segment colors to segment labels, and the integer segment values are printed inside the segments. Use the printed segment or slice values to answer the composition question. At category W, what is the value of the Hans segment?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":9}"
+          "prompt": "You are given a composition chart: a stacked horizontal bar chart. Each category has one horizontal bar divided into differently colored segments, a legend on the right maps segment colors to segment labels, and the integer segment values are printed inside the segments. Use the printed segment or slice values to answer the composition question. Read the Rivy segment at category Q. What value does it have?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":9}"
         }
       },
       "task_variant": "stack_segment_value",
@@ -365,25 +393,21 @@
     "render_map": {
       "image_id": "img0",
       "label_centers_px": {
-        "C": [
-          341.1,
-          634.0
+        "A": [
+          86.0,
+          255.5
         ],
-        "D": [
-          193.7,
-          634.0
+        "P": [
+          86.0,
+          537.5
         ],
         "Q": [
-          488.5,
-          634.0
+          86.0,
+          114.5
         ],
-        "W": [
-          635.9,
-          634.0
-        ],
-        "Z": [
-          783.3,
-          634.0
+        "Y": [
+          86.0,
+          396.5
         ]
       },
       "plot_bbox_px": [
@@ -421,48 +445,58 @@
         "mark_color_distance_space": "lab",
         "mark_color_min_distance": 40.0,
         "mark_fill_rgb": [
-          128,
-          142,
-          183
+          35,
+          59,
+          111
         ],
         "mark_outline_rgb": [
-          70,
-          78,
-          101
+          19,
+          32,
+          61
         ],
         "sampling_policy": "random_rgb_palette",
         "series_fill_palette_rgb": [
           [
-            128,
-            142,
-            183
+            35,
+            59,
+            111
           ],
           [
-            70,
-            66,
-            197
+            149,
+            169,
+            124
           ],
           [
-            198,
-            21,
-            44
+            138,
+            43,
+            199
+          ],
+          [
+            205,
+            38,
+            106
           ]
         ],
         "series_outline_palette_rgb": [
           [
-            70,
-            78,
-            101
+            19,
+            32,
+            61
           ],
           [
-            38,
-            36,
-            108
+            82,
+            93,
+            68
           ],
           [
-            109,
-            12,
-            24
+            76,
+            24,
+            109
+          ],
+          [
+            113,
+            21,
+            58
           ]
         ]
       },
@@ -488,13 +522,13 @@
         "edits": [],
         "enabled": false
       },
-      "scene_variant": "stacked_bar",
+      "scene_variant": "stacked_horizontal_bar",
       "text_style": {
         "label_font_size_px": 24,
         "label_stroke_width_px": 2,
         "tick_font_size_px": 20
       },
-      "y_axis_max": 48,
+      "y_axis_max": 52,
       "y_ticks": [
         0,
         1,
@@ -544,7 +578,11 @@
         45,
         46,
         47,
-        48
+        48,
+        49,
+        50,
+        51,
+        52
       ]
     },
     "scene_ir": {
@@ -552,341 +590,17 @@
         {
           "attrs": {
             "category_group_bbox_px": [
-              148.006,
-              55.75,
-              239.394,
-              643.0
-            ],
-            "category_label": "D",
-            "category_rank": 0,
-            "legend_label_bbox_px": [
-              931.0,
-              65.0,
-              998.0,
-              83.0
-            ],
-            "legend_swatch_bbox_px": [
-              881.0,
-              60.0,
-              909.0,
-              88.0
-            ],
-            "mark_bbox_px": [
-              148.006,
-              396.5,
-              239.394,
-              608.0
-            ],
-            "mark_center_px": [
-              193.7,
-              502.25
-            ],
-            "mark_fill_rgb": [
-              128,
-              142,
-              183
-            ],
-            "mark_outline_rgb": [
-              70,
-              78,
-              101
-            ],
-            "scene_variant": "stacked_bar",
-            "series_label": "Hans",
-            "series_rank": 0,
-            "value": 18,
-            "value_center_px": [
-              193.7,
-              502.25
-            ]
-          },
-          "entity_id": "segment_D_Hans",
-          "entity_type": "segment"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              148.006,
-              55.75,
-              239.394,
-              643.0
-            ],
-            "category_label": "D",
-            "category_rank": 0,
-            "legend_label_bbox_px": [
-              931.0,
-              104.5,
-              991.0,
-              127.5
-            ],
-            "legend_swatch_bbox_px": [
-              881.0,
-              102.0,
-              909.0,
-              130.0
-            ],
-            "mark_bbox_px": [
-              148.006,
-              255.5,
-              239.394,
-              396.5
-            ],
-            "mark_center_px": [
-              193.7,
-              326.0
-            ],
-            "mark_fill_rgb": [
-              70,
-              66,
-              197
-            ],
-            "mark_outline_rgb": [
-              38,
-              36,
-              108
-            ],
-            "scene_variant": "stacked_bar",
-            "series_label": "Jaan",
-            "series_rank": 1,
-            "value": 12,
-            "value_center_px": [
-              193.7,
-              326.0
-            ]
-          },
-          "entity_id": "segment_D_Jaan",
-          "entity_type": "segment"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              148.006,
-              55.75,
-              239.394,
-              643.0
-            ],
-            "category_label": "D",
-            "category_rank": 0,
-            "legend_label_bbox_px": [
-              931.0,
-              149.0,
-              976.0,
-              167.0
-            ],
-            "legend_swatch_bbox_px": [
-              881.0,
-              144.0,
-              909.0,
-              172.0
-            ],
-            "mark_bbox_px": [
-              148.006,
-              55.75,
-              239.394,
-              255.5
-            ],
-            "mark_center_px": [
-              193.7,
-              155.625
-            ],
-            "mark_fill_rgb": [
-              198,
-              21,
-              44
-            ],
-            "mark_outline_rgb": [
-              109,
-              12,
-              24
-            ],
-            "scene_variant": "stacked_bar",
-            "series_label": "Riti",
-            "series_rank": 2,
-            "value": 17,
-            "value_center_px": [
-              193.7,
-              155.625
-            ]
-          },
-          "entity_id": "segment_D_Riti",
-          "entity_type": "segment"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              295.406,
-              114.5,
-              386.794,
-              643.0
-            ],
-            "category_label": "C",
-            "category_rank": 1,
-            "legend_label_bbox_px": [
-              931.0,
-              65.0,
-              998.0,
-              83.0
-            ],
-            "legend_swatch_bbox_px": [
-              881.0,
-              60.0,
-              909.0,
-              88.0
-            ],
-            "mark_bbox_px": [
-              295.406,
-              478.75,
-              386.794,
-              608.0
-            ],
-            "mark_center_px": [
-              341.1,
-              543.375
-            ],
-            "mark_fill_rgb": [
-              128,
-              142,
-              183
-            ],
-            "mark_outline_rgb": [
-              70,
-              78,
-              101
-            ],
-            "scene_variant": "stacked_bar",
-            "series_label": "Hans",
-            "series_rank": 0,
-            "value": 11,
-            "value_center_px": [
-              341.1,
-              543.375
-            ]
-          },
-          "entity_id": "segment_C_Hans",
-          "entity_type": "segment"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              295.406,
-              114.5,
-              386.794,
-              643.0
-            ],
-            "category_label": "C",
-            "category_rank": 1,
-            "legend_label_bbox_px": [
-              931.0,
-              104.5,
-              991.0,
-              127.5
-            ],
-            "legend_swatch_bbox_px": [
-              881.0,
-              102.0,
-              909.0,
-              130.0
-            ],
-            "mark_bbox_px": [
-              295.406,
-              326.0,
-              386.794,
-              478.75
-            ],
-            "mark_center_px": [
-              341.1,
-              402.375
-            ],
-            "mark_fill_rgb": [
-              70,
-              66,
-              197
-            ],
-            "mark_outline_rgb": [
-              38,
-              36,
-              108
-            ],
-            "scene_variant": "stacked_bar",
-            "series_label": "Jaan",
-            "series_rank": 1,
-            "value": 13,
-            "value_center_px": [
-              341.1,
-              402.375
-            ]
-          },
-          "entity_id": "segment_C_Jaan",
-          "entity_type": "segment"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              295.406,
-              114.5,
-              386.794,
-              643.0
-            ],
-            "category_label": "C",
-            "category_rank": 1,
-            "legend_label_bbox_px": [
-              931.0,
-              149.0,
-              976.0,
-              167.0
-            ],
-            "legend_swatch_bbox_px": [
-              881.0,
-              144.0,
-              909.0,
-              172.0
-            ],
-            "mark_bbox_px": [
-              295.406,
-              114.5,
-              386.794,
-              326.0
-            ],
-            "mark_center_px": [
-              341.1,
-              220.25
-            ],
-            "mark_fill_rgb": [
-              198,
-              21,
-              44
-            ],
-            "mark_outline_rgb": [
-              109,
-              12,
-              24
-            ],
-            "scene_variant": "stacked_bar",
-            "series_label": "Riti",
-            "series_rank": 2,
-            "value": 18,
-            "value_center_px": [
-              341.1,
-              220.25
-            ]
-          },
-          "entity_id": "segment_C_Riti",
-          "entity_type": "segment"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              442.806,
-              232.0,
-              534.194,
-              645.0
+              76.0,
+              70.79,
+              715.269,
+              158.21
             ],
             "category_label": "Q",
-            "category_rank": 2,
+            "category_rank": 0,
             "legend_label_bbox_px": [
               931.0,
               65.0,
-              998.0,
+              996.0,
               83.0
             ],
             "legend_swatch_bbox_px": [
@@ -896,51 +610,51 @@
               88.0
             ],
             "mark_bbox_px": [
-              442.806,
-              537.5,
-              534.194,
-              608.0
+              120.0,
+              70.79,
+              205.038,
+              158.21
             ],
             "mark_center_px": [
-              488.5,
-              572.75
+              162.519,
+              114.5
             ],
             "mark_fill_rgb": [
-              128,
-              142,
-              183
+              35,
+              59,
+              111
             ],
             "mark_outline_rgb": [
-              70,
-              78,
-              101
+              19,
+              32,
+              61
             ],
-            "scene_variant": "stacked_bar",
-            "series_label": "Hans",
+            "scene_variant": "stacked_horizontal_bar",
+            "series_label": "Bock",
             "series_rank": 0,
             "value": 6,
             "value_center_px": [
-              488.5,
-              572.75
+              162.519,
+              114.5
             ]
           },
-          "entity_id": "segment_Q_Hans",
+          "entity_id": "segment_Q_Bock",
           "entity_type": "segment"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              442.806,
-              232.0,
-              534.194,
-              645.0
+              76.0,
+              70.79,
+              715.269,
+              158.21
             ],
             "category_label": "Q",
-            "category_rank": 2,
+            "category_rank": 0,
             "legend_label_bbox_px": [
               931.0,
               104.5,
-              991.0,
+              989.0,
               127.5
             ],
             "legend_swatch_bbox_px": [
@@ -950,376 +664,700 @@
               130.0
             ],
             "mark_bbox_px": [
-              442.806,
-              431.75,
-              534.194,
-              537.5
+              205.038,
+              70.79,
+              431.808,
+              158.21
             ],
             "mark_center_px": [
-              488.5,
-              484.625
+              318.423,
+              114.5
             ],
             "mark_fill_rgb": [
-              70,
-              66,
-              197
+              149,
+              169,
+              124
             ],
             "mark_outline_rgb": [
-              38,
-              36,
-              108
+              82,
+              93,
+              68
             ],
-            "scene_variant": "stacked_bar",
-            "series_label": "Jaan",
+            "scene_variant": "stacked_horizontal_bar",
+            "series_label": "Rivy",
+            "series_rank": 1,
+            "value": 16,
+            "value_center_px": [
+              318.423,
+              114.5
+            ]
+          },
+          "entity_id": "segment_Q_Rivy",
+          "entity_type": "segment"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              76.0,
+              70.79,
+              715.269,
+              158.21
+            ],
+            "category_label": "Q",
+            "category_rank": 0,
+            "legend_label_bbox_px": [
+              931.0,
+              146.5,
+              999.0,
+              169.5
+            ],
+            "legend_swatch_bbox_px": [
+              881.0,
+              144.0,
+              909.0,
+              172.0
+            ],
+            "mark_bbox_px": [
+              431.808,
+              70.79,
+              658.577,
+              158.21
+            ],
+            "mark_center_px": [
+              545.192,
+              114.5
+            ],
+            "mark_fill_rgb": [
+              138,
+              43,
+              199
+            ],
+            "mark_outline_rgb": [
+              76,
+              24,
+              109
+            ],
+            "scene_variant": "stacked_horizontal_bar",
+            "series_label": "Dyke",
+            "series_rank": 2,
+            "value": 16,
+            "value_center_px": [
+              545.192,
+              114.5
+            ]
+          },
+          "entity_id": "segment_Q_Dyke",
+          "entity_type": "segment"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              76.0,
+              70.79,
+              715.269,
+              158.21
+            ],
+            "category_label": "Q",
+            "category_rank": 0,
+            "legend_label_bbox_px": [
+              931.0,
+              191.0,
+              1009.0,
+              209.0
+            ],
+            "legend_swatch_bbox_px": [
+              881.0,
+              186.0,
+              909.0,
+              214.0
+            ],
+            "mark_bbox_px": [
+              658.577,
+              70.79,
+              715.269,
+              158.21
+            ],
+            "mark_center_px": [
+              686.923,
+              114.5
+            ],
+            "mark_fill_rgb": [
+              205,
+              38,
+              106
+            ],
+            "mark_outline_rgb": [
+              113,
+              21,
+              58
+            ],
+            "scene_variant": "stacked_horizontal_bar",
+            "series_label": "Demb",
+            "series_rank": 3,
+            "value": 4,
+            "value_center_px": [
+              686.923,
+              114.5
+            ]
+          },
+          "entity_id": "segment_Q_Demb",
+          "entity_type": "segment"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              76.5,
+              211.79,
+              715.269,
+              299.21
+            ],
+            "category_label": "A",
+            "category_rank": 1,
+            "legend_label_bbox_px": [
+              931.0,
+              65.0,
+              996.0,
+              83.0
+            ],
+            "legend_swatch_bbox_px": [
+              881.0,
+              60.0,
+              909.0,
+              88.0
+            ],
+            "mark_bbox_px": [
+              120.0,
+              211.79,
+              346.769,
+              299.21
+            ],
+            "mark_center_px": [
+              233.385,
+              255.5
+            ],
+            "mark_fill_rgb": [
+              35,
+              59,
+              111
+            ],
+            "mark_outline_rgb": [
+              19,
+              32,
+              61
+            ],
+            "scene_variant": "stacked_horizontal_bar",
+            "series_label": "Bock",
+            "series_rank": 0,
+            "value": 16,
+            "value_center_px": [
+              233.385,
+              255.5
+            ]
+          },
+          "entity_id": "segment_A_Bock",
+          "entity_type": "segment"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              76.5,
+              211.79,
+              715.269,
+              299.21
+            ],
+            "category_label": "A",
+            "category_rank": 1,
+            "legend_label_bbox_px": [
+              931.0,
+              104.5,
+              989.0,
+              127.5
+            ],
+            "legend_swatch_bbox_px": [
+              881.0,
+              102.0,
+              909.0,
+              130.0
+            ],
+            "mark_bbox_px": [
+              346.769,
+              211.79,
+              502.673,
+              299.21
+            ],
+            "mark_center_px": [
+              424.721,
+              255.5
+            ],
+            "mark_fill_rgb": [
+              149,
+              169,
+              124
+            ],
+            "mark_outline_rgb": [
+              82,
+              93,
+              68
+            ],
+            "scene_variant": "stacked_horizontal_bar",
+            "series_label": "Rivy",
+            "series_rank": 1,
+            "value": 11,
+            "value_center_px": [
+              424.721,
+              255.5
+            ]
+          },
+          "entity_id": "segment_A_Rivy",
+          "entity_type": "segment"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              76.5,
+              211.79,
+              715.269,
+              299.21
+            ],
+            "category_label": "A",
+            "category_rank": 1,
+            "legend_label_bbox_px": [
+              931.0,
+              146.5,
+              999.0,
+              169.5
+            ],
+            "legend_swatch_bbox_px": [
+              881.0,
+              144.0,
+              909.0,
+              172.0
+            ],
+            "mark_bbox_px": [
+              502.673,
+              211.79,
+              644.404,
+              299.21
+            ],
+            "mark_center_px": [
+              573.538,
+              255.5
+            ],
+            "mark_fill_rgb": [
+              138,
+              43,
+              199
+            ],
+            "mark_outline_rgb": [
+              76,
+              24,
+              109
+            ],
+            "scene_variant": "stacked_horizontal_bar",
+            "series_label": "Dyke",
+            "series_rank": 2,
+            "value": 10,
+            "value_center_px": [
+              573.538,
+              255.5
+            ]
+          },
+          "entity_id": "segment_A_Dyke",
+          "entity_type": "segment"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              76.5,
+              211.79,
+              715.269,
+              299.21
+            ],
+            "category_label": "A",
+            "category_rank": 1,
+            "legend_label_bbox_px": [
+              931.0,
+              191.0,
+              1009.0,
+              209.0
+            ],
+            "legend_swatch_bbox_px": [
+              881.0,
+              186.0,
+              909.0,
+              214.0
+            ],
+            "mark_bbox_px": [
+              644.404,
+              211.79,
+              715.269,
+              299.21
+            ],
+            "mark_center_px": [
+              679.837,
+              255.5
+            ],
+            "mark_fill_rgb": [
+              205,
+              38,
+              106
+            ],
+            "mark_outline_rgb": [
+              113,
+              21,
+              58
+            ],
+            "scene_variant": "stacked_horizontal_bar",
+            "series_label": "Demb",
+            "series_rank": 3,
+            "value": 5,
+            "value_center_px": [
+              679.837,
+              255.5
+            ]
+          },
+          "entity_id": "segment_A_Demb",
+          "entity_type": "segment"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              76.5,
+              352.79,
+              729.442,
+              440.21
+            ],
+            "category_label": "Y",
+            "category_rank": 2,
+            "legend_label_bbox_px": [
+              931.0,
+              65.0,
+              996.0,
+              83.0
+            ],
+            "legend_swatch_bbox_px": [
+              881.0,
+              60.0,
+              909.0,
+              88.0
+            ],
+            "mark_bbox_px": [
+              120.0,
+              352.79,
+              205.038,
+              440.21
+            ],
+            "mark_center_px": [
+              162.519,
+              396.5
+            ],
+            "mark_fill_rgb": [
+              35,
+              59,
+              111
+            ],
+            "mark_outline_rgb": [
+              19,
+              32,
+              61
+            ],
+            "scene_variant": "stacked_horizontal_bar",
+            "series_label": "Bock",
+            "series_rank": 0,
+            "value": 6,
+            "value_center_px": [
+              162.519,
+              396.5
+            ]
+          },
+          "entity_id": "segment_Y_Bock",
+          "entity_type": "segment"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              76.5,
+              352.79,
+              729.442,
+              440.21
+            ],
+            "category_label": "Y",
+            "category_rank": 2,
+            "legend_label_bbox_px": [
+              931.0,
+              104.5,
+              989.0,
+              127.5
+            ],
+            "legend_swatch_bbox_px": [
+              881.0,
+              102.0,
+              909.0,
+              130.0
+            ],
+            "mark_bbox_px": [
+              205.038,
+              352.79,
+              431.808,
+              440.21
+            ],
+            "mark_center_px": [
+              318.423,
+              396.5
+            ],
+            "mark_fill_rgb": [
+              149,
+              169,
+              124
+            ],
+            "mark_outline_rgb": [
+              82,
+              93,
+              68
+            ],
+            "scene_variant": "stacked_horizontal_bar",
+            "series_label": "Rivy",
+            "series_rank": 1,
+            "value": 16,
+            "value_center_px": [
+              318.423,
+              396.5
+            ]
+          },
+          "entity_id": "segment_Y_Rivy",
+          "entity_type": "segment"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              76.5,
+              352.79,
+              729.442,
+              440.21
+            ],
+            "category_label": "Y",
+            "category_rank": 2,
+            "legend_label_bbox_px": [
+              931.0,
+              146.5,
+              999.0,
+              169.5
+            ],
+            "legend_swatch_bbox_px": [
+              881.0,
+              144.0,
+              909.0,
+              172.0
+            ],
+            "mark_bbox_px": [
+              431.808,
+              352.79,
+              488.5,
+              440.21
+            ],
+            "mark_center_px": [
+              460.154,
+              396.5
+            ],
+            "mark_fill_rgb": [
+              138,
+              43,
+              199
+            ],
+            "mark_outline_rgb": [
+              76,
+              24,
+              109
+            ],
+            "scene_variant": "stacked_horizontal_bar",
+            "series_label": "Dyke",
+            "series_rank": 2,
+            "value": 4,
+            "value_center_px": [
+              460.154,
+              396.5
+            ]
+          },
+          "entity_id": "segment_Y_Dyke",
+          "entity_type": "segment"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              76.5,
+              352.79,
+              729.442,
+              440.21
+            ],
+            "category_label": "Y",
+            "category_rank": 2,
+            "legend_label_bbox_px": [
+              931.0,
+              191.0,
+              1009.0,
+              209.0
+            ],
+            "legend_swatch_bbox_px": [
+              881.0,
+              186.0,
+              909.0,
+              214.0
+            ],
+            "mark_bbox_px": [
+              488.5,
+              352.79,
+              729.442,
+              440.21
+            ],
+            "mark_center_px": [
+              608.971,
+              396.5
+            ],
+            "mark_fill_rgb": [
+              205,
+              38,
+              106
+            ],
+            "mark_outline_rgb": [
+              113,
+              21,
+              58
+            ],
+            "scene_variant": "stacked_horizontal_bar",
+            "series_label": "Demb",
+            "series_rank": 3,
+            "value": 17,
+            "value_center_px": [
+              608.971,
+              396.5
+            ]
+          },
+          "entity_id": "segment_Y_Demb",
+          "entity_type": "segment"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              77.0,
+              493.79,
+              842.827,
+              581.21
+            ],
+            "category_label": "P",
+            "category_rank": 3,
+            "legend_label_bbox_px": [
+              931.0,
+              65.0,
+              996.0,
+              83.0
+            ],
+            "legend_swatch_bbox_px": [
+              881.0,
+              60.0,
+              909.0,
+              88.0
+            ],
+            "mark_bbox_px": [
+              120.0,
+              493.79,
+              275.904,
+              581.21
+            ],
+            "mark_center_px": [
+              197.952,
+              537.5
+            ],
+            "mark_fill_rgb": [
+              35,
+              59,
+              111
+            ],
+            "mark_outline_rgb": [
+              19,
+              32,
+              61
+            ],
+            "scene_variant": "stacked_horizontal_bar",
+            "series_label": "Bock",
+            "series_rank": 0,
+            "value": 11,
+            "value_center_px": [
+              197.952,
+              537.5
+            ]
+          },
+          "entity_id": "segment_P_Bock",
+          "entity_type": "segment"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              77.0,
+              493.79,
+              842.827,
+              581.21
+            ],
+            "category_label": "P",
+            "category_rank": 3,
+            "legend_label_bbox_px": [
+              931.0,
+              104.5,
+              989.0,
+              127.5
+            ],
+            "legend_swatch_bbox_px": [
+              881.0,
+              102.0,
+              909.0,
+              130.0
+            ],
+            "mark_bbox_px": [
+              275.904,
+              493.79,
+              403.462,
+              581.21
+            ],
+            "mark_center_px": [
+              339.683,
+              537.5
+            ],
+            "mark_fill_rgb": [
+              149,
+              169,
+              124
+            ],
+            "mark_outline_rgb": [
+              82,
+              93,
+              68
+            ],
+            "scene_variant": "stacked_horizontal_bar",
+            "series_label": "Rivy",
             "series_rank": 1,
             "value": 9,
             "value_center_px": [
-              488.5,
-              484.625
-            ]
-          },
-          "entity_id": "segment_Q_Jaan",
-          "entity_type": "segment"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              442.806,
-              232.0,
-              534.194,
-              645.0
-            ],
-            "category_label": "Q",
-            "category_rank": 2,
-            "legend_label_bbox_px": [
-              931.0,
-              149.0,
-              976.0,
-              167.0
-            ],
-            "legend_swatch_bbox_px": [
-              881.0,
-              144.0,
-              909.0,
-              172.0
-            ],
-            "mark_bbox_px": [
-              442.806,
-              232.0,
-              534.194,
-              431.75
-            ],
-            "mark_center_px": [
-              488.5,
-              331.875
-            ],
-            "mark_fill_rgb": [
-              198,
-              21,
-              44
-            ],
-            "mark_outline_rgb": [
-              109,
-              12,
-              24
-            ],
-            "scene_variant": "stacked_bar",
-            "series_label": "Riti",
-            "series_rank": 2,
-            "value": 17,
-            "value_center_px": [
-              488.5,
-              331.875
-            ]
-          },
-          "entity_id": "segment_Q_Riti",
-          "entity_type": "segment"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              590.206,
-              290.75,
-              681.594,
-              643.0
-            ],
-            "category_label": "W",
-            "category_rank": 3,
-            "legend_label_bbox_px": [
-              931.0,
-              65.0,
-              998.0,
-              83.0
-            ],
-            "legend_swatch_bbox_px": [
-              881.0,
-              60.0,
-              909.0,
-              88.0
-            ],
-            "mark_bbox_px": [
-              590.206,
-              490.5,
-              681.594,
-              608.0
-            ],
-            "mark_center_px": [
-              635.9,
-              549.25
-            ],
-            "mark_fill_rgb": [
-              128,
-              142,
-              183
-            ],
-            "mark_outline_rgb": [
-              70,
-              78,
-              101
-            ],
-            "scene_variant": "stacked_bar",
-            "series_label": "Hans",
-            "series_rank": 0,
-            "value": 10,
-            "value_center_px": [
-              635.9,
-              549.25
-            ]
-          },
-          "entity_id": "segment_W_Hans",
-          "entity_type": "segment"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              590.206,
-              290.75,
-              681.594,
-              643.0
-            ],
-            "category_label": "W",
-            "category_rank": 3,
-            "legend_label_bbox_px": [
-              931.0,
-              104.5,
-              991.0,
-              127.5
-            ],
-            "legend_swatch_bbox_px": [
-              881.0,
-              102.0,
-              909.0,
-              130.0
-            ],
-            "mark_bbox_px": [
-              590.206,
-              408.25,
-              681.594,
-              490.5
-            ],
-            "mark_center_px": [
-              635.9,
-              449.375
-            ],
-            "mark_fill_rgb": [
-              70,
-              66,
-              197
-            ],
-            "mark_outline_rgb": [
-              38,
-              36,
-              108
-            ],
-            "scene_variant": "stacked_bar",
-            "series_label": "Jaan",
-            "series_rank": 1,
-            "value": 7,
-            "value_center_px": [
-              635.9,
-              449.375
-            ]
-          },
-          "entity_id": "segment_W_Jaan",
-          "entity_type": "segment"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              590.206,
-              290.75,
-              681.594,
-              643.0
-            ],
-            "category_label": "W",
-            "category_rank": 3,
-            "legend_label_bbox_px": [
-              931.0,
-              149.0,
-              976.0,
-              167.0
-            ],
-            "legend_swatch_bbox_px": [
-              881.0,
-              144.0,
-              909.0,
-              172.0
-            ],
-            "mark_bbox_px": [
-              590.206,
-              290.75,
-              681.594,
-              408.25
-            ],
-            "mark_center_px": [
-              635.9,
-              349.5
-            ],
-            "mark_fill_rgb": [
-              198,
-              21,
-              44
-            ],
-            "mark_outline_rgb": [
-              109,
-              12,
-              24
-            ],
-            "scene_variant": "stacked_bar",
-            "series_label": "Riti",
-            "series_rank": 2,
-            "value": 10,
-            "value_center_px": [
-              635.9,
-              349.5
-            ]
-          },
-          "entity_id": "segment_W_Riti",
-          "entity_type": "segment"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              737.606,
-              232.0,
-              828.994,
-              643.0
-            ],
-            "category_label": "Z",
-            "category_rank": 4,
-            "legend_label_bbox_px": [
-              931.0,
-              65.0,
-              998.0,
-              83.0
-            ],
-            "legend_swatch_bbox_px": [
-              881.0,
-              60.0,
-              909.0,
-              88.0
-            ],
-            "mark_bbox_px": [
-              737.606,
-              467.0,
-              828.994,
-              608.0
-            ],
-            "mark_center_px": [
-              783.3,
-              537.5
-            ],
-            "mark_fill_rgb": [
-              128,
-              142,
-              183
-            ],
-            "mark_outline_rgb": [
-              70,
-              78,
-              101
-            ],
-            "scene_variant": "stacked_bar",
-            "series_label": "Hans",
-            "series_rank": 0,
-            "value": 12,
-            "value_center_px": [
-              783.3,
+              339.683,
               537.5
             ]
           },
-          "entity_id": "segment_Z_Hans",
+          "entity_id": "segment_P_Rivy",
           "entity_type": "segment"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              737.606,
-              232.0,
-              828.994,
-              643.0
+              77.0,
+              493.79,
+              842.827,
+              581.21
             ],
-            "category_label": "Z",
-            "category_rank": 4,
+            "category_label": "P",
+            "category_rank": 3,
             "legend_label_bbox_px": [
               931.0,
-              104.5,
-              991.0,
-              127.5
-            ],
-            "legend_swatch_bbox_px": [
-              881.0,
-              102.0,
-              909.0,
-              130.0
-            ],
-            "mark_bbox_px": [
-              737.606,
-              408.25,
-              828.994,
-              467.0
-            ],
-            "mark_center_px": [
-              783.3,
-              437.625
-            ],
-            "mark_fill_rgb": [
-              70,
-              66,
-              197
-            ],
-            "mark_outline_rgb": [
-              38,
-              36,
-              108
-            ],
-            "scene_variant": "stacked_bar",
-            "series_label": "Jaan",
-            "series_rank": 1,
-            "value": 5,
-            "value_center_px": [
-              783.3,
-              437.625
-            ]
-          },
-          "entity_id": "segment_Z_Jaan",
-          "entity_type": "segment"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              737.606,
-              232.0,
-              828.994,
-              643.0
-            ],
-            "category_label": "Z",
-            "category_rank": 4,
-            "legend_label_bbox_px": [
-              931.0,
-              149.0,
-              976.0,
-              167.0
+              146.5,
+              999.0,
+              169.5
             ],
             "legend_swatch_bbox_px": [
               881.0,
@@ -1328,64 +1366,121 @@
               172.0
             ],
             "mark_bbox_px": [
-              737.606,
-              232.0,
-              828.994,
-              408.25
+              403.462,
+              493.79,
+              616.058,
+              581.21
             ],
             "mark_center_px": [
-              783.3,
-              320.125
+              509.76,
+              537.5
             ],
             "mark_fill_rgb": [
-              198,
-              21,
-              44
+              138,
+              43,
+              199
             ],
             "mark_outline_rgb": [
-              109,
-              12,
-              24
+              76,
+              24,
+              109
             ],
-            "scene_variant": "stacked_bar",
-            "series_label": "Riti",
+            "scene_variant": "stacked_horizontal_bar",
+            "series_label": "Dyke",
             "series_rank": 2,
             "value": 15,
             "value_center_px": [
-              783.3,
-              320.125
+              509.76,
+              537.5
             ]
           },
-          "entity_id": "segment_Z_Riti",
+          "entity_id": "segment_P_Dyke",
+          "entity_type": "segment"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              77.0,
+              493.79,
+              842.827,
+              581.21
+            ],
+            "category_label": "P",
+            "category_rank": 3,
+            "legend_label_bbox_px": [
+              931.0,
+              191.0,
+              1009.0,
+              209.0
+            ],
+            "legend_swatch_bbox_px": [
+              881.0,
+              186.0,
+              909.0,
+              214.0
+            ],
+            "mark_bbox_px": [
+              616.058,
+              493.79,
+              842.827,
+              581.21
+            ],
+            "mark_center_px": [
+              729.442,
+              537.5
+            ],
+            "mark_fill_rgb": [
+              205,
+              38,
+              106
+            ],
+            "mark_outline_rgb": [
+              113,
+              21,
+              58
+            ],
+            "scene_variant": "stacked_horizontal_bar",
+            "series_label": "Demb",
+            "series_rank": 3,
+            "value": 16,
+            "value_center_px": [
+              729.442,
+              537.5
+            ]
+          },
+          "entity_id": "segment_P_Demb",
           "entity_type": "segment"
         }
       ],
       "relations": {
-        "answer_value": 10,
+        "answer_value": 16,
         "evidence_labels": [
-          "Hans",
-          "Jaan",
-          "Riti"
+          "Bock",
+          "Rivy",
+          "Dyke",
+          "Demb"
         ],
-        "query_category_label": "W",
-        "query_series_label": "Hans",
+        "query_category_label": "Q",
+        "query_series_label": "Rivy",
         "query_subset_labels": [],
-        "scene_variant": "stacked_bar",
+        "scene_variant": "stacked_horizontal_bar",
         "task_variant": "stack_segment_value"
       },
-      "scene_kind": "chart_stacked_bar_composition"
+      "scene_kind": "chart_stacked_horizontal_bar_composition"
     },
     "witness_symbolic": {
       "labels": [
-        "Hans",
-        "Jaan",
-        "Riti"
+        "Bock",
+        "Rivy",
+        "Dyke",
+        "Demb"
       ],
       "type": "integer_list",
       "values": [
-        10,
-        7,
-        10
+        6,
+        16,
+        16,
+        4
       ]
     }
   },

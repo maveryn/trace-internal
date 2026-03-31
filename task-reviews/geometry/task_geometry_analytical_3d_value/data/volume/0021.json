@@ -1,25 +1,24 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 5054
+    "value": 2430
   },
   "evidence_gt": {
     "type": "measurement_ref_map",
     "value": {
-      "YA": 38,
-      "YB": 38,
-      "YZ": 7
+      "EF": 27,
+      "GH": 10
     }
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_3d_value/images/volume/0021.png"
   },
-  "instance_seed": 941863908481627,
-  "prompt": "Use the image showing an annotated 3D solid. Read the marked measurements and answer: The triangular prism has an annotated triangle base, triangle height, and prism length. What is its volume in cubic units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: YZ, YA, YB.\nAnswer format: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":{\"YZ\":2,\"YA\":3,\"YB\":4},\"answer\":8}",
+  "instance_seed": 3453265177121059,
+  "prompt": "You are given an image showing an annotated 3D solid. The square pyramid has an annotated base side and vertical height. What is its volume in cubic units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: EF, GH.\nAnswer requirement: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":{\"EF\":2,\"GH\":3},\"answer\":8}",
   "prompt_variants": {
-    "answer_and_evidence": "Use the image showing an annotated 3D solid. Read the marked measurements and answer: The triangular prism has an annotated triangle base, triangle height, and prism length. What is its volume in cubic units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: YZ, YA, YB.\nAnswer format: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":{\"YZ\":2,\"YA\":3,\"YB\":4},\"answer\":8}",
-    "answer_only": "Use the image showing an annotated 3D solid. Read the marked measurements and answer: The triangular prism has an annotated triangle base, triangle height, and prism length. What is its volume in cubic units?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the value as an integer.\nExample JSON:\n{\"answer\":8}"
+    "answer_and_evidence": "You are given an image showing an annotated 3D solid. The square pyramid has an annotated base side and vertical height. What is its volume in cubic units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: EF, GH.\nAnswer requirement: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":{\"EF\":2,\"GH\":3},\"answer\":8}",
+    "answer_only": "You are given an image showing an annotated 3D solid. The square pyramid has an annotated base side and vertical height. What is its volume in cubic units?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the value as an integer.\nExample JSON:\n{\"answer\":8}"
   },
   "task": "task_geometry_analytical_3d_value",
   "task_variant": "volume",
@@ -27,32 +26,28 @@
     "execution_trace": {
       "answer_max": 200000,
       "answer_min": 8,
-      "answer_scalar": 5054,
+      "answer_scalar": 2430,
       "answer_type": "integer",
-      "answer_value": 5054,
+      "answer_value": 2430,
       "evidence_map": {
-        "YA": 38,
-        "YB": 38,
-        "YZ": 7
+        "EF": 27,
+        "GH": 10
       },
       "evidence_role_tokens": {
-        "L": "YB",
-        "b": "YZ",
-        "h": "YA"
+        "h": "GH",
+        "s": "EF"
       },
       "evidence_role_values": {
-        "L": 38,
-        "b": 7,
-        "h": 38
+        "h": 10,
+        "s": 27
       },
       "evidence_roles": [
-        "b",
-        "h",
-        "L"
+        "s",
+        "h"
       ],
-      "formula_expression": "V = (b * h / 2) * L",
-      "legacy_query_variant": "triangular_prism_given_b_h_l",
-      "legacy_scene_variant": "triangular_prism_given_b_h_l",
+      "formula_expression": "V = (s^2 * h) / 3",
+      "legacy_query_variant": "square_pyramid_given_base_height",
+      "legacy_scene_variant": "square_pyramid_given_base_height",
       "legacy_task_id": "task_geometry_analytical_3d_volume",
       "query_variant": "volume",
       "query_variant_probabilities": {
@@ -60,11 +55,10 @@
         "volume": 1.0
       },
       "required_annotations": [
-        "YZ",
-        "YA",
-        "YB"
+        "EF",
+        "GH"
       ],
-      "scene_variant": "triangular_prism",
+      "scene_variant": "square_pyramid",
       "scene_variant_probabilities": {
         "cone": 0.16666666666666666,
         "cylinder": 0.16666666666666666,
@@ -83,52 +77,41 @@
         "cylinder_given_r_h": 0.0,
         "rectangular_prism_given_lwh": 0.0,
         "sphere_given_r": 0.0,
-        "square_pyramid_given_base_height": 0.0,
-        "triangular_prism_given_b_h_l": 1.0
+        "square_pyramid_given_base_height": 1.0,
+        "triangular_prism_given_b_h_l": 0.0
       }
     },
     "projected_evidence": {
       "annotation_labels": {
-        "L": "YB",
-        "b": "YZ",
-        "h": "YA"
+        "h": "GH",
+        "s": "EF"
       },
       "id_set": [
-        "YZ",
-        "YA",
-        "YB"
+        "EF",
+        "GH"
       ],
       "measurement_ref_map": {
-        "YA": 38,
-        "YB": 38,
-        "YZ": 7
+        "EF": 27,
+        "GH": 10
       },
       "pixel_annotation_centers": {
-        "YA": [
-          432.46207430743806,
-          220.6611570247934
+        "EF": [
+          526.2500000458839,
+          237.59693308615397
         ],
-        "YB": [
-          286.54082188469465,
-          473.40418128251025
-        ],
-        "YZ": [
-          480.821252347035,
-          438.0922408440543
+        "GH": [
+          381.5,
+          285.6078847152794
         ]
       },
       "pixel_point_set": [
         [
-          480.821252347035,
-          438.0922408440543
+          526.2500000458839,
+          237.59693308615397
         ],
         [
-          432.46207430743806,
-          220.6611570247934
-        ],
-        [
-          286.54082188469465,
-          473.40418128251025
+          381.5,
+          285.6078847152794
         ]
       ]
     },
@@ -136,15 +119,15 @@
       "params": {
         "answer_max": 200000,
         "answer_min": 8,
-        "legacy_query_variant": "triangular_prism_given_b_h_l",
-        "legacy_scene_variant": "triangular_prism_given_b_h_l",
+        "legacy_query_variant": "square_pyramid_given_base_height",
+        "legacy_scene_variant": "square_pyramid_given_base_height",
         "legacy_task_id": "task_geometry_analytical_3d_volume",
         "query_variant": "volume",
         "query_variant_probabilities": {
           "surface_area": 0.0,
           "volume": 1.0
         },
-        "scene_variant": "triangular_prism",
+        "scene_variant": "square_pyramid",
         "scene_variant_probabilities": {
           "cone": 0.16666666666666666,
           "cylinder": 0.16666666666666666,
@@ -153,7 +136,7 @@
           "square_pyramid": 0.16666666666666666,
           "triangular_prism": 0.16666666666666666
         },
-        "task_variant": "triangular_prism_given_b_h_l",
+        "task_variant": "square_pyramid_given_base_height",
         "variant_probabilities": {
           "surface_area": 0.0,
           "volume": 1.0
@@ -161,23 +144,23 @@
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 1,
+        "answer_or_evidence_variant_index": 2,
         "prompt_bundle_id": "geometry_analytical_volume_v1",
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the value as an integer",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: YZ, YA, YB",
-          "json_example": "{\"evidence\":{\"YZ\":2,\"YA\":3,\"YB\":4},\"answer\":8}",
+          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: EF, GH",
+          "json_example": "{\"evidence\":{\"EF\":2,\"GH\":3},\"answer\":8}",
           "json_example_answer_only": "{\"answer\":8}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
           "object_description": "an annotated 3D solid",
-          "question_text": "The triangular prism has an annotated triangle base, triangle height, and prism length. What is its volume in cubic units?"
+          "question_text": "The square pyramid has an annotated base side and vertical height. What is its volume in cubic units?"
         },
         "task_family_key": "analytical_single_solid",
-        "task_family_variant_index": 3,
+        "task_family_variant_index": 0,
         "task_key": "analytical_volume_query",
-        "task_variant_index": 3,
+        "task_variant_index": 0,
         "task_variant_key": null,
         "task_variant_template_index": null,
         "template_paths": [
@@ -194,23 +177,23 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 1,
+            "answer_or_evidence_variant_index": 2,
             "prompt_bundle_id": "geometry_analytical_volume_v1",
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: YZ, YA, YB",
-              "json_example": "{\"evidence\":{\"YZ\":2,\"YA\":3,\"YB\":4},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: EF, GH",
+              "json_example": "{\"evidence\":{\"EF\":2,\"GH\":3},\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "an annotated 3D solid",
-              "question_text": "The triangular prism has an annotated triangle base, triangle height, and prism length. What is its volume in cubic units?"
+              "question_text": "The square pyramid has an annotated base side and vertical height. What is its volume in cubic units?"
             },
             "task_family_key": "analytical_single_solid",
-            "task_family_variant_index": 3,
+            "task_family_variant_index": 0,
             "task_key": "analytical_volume_query",
-            "task_variant_index": 3,
+            "task_variant_index": 0,
             "task_variant_key": null,
             "task_variant_template_index": null,
             "template_paths": [
@@ -222,28 +205,28 @@
               "task_family:analytical_single_solid": 5
             }
           },
-          "prompt": "Use the image showing an annotated 3D solid. Read the marked measurements and answer: The triangular prism has an annotated triangle base, triangle height, and prism length. What is its volume in cubic units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: YZ, YA, YB.\nAnswer format: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":{\"YZ\":2,\"YA\":3,\"YB\":4},\"answer\":8}"
+          "prompt": "You are given an image showing an annotated 3D solid. The square pyramid has an annotated base side and vertical height. What is its volume in cubic units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: EF, GH.\nAnswer requirement: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":{\"EF\":2,\"GH\":3},\"answer\":8}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 1,
+            "answer_or_evidence_variant_index": 0,
             "prompt_bundle_id": "geometry_analytical_volume_v1",
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: YZ, YA, YB",
-              "json_example": "{\"evidence\":{\"YZ\":2,\"YA\":3,\"YB\":4},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: EF, GH",
+              "json_example": "{\"evidence\":{\"EF\":2,\"GH\":3},\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "an annotated 3D solid",
-              "question_text": "The triangular prism has an annotated triangle base, triangle height, and prism length. What is its volume in cubic units?"
+              "question_text": "The square pyramid has an annotated base side and vertical height. What is its volume in cubic units?"
             },
             "task_family_key": "analytical_single_solid",
-            "task_family_variant_index": 3,
+            "task_family_variant_index": 0,
             "task_key": "analytical_volume_query",
-            "task_variant_index": 3,
+            "task_variant_index": 0,
             "task_variant_key": null,
             "task_variant_template_index": null,
             "template_paths": [
@@ -255,7 +238,7 @@
               "task_family:analytical_single_solid": 5
             }
           },
-          "prompt": "Use the image showing an annotated 3D solid. Read the marked measurements and answer: The triangular prism has an annotated triangle base, triangle height, and prism length. What is its volume in cubic units?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the value as an integer.\nExample JSON:\n{\"answer\":8}"
+          "prompt": "You are given an image showing an annotated 3D solid. The square pyramid has an annotated base side and vertical height. What is its volume in cubic units?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the value as an integer.\nExample JSON:\n{\"answer\":8}"
         }
       },
       "task_variant": "volume",
@@ -263,56 +246,51 @@
     },
     "render_map": {
       "annotation_centers": {
-        "YA": [
-          432.46207430743806,
-          220.6611570247934
+        "EF": [
+          526.2500000458839,
+          237.59693308615397
         ],
-        "YB": [
-          286.54082188469465,
-          473.40418128251025
-        ],
-        "YZ": [
-          480.821252347035,
-          438.0922408440543
+        "GH": [
+          381.5,
+          285.6078847152794
         ]
       },
       "annotation_labels": {
-        "L": "YB",
-        "b": "YZ",
-        "h": "YA"
+        "h": "GH",
+        "s": "EF"
       },
       "coord_space": "pixel",
       "entity_id": "solid_1",
       "instance_anchor": {
         "coord_space": "pixel",
         "point": [
-          320.1802739768595,
-          385.88429752066116
+          353.5,
+          330.8692949050931
         ],
         "polyline": [
           [
-            460.462074307438,
-            405.3223140495868
+            353.5,
+            170.1912887312543
           ],
           [
-            519.380430446281,
-            439.3388429752066
+            671.0,
+            353.5
           ],
           [
-            460.462074307438,
-            36.0
+            353.5,
+            536.8087112687457
           ],
           [
-            140.61956955371903,
-            589.9834710743801
+            36.0,
+            353.5
           ],
           [
-            199.537925692562,
-            624.0
+            353.5,
+            217.71576943055874
           ],
           [
-            140.61956955371903,
-            220.6611570247934
+            353.5,
+            353.5
           ]
         ]
       }
@@ -327,43 +305,45 @@
         ],
         "enabled": true,
         "render_scale": 3,
-        "selected_style": "solid_offwhite",
+        "selected_style": "solid_cool",
         "style_spec": {
           "color": [
-            252,
-            252,
+            246,
+            248,
             252
           ],
           "kind": "solid"
         }
       },
-      "canvas_size": 660,
+      "canvas_size": 707,
       "coord_space": "pixel",
       "graph_coordinate_frame": {
         "coord_space": "graph_unit",
-        "full_cells_x": 4,
-        "full_cells_y": 4,
+        "full_cells_x": 8,
+        "full_cells_y": 8,
+        "origin_fraction_x": 0.5,
+        "origin_fraction_y": 0.5,
         "origin_pixel": [
-          330,
-          330
+          353,
+          353
         ],
         "outer_margin_px": 16,
         "partial_edge_cells": true,
-        "spacing_px": 110,
-        "target_cells_x": 6,
-        "target_cells_y": 6,
+        "spacing_px": 79,
+        "target_cells_x": 9,
+        "target_cells_y": 9,
         "x_positive": "right",
         "y_positive": "up"
       },
       "graph_paper_grid": {
-        "full_cells_x": 4,
-        "full_cells_y": 4,
+        "full_cells_x": 8,
+        "full_cells_y": 8,
         "partial_edge_cells": true,
-        "spacing_px": 110,
-        "target_cells_x": 6,
-        "target_cells_y": 6
+        "spacing_px": 79,
+        "target_cells_x": 9,
+        "target_cells_y": 9
       },
-      "legacy_scene_variant": "triangular_prism_given_b_h_l",
+      "legacy_scene_variant": "square_pyramid_given_base_height",
       "post_image_noise": {
         "applied": false,
         "apply_prob": 0.5,
@@ -381,22 +361,22 @@
         "enabled": true
       },
       "query_variant": "volume",
-      "scene_variant": "triangular_prism",
+      "scene_variant": "square_pyramid",
       "shape_style": {
         "label_color": [
-          20,
-          75,
-          81
+          111,
+          40,
+          58
         ],
         "label_stroke_color": [
-          255,
-          254,
-          252
+          249,
+          251,
+          254
         ],
         "line_color": [
-          20,
-          75,
-          81
+          111,
+          40,
+          58
         ]
       }
     },
@@ -404,49 +384,48 @@
       "entities": [
         {
           "attrs": {
-            "base_units": 7,
+            "base_side_units": 27,
+            "height_units": 10,
             "points": {
               "A": [
-                460.462074307438,
-                405.3223140495868
+                353.5,
+                170.1912887312543
               ],
               "B": [
-                519.380430446281,
-                439.3388429752066
+                671.0,
+                353.5
               ],
               "C": [
-                460.462074307438,
-                36.0
+                353.5,
+                536.8087112687457
               ],
               "D": [
-                140.61956955371903,
-                589.9834710743801
+                36.0,
+                353.5
               ],
               "E": [
-                199.537925692562,
-                624.0
+                353.5,
+                217.71576943055874
               ],
-              "F": [
-                140.61956955371903,
-                220.6611570247934
+              "O": [
+                353.5,
+                353.5
               ]
             },
-            "prism_length_units": 38,
-            "task_variant": "triangular_prism_given_b_h_l",
-            "triangle_height_units": 38,
-            "volume_cubic_units": 5054
+            "task_variant": "square_pyramid_given_base_height",
+            "volume_cubic_units": 2430
           },
           "entity_id": "solid_1",
-          "entity_type": "triangular_prism"
+          "entity_type": "square_pyramid"
         }
       ],
       "frames": {
         "graph_unit": {
           "origin_pixel": [
-            330,
-            330
+            353,
+            353
           ],
-          "spacing_px": 110,
+          "spacing_px": 79,
           "x_positive": "right",
           "y_positive": "up"
         },
@@ -460,37 +439,33 @@
         }
       },
       "relations": {
-        "legacy_query_variant": "triangular_prism_given_b_h_l",
-        "legacy_scene_variant": "triangular_prism_given_b_h_l",
+        "legacy_query_variant": "square_pyramid_given_base_height",
+        "legacy_scene_variant": "square_pyramid_given_base_height",
         "legacy_task_id": "task_geometry_analytical_3d_volume",
         "query_variant": "volume",
-        "scene_variant": "triangular_prism"
+        "scene_variant": "square_pyramid"
       },
       "scene_kind": "geometry_3d_analytical_volume"
     },
     "witness_symbolic": {
       "annotation_ids": [
-        "YZ",
-        "YA",
-        "YB"
+        "EF",
+        "GH"
       ],
       "annotation_labels": {
-        "L": "YB",
-        "b": "YZ",
-        "h": "YA"
+        "h": "GH",
+        "s": "EF"
       },
       "annotation_values": {
-        "YA": 38,
-        "YB": 38,
-        "YZ": 7
+        "EF": 27,
+        "GH": 10
       },
-      "formula_expression": "V = (b * h / 2) * L",
+      "formula_expression": "V = (s^2 * h) / 3",
       "measurement_ref_map": {
-        "YA": 38,
-        "YB": 38,
-        "YZ": 7
+        "EF": 27,
+        "GH": 10
       },
-      "task_variant": "triangular_prism_given_b_h_l",
+      "task_variant": "square_pyramid_given_base_height",
       "type": "annotation_measurement_map"
     }
   },

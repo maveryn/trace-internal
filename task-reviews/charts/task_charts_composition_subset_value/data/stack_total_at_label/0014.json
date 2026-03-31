@@ -1,71 +1,70 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 18
+    "value": 46
   },
   "evidence_gt": {
     "type": "integer_list",
     "value": [
-      5,
-      5,
-      4,
-      4
+      10,
+      18,
+      18
     ]
   },
   "image": {
     "format": "png",
     "path": "charts/task_charts_composition_subset_value/images/stack_total_at_label/0014.png"
   },
-  "instance_seed": 6669710784260643,
-  "prompt": "Work from the chart shown in the image: a stacked bar chart. Each category has one bar divided into differently colored segments, a legend on the right maps segment colors to segment labels, and the integer segment values are printed inside the segments. Read the relevant composition values directly from the chart and answer the question. At category S, what is the total value of the full stack?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array [v1, v2, ...] listing the segment values in legend order for the queried stack.\nAnswer requirement: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[6,9,5],\"answer\":20}",
+  "instance_seed": 5558447478915011,
+  "prompt": "The image shows a stacked bar chart. Each category has one bar divided into differently colored segments, a legend on the right maps segment colors to segment labels, and the integer segment values are printed inside the segments. Use the chart's printed segment or slice values to compute the answer. For the stack at category Q, what total do all segment values sum to?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array [v1, v2, ...] listing the segment values in legend order for the queried stack.\nAnswer rule: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[6,9,5],\"answer\":20}",
   "prompt_variants": {
-    "answer_and_evidence": "Work from the chart shown in the image: a stacked bar chart. Each category has one bar divided into differently colored segments, a legend on the right maps segment colors to segment labels, and the integer segment values are printed inside the segments. Read the relevant composition values directly from the chart and answer the question. At category S, what is the total value of the full stack?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array [v1, v2, ...] listing the segment values in legend order for the queried stack.\nAnswer requirement: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[6,9,5],\"answer\":20}",
-    "answer_only": "Work from the chart shown in the image: a stacked bar chart. Each category has one bar divided into differently colored segments, a legend on the right maps segment colors to segment labels, and the integer segment values are printed inside the segments. Read the relevant composition values directly from the chart and answer the question. At category S, what is the total value of the full stack?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":20}"
+    "answer_and_evidence": "The image shows a stacked bar chart. Each category has one bar divided into differently colored segments, a legend on the right maps segment colors to segment labels, and the integer segment values are printed inside the segments. Use the chart's printed segment or slice values to compute the answer. For the stack at category Q, what total do all segment values sum to?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array [v1, v2, ...] listing the segment values in legend order for the queried stack.\nAnswer rule: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[6,9,5],\"answer\":20}",
+    "answer_only": "The image shows a stacked bar chart. Each category has one bar divided into differently colored segments, a legend on the right maps segment colors to segment labels, and the integer segment values are printed inside the segments. Use the chart's printed segment or slice values to compute the answer. For the stack at category Q, what total do all segment values sum to?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":20}"
   },
   "task": "task_charts_composition_subset_value",
   "task_variant": "stack_total_at_label",
   "trace_payload": {
     "execution_trace": {
-      "answer_value": 18,
-      "category_count": 5,
+      "answer_value": 46,
+      "category_count": 7,
       "category_count_range": [
         4,
         7
       ],
       "category_labels": [
-        "C",
+        "Z",
+        "D",
+        "S",
         "W",
-        "X",
+        "T",
         "Q",
-        "S"
+        "G"
       ],
       "composition_scope": "stack",
       "evidence_labels": [
-        "Dean",
-        "Uria",
-        "Swen",
-        "Hein"
+        "Zug",
+        "Han",
+        "Hewe"
       ],
       "evidence_values": [
-        5,
-        5,
-        4,
-        4
+        10,
+        18,
+        18
       ],
       "mark_color_distance_space": "lab",
       "mark_color_min_distance": 40.0,
       "mark_color_sampling_policy": "random_rgb_palette",
       "mark_fill_rgb": [
-        56,
-        51,
-        20
+        150,
+        5,
+        16
       ],
       "mark_outline_rgb": [
-        31,
-        28,
-        11
+        82,
+        3,
+        9
       ],
-      "query_category_label": "S",
+      "query_category_label": "Q",
       "query_series_label": "",
       "query_subset_labels": [],
       "question_format": "numeric_open",
@@ -75,190 +74,168 @@
         "stacked_bar": 0.5,
         "stacked_horizontal_bar": 0.5
       },
-      "series_count": 4,
+      "series_count": 3,
       "series_count_range": [
         3,
         5
       ],
       "series_fill_palette_rgb": [
         [
-          56,
-          51,
-          20
+          150,
+          5,
+          16
         ],
         [
+          102,
           146,
-          132,
-          142
+          182
         ],
         [
-          175,
-          120,
-          216
-        ],
-        [
-          24,
-          74,
-          215
+          111,
+          124,
+          79
         ]
       ],
       "series_labels": [
-        "Dean",
-        "Uria",
-        "Swen",
-        "Hein"
+        "Zug",
+        "Han",
+        "Hewe"
       ],
       "series_outline_palette_rgb": [
         [
-          31,
-          28,
-          11
+          82,
+          3,
+          9
         ],
         [
+          56,
           80,
-          73,
-          78
+          100
         ],
         [
-          96,
-          66,
-          119
-        ],
-        [
-          13,
-          41,
-          118
+          61,
+          68,
+          43
         ]
       ],
-      "target_answer": 18,
+      "target_answer": 46,
       "target_answer_range": [
         12,
         90
       ],
       "task_variant": "stack_total_at_label",
       "task_variant_probabilities": {
-        "combined_share_subset": 0.3333333333333333,
-        "stack_segment_value": 0.3333333333333333,
-        "stack_total_at_label": 0.3333333333333333
+        "combined_share_subset": 0.0,
+        "stack_segment_value": 0.0,
+        "stack_total_at_label": 1.0
       },
       "value_semantics": "integer",
       "values_by_category": {
-        "C": {
-          "Dean": 6,
-          "Hein": 14,
-          "Swen": 16,
-          "Uria": 15
+        "D": {
+          "Han": 10,
+          "Hewe": 18,
+          "Zug": 13
+        },
+        "G": {
+          "Han": 13,
+          "Hewe": 11,
+          "Zug": 9
         },
         "Q": {
-          "Dean": 17,
-          "Hein": 16,
-          "Swen": 5,
-          "Uria": 13
+          "Han": 18,
+          "Hewe": 18,
+          "Zug": 10
         },
         "S": {
-          "Dean": 5,
-          "Hein": 4,
-          "Swen": 4,
-          "Uria": 5
+          "Han": 12,
+          "Hewe": 13,
+          "Zug": 16
+        },
+        "T": {
+          "Han": 16,
+          "Hewe": 11,
+          "Zug": 10
         },
         "W": {
-          "Dean": 13,
-          "Hein": 15,
-          "Swen": 11,
-          "Uria": 11
+          "Han": 9,
+          "Hewe": 14,
+          "Zug": 18
         },
-        "X": {
-          "Dean": 17,
-          "Hein": 8,
-          "Swen": 14,
-          "Uria": 4
+        "Z": {
+          "Han": 7,
+          "Hewe": 12,
+          "Zug": 16
         }
       },
       "values_by_label": {
-        "Dean": 5,
-        "Hein": 4,
-        "Swen": 4,
-        "Uria": 5
+        "Han": 18,
+        "Hewe": 18,
+        "Zug": 10
       }
     },
     "projected_evidence": {
       "bbox_set": [
         [
-          737.606,
-          553.769,
-          828.994,
+          666.433,
+          488.0,
+          731.71,
           608.0
         ],
         [
-          737.606,
-          499.538,
-          828.994,
-          553.769
+          666.433,
+          272.0,
+          731.71,
+          488.0
         ],
         [
-          737.606,
-          456.154,
-          828.994,
-          499.538
-        ],
-        [
-          737.606,
-          412.769,
-          828.994,
-          456.154
+          666.433,
+          56.0,
+          731.71,
+          272.0
         ]
       ],
       "integer_list": [
-        5,
-        5,
-        4,
-        4
+        10,
+        18,
+        18
       ],
       "pixel_point_map": {
-        "Dean": [
-          783.3,
-          580.885
+        "Han": [
+          699.071,
+          380.0
         ],
-        "Hein": [
-          783.3,
-          434.462
+        "Hewe": [
+          699.071,
+          164.0
         ],
-        "Swen": [
-          783.3,
-          477.846
-        ],
-        "Uria": [
-          783.3,
-          526.654
+        "Zug": [
+          699.071,
+          548.0
         ]
       },
       "pixel_point_set": [
         [
-          783.3,
-          580.885
+          699.071,
+          548.0
         ],
         [
-          783.3,
-          526.654
+          699.071,
+          380.0
         ],
         [
-          783.3,
-          477.846
-        ],
-        [
-          783.3,
-          434.462
+          699.071,
+          164.0
         ]
       ]
     },
     "query_spec": {
       "params": {
-        "category_count": 5,
+        "category_count": 7,
         "category_count_range": [
           4,
           7
         ],
-        "query_category_label": "S",
+        "query_category_label": "Q",
         "query_series_label": "",
         "query_subset_labels": [],
         "scene_variant": "stacked_bar",
@@ -266,26 +243,26 @@
           "stacked_bar": 0.5,
           "stacked_horizontal_bar": 0.5
         },
-        "series_count": 4,
+        "series_count": 3,
         "series_count_range": [
           3,
           5
         ],
-        "target_answer": 18,
+        "target_answer": 46,
         "target_answer_range": [
           12,
           90
         ],
         "task_variant": "stack_total_at_label",
         "task_variant_probabilities": {
-          "combined_share_subset": 0.3333333333333333,
-          "stack_segment_value": 0.3333333333333333,
-          "stack_total_at_label": 0.3333333333333333
+          "combined_share_subset": 0.0,
+          "stack_segment_value": 0.0,
+          "stack_total_at_label": 1.0
         }
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 2,
+        "answer_or_evidence_variant_index": 4,
         "prompt_bundle_id": "charts_composition_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -296,17 +273,17 @@
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
           "object_description": "a stacked bar chart. Each category has one bar divided into differently colored segments, a legend on the right maps segment colors to segment labels, and the integer segment values are printed inside the segments",
-          "query_category_label": "S",
+          "query_category_label": "Q",
           "query_label_a": "",
           "query_label_b": "",
           "query_series_label": ""
         },
         "task_family_key": "composition_chart_value",
-        "task_family_variant_index": 2,
+        "task_family_variant_index": 0,
         "task_key": "subset_value_query",
-        "task_variant_index": 3,
+        "task_variant_index": 2,
         "task_variant_key": "stack_total_at_label",
-        "task_variant_template_index": 0,
+        "task_variant_template_index": 1,
         "template_paths": [
           "charts/composition/charts_composition_v1.json"
         ],
@@ -322,7 +299,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 2,
+            "answer_or_evidence_variant_index": 4,
             "prompt_bundle_id": "charts_composition_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -333,17 +310,17 @@
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a stacked bar chart. Each category has one bar divided into differently colored segments, a legend on the right maps segment colors to segment labels, and the integer segment values are printed inside the segments",
-              "query_category_label": "S",
+              "query_category_label": "Q",
               "query_label_a": "",
               "query_label_b": "",
               "query_series_label": ""
             },
             "task_family_key": "composition_chart_value",
-            "task_family_variant_index": 2,
+            "task_family_variant_index": 0,
             "task_key": "subset_value_query",
-            "task_variant_index": 3,
+            "task_variant_index": 2,
             "task_variant_key": "stack_total_at_label",
-            "task_variant_template_index": 0,
+            "task_variant_template_index": 1,
             "template_paths": [
               "charts/composition/charts_composition_v1.json"
             ],
@@ -354,12 +331,12 @@
               "task_variant:stack_total_at_label": 5
             }
           },
-          "prompt": "Work from the chart shown in the image: a stacked bar chart. Each category has one bar divided into differently colored segments, a legend on the right maps segment colors to segment labels, and the integer segment values are printed inside the segments. Read the relevant composition values directly from the chart and answer the question. At category S, what is the total value of the full stack?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array [v1, v2, ...] listing the segment values in legend order for the queried stack.\nAnswer requirement: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[6,9,5],\"answer\":20}"
+          "prompt": "The image shows a stacked bar chart. Each category has one bar divided into differently colored segments, a legend on the right maps segment colors to segment labels, and the integer segment values are printed inside the segments. Use the chart's printed segment or slice values to compute the answer. For the stack at category Q, what total do all segment values sum to?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array [v1, v2, ...] listing the segment values in legend order for the queried stack.\nAnswer rule: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[6,9,5],\"answer\":20}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 0,
+            "answer_or_evidence_variant_index": 4,
             "prompt_bundle_id": "charts_composition_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -370,17 +347,17 @@
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a stacked bar chart. Each category has one bar divided into differently colored segments, a legend on the right maps segment colors to segment labels, and the integer segment values are printed inside the segments",
-              "query_category_label": "S",
+              "query_category_label": "Q",
               "query_label_a": "",
               "query_label_b": "",
               "query_series_label": ""
             },
             "task_family_key": "composition_chart_value",
-            "task_family_variant_index": 2,
+            "task_family_variant_index": 0,
             "task_key": "subset_value_query",
-            "task_variant_index": 3,
+            "task_variant_index": 2,
             "task_variant_key": "stack_total_at_label",
-            "task_variant_template_index": 0,
+            "task_variant_template_index": 1,
             "template_paths": [
               "charts/composition/charts_composition_v1.json"
             ],
@@ -391,7 +368,7 @@
               "task_variant:stack_total_at_label": 5
             }
           },
-          "prompt": "Work from the chart shown in the image: a stacked bar chart. Each category has one bar divided into differently colored segments, a legend on the right maps segment colors to segment labels, and the integer segment values are printed inside the segments. Read the relevant composition values directly from the chart and answer the question. At category S, what is the total value of the full stack?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":20}"
+          "prompt": "The image shows a stacked bar chart. Each category has one bar divided into differently colored segments, a legend on the right maps segment colors to segment labels, and the integer segment values are printed inside the segments. Use the chart's printed segment or slice values to compute the answer. For the stack at category Q, what total do all segment values sum to?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":20}"
         }
       },
       "task_variant": "stack_total_at_label",
@@ -400,24 +377,32 @@
     "render_map": {
       "image_id": "img0",
       "label_centers_px": {
-        "C": [
-          193.7,
+        "D": [
+          277.929,
+          634.0
+        ],
+        "G": [
+          804.357,
           634.0
         ],
         "Q": [
-          635.9,
+          699.071,
           634.0
         ],
         "S": [
-          783.3,
+          383.214,
+          634.0
+        ],
+        "T": [
+          593.786,
           634.0
         ],
         "W": [
-          341.1,
+          488.5,
           634.0
         ],
-        "X": [
-          488.5,
+        "Z": [
+          172.643,
           634.0
         ]
       },
@@ -456,58 +441,48 @@
         "mark_color_distance_space": "lab",
         "mark_color_min_distance": 40.0,
         "mark_fill_rgb": [
-          56,
-          51,
-          20
+          150,
+          5,
+          16
         ],
         "mark_outline_rgb": [
-          31,
-          28,
-          11
+          82,
+          3,
+          9
         ],
         "sampling_policy": "random_rgb_palette",
         "series_fill_palette_rgb": [
           [
-            56,
-            51,
-            20
+            150,
+            5,
+            16
           ],
           [
+            102,
             146,
-            132,
-            142
+            182
           ],
           [
-            175,
-            120,
-            216
-          ],
-          [
-            24,
-            74,
-            215
+            111,
+            124,
+            79
           ]
         ],
         "series_outline_palette_rgb": [
           [
-            31,
-            28,
-            11
+            82,
+            3,
+            9
           ],
           [
+            56,
             80,
-            73,
-            78
+            100
           ],
           [
-            96,
-            66,
-            119
-          ],
-          [
-            13,
-            41,
-            118
+            61,
+            68,
+            43
           ]
         ]
       },
@@ -539,7 +514,7 @@
         "label_stroke_width_px": 2,
         "tick_font_size_px": 20
       },
-      "y_axis_max": 52,
+      "y_axis_max": 47,
       "y_ticks": [
         0,
         1,
@@ -588,12 +563,7 @@
         44,
         45,
         46,
-        47,
-        48,
-        49,
-        50,
-        51,
-        52
+        47
       ]
     },
     "scene_ir": {
@@ -601,18 +571,18 @@
         {
           "attrs": {
             "category_group_bbox_px": [
-              148.006,
-              54.846,
-              239.394,
+              140.004,
+              188.0,
+              205.281,
               643.0
             ],
-            "category_label": "C",
+            "category_label": "Z",
             "category_rank": 0,
             "legend_label_bbox_px": [
               931.0,
-              65.0,
-              1000.0,
-              83.0
+              62.5,
+              982.0,
+              85.5
             ],
             "legend_swatch_bbox_px": [
               881.0,
@@ -621,51 +591,51 @@
               88.0
             ],
             "mark_bbox_px": [
-              148.006,
-              542.923,
-              239.394,
+              140.004,
+              416.0,
+              205.281,
               608.0
             ],
             "mark_center_px": [
-              193.7,
-              575.462
+              172.643,
+              512.0
             ],
             "mark_fill_rgb": [
-              56,
-              51,
-              20
+              150,
+              5,
+              16
             ],
             "mark_outline_rgb": [
-              31,
-              28,
-              11
+              82,
+              3,
+              9
             ],
             "scene_variant": "stacked_bar",
-            "series_label": "Dean",
+            "series_label": "Zug",
             "series_rank": 0,
-            "value": 6,
+            "value": 16,
             "value_center_px": [
-              193.7,
-              575.462
+              172.643,
+              512.0
             ]
           },
-          "entity_id": "segment_C_Dean",
+          "entity_id": "segment_Z_Zug",
           "entity_type": "segment"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              148.006,
-              54.846,
-              239.394,
+              140.004,
+              188.0,
+              205.281,
               643.0
             ],
-            "category_label": "C",
+            "category_label": "Z",
             "category_rank": 0,
             "legend_label_bbox_px": [
               931.0,
               107.0,
-              986.0,
+              984.0,
               125.0
             ],
             "legend_swatch_bbox_px": [
@@ -675,51 +645,51 @@
               130.0
             ],
             "mark_bbox_px": [
-              148.006,
-              380.231,
-              239.394,
-              542.923
+              140.004,
+              332.0,
+              205.281,
+              416.0
             ],
             "mark_center_px": [
-              193.7,
-              461.577
+              172.643,
+              374.0
             ],
             "mark_fill_rgb": [
+              102,
               146,
-              132,
-              142
+              182
             ],
             "mark_outline_rgb": [
+              56,
               80,
-              73,
-              78
+              100
             ],
             "scene_variant": "stacked_bar",
-            "series_label": "Uria",
+            "series_label": "Han",
             "series_rank": 1,
-            "value": 15,
+            "value": 7,
             "value_center_px": [
-              193.7,
-              461.577
+              172.643,
+              374.0
             ]
           },
-          "entity_id": "segment_C_Uria",
+          "entity_id": "segment_Z_Han",
           "entity_type": "segment"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              148.006,
-              54.846,
-              239.394,
+              140.004,
+              188.0,
+              205.281,
               643.0
             ],
-            "category_label": "C",
+            "category_label": "Z",
             "category_rank": 0,
             "legend_label_bbox_px": [
               931.0,
               149.0,
-              1003.0,
+              1005.0,
               167.0
             ],
             "legend_swatch_bbox_px": [
@@ -729,106 +699,52 @@
               172.0
             ],
             "mark_bbox_px": [
-              148.006,
-              206.692,
-              239.394,
-              380.231
+              140.004,
+              188.0,
+              205.281,
+              332.0
             ],
             "mark_center_px": [
-              193.7,
-              293.462
+              172.643,
+              260.0
             ],
             "mark_fill_rgb": [
-              175,
-              120,
-              216
+              111,
+              124,
+              79
             ],
             "mark_outline_rgb": [
-              96,
-              66,
-              119
+              61,
+              68,
+              43
             ],
             "scene_variant": "stacked_bar",
-            "series_label": "Swen",
+            "series_label": "Hewe",
             "series_rank": 2,
-            "value": 16,
+            "value": 12,
             "value_center_px": [
-              193.7,
-              293.462
+              172.643,
+              260.0
             ]
           },
-          "entity_id": "segment_C_Swen",
+          "entity_id": "segment_Z_Hewe",
           "entity_type": "segment"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              148.006,
-              54.846,
-              239.394,
+              245.29,
+              116.0,
+              310.567,
               643.0
             ],
-            "category_label": "C",
-            "category_rank": 0,
-            "legend_label_bbox_px": [
-              931.0,
-              191.0,
-              992.0,
-              209.0
-            ],
-            "legend_swatch_bbox_px": [
-              881.0,
-              186.0,
-              909.0,
-              214.0
-            ],
-            "mark_bbox_px": [
-              148.006,
-              54.846,
-              239.394,
-              206.692
-            ],
-            "mark_center_px": [
-              193.7,
-              130.769
-            ],
-            "mark_fill_rgb": [
-              24,
-              74,
-              215
-            ],
-            "mark_outline_rgb": [
-              13,
-              41,
-              118
-            ],
-            "scene_variant": "stacked_bar",
-            "series_label": "Hein",
-            "series_rank": 3,
-            "value": 14,
-            "value_center_px": [
-              193.7,
-              130.769
-            ]
-          },
-          "entity_id": "segment_C_Hein",
-          "entity_type": "segment"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              295.406,
-              65.692,
-              386.794,
-              643.0
-            ],
-            "category_label": "W",
+            "category_label": "D",
             "category_rank": 1,
             "legend_label_bbox_px": [
               931.0,
-              65.0,
-              1000.0,
-              83.0
+              62.5,
+              982.0,
+              85.5
             ],
             "legend_swatch_bbox_px": [
               881.0,
@@ -837,51 +753,51 @@
               88.0
             ],
             "mark_bbox_px": [
-              295.406,
-              467.0,
-              386.794,
+              245.29,
+              452.0,
+              310.567,
               608.0
             ],
             "mark_center_px": [
-              341.1,
-              537.5
+              277.929,
+              530.0
             ],
             "mark_fill_rgb": [
-              56,
-              51,
-              20
+              150,
+              5,
+              16
             ],
             "mark_outline_rgb": [
-              31,
-              28,
-              11
+              82,
+              3,
+              9
             ],
             "scene_variant": "stacked_bar",
-            "series_label": "Dean",
+            "series_label": "Zug",
             "series_rank": 0,
             "value": 13,
             "value_center_px": [
-              341.1,
-              537.5
+              277.929,
+              530.0
             ]
           },
-          "entity_id": "segment_W_Dean",
+          "entity_id": "segment_D_Zug",
           "entity_type": "segment"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              295.406,
-              65.692,
-              386.794,
+              245.29,
+              116.0,
+              310.567,
               643.0
             ],
-            "category_label": "W",
+            "category_label": "D",
             "category_rank": 1,
             "legend_label_bbox_px": [
               931.0,
               107.0,
-              986.0,
+              984.0,
               125.0
             ],
             "legend_swatch_bbox_px": [
@@ -891,51 +807,51 @@
               130.0
             ],
             "mark_bbox_px": [
-              295.406,
-              347.692,
-              386.794,
-              467.0
+              245.29,
+              332.0,
+              310.567,
+              452.0
             ],
             "mark_center_px": [
-              341.1,
-              407.346
+              277.929,
+              392.0
             ],
             "mark_fill_rgb": [
+              102,
               146,
-              132,
-              142
+              182
             ],
             "mark_outline_rgb": [
+              56,
               80,
-              73,
-              78
+              100
             ],
             "scene_variant": "stacked_bar",
-            "series_label": "Uria",
+            "series_label": "Han",
             "series_rank": 1,
-            "value": 11,
+            "value": 10,
             "value_center_px": [
-              341.1,
-              407.346
+              277.929,
+              392.0
             ]
           },
-          "entity_id": "segment_W_Uria",
+          "entity_id": "segment_D_Han",
           "entity_type": "segment"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              295.406,
-              65.692,
-              386.794,
+              245.29,
+              116.0,
+              310.567,
               643.0
             ],
-            "category_label": "W",
+            "category_label": "D",
             "category_rank": 1,
             "legend_label_bbox_px": [
               931.0,
               149.0,
-              1003.0,
+              1005.0,
               167.0
             ],
             "legend_swatch_bbox_px": [
@@ -945,106 +861,52 @@
               172.0
             ],
             "mark_bbox_px": [
-              295.406,
-              228.385,
-              386.794,
-              347.692
+              245.29,
+              116.0,
+              310.567,
+              332.0
             ],
             "mark_center_px": [
-              341.1,
-              288.038
+              277.929,
+              224.0
             ],
             "mark_fill_rgb": [
-              175,
-              120,
-              216
+              111,
+              124,
+              79
             ],
             "mark_outline_rgb": [
-              96,
-              66,
-              119
+              61,
+              68,
+              43
             ],
             "scene_variant": "stacked_bar",
-            "series_label": "Swen",
+            "series_label": "Hewe",
             "series_rank": 2,
-            "value": 11,
+            "value": 18,
             "value_center_px": [
-              341.1,
-              288.038
+              277.929,
+              224.0
             ]
           },
-          "entity_id": "segment_W_Swen",
+          "entity_id": "segment_D_Hewe",
           "entity_type": "segment"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              295.406,
-              65.692,
-              386.794,
+              350.576,
+              116.0,
+              415.853,
               643.0
             ],
-            "category_label": "W",
-            "category_rank": 1,
-            "legend_label_bbox_px": [
-              931.0,
-              191.0,
-              992.0,
-              209.0
-            ],
-            "legend_swatch_bbox_px": [
-              881.0,
-              186.0,
-              909.0,
-              214.0
-            ],
-            "mark_bbox_px": [
-              295.406,
-              65.692,
-              386.794,
-              228.385
-            ],
-            "mark_center_px": [
-              341.1,
-              147.038
-            ],
-            "mark_fill_rgb": [
-              24,
-              74,
-              215
-            ],
-            "mark_outline_rgb": [
-              13,
-              41,
-              118
-            ],
-            "scene_variant": "stacked_bar",
-            "series_label": "Hein",
-            "series_rank": 3,
-            "value": 15,
-            "value_center_px": [
-              341.1,
-              147.038
-            ]
-          },
-          "entity_id": "segment_W_Hein",
-          "entity_type": "segment"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              442.806,
-              141.615,
-              534.194,
-              643.0
-            ],
-            "category_label": "X",
+            "category_label": "S",
             "category_rank": 2,
             "legend_label_bbox_px": [
               931.0,
-              65.0,
-              1000.0,
-              83.0
+              62.5,
+              982.0,
+              85.5
             ],
             "legend_swatch_bbox_px": [
               881.0,
@@ -1053,51 +915,51 @@
               88.0
             ],
             "mark_bbox_px": [
-              442.806,
-              423.615,
-              534.194,
+              350.576,
+              416.0,
+              415.853,
               608.0
             ],
             "mark_center_px": [
-              488.5,
-              515.808
+              383.214,
+              512.0
             ],
             "mark_fill_rgb": [
-              56,
-              51,
-              20
+              150,
+              5,
+              16
             ],
             "mark_outline_rgb": [
-              31,
-              28,
-              11
+              82,
+              3,
+              9
             ],
             "scene_variant": "stacked_bar",
-            "series_label": "Dean",
+            "series_label": "Zug",
             "series_rank": 0,
-            "value": 17,
+            "value": 16,
             "value_center_px": [
-              488.5,
-              515.808
+              383.214,
+              512.0
             ]
           },
-          "entity_id": "segment_X_Dean",
+          "entity_id": "segment_S_Zug",
           "entity_type": "segment"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              442.806,
-              141.615,
-              534.194,
+              350.576,
+              116.0,
+              415.853,
               643.0
             ],
-            "category_label": "X",
+            "category_label": "S",
             "category_rank": 2,
             "legend_label_bbox_px": [
               931.0,
               107.0,
-              986.0,
+              984.0,
               125.0
             ],
             "legend_swatch_bbox_px": [
@@ -1107,51 +969,51 @@
               130.0
             ],
             "mark_bbox_px": [
-              442.806,
-              380.231,
-              534.194,
-              423.615
+              350.576,
+              272.0,
+              415.853,
+              416.0
             ],
             "mark_center_px": [
-              488.5,
-              401.923
+              383.214,
+              344.0
             ],
             "mark_fill_rgb": [
+              102,
               146,
-              132,
-              142
+              182
             ],
             "mark_outline_rgb": [
+              56,
               80,
-              73,
-              78
+              100
             ],
             "scene_variant": "stacked_bar",
-            "series_label": "Uria",
+            "series_label": "Han",
             "series_rank": 1,
-            "value": 4,
+            "value": 12,
             "value_center_px": [
-              488.5,
-              401.923
+              383.214,
+              344.0
             ]
           },
-          "entity_id": "segment_X_Uria",
+          "entity_id": "segment_S_Han",
           "entity_type": "segment"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              442.806,
-              141.615,
-              534.194,
+              350.576,
+              116.0,
+              415.853,
               643.0
             ],
-            "category_label": "X",
+            "category_label": "S",
             "category_rank": 2,
             "legend_label_bbox_px": [
               931.0,
               149.0,
-              1003.0,
+              1005.0,
               167.0
             ],
             "legend_swatch_bbox_px": [
@@ -1161,106 +1023,214 @@
               172.0
             ],
             "mark_bbox_px": [
-              442.806,
-              228.385,
-              534.194,
-              380.231
+              350.576,
+              116.0,
+              415.853,
+              272.0
+            ],
+            "mark_center_px": [
+              383.214,
+              194.0
+            ],
+            "mark_fill_rgb": [
+              111,
+              124,
+              79
+            ],
+            "mark_outline_rgb": [
+              61,
+              68,
+              43
+            ],
+            "scene_variant": "stacked_bar",
+            "series_label": "Hewe",
+            "series_rank": 2,
+            "value": 13,
+            "value_center_px": [
+              383.214,
+              194.0
+            ]
+          },
+          "entity_id": "segment_S_Hewe",
+          "entity_type": "segment"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              455.861,
+              116.0,
+              521.139,
+              643.0
+            ],
+            "category_label": "W",
+            "category_rank": 3,
+            "legend_label_bbox_px": [
+              931.0,
+              62.5,
+              982.0,
+              85.5
+            ],
+            "legend_swatch_bbox_px": [
+              881.0,
+              60.0,
+              909.0,
+              88.0
+            ],
+            "mark_bbox_px": [
+              455.861,
+              392.0,
+              521.139,
+              608.0
             ],
             "mark_center_px": [
               488.5,
-              304.308
+              500.0
             ],
             "mark_fill_rgb": [
-              175,
-              120,
-              216
+              150,
+              5,
+              16
             ],
             "mark_outline_rgb": [
-              96,
-              66,
-              119
+              82,
+              3,
+              9
             ],
             "scene_variant": "stacked_bar",
-            "series_label": "Swen",
+            "series_label": "Zug",
+            "series_rank": 0,
+            "value": 18,
+            "value_center_px": [
+              488.5,
+              500.0
+            ]
+          },
+          "entity_id": "segment_W_Zug",
+          "entity_type": "segment"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              455.861,
+              116.0,
+              521.139,
+              643.0
+            ],
+            "category_label": "W",
+            "category_rank": 3,
+            "legend_label_bbox_px": [
+              931.0,
+              107.0,
+              984.0,
+              125.0
+            ],
+            "legend_swatch_bbox_px": [
+              881.0,
+              102.0,
+              909.0,
+              130.0
+            ],
+            "mark_bbox_px": [
+              455.861,
+              284.0,
+              521.139,
+              392.0
+            ],
+            "mark_center_px": [
+              488.5,
+              338.0
+            ],
+            "mark_fill_rgb": [
+              102,
+              146,
+              182
+            ],
+            "mark_outline_rgb": [
+              56,
+              80,
+              100
+            ],
+            "scene_variant": "stacked_bar",
+            "series_label": "Han",
+            "series_rank": 1,
+            "value": 9,
+            "value_center_px": [
+              488.5,
+              338.0
+            ]
+          },
+          "entity_id": "segment_W_Han",
+          "entity_type": "segment"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              455.861,
+              116.0,
+              521.139,
+              643.0
+            ],
+            "category_label": "W",
+            "category_rank": 3,
+            "legend_label_bbox_px": [
+              931.0,
+              149.0,
+              1005.0,
+              167.0
+            ],
+            "legend_swatch_bbox_px": [
+              881.0,
+              144.0,
+              909.0,
+              172.0
+            ],
+            "mark_bbox_px": [
+              455.861,
+              116.0,
+              521.139,
+              284.0
+            ],
+            "mark_center_px": [
+              488.5,
+              200.0
+            ],
+            "mark_fill_rgb": [
+              111,
+              124,
+              79
+            ],
+            "mark_outline_rgb": [
+              61,
+              68,
+              43
+            ],
+            "scene_variant": "stacked_bar",
+            "series_label": "Hewe",
             "series_rank": 2,
             "value": 14,
             "value_center_px": [
               488.5,
-              304.308
+              200.0
             ]
           },
-          "entity_id": "segment_X_Swen",
+          "entity_id": "segment_W_Hewe",
           "entity_type": "segment"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              442.806,
-              141.615,
-              534.194,
+              561.147,
+              164.0,
+              626.424,
               643.0
             ],
-            "category_label": "X",
-            "category_rank": 2,
+            "category_label": "T",
+            "category_rank": 4,
             "legend_label_bbox_px": [
               931.0,
-              191.0,
-              992.0,
-              209.0
-            ],
-            "legend_swatch_bbox_px": [
-              881.0,
-              186.0,
-              909.0,
-              214.0
-            ],
-            "mark_bbox_px": [
-              442.806,
-              141.615,
-              534.194,
-              228.385
-            ],
-            "mark_center_px": [
-              488.5,
-              185.0
-            ],
-            "mark_fill_rgb": [
-              24,
-              74,
-              215
-            ],
-            "mark_outline_rgb": [
-              13,
-              41,
-              118
-            ],
-            "scene_variant": "stacked_bar",
-            "series_label": "Hein",
-            "series_rank": 3,
-            "value": 8,
-            "value_center_px": [
-              488.5,
-              185.0
-            ]
-          },
-          "entity_id": "segment_X_Hein",
-          "entity_type": "segment"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              590.206,
-              54.846,
-              681.594,
-              645.0
-            ],
-            "category_label": "Q",
-            "category_rank": 3,
-            "legend_label_bbox_px": [
-              931.0,
-              65.0,
-              1000.0,
-              83.0
+              62.5,
+              982.0,
+              85.5
             ],
             "legend_swatch_bbox_px": [
               881.0,
@@ -1269,51 +1239,51 @@
               88.0
             ],
             "mark_bbox_px": [
-              590.206,
-              423.615,
-              681.594,
+              561.147,
+              488.0,
+              626.424,
               608.0
             ],
             "mark_center_px": [
-              635.9,
-              515.808
+              593.786,
+              548.0
             ],
             "mark_fill_rgb": [
-              56,
-              51,
-              20
+              150,
+              5,
+              16
             ],
             "mark_outline_rgb": [
-              31,
-              28,
-              11
+              82,
+              3,
+              9
             ],
             "scene_variant": "stacked_bar",
-            "series_label": "Dean",
+            "series_label": "Zug",
             "series_rank": 0,
-            "value": 17,
+            "value": 10,
             "value_center_px": [
-              635.9,
-              515.808
+              593.786,
+              548.0
             ]
           },
-          "entity_id": "segment_Q_Dean",
+          "entity_id": "segment_T_Zug",
           "entity_type": "segment"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              590.206,
-              54.846,
-              681.594,
-              645.0
+              561.147,
+              164.0,
+              626.424,
+              643.0
             ],
-            "category_label": "Q",
-            "category_rank": 3,
+            "category_label": "T",
+            "category_rank": 4,
             "legend_label_bbox_px": [
               931.0,
               107.0,
-              986.0,
+              984.0,
               125.0
             ],
             "legend_swatch_bbox_px": [
@@ -1323,51 +1293,375 @@
               130.0
             ],
             "mark_bbox_px": [
-              590.206,
-              282.615,
-              681.594,
-              423.615
+              561.147,
+              296.0,
+              626.424,
+              488.0
             ],
             "mark_center_px": [
-              635.9,
-              353.115
+              593.786,
+              392.0
             ],
             "mark_fill_rgb": [
+              102,
               146,
-              132,
-              142
+              182
             ],
             "mark_outline_rgb": [
+              56,
               80,
-              73,
-              78
+              100
             ],
             "scene_variant": "stacked_bar",
-            "series_label": "Uria",
+            "series_label": "Han",
+            "series_rank": 1,
+            "value": 16,
+            "value_center_px": [
+              593.786,
+              392.0
+            ]
+          },
+          "entity_id": "segment_T_Han",
+          "entity_type": "segment"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              561.147,
+              164.0,
+              626.424,
+              643.0
+            ],
+            "category_label": "T",
+            "category_rank": 4,
+            "legend_label_bbox_px": [
+              931.0,
+              149.0,
+              1005.0,
+              167.0
+            ],
+            "legend_swatch_bbox_px": [
+              881.0,
+              144.0,
+              909.0,
+              172.0
+            ],
+            "mark_bbox_px": [
+              561.147,
+              164.0,
+              626.424,
+              296.0
+            ],
+            "mark_center_px": [
+              593.786,
+              230.0
+            ],
+            "mark_fill_rgb": [
+              111,
+              124,
+              79
+            ],
+            "mark_outline_rgb": [
+              61,
+              68,
+              43
+            ],
+            "scene_variant": "stacked_bar",
+            "series_label": "Hewe",
+            "series_rank": 2,
+            "value": 11,
+            "value_center_px": [
+              593.786,
+              230.0
+            ]
+          },
+          "entity_id": "segment_T_Hewe",
+          "entity_type": "segment"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              666.433,
+              56.0,
+              731.71,
+              645.0
+            ],
+            "category_label": "Q",
+            "category_rank": 5,
+            "legend_label_bbox_px": [
+              931.0,
+              62.5,
+              982.0,
+              85.5
+            ],
+            "legend_swatch_bbox_px": [
+              881.0,
+              60.0,
+              909.0,
+              88.0
+            ],
+            "mark_bbox_px": [
+              666.433,
+              488.0,
+              731.71,
+              608.0
+            ],
+            "mark_center_px": [
+              699.071,
+              548.0
+            ],
+            "mark_fill_rgb": [
+              150,
+              5,
+              16
+            ],
+            "mark_outline_rgb": [
+              82,
+              3,
+              9
+            ],
+            "scene_variant": "stacked_bar",
+            "series_label": "Zug",
+            "series_rank": 0,
+            "value": 10,
+            "value_center_px": [
+              699.071,
+              548.0
+            ]
+          },
+          "entity_id": "segment_Q_Zug",
+          "entity_type": "segment"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              666.433,
+              56.0,
+              731.71,
+              645.0
+            ],
+            "category_label": "Q",
+            "category_rank": 5,
+            "legend_label_bbox_px": [
+              931.0,
+              107.0,
+              984.0,
+              125.0
+            ],
+            "legend_swatch_bbox_px": [
+              881.0,
+              102.0,
+              909.0,
+              130.0
+            ],
+            "mark_bbox_px": [
+              666.433,
+              272.0,
+              731.71,
+              488.0
+            ],
+            "mark_center_px": [
+              699.071,
+              380.0
+            ],
+            "mark_fill_rgb": [
+              102,
+              146,
+              182
+            ],
+            "mark_outline_rgb": [
+              56,
+              80,
+              100
+            ],
+            "scene_variant": "stacked_bar",
+            "series_label": "Han",
+            "series_rank": 1,
+            "value": 18,
+            "value_center_px": [
+              699.071,
+              380.0
+            ]
+          },
+          "entity_id": "segment_Q_Han",
+          "entity_type": "segment"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              666.433,
+              56.0,
+              731.71,
+              645.0
+            ],
+            "category_label": "Q",
+            "category_rank": 5,
+            "legend_label_bbox_px": [
+              931.0,
+              149.0,
+              1005.0,
+              167.0
+            ],
+            "legend_swatch_bbox_px": [
+              881.0,
+              144.0,
+              909.0,
+              172.0
+            ],
+            "mark_bbox_px": [
+              666.433,
+              56.0,
+              731.71,
+              272.0
+            ],
+            "mark_center_px": [
+              699.071,
+              164.0
+            ],
+            "mark_fill_rgb": [
+              111,
+              124,
+              79
+            ],
+            "mark_outline_rgb": [
+              61,
+              68,
+              43
+            ],
+            "scene_variant": "stacked_bar",
+            "series_label": "Hewe",
+            "series_rank": 2,
+            "value": 18,
+            "value_center_px": [
+              699.071,
+              164.0
+            ]
+          },
+          "entity_id": "segment_Q_Hewe",
+          "entity_type": "segment"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              771.719,
+              212.0,
+              836.996,
+              643.0
+            ],
+            "category_label": "G",
+            "category_rank": 6,
+            "legend_label_bbox_px": [
+              931.0,
+              62.5,
+              982.0,
+              85.5
+            ],
+            "legend_swatch_bbox_px": [
+              881.0,
+              60.0,
+              909.0,
+              88.0
+            ],
+            "mark_bbox_px": [
+              771.719,
+              500.0,
+              836.996,
+              608.0
+            ],
+            "mark_center_px": [
+              804.357,
+              554.0
+            ],
+            "mark_fill_rgb": [
+              150,
+              5,
+              16
+            ],
+            "mark_outline_rgb": [
+              82,
+              3,
+              9
+            ],
+            "scene_variant": "stacked_bar",
+            "series_label": "Zug",
+            "series_rank": 0,
+            "value": 9,
+            "value_center_px": [
+              804.357,
+              554.0
+            ]
+          },
+          "entity_id": "segment_G_Zug",
+          "entity_type": "segment"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              771.719,
+              212.0,
+              836.996,
+              643.0
+            ],
+            "category_label": "G",
+            "category_rank": 6,
+            "legend_label_bbox_px": [
+              931.0,
+              107.0,
+              984.0,
+              125.0
+            ],
+            "legend_swatch_bbox_px": [
+              881.0,
+              102.0,
+              909.0,
+              130.0
+            ],
+            "mark_bbox_px": [
+              771.719,
+              344.0,
+              836.996,
+              500.0
+            ],
+            "mark_center_px": [
+              804.357,
+              422.0
+            ],
+            "mark_fill_rgb": [
+              102,
+              146,
+              182
+            ],
+            "mark_outline_rgb": [
+              56,
+              80,
+              100
+            ],
+            "scene_variant": "stacked_bar",
+            "series_label": "Han",
             "series_rank": 1,
             "value": 13,
             "value_center_px": [
-              635.9,
-              353.115
+              804.357,
+              422.0
             ]
           },
-          "entity_id": "segment_Q_Uria",
+          "entity_id": "segment_G_Han",
           "entity_type": "segment"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              590.206,
-              54.846,
-              681.594,
-              645.0
+              771.719,
+              212.0,
+              836.996,
+              643.0
             ],
-            "category_label": "Q",
-            "category_rank": 3,
+            "category_label": "G",
+            "category_rank": 6,
             "legend_label_bbox_px": [
               931.0,
               149.0,
-              1003.0,
+              1005.0,
               167.0
             ],
             "legend_swatch_bbox_px": [
@@ -1377,317 +1671,46 @@
               172.0
             ],
             "mark_bbox_px": [
-              590.206,
-              228.385,
-              681.594,
-              282.615
+              771.719,
+              212.0,
+              836.996,
+              344.0
             ],
             "mark_center_px": [
-              635.9,
-              255.5
+              804.357,
+              278.0
             ],
             "mark_fill_rgb": [
-              175,
-              120,
-              216
+              111,
+              124,
+              79
             ],
             "mark_outline_rgb": [
-              96,
-              66,
-              119
+              61,
+              68,
+              43
             ],
             "scene_variant": "stacked_bar",
-            "series_label": "Swen",
+            "series_label": "Hewe",
             "series_rank": 2,
-            "value": 5,
+            "value": 11,
             "value_center_px": [
-              635.9,
-              255.5
+              804.357,
+              278.0
             ]
           },
-          "entity_id": "segment_Q_Swen",
-          "entity_type": "segment"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              590.206,
-              54.846,
-              681.594,
-              645.0
-            ],
-            "category_label": "Q",
-            "category_rank": 3,
-            "legend_label_bbox_px": [
-              931.0,
-              191.0,
-              992.0,
-              209.0
-            ],
-            "legend_swatch_bbox_px": [
-              881.0,
-              186.0,
-              909.0,
-              214.0
-            ],
-            "mark_bbox_px": [
-              590.206,
-              54.846,
-              681.594,
-              228.385
-            ],
-            "mark_center_px": [
-              635.9,
-              141.615
-            ],
-            "mark_fill_rgb": [
-              24,
-              74,
-              215
-            ],
-            "mark_outline_rgb": [
-              13,
-              41,
-              118
-            ],
-            "scene_variant": "stacked_bar",
-            "series_label": "Hein",
-            "series_rank": 3,
-            "value": 16,
-            "value_center_px": [
-              635.9,
-              141.615
-            ]
-          },
-          "entity_id": "segment_Q_Hein",
-          "entity_type": "segment"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              737.606,
-              412.769,
-              828.994,
-              643.0
-            ],
-            "category_label": "S",
-            "category_rank": 4,
-            "legend_label_bbox_px": [
-              931.0,
-              65.0,
-              1000.0,
-              83.0
-            ],
-            "legend_swatch_bbox_px": [
-              881.0,
-              60.0,
-              909.0,
-              88.0
-            ],
-            "mark_bbox_px": [
-              737.606,
-              553.769,
-              828.994,
-              608.0
-            ],
-            "mark_center_px": [
-              783.3,
-              580.885
-            ],
-            "mark_fill_rgb": [
-              56,
-              51,
-              20
-            ],
-            "mark_outline_rgb": [
-              31,
-              28,
-              11
-            ],
-            "scene_variant": "stacked_bar",
-            "series_label": "Dean",
-            "series_rank": 0,
-            "value": 5,
-            "value_center_px": [
-              783.3,
-              580.885
-            ]
-          },
-          "entity_id": "segment_S_Dean",
-          "entity_type": "segment"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              737.606,
-              412.769,
-              828.994,
-              643.0
-            ],
-            "category_label": "S",
-            "category_rank": 4,
-            "legend_label_bbox_px": [
-              931.0,
-              107.0,
-              986.0,
-              125.0
-            ],
-            "legend_swatch_bbox_px": [
-              881.0,
-              102.0,
-              909.0,
-              130.0
-            ],
-            "mark_bbox_px": [
-              737.606,
-              499.538,
-              828.994,
-              553.769
-            ],
-            "mark_center_px": [
-              783.3,
-              526.654
-            ],
-            "mark_fill_rgb": [
-              146,
-              132,
-              142
-            ],
-            "mark_outline_rgb": [
-              80,
-              73,
-              78
-            ],
-            "scene_variant": "stacked_bar",
-            "series_label": "Uria",
-            "series_rank": 1,
-            "value": 5,
-            "value_center_px": [
-              783.3,
-              526.654
-            ]
-          },
-          "entity_id": "segment_S_Uria",
-          "entity_type": "segment"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              737.606,
-              412.769,
-              828.994,
-              643.0
-            ],
-            "category_label": "S",
-            "category_rank": 4,
-            "legend_label_bbox_px": [
-              931.0,
-              149.0,
-              1003.0,
-              167.0
-            ],
-            "legend_swatch_bbox_px": [
-              881.0,
-              144.0,
-              909.0,
-              172.0
-            ],
-            "mark_bbox_px": [
-              737.606,
-              456.154,
-              828.994,
-              499.538
-            ],
-            "mark_center_px": [
-              783.3,
-              477.846
-            ],
-            "mark_fill_rgb": [
-              175,
-              120,
-              216
-            ],
-            "mark_outline_rgb": [
-              96,
-              66,
-              119
-            ],
-            "scene_variant": "stacked_bar",
-            "series_label": "Swen",
-            "series_rank": 2,
-            "value": 4,
-            "value_center_px": [
-              783.3,
-              477.846
-            ]
-          },
-          "entity_id": "segment_S_Swen",
-          "entity_type": "segment"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              737.606,
-              412.769,
-              828.994,
-              643.0
-            ],
-            "category_label": "S",
-            "category_rank": 4,
-            "legend_label_bbox_px": [
-              931.0,
-              191.0,
-              992.0,
-              209.0
-            ],
-            "legend_swatch_bbox_px": [
-              881.0,
-              186.0,
-              909.0,
-              214.0
-            ],
-            "mark_bbox_px": [
-              737.606,
-              412.769,
-              828.994,
-              456.154
-            ],
-            "mark_center_px": [
-              783.3,
-              434.462
-            ],
-            "mark_fill_rgb": [
-              24,
-              74,
-              215
-            ],
-            "mark_outline_rgb": [
-              13,
-              41,
-              118
-            ],
-            "scene_variant": "stacked_bar",
-            "series_label": "Hein",
-            "series_rank": 3,
-            "value": 4,
-            "value_center_px": [
-              783.3,
-              434.462
-            ]
-          },
-          "entity_id": "segment_S_Hein",
+          "entity_id": "segment_G_Hewe",
           "entity_type": "segment"
         }
       ],
       "relations": {
-        "answer_value": 18,
+        "answer_value": 46,
         "evidence_labels": [
-          "Dean",
-          "Uria",
-          "Swen",
-          "Hein"
+          "Zug",
+          "Han",
+          "Hewe"
         ],
-        "query_category_label": "S",
+        "query_category_label": "Q",
         "query_series_label": "",
         "query_subset_labels": [],
         "scene_variant": "stacked_bar",
@@ -1697,17 +1720,15 @@
     },
     "witness_symbolic": {
       "labels": [
-        "Dean",
-        "Uria",
-        "Swen",
-        "Hein"
+        "Zug",
+        "Han",
+        "Hewe"
       ],
       "type": "integer_list",
       "values": [
-        5,
-        5,
-        4,
-        4
+        10,
+        18,
+        18
       ]
     }
   },

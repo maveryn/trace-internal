@@ -7,65 +7,66 @@
     "type": "label_set",
     "value": [
       "A",
-      "E",
-      "F",
-      "H"
+      "J",
+      "L",
+      "X"
     ]
   },
   "image": {
     "format": "png",
     "path": "charts/task_charts_counting_value_count/images/in_interval/0006.png"
   },
-  "instance_seed": 2340660999777547,
-  "prompt": "Look at the chart in the image. It shows a labeled bar chart. Each bar's numeric height can be read from the vertical axis. Determine how many labeled marks meet the stated value condition. How many labeled marks have value in the inclusive interval [15, 17]?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing the labels of all marks with values in the inclusive interval.\nAnswer rule: set \"answer\" to the number of matching marks as an integer.\nExample JSON:\n{\"evidence\":[\"C\",\"F\",\"Q\"],\"answer\":3}",
+  "instance_seed": 2360281599152714,
+  "prompt": "The image shows a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Read the chart values and count the matching marks. What number of labeled marks lie in the inclusive interval [1, 4]?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing the labels of all marks with values in the inclusive interval.\nAnswer field: set \"answer\" to the number of matching marks as an integer.\nExample JSON:\n{\"evidence\":[\"C\",\"F\",\"Q\"],\"answer\":3}",
   "prompt_variants": {
-    "answer_and_evidence": "Look at the chart in the image. It shows a labeled bar chart. Each bar's numeric height can be read from the vertical axis. Determine how many labeled marks meet the stated value condition. How many labeled marks have value in the inclusive interval [15, 17]?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing the labels of all marks with values in the inclusive interval.\nAnswer rule: set \"answer\" to the number of matching marks as an integer.\nExample JSON:\n{\"evidence\":[\"C\",\"F\",\"Q\"],\"answer\":3}",
-    "answer_only": "Look at the chart in the image. It shows a labeled bar chart. Each bar's numeric height can be read from the vertical axis. Determine how many labeled marks meet the stated value condition. How many labeled marks have value in the inclusive interval [15, 17]?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the number of matching marks as an integer.\nExample JSON:\n{\"answer\":3}"
+    "answer_and_evidence": "The image shows a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Read the chart values and count the matching marks. What number of labeled marks lie in the inclusive interval [1, 4]?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing the labels of all marks with values in the inclusive interval.\nAnswer field: set \"answer\" to the number of matching marks as an integer.\nExample JSON:\n{\"evidence\":[\"C\",\"F\",\"Q\"],\"answer\":3}",
+    "answer_only": "The image shows a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Read the chart values and count the matching marks. What number of labeled marks lie in the inclusive interval [1, 4]?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the number of matching marks as an integer.\nExample JSON:\n{\"answer\":3}"
   },
   "task": "task_charts_counting_value_count",
   "task_variant": "in_interval",
   "trace_payload": {
     "execution_trace": {
       "answer_value": 4,
+      "composition_total": 100,
       "evidence_labels": [
         "A",
-        "E",
-        "F",
-        "H"
+        "J",
+        "L",
+        "X"
       ],
       "interval_inclusive": true,
-      "interval_max": 17,
-      "interval_min": 15,
+      "interval_max": 4,
+      "interval_min": 1,
       "labels": [
-        "E",
-        "H",
-        "Q",
-        "P",
         "V",
-        "F",
-        "Z",
-        "A"
+        "A",
+        "L",
+        "E",
+        "J",
+        "G",
+        "X"
       ],
       "mark_color_distance_space": "lab",
-      "mark_color_min_distance": 40.0,
-      "mark_color_sampling_policy": "random_rgb",
-      "mark_count": 8,
+      "mark_color_min_distance": 58.0,
+      "mark_color_sampling_policy": "random_rgb_palette",
+      "mark_count": 7,
       "mark_count_range": [
         5,
-        10
+        8
       ],
       "mark_fill_rgb": [
-        15,
-        123,
-        109
+        22,
+        189,
+        123
       ],
       "mark_outline_rgb": [
-        8,
-        68,
-        60
+        12,
+        104,
+        68
       ],
+      "pie_like_mark_color_channel_max": 200,
       "question_format": "numeric_open",
-      "scene_variant": "bar",
+      "scene_variant": "donut",
       "scene_variant_probabilities": {
         "area": 0.1,
         "bar": 0.1,
@@ -78,6 +79,80 @@
         "radar": 0.1,
         "scatter": 0.1
       },
+      "slice_fill_palette_rgb": [
+        [
+          22,
+          189,
+          123
+        ],
+        [
+          183,
+          15,
+          200
+        ],
+        [
+          164,
+          117,
+          54
+        ],
+        [
+          26,
+          36,
+          68
+        ],
+        [
+          150,
+          24,
+          71
+        ],
+        [
+          44,
+          79,
+          193
+        ],
+        [
+          161,
+          195,
+          17
+        ]
+      ],
+      "slice_outline_palette_rgb": [
+        [
+          12,
+          104,
+          68
+        ],
+        [
+          101,
+          8,
+          110
+        ],
+        [
+          90,
+          64,
+          30
+        ],
+        [
+          14,
+          20,
+          37
+        ],
+        [
+          82,
+          13,
+          39
+        ],
+        [
+          24,
+          43,
+          106
+        ],
+        [
+          89,
+          107,
+          9
+        ]
+      ],
       "target_answer": 4,
       "target_answer_range": [
         0,
@@ -85,110 +160,109 @@
       ],
       "task_variant": "in_interval",
       "task_variant_probabilities": {
-        "above_threshold": 0.3333333333333333,
-        "below_threshold": 0.3333333333333333,
-        "in_interval": 0.3333333333333333
+        "above_threshold": 0.0,
+        "below_threshold": 0.0,
+        "in_interval": 1.0
       },
-      "value_max": 20,
+      "value_max": 99,
       "value_min": 1,
+      "value_semantics": "percentage",
       "values": [
-        15,
-        16,
-        20,
-        20,
-        5,
-        16,
-        10,
-        15
+        7,
+        2,
+        1,
+        79,
+        1,
+        8,
+        2
       ],
       "values_by_label": {
-        "A": 15,
-        "E": 15,
-        "F": 16,
-        "H": 16,
-        "P": 20,
-        "Q": 20,
-        "V": 5,
-        "Z": 10
+        "A": 2,
+        "E": 79,
+        "G": 8,
+        "J": 1,
+        "L": 1,
+        "V": 7,
+        "X": 2
       }
     },
     "projected_evidence": {
       "bbox_set": [
         [
-          688.628,
-          176.571,
-          736.622,
-          508.0
+          319.32,
+          88.23,
+          430.515,
+          276.0
         ],
         [
-          109.377,
-          176.571,
-          157.373,
-          508.0
+          187.042,
+          108.113,
+          319.32,
+          276.0
         ],
         [
-          523.128,
-          154.476,
-          571.122,
-          508.0
+          319.32,
+          100.785,
+          441.297,
+          276.0
         ],
         [
-          192.127,
-          154.476,
-          240.123,
-          508.0
+          293.311,
+          68.48,
+          319.32,
+          276.0
         ]
       ],
       "label_set": [
         "A",
-        "E",
-        "F",
-        "H"
+        "J",
+        "L",
+        "X"
       ],
       "pixel_point_map": {
         "A": [
-          712.625,
-          176.571
+          390.301,
+          146.886
         ],
-        "E": [
-          133.375,
-          176.571
+        "J": [
+          229.015,
+          159.579
         ],
-        "F": [
-          547.125,
-          154.476
+        "L": [
+          402.137,
+          154.139
         ],
-        "H": [
-          216.125,
-          154.476
+        "X": [
+          310.068,
+          128.952
         ]
       },
       "pixel_point_set": [
         [
-          712.625,
-          176.571
+          390.301,
+          146.886
         ],
         [
-          133.375,
-          176.571
+          229.015,
+          159.579
         ],
         [
-          547.125,
-          154.476
+          402.137,
+          154.139
         ],
         [
-          216.125,
-          154.476
+          310.068,
+          128.952
         ]
       ]
     },
     "query_spec": {
       "params": {
         "interval_inclusive": true,
-        "interval_max": 17,
-        "interval_min": 15,
-        "mark_count": 8,
-        "scene_variant": "bar",
+        "interval_max": 4,
+        "interval_min": 1,
+        "mark_count": 7,
+        "scene_variant": "donut",
         "scene_variant_probabilities": {
           "area": 0.1,
           "bar": 0.1,
@@ -208,34 +282,34 @@
         ],
         "task_variant": "in_interval",
         "task_variant_probabilities": {
-          "above_threshold": 0.3333333333333333,
-          "below_threshold": 0.3333333333333333,
-          "in_interval": 0.3333333333333333
+          "above_threshold": 0.0,
+          "below_threshold": 0.0,
+          "in_interval": 1.0
         }
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 4,
+        "answer_or_evidence_variant_index": 3,
         "prompt_bundle_id": "charts_counting_v1",
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the number of matching marks as an integer",
           "evidence_hint": "set \"evidence\" to an array containing the labels of all marks with values in the inclusive interval",
-          "interval_max": "17",
-          "interval_min": "15",
+          "interval_max": "4",
+          "interval_min": "1",
           "json_example": "{\"evidence\":[\"C\",\"F\",\"Q\"],\"answer\":3}",
           "json_example_answer_only": "{\"answer\":3}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "object_description": "a labeled bar chart. Each bar's numeric height can be read from the vertical axis",
+          "object_description": "a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices",
           "threshold": ""
         },
         "task_family_key": "labeled_chart_counting",
-        "task_family_variant_index": 3,
+        "task_family_variant_index": 0,
         "task_key": "value_count_query",
-        "task_variant_index": 3,
+        "task_variant_index": 4,
         "task_variant_key": "in_interval",
-        "task_variant_template_index": 0,
+        "task_variant_template_index": 3,
         "template_paths": [
           "charts/counting/charts_counting_v1.json"
         ],
@@ -251,27 +325,27 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 4,
+            "answer_or_evidence_variant_index": 3,
             "prompt_bundle_id": "charts_counting_v1",
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the number of matching marks as an integer",
               "evidence_hint": "set \"evidence\" to an array containing the labels of all marks with values in the inclusive interval",
-              "interval_max": "17",
-              "interval_min": "15",
+              "interval_max": "4",
+              "interval_min": "1",
               "json_example": "{\"evidence\":[\"C\",\"F\",\"Q\"],\"answer\":3}",
               "json_example_answer_only": "{\"answer\":3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a labeled bar chart. Each bar's numeric height can be read from the vertical axis",
+              "object_description": "a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices",
               "threshold": ""
             },
             "task_family_key": "labeled_chart_counting",
-            "task_family_variant_index": 3,
+            "task_family_variant_index": 0,
             "task_key": "value_count_query",
-            "task_variant_index": 3,
+            "task_variant_index": 4,
             "task_variant_key": "in_interval",
-            "task_variant_template_index": 0,
+            "task_variant_template_index": 3,
             "template_paths": [
               "charts/counting/charts_counting_v1.json"
             ],
@@ -282,32 +356,32 @@
               "task_variant:in_interval": 5
             }
           },
-          "prompt": "Look at the chart in the image. It shows a labeled bar chart. Each bar's numeric height can be read from the vertical axis. Determine how many labeled marks meet the stated value condition. How many labeled marks have value in the inclusive interval [15, 17]?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing the labels of all marks with values in the inclusive interval.\nAnswer rule: set \"answer\" to the number of matching marks as an integer.\nExample JSON:\n{\"evidence\":[\"C\",\"F\",\"Q\"],\"answer\":3}"
+          "prompt": "The image shows a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Read the chart values and count the matching marks. What number of labeled marks lie in the inclusive interval [1, 4]?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing the labels of all marks with values in the inclusive interval.\nAnswer field: set \"answer\" to the number of matching marks as an integer.\nExample JSON:\n{\"evidence\":[\"C\",\"F\",\"Q\"],\"answer\":3}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 2,
+            "answer_or_evidence_variant_index": 4,
             "prompt_bundle_id": "charts_counting_v1",
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the number of matching marks as an integer",
               "evidence_hint": "set \"evidence\" to an array containing the labels of all marks with values in the inclusive interval",
-              "interval_max": "17",
-              "interval_min": "15",
+              "interval_max": "4",
+              "interval_min": "1",
               "json_example": "{\"evidence\":[\"C\",\"F\",\"Q\"],\"answer\":3}",
               "json_example_answer_only": "{\"answer\":3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a labeled bar chart. Each bar's numeric height can be read from the vertical axis",
+              "object_description": "a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices",
               "threshold": ""
             },
             "task_family_key": "labeled_chart_counting",
-            "task_family_variant_index": 3,
+            "task_family_variant_index": 0,
             "task_key": "value_count_query",
-            "task_variant_index": 3,
+            "task_variant_index": 4,
             "task_variant_key": "in_interval",
-            "task_variant_template_index": 0,
+            "task_variant_template_index": 3,
             "template_paths": [
               "charts/counting/charts_counting_v1.json"
             ],
@@ -318,7 +392,7 @@
               "task_variant:in_interval": 5
             }
           },
-          "prompt": "Look at the chart in the image. It shows a labeled bar chart. Each bar's numeric height can be read from the vertical axis. Determine how many labeled marks meet the stated value condition. How many labeled marks have value in the inclusive interval [15, 17]?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the number of matching marks as an integer.\nExample JSON:\n{\"answer\":3}"
+          "prompt": "The image shows a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Read the chart values and count the matching marks. What number of labeled marks lie in the inclusive interval [1, 4]?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the number of matching marks as an integer.\nExample JSON:\n{\"answer\":3}"
         }
       },
       "task_variant": "in_interval",
@@ -328,36 +402,32 @@
       "image_id": "img0",
       "label_centers_px": {
         "A": [
-          712.625,
-          534.0
+          625.14,
+          185.0
         ],
         "E": [
-          133.375,
-          534.0
+          624.14,
+          269.0
         ],
-        "F": [
-          547.125,
-          534.0
+        "G": [
+          625.64,
+          353.0
         ],
-        "H": [
-          216.125,
-          534.0
+        "J": [
+          621.64,
+          311.0
         ],
-        "P": [
-          381.625,
-          534.0
-        ],
-        "Q": [
-          298.875,
-          534.0
+        "L": [
+          623.64,
+          227.0
         ],
         "V": [
-          464.375,
-          534.0
+          625.14,
+          143.0
         ],
-        "Z": [
-          629.875,
-          534.0
+        "X": [
+          625.14,
+          395.0
         ]
       },
       "plot_bbox_px": [
@@ -393,18 +463,93 @@
       "coord_space": "pixel",
       "mark_style": {
         "mark_color_distance_space": "lab",
-        "mark_color_min_distance": 40.0,
+        "mark_color_min_distance": 58.0,
         "mark_fill_rgb": [
-          15,
-          123,
-          109
+          22,
+          189,
+          123
         ],
         "mark_outline_rgb": [
-          8,
-          68,
-          60
+          12,
+          104,
+          68
         ],
-        "sampling_policy": "random_rgb"
+        "pie_like_mark_color_channel_max": 200,
+        "sampling_policy": "random_rgb_palette",
+        "slice_fill_palette_rgb": [
+          [
+            22,
+            189,
+            123
+          ],
+          [
+            183,
+            15,
+            200
+          ],
+          [
+            164,
+            117,
+            54
+          ],
+          [
+            26,
+            36,
+            68
+          ],
+          [
+            150,
+            24,
+            71
+          ],
+          [
+            44,
+            79,
+            193
+          ],
+          [
+            161,
+            195,
+            17
+          ]
+        ],
+        "slice_outline_palette_rgb": [
+          [
+            12,
+            104,
+            68
+          ],
+          [
+            101,
+            8,
+            110
+          ],
+          [
+            90,
+            64,
+            30
+          ],
+          [
+            14,
+            20,
+            37
+          ],
+          [
+            82,
+            13,
+            39
+          ],
+          [
+            24,
+            43,
+            106
+          ],
+          [
+            89,
+            107,
+            9
+          ]
+        ]
       },
       "plot_bbox_px": [
         92,
@@ -428,13 +573,13 @@
         "edits": [],
         "enabled": false
       },
-      "scene_variant": "bar",
+      "scene_variant": "donut",
       "text_style": {
         "label_font_size_px": 22,
         "label_stroke_width_px": 2,
         "tick_font_size_px": 18
       },
-      "y_axis_max": 21,
+      "y_axis_max": 80,
       "y_ticks": [
         0,
         1,
@@ -457,305 +602,498 @@
         18,
         19,
         20,
-        21
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60,
+        61,
+        62,
+        63,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69,
+        70,
+        71,
+        72,
+        73,
+        74,
+        75,
+        76,
+        77,
+        78,
+        79,
+        80
       ]
     },
     "scene_ir": {
       "entities": [
         {
           "attrs": {
-            "label": "E",
+            "end_angle_deg": -64.8,
+            "label": "V",
+            "label_bbox_px": [
+              616.64,
+              135.0,
+              633.64,
+              151.0
+            ],
             "label_center_px": [
-              133.375,
-              534.0
+              625.14,
+              143.0
+            ],
+            "legend_swatch_bbox_px": [
+              568.64,
+              129.0,
+              596.64,
+              157.0
             ],
             "mark_bbox_px": [
-              109.377,
-              176.571,
-              157.373,
-              508.0
+              319.32,
+              68.48,
+              407.678,
+              276.0
             ],
             "mark_center_px": [
-              133.375,
-              176.571
+              351.461,
+              132.209
             ],
             "mark_fill_rgb": [
-              15,
-              123,
-              109
+              22,
+              189,
+              123
             ],
             "mark_outline_rgb": [
-              8,
-              68,
-              60
+              12,
+              104,
+              68
             ],
-            "scene_variant": "bar",
-            "value": 15,
+            "percentage_bbox_px": [
+              332.961,
+              124.209,
+              369.961,
+              140.209
+            ],
+            "percentage_center_px": [
+              351.461,
+              132.209
+            ],
+            "scene_variant": "donut",
+            "start_angle_deg": -90.0,
+            "value": 7,
             "x_rank": 0
           },
-          "entity_id": "mark_E",
-          "entity_type": "bar"
+          "entity_id": "mark_V",
+          "entity_type": "slice"
         },
         {
           "attrs": {
-            "label": "H",
+            "end_angle_deg": -57.6,
+            "label": "A",
+            "label_bbox_px": [
+              616.64,
+              177.0,
+              633.64,
+              193.0
+            ],
             "label_center_px": [
-              216.125,
-              534.0
+              625.14,
+              185.0
+            ],
+            "legend_swatch_bbox_px": [
+              568.64,
+              171.0,
+              596.64,
+              199.0
             ],
             "mark_bbox_px": [
-              192.127,
-              154.476,
-              240.123,
-              508.0
+              319.32,
+              88.23,
+              430.515,
+              276.0
             ],
             "mark_center_px": [
-              216.125,
-              154.476
+              390.301,
+              146.886
             ],
             "mark_fill_rgb": [
+              183,
               15,
-              123,
-              109
+              200
             ],
             "mark_outline_rgb": [
+              101,
               8,
-              68,
-              60
+              110
             ],
-            "scene_variant": "bar",
-            "value": 16,
+            "percentage_bbox_px": [
+              408.502,
+              72.128,
+              445.502,
+              88.128
+            ],
+            "percentage_center_px": [
+              427.002,
+              80.128
+            ],
+            "scene_variant": "donut",
+            "start_angle_deg": -64.8,
+            "value": 2,
             "x_rank": 1
           },
-          "entity_id": "mark_H",
-          "entity_type": "bar"
+          "entity_id": "mark_A",
+          "entity_type": "slice"
         },
         {
           "attrs": {
-            "label": "Q",
+            "end_angle_deg": -54.0,
+            "label": "L",
+            "label_bbox_px": [
+              616.64,
+              219.0,
+              630.64,
+              235.0
+            ],
             "label_center_px": [
-              298.875,
-              534.0
+              623.64,
+              227.0
+            ],
+            "legend_swatch_bbox_px": [
+              568.64,
+              213.0,
+              596.64,
+              241.0
             ],
             "mark_bbox_px": [
-              274.877,
-              66.095,
-              322.873,
-              508.0
+              319.32,
+              100.785,
+              441.297,
+              276.0
             ],
             "mark_center_px": [
-              298.875,
-              66.095
+              402.137,
+              154.139
             ],
             "mark_fill_rgb": [
-              15,
-              123,
-              109
+              164,
+              117,
+              54
             ],
             "mark_outline_rgb": [
-              8,
-              68,
-              60
+              90,
+              64,
+              30
             ],
-            "scene_variant": "bar",
-            "value": 20,
+            "percentage_bbox_px": [
+              426.457,
+              83.131,
+              463.457,
+              99.131
+            ],
+            "percentage_center_px": [
+              444.957,
+              91.131
+            ],
+            "scene_variant": "donut",
+            "start_angle_deg": -57.6,
+            "value": 1,
             "x_rank": 2
           },
-          "entity_id": "mark_Q",
-          "entity_type": "bar"
+          "entity_id": "mark_L",
+          "entity_type": "slice"
         },
         {
           "attrs": {
-            "label": "P",
+            "end_angle_deg": 230.4,
+            "label": "E",
+            "label_bbox_px": [
+              616.64,
+              261.0,
+              631.64,
+              277.0
+            ],
             "label_center_px": [
-              381.625,
-              534.0
+              624.14,
+              269.0
+            ],
+            "legend_swatch_bbox_px": [
+              568.64,
+              255.0,
+              596.64,
+              283.0
             ],
             "mark_bbox_px": [
-              357.627,
-              66.095,
-              405.623,
-              508.0
+              112.07,
+              108.113,
+              526.826,
+              483.418
             ],
             "mark_center_px": [
-              381.625,
-              66.095
+              323.948,
+              423.266
             ],
             "mark_fill_rgb": [
-              15,
-              123,
-              109
+              26,
+              36,
+              68
             ],
             "mark_outline_rgb": [
-              8,
-              68,
-              60
+              14,
+              20,
+              37
             ],
-            "scene_variant": "bar",
-            "value": 20,
+            "percentage_bbox_px": [
+              297.948,
+              415.266,
+              349.948,
+              431.266
+            ],
+            "percentage_center_px": [
+              323.948,
+              423.266
+            ],
+            "scene_variant": "donut",
+            "start_angle_deg": -54.0,
+            "value": 79,
             "x_rank": 3
           },
-          "entity_id": "mark_P",
-          "entity_type": "bar"
+          "entity_id": "mark_E",
+          "entity_type": "slice"
         },
         {
           "attrs": {
-            "label": "V",
+            "end_angle_deg": 234.0,
+            "label": "J",
+            "label_bbox_px": [
+              616.64,
+              301.0,
+              626.64,
+              321.0
+            ],
             "label_center_px": [
-              464.375,
-              534.0
+              621.64,
+              311.0
+            ],
+            "legend_swatch_bbox_px": [
+              568.64,
+              297.0,
+              596.64,
+              325.0
             ],
             "mark_bbox_px": [
-              440.377,
-              397.524,
-              488.373,
-              508.0
+              187.042,
+              108.113,
+              319.32,
+              276.0
             ],
             "mark_center_px": [
-              464.375,
-              397.524
+              229.015,
+              159.579
             ],
             "mark_fill_rgb": [
-              15,
-              123,
-              109
+              150,
+              24,
+              71
             ],
             "mark_outline_rgb": [
-              8,
-              68,
-              60
+              82,
+              13,
+              39
             ],
-            "scene_variant": "bar",
-            "value": 5,
+            "percentage_bbox_px": [
+              163.823,
+              91.385,
+              200.823,
+              107.385
+            ],
+            "percentage_center_px": [
+              182.323,
+              99.385
+            ],
+            "scene_variant": "donut",
+            "start_angle_deg": 230.4,
+            "value": 1,
             "x_rank": 4
           },
-          "entity_id": "mark_V",
-          "entity_type": "bar"
+          "entity_id": "mark_J",
+          "entity_type": "slice"
         },
         {
           "attrs": {
-            "label": "F",
+            "end_angle_deg": 262.8,
+            "label": "G",
+            "label_bbox_px": [
+              616.64,
+              345.0,
+              634.64,
+              361.0
+            ],
             "label_center_px": [
-              547.125,
-              534.0
+              625.64,
+              353.0
+            ],
+            "legend_swatch_bbox_px": [
+              568.64,
+              339.0,
+              596.64,
+              367.0
             ],
             "mark_bbox_px": [
-              523.128,
-              154.476,
-              571.122,
-              508.0
+              197.343,
+              70.116,
+              319.32,
+              276.0
             ],
             "mark_center_px": [
-              547.125,
-              154.476
+              265.081,
+              139.007
             ],
             "mark_fill_rgb": [
-              15,
-              123,
-              109
+              44,
+              79,
+              193
             ],
             "mark_outline_rgb": [
-              8,
-              68,
-              60
+              24,
+              43,
+              106
             ],
-            "scene_variant": "bar",
-            "value": 16,
+            "percentage_bbox_px": [
+              246.581,
+              131.007,
+              283.581,
+              147.007
+            ],
+            "percentage_center_px": [
+              265.081,
+              139.007
+            ],
+            "scene_variant": "donut",
+            "start_angle_deg": 234.0,
+            "value": 8,
             "x_rank": 5
           },
-          "entity_id": "mark_F",
-          "entity_type": "bar"
+          "entity_id": "mark_G",
+          "entity_type": "slice"
         },
         {
           "attrs": {
-            "label": "Z",
+            "end_angle_deg": 270.0,
+            "label": "X",
+            "label_bbox_px": [
+              616.64,
+              387.0,
+              633.64,
+              403.0
+            ],
             "label_center_px": [
-              629.875,
-              534.0
+              625.14,
+              395.0
+            ],
+            "legend_swatch_bbox_px": [
+              568.64,
+              381.0,
+              596.64,
+              409.0
             ],
             "mark_bbox_px": [
-              605.878,
-              287.048,
-              653.872,
-              508.0
+              293.311,
+              68.48,
+              319.32,
+              276.0
             ],
             "mark_center_px": [
-              629.875,
-              287.048
+              310.068,
+              128.952
             ],
             "mark_fill_rgb": [
-              15,
-              123,
-              109
+              161,
+              195,
+              17
             ],
             "mark_outline_rgb": [
-              8,
-              68,
-              60
+              89,
+              107,
+              9
             ],
-            "scene_variant": "bar",
-            "value": 10,
+            "percentage_bbox_px": [
+              286.785,
+              44.921,
+              323.785,
+              60.921
+            ],
+            "percentage_center_px": [
+              305.285,
+              52.921
+            ],
+            "scene_variant": "donut",
+            "start_angle_deg": 262.8,
+            "value": 2,
             "x_rank": 6
           },
-          "entity_id": "mark_Z",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "label": "A",
-            "label_center_px": [
-              712.625,
-              534.0
-            ],
-            "mark_bbox_px": [
-              688.628,
-              176.571,
-              736.622,
-              508.0
-            ],
-            "mark_center_px": [
-              712.625,
-              176.571
-            ],
-            "mark_fill_rgb": [
-              15,
-              123,
-              109
-            ],
-            "mark_outline_rgb": [
-              8,
-              68,
-              60
-            ],
-            "scene_variant": "bar",
-            "value": 15,
-            "x_rank": 7
-          },
-          "entity_id": "mark_A",
-          "entity_type": "bar"
+          "entity_id": "mark_X",
+          "entity_type": "slice"
         }
       ],
       "relations": {
         "evidence_labels": [
           "A",
-          "E",
-          "F",
-          "H"
+          "J",
+          "L",
+          "X"
         ],
         "interval_inclusive": true,
-        "interval_max": 17,
-        "interval_min": 15,
-        "scene_variant": "bar",
+        "interval_max": 4,
+        "interval_min": 1,
+        "scene_variant": "donut",
         "task_variant": "in_interval"
       },
-      "scene_kind": "chart_bar_counting"
+      "scene_kind": "chart_donut_counting"
     },
     "witness_symbolic": {
       "labels": [
         "A",
-        "E",
-        "F",
-        "H"
+        "J",
+        "L",
+        "X"
       ],
       "type": "label_set"
     }

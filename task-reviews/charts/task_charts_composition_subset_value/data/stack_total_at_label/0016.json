@@ -1,72 +1,72 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 82
+    "value": 75
   },
   "evidence_gt": {
     "type": "integer_list",
     "value": [
+      11,
+      15,
       18,
-      17,
-      14,
-      18,
-      15
+      13,
+      18
     ]
   },
   "image": {
     "format": "png",
     "path": "charts/task_charts_composition_subset_value/images/stack_total_at_label/0016.png"
   },
-  "instance_seed": 7452038756184908,
-  "prompt": "You are given a composition chart: a stacked horizontal bar chart. Each category has one horizontal bar divided into differently colored segments, a legend on the right maps segment colors to segment labels, and the integer segment values are printed inside the segments. Read the relevant composition values directly from the chart and answer the question. Using the stack at category C, what total do the segment values give?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array [v1, v2, ...] listing the segment values in legend order for the queried stack.\nAnswer format: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[6,9,5],\"answer\":20}",
+  "instance_seed": 2855112299059325,
+  "prompt": "You are given a composition chart: a stacked horizontal bar chart. Each category has one horizontal bar divided into differently colored segments, a legend on the right maps segment colors to segment labels, and the integer segment values are printed inside the segments. Use the printed segment or slice values to answer the composition question. Using the stack at category C, what total do the segment values give?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array [v1, v2, ...] listing the segment values in legend order for the queried stack.\nAnswer rule: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[6,9,5],\"answer\":20}",
   "prompt_variants": {
-    "answer_and_evidence": "You are given a composition chart: a stacked horizontal bar chart. Each category has one horizontal bar divided into differently colored segments, a legend on the right maps segment colors to segment labels, and the integer segment values are printed inside the segments. Read the relevant composition values directly from the chart and answer the question. Using the stack at category C, what total do the segment values give?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array [v1, v2, ...] listing the segment values in legend order for the queried stack.\nAnswer format: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[6,9,5],\"answer\":20}",
-    "answer_only": "You are given a composition chart: a stacked horizontal bar chart. Each category has one horizontal bar divided into differently colored segments, a legend on the right maps segment colors to segment labels, and the integer segment values are printed inside the segments. Read the relevant composition values directly from the chart and answer the question. Using the stack at category C, what total do the segment values give?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":20}"
+    "answer_and_evidence": "You are given a composition chart: a stacked horizontal bar chart. Each category has one horizontal bar divided into differently colored segments, a legend on the right maps segment colors to segment labels, and the integer segment values are printed inside the segments. Use the printed segment or slice values to answer the composition question. Using the stack at category C, what total do the segment values give?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array [v1, v2, ...] listing the segment values in legend order for the queried stack.\nAnswer rule: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[6,9,5],\"answer\":20}",
+    "answer_only": "You are given a composition chart: a stacked horizontal bar chart. Each category has one horizontal bar divided into differently colored segments, a legend on the right maps segment colors to segment labels, and the integer segment values are printed inside the segments. Use the printed segment or slice values to answer the composition question. Using the stack at category C, what total do the segment values give?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":20}"
   },
   "task": "task_charts_composition_subset_value",
   "task_variant": "stack_total_at_label",
   "trace_payload": {
     "execution_trace": {
-      "answer_value": 82,
+      "answer_value": 75,
       "category_count": 5,
       "category_count_range": [
         4,
         7
       ],
       "category_labels": [
+        "Z",
+        "L",
+        "V",
         "C",
-        "S",
-        "N",
-        "J",
-        "Z"
+        "U"
       ],
       "composition_scope": "stack",
       "evidence_labels": [
-        "Heim",
-        "Kial",
-        "Ochs",
-        "Cyb",
-        "Yurt"
+        "Elga",
+        "Cora",
+        "Neve",
+        "Arad",
+        "Ewan"
       ],
       "evidence_values": [
+        11,
+        15,
         18,
-        17,
-        14,
-        18,
-        15
+        13,
+        18
       ],
       "mark_color_distance_space": "lab",
       "mark_color_min_distance": 40.0,
       "mark_color_sampling_policy": "random_rgb_palette",
       "mark_fill_rgb": [
-        36,
-        86,
-        166
+        208,
+        136,
+        60
       ],
       "mark_outline_rgb": [
-        20,
-        47,
-        91
+        114,
+        75,
+        33
       ],
       "query_category_label": "C",
       "query_series_label": "",
@@ -85,204 +85,204 @@
       ],
       "series_fill_palette_rgb": [
         [
-          36,
-          86,
-          166
-        ],
-        [
-          171,
-          188,
-          44
-        ],
-        [
-          40,
           208,
-          159
+          136,
+          60
         ],
         [
-          116,
-          138,
-          163
+          84,
+          70,
+          106
         ],
         [
-          25,
-          79,
-          33
+          91,
+          202,
+          149
+        ],
+        [
+          190,
+          42,
+          36
+        ],
+        [
+          101,
+          22,
+          136
         ]
       ],
       "series_labels": [
-        "Heim",
-        "Kial",
-        "Ochs",
-        "Cyb",
-        "Yurt"
+        "Elga",
+        "Cora",
+        "Neve",
+        "Arad",
+        "Ewan"
       ],
       "series_outline_palette_rgb": [
         [
-          20,
-          47,
-          91
-        ],
-        [
-          94,
-          103,
-          24
-        ],
-        [
-          22,
           114,
-          87
+          75,
+          33
         ],
         [
-          64,
-          76,
-          90
+          46,
+          38,
+          58
         ],
         [
-          14,
-          43,
-          18
+          50,
+          111,
+          82
+        ],
+        [
+          105,
+          23,
+          20
+        ],
+        [
+          56,
+          12,
+          75
         ]
       ],
-      "target_answer": 82,
+      "target_answer": 75,
       "target_answer_range": [
         12,
         90
       ],
       "task_variant": "stack_total_at_label",
       "task_variant_probabilities": {
-        "combined_share_subset": 0.3333333333333333,
-        "stack_segment_value": 0.3333333333333333,
-        "stack_total_at_label": 0.3333333333333333
+        "combined_share_subset": 0.0,
+        "stack_segment_value": 0.0,
+        "stack_total_at_label": 1.0
       },
       "value_semantics": "integer",
       "values_by_category": {
         "C": {
-          "Cyb": 18,
-          "Heim": 18,
-          "Kial": 17,
-          "Ochs": 14,
-          "Yurt": 15
+          "Arad": 13,
+          "Cora": 15,
+          "Elga": 11,
+          "Ewan": 18,
+          "Neve": 18
         },
-        "J": {
-          "Cyb": 15,
-          "Heim": 18,
-          "Kial": 6,
-          "Ochs": 14,
-          "Yurt": 16
+        "L": {
+          "Arad": 18,
+          "Cora": 7,
+          "Elga": 18,
+          "Ewan": 7,
+          "Neve": 11
         },
-        "N": {
-          "Cyb": 4,
-          "Heim": 15,
-          "Kial": 5,
-          "Ochs": 7,
-          "Yurt": 7
+        "U": {
+          "Arad": 17,
+          "Cora": 16,
+          "Elga": 18,
+          "Ewan": 14,
+          "Neve": 4
         },
-        "S": {
-          "Cyb": 11,
-          "Heim": 14,
-          "Kial": 11,
-          "Ochs": 12,
-          "Yurt": 6
+        "V": {
+          "Arad": 14,
+          "Cora": 12,
+          "Elga": 12,
+          "Ewan": 7,
+          "Neve": 18
         },
         "Z": {
-          "Cyb": 15,
-          "Heim": 18,
-          "Kial": 14,
-          "Ochs": 10,
-          "Yurt": 16
+          "Arad": 7,
+          "Cora": 5,
+          "Elga": 8,
+          "Ewan": 11,
+          "Neve": 17
         }
       },
       "values_by_label": {
-        "Cyb": 18,
-        "Heim": 18,
-        "Kial": 17,
-        "Ochs": 14,
-        "Yurt": 15
+        "Arad": 13,
+        "Cora": 15,
+        "Elga": 11,
+        "Ewan": 18,
+        "Neve": 18
       }
     },
     "projected_evidence": {
       "bbox_set": [
         [
           120.0,
-          65.432,
-          279.831,
-          135.368
+          403.832,
+          226.671,
+          473.768
         ],
         [
-          279.831,
-          65.432,
-          430.783,
-          135.368
+          226.671,
+          403.832,
+          372.132,
+          473.768
         ],
         [
-          430.783,
-          65.432,
-          555.096,
-          135.368
+          372.132,
+          403.832,
+          546.684,
+          473.768
         ],
         [
-          555.096,
-          65.432,
-          714.928,
-          135.368
+          546.684,
+          403.832,
+          672.75,
+          473.768
         ],
         [
-          714.928,
-          65.432,
-          848.12,
-          135.368
+          672.75,
+          403.832,
+          847.303,
+          473.768
         ]
       ],
       "integer_list": [
+        11,
+        15,
         18,
-        17,
-        14,
-        18,
-        15
+        13,
+        18
       ],
       "pixel_point_map": {
-        "Cyb": [
-          635.012,
-          100.4
+        "Arad": [
+          609.717,
+          438.8
         ],
-        "Heim": [
-          199.916,
-          100.4
+        "Cora": [
+          299.401,
+          438.8
         ],
-        "Kial": [
-          355.307,
-          100.4
+        "Elga": [
+          173.336,
+          438.8
         ],
-        "Ochs": [
-          492.94,
-          100.4
+        "Ewan": [
+          760.026,
+          438.8
         ],
-        "Yurt": [
-          781.524,
-          100.4
+        "Neve": [
+          459.408,
+          438.8
         ]
       },
       "pixel_point_set": [
         [
-          199.916,
-          100.4
+          173.336,
+          438.8
         ],
         [
-          355.307,
-          100.4
+          299.401,
+          438.8
         ],
         [
-          492.94,
-          100.4
+          459.408,
+          438.8
         ],
         [
-          635.012,
-          100.4
+          609.717,
+          438.8
         ],
         [
-          781.524,
-          100.4
+          760.026,
+          438.8
         ]
       ]
     },
@@ -306,21 +306,21 @@
           3,
           5
         ],
-        "target_answer": 82,
+        "target_answer": 75,
         "target_answer_range": [
           12,
           90
         ],
         "task_variant": "stack_total_at_label",
         "task_variant_probabilities": {
-          "combined_share_subset": 0.3333333333333333,
-          "stack_segment_value": 0.3333333333333333,
-          "stack_total_at_label": 0.3333333333333333
+          "combined_share_subset": 0.0,
+          "stack_segment_value": 0.0,
+          "stack_total_at_label": 1.0
         }
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 1,
+        "answer_or_evidence_variant_index": 4,
         "prompt_bundle_id": "charts_composition_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -339,7 +339,7 @@
         "task_family_key": "composition_chart_value",
         "task_family_variant_index": 4,
         "task_key": "subset_value_query",
-        "task_variant_index": 3,
+        "task_variant_index": 0,
         "task_variant_key": "stack_total_at_label",
         "task_variant_template_index": 3,
         "template_paths": [
@@ -357,7 +357,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 1,
+            "answer_or_evidence_variant_index": 4,
             "prompt_bundle_id": "charts_composition_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -376,7 +376,7 @@
             "task_family_key": "composition_chart_value",
             "task_family_variant_index": 4,
             "task_key": "subset_value_query",
-            "task_variant_index": 3,
+            "task_variant_index": 0,
             "task_variant_key": "stack_total_at_label",
             "task_variant_template_index": 3,
             "template_paths": [
@@ -389,12 +389,12 @@
               "task_variant:stack_total_at_label": 5
             }
           },
-          "prompt": "You are given a composition chart: a stacked horizontal bar chart. Each category has one horizontal bar divided into differently colored segments, a legend on the right maps segment colors to segment labels, and the integer segment values are printed inside the segments. Read the relevant composition values directly from the chart and answer the question. Using the stack at category C, what total do the segment values give?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array [v1, v2, ...] listing the segment values in legend order for the queried stack.\nAnswer format: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[6,9,5],\"answer\":20}"
+          "prompt": "You are given a composition chart: a stacked horizontal bar chart. Each category has one horizontal bar divided into differently colored segments, a legend on the right maps segment colors to segment labels, and the integer segment values are printed inside the segments. Use the printed segment or slice values to answer the composition question. Using the stack at category C, what total do the segment values give?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array [v1, v2, ...] listing the segment values in legend order for the queried stack.\nAnswer rule: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[6,9,5],\"answer\":20}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 2,
+            "answer_or_evidence_variant_index": 0,
             "prompt_bundle_id": "charts_composition_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -413,7 +413,7 @@
             "task_family_key": "composition_chart_value",
             "task_family_variant_index": 4,
             "task_key": "subset_value_query",
-            "task_variant_index": 3,
+            "task_variant_index": 0,
             "task_variant_key": "stack_total_at_label",
             "task_variant_template_index": 3,
             "template_paths": [
@@ -426,7 +426,7 @@
               "task_variant:stack_total_at_label": 5
             }
           },
-          "prompt": "You are given a composition chart: a stacked horizontal bar chart. Each category has one horizontal bar divided into differently colored segments, a legend on the right maps segment colors to segment labels, and the integer segment values are printed inside the segments. Read the relevant composition values directly from the chart and answer the question. Using the stack at category C, what total do the segment values give?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":20}"
+          "prompt": "You are given a composition chart: a stacked horizontal bar chart. Each category has one horizontal bar divided into differently colored segments, a legend on the right maps segment colors to segment labels, and the integer segment values are printed inside the segments. Use the printed segment or slice values to answer the composition question. Using the stack at category C, what total do the segment values give?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":20}"
         }
       },
       "task_variant": "stack_total_at_label",
@@ -437,23 +437,23 @@
       "label_centers_px": {
         "C": [
           86.0,
-          100.4
-        ],
-        "J": [
-          86.0,
           438.8
         ],
-        "N": [
-          86.0,
-          326.0
-        ],
-        "S": [
+        "L": [
           86.0,
           213.2
         ],
-        "Z": [
+        "U": [
           86.0,
           551.6
+        ],
+        "V": [
+          86.0,
+          326.0
+        ],
+        "Z": [
+          86.0,
+          100.4
         ]
       },
       "plot_bbox_px": [
@@ -491,68 +491,68 @@
         "mark_color_distance_space": "lab",
         "mark_color_min_distance": 40.0,
         "mark_fill_rgb": [
-          36,
-          86,
-          166
+          208,
+          136,
+          60
         ],
         "mark_outline_rgb": [
-          20,
-          47,
-          91
+          114,
+          75,
+          33
         ],
         "sampling_policy": "random_rgb_palette",
         "series_fill_palette_rgb": [
           [
-            36,
-            86,
-            166
-          ],
-          [
-            171,
-            188,
-            44
-          ],
-          [
-            40,
             208,
-            159
+            136,
+            60
           ],
           [
-            116,
-            138,
-            163
+            84,
+            70,
+            106
           ],
           [
-            25,
-            79,
-            33
+            91,
+            202,
+            149
+          ],
+          [
+            190,
+            42,
+            36
+          ],
+          [
+            101,
+            22,
+            136
           ]
         ],
         "series_outline_palette_rgb": [
           [
-            20,
-            47,
-            91
-          ],
-          [
-            94,
-            103,
-            24
-          ],
-          [
-            22,
             114,
-            87
+            75,
+            33
           ],
           [
-            64,
-            76,
-            90
+            46,
+            38,
+            58
           ],
           [
-            14,
-            43,
-            18
+            50,
+            111,
+            82
+          ],
+          [
+            105,
+            23,
+            20
+          ],
+          [
+            56,
+            12,
+            75
           ]
         ]
       },
@@ -584,7 +584,7 @@
         "label_stroke_width_px": 2,
         "tick_font_size_px": 20
       },
-      "y_axis_max": 83,
+      "y_axis_max": 76,
       "y_ticks": [
         0,
         1,
@@ -662,14 +662,7 @@
         73,
         74,
         75,
-        76,
-        77,
-        78,
-        79,
-        80,
-        81,
-        82,
-        83
+        76
       ]
     },
     "scene_ir": {
@@ -677,18 +670,18 @@
         {
           "attrs": {
             "category_group_bbox_px": [
-              77.0,
+              77.5,
               65.432,
-              848.12,
+              585.474,
               135.368
             ],
-            "category_label": "C",
+            "category_label": "Z",
             "category_rank": 0,
             "legend_label_bbox_px": [
               931.0,
-              65.0,
-              1000.0,
-              83.0
+              62.5,
+              988.0,
+              85.5
             ],
             "legend_swatch_bbox_px": [
               881.0,
@@ -699,319 +692,49 @@
             "mark_bbox_px": [
               120.0,
               65.432,
-              279.831,
+              197.579,
               135.368
             ],
             "mark_center_px": [
-              199.916,
+              158.789,
               100.4
             ],
             "mark_fill_rgb": [
-              36,
-              86,
-              166
-            ],
-            "mark_outline_rgb": [
-              20,
-              47,
-              91
-            ],
-            "scene_variant": "stacked_horizontal_bar",
-            "series_label": "Heim",
-            "series_rank": 0,
-            "value": 18,
-            "value_center_px": [
-              199.916,
-              100.4
-            ]
-          },
-          "entity_id": "segment_C_Heim",
-          "entity_type": "segment"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              77.0,
-              65.432,
-              848.12,
-              135.368
-            ],
-            "category_label": "C",
-            "category_rank": 0,
-            "legend_label_bbox_px": [
-              931.0,
-              107.0,
-              982.0,
-              125.0
-            ],
-            "legend_swatch_bbox_px": [
-              881.0,
-              102.0,
-              909.0,
-              130.0
-            ],
-            "mark_bbox_px": [
-              279.831,
-              65.432,
-              430.783,
-              135.368
-            ],
-            "mark_center_px": [
-              355.307,
-              100.4
-            ],
-            "mark_fill_rgb": [
-              171,
-              188,
-              44
-            ],
-            "mark_outline_rgb": [
-              94,
-              103,
-              24
-            ],
-            "scene_variant": "stacked_horizontal_bar",
-            "series_label": "Kial",
-            "series_rank": 1,
-            "value": 17,
-            "value_center_px": [
-              355.307,
-              100.4
-            ]
-          },
-          "entity_id": "segment_C_Kial",
-          "entity_type": "segment"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              77.0,
-              65.432,
-              848.12,
-              135.368
-            ],
-            "category_label": "C",
-            "category_rank": 0,
-            "legend_label_bbox_px": [
-              931.0,
-              149.0,
-              996.0,
-              167.0
-            ],
-            "legend_swatch_bbox_px": [
-              881.0,
-              144.0,
-              909.0,
-              172.0
-            ],
-            "mark_bbox_px": [
-              430.783,
-              65.432,
-              555.096,
-              135.368
-            ],
-            "mark_center_px": [
-              492.94,
-              100.4
-            ],
-            "mark_fill_rgb": [
-              40,
               208,
-              159
+              136,
+              60
             ],
             "mark_outline_rgb": [
-              22,
               114,
-              87
-            ],
-            "scene_variant": "stacked_horizontal_bar",
-            "series_label": "Ochs",
-            "series_rank": 2,
-            "value": 14,
-            "value_center_px": [
-              492.94,
-              100.4
-            ]
-          },
-          "entity_id": "segment_C_Ochs",
-          "entity_type": "segment"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              77.0,
-              65.432,
-              848.12,
-              135.368
-            ],
-            "category_label": "C",
-            "category_rank": 0,
-            "legend_label_bbox_px": [
-              931.0,
-              188.5,
-              982.0,
-              211.5
-            ],
-            "legend_swatch_bbox_px": [
-              881.0,
-              186.0,
-              909.0,
-              214.0
-            ],
-            "mark_bbox_px": [
-              555.096,
-              65.432,
-              714.928,
-              135.368
-            ],
-            "mark_center_px": [
-              635.012,
-              100.4
-            ],
-            "mark_fill_rgb": [
-              116,
-              138,
-              163
-            ],
-            "mark_outline_rgb": [
-              64,
-              76,
-              90
-            ],
-            "scene_variant": "stacked_horizontal_bar",
-            "series_label": "Cyb",
-            "series_rank": 3,
-            "value": 18,
-            "value_center_px": [
-              635.012,
-              100.4
-            ]
-          },
-          "entity_id": "segment_C_Cyb",
-          "entity_type": "segment"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              77.0,
-              65.432,
-              848.12,
-              135.368
-            ],
-            "category_label": "C",
-            "category_rank": 0,
-            "legend_label_bbox_px": [
-              931.0,
-              233.0,
-              989.0,
-              251.0
-            ],
-            "legend_swatch_bbox_px": [
-              881.0,
-              228.0,
-              909.0,
-              256.0
-            ],
-            "mark_bbox_px": [
-              714.928,
-              65.432,
-              848.12,
-              135.368
-            ],
-            "mark_center_px": [
-              781.524,
-              100.4
-            ],
-            "mark_fill_rgb": [
-              25,
-              79,
+              75,
               33
             ],
-            "mark_outline_rgb": [
-              14,
-              43,
-              18
-            ],
             "scene_variant": "stacked_horizontal_bar",
-            "series_label": "Yurt",
-            "series_rank": 4,
-            "value": 15,
+            "series_label": "Elga",
+            "series_rank": 0,
+            "value": 8,
             "value_center_px": [
-              781.524,
+              158.789,
               100.4
             ]
           },
-          "entity_id": "segment_C_Yurt",
+          "entity_id": "segment_Z_Elga",
           "entity_type": "segment"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
               77.5,
-              178.232,
-              599.494,
-              248.168
+              65.432,
+              585.474,
+              135.368
             ],
-            "category_label": "S",
-            "category_rank": 1,
-            "legend_label_bbox_px": [
-              931.0,
-              65.0,
-              1000.0,
-              83.0
-            ],
-            "legend_swatch_bbox_px": [
-              881.0,
-              60.0,
-              909.0,
-              88.0
-            ],
-            "mark_bbox_px": [
-              120.0,
-              178.232,
-              244.313,
-              248.168
-            ],
-            "mark_center_px": [
-              182.157,
-              213.2
-            ],
-            "mark_fill_rgb": [
-              36,
-              86,
-              166
-            ],
-            "mark_outline_rgb": [
-              20,
-              47,
-              91
-            ],
-            "scene_variant": "stacked_horizontal_bar",
-            "series_label": "Heim",
-            "series_rank": 0,
-            "value": 14,
-            "value_center_px": [
-              182.157,
-              213.2
-            ]
-          },
-          "entity_id": "segment_S_Heim",
-          "entity_type": "segment"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              77.5,
-              178.232,
-              599.494,
-              248.168
-            ],
-            "category_label": "S",
-            "category_rank": 1,
+            "category_label": "Z",
+            "category_rank": 0,
             "legend_label_bbox_px": [
               931.0,
               107.0,
-              982.0,
+              993.0,
               125.0
             ],
             "legend_swatch_bbox_px": [
@@ -1021,321 +744,51 @@
               130.0
             ],
             "mark_bbox_px": [
-              244.313,
-              178.232,
-              341.988,
-              248.168
+              197.579,
+              65.432,
+              246.066,
+              135.368
             ],
             "mark_center_px": [
-              293.151,
-              213.2
+              221.822,
+              100.4
             ],
             "mark_fill_rgb": [
-              171,
-              188,
-              44
+              84,
+              70,
+              106
             ],
             "mark_outline_rgb": [
-              94,
-              103,
-              24
+              46,
+              38,
+              58
             ],
             "scene_variant": "stacked_horizontal_bar",
-            "series_label": "Kial",
-            "series_rank": 1,
-            "value": 11,
-            "value_center_px": [
-              293.151,
-              213.2
-            ]
-          },
-          "entity_id": "segment_S_Kial",
-          "entity_type": "segment"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              77.5,
-              178.232,
-              599.494,
-              248.168
-            ],
-            "category_label": "S",
-            "category_rank": 1,
-            "legend_label_bbox_px": [
-              931.0,
-              149.0,
-              996.0,
-              167.0
-            ],
-            "legend_swatch_bbox_px": [
-              881.0,
-              144.0,
-              909.0,
-              172.0
-            ],
-            "mark_bbox_px": [
-              341.988,
-              178.232,
-              448.542,
-              248.168
-            ],
-            "mark_center_px": [
-              395.265,
-              213.2
-            ],
-            "mark_fill_rgb": [
-              40,
-              208,
-              159
-            ],
-            "mark_outline_rgb": [
-              22,
-              114,
-              87
-            ],
-            "scene_variant": "stacked_horizontal_bar",
-            "series_label": "Ochs",
-            "series_rank": 2,
-            "value": 12,
-            "value_center_px": [
-              395.265,
-              213.2
-            ]
-          },
-          "entity_id": "segment_S_Ochs",
-          "entity_type": "segment"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              77.5,
-              178.232,
-              599.494,
-              248.168
-            ],
-            "category_label": "S",
-            "category_rank": 1,
-            "legend_label_bbox_px": [
-              931.0,
-              188.5,
-              982.0,
-              211.5
-            ],
-            "legend_swatch_bbox_px": [
-              881.0,
-              186.0,
-              909.0,
-              214.0
-            ],
-            "mark_bbox_px": [
-              448.542,
-              178.232,
-              546.217,
-              248.168
-            ],
-            "mark_center_px": [
-              497.38,
-              213.2
-            ],
-            "mark_fill_rgb": [
-              116,
-              138,
-              163
-            ],
-            "mark_outline_rgb": [
-              64,
-              76,
-              90
-            ],
-            "scene_variant": "stacked_horizontal_bar",
-            "series_label": "Cyb",
-            "series_rank": 3,
-            "value": 11,
-            "value_center_px": [
-              497.38,
-              213.2
-            ]
-          },
-          "entity_id": "segment_S_Cyb",
-          "entity_type": "segment"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              77.5,
-              178.232,
-              599.494,
-              248.168
-            ],
-            "category_label": "S",
-            "category_rank": 1,
-            "legend_label_bbox_px": [
-              931.0,
-              233.0,
-              989.0,
-              251.0
-            ],
-            "legend_swatch_bbox_px": [
-              881.0,
-              228.0,
-              909.0,
-              256.0
-            ],
-            "mark_bbox_px": [
-              546.217,
-              178.232,
-              599.494,
-              248.168
-            ],
-            "mark_center_px": [
-              572.855,
-              213.2
-            ],
-            "mark_fill_rgb": [
-              25,
-              79,
-              33
-            ],
-            "mark_outline_rgb": [
-              14,
-              43,
-              18
-            ],
-            "scene_variant": "stacked_horizontal_bar",
-            "series_label": "Yurt",
-            "series_rank": 4,
-            "value": 6,
-            "value_center_px": [
-              572.855,
-              213.2
-            ]
-          },
-          "entity_id": "segment_S_Yurt",
-          "entity_type": "segment"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              76.0,
-              291.032,
-              457.422,
-              360.968
-            ],
-            "category_label": "N",
-            "category_rank": 2,
-            "legend_label_bbox_px": [
-              931.0,
-              65.0,
-              1000.0,
-              83.0
-            ],
-            "legend_swatch_bbox_px": [
-              881.0,
-              60.0,
-              909.0,
-              88.0
-            ],
-            "mark_bbox_px": [
-              120.0,
-              291.032,
-              253.193,
-              360.968
-            ],
-            "mark_center_px": [
-              186.596,
-              326.0
-            ],
-            "mark_fill_rgb": [
-              36,
-              86,
-              166
-            ],
-            "mark_outline_rgb": [
-              20,
-              47,
-              91
-            ],
-            "scene_variant": "stacked_horizontal_bar",
-            "series_label": "Heim",
-            "series_rank": 0,
-            "value": 15,
-            "value_center_px": [
-              186.596,
-              326.0
-            ]
-          },
-          "entity_id": "segment_N_Heim",
-          "entity_type": "segment"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              76.0,
-              291.032,
-              457.422,
-              360.968
-            ],
-            "category_label": "N",
-            "category_rank": 2,
-            "legend_label_bbox_px": [
-              931.0,
-              107.0,
-              982.0,
-              125.0
-            ],
-            "legend_swatch_bbox_px": [
-              881.0,
-              102.0,
-              909.0,
-              130.0
-            ],
-            "mark_bbox_px": [
-              253.193,
-              291.032,
-              297.59,
-              360.968
-            ],
-            "mark_center_px": [
-              275.392,
-              326.0
-            ],
-            "mark_fill_rgb": [
-              171,
-              188,
-              44
-            ],
-            "mark_outline_rgb": [
-              94,
-              103,
-              24
-            ],
-            "scene_variant": "stacked_horizontal_bar",
-            "series_label": "Kial",
+            "series_label": "Cora",
             "series_rank": 1,
             "value": 5,
             "value_center_px": [
-              275.392,
-              326.0
+              221.822,
+              100.4
             ]
           },
-          "entity_id": "segment_N_Kial",
+          "entity_id": "segment_Z_Cora",
           "entity_type": "segment"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              76.0,
-              291.032,
-              457.422,
-              360.968
+              77.5,
+              65.432,
+              585.474,
+              135.368
             ],
-            "category_label": "N",
-            "category_rank": 2,
+            "category_label": "Z",
+            "category_rank": 0,
             "legend_label_bbox_px": [
               931.0,
               149.0,
-              996.0,
+              999.0,
               167.0
             ],
             "legend_swatch_bbox_px": [
@@ -1345,52 +798,52 @@
               172.0
             ],
             "mark_bbox_px": [
-              297.59,
-              291.032,
-              359.747,
-              360.968
+              246.066,
+              65.432,
+              410.921,
+              135.368
             ],
             "mark_center_px": [
-              328.669,
-              326.0
+              328.493,
+              100.4
             ],
             "mark_fill_rgb": [
-              40,
-              208,
-              159
+              91,
+              202,
+              149
             ],
             "mark_outline_rgb": [
-              22,
-              114,
-              87
+              50,
+              111,
+              82
             ],
             "scene_variant": "stacked_horizontal_bar",
-            "series_label": "Ochs",
+            "series_label": "Neve",
             "series_rank": 2,
-            "value": 7,
+            "value": 17,
             "value_center_px": [
-              328.669,
-              326.0
+              328.493,
+              100.4
             ]
           },
-          "entity_id": "segment_N_Ochs",
+          "entity_id": "segment_Z_Neve",
           "entity_type": "segment"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              76.0,
-              291.032,
-              457.422,
-              360.968
+              77.5,
+              65.432,
+              585.474,
+              135.368
             ],
-            "category_label": "N",
-            "category_rank": 2,
+            "category_label": "Z",
+            "category_rank": 0,
             "legend_label_bbox_px": [
               931.0,
-              188.5,
-              982.0,
-              211.5
+              191.0,
+              995.0,
+              209.0
             ],
             "legend_swatch_bbox_px": [
               881.0,
@@ -1399,268 +852,1078 @@
               214.0
             ],
             "mark_bbox_px": [
-              359.747,
+              410.921,
+              65.432,
+              478.803,
+              135.368
+            ],
+            "mark_center_px": [
+              444.862,
+              100.4
+            ],
+            "mark_fill_rgb": [
+              190,
+              42,
+              36
+            ],
+            "mark_outline_rgb": [
+              105,
+              23,
+              20
+            ],
+            "scene_variant": "stacked_horizontal_bar",
+            "series_label": "Arad",
+            "series_rank": 3,
+            "value": 7,
+            "value_center_px": [
+              444.862,
+              100.4
+            ]
+          },
+          "entity_id": "segment_Z_Arad",
+          "entity_type": "segment"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              77.5,
+              65.432,
+              585.474,
+              135.368
+            ],
+            "category_label": "Z",
+            "category_rank": 0,
+            "legend_label_bbox_px": [
+              931.0,
+              233.0,
+              1002.0,
+              251.0
+            ],
+            "legend_swatch_bbox_px": [
+              881.0,
+              228.0,
+              909.0,
+              256.0
+            ],
+            "mark_bbox_px": [
+              478.803,
+              65.432,
+              585.474,
+              135.368
+            ],
+            "mark_center_px": [
+              532.138,
+              100.4
+            ],
+            "mark_fill_rgb": [
+              101,
+              22,
+              136
+            ],
+            "mark_outline_rgb": [
+              56,
+              12,
+              75
+            ],
+            "scene_variant": "stacked_horizontal_bar",
+            "series_label": "Ewan",
+            "series_rank": 4,
+            "value": 11,
+            "value_center_px": [
+              532.138,
+              100.4
+            ]
+          },
+          "entity_id": "segment_Z_Ewan",
+          "entity_type": "segment"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              78.5,
+              178.232,
+              711.539,
+              248.168
+            ],
+            "category_label": "L",
+            "category_rank": 1,
+            "legend_label_bbox_px": [
+              931.0,
+              62.5,
+              988.0,
+              85.5
+            ],
+            "legend_swatch_bbox_px": [
+              881.0,
+              60.0,
+              909.0,
+              88.0
+            ],
+            "mark_bbox_px": [
+              120.0,
+              178.232,
+              294.553,
+              248.168
+            ],
+            "mark_center_px": [
+              207.276,
+              213.2
+            ],
+            "mark_fill_rgb": [
+              208,
+              136,
+              60
+            ],
+            "mark_outline_rgb": [
+              114,
+              75,
+              33
+            ],
+            "scene_variant": "stacked_horizontal_bar",
+            "series_label": "Elga",
+            "series_rank": 0,
+            "value": 18,
+            "value_center_px": [
+              207.276,
+              213.2
+            ]
+          },
+          "entity_id": "segment_L_Elga",
+          "entity_type": "segment"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              78.5,
+              178.232,
+              711.539,
+              248.168
+            ],
+            "category_label": "L",
+            "category_rank": 1,
+            "legend_label_bbox_px": [
+              931.0,
+              107.0,
+              993.0,
+              125.0
+            ],
+            "legend_swatch_bbox_px": [
+              881.0,
+              102.0,
+              909.0,
+              130.0
+            ],
+            "mark_bbox_px": [
+              294.553,
+              178.232,
+              362.434,
+              248.168
+            ],
+            "mark_center_px": [
+              328.493,
+              213.2
+            ],
+            "mark_fill_rgb": [
+              84,
+              70,
+              106
+            ],
+            "mark_outline_rgb": [
+              46,
+              38,
+              58
+            ],
+            "scene_variant": "stacked_horizontal_bar",
+            "series_label": "Cora",
+            "series_rank": 1,
+            "value": 7,
+            "value_center_px": [
+              328.493,
+              213.2
+            ]
+          },
+          "entity_id": "segment_L_Cora",
+          "entity_type": "segment"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              78.5,
+              178.232,
+              711.539,
+              248.168
+            ],
+            "category_label": "L",
+            "category_rank": 1,
+            "legend_label_bbox_px": [
+              931.0,
+              149.0,
+              999.0,
+              167.0
+            ],
+            "legend_swatch_bbox_px": [
+              881.0,
+              144.0,
+              909.0,
+              172.0
+            ],
+            "mark_bbox_px": [
+              362.434,
+              178.232,
+              469.105,
+              248.168
+            ],
+            "mark_center_px": [
+              415.77,
+              213.2
+            ],
+            "mark_fill_rgb": [
+              91,
+              202,
+              149
+            ],
+            "mark_outline_rgb": [
+              50,
+              111,
+              82
+            ],
+            "scene_variant": "stacked_horizontal_bar",
+            "series_label": "Neve",
+            "series_rank": 2,
+            "value": 11,
+            "value_center_px": [
+              415.77,
+              213.2
+            ]
+          },
+          "entity_id": "segment_L_Neve",
+          "entity_type": "segment"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              78.5,
+              178.232,
+              711.539,
+              248.168
+            ],
+            "category_label": "L",
+            "category_rank": 1,
+            "legend_label_bbox_px": [
+              931.0,
+              191.0,
+              995.0,
+              209.0
+            ],
+            "legend_swatch_bbox_px": [
+              881.0,
+              186.0,
+              909.0,
+              214.0
+            ],
+            "mark_bbox_px": [
+              469.105,
+              178.232,
+              643.658,
+              248.168
+            ],
+            "mark_center_px": [
+              556.382,
+              213.2
+            ],
+            "mark_fill_rgb": [
+              190,
+              42,
+              36
+            ],
+            "mark_outline_rgb": [
+              105,
+              23,
+              20
+            ],
+            "scene_variant": "stacked_horizontal_bar",
+            "series_label": "Arad",
+            "series_rank": 3,
+            "value": 18,
+            "value_center_px": [
+              556.382,
+              213.2
+            ]
+          },
+          "entity_id": "segment_L_Arad",
+          "entity_type": "segment"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              78.5,
+              178.232,
+              711.539,
+              248.168
+            ],
+            "category_label": "L",
+            "category_rank": 1,
+            "legend_label_bbox_px": [
+              931.0,
+              233.0,
+              1002.0,
+              251.0
+            ],
+            "legend_swatch_bbox_px": [
+              881.0,
+              228.0,
+              909.0,
+              256.0
+            ],
+            "mark_bbox_px": [
+              643.658,
+              178.232,
+              711.539,
+              248.168
+            ],
+            "mark_center_px": [
+              677.599,
+              213.2
+            ],
+            "mark_fill_rgb": [
+              101,
+              22,
+              136
+            ],
+            "mark_outline_rgb": [
+              56,
+              12,
+              75
+            ],
+            "scene_variant": "stacked_horizontal_bar",
+            "series_label": "Ewan",
+            "series_rank": 4,
+            "value": 7,
+            "value_center_px": [
+              677.599,
+              213.2
+            ]
+          },
+          "entity_id": "segment_L_Ewan",
+          "entity_type": "segment"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              76.5,
               291.032,
-              395.265,
+              730.934,
+              360.968
+            ],
+            "category_label": "V",
+            "category_rank": 2,
+            "legend_label_bbox_px": [
+              931.0,
+              62.5,
+              988.0,
+              85.5
+            ],
+            "legend_swatch_bbox_px": [
+              881.0,
+              60.0,
+              909.0,
+              88.0
+            ],
+            "mark_bbox_px": [
+              120.0,
+              291.032,
+              236.368,
               360.968
             ],
             "mark_center_px": [
-              377.506,
+              178.184,
               326.0
             ],
             "mark_fill_rgb": [
-              116,
-              138,
-              163
+              208,
+              136,
+              60
             ],
             "mark_outline_rgb": [
-              64,
-              76,
-              90
+              114,
+              75,
+              33
             ],
             "scene_variant": "stacked_horizontal_bar",
-            "series_label": "Cyb",
+            "series_label": "Elga",
+            "series_rank": 0,
+            "value": 12,
+            "value_center_px": [
+              178.184,
+              326.0
+            ]
+          },
+          "entity_id": "segment_V_Elga",
+          "entity_type": "segment"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              76.5,
+              291.032,
+              730.934,
+              360.968
+            ],
+            "category_label": "V",
+            "category_rank": 2,
+            "legend_label_bbox_px": [
+              931.0,
+              107.0,
+              993.0,
+              125.0
+            ],
+            "legend_swatch_bbox_px": [
+              881.0,
+              102.0,
+              909.0,
+              130.0
+            ],
+            "mark_bbox_px": [
+              236.368,
+              291.032,
+              352.737,
+              360.968
+            ],
+            "mark_center_px": [
+              294.553,
+              326.0
+            ],
+            "mark_fill_rgb": [
+              84,
+              70,
+              106
+            ],
+            "mark_outline_rgb": [
+              46,
+              38,
+              58
+            ],
+            "scene_variant": "stacked_horizontal_bar",
+            "series_label": "Cora",
+            "series_rank": 1,
+            "value": 12,
+            "value_center_px": [
+              294.553,
+              326.0
+            ]
+          },
+          "entity_id": "segment_V_Cora",
+          "entity_type": "segment"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              76.5,
+              291.032,
+              730.934,
+              360.968
+            ],
+            "category_label": "V",
+            "category_rank": 2,
+            "legend_label_bbox_px": [
+              931.0,
+              149.0,
+              999.0,
+              167.0
+            ],
+            "legend_swatch_bbox_px": [
+              881.0,
+              144.0,
+              909.0,
+              172.0
+            ],
+            "mark_bbox_px": [
+              352.737,
+              291.032,
+              527.289,
+              360.968
+            ],
+            "mark_center_px": [
+              440.013,
+              326.0
+            ],
+            "mark_fill_rgb": [
+              91,
+              202,
+              149
+            ],
+            "mark_outline_rgb": [
+              50,
+              111,
+              82
+            ],
+            "scene_variant": "stacked_horizontal_bar",
+            "series_label": "Neve",
+            "series_rank": 2,
+            "value": 18,
+            "value_center_px": [
+              440.013,
+              326.0
+            ]
+          },
+          "entity_id": "segment_V_Neve",
+          "entity_type": "segment"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              76.5,
+              291.032,
+              730.934,
+              360.968
+            ],
+            "category_label": "V",
+            "category_rank": 2,
+            "legend_label_bbox_px": [
+              931.0,
+              191.0,
+              995.0,
+              209.0
+            ],
+            "legend_swatch_bbox_px": [
+              881.0,
+              186.0,
+              909.0,
+              214.0
+            ],
+            "mark_bbox_px": [
+              527.289,
+              291.032,
+              663.053,
+              360.968
+            ],
+            "mark_center_px": [
+              595.171,
+              326.0
+            ],
+            "mark_fill_rgb": [
+              190,
+              42,
+              36
+            ],
+            "mark_outline_rgb": [
+              105,
+              23,
+              20
+            ],
+            "scene_variant": "stacked_horizontal_bar",
+            "series_label": "Arad",
             "series_rank": 3,
+            "value": 14,
+            "value_center_px": [
+              595.171,
+              326.0
+            ]
+          },
+          "entity_id": "segment_V_Arad",
+          "entity_type": "segment"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              76.5,
+              291.032,
+              730.934,
+              360.968
+            ],
+            "category_label": "V",
+            "category_rank": 2,
+            "legend_label_bbox_px": [
+              931.0,
+              233.0,
+              1002.0,
+              251.0
+            ],
+            "legend_swatch_bbox_px": [
+              881.0,
+              228.0,
+              909.0,
+              256.0
+            ],
+            "mark_bbox_px": [
+              663.053,
+              291.032,
+              730.934,
+              360.968
+            ],
+            "mark_center_px": [
+              696.993,
+              326.0
+            ],
+            "mark_fill_rgb": [
+              101,
+              22,
+              136
+            ],
+            "mark_outline_rgb": [
+              56,
+              12,
+              75
+            ],
+            "scene_variant": "stacked_horizontal_bar",
+            "series_label": "Ewan",
+            "series_rank": 4,
+            "value": 7,
+            "value_center_px": [
+              696.993,
+              326.0
+            ]
+          },
+          "entity_id": "segment_V_Ewan",
+          "entity_type": "segment"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              77.0,
+              403.832,
+              847.303,
+              473.768
+            ],
+            "category_label": "C",
+            "category_rank": 3,
+            "legend_label_bbox_px": [
+              931.0,
+              62.5,
+              988.0,
+              85.5
+            ],
+            "legend_swatch_bbox_px": [
+              881.0,
+              60.0,
+              909.0,
+              88.0
+            ],
+            "mark_bbox_px": [
+              120.0,
+              403.832,
+              226.671,
+              473.768
+            ],
+            "mark_center_px": [
+              173.336,
+              438.8
+            ],
+            "mark_fill_rgb": [
+              208,
+              136,
+              60
+            ],
+            "mark_outline_rgb": [
+              114,
+              75,
+              33
+            ],
+            "scene_variant": "stacked_horizontal_bar",
+            "series_label": "Elga",
+            "series_rank": 0,
+            "value": 11,
+            "value_center_px": [
+              173.336,
+              438.8
+            ]
+          },
+          "entity_id": "segment_C_Elga",
+          "entity_type": "segment"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              77.0,
+              403.832,
+              847.303,
+              473.768
+            ],
+            "category_label": "C",
+            "category_rank": 3,
+            "legend_label_bbox_px": [
+              931.0,
+              107.0,
+              993.0,
+              125.0
+            ],
+            "legend_swatch_bbox_px": [
+              881.0,
+              102.0,
+              909.0,
+              130.0
+            ],
+            "mark_bbox_px": [
+              226.671,
+              403.832,
+              372.132,
+              473.768
+            ],
+            "mark_center_px": [
+              299.401,
+              438.8
+            ],
+            "mark_fill_rgb": [
+              84,
+              70,
+              106
+            ],
+            "mark_outline_rgb": [
+              46,
+              38,
+              58
+            ],
+            "scene_variant": "stacked_horizontal_bar",
+            "series_label": "Cora",
+            "series_rank": 1,
+            "value": 15,
+            "value_center_px": [
+              299.401,
+              438.8
+            ]
+          },
+          "entity_id": "segment_C_Cora",
+          "entity_type": "segment"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              77.0,
+              403.832,
+              847.303,
+              473.768
+            ],
+            "category_label": "C",
+            "category_rank": 3,
+            "legend_label_bbox_px": [
+              931.0,
+              149.0,
+              999.0,
+              167.0
+            ],
+            "legend_swatch_bbox_px": [
+              881.0,
+              144.0,
+              909.0,
+              172.0
+            ],
+            "mark_bbox_px": [
+              372.132,
+              403.832,
+              546.684,
+              473.768
+            ],
+            "mark_center_px": [
+              459.408,
+              438.8
+            ],
+            "mark_fill_rgb": [
+              91,
+              202,
+              149
+            ],
+            "mark_outline_rgb": [
+              50,
+              111,
+              82
+            ],
+            "scene_variant": "stacked_horizontal_bar",
+            "series_label": "Neve",
+            "series_rank": 2,
+            "value": 18,
+            "value_center_px": [
+              459.408,
+              438.8
+            ]
+          },
+          "entity_id": "segment_C_Neve",
+          "entity_type": "segment"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              77.0,
+              403.832,
+              847.303,
+              473.768
+            ],
+            "category_label": "C",
+            "category_rank": 3,
+            "legend_label_bbox_px": [
+              931.0,
+              191.0,
+              995.0,
+              209.0
+            ],
+            "legend_swatch_bbox_px": [
+              881.0,
+              186.0,
+              909.0,
+              214.0
+            ],
+            "mark_bbox_px": [
+              546.684,
+              403.832,
+              672.75,
+              473.768
+            ],
+            "mark_center_px": [
+              609.717,
+              438.8
+            ],
+            "mark_fill_rgb": [
+              190,
+              42,
+              36
+            ],
+            "mark_outline_rgb": [
+              105,
+              23,
+              20
+            ],
+            "scene_variant": "stacked_horizontal_bar",
+            "series_label": "Arad",
+            "series_rank": 3,
+            "value": 13,
+            "value_center_px": [
+              609.717,
+              438.8
+            ]
+          },
+          "entity_id": "segment_C_Arad",
+          "entity_type": "segment"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              77.0,
+              403.832,
+              847.303,
+              473.768
+            ],
+            "category_label": "C",
+            "category_rank": 3,
+            "legend_label_bbox_px": [
+              931.0,
+              233.0,
+              1002.0,
+              251.0
+            ],
+            "legend_swatch_bbox_px": [
+              881.0,
+              228.0,
+              909.0,
+              256.0
+            ],
+            "mark_bbox_px": [
+              672.75,
+              403.832,
+              847.303,
+              473.768
+            ],
+            "mark_center_px": [
+              760.026,
+              438.8
+            ],
+            "mark_fill_rgb": [
+              101,
+              22,
+              136
+            ],
+            "mark_outline_rgb": [
+              56,
+              12,
+              75
+            ],
+            "scene_variant": "stacked_horizontal_bar",
+            "series_label": "Ewan",
+            "series_rank": 4,
+            "value": 18,
+            "value_center_px": [
+              760.026,
+              438.8
+            ]
+          },
+          "entity_id": "segment_C_Ewan",
+          "entity_type": "segment"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              76.5,
+              516.632,
+              789.118,
+              586.568
+            ],
+            "category_label": "U",
+            "category_rank": 4,
+            "legend_label_bbox_px": [
+              931.0,
+              62.5,
+              988.0,
+              85.5
+            ],
+            "legend_swatch_bbox_px": [
+              881.0,
+              60.0,
+              909.0,
+              88.0
+            ],
+            "mark_bbox_px": [
+              120.0,
+              516.632,
+              294.553,
+              586.568
+            ],
+            "mark_center_px": [
+              207.276,
+              551.6
+            ],
+            "mark_fill_rgb": [
+              208,
+              136,
+              60
+            ],
+            "mark_outline_rgb": [
+              114,
+              75,
+              33
+            ],
+            "scene_variant": "stacked_horizontal_bar",
+            "series_label": "Elga",
+            "series_rank": 0,
+            "value": 18,
+            "value_center_px": [
+              207.276,
+              551.6
+            ]
+          },
+          "entity_id": "segment_U_Elga",
+          "entity_type": "segment"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              76.5,
+              516.632,
+              789.118,
+              586.568
+            ],
+            "category_label": "U",
+            "category_rank": 4,
+            "legend_label_bbox_px": [
+              931.0,
+              107.0,
+              993.0,
+              125.0
+            ],
+            "legend_swatch_bbox_px": [
+              881.0,
+              102.0,
+              909.0,
+              130.0
+            ],
+            "mark_bbox_px": [
+              294.553,
+              516.632,
+              449.711,
+              586.568
+            ],
+            "mark_center_px": [
+              372.132,
+              551.6
+            ],
+            "mark_fill_rgb": [
+              84,
+              70,
+              106
+            ],
+            "mark_outline_rgb": [
+              46,
+              38,
+              58
+            ],
+            "scene_variant": "stacked_horizontal_bar",
+            "series_label": "Cora",
+            "series_rank": 1,
+            "value": 16,
+            "value_center_px": [
+              372.132,
+              551.6
+            ]
+          },
+          "entity_id": "segment_U_Cora",
+          "entity_type": "segment"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              76.5,
+              516.632,
+              789.118,
+              586.568
+            ],
+            "category_label": "U",
+            "category_rank": 4,
+            "legend_label_bbox_px": [
+              931.0,
+              149.0,
+              999.0,
+              167.0
+            ],
+            "legend_swatch_bbox_px": [
+              881.0,
+              144.0,
+              909.0,
+              172.0
+            ],
+            "mark_bbox_px": [
+              449.711,
+              516.632,
+              488.5,
+              586.568
+            ],
+            "mark_center_px": [
+              469.105,
+              551.6
+            ],
+            "mark_fill_rgb": [
+              91,
+              202,
+              149
+            ],
+            "mark_outline_rgb": [
+              50,
+              111,
+              82
+            ],
+            "scene_variant": "stacked_horizontal_bar",
+            "series_label": "Neve",
+            "series_rank": 2,
             "value": 4,
             "value_center_px": [
-              377.506,
-              326.0
+              469.105,
+              551.6
             ]
           },
-          "entity_id": "segment_N_Cyb",
+          "entity_id": "segment_U_Neve",
           "entity_type": "segment"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              76.0,
-              291.032,
-              457.422,
-              360.968
+              76.5,
+              516.632,
+              789.118,
+              586.568
             ],
-            "category_label": "N",
-            "category_rank": 2,
+            "category_label": "U",
+            "category_rank": 4,
             "legend_label_bbox_px": [
               931.0,
-              233.0,
-              989.0,
-              251.0
-            ],
-            "legend_swatch_bbox_px": [
-              881.0,
-              228.0,
-              909.0,
-              256.0
-            ],
-            "mark_bbox_px": [
-              395.265,
-              291.032,
-              457.422,
-              360.968
-            ],
-            "mark_center_px": [
-              426.343,
-              326.0
-            ],
-            "mark_fill_rgb": [
-              25,
-              79,
-              33
-            ],
-            "mark_outline_rgb": [
-              14,
-              43,
-              18
-            ],
-            "scene_variant": "stacked_horizontal_bar",
-            "series_label": "Yurt",
-            "series_rank": 4,
-            "value": 7,
-            "value_center_px": [
-              426.343,
-              326.0
-            ]
-          },
-          "entity_id": "segment_N_Yurt",
-          "entity_type": "segment"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              80.5,
-              403.832,
-              732.687,
-              473.768
-            ],
-            "category_label": "J",
-            "category_rank": 3,
-            "legend_label_bbox_px": [
-              931.0,
-              65.0,
-              1000.0,
-              83.0
-            ],
-            "legend_swatch_bbox_px": [
-              881.0,
-              60.0,
-              909.0,
-              88.0
-            ],
-            "mark_bbox_px": [
-              120.0,
-              403.832,
-              279.831,
-              473.768
-            ],
-            "mark_center_px": [
-              199.916,
-              438.8
-            ],
-            "mark_fill_rgb": [
-              36,
-              86,
-              166
-            ],
-            "mark_outline_rgb": [
-              20,
-              47,
-              91
-            ],
-            "scene_variant": "stacked_horizontal_bar",
-            "series_label": "Heim",
-            "series_rank": 0,
-            "value": 18,
-            "value_center_px": [
-              199.916,
-              438.8
-            ]
-          },
-          "entity_id": "segment_J_Heim",
-          "entity_type": "segment"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              80.5,
-              403.832,
-              732.687,
-              473.768
-            ],
-            "category_label": "J",
-            "category_rank": 3,
-            "legend_label_bbox_px": [
-              931.0,
-              107.0,
-              982.0,
-              125.0
-            ],
-            "legend_swatch_bbox_px": [
-              881.0,
-              102.0,
-              909.0,
-              130.0
-            ],
-            "mark_bbox_px": [
-              279.831,
-              403.832,
-              333.108,
-              473.768
-            ],
-            "mark_center_px": [
-              306.47,
-              438.8
-            ],
-            "mark_fill_rgb": [
-              171,
-              188,
-              44
-            ],
-            "mark_outline_rgb": [
-              94,
-              103,
-              24
-            ],
-            "scene_variant": "stacked_horizontal_bar",
-            "series_label": "Kial",
-            "series_rank": 1,
-            "value": 6,
-            "value_center_px": [
-              306.47,
-              438.8
-            ]
-          },
-          "entity_id": "segment_J_Kial",
-          "entity_type": "segment"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              80.5,
-              403.832,
-              732.687,
-              473.768
-            ],
-            "category_label": "J",
-            "category_rank": 3,
-            "legend_label_bbox_px": [
-              931.0,
-              149.0,
-              996.0,
-              167.0
-            ],
-            "legend_swatch_bbox_px": [
-              881.0,
-              144.0,
-              909.0,
-              172.0
-            ],
-            "mark_bbox_px": [
-              333.108,
-              403.832,
-              457.422,
-              473.768
-            ],
-            "mark_center_px": [
-              395.265,
-              438.8
-            ],
-            "mark_fill_rgb": [
-              40,
-              208,
-              159
-            ],
-            "mark_outline_rgb": [
-              22,
-              114,
-              87
-            ],
-            "scene_variant": "stacked_horizontal_bar",
-            "series_label": "Ochs",
-            "series_rank": 2,
-            "value": 14,
-            "value_center_px": [
-              395.265,
-              438.8
-            ]
-          },
-          "entity_id": "segment_J_Ochs",
-          "entity_type": "segment"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              80.5,
-              403.832,
-              732.687,
-              473.768
-            ],
-            "category_label": "J",
-            "category_rank": 3,
-            "legend_label_bbox_px": [
-              931.0,
-              188.5,
-              982.0,
-              211.5
+              191.0,
+              995.0,
+              209.0
             ],
             "legend_swatch_bbox_px": [
               881.0,
@@ -1669,51 +1932,51 @@
               214.0
             ],
             "mark_bbox_px": [
-              457.422,
-              403.832,
-              590.614,
-              473.768
+              488.5,
+              516.632,
+              653.355,
+              586.568
             ],
             "mark_center_px": [
-              524.018,
-              438.8
+              570.928,
+              551.6
             ],
             "mark_fill_rgb": [
-              116,
-              138,
-              163
+              190,
+              42,
+              36
             ],
             "mark_outline_rgb": [
-              64,
-              76,
-              90
+              105,
+              23,
+              20
             ],
             "scene_variant": "stacked_horizontal_bar",
-            "series_label": "Cyb",
+            "series_label": "Arad",
             "series_rank": 3,
-            "value": 15,
+            "value": 17,
             "value_center_px": [
-              524.018,
-              438.8
+              570.928,
+              551.6
             ]
           },
-          "entity_id": "segment_J_Cyb",
+          "entity_id": "segment_U_Arad",
           "entity_type": "segment"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              80.5,
-              403.832,
-              732.687,
-              473.768
+              76.5,
+              516.632,
+              789.118,
+              586.568
             ],
-            "category_label": "J",
-            "category_rank": 3,
+            "category_label": "U",
+            "category_rank": 4,
             "legend_label_bbox_px": [
               931.0,
               233.0,
-              989.0,
+              1002.0,
               251.0
             ],
             "legend_swatch_bbox_px": [
@@ -1723,316 +1986,46 @@
               256.0
             ],
             "mark_bbox_px": [
-              590.614,
-              403.832,
-              732.687,
-              473.768
+              653.355,
+              516.632,
+              789.118,
+              586.568
             ],
             "mark_center_px": [
-              661.651,
-              438.8
+              721.237,
+              551.6
             ],
             "mark_fill_rgb": [
-              25,
-              79,
-              33
+              101,
+              22,
+              136
             ],
             "mark_outline_rgb": [
-              14,
-              43,
-              18
+              56,
+              12,
+              75
             ],
             "scene_variant": "stacked_horizontal_bar",
-            "series_label": "Yurt",
+            "series_label": "Ewan",
             "series_rank": 4,
-            "value": 16,
-            "value_center_px": [
-              661.651,
-              438.8
-            ]
-          },
-          "entity_id": "segment_J_Yurt",
-          "entity_type": "segment"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              77.5,
-              516.632,
-              768.205,
-              586.568
-            ],
-            "category_label": "Z",
-            "category_rank": 4,
-            "legend_label_bbox_px": [
-              931.0,
-              65.0,
-              1000.0,
-              83.0
-            ],
-            "legend_swatch_bbox_px": [
-              881.0,
-              60.0,
-              909.0,
-              88.0
-            ],
-            "mark_bbox_px": [
-              120.0,
-              516.632,
-              279.831,
-              586.568
-            ],
-            "mark_center_px": [
-              199.916,
-              551.6
-            ],
-            "mark_fill_rgb": [
-              36,
-              86,
-              166
-            ],
-            "mark_outline_rgb": [
-              20,
-              47,
-              91
-            ],
-            "scene_variant": "stacked_horizontal_bar",
-            "series_label": "Heim",
-            "series_rank": 0,
-            "value": 18,
-            "value_center_px": [
-              199.916,
-              551.6
-            ]
-          },
-          "entity_id": "segment_Z_Heim",
-          "entity_type": "segment"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              77.5,
-              516.632,
-              768.205,
-              586.568
-            ],
-            "category_label": "Z",
-            "category_rank": 4,
-            "legend_label_bbox_px": [
-              931.0,
-              107.0,
-              982.0,
-              125.0
-            ],
-            "legend_swatch_bbox_px": [
-              881.0,
-              102.0,
-              909.0,
-              130.0
-            ],
-            "mark_bbox_px": [
-              279.831,
-              516.632,
-              404.145,
-              586.568
-            ],
-            "mark_center_px": [
-              341.988,
-              551.6
-            ],
-            "mark_fill_rgb": [
-              171,
-              188,
-              44
-            ],
-            "mark_outline_rgb": [
-              94,
-              103,
-              24
-            ],
-            "scene_variant": "stacked_horizontal_bar",
-            "series_label": "Kial",
-            "series_rank": 1,
             "value": 14,
             "value_center_px": [
-              341.988,
+              721.237,
               551.6
             ]
           },
-          "entity_id": "segment_Z_Kial",
-          "entity_type": "segment"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              77.5,
-              516.632,
-              768.205,
-              586.568
-            ],
-            "category_label": "Z",
-            "category_rank": 4,
-            "legend_label_bbox_px": [
-              931.0,
-              149.0,
-              996.0,
-              167.0
-            ],
-            "legend_swatch_bbox_px": [
-              881.0,
-              144.0,
-              909.0,
-              172.0
-            ],
-            "mark_bbox_px": [
-              404.145,
-              516.632,
-              492.94,
-              586.568
-            ],
-            "mark_center_px": [
-              448.542,
-              551.6
-            ],
-            "mark_fill_rgb": [
-              40,
-              208,
-              159
-            ],
-            "mark_outline_rgb": [
-              22,
-              114,
-              87
-            ],
-            "scene_variant": "stacked_horizontal_bar",
-            "series_label": "Ochs",
-            "series_rank": 2,
-            "value": 10,
-            "value_center_px": [
-              448.542,
-              551.6
-            ]
-          },
-          "entity_id": "segment_Z_Ochs",
-          "entity_type": "segment"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              77.5,
-              516.632,
-              768.205,
-              586.568
-            ],
-            "category_label": "Z",
-            "category_rank": 4,
-            "legend_label_bbox_px": [
-              931.0,
-              188.5,
-              982.0,
-              211.5
-            ],
-            "legend_swatch_bbox_px": [
-              881.0,
-              186.0,
-              909.0,
-              214.0
-            ],
-            "mark_bbox_px": [
-              492.94,
-              516.632,
-              626.133,
-              586.568
-            ],
-            "mark_center_px": [
-              559.536,
-              551.6
-            ],
-            "mark_fill_rgb": [
-              116,
-              138,
-              163
-            ],
-            "mark_outline_rgb": [
-              64,
-              76,
-              90
-            ],
-            "scene_variant": "stacked_horizontal_bar",
-            "series_label": "Cyb",
-            "series_rank": 3,
-            "value": 15,
-            "value_center_px": [
-              559.536,
-              551.6
-            ]
-          },
-          "entity_id": "segment_Z_Cyb",
-          "entity_type": "segment"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              77.5,
-              516.632,
-              768.205,
-              586.568
-            ],
-            "category_label": "Z",
-            "category_rank": 4,
-            "legend_label_bbox_px": [
-              931.0,
-              233.0,
-              989.0,
-              251.0
-            ],
-            "legend_swatch_bbox_px": [
-              881.0,
-              228.0,
-              909.0,
-              256.0
-            ],
-            "mark_bbox_px": [
-              626.133,
-              516.632,
-              768.205,
-              586.568
-            ],
-            "mark_center_px": [
-              697.169,
-              551.6
-            ],
-            "mark_fill_rgb": [
-              25,
-              79,
-              33
-            ],
-            "mark_outline_rgb": [
-              14,
-              43,
-              18
-            ],
-            "scene_variant": "stacked_horizontal_bar",
-            "series_label": "Yurt",
-            "series_rank": 4,
-            "value": 16,
-            "value_center_px": [
-              697.169,
-              551.6
-            ]
-          },
-          "entity_id": "segment_Z_Yurt",
+          "entity_id": "segment_U_Ewan",
           "entity_type": "segment"
         }
       ],
       "relations": {
-        "answer_value": 82,
+        "answer_value": 75,
         "evidence_labels": [
-          "Heim",
-          "Kial",
-          "Ochs",
-          "Cyb",
-          "Yurt"
+          "Elga",
+          "Cora",
+          "Neve",
+          "Arad",
+          "Ewan"
         ],
         "query_category_label": "C",
         "query_series_label": "",
@@ -2044,19 +2037,19 @@
     },
     "witness_symbolic": {
       "labels": [
-        "Heim",
-        "Kial",
-        "Ochs",
-        "Cyb",
-        "Yurt"
+        "Elga",
+        "Cora",
+        "Neve",
+        "Arad",
+        "Ewan"
       ],
       "type": "integer_list",
       "values": [
+        11,
+        15,
         18,
-        17,
-        14,
-        18,
-        15
+        13,
+        18
       ]
     }
   },

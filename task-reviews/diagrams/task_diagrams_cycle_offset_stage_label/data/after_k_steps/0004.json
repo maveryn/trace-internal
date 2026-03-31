@@ -1,16 +1,16 @@
 {
   "answer_gt": {
     "type": "string",
-    "value": "Chet"
+    "value": "Lin"
   },
   "evidence_gt": {
     "type": "bbox_set",
     "value": [
       [
-        284.442,
-        312.223,
-        406.442,
-        370.223
+        539.0,
+        739.0,
+        661.0,
+        797.0
       ]
     ]
   },
@@ -18,11 +18,11 @@
     "format": "png",
     "path": "diagrams/task_diagrams_cycle_offset_stage_label/images/after_k_steps/0004.png"
   },
-  "instance_seed": 3853034783443525,
-  "prompt": "The image shows a clockwise cycle diagram with labeled stages connected by arrows. Determine the requested stage from the cycle: Moving clockwise around the cycle, what stage is 4 steps after Vita? Return the exact label shown. Return the exact visible label.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct stage box.\nAnswer rule: set \"answer\" to the exact visible stage label.\nExample JSON:\n{\"evidence\":[[747,242,869,300]],\"answer\":\"Mina\"}",
+  "instance_seed": 3764172516678724,
+  "prompt": "Use the directed cycle diagram in the image: a clockwise cycle diagram with labeled stages connected by arrows. Read the directed cycle diagram and answer: Moving clockwise around the cycle, what stage is 4 steps after Rab? Return the exact label shown. Answer using the exact visible label.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct stage box.\nAnswer: set \"answer\" to the exact visible stage label.\nExample JSON:\n{\"evidence\":[[747,242,869,300]],\"answer\":\"Mina\"}",
   "prompt_variants": {
-    "answer_and_evidence": "The image shows a clockwise cycle diagram with labeled stages connected by arrows. Determine the requested stage from the cycle: Moving clockwise around the cycle, what stage is 4 steps after Vita? Return the exact label shown. Return the exact visible label.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct stage box.\nAnswer rule: set \"answer\" to the exact visible stage label.\nExample JSON:\n{\"evidence\":[[747,242,869,300]],\"answer\":\"Mina\"}",
-    "answer_only": "The image shows a clockwise cycle diagram with labeled stages connected by arrows. Determine the requested stage from the cycle: Moving clockwise around the cycle, what stage is 4 steps after Vita? Return the exact label shown. Return the exact visible label.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the exact visible stage label.\nExample JSON:\n{\"answer\":\"Mina\"}"
+    "answer_and_evidence": "Use the directed cycle diagram in the image: a clockwise cycle diagram with labeled stages connected by arrows. Read the directed cycle diagram and answer: Moving clockwise around the cycle, what stage is 4 steps after Rab? Return the exact label shown. Answer using the exact visible label.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct stage box.\nAnswer: set \"answer\" to the exact visible stage label.\nExample JSON:\n{\"evidence\":[[747,242,869,300]],\"answer\":\"Mina\"}",
+    "answer_only": "Use the directed cycle diagram in the image: a clockwise cycle diagram with labeled stages connected by arrows. Read the directed cycle diagram and answer: Moving clockwise around the cycle, what stage is 4 steps after Rab? Return the exact label shown. Answer using the exact visible label.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the exact visible stage label.\nExample JSON:\n{\"answer\":\"Mina\"}"
   },
   "task": "task_diagrams_cycle_offset_stage_label",
   "task_variant": "after_k_steps",
@@ -43,10 +43,10 @@
       }
     },
     "execution_trace": {
-      "answer_stage_bbox_id": "stage_bbox_7",
-      "answer_stage_id": "stage_7",
-      "answer_stage_index": 7,
-      "answer_stage_label": "Chet",
+      "answer_stage_bbox_id": "stage_bbox_4",
+      "answer_stage_id": "stage_4",
+      "answer_stage_index": 4,
+      "answer_stage_label": "Lin",
       "direction": "clockwise",
       "edge_specs": [
         {
@@ -91,12 +91,12 @@
         }
       ],
       "query_relationship": "after",
-      "query_stage_id": "stage_3",
-      "query_stage_index": 3,
-      "query_stage_label": "Vita",
+      "query_stage_id": "stage_0",
+      "query_stage_index": 0,
+      "query_stage_label": "Rab",
       "question_format": "cycle_offset_stage_label",
-      "question_text": "Moving clockwise around the cycle, what stage is 4 steps after Vita? Return the exact label shown.",
-      "scene_title": "Cycle Overview",
+      "question_text": "Moving clockwise around the cycle, what stage is 4 steps after Rab? Return the exact label shown.",
+      "scene_title": "Process Ring",
       "scene_variant": "cycle_ring",
       "stage_count": 8,
       "stage_specs": [
@@ -104,62 +104,62 @@
           "order_index": 0,
           "stage_bbox_id": "stage_bbox_0",
           "stage_id": "stage_0",
-          "stage_label": "Bean",
+          "stage_label": "Rab",
           "stage_label_bbox_id": "stage_label_bbox_0"
         },
         {
           "order_index": 1,
           "stage_bbox_id": "stage_bbox_1",
           "stage_id": "stage_1",
-          "stage_label": "Demp",
+          "stage_label": "Cass",
           "stage_label_bbox_id": "stage_label_bbox_1"
         },
         {
           "order_index": 2,
           "stage_bbox_id": "stage_bbox_2",
           "stage_id": "stage_2",
-          "stage_label": "Dhar",
+          "stage_label": "Wei",
           "stage_label_bbox_id": "stage_label_bbox_2"
         },
         {
           "order_index": 3,
           "stage_bbox_id": "stage_bbox_3",
           "stage_id": "stage_3",
-          "stage_label": "Vita",
+          "stage_label": "Deva",
           "stage_label_bbox_id": "stage_label_bbox_3"
         },
         {
           "order_index": 4,
           "stage_bbox_id": "stage_bbox_4",
           "stage_id": "stage_4",
-          "stage_label": "Gram",
+          "stage_label": "Lin",
           "stage_label_bbox_id": "stage_label_bbox_4"
         },
         {
           "order_index": 5,
           "stage_bbox_id": "stage_bbox_5",
           "stage_id": "stage_5",
-          "stage_label": "Joao",
+          "stage_label": "King",
           "stage_label_bbox_id": "stage_label_bbox_5"
         },
         {
           "order_index": 6,
           "stage_bbox_id": "stage_bbox_6",
           "stage_id": "stage_6",
-          "stage_label": "Echo",
+          "stage_label": "Yeh",
           "stage_label_bbox_id": "stage_label_bbox_6"
         },
         {
           "order_index": 7,
           "stage_bbox_id": "stage_bbox_7",
           "stage_id": "stage_7",
-          "stage_label": "Chet",
+          "stage_label": "Hole",
           "stage_label_bbox_id": "stage_label_bbox_7"
         }
       ],
       "step_count": 4,
       "supporting_stage_bbox_ids": [
-        "stage_bbox_7"
+        "stage_bbox_4"
       ],
       "task_variant": "after_k_steps",
       "view_family": "cycle_diagram"
@@ -183,10 +183,10 @@
     "projected_evidence": {
       "bbox_set": [
         [
-          284.442,
-          312.223,
-          406.442,
-          370.223
+          539.0,
+          739.0,
+          661.0,
+          797.0
         ]
       ]
     },
@@ -207,7 +207,7 @@
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 4,
+        "answer_or_evidence_variant_index": 0,
         "prompt_bundle_id": "diagrams_cycle_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -218,14 +218,14 @@
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
           "object_description": "a clockwise cycle diagram with labeled stages connected by arrows",
-          "question_text": "Moving clockwise around the cycle, what stage is 4 steps after Vita? Return the exact label shown."
+          "question_text": "Moving clockwise around the cycle, what stage is 4 steps after Rab? Return the exact label shown."
         },
         "task_family_key": "cycle_diagram",
-        "task_family_variant_index": 0,
+        "task_family_variant_index": 3,
         "task_key": "offset_stage_query",
-        "task_variant_index": 4,
+        "task_variant_index": 2,
         "task_variant_key": "after_k_steps",
-        "task_variant_template_index": 1,
+        "task_variant_template_index": 4,
         "template_paths": [
           "diagrams/cycle/diagrams_cycle_v1.json"
         ],
@@ -241,7 +241,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 4,
+            "answer_or_evidence_variant_index": 0,
             "prompt_bundle_id": "diagrams_cycle_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -252,14 +252,14 @@
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a clockwise cycle diagram with labeled stages connected by arrows",
-              "question_text": "Moving clockwise around the cycle, what stage is 4 steps after Vita? Return the exact label shown."
+              "question_text": "Moving clockwise around the cycle, what stage is 4 steps after Rab? Return the exact label shown."
             },
             "task_family_key": "cycle_diagram",
-            "task_family_variant_index": 0,
+            "task_family_variant_index": 3,
             "task_key": "offset_stage_query",
-            "task_variant_index": 4,
+            "task_variant_index": 2,
             "task_variant_key": "after_k_steps",
-            "task_variant_template_index": 1,
+            "task_variant_template_index": 4,
             "template_paths": [
               "diagrams/cycle/diagrams_cycle_v1.json"
             ],
@@ -270,12 +270,12 @@
               "task_variant:after_k_steps": 5
             }
           },
-          "prompt": "The image shows a clockwise cycle diagram with labeled stages connected by arrows. Determine the requested stage from the cycle: Moving clockwise around the cycle, what stage is 4 steps after Vita? Return the exact label shown. Return the exact visible label.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct stage box.\nAnswer rule: set \"answer\" to the exact visible stage label.\nExample JSON:\n{\"evidence\":[[747,242,869,300]],\"answer\":\"Mina\"}"
+          "prompt": "Use the directed cycle diagram in the image: a clockwise cycle diagram with labeled stages connected by arrows. Read the directed cycle diagram and answer: Moving clockwise around the cycle, what stage is 4 steps after Rab? Return the exact label shown. Answer using the exact visible label.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct stage box.\nAnswer: set \"answer\" to the exact visible stage label.\nExample JSON:\n{\"evidence\":[[747,242,869,300]],\"answer\":\"Mina\"}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 2,
+            "answer_or_evidence_variant_index": 0,
             "prompt_bundle_id": "diagrams_cycle_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -286,14 +286,14 @@
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a clockwise cycle diagram with labeled stages connected by arrows",
-              "question_text": "Moving clockwise around the cycle, what stage is 4 steps after Vita? Return the exact label shown."
+              "question_text": "Moving clockwise around the cycle, what stage is 4 steps after Rab? Return the exact label shown."
             },
             "task_family_key": "cycle_diagram",
-            "task_family_variant_index": 0,
+            "task_family_variant_index": 3,
             "task_key": "offset_stage_query",
-            "task_variant_index": 4,
+            "task_variant_index": 2,
             "task_variant_key": "after_k_steps",
-            "task_variant_template_index": 1,
+            "task_variant_template_index": 4,
             "template_paths": [
               "diagrams/cycle/diagrams_cycle_v1.json"
             ],
@@ -304,7 +304,7 @@
               "task_variant:after_k_steps": 5
             }
           },
-          "prompt": "The image shows a clockwise cycle diagram with labeled stages connected by arrows. Determine the requested stage from the cycle: Moving clockwise around the cycle, what stage is 4 steps after Vita? Return the exact label shown. Return the exact visible label.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the exact visible stage label.\nExample JSON:\n{\"answer\":\"Mina\"}"
+          "prompt": "Use the directed cycle diagram in the image: a clockwise cycle diagram with labeled stages connected by arrows. Read the directed cycle diagram and answer: Moving clockwise around the cycle, what stage is 4 steps after Rab? Return the exact label shown. Answer using the exact visible label.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the exact visible stage label.\nExample JSON:\n{\"answer\":\"Mina\"}"
         }
       },
       "task_variant": "after_k_steps",
@@ -425,58 +425,58 @@
       },
       "stage_label_bboxes_px": {
         "stage_label_bbox_0": [
-          567.5,
-          259.0,
-          632.5,
-          277.0
+          575.0,
+          258.5,
+          625.0,
+          277.5
         ],
         "stage_label_bbox_1": [
-          817.558,
-          329.723,
-          891.558,
-          352.723
+          825.058,
+          332.223,
+          884.058,
+          350.223
         ],
         "stage_label_bbox_2": [
-          929.0,
+          935.5,
           508.5,
-          991.0,
+          984.5,
           527.5
         ],
         "stage_label_bbox_3": [
-          828.058,
-          685.277,
-          881.058,
-          704.277
+          822.558,
+          685.777,
+          886.558,
+          703.777
         ],
         "stage_label_bbox_4": [
-          565.5,
-          759.0,
-          634.5,
-          777.0
+          580.0,
+          758.5,
+          620.0,
+          777.5
         ],
         "stage_label_bbox_5": [
-          316.942,
-          683.777,
-          373.942,
-          705.777
+          315.942,
+          682.777,
+          374.942,
+          706.777
         ],
         "stage_label_bbox_6": [
-          209.5,
+          215.0,
           508.5,
-          270.5,
+          265.0,
           527.5
         ],
         "stage_label_bbox_7": [
-          315.442,
+          316.442,
           331.723,
-          375.442,
+          374.442,
           350.723
         ]
       },
       "title_bbox_px": [
-        460.5,
+        482.5,
         74.5,
-        739.5,
+        717.5,
         107.5
       ]
     },
@@ -484,7 +484,7 @@
       "canvas_height": 900,
       "canvas_width": 1200,
       "edge_width_px": 5,
-      "geometry_seed": 3853034783443525,
+      "geometry_seed": 3764172516678724,
       "node_height_px": 58,
       "node_width_px": 122,
       "ring_radius_x_px": 360,
@@ -505,14 +505,14 @@
         },
         {
           "bbox_xyxy": [
-            460.5,
+            482.5,
             74.5,
-            739.5,
+            717.5,
             107.5
           ],
           "entity_id": "diagram_title",
           "entity_type": "diagram_title",
-          "text": "Cycle Overview"
+          "text": "Process Ring"
         },
         {
           "bbox_xyxy": [
@@ -651,19 +651,19 @@
           "entity_type": "diagram_stage",
           "order_index": 0,
           "stage_id": "stage_0",
-          "text": "Bean"
+          "text": "Rab"
         },
         {
           "bbox_xyxy": [
-            567.5,
-            259.0,
-            632.5,
-            277.0
+            575.0,
+            258.5,
+            625.0,
+            277.5
           ],
           "entity_id": "stage_label_bbox_0",
           "entity_type": "diagram_stage_label",
           "stage_id": "stage_0",
-          "text": "Bean"
+          "text": "Rab"
         },
         {
           "bbox_xyxy": [
@@ -676,19 +676,19 @@
           "entity_type": "diagram_stage",
           "order_index": 1,
           "stage_id": "stage_1",
-          "text": "Demp"
+          "text": "Cass"
         },
         {
           "bbox_xyxy": [
-            817.558,
-            329.723,
-            891.558,
-            352.723
+            825.058,
+            332.223,
+            884.058,
+            350.223
           ],
           "entity_id": "stage_label_bbox_1",
           "entity_type": "diagram_stage_label",
           "stage_id": "stage_1",
-          "text": "Demp"
+          "text": "Cass"
         },
         {
           "bbox_xyxy": [
@@ -701,19 +701,19 @@
           "entity_type": "diagram_stage",
           "order_index": 2,
           "stage_id": "stage_2",
-          "text": "Dhar"
+          "text": "Wei"
         },
         {
           "bbox_xyxy": [
-            929.0,
+            935.5,
             508.5,
-            991.0,
+            984.5,
             527.5
           ],
           "entity_id": "stage_label_bbox_2",
           "entity_type": "diagram_stage_label",
           "stage_id": "stage_2",
-          "text": "Dhar"
+          "text": "Wei"
         },
         {
           "bbox_xyxy": [
@@ -726,19 +726,19 @@
           "entity_type": "diagram_stage",
           "order_index": 3,
           "stage_id": "stage_3",
-          "text": "Vita"
+          "text": "Deva"
         },
         {
           "bbox_xyxy": [
-            828.058,
-            685.277,
-            881.058,
-            704.277
+            822.558,
+            685.777,
+            886.558,
+            703.777
           ],
           "entity_id": "stage_label_bbox_3",
           "entity_type": "diagram_stage_label",
           "stage_id": "stage_3",
-          "text": "Vita"
+          "text": "Deva"
         },
         {
           "bbox_xyxy": [
@@ -751,19 +751,19 @@
           "entity_type": "diagram_stage",
           "order_index": 4,
           "stage_id": "stage_4",
-          "text": "Gram"
+          "text": "Lin"
         },
         {
           "bbox_xyxy": [
-            565.5,
-            759.0,
-            634.5,
-            777.0
+            580.0,
+            758.5,
+            620.0,
+            777.5
           ],
           "entity_id": "stage_label_bbox_4",
           "entity_type": "diagram_stage_label",
           "stage_id": "stage_4",
-          "text": "Gram"
+          "text": "Lin"
         },
         {
           "bbox_xyxy": [
@@ -776,19 +776,19 @@
           "entity_type": "diagram_stage",
           "order_index": 5,
           "stage_id": "stage_5",
-          "text": "Joao"
+          "text": "King"
         },
         {
           "bbox_xyxy": [
-            316.942,
-            683.777,
-            373.942,
-            705.777
+            315.942,
+            682.777,
+            374.942,
+            706.777
           ],
           "entity_id": "stage_label_bbox_5",
           "entity_type": "diagram_stage_label",
           "stage_id": "stage_5",
-          "text": "Joao"
+          "text": "King"
         },
         {
           "bbox_xyxy": [
@@ -801,19 +801,19 @@
           "entity_type": "diagram_stage",
           "order_index": 6,
           "stage_id": "stage_6",
-          "text": "Echo"
+          "text": "Yeh"
         },
         {
           "bbox_xyxy": [
-            209.5,
+            215.0,
             508.5,
-            270.5,
+            265.0,
             527.5
           ],
           "entity_id": "stage_label_bbox_6",
           "entity_type": "diagram_stage_label",
           "stage_id": "stage_6",
-          "text": "Echo"
+          "text": "Yeh"
         },
         {
           "bbox_xyxy": [
@@ -826,24 +826,24 @@
           "entity_type": "diagram_stage",
           "order_index": 7,
           "stage_id": "stage_7",
-          "text": "Chet"
+          "text": "Hole"
         },
         {
           "bbox_xyxy": [
-            315.442,
+            316.442,
             331.723,
-            375.442,
+            374.442,
             350.723
           ],
           "entity_id": "stage_label_bbox_7",
           "entity_type": "diagram_stage_label",
           "stage_id": "stage_7",
-          "text": "Chet"
+          "text": "Hole"
         }
       ],
       "relations": {
-        "answer_stage_bbox_id": "stage_bbox_7",
-        "answer_stage_id": "stage_7",
+        "answer_stage_bbox_id": "stage_bbox_4",
+        "answer_stage_id": "stage_4",
         "direction": "clockwise",
         "scene_variant": "cycle_ring",
         "task_variant": "after_k_steps",
@@ -853,7 +853,7 @@
     },
     "witness_symbolic": {
       "ids": [
-        "stage_7"
+        "stage_4"
       ],
       "type": "id_set"
     }

@@ -11,13 +11,13 @@
       "row_uniqueness"
     ],
     "generated_variant_counts": {
-      "column_uniqueness": 100,
-      "row_and_column_uniqueness": 109,
-      "row_uniqueness": 121
+      "column_uniqueness": 102,
+      "row_and_column_uniqueness": 103,
+      "row_uniqueness": 100
     },
     "generation_error_counts": {},
     "target_count_per_variant": 100,
-    "total_generated": 330
+    "total_generated": 305
   },
   "domain": "puzzles",
   "failed_variants": [],
@@ -62,18 +62,18 @@
       },
       {
         "answer_label": "D",
-        "count": 52
-      },
-      {
-        "answer_label": "E",
-        "count": 49
-      },
-      {
-        "answer_label": "A",
-        "count": 43
+        "count": 55
       },
       {
         "answer_label": "F",
+        "count": 45
+      },
+      {
+        "answer_label": "E",
+        "count": 44
+      },
+      {
+        "answer_label": "A",
         "count": 42
       }
     ],
@@ -87,7 +87,7 @@
       },
       "checks": {
         "max_answer_frequency": {
-          "observed": 0.2,
+          "observed": 0.24,
           "pass": true,
           "threshold": 0.25
         },
@@ -103,25 +103,25 @@
         }
       },
       "five_bin_numeric": null,
-      "max_answer_count": 20,
-      "max_answer_frequency": 0.2,
+      "max_answer_count": 24,
+      "max_answer_frequency": 0.24,
       "pass": true,
       "sample_count": 100,
       "top_answers": [
         {
-          "answer_label": "B",
-          "count": 20
+          "answer_label": "D",
+          "count": 24
         },
         {
-          "answer_label": "D",
+          "answer_label": "B",
           "count": 19
         },
         {
           "answer_label": "C",
-          "count": 17
+          "count": 18
         },
         {
-          "answer_label": "E",
+          "answer_label": "A",
           "count": 16
         },
         {
@@ -129,8 +129,8 @@
           "count": 15
         },
         {
-          "answer_label": "A",
-          "count": 13
+          "answer_label": "E",
+          "count": 8
         }
       ],
       "unique_answers": 6
@@ -141,7 +141,7 @@
       },
       "checks": {
         "max_answer_frequency": {
-          "observed": 0.23,
+          "observed": 0.19,
           "pass": true,
           "threshold": 0.25
         },
@@ -157,34 +157,34 @@
         }
       },
       "five_bin_numeric": null,
-      "max_answer_count": 23,
-      "max_answer_frequency": 0.23,
+      "max_answer_count": 19,
+      "max_answer_frequency": 0.19,
       "pass": true,
       "sample_count": 100,
       "top_answers": [
         {
           "answer_label": "B",
-          "count": 23
-        },
-        {
-          "answer_label": "E",
           "count": 19
         },
         {
-          "answer_label": "D",
-          "count": 17
-        },
-        {
-          "answer_label": "A",
-          "count": 15
-        },
-        {
           "answer_label": "C",
-          "count": 15
+          "count": 18
         },
         {
           "answer_label": "F",
-          "count": 11
+          "count": 17
+        },
+        {
+          "answer_label": "D",
+          "count": 16
+        },
+        {
+          "answer_label": "E",
+          "count": 16
+        },
+        {
+          "answer_label": "A",
+          "count": 14
         }
       ],
       "unique_answers": 6
@@ -195,7 +195,7 @@
       },
       "checks": {
         "max_answer_frequency": {
-          "observed": 0.23,
+          "observed": 0.21,
           "pass": true,
           "threshold": 0.25
         },
@@ -211,34 +211,34 @@
         }
       },
       "five_bin_numeric": null,
-      "max_answer_count": 23,
-      "max_answer_frequency": 0.23,
+      "max_answer_count": 21,
+      "max_answer_frequency": 0.21,
       "pass": true,
       "sample_count": 100,
       "top_answers": [
         {
-          "answer_label": "C",
-          "count": 23
-        },
-        {
           "answer_label": "B",
-          "count": 16
-        },
-        {
-          "answer_label": "D",
-          "count": 16
-        },
-        {
-          "answer_label": "F",
-          "count": 16
-        },
-        {
-          "answer_label": "A",
-          "count": 15
+          "count": 21
         },
         {
           "answer_label": "E",
-          "count": 14
+          "count": 20
+        },
+        {
+          "answer_label": "C",
+          "count": 19
+        },
+        {
+          "answer_label": "D",
+          "count": 15
+        },
+        {
+          "answer_label": "F",
+          "count": 13
+        },
+        {
+          "answer_label": "A",
+          "count": 12
         }
       ],
       "unique_answers": 6

@@ -1,16 +1,16 @@
 {
   "answer_gt": {
     "type": "string",
-    "value": "2026-04-08"
+    "value": "Apr 28, 2026"
   },
   "evidence_gt": {
     "type": "bbox_set",
     "value": [
       [
-        214.0,
-        604.0,
-        380.0,
-        626.0
+        678.0,
+        558.0,
+        864.0,
+        586.0
       ]
     ]
   },
@@ -18,18 +18,18 @@
     "format": "png",
     "path": "documents/task_documents_relation_section_extremum_value/images/latest_date_in_section/0005.png"
   },
-  "instance_seed": 286685835221849,
-  "prompt": "Look at the document in the image: an invoice with visible named sections, labeled header fields, and summary blocks. In the Dates section, what is the latest date shown? Return the exact date shown. Answer with the exact date text shown.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly one bounding box for the winning value.\nAnswer format: set \"answer\" to the exact winning value text shown in the named section.\nExample JSON:\n{\"evidence\":[[150,260,364,294]],\"answer\":\"2026-04-27\"}",
+  "instance_seed": 8245081411703965,
+  "prompt": "Look at the document in the image: a receipt-style document with visible section headers and labeled totals rows. Use the section headers and labeled fields to answer: In the Dates section, what is the latest date shown? Return the exact date shown. Return the exact date as written in the document.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing exactly one bounding box for the winning value.\nAnswer field: set \"answer\" to the exact winning value text shown in the named section.\nExample JSON:\n{\"evidence\":[[150,260,364,294]],\"answer\":\"2026-04-27\"}",
   "prompt_variants": {
-    "answer_and_evidence": "Look at the document in the image: an invoice with visible named sections, labeled header fields, and summary blocks. In the Dates section, what is the latest date shown? Return the exact date shown. Answer with the exact date text shown.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly one bounding box for the winning value.\nAnswer format: set \"answer\" to the exact winning value text shown in the named section.\nExample JSON:\n{\"evidence\":[[150,260,364,294]],\"answer\":\"2026-04-27\"}",
-    "answer_only": "Look at the document in the image: an invoice with visible named sections, labeled header fields, and summary blocks. In the Dates section, what is the latest date shown? Return the exact date shown. Answer with the exact date text shown.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the exact winning value text shown in the named section.\nExample JSON:\n{\"answer\":\"2026-04-27\"}"
+    "answer_and_evidence": "Look at the document in the image: a receipt-style document with visible section headers and labeled totals rows. Use the section headers and labeled fields to answer: In the Dates section, what is the latest date shown? Return the exact date shown. Return the exact date as written in the document.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing exactly one bounding box for the winning value.\nAnswer field: set \"answer\" to the exact winning value text shown in the named section.\nExample JSON:\n{\"evidence\":[[150,260,364,294]],\"answer\":\"2026-04-27\"}",
+    "answer_only": "Look at the document in the image: a receipt-style document with visible section headers and labeled totals rows. Use the section headers and labeled fields to answer: In the Dates section, what is the latest date shown? Return the exact date shown. Return the exact date as written in the document.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the exact winning value text shown in the named section.\nExample JSON:\n{\"answer\":\"2026-04-27\"}"
   },
   "task": "task_documents_relation_section_extremum_value",
   "task_variant": "latest_date_in_section",
   "trace_payload": {
     "answer_gt": {
       "type": "string",
-      "value": "2026-04-08"
+      "value": "Apr 28, 2026"
     },
     "background": {
       "available_styles": [
@@ -50,177 +50,149 @@
       "type": "bbox_set",
       "value": [
         [
-          214.0,
-          604.0,
-          380.0,
-          626.0
+          678.0,
+          558.0,
+          864.0,
+          586.0
         ]
       ]
     },
     "execution_trace": {
       "candidate_sort_values": {
-        "due_date": 739714,
-        "issue_date": 739688,
-        "service_date": 739691
+        "pickup_date": 739725,
+        "purchase_date": 739723,
+        "return_date": 739734
       },
       "compared_field_ids": [
-        "issue_date",
-        "service_date",
-        "due_date"
+        "purchase_date",
+        "pickup_date",
+        "return_date"
       ],
       "compared_field_labels": [
-        "Issue Date",
-        "Service Date",
-        "Due Date"
+        "Purchase Date",
+        "Pickup Date",
+        "Return Date"
       ],
       "compared_field_value_bbox_ids": [
-        "issue_date:value",
-        "service_date:value",
-        "due_date:value"
+        "purchase_date:value",
+        "pickup_date:value",
+        "return_date:value"
       ],
       "comparison_kind": "date",
-      "field_count": 11,
+      "field_count": 9,
       "field_specs": [
         {
           "comparison_kind": "other",
-          "field_id": "vendor_name",
-          "field_label": "Vendor",
-          "field_value": "Central Supply",
-          "label_bbox_id": "vendor_name:label",
-          "section_id": "parties",
-          "section_label": "Parties",
-          "value_bbox_id": "vendor_name:value"
+          "field_id": "store_name",
+          "field_label": "Store Name",
+          "field_value": "Central Office",
+          "label_bbox_id": "store_name:label",
+          "section_id": "store_details",
+          "section_label": "Store Details",
+          "value_bbox_id": "store_name:value"
         },
         {
           "comparison_kind": "other",
-          "field_id": "customer_name",
-          "field_label": "Customer",
-          "field_value": "Maya Shaw",
-          "label_bbox_id": "customer_name:label",
-          "section_id": "parties",
-          "section_label": "Parties",
-          "value_bbox_id": "customer_name:value"
+          "field_id": "receipt_number",
+          "field_label": "Receipt No.",
+          "field_value": "R-34265",
+          "label_bbox_id": "receipt_number:label",
+          "section_id": "store_details",
+          "section_label": "Store Details",
+          "value_bbox_id": "receipt_number:value"
         },
         {
           "comparison_kind": "other",
-          "field_id": "invoice_number",
-          "field_label": "Invoice Number",
-          "field_value": "INV-62034",
-          "label_bbox_id": "invoice_number:label",
-          "section_id": "parties",
-          "section_label": "Parties",
-          "value_bbox_id": "invoice_number:value"
-        },
-        {
-          "comparison_kind": "other",
-          "field_id": "account_id",
-          "field_label": "Account ID",
-          "field_value": "ACC-7865",
-          "label_bbox_id": "account_id:label",
-          "section_id": "account",
-          "section_label": "Account",
-          "value_bbox_id": "account_id:value"
-        },
-        {
-          "comparison_kind": "other",
-          "field_id": "contact_email",
-          "field_label": "Contact Email",
-          "field_value": "centralsupply@mailhub.net",
-          "label_bbox_id": "contact_email:label",
-          "section_id": "account",
-          "section_label": "Account",
-          "value_bbox_id": "contact_email:value"
+          "field_id": "cashier_name",
+          "field_label": "Cashier",
+          "field_value": "Sage Turner",
+          "label_bbox_id": "cashier_name:label",
+          "section_id": "store_details",
+          "section_label": "Store Details",
+          "value_bbox_id": "cashier_name:value"
         },
         {
           "comparison_kind": "date",
-          "field_id": "issue_date",
-          "field_label": "Issue Date",
-          "field_value": "2026-03-13",
-          "label_bbox_id": "issue_date:label",
+          "field_id": "purchase_date",
+          "field_label": "Purchase Date",
+          "field_value": "Apr 17, 2026",
+          "label_bbox_id": "purchase_date:label",
           "section_id": "dates",
           "section_label": "Dates",
-          "value_bbox_id": "issue_date:value"
+          "value_bbox_id": "purchase_date:value"
         },
         {
           "comparison_kind": "date",
-          "field_id": "service_date",
-          "field_label": "Service Date",
-          "field_value": "2026-03-16",
-          "label_bbox_id": "service_date:label",
+          "field_id": "pickup_date",
+          "field_label": "Pickup Date",
+          "field_value": "Apr 19, 2026",
+          "label_bbox_id": "pickup_date:label",
           "section_id": "dates",
           "section_label": "Dates",
-          "value_bbox_id": "service_date:value"
+          "value_bbox_id": "pickup_date:value"
         },
         {
           "comparison_kind": "date",
-          "field_id": "due_date",
-          "field_label": "Due Date",
-          "field_value": "2026-04-08",
-          "label_bbox_id": "due_date:label",
+          "field_id": "return_date",
+          "field_label": "Return Date",
+          "field_value": "Apr 28, 2026",
+          "label_bbox_id": "return_date:label",
           "section_id": "dates",
           "section_label": "Dates",
-          "value_bbox_id": "due_date:value"
+          "value_bbox_id": "return_date:value"
         },
         {
           "comparison_kind": "amount",
           "field_id": "subtotal_amount",
           "field_label": "Subtotal",
-          "field_value": "$204.55",
+          "field_value": "$81.53",
           "label_bbox_id": "subtotal_amount:label",
-          "section_id": "billing_summary",
-          "section_label": "Billing Summary",
+          "section_id": "totals",
+          "section_label": "Totals",
           "value_bbox_id": "subtotal_amount:value"
         },
         {
           "comparison_kind": "amount",
           "field_id": "tax_amount",
           "field_label": "Tax",
-          "field_value": "$21.48",
+          "field_value": "$4.33",
           "label_bbox_id": "tax_amount:label",
-          "section_id": "billing_summary",
-          "section_label": "Billing Summary",
+          "section_id": "totals",
+          "section_label": "Totals",
           "value_bbox_id": "tax_amount:value"
         },
         {
           "comparison_kind": "amount",
-          "field_id": "total_due",
-          "field_label": "Total Due",
-          "field_value": "$226.03",
-          "label_bbox_id": "total_due:label",
-          "section_id": "billing_summary",
-          "section_label": "Billing Summary",
-          "value_bbox_id": "total_due:value"
+          "field_id": "total_paid",
+          "field_label": "Total Paid",
+          "field_value": "$85.86",
+          "label_bbox_id": "total_paid:label",
+          "section_id": "totals",
+          "section_label": "Totals",
+          "value_bbox_id": "total_paid:value"
         }
       ],
       "query_section_id": "dates",
       "query_section_label": "Dates",
       "question_format": "document_section_extremum_value",
       "question_text": "In the Dates section, what is the latest date shown? Return the exact date shown.",
-      "scene_title": "Invoice",
-      "scene_variant": "invoice_sheet",
+      "scene_title": "Receipt",
+      "scene_variant": "receipt_sheet",
       "section_specs": [
         {
           "field_ids": [
-            "vendor_name",
-            "customer_name",
-            "invoice_number"
+            "store_name",
+            "receipt_number",
+            "cashier_name"
           ],
-          "section_id": "parties",
-          "section_label": "Parties"
+          "section_id": "store_details",
+          "section_label": "Store Details"
         },
         {
           "field_ids": [
-            "account_id",
-            "contact_email"
-          ],
-          "section_id": "account",
-          "section_label": "Account"
-        },
-        {
-          "field_ids": [
-            "issue_date",
-            "service_date",
-            "due_date"
+            "purchase_date",
+            "pickup_date",
+            "return_date"
           ],
           "section_id": "dates",
           "section_label": "Dates"
@@ -229,19 +201,19 @@
           "field_ids": [
             "subtotal_amount",
             "tax_amount",
-            "total_due"
+            "total_paid"
           ],
-          "section_id": "billing_summary",
-          "section_label": "Billing Summary"
+          "section_id": "totals",
+          "section_label": "Totals"
         }
       ],
       "task_variant": "latest_date_in_section",
       "view_family": "structured_document",
-      "winning_field_id": "due_date",
-      "winning_field_label": "Due Date",
-      "winning_field_value": "2026-04-08",
-      "winning_sort_value": 739714,
-      "winning_value_bbox_id": "due_date:value"
+      "winning_field_id": "return_date",
+      "winning_field_label": "Return Date",
+      "winning_field_value": "Apr 28, 2026",
+      "winning_sort_value": 739734,
+      "winning_value_bbox_id": "return_date:value"
     },
     "post_image_noise": {
       "applied": false,
@@ -262,22 +234,22 @@
     "projected_evidence": {
       "bbox_set": [
         [
-          214.0,
-          604.0,
-          380.0,
-          626.0
+          678.0,
+          558.0,
+          864.0,
+          586.0
         ]
       ]
     },
     "query_spec": {
       "params": {
         "compared_field_count": 3,
-        "field_count": 11,
+        "field_count": 9,
         "field_count_range": [
           9,
           11
         ],
-        "scene_variant": "invoice_sheet",
+        "scene_variant": "receipt_sheet",
         "scene_variant_probabilities": {
           "form_sheet": 0.3333333333333333,
           "invoice_sheet": 0.3333333333333333,
@@ -293,7 +265,7 @@
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 1,
+        "answer_or_evidence_variant_index": 3,
         "prompt_bundle_id": "documents_relation_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -303,15 +275,15 @@
           "json_example_answer_only": "{\"answer\":\"2026-04-27\"}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "object_description": "an invoice with visible named sections, labeled header fields, and summary blocks",
+          "object_description": "a receipt-style document with visible section headers and labeled totals rows",
           "question_text": "In the Dates section, what is the latest date shown? Return the exact date shown."
         },
         "task_family_key": "structured_document_sections",
         "task_family_variant_index": 1,
         "task_key": "section_extremum_query",
-        "task_variant_index": 0,
+        "task_variant_index": 3,
         "task_variant_key": "latest_date_in_section",
-        "task_variant_template_index": 0,
+        "task_variant_template_index": 1,
         "template_paths": [
           "documents/relation/documents_relation_v1.json"
         ],
@@ -327,7 +299,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 1,
+            "answer_or_evidence_variant_index": 3,
             "prompt_bundle_id": "documents_relation_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -337,15 +309,15 @@
               "json_example_answer_only": "{\"answer\":\"2026-04-27\"}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "an invoice with visible named sections, labeled header fields, and summary blocks",
+              "object_description": "a receipt-style document with visible section headers and labeled totals rows",
               "question_text": "In the Dates section, what is the latest date shown? Return the exact date shown."
             },
             "task_family_key": "structured_document_sections",
             "task_family_variant_index": 1,
             "task_key": "section_extremum_query",
-            "task_variant_index": 0,
+            "task_variant_index": 3,
             "task_variant_key": "latest_date_in_section",
-            "task_variant_template_index": 0,
+            "task_variant_template_index": 1,
             "template_paths": [
               "documents/relation/documents_relation_v1.json"
             ],
@@ -356,12 +328,12 @@
               "task_variant:latest_date_in_section": 5
             }
           },
-          "prompt": "Look at the document in the image: an invoice with visible named sections, labeled header fields, and summary blocks. In the Dates section, what is the latest date shown? Return the exact date shown. Answer with the exact date text shown.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly one bounding box for the winning value.\nAnswer format: set \"answer\" to the exact winning value text shown in the named section.\nExample JSON:\n{\"evidence\":[[150,260,364,294]],\"answer\":\"2026-04-27\"}"
+          "prompt": "Look at the document in the image: a receipt-style document with visible section headers and labeled totals rows. Use the section headers and labeled fields to answer: In the Dates section, what is the latest date shown? Return the exact date shown. Return the exact date as written in the document.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing exactly one bounding box for the winning value.\nAnswer field: set \"answer\" to the exact winning value text shown in the named section.\nExample JSON:\n{\"evidence\":[[150,260,364,294]],\"answer\":\"2026-04-27\"}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 0,
+            "answer_or_evidence_variant_index": 2,
             "prompt_bundle_id": "documents_relation_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -371,15 +343,15 @@
               "json_example_answer_only": "{\"answer\":\"2026-04-27\"}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "an invoice with visible named sections, labeled header fields, and summary blocks",
+              "object_description": "a receipt-style document with visible section headers and labeled totals rows",
               "question_text": "In the Dates section, what is the latest date shown? Return the exact date shown."
             },
             "task_family_key": "structured_document_sections",
             "task_family_variant_index": 1,
             "task_key": "section_extremum_query",
-            "task_variant_index": 0,
+            "task_variant_index": 3,
             "task_variant_key": "latest_date_in_section",
-            "task_variant_template_index": 0,
+            "task_variant_template_index": 1,
             "template_paths": [
               "documents/relation/documents_relation_v1.json"
             ],
@@ -390,7 +362,7 @@
               "task_variant:latest_date_in_section": 5
             }
           },
-          "prompt": "Look at the document in the image: an invoice with visible named sections, labeled header fields, and summary blocks. In the Dates section, what is the latest date shown? Return the exact date shown. Answer with the exact date text shown.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the exact winning value text shown in the named section.\nExample JSON:\n{\"answer\":\"2026-04-27\"}"
+          "prompt": "Look at the document in the image: a receipt-style document with visible section headers and labeled totals rows. Use the section headers and labeled fields to answer: In the Dates section, what is the latest date shown? Return the exact date shown. Return the exact date as written in the document.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the exact winning value text shown in the named section.\nExample JSON:\n{\"answer\":\"2026-04-27\"}"
         }
       },
       "task_variant": "latest_date_in_section",
@@ -398,282 +370,234 @@
     },
     "render_map": {
       "field_box_bboxes_px": {
-        "account_id": [
-          498.667,
-          322.0,
-          781.333,
-          420.0
+        "cashier_name": [
+          406.0,
+          332.0,
+          874.0,
+          392.0
         ],
-        "contact_email": [
-          797.333,
-          322.0,
-          1080.0,
-          420.0
+        "pickup_date": [
+          406.0,
+          472.0,
+          874.0,
+          532.0
         ],
-        "customer_name": [
-          651.0,
-          206.0,
-          1080.0,
-          304.0
+        "purchase_date": [
+          406.0,
+          402.0,
+          874.0,
+          462.0
         ],
-        "due_date": [
-          200.0,
-          554.0,
-          629.0,
-          652.0
+        "receipt_number": [
+          406.0,
+          262.0,
+          874.0,
+          322.0
         ],
-        "invoice_number": [
-          200.0,
-          322.0,
-          482.667,
-          420.0
+        "return_date": [
+          406.0,
+          542.0,
+          874.0,
+          602.0
         ],
-        "issue_date": [
-          200.0,
-          438.0,
-          629.0,
-          536.0
-        ],
-        "service_date": [
-          651.0,
-          438.0,
-          1080.0,
-          536.0
+        "store_name": [
+          406.0,
+          192.0,
+          874.0,
+          252.0
         ],
         "subtotal_amount": [
-          651.0,
-          554.0,
-          1080.0,
-          652.0
+          406.0,
+          612.0,
+          874.0,
+          672.0
         ],
         "tax_amount": [
-          200.0,
-          672.0,
-          629.0,
-          776.0
+          406.0,
+          682.0,
+          874.0,
+          742.0
         ],
-        "total_due": [
-          651.0,
-          672.0,
-          1080.0,
-          776.0
-        ],
-        "vendor_name": [
-          200.0,
-          206.0,
-          629.0,
-          304.0
+        "total_paid": [
+          406.0,
+          752.0,
+          874.0,
+          812.0
         ]
       },
       "field_label_bboxes_px": {
-        "account_id:label": [
-          512.667,
-          336.0,
-          649.667,
-          354.0
+        "cashier_name:label": [
+          416.0,
+          352.5,
+          512.0,
+          371.5
         ],
-        "contact_email:label": [
-          811.333,
-          335.5,
-          987.333,
-          354.5
+        "pickup_date:label": [
+          416.0,
+          490.0,
+          569.0,
+          514.0
         ],
-        "customer_name:label": [
-          665.0,
-          220.0,
-          787.0,
-          238.0
+        "purchase_date:label": [
+          416.0,
+          423.0,
+          588.0,
+          441.0
         ],
-        "due_date:label": [
-          214.0,
-          568.0,
-          332.0,
-          586.0
+        "receipt_number:label": [
+          416.0,
+          280.0,
+          562.0,
+          304.0
         ],
-        "invoice_number:label": [
-          214.0,
-          335.5,
-          412.0,
-          354.5
+        "return_date:label": [
+          416.0,
+          563.0,
+          571.0,
+          581.0
         ],
-        "issue_date:label": [
-          214.0,
-          452.0,
-          348.0,
-          470.0
-        ],
-        "service_date:label": [
-          665.0,
-          451.5,
-          826.0,
-          470.5
+        "store_name:label": [
+          416.0,
+          213.0,
+          565.0,
+          231.0
         ],
         "subtotal_amount:label": [
-          665.0,
-          567.5,
-          775.0,
-          586.5
+          416.0,
+          632.5,
+          526.0,
+          651.5
         ],
         "tax_amount:label": [
-          214.0,
-          686.0,
-          260.0,
-          704.0
+          416.0,
+          703.0,
+          462.0,
+          721.0
         ],
-        "total_due:label": [
-          665.0,
-          685.5,
-          788.0,
-          704.5
-        ],
-        "vendor_name:label": [
-          214.0,
-          219.5,
-          306.0,
-          238.5
+        "total_paid:label": [
+          416.0,
+          772.5,
+          545.0,
+          791.5
         ]
       },
       "field_value_bboxes_px": {
-        "account_id:value": [
-          512.667,
-          372.0,
-          655.667,
-          394.0
+        "cashier_name:value": [
+          689.0,
+          348.0,
+          864.0,
+          376.0
         ],
-        "contact_email:value": [
-          811.333,
-          373.0,
-          1058.333,
-          393.0
-        ],
-        "customer_name:value": [
-          665.0,
-          252.5,
-          827.0,
-          281.5
-        ],
-        "due_date:value": [
-          214.0,
-          604.0,
-          380.0,
-          626.0
-        ],
-        "invoice_number:value": [
-          214.0,
-          372.0,
-          364.0,
-          394.0
-        ],
-        "issue_date:value": [
-          214.0,
+        "pickup_date:value": [
+          678.0,
           488.0,
-          380.0,
-          510.0
+          864.0,
+          516.0
         ],
-        "service_date:value": [
-          665.0,
-          488.0,
-          831.0,
-          510.0
+        "purchase_date:value": [
+          678.0,
+          418.0,
+          864.0,
+          446.0
+        ],
+        "receipt_number:value": [
+          743.0,
+          281.0,
+          864.0,
+          303.0
+        ],
+        "return_date:value": [
+          678.0,
+          558.0,
+          864.0,
+          586.0
+        ],
+        "store_name:value": [
+          668.0,
+          210.5,
+          864.0,
+          233.5
         ],
         "subtotal_amount:value": [
-          665.0,
-          601.5,
-          784.0,
-          628.5
+          763.0,
+          628.5,
+          864.0,
+          655.5
         ],
         "tax_amount:value": [
-          214.0,
-          722.5,
-          315.0,
-          749.5
+          781.0,
+          698.5,
+          864.0,
+          725.5
         ],
-        "total_due:value": [
-          665.0,
-          722.5,
-          784.0,
-          749.5
-        ],
-        "vendor_name:value": [
-          214.0,
-          252.5,
-          425.0,
-          281.5
+        "total_paid:value": [
+          763.0,
+          768.5,
+          864.0,
+          795.5
         ]
       },
       "page_bbox_px": [
-        160.0,
+        380.0,
         80.0,
-        1120.0,
+        900.0,
         840.0
       ],
       "section_box_bboxes_px": {
-        "account": [
-          486.667,
-          286.0,
-          1092.0,
-          432.0
-        ],
-        "billing_summary": [
-          188.0,
-          518.0,
-          1092.0,
-          788.0
-        ],
         "dates": [
-          188.0,
-          402.0,
-          1092.0,
-          664.0
+          394.0,
+          366.0,
+          886.0,
+          614.0
         ],
-        "parties": [
-          188.0,
-          172.0,
-          1092.0,
-          432.0
+        "store_details": [
+          394.0,
+          163.5,
+          886.0,
+          404.0
+        ],
+        "totals": [
+          394.0,
+          576.0,
+          886.0,
+          824.0
         ]
       },
       "section_label_bboxes_px": {
-        "account": [
-          521.667,
-          296.0,
-          610.667,
-          312.0
-        ],
-        "billing_summary": [
-          246.0,
-          527.5,
-          395.0,
-          544.5
-        ],
         "dates": [
-          221.0,
-          412.0,
-          285.0,
-          428.0
+          410.0,
+          372.0,
+          508.0,
+          394.0
         ],
-        "parties": [
-          227.0,
-          181.5,
-          296.0,
-          196.5
+        "store_details": [
+          410.0,
+          169.5,
+          600.0,
+          187.5
+        ],
+        "totals": [
+          410.0,
+          582.0,
+          513.0,
+          604.0
         ]
       },
       "title_bbox_px": [
-        191.0,
-        105.0,
-        362.0,
-        139.0
+        411.0,
+        100.5,
+        590.0,
+        143.5
       ]
     },
     "render_spec": {
       "canvas_height": 920,
       "canvas_width": 1280,
-      "geometry_seed": 286685835221849,
+      "geometry_seed": 8245081411703965,
       "page_shadow_offset_px": 14,
       "receipt_page_height_px": 760,
       "receipt_page_width_px": 520,
-      "scene_variant": "invoice_sheet",
+      "scene_variant": "receipt_sheet",
       "sheet_page_height_px": 760,
       "sheet_page_width_px": 960
     },
@@ -682,9 +606,9 @@
         {
           "bbox_id": "page",
           "bbox_px": [
-            160.0,
+            380.0,
             80.0,
-            1120.0,
+            900.0,
             840.0
           ],
           "entity_id": "page",
@@ -693,393 +617,301 @@
         {
           "bbox_id": "title",
           "bbox_px": [
-            191.0,
-            105.0,
-            362.0,
-            139.0
+            411.0,
+            100.5,
+            590.0,
+            143.5
           ],
           "entity_id": "title",
           "entity_type": "document_title",
-          "text": "Invoice"
+          "text": "Receipt"
         },
         {
-          "bbox_id": "parties",
+          "bbox_id": "store_details",
           "bbox_px": [
-            188.0,
-            172.0,
-            1092.0,
-            432.0
+            394.0,
+            163.5,
+            886.0,
+            404.0
           ],
-          "entity_id": "parties:section",
+          "entity_id": "store_details:section",
           "entity_type": "document_section",
           "field_ids": [
-            "vendor_name",
-            "customer_name",
-            "invoice_number"
+            "store_name",
+            "receipt_number",
+            "cashier_name"
           ],
-          "section_id": "parties"
-        },
-        {
-          "bbox_id": "account",
-          "bbox_px": [
-            486.667,
-            286.0,
-            1092.0,
-            432.0
-          ],
-          "entity_id": "account:section",
-          "entity_type": "document_section",
-          "field_ids": [
-            "account_id",
-            "contact_email"
-          ],
-          "section_id": "account"
+          "section_id": "store_details"
         },
         {
           "bbox_id": "dates",
           "bbox_px": [
-            188.0,
-            402.0,
-            1092.0,
-            664.0
+            394.0,
+            366.0,
+            886.0,
+            614.0
           ],
           "entity_id": "dates:section",
           "entity_type": "document_section",
           "field_ids": [
-            "issue_date",
-            "service_date",
-            "due_date"
+            "purchase_date",
+            "pickup_date",
+            "return_date"
           ],
           "section_id": "dates"
         },
         {
-          "bbox_id": "billing_summary",
+          "bbox_id": "totals",
           "bbox_px": [
-            188.0,
-            518.0,
-            1092.0,
-            788.0
+            394.0,
+            576.0,
+            886.0,
+            824.0
           ],
-          "entity_id": "billing_summary:section",
+          "entity_id": "totals:section",
           "entity_type": "document_section",
           "field_ids": [
             "subtotal_amount",
             "tax_amount",
-            "total_due"
+            "total_paid"
           ],
-          "section_id": "billing_summary"
+          "section_id": "totals"
         },
         {
-          "bbox_id": "vendor_name",
+          "bbox_id": "store_name",
           "bbox_px": [
-            200.0,
-            206.0,
-            629.0,
+            406.0,
+            192.0,
+            874.0,
+            252.0
+          ],
+          "entity_id": "store_name:field",
+          "entity_type": "document_field_box",
+          "field_id": "store_name"
+        },
+        {
+          "bbox_id": "store_name:label",
+          "bbox_px": [
+            416.0,
+            213.0,
+            565.0,
+            231.0
+          ],
+          "entity_id": "store_name:label",
+          "entity_type": "document_field_label",
+          "field_id": "store_name",
+          "text": "Store Name"
+        },
+        {
+          "bbox_id": "store_name:value",
+          "bbox_px": [
+            668.0,
+            210.5,
+            864.0,
+            233.5
+          ],
+          "entity_id": "store_name:value",
+          "entity_type": "document_field_value",
+          "field_id": "store_name",
+          "text": "Central Office"
+        },
+        {
+          "bbox_id": "receipt_number",
+          "bbox_px": [
+            406.0,
+            262.0,
+            874.0,
+            322.0
+          ],
+          "entity_id": "receipt_number:field",
+          "entity_type": "document_field_box",
+          "field_id": "receipt_number"
+        },
+        {
+          "bbox_id": "receipt_number:label",
+          "bbox_px": [
+            416.0,
+            280.0,
+            562.0,
             304.0
           ],
-          "entity_id": "vendor_name:field",
-          "entity_type": "document_field_box",
-          "field_id": "vendor_name"
-        },
-        {
-          "bbox_id": "vendor_name:label",
-          "bbox_px": [
-            214.0,
-            219.5,
-            306.0,
-            238.5
-          ],
-          "entity_id": "vendor_name:label",
+          "entity_id": "receipt_number:label",
           "entity_type": "document_field_label",
-          "field_id": "vendor_name",
-          "text": "Vendor"
+          "field_id": "receipt_number",
+          "text": "Receipt No."
         },
         {
-          "bbox_id": "vendor_name:value",
+          "bbox_id": "receipt_number:value",
           "bbox_px": [
-            214.0,
-            252.5,
-            425.0,
-            281.5
+            743.0,
+            281.0,
+            864.0,
+            303.0
           ],
-          "entity_id": "vendor_name:value",
+          "entity_id": "receipt_number:value",
           "entity_type": "document_field_value",
-          "field_id": "vendor_name",
-          "text": "Central Supply"
+          "field_id": "receipt_number",
+          "text": "R-34265"
         },
         {
-          "bbox_id": "customer_name",
+          "bbox_id": "cashier_name",
           "bbox_px": [
-            651.0,
-            206.0,
-            1080.0,
-            304.0
-          ],
-          "entity_id": "customer_name:field",
-          "entity_type": "document_field_box",
-          "field_id": "customer_name"
-        },
-        {
-          "bbox_id": "customer_name:label",
-          "bbox_px": [
-            665.0,
-            220.0,
-            787.0,
-            238.0
-          ],
-          "entity_id": "customer_name:label",
-          "entity_type": "document_field_label",
-          "field_id": "customer_name",
-          "text": "Customer"
-        },
-        {
-          "bbox_id": "customer_name:value",
-          "bbox_px": [
-            665.0,
-            252.5,
-            827.0,
-            281.5
-          ],
-          "entity_id": "customer_name:value",
-          "entity_type": "document_field_value",
-          "field_id": "customer_name",
-          "text": "Maya Shaw"
-        },
-        {
-          "bbox_id": "invoice_number",
-          "bbox_px": [
-            200.0,
-            322.0,
-            482.667,
-            420.0
-          ],
-          "entity_id": "invoice_number:field",
-          "entity_type": "document_field_box",
-          "field_id": "invoice_number"
-        },
-        {
-          "bbox_id": "invoice_number:label",
-          "bbox_px": [
-            214.0,
-            335.5,
-            412.0,
-            354.5
-          ],
-          "entity_id": "invoice_number:label",
-          "entity_type": "document_field_label",
-          "field_id": "invoice_number",
-          "text": "Invoice Number"
-        },
-        {
-          "bbox_id": "invoice_number:value",
-          "bbox_px": [
-            214.0,
-            372.0,
-            364.0,
-            394.0
-          ],
-          "entity_id": "invoice_number:value",
-          "entity_type": "document_field_value",
-          "field_id": "invoice_number",
-          "text": "INV-62034"
-        },
-        {
-          "bbox_id": "account_id",
-          "bbox_px": [
-            498.667,
-            322.0,
-            781.333,
-            420.0
-          ],
-          "entity_id": "account_id:field",
-          "entity_type": "document_field_box",
-          "field_id": "account_id"
-        },
-        {
-          "bbox_id": "account_id:label",
-          "bbox_px": [
-            512.667,
-            336.0,
-            649.667,
-            354.0
-          ],
-          "entity_id": "account_id:label",
-          "entity_type": "document_field_label",
-          "field_id": "account_id",
-          "text": "Account ID"
-        },
-        {
-          "bbox_id": "account_id:value",
-          "bbox_px": [
-            512.667,
-            372.0,
-            655.667,
-            394.0
-          ],
-          "entity_id": "account_id:value",
-          "entity_type": "document_field_value",
-          "field_id": "account_id",
-          "text": "ACC-7865"
-        },
-        {
-          "bbox_id": "contact_email",
-          "bbox_px": [
-            797.333,
-            322.0,
-            1080.0,
-            420.0
-          ],
-          "entity_id": "contact_email:field",
-          "entity_type": "document_field_box",
-          "field_id": "contact_email"
-        },
-        {
-          "bbox_id": "contact_email:label",
-          "bbox_px": [
-            811.333,
-            335.5,
-            987.333,
-            354.5
-          ],
-          "entity_id": "contact_email:label",
-          "entity_type": "document_field_label",
-          "field_id": "contact_email",
-          "text": "Contact Email"
-        },
-        {
-          "bbox_id": "contact_email:value",
-          "bbox_px": [
-            811.333,
-            373.0,
-            1058.333,
-            393.0
-          ],
-          "entity_id": "contact_email:value",
-          "entity_type": "document_field_value",
-          "field_id": "contact_email",
-          "text": "centralsupply@mailhub.net"
-        },
-        {
-          "bbox_id": "issue_date",
-          "bbox_px": [
-            200.0,
-            438.0,
-            629.0,
-            536.0
-          ],
-          "entity_id": "issue_date:field",
-          "entity_type": "document_field_box",
-          "field_id": "issue_date"
-        },
-        {
-          "bbox_id": "issue_date:label",
-          "bbox_px": [
-            214.0,
-            452.0,
-            348.0,
-            470.0
-          ],
-          "entity_id": "issue_date:label",
-          "entity_type": "document_field_label",
-          "field_id": "issue_date",
-          "text": "Issue Date"
-        },
-        {
-          "bbox_id": "issue_date:value",
-          "bbox_px": [
-            214.0,
-            488.0,
-            380.0,
-            510.0
-          ],
-          "entity_id": "issue_date:value",
-          "entity_type": "document_field_value",
-          "field_id": "issue_date",
-          "text": "2026-03-13"
-        },
-        {
-          "bbox_id": "service_date",
-          "bbox_px": [
-            651.0,
-            438.0,
-            1080.0,
-            536.0
-          ],
-          "entity_id": "service_date:field",
-          "entity_type": "document_field_box",
-          "field_id": "service_date"
-        },
-        {
-          "bbox_id": "service_date:label",
-          "bbox_px": [
-            665.0,
-            451.5,
-            826.0,
-            470.5
-          ],
-          "entity_id": "service_date:label",
-          "entity_type": "document_field_label",
-          "field_id": "service_date",
-          "text": "Service Date"
-        },
-        {
-          "bbox_id": "service_date:value",
-          "bbox_px": [
-            665.0,
-            488.0,
-            831.0,
-            510.0
-          ],
-          "entity_id": "service_date:value",
-          "entity_type": "document_field_value",
-          "field_id": "service_date",
-          "text": "2026-03-16"
-        },
-        {
-          "bbox_id": "due_date",
-          "bbox_px": [
-            200.0,
-            554.0,
-            629.0,
-            652.0
-          ],
-          "entity_id": "due_date:field",
-          "entity_type": "document_field_box",
-          "field_id": "due_date"
-        },
-        {
-          "bbox_id": "due_date:label",
-          "bbox_px": [
-            214.0,
-            568.0,
+            406.0,
             332.0,
+            874.0,
+            392.0
+          ],
+          "entity_id": "cashier_name:field",
+          "entity_type": "document_field_box",
+          "field_id": "cashier_name"
+        },
+        {
+          "bbox_id": "cashier_name:label",
+          "bbox_px": [
+            416.0,
+            352.5,
+            512.0,
+            371.5
+          ],
+          "entity_id": "cashier_name:label",
+          "entity_type": "document_field_label",
+          "field_id": "cashier_name",
+          "text": "Cashier"
+        },
+        {
+          "bbox_id": "cashier_name:value",
+          "bbox_px": [
+            689.0,
+            348.0,
+            864.0,
+            376.0
+          ],
+          "entity_id": "cashier_name:value",
+          "entity_type": "document_field_value",
+          "field_id": "cashier_name",
+          "text": "Sage Turner"
+        },
+        {
+          "bbox_id": "purchase_date",
+          "bbox_px": [
+            406.0,
+            402.0,
+            874.0,
+            462.0
+          ],
+          "entity_id": "purchase_date:field",
+          "entity_type": "document_field_box",
+          "field_id": "purchase_date"
+        },
+        {
+          "bbox_id": "purchase_date:label",
+          "bbox_px": [
+            416.0,
+            423.0,
+            588.0,
+            441.0
+          ],
+          "entity_id": "purchase_date:label",
+          "entity_type": "document_field_label",
+          "field_id": "purchase_date",
+          "text": "Purchase Date"
+        },
+        {
+          "bbox_id": "purchase_date:value",
+          "bbox_px": [
+            678.0,
+            418.0,
+            864.0,
+            446.0
+          ],
+          "entity_id": "purchase_date:value",
+          "entity_type": "document_field_value",
+          "field_id": "purchase_date",
+          "text": "Apr 17, 2026"
+        },
+        {
+          "bbox_id": "pickup_date",
+          "bbox_px": [
+            406.0,
+            472.0,
+            874.0,
+            532.0
+          ],
+          "entity_id": "pickup_date:field",
+          "entity_type": "document_field_box",
+          "field_id": "pickup_date"
+        },
+        {
+          "bbox_id": "pickup_date:label",
+          "bbox_px": [
+            416.0,
+            490.0,
+            569.0,
+            514.0
+          ],
+          "entity_id": "pickup_date:label",
+          "entity_type": "document_field_label",
+          "field_id": "pickup_date",
+          "text": "Pickup Date"
+        },
+        {
+          "bbox_id": "pickup_date:value",
+          "bbox_px": [
+            678.0,
+            488.0,
+            864.0,
+            516.0
+          ],
+          "entity_id": "pickup_date:value",
+          "entity_type": "document_field_value",
+          "field_id": "pickup_date",
+          "text": "Apr 19, 2026"
+        },
+        {
+          "bbox_id": "return_date",
+          "bbox_px": [
+            406.0,
+            542.0,
+            874.0,
+            602.0
+          ],
+          "entity_id": "return_date:field",
+          "entity_type": "document_field_box",
+          "field_id": "return_date"
+        },
+        {
+          "bbox_id": "return_date:label",
+          "bbox_px": [
+            416.0,
+            563.0,
+            571.0,
+            581.0
+          ],
+          "entity_id": "return_date:label",
+          "entity_type": "document_field_label",
+          "field_id": "return_date",
+          "text": "Return Date"
+        },
+        {
+          "bbox_id": "return_date:value",
+          "bbox_px": [
+            678.0,
+            558.0,
+            864.0,
             586.0
           ],
-          "entity_id": "due_date:label",
-          "entity_type": "document_field_label",
-          "field_id": "due_date",
-          "text": "Due Date"
-        },
-        {
-          "bbox_id": "due_date:value",
-          "bbox_px": [
-            214.0,
-            604.0,
-            380.0,
-            626.0
-          ],
-          "entity_id": "due_date:value",
+          "entity_id": "return_date:value",
           "entity_type": "document_field_value",
-          "field_id": "due_date",
-          "text": "2026-04-08"
+          "field_id": "return_date",
+          "text": "Apr 28, 2026"
         },
         {
           "bbox_id": "subtotal_amount",
           "bbox_px": [
-            651.0,
-            554.0,
-            1080.0,
-            652.0
+            406.0,
+            612.0,
+            874.0,
+            672.0
           ],
           "entity_id": "subtotal_amount:field",
           "entity_type": "document_field_box",
@@ -1088,10 +920,10 @@
         {
           "bbox_id": "subtotal_amount:label",
           "bbox_px": [
-            665.0,
-            567.5,
-            775.0,
-            586.5
+            416.0,
+            632.5,
+            526.0,
+            651.5
           ],
           "entity_id": "subtotal_amount:label",
           "entity_type": "document_field_label",
@@ -1101,23 +933,23 @@
         {
           "bbox_id": "subtotal_amount:value",
           "bbox_px": [
-            665.0,
-            601.5,
-            784.0,
-            628.5
+            763.0,
+            628.5,
+            864.0,
+            655.5
           ],
           "entity_id": "subtotal_amount:value",
           "entity_type": "document_field_value",
           "field_id": "subtotal_amount",
-          "text": "$204.55"
+          "text": "$81.53"
         },
         {
           "bbox_id": "tax_amount",
           "bbox_px": [
-            200.0,
-            672.0,
-            629.0,
-            776.0
+            406.0,
+            682.0,
+            874.0,
+            742.0
           ],
           "entity_id": "tax_amount:field",
           "entity_type": "document_field_box",
@@ -1126,10 +958,10 @@
         {
           "bbox_id": "tax_amount:label",
           "bbox_px": [
-            214.0,
-            686.0,
-            260.0,
-            704.0
+            416.0,
+            703.0,
+            462.0,
+            721.0
           ],
           "entity_id": "tax_amount:label",
           "entity_type": "document_field_label",
@@ -1139,87 +971,74 @@
         {
           "bbox_id": "tax_amount:value",
           "bbox_px": [
-            214.0,
-            722.5,
-            315.0,
-            749.5
+            781.0,
+            698.5,
+            864.0,
+            725.5
           ],
           "entity_id": "tax_amount:value",
           "entity_type": "document_field_value",
           "field_id": "tax_amount",
-          "text": "$21.48"
+          "text": "$4.33"
         },
         {
-          "bbox_id": "total_due",
+          "bbox_id": "total_paid",
           "bbox_px": [
-            651.0,
-            672.0,
-            1080.0,
-            776.0
+            406.0,
+            752.0,
+            874.0,
+            812.0
           ],
-          "entity_id": "total_due:field",
+          "entity_id": "total_paid:field",
           "entity_type": "document_field_box",
-          "field_id": "total_due"
+          "field_id": "total_paid"
         },
         {
-          "bbox_id": "total_due:label",
+          "bbox_id": "total_paid:label",
           "bbox_px": [
-            665.0,
-            685.5,
-            788.0,
-            704.5
+            416.0,
+            772.5,
+            545.0,
+            791.5
           ],
-          "entity_id": "total_due:label",
+          "entity_id": "total_paid:label",
           "entity_type": "document_field_label",
-          "field_id": "total_due",
-          "text": "Total Due"
+          "field_id": "total_paid",
+          "text": "Total Paid"
         },
         {
-          "bbox_id": "total_due:value",
+          "bbox_id": "total_paid:value",
           "bbox_px": [
-            665.0,
-            722.5,
-            784.0,
-            749.5
+            763.0,
+            768.5,
+            864.0,
+            795.5
           ],
-          "entity_id": "total_due:value",
+          "entity_id": "total_paid:value",
           "entity_type": "document_field_value",
-          "field_id": "total_due",
-          "text": "$226.03"
+          "field_id": "total_paid",
+          "text": "$85.86"
         },
         {
-          "bbox_id": "parties:label",
+          "bbox_id": "store_details:label",
           "bbox_px": [
-            227.0,
-            181.5,
-            296.0,
-            196.5
+            410.0,
+            169.5,
+            600.0,
+            187.5
           ],
-          "entity_id": "parties:label",
+          "entity_id": "store_details:label",
           "entity_type": "document_section_label",
-          "section_id": "parties",
-          "text": "Parties"
-        },
-        {
-          "bbox_id": "account:label",
-          "bbox_px": [
-            521.667,
-            296.0,
-            610.667,
-            312.0
-          ],
-          "entity_id": "account:label",
-          "entity_type": "document_section_label",
-          "section_id": "account",
-          "text": "Account"
+          "section_id": "store_details",
+          "text": "Store Details"
         },
         {
           "bbox_id": "dates:label",
           "bbox_px": [
-            221.0,
-            412.0,
-            285.0,
-            428.0
+            410.0,
+            372.0,
+            508.0,
+            394.0
           ],
           "entity_id": "dates:label",
           "entity_type": "document_section_label",
@@ -1227,34 +1046,34 @@
           "text": "Dates"
         },
         {
-          "bbox_id": "billing_summary:label",
+          "bbox_id": "totals:label",
           "bbox_px": [
-            246.0,
-            527.5,
-            395.0,
-            544.5
+            410.0,
+            582.0,
+            513.0,
+            604.0
           ],
-          "entity_id": "billing_summary:label",
+          "entity_id": "totals:label",
           "entity_type": "document_section_label",
-          "section_id": "billing_summary",
-          "text": "Billing Summary"
+          "section_id": "totals",
+          "text": "Totals"
         }
       ],
       "relations": {
         "comparison_kind": "date",
         "query_section_id": "dates",
         "query_section_label": "Dates",
-        "scene_variant": "invoice_sheet",
+        "scene_variant": "receipt_sheet",
         "task_variant": "latest_date_in_section",
         "view_family": "structured_document"
       },
-      "scene_kind": "document_invoice_sheet"
+      "scene_kind": "document_receipt_sheet"
     },
     "witness_symbolic": {
       "bbox_id_sequence": [
-        "due_date:value"
+        "return_date:value"
       ],
-      "field_id": "due_date"
+      "field_id": "return_date"
     }
   },
   "versions": {

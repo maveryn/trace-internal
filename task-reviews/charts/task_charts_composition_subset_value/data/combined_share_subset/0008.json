@@ -1,31 +1,33 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 6
+    "value": 75
   },
   "evidence_gt": {
     "type": "integer_list",
     "value": [
-      4,
-      94,
-      2
+      3,
+      72,
+      11,
+      9,
+      5
     ]
   },
   "image": {
     "format": "png",
     "path": "charts/task_charts_composition_subset_value/images/combined_share_subset/0008.png"
   },
-  "instance_seed": 4724791362229664,
-  "prompt": "Use the composition chart in the image. It shows a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Use the chart's printed segment or slice values to compute the answer. Using labels Kamp and Mosa, what combined share of the chart do they make up?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array [v1, v2, ...] listing the slice percentages in legend order for the whole chart.\nAnswer: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[18,27,22,33],\"answer\":45}",
+  "instance_seed": 2648026971259234,
+  "prompt": "Look at the chart in the image. It shows a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Answer the question using the printed values shown in the composition chart. Add the chart percentages for labels Warp and Atal. What total percentage do they contribute?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array [v1, v2, ...] listing the slice percentages in legend order for the whole chart.\nAnswer field: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[18,27,22,33],\"answer\":45}",
   "prompt_variants": {
-    "answer_and_evidence": "Use the composition chart in the image. It shows a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Use the chart's printed segment or slice values to compute the answer. Using labels Kamp and Mosa, what combined share of the chart do they make up?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array [v1, v2, ...] listing the slice percentages in legend order for the whole chart.\nAnswer: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[18,27,22,33],\"answer\":45}",
-    "answer_only": "Use the composition chart in the image. It shows a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Use the chart's printed segment or slice values to compute the answer. Using labels Kamp and Mosa, what combined share of the chart do they make up?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":45}"
+    "answer_and_evidence": "Look at the chart in the image. It shows a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Answer the question using the printed values shown in the composition chart. Add the chart percentages for labels Warp and Atal. What total percentage do they contribute?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array [v1, v2, ...] listing the slice percentages in legend order for the whole chart.\nAnswer field: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[18,27,22,33],\"answer\":45}",
+    "answer_only": "Look at the chart in the image. It shows a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Answer the question using the printed values shown in the composition chart. Add the chart percentages for labels Warp and Atal. What total percentage do they contribute?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":45}"
   },
   "task": "task_charts_composition_subset_value",
   "task_variant": "combined_share_subset",
   "trace_payload": {
     "execution_trace": {
-      "answer_value": 6,
+      "answer_value": 75,
       "category_count": 0,
       "category_count_range": [
         0,
@@ -35,34 +37,38 @@
       "composition_scope": "chart",
       "composition_total": 100,
       "evidence_labels": [
-        "Kamp",
-        "Neil",
-        "Mosa"
+        "Warp",
+        "Atal",
+        "Veal",
+        "York",
+        "Ronn"
       ],
       "evidence_values": [
-        4,
-        94,
-        2
+        3,
+        72,
+        11,
+        9,
+        5
       ],
       "mark_color_distance_space": "lab",
       "mark_color_min_distance": 58.0,
       "mark_color_sampling_policy": "random_rgb_palette",
       "mark_fill_rgb": [
-        34,
-        179,
-        124
+        7,
+        103,
+        70
       ],
       "mark_outline_rgb": [
-        19,
-        98,
-        68
+        4,
+        57,
+        38
       ],
       "pie_like_mark_color_channel_max": 200,
       "query_category_label": "",
       "query_series_label": "",
       "query_subset_labels": [
-        "Kamp",
-        "Mosa"
+        "Warp",
+        "Atal"
       ],
       "question_format": "numeric_open",
       "scene_mode": "pie_like",
@@ -71,71 +77,97 @@
         "donut": 0.5,
         "pie": 0.5
       },
-      "series_count": 3,
+      "series_count": 5,
       "series_count_range": [
         3,
         5
       ],
       "series_labels": [
-        "Kamp",
-        "Neil",
-        "Mosa"
+        "Warp",
+        "Atal",
+        "Veal",
+        "York",
+        "Ronn"
       ],
       "slice_fill_palette_rgb": [
         [
-          34,
+          7,
+          103,
+          70
+        ],
+        [
+          121,
+          41,
+          38
+        ],
+        [
+          101,
+          7,
+          172
+        ],
+        [
+          28,
           179,
-          124
+          7
         ],
         [
-          104,
-          31,
-          52
-        ],
-        [
-          193,
-          182,
-          33
+          53,
+          96,
+          150
         ]
       ],
       "slice_outline_palette_rgb": [
         [
-          19,
-          98,
-          68
-        ],
-        [
+          4,
           57,
-          17,
-          29
+          38
         ],
         [
-          106,
-          100,
-          18
+          67,
+          23,
+          21
+        ],
+        [
+          56,
+          4,
+          95
+        ],
+        [
+          15,
+          98,
+          4
+        ],
+        [
+          29,
+          53,
+          82
         ]
       ],
-      "target_answer": 6,
+      "target_answer": 75,
       "target_answer_range": [
         5,
         95
       ],
       "task_variant": "combined_share_subset",
       "task_variant_probabilities": {
-        "combined_share_subset": 0.3333333333333333,
-        "stack_segment_value": 0.3333333333333333,
-        "stack_total_at_label": 0.3333333333333333
+        "combined_share_subset": 1.0,
+        "stack_segment_value": 0.0,
+        "stack_total_at_label": 0.0
       },
       "value_semantics": "percentage",
       "values": [
-        4,
-        94,
-        2
+        3,
+        72,
+        11,
+        9,
+        5
       ],
       "values_by_label": {
-        "Kamp": 4,
-        "Mosa": 2,
-        "Neil": 94
+        "Atal": 72,
+        "Ronn": 5,
+        "Veal": 11,
+        "Warp": 3,
+        "York": 9
       }
     },
     "projected_evidence": {
@@ -143,53 +175,83 @@
         [
           442.08,
           65.6,
-          506.839,
+          490.874,
           326.0
         ],
         [
-          183.229,
-          67.653,
-          701.727,
-          585.285
+          181.68,
+          70.212,
+          700.427,
+          585.886
         ],
         [
-          409.443,
+          181.68,
+          160.015,
+          442.08,
+          326.0
+        ],
+        [
+          241.438,
+          78.345,
+          442.08,
+          326.0
+        ],
+        [
+          361.612,
           65.6,
           442.08,
           326.0
         ]
       ],
       "integer_list": [
-        4,
-        94,
-        2
+        3,
+        72,
+        11,
+        9,
+        5
       ],
       "pixel_point_map": {
-        "Kamp": [
-          461.662,
-          170.992
+        "Atal": [
+          541.671,
+          446.385
         ],
-        "Mosa": [
-          432.27,
-          170.068
+        "Ronn": [
+          417.639,
+          171.684
         ],
-        "Neil": [
-          432.27,
-          481.932
+        "Veal": [
+          295.077,
+          273.076
+        ],
+        "Warp": [
+          456.783,
+          170.453
+        ],
+        "York": [
+          354.26,
+          196.777
         ]
       },
       "pixel_point_set": [
         [
-          461.662,
-          170.992
+          456.783,
+          170.453
         ],
         [
-          432.27,
-          481.932
+          541.671,
+          446.385
         ],
         [
-          432.27,
-          170.068
+          295.077,
+          273.076
+        ],
+        [
+          354.26,
+          196.777
+        ],
+        [
+          417.639,
+          171.684
         ]
       ]
     },
@@ -203,34 +265,34 @@
         "query_category_label": "",
         "query_series_label": "",
         "query_subset_labels": [
-          "Kamp",
-          "Mosa"
+          "Warp",
+          "Atal"
         ],
         "scene_variant": "pie",
         "scene_variant_probabilities": {
           "donut": 0.5,
           "pie": 0.5
         },
-        "series_count": 3,
+        "series_count": 5,
         "series_count_range": [
           3,
           5
         ],
-        "target_answer": 6,
+        "target_answer": 75,
         "target_answer_range": [
           5,
           95
         ],
         "task_variant": "combined_share_subset",
         "task_variant_probabilities": {
-          "combined_share_subset": 0.3333333333333333,
-          "stack_segment_value": 0.3333333333333333,
-          "stack_total_at_label": 0.3333333333333333
+          "combined_share_subset": 1.0,
+          "stack_segment_value": 0.0,
+          "stack_total_at_label": 0.0
         }
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 0,
+        "answer_or_evidence_variant_index": 3,
         "prompt_bundle_id": "charts_composition_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -242,16 +304,16 @@
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
           "object_description": "a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices",
           "query_category_label": "",
-          "query_label_a": "Kamp",
-          "query_label_b": "Mosa",
+          "query_label_a": "Warp",
+          "query_label_b": "Atal",
           "query_series_label": ""
         },
         "task_family_key": "composition_chart_value",
-        "task_family_variant_index": 1,
+        "task_family_variant_index": 3,
         "task_key": "subset_value_query",
-        "task_variant_index": 2,
+        "task_variant_index": 4,
         "task_variant_key": "combined_share_subset",
-        "task_variant_template_index": 3,
+        "task_variant_template_index": 1,
         "template_paths": [
           "charts/composition/charts_composition_v1.json"
         ],
@@ -267,43 +329,6 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 0,
-            "prompt_bundle_id": "charts_composition_v1",
-            "schema_version": "v1",
-            "slot_values": {
-              "answer_hint": "set \"answer\" to the requested integer value",
-              "evidence_hint": "set \"evidence\" to an array [v1, v2, ...] listing the slice percentages in legend order for the whole chart",
-              "json_example": "{\"evidence\":[18,27,22,33],\"answer\":45}",
-              "json_example_answer_only": "{\"answer\":45}",
-              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
-              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices",
-              "query_category_label": "",
-              "query_label_a": "Kamp",
-              "query_label_b": "Mosa",
-              "query_series_label": ""
-            },
-            "task_family_key": "composition_chart_value",
-            "task_family_variant_index": 1,
-            "task_key": "subset_value_query",
-            "task_variant_index": 2,
-            "task_variant_key": "combined_share_subset",
-            "task_variant_template_index": 3,
-            "template_paths": [
-              "charts/composition/charts_composition_v1.json"
-            ],
-            "variant_count_by_key": {
-              "answer_or_evidence:answer_and_evidence": 5,
-              "task:subset_value_query": 5,
-              "task_family:composition_chart_value": 5,
-              "task_variant:combined_share_subset": 5
-            }
-          },
-          "prompt": "Use the composition chart in the image. It shows a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Use the chart's printed segment or slice values to compute the answer. Using labels Kamp and Mosa, what combined share of the chart do they make up?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array [v1, v2, ...] listing the slice percentages in legend order for the whole chart.\nAnswer: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[18,27,22,33],\"answer\":45}"
-        },
-        "answer_only": {
-          "metadata": {
-            "answer_or_evidence_key": "answer_only",
             "answer_or_evidence_variant_index": 3,
             "prompt_bundle_id": "charts_composition_v1",
             "schema_version": "v1",
@@ -316,16 +341,53 @@
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices",
               "query_category_label": "",
-              "query_label_a": "Kamp",
-              "query_label_b": "Mosa",
+              "query_label_a": "Warp",
+              "query_label_b": "Atal",
               "query_series_label": ""
             },
             "task_family_key": "composition_chart_value",
-            "task_family_variant_index": 1,
+            "task_family_variant_index": 3,
             "task_key": "subset_value_query",
-            "task_variant_index": 2,
+            "task_variant_index": 4,
             "task_variant_key": "combined_share_subset",
-            "task_variant_template_index": 3,
+            "task_variant_template_index": 1,
+            "template_paths": [
+              "charts/composition/charts_composition_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:subset_value_query": 5,
+              "task_family:composition_chart_value": 5,
+              "task_variant:combined_share_subset": 5
+            }
+          },
+          "prompt": "Look at the chart in the image. It shows a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Answer the question using the printed values shown in the composition chart. Add the chart percentages for labels Warp and Atal. What total percentage do they contribute?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array [v1, v2, ...] listing the slice percentages in legend order for the whole chart.\nAnswer field: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[18,27,22,33],\"answer\":45}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 2,
+            "prompt_bundle_id": "charts_composition_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the requested integer value",
+              "evidence_hint": "set \"evidence\" to an array [v1, v2, ...] listing the slice percentages in legend order for the whole chart",
+              "json_example": "{\"evidence\":[18,27,22,33],\"answer\":45}",
+              "json_example_answer_only": "{\"answer\":45}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices",
+              "query_category_label": "",
+              "query_label_a": "Warp",
+              "query_label_b": "Atal",
+              "query_series_label": ""
+            },
+            "task_family_key": "composition_chart_value",
+            "task_family_variant_index": 3,
+            "task_key": "subset_value_query",
+            "task_variant_index": 4,
+            "task_variant_key": "combined_share_subset",
+            "task_variant_template_index": 1,
             "template_paths": [
               "charts/composition/charts_composition_v1.json"
             ],
@@ -336,7 +398,7 @@
               "task_variant:combined_share_subset": 5
             }
           },
-          "prompt": "Use the composition chart in the image. It shows a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Use the chart's printed segment or slice values to compute the answer. Using labels Kamp and Mosa, what combined share of the chart do they make up?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":45}"
+          "prompt": "Look at the chart in the image. It shows a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Answer the question using the printed values shown in the composition chart. Add the chart percentages for labels Warp and Atal. What total percentage do they contribute?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":45}"
         }
       },
       "task_variant": "combined_share_subset",
@@ -345,17 +407,25 @@
     "render_map": {
       "image_id": "img0",
       "label_centers_px": {
-        "Kamp": [
-          876.66,
+        "Atal": [
+          865.16,
           277.0
         ],
-        "Mosa": [
-          873.16,
-          361.0
+        "Ronn": [
+          872.16,
+          403.0
         ],
-        "Neil": [
-          864.16,
+        "Veal": [
+          867.66,
           319.0
+        ],
+        "Warp": [
+          873.66,
+          235.0
+        ],
+        "York": [
+          869.66,
+          361.0
         ]
       },
       "plot_bbox_px": [
@@ -393,49 +463,69 @@
         "mark_color_distance_space": "lab",
         "mark_color_min_distance": 58.0,
         "mark_fill_rgb": [
-          34,
-          179,
-          124
+          7,
+          103,
+          70
         ],
         "mark_outline_rgb": [
-          19,
-          98,
-          68
+          4,
+          57,
+          38
         ],
         "pie_like_mark_color_channel_max": 200,
         "sampling_policy": "random_rgb_palette",
         "slice_fill_palette_rgb": [
           [
-            34,
+            7,
+            103,
+            70
+          ],
+          [
+            121,
+            41,
+            38
+          ],
+          [
+            101,
+            7,
+            172
+          ],
+          [
+            28,
             179,
-            124
+            7
           ],
           [
-            104,
-            31,
-            52
-          ],
-          [
-            193,
-            182,
-            33
+            53,
+            96,
+            150
           ]
         ],
         "slice_outline_palette_rgb": [
           [
-            19,
-            98,
-            68
-          ],
-          [
+            4,
             57,
-            17,
-            29
+            38
           ],
           [
-            106,
-            100,
-            18
+            67,
+            23,
+            21
+          ],
+          [
+            56,
+            4,
+            95
+          ],
+          [
+            15,
+            98,
+            4
+          ],
+          [
+            29,
+            53,
+            82
           ]
         ]
       },
@@ -467,7 +557,7 @@
         "label_stroke_width_px": 2,
         "tick_font_size_px": 20
       },
-      "y_axis_max": 95,
+      "y_axis_max": 73,
       "y_ticks": [
         0,
         1,
@@ -542,45 +632,81 @@
         70,
         71,
         72,
-        73,
-        74,
-        75,
-        76,
-        77,
-        78,
-        79,
-        80,
-        81,
-        82,
-        83,
-        84,
-        85,
-        86,
-        87,
-        88,
-        89,
-        90,
-        91,
-        92,
-        93,
-        94,
-        95
+        73
       ]
     },
     "scene_ir": {
       "entities": [
         {
           "attrs": {
-            "end_angle_deg": -75.6,
-            "label": "Kamp",
+            "end_angle_deg": -79.2,
+            "label": "Warp",
             "label_bbox_px": [
               838.16,
-              265.5,
-              915.16,
-              288.5
+              223.5,
+              909.16,
+              246.5
             ],
             "label_center_px": [
-              876.66,
+              873.66,
+              235.0
+            ],
+            "legend_swatch_bbox_px": [
+              788.16,
+              221.0,
+              816.16,
+              249.0
+            ],
+            "mark_bbox_px": [
+              442.08,
+              65.6,
+              490.874,
+              326.0
+            ],
+            "mark_center_px": [
+              456.783,
+              170.453
+            ],
+            "mark_fill_rgb": [
+              7,
+              103,
+              70
+            ],
+            "mark_outline_rgb": [
+              4,
+              57,
+              38
+            ],
+            "percentage_bbox_px": [
+              447.592,
+              41.827,
+              488.592,
+              59.827
+            ],
+            "percentage_center_px": [
+              468.092,
+              50.827
+            ],
+            "scene_variant": "pie",
+            "start_angle_deg": -90.0,
+            "value": 3,
+            "x_rank": 0
+          },
+          "entity_id": "mark_Warp",
+          "entity_type": "slice"
+        },
+        {
+          "attrs": {
+            "end_angle_deg": 180.0,
+            "label": "Atal",
+            "label_bbox_px": [
+              838.16,
+              268.0,
+              892.16,
+              286.0
+            ],
+            "label_center_px": [
+              865.16,
               277.0
             ],
             "legend_swatch_bbox_px": [
@@ -590,55 +716,55 @@
               291.0
             ],
             "mark_bbox_px": [
-              442.08,
-              65.6,
-              506.839,
-              326.0
+              181.68,
+              70.212,
+              700.427,
+              585.886
             ],
             "mark_center_px": [
-              461.662,
-              170.992
+              541.671,
+              446.385
             ],
             "mark_fill_rgb": [
-              34,
-              179,
-              124
+              121,
+              41,
+              38
             ],
             "mark_outline_rgb": [
-              19,
-              98,
-              68
+              67,
+              23,
+              21
             ],
             "percentage_bbox_px": [
-              456.222,
-              42.779,
-              497.222,
-              60.779
+              512.671,
+              437.385,
+              570.671,
+              455.385
             ],
             "percentage_center_px": [
-              476.722,
-              51.779
+              541.671,
+              446.385
             ],
             "scene_variant": "pie",
-            "start_angle_deg": -90.0,
-            "value": 4,
-            "x_rank": 0
+            "start_angle_deg": -79.2,
+            "value": 72,
+            "x_rank": 1
           },
-          "entity_id": "mark_Kamp",
+          "entity_id": "mark_Atal",
           "entity_type": "slice"
         },
         {
           "attrs": {
-            "end_angle_deg": 262.8,
-            "label": "Neil",
+            "end_angle_deg": 219.6,
+            "label": "Veal",
             "label_bbox_px": [
               838.16,
               310.0,
-              890.16,
+              897.16,
               328.0
             ],
             "label_center_px": [
-              864.16,
+              867.66,
               319.0
             ],
             "legend_swatch_bbox_px": [
@@ -648,55 +774,55 @@
               333.0
             ],
             "mark_bbox_px": [
-              183.229,
-              67.653,
-              701.727,
-              585.285
+              181.68,
+              160.015,
+              442.08,
+              326.0
             ],
             "mark_center_px": [
-              432.27,
-              481.932
+              295.077,
+              273.076
             ],
             "mark_fill_rgb": [
-              104,
-              31,
-              52
+              101,
+              7,
+              172
             ],
             "mark_outline_rgb": [
-              57,
-              17,
-              29
+              56,
+              4,
+              95
             ],
             "percentage_bbox_px": [
-              403.27,
-              472.932,
-              461.27,
-              490.932
+              266.077,
+              264.076,
+              324.077,
+              282.076
             ],
             "percentage_center_px": [
-              432.27,
-              481.932
+              295.077,
+              273.076
             ],
             "scene_variant": "pie",
-            "start_angle_deg": -75.6,
-            "value": 94,
-            "x_rank": 1
+            "start_angle_deg": 180.0,
+            "value": 11,
+            "x_rank": 2
           },
-          "entity_id": "mark_Neil",
+          "entity_id": "mark_Veal",
           "entity_type": "slice"
         },
         {
           "attrs": {
-            "end_angle_deg": 270.0,
-            "label": "Mosa",
+            "end_angle_deg": 252.0,
+            "label": "York",
             "label_bbox_px": [
               838.16,
               352.0,
-              908.16,
+              901.16,
               370.0
             ],
             "label_center_px": [
-              873.16,
+              869.66,
               361.0
             ],
             "legend_swatch_bbox_px": [
@@ -706,56 +832,116 @@
               375.0
             ],
             "mark_bbox_px": [
-              409.443,
+              241.438,
+              78.345,
+              442.08,
+              326.0
+            ],
+            "mark_center_px": [
+              354.26,
+              196.777
+            ],
+            "mark_fill_rgb": [
+              28,
+              179,
+              7
+            ],
+            "mark_outline_rgb": [
+              15,
+              98,
+              4
+            ],
+            "percentage_bbox_px": [
+              333.76,
+              187.777,
+              374.76,
+              205.777
+            ],
+            "percentage_center_px": [
+              354.26,
+              196.777
+            ],
+            "scene_variant": "pie",
+            "start_angle_deg": 219.6,
+            "value": 9,
+            "x_rank": 3
+          },
+          "entity_id": "mark_York",
+          "entity_type": "slice"
+        },
+        {
+          "attrs": {
+            "end_angle_deg": 270.0,
+            "label": "Ronn",
+            "label_bbox_px": [
+              838.16,
+              394.0,
+              906.16,
+              412.0
+            ],
+            "label_center_px": [
+              872.16,
+              403.0
+            ],
+            "legend_swatch_bbox_px": [
+              788.16,
+              389.0,
+              816.16,
+              417.0
+            ],
+            "mark_bbox_px": [
+              361.612,
               65.6,
               442.08,
               326.0
             ],
             "mark_center_px": [
-              432.27,
-              170.068
+              417.639,
+              171.684
             ],
             "mark_fill_rgb": [
-              193,
-              182,
-              33
+              53,
+              96,
+              150
             ],
             "mark_outline_rgb": [
-              106,
-              100,
-              18
+              29,
+              53,
+              82
             ],
             "percentage_bbox_px": [
-              404.225,
-              41.145,
-              445.225,
-              59.145
+              397.139,
+              162.684,
+              438.139,
+              180.684
             ],
             "percentage_center_px": [
-              424.725,
-              50.145
+              417.639,
+              171.684
             ],
             "scene_variant": "pie",
-            "start_angle_deg": 262.8,
-            "value": 2,
-            "x_rank": 2
+            "start_angle_deg": 252.0,
+            "value": 5,
+            "x_rank": 4
           },
-          "entity_id": "mark_Mosa",
+          "entity_id": "mark_Ronn",
           "entity_type": "slice"
         }
       ],
       "relations": {
-        "answer_value": 6,
+        "answer_value": 75,
         "evidence_labels": [
-          "Kamp",
-          "Neil",
-          "Mosa"
+          "Warp",
+          "Atal",
+          "Veal",
+          "York",
+          "Ronn"
         ],
         "query_category_label": "",
         "query_series_label": "",
         "query_subset_labels": [
-          "Kamp",
-          "Mosa"
+          "Warp",
+          "Atal"
         ],
         "scene_variant": "pie",
         "task_variant": "combined_share_subset"
@@ -764,15 +950,19 @@
     },
     "witness_symbolic": {
       "labels": [
-        "Kamp",
-        "Neil",
-        "Mosa"
+        "Warp",
+        "Atal",
+        "Veal",
+        "York",
+        "Ronn"
       ],
       "type": "integer_list",
       "values": [
-        4,
-        94,
-        2
+        3,
+        72,
+        11,
+        9,
+        5
       ]
     }
   },

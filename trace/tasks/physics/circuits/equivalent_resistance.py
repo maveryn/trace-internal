@@ -21,11 +21,7 @@ from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_json_example import build_prompt_json_examples
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_task_prompt_variants
 from ...shared.text_rendering import load_font, resolve_text_stroke_fill
-from ...shared.variant_sampling import (
-    apply_balanced_variant_sampling,
-    resolve_compatible_scene_query_variants,
-    resolve_variant,
-)
+from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
 from ..shared.circuit_scene import RenderedCircuitScene, render_resistor_network_scene
 from ..shared.complexity import build_physics_circuit_resistance_complexity
 from ..shared.style import SUPPORTED_PHYSICS_COLOR_NAMES
@@ -68,6 +64,7 @@ class _TaskDefaults:
     series_parallel_branch_left_x_px: int = 360
     resistor_value_min: int = 1
     resistor_value_max: int = 12
+    total_resistance_target_answer_support: Tuple[int, ...] = tuple(range(1, 19))
     parallel_target_answer_support: Tuple[int, ...] = (1, 2, 3, 4, 5, 6)
     simple_series_parallel_target_answer_support: Tuple[int, ...] = tuple(range(2, 19))
     missing_resistor_value_support: Tuple[int, ...] = tuple(range(1, 13))
@@ -273,23 +270,36 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
     """Resolve one compatible scene/query pair plus answer support."""
 
     axis_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.axes")
-    scene_variant, scene_probs, query_variant, query_probs = resolve_compatible_scene_query_variants(
+    query_variant, query_probs = _resolve_query_variant(
         axis_rng,
         instance_seed=int(instance_seed),
         params=params,
-        gen_defaults=_GEN_DEFAULTS,
-        supported_scene_variants=SUPPORTED_SCENE_VARIANTS,
-        supported_query_variants=SUPPORTED_QUERY_VARIANTS,
-        compatibility=COMPATIBILITY,
-        scene_sampling_namespace=f"{TASK_ID}.scene_variant",
-        query_sampling_namespace=f"{TASK_ID}.query_variant",
     )
-    target_answer, target_answer_support, target_answer_probabilities = _resolve_target_answer(
-        instance_seed=int(instance_seed),
-        params=params,
-        scene_variant=str(scene_variant),
-        query_variant=str(query_variant),
-    )
+    explicit_scene = params.get("scene_variant")
+    if str(query_variant) == "total_resistance" and explicit_scene is None:
+        target_answer, target_answer_support, target_answer_probabilities = _resolve_total_resistance_target_answer(
+            instance_seed=int(instance_seed),
+            params=params,
+        )
+        scene_variant, scene_probs = _resolve_scene_variant_for_total_resistance(
+            axis_rng,
+            instance_seed=int(instance_seed),
+            params=params,
+            target_answer=int(target_answer),
+        )
+    else:
+        scene_variant, scene_probs = _resolve_scene_variant(
+            axis_rng,
+            instance_seed=int(instance_seed),
+            params=params,
+            query_variant=str(query_variant),
+        )
+        target_answer, target_answer_support, target_answer_probabilities = _resolve_target_answer(
+            instance_seed=int(instance_seed),
+            params=params,
+            scene_variant=str(scene_variant),
+            query_variant=str(query_variant),
+        )
     color_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.accent_color_name")
     accent_color_name, accent_color_name_probabilities = resolve_variant(
         color_rng,
@@ -322,6 +332,232 @@ def _resolve_axes(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolved
         accent_color_name_probabilities=dict(accent_color_name_probabilities),
         target_answer_probabilities=dict(target_answer_probabilities),
     )
+
+
+def _resolve_query_variant(
+    rng,
+    *,
+    instance_seed: int,
+    params: Mapping[str, Any],
+) -> Tuple[str, Dict[str, float]]:
+    """Resolve the query variant, respecting any explicit scene compatibility."""
+
+    query_supported = [str(value) for value in SUPPORTED_QUERY_VARIANTS]
+    compatibility_map = {
+        str(scene): tuple(str(query) for query in queries)
+        for scene, queries in COMPATIBILITY.items()
+    }
+    query_set = set(query_supported)
+
+    explicit_query = params.get("query_variant", params.get("task_variant"))
+    if explicit_query is not None and str(explicit_query) not in query_set:
+        raise ValueError(f"unsupported query_variant: {explicit_query}")
+    explicit_scene = params.get("scene_variant")
+    if explicit_scene is not None:
+        if str(explicit_scene) not in set(str(value) for value in SUPPORTED_SCENE_VARIANTS):
+            raise ValueError(f"unsupported scene_variant: {explicit_scene}")
+        allowed_queries = list(compatibility_map.get(str(explicit_scene), ()))
+        selected_query, restricted_query_probs = resolve_variant(
+            rng,
+            params=params,
+            gen_defaults=_GEN_DEFAULTS,
+            supported_variants=allowed_queries,
+            explicit_key="query_variant",
+            weights_key="query_variant_weights",
+        )
+        selected_query = apply_balanced_variant_sampling(
+            instance_seed=int(instance_seed),
+            params=params,
+            gen_defaults=_GEN_DEFAULTS,
+            selected_variant=str(selected_query),
+            variant_probabilities=restricted_query_probs,
+            supported_variants=allowed_queries,
+            balance_flag_key="balanced_query_variant_sampling",
+            explicit_key="query_variant",
+            weights_key="query_variant_weights",
+            sampling_namespace=f"{TASK_ID}.query_variant",
+        )
+        return str(selected_query), {
+            query: float(restricted_query_probs.get(query, 0.0)) for query in query_supported
+        }
+
+    selected_query, restricted_query_probs = resolve_variant(
+        rng,
+        params=params,
+        gen_defaults=_GEN_DEFAULTS,
+        supported_variants=query_supported,
+        explicit_key="query_variant",
+        weights_key="query_variant_weights",
+    )
+    selected_query = apply_balanced_variant_sampling(
+        instance_seed=int(instance_seed),
+        params=params,
+        gen_defaults=_GEN_DEFAULTS,
+        selected_variant=str(selected_query),
+        variant_probabilities=restricted_query_probs,
+        supported_variants=query_supported,
+        balance_flag_key="balanced_query_variant_sampling",
+        explicit_key="query_variant",
+        weights_key="query_variant_weights",
+        sampling_namespace=f"{TASK_ID}.query_variant",
+    )
+    return str(selected_query), {
+        query: float(restricted_query_probs.get(query, 0.0)) for query in query_supported
+    }
+
+
+def _resolve_scene_variant(
+    rng,
+    *,
+    instance_seed: int,
+    params: Mapping[str, Any],
+    query_variant: str,
+) -> Tuple[str, Dict[str, float]]:
+    """Resolve one scene variant after the query variant is known."""
+
+    scene_supported = [str(value) for value in SUPPORTED_SCENE_VARIANTS]
+    explicit_scene = params.get("scene_variant")
+    if explicit_scene is not None:
+        if str(explicit_scene) not in set(scene_supported):
+            raise ValueError(f"unsupported scene_variant: {explicit_scene}")
+        allowed_queries = set(COMPATIBILITY.get(str(explicit_scene), ()))
+        if str(query_variant) not in allowed_queries:
+            raise ValueError(f"incompatible scene/query combination: {explicit_scene} + {query_variant}")
+        return str(explicit_scene), {scene: (1.0 if scene == str(explicit_scene) else 0.0) for scene in scene_supported}
+
+    allowed_scenes = [
+        scene for scene in scene_supported if str(query_variant) in set(COMPATIBILITY.get(scene, ()))
+    ]
+    selected_scene, restricted_scene_probs = resolve_variant(
+        rng,
+        params=params,
+        gen_defaults=_GEN_DEFAULTS,
+        supported_variants=allowed_scenes,
+        explicit_key="scene_variant",
+        weights_key="scene_variant_weights",
+    )
+    selected_scene = apply_balanced_variant_sampling(
+        instance_seed=int(instance_seed),
+        params=params,
+        gen_defaults=_GEN_DEFAULTS,
+        selected_variant=str(selected_scene),
+        variant_probabilities=restricted_scene_probs,
+        supported_variants=allowed_scenes,
+        balance_flag_key="balanced_scene_variant_sampling",
+        explicit_key="scene_variant",
+        weights_key="scene_variant_weights",
+        sampling_namespace=f"{TASK_ID}.scene_variant.{str(query_variant)}",
+    )
+    return str(selected_scene), {
+        scene: float(restricted_scene_probs.get(scene, 0.0)) for scene in scene_supported
+    }
+
+
+def _resolve_total_resistance_target_answer(
+    *,
+    instance_seed: int,
+    params: Mapping[str, Any],
+) -> Tuple[int, Tuple[int, ...], Dict[str, float]]:
+    """Resolve the total-resistance target from the query-level feasible support."""
+
+    fallback = getattr(_DEFAULTS, "total_resistance_target_answer_support")
+    raw_support = resolve_integer_support(
+        params,
+        gen_defaults=_GEN_DEFAULTS,
+        key="total_resistance_target_answer_support",
+        fallback=fallback,
+    )
+    resistor_value_min = int(
+        params.get("resistor_value_min", group_default(_GEN_DEFAULTS, "resistor_value_min", _DEFAULTS.resistor_value_min))
+    )
+    resistor_value_max = int(
+        params.get("resistor_value_max", group_default(_GEN_DEFAULTS, "resistor_value_max", _DEFAULTS.resistor_value_max))
+    )
+    feasible_support = tuple(
+        int(value)
+        for value in raw_support
+        if any(
+            _is_feasible_target_answer(
+                scene_variant=str(scene_variant),
+                query_variant="total_resistance",
+                target_answer=int(value),
+                resistor_value_min=int(resistor_value_min),
+                resistor_value_max=int(resistor_value_max),
+            )
+            for scene_variant in SUPPORTED_SCENE_VARIANTS
+        )
+    )
+    if not feasible_support:
+        raise ValueError("no feasible total_resistance target_answer values remain")
+    resolved_params = dict(params)
+    resolved_params["total_resistance_target_answer_support"] = list(int(value) for value in feasible_support)
+    target_answer, probabilities = resolve_integer_choice(
+        instance_seed=int(instance_seed),
+        params=resolved_params,
+        gen_defaults=_GEN_DEFAULTS,
+        support_key="total_resistance_target_answer_support",
+        explicit_key="target_answer",
+        fallback_support=feasible_support,
+        namespace=f"{TASK_ID}.target_answer.total_resistance",
+        balanced_flag_key="balanced_target_answer_sampling",
+        namespace_explicit_sampling_index=True,
+    )
+    return int(target_answer), tuple(int(value) for value in feasible_support), dict(probabilities)
+
+
+def _resolve_scene_variant_for_total_resistance(
+    rng,
+    *,
+    instance_seed: int,
+    params: Mapping[str, Any],
+    target_answer: int,
+) -> Tuple[str, Dict[str, float]]:
+    """Resolve a total-resistance scene that can realize the chosen answer."""
+
+    resistor_value_min = int(
+        params.get("resistor_value_min", group_default(_GEN_DEFAULTS, "resistor_value_min", _DEFAULTS.resistor_value_min))
+    )
+    resistor_value_max = int(
+        params.get("resistor_value_max", group_default(_GEN_DEFAULTS, "resistor_value_max", _DEFAULTS.resistor_value_max))
+    )
+    allowed_scenes = [
+        str(scene_variant)
+        for scene_variant in SUPPORTED_SCENE_VARIANTS
+        if _is_feasible_target_answer(
+            scene_variant=str(scene_variant),
+            query_variant="total_resistance",
+            target_answer=int(target_answer),
+            resistor_value_min=int(resistor_value_min),
+            resistor_value_max=int(resistor_value_max),
+        )
+    ]
+    if not allowed_scenes:
+        raise ValueError(f"no scene variants can realize total_resistance target {target_answer}")
+    selected_scene, restricted_scene_probs = resolve_variant(
+        rng,
+        params=params,
+        gen_defaults=_GEN_DEFAULTS,
+        supported_variants=allowed_scenes,
+        explicit_key="scene_variant",
+        weights_key="scene_variant_weights",
+    )
+    selected_scene = apply_balanced_variant_sampling(
+        instance_seed=int(instance_seed),
+        params=params,
+        gen_defaults=_GEN_DEFAULTS,
+        selected_variant=str(selected_scene),
+        variant_probabilities=restricted_scene_probs,
+        supported_variants=allowed_scenes,
+        balance_flag_key="balanced_scene_variant_sampling",
+        explicit_key="scene_variant",
+        weights_key="scene_variant_weights",
+        sampling_namespace=f"{TASK_ID}.scene_variant.total_resistance.{int(target_answer)}",
+    )
+
+    scene_supported = [str(value) for value in SUPPORTED_SCENE_VARIANTS]
+    return str(selected_scene), {
+        scene: float(restricted_scene_probs.get(scene, 0.0)) for scene in scene_supported
+    }
 
 
 def _sorted_int_tuple(*values: int) -> Tuple[int, ...]:

@@ -1,33 +1,32 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 71
+    "value": 94
   },
   "evidence_gt": {
     "type": "integer_list",
     "value": [
-      23,
-      4,
-      4,
-      21,
-      48
+      35,
+      59,
+      5,
+      1
     ]
   },
   "image": {
     "format": "png",
     "path": "charts/task_charts_composition_subset_value/images/combined_share_subset/0007.png"
   },
-  "instance_seed": 6359188200494800,
-  "prompt": "You are given a composition chart: a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Use the printed segment or slice values to answer the composition question. Using labels Jair and Bast, what combined share of the chart do they make up?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array [v1, v2, ...] listing the slice percentages in legend order for the whole chart.\nAnswer field: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[18,27,22,33],\"answer\":45}",
+  "instance_seed": 3880428790970773,
+  "prompt": "You are given a composition chart: a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Answer the question using the printed values shown in the composition chart. What combined percentage of the chart is contributed by labels Behn and Mays?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array [v1, v2, ...] listing the slice percentages in legend order for the whole chart.\nAnswer requirement: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[18,27,22,33],\"answer\":45}",
   "prompt_variants": {
-    "answer_and_evidence": "You are given a composition chart: a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Use the printed segment or slice values to answer the composition question. Using labels Jair and Bast, what combined share of the chart do they make up?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array [v1, v2, ...] listing the slice percentages in legend order for the whole chart.\nAnswer field: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[18,27,22,33],\"answer\":45}",
-    "answer_only": "You are given a composition chart: a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Use the printed segment or slice values to answer the composition question. Using labels Jair and Bast, what combined share of the chart do they make up?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":45}"
+    "answer_and_evidence": "You are given a composition chart: a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Answer the question using the printed values shown in the composition chart. What combined percentage of the chart is contributed by labels Behn and Mays?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array [v1, v2, ...] listing the slice percentages in legend order for the whole chart.\nAnswer requirement: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[18,27,22,33],\"answer\":45}",
+    "answer_only": "You are given a composition chart: a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Answer the question using the printed values shown in the composition chart. What combined percentage of the chart is contributed by labels Behn and Mays?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":45}"
   },
   "task": "task_charts_composition_subset_value",
   "task_variant": "combined_share_subset",
   "trace_payload": {
     "execution_trace": {
-      "answer_value": 71,
+      "answer_value": 94,
       "category_count": 0,
       "category_count_range": [
         0,
@@ -37,38 +36,36 @@
       "composition_scope": "chart",
       "composition_total": 100,
       "evidence_labels": [
-        "Jair",
-        "Swor",
-        "Tavy",
-        "Zak",
-        "Bast"
+        "Behn",
+        "Mays",
+        "Nole",
+        "Ly"
       ],
       "evidence_values": [
-        23,
-        4,
-        4,
-        21,
-        48
+        35,
+        59,
+        5,
+        1
       ],
       "mark_color_distance_space": "lab",
       "mark_color_min_distance": 58.0,
       "mark_color_sampling_policy": "random_rgb_palette",
       "mark_fill_rgb": [
-        37,
-        138,
-        101
+        106,
+        7,
+        177
       ],
       "mark_outline_rgb": [
-        20,
-        76,
-        56
+        58,
+        4,
+        97
       ],
       "pie_like_mark_color_channel_max": 200,
       "query_category_label": "",
       "query_series_label": "",
       "query_subset_labels": [
-        "Jair",
-        "Bast"
+        "Behn",
+        "Mays"
       ],
       "question_format": "numeric_open",
       "scene_mode": "pie_like",
@@ -77,97 +74,84 @@
         "donut": 0.5,
         "pie": 0.5
       },
-      "series_count": 5,
+      "series_count": 4,
       "series_count_range": [
         3,
         5
       ],
       "series_labels": [
-        "Jair",
-        "Swor",
-        "Tavy",
-        "Zak",
-        "Bast"
+        "Behn",
+        "Mays",
+        "Nole",
+        "Ly"
       ],
       "slice_fill_palette_rgb": [
         [
-          37,
-          138,
-          101
+          106,
+          7,
+          177
         ],
         [
-          35,
-          81,
-          160
+          102,
+          191,
+          55
         ],
         [
-          181,
-          29,
-          16
+          60,
+          73,
+          44
         ],
         [
-          192,
-          181,
-          1
-        ],
-        [
-          200,
-          50,
-          147
+          184,
+          124,
+          8
         ]
       ],
       "slice_outline_palette_rgb": [
         [
-          20,
-          76,
-          56
+          58,
+          4,
+          97
         ],
         [
-          19,
-          45,
-          88
+          56,
+          105,
+          30
         ],
         [
-          100,
-          16,
-          9
+          33,
+          40,
+          24
         ],
         [
-          106,
-          100,
-          1
-        ],
-        [
-          110,
-          28,
-          81
+          101,
+          68,
+          4
         ]
       ],
-      "target_answer": 71,
+      "target_answer": 94,
       "target_answer_range": [
         5,
         95
       ],
       "task_variant": "combined_share_subset",
       "task_variant_probabilities": {
-        "combined_share_subset": 0.3333333333333333,
-        "stack_segment_value": 0.3333333333333333,
-        "stack_total_at_label": 0.3333333333333333
+        "combined_share_subset": 1.0,
+        "stack_segment_value": 0.0,
+        "stack_total_at_label": 0.0
       },
       "value_semantics": "percentage",
       "values": [
-        23,
-        4,
-        4,
-        21,
-        48
+        35,
+        59,
+        5,
+        1
       ],
       "values_by_label": {
-        "Bast": 48,
-        "Jair": 23,
-        "Swor": 4,
-        "Tavy": 4,
-        "Zak": 21
+        "Behn": 35,
+        "Ly": 1,
+        "Mays": 59,
+        "Nole": 5
       }
     },
     "projected_evidence": {
@@ -175,83 +159,68 @@
         [
           442.08,
           65.6,
-          700.427,
+          702.48,
+          479.059
+        ],
+        [
+          181.908,
+          83.886,
+          652.748,
+          586.368
+        ],
+        [
+          346.22,
+          66.114,
+          442.08,
           326.0
         ],
         [
-          442.08,
-          293.363,
-          702.48,
-          358.637
-        ],
-        [
-          442.08,
-          326.0,
-          700.427,
-          421.86
-        ],
-        [
-          409.443,
-          326.0,
-          684.194,
-          584.347
-        ],
-        [
-          182.194,
+          425.729,
           65.6,
           442.08,
-          584.347
+          326.0
         ]
       ],
       "integer_list": [
-        23,
-        4,
-        4,
-        21,
-        48
+        35,
+        59,
+        5,
+        1
       ],
       "pixel_point_map": {
-        "Bast": [
-          286.148,
-          316.19
+        "Behn": [
+          581.291,
+          255.069
         ],
-        "Jair": [
-          545.403,
-          208.803
+        "Ly": [
+          437.172,
+          169.837
         ],
-        "Swor": [
-          598.32,
-          326.0
+        "Mays": [
+          318.626,
+          421.761
         ],
-        "Tavy": [
-          593.411,
-          364.855
-        ],
-        "Zak": [
-          521.613,
-          460.482
+        "Nole": [
+          407.997,
+          173.523
         ]
       },
       "pixel_point_set": [
         [
-          545.403,
-          208.803
+          581.291,
+          255.069
         ],
         [
-          598.32,
-          326.0
+          318.626,
+          421.761
         ],
         [
-          593.411,
-          364.855
+          407.997,
+          173.523
         ],
         [
-          521.613,
-          460.482
-        ],
-        [
-          286.148,
-          316.19
+          437.172,
+          169.837
         ]
       ]
     },
@@ -265,34 +234,34 @@
         "query_category_label": "",
         "query_series_label": "",
         "query_subset_labels": [
-          "Jair",
-          "Bast"
+          "Behn",
+          "Mays"
         ],
         "scene_variant": "pie",
         "scene_variant_probabilities": {
           "donut": 0.5,
           "pie": 0.5
         },
-        "series_count": 5,
+        "series_count": 4,
         "series_count_range": [
           3,
           5
         ],
-        "target_answer": 71,
+        "target_answer": 94,
         "target_answer_range": [
           5,
           95
         ],
         "task_variant": "combined_share_subset",
         "task_variant_probabilities": {
-          "combined_share_subset": 0.3333333333333333,
-          "stack_segment_value": 0.3333333333333333,
-          "stack_total_at_label": 0.3333333333333333
+          "combined_share_subset": 1.0,
+          "stack_segment_value": 0.0,
+          "stack_total_at_label": 0.0
         }
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 3,
+        "answer_or_evidence_variant_index": 2,
         "prompt_bundle_id": "charts_composition_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -304,16 +273,16 @@
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
           "object_description": "a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices",
           "query_category_label": "",
-          "query_label_a": "Jair",
-          "query_label_b": "Bast",
+          "query_label_a": "Behn",
+          "query_label_b": "Mays",
           "query_series_label": ""
         },
         "task_family_key": "composition_chart_value",
         "task_family_variant_index": 4,
         "task_key": "subset_value_query",
-        "task_variant_index": 0,
+        "task_variant_index": 4,
         "task_variant_key": "combined_share_subset",
-        "task_variant_template_index": 3,
+        "task_variant_template_index": 0,
         "template_paths": [
           "charts/composition/charts_composition_v1.json"
         ],
@@ -329,7 +298,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 3,
+            "answer_or_evidence_variant_index": 2,
             "prompt_bundle_id": "charts_composition_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -341,16 +310,16 @@
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices",
               "query_category_label": "",
-              "query_label_a": "Jair",
-              "query_label_b": "Bast",
+              "query_label_a": "Behn",
+              "query_label_b": "Mays",
               "query_series_label": ""
             },
             "task_family_key": "composition_chart_value",
             "task_family_variant_index": 4,
             "task_key": "subset_value_query",
-            "task_variant_index": 0,
+            "task_variant_index": 4,
             "task_variant_key": "combined_share_subset",
-            "task_variant_template_index": 3,
+            "task_variant_template_index": 0,
             "template_paths": [
               "charts/composition/charts_composition_v1.json"
             ],
@@ -361,12 +330,12 @@
               "task_variant:combined_share_subset": 5
             }
           },
-          "prompt": "You are given a composition chart: a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Use the printed segment or slice values to answer the composition question. Using labels Jair and Bast, what combined share of the chart do they make up?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array [v1, v2, ...] listing the slice percentages in legend order for the whole chart.\nAnswer field: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[18,27,22,33],\"answer\":45}"
+          "prompt": "You are given a composition chart: a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Answer the question using the printed values shown in the composition chart. What combined percentage of the chart is contributed by labels Behn and Mays?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array [v1, v2, ...] listing the slice percentages in legend order for the whole chart.\nAnswer requirement: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[18,27,22,33],\"answer\":45}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 3,
+            "answer_or_evidence_variant_index": 4,
             "prompt_bundle_id": "charts_composition_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -378,16 +347,16 @@
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices",
               "query_category_label": "",
-              "query_label_a": "Jair",
-              "query_label_b": "Bast",
+              "query_label_a": "Behn",
+              "query_label_b": "Mays",
               "query_series_label": ""
             },
             "task_family_key": "composition_chart_value",
             "task_family_variant_index": 4,
             "task_key": "subset_value_query",
-            "task_variant_index": 0,
+            "task_variant_index": 4,
             "task_variant_key": "combined_share_subset",
-            "task_variant_template_index": 3,
+            "task_variant_template_index": 0,
             "template_paths": [
               "charts/composition/charts_composition_v1.json"
             ],
@@ -398,7 +367,7 @@
               "task_variant:combined_share_subset": 5
             }
           },
-          "prompt": "You are given a composition chart: a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Use the printed segment or slice values to answer the composition question. Using labels Jair and Bast, what combined share of the chart do they make up?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":45}"
+          "prompt": "You are given a composition chart: a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Answer the question using the printed values shown in the composition chart. What combined percentage of the chart is contributed by labels Behn and Mays?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":45}"
         }
       },
       "task_variant": "combined_share_subset",
@@ -407,25 +376,21 @@
     "render_map": {
       "image_id": "img0",
       "label_centers_px": {
-        "Bast": [
-          867.66,
-          403.0
+        "Behn": [
+          872.16,
+          256.0
         ],
-        "Jair": [
-          861.66,
-          235.0
+        "Ly": [
+          853.66,
+          382.0
         ],
-        "Swor": [
-          871.66,
-          277.0
+        "Mays": [
+          873.16,
+          298.0
         ],
-        "Tavy": [
-          870.16,
-          319.0
-        ],
-        "Zak": [
-          863.16,
-          361.0
+        "Nole": [
+          868.16,
+          340.0
         ]
       },
       "plot_bbox_px": [
@@ -463,69 +428,59 @@
         "mark_color_distance_space": "lab",
         "mark_color_min_distance": 58.0,
         "mark_fill_rgb": [
-          37,
-          138,
-          101
+          106,
+          7,
+          177
         ],
         "mark_outline_rgb": [
-          20,
-          76,
-          56
+          58,
+          4,
+          97
         ],
         "pie_like_mark_color_channel_max": 200,
         "sampling_policy": "random_rgb_palette",
         "slice_fill_palette_rgb": [
           [
-            37,
-            138,
-            101
+            106,
+            7,
+            177
           ],
           [
-            35,
-            81,
-            160
+            102,
+            191,
+            55
           ],
           [
-            181,
-            29,
-            16
+            60,
+            73,
+            44
           ],
           [
-            192,
-            181,
-            1
-          ],
-          [
-            200,
-            50,
-            147
+            184,
+            124,
+            8
           ]
         ],
         "slice_outline_palette_rgb": [
           [
-            20,
-            76,
-            56
+            58,
+            4,
+            97
           ],
           [
-            19,
-            45,
-            88
+            56,
+            105,
+            30
           ],
           [
-            100,
-            16,
-            9
+            33,
+            40,
+            24
           ],
           [
-            106,
-            100,
-            1
-          ],
-          [
-            110,
-            28,
-            81
+            101,
+            68,
+            4
           ]
         ]
       },
@@ -557,7 +512,7 @@
         "label_stroke_width_px": 2,
         "tick_font_size_px": 20
       },
-      "y_axis_max": 49,
+      "y_axis_max": 60,
       "y_ticks": [
         0,
         1,
@@ -608,316 +563,268 @@
         46,
         47,
         48,
-        49
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60
       ]
     },
     "scene_ir": {
       "entities": [
         {
           "attrs": {
-            "end_angle_deg": -7.2,
-            "label": "Jair",
+            "end_angle_deg": 36.0,
+            "label": "Behn",
             "label_bbox_px": [
               838.16,
-              223.5,
-              885.16,
-              246.5
+              247.0,
+              906.16,
+              265.0
             ],
             "label_center_px": [
-              861.66,
-              235.0
+              872.16,
+              256.0
             ],
             "legend_swatch_bbox_px": [
               788.16,
-              221.0,
+              242.0,
               816.16,
-              249.0
+              270.0
             ],
             "mark_bbox_px": [
               442.08,
               65.6,
-              700.427,
-              326.0
+              702.48,
+              479.059
             ],
             "mark_center_px": [
-              545.403,
-              208.803
+              581.291,
+              255.069
             ],
             "mark_fill_rgb": [
-              37,
-              138,
-              101
+              106,
+              7,
+              177
             ],
             "mark_outline_rgb": [
-              20,
-              76,
-              56
+              58,
+              4,
+              97
             ],
             "percentage_bbox_px": [
-              516.403,
-              199.803,
-              574.403,
-              217.803
+              552.291,
+              246.069,
+              610.291,
+              264.069
             ],
             "percentage_center_px": [
-              545.403,
-              208.803
+              581.291,
+              255.069
             ],
             "scene_variant": "pie",
             "start_angle_deg": -90.0,
-            "value": 23,
+            "value": 35,
             "x_rank": 0
           },
-          "entity_id": "mark_Jair",
+          "entity_id": "mark_Behn",
           "entity_type": "slice"
         },
         {
           "attrs": {
-            "end_angle_deg": 7.2,
-            "label": "Swor",
+            "end_angle_deg": 248.4,
+            "label": "Mays",
             "label_bbox_px": [
               838.16,
-              268.0,
-              905.16,
-              286.0
+              286.5,
+              908.16,
+              309.5
             ],
             "label_center_px": [
-              871.66,
-              277.0
+              873.16,
+              298.0
             ],
             "legend_swatch_bbox_px": [
               788.16,
-              263.0,
+              284.0,
               816.16,
-              291.0
+              312.0
             ],
             "mark_bbox_px": [
-              442.08,
-              293.363,
-              702.48,
-              358.637
+              181.908,
+              83.886,
+              652.748,
+              586.368
             ],
             "mark_center_px": [
-              598.32,
-              326.0
+              318.626,
+              421.761
             ],
             "mark_fill_rgb": [
-              35,
-              81,
-              160
+              102,
+              191,
+              55
             ],
             "mark_outline_rgb": [
-              19,
-              45,
-              88
+              56,
+              105,
+              30
             ],
             "percentage_bbox_px": [
-              697.98,
-              317.0,
-              738.98,
-              335.0
+              289.626,
+              412.761,
+              347.626,
+              430.761
             ],
             "percentage_center_px": [
-              718.48,
-              326.0
+              318.626,
+              421.761
             ],
             "scene_variant": "pie",
-            "start_angle_deg": -7.2,
-            "value": 4,
+            "start_angle_deg": 36.0,
+            "value": 59,
             "x_rank": 1
           },
-          "entity_id": "mark_Swor",
+          "entity_id": "mark_Mays",
           "entity_type": "slice"
         },
         {
           "attrs": {
-            "end_angle_deg": 21.6,
-            "label": "Tavy",
+            "end_angle_deg": 266.4,
+            "label": "Nole",
             "label_bbox_px": [
               838.16,
-              307.5,
-              902.16,
-              330.5
+              331.0,
+              898.16,
+              349.0
             ],
             "label_center_px": [
-              870.16,
-              319.0
+              868.16,
+              340.0
             ],
             "legend_swatch_bbox_px": [
               788.16,
-              305.0,
+              326.0,
               816.16,
-              333.0
+              354.0
             ],
             "mark_bbox_px": [
+              346.22,
+              66.114,
               442.08,
-              326.0,
-              700.427,
-              421.86
+              326.0
             ],
             "mark_center_px": [
-              593.411,
-              364.855
+              407.997,
+              173.523
             ],
             "mark_fill_rgb": [
-              181,
-              29,
-              16
+              60,
+              73,
+              44
             ],
             "mark_outline_rgb": [
-              100,
-              16,
-              9
+              33,
+              40,
+              24
             ],
             "percentage_bbox_px": [
-              689.296,
-              385.738,
-              730.296,
-              403.738
+              387.497,
+              164.523,
+              428.497,
+              182.523
             ],
             "percentage_center_px": [
-              709.796,
-              394.738
+              407.997,
+              173.523
             ],
             "scene_variant": "pie",
-            "start_angle_deg": 7.2,
-            "value": 4,
+            "start_angle_deg": 248.4,
+            "value": 5,
             "x_rank": 2
           },
-          "entity_id": "mark_Tavy",
-          "entity_type": "slice"
-        },
-        {
-          "attrs": {
-            "end_angle_deg": 97.2,
-            "label": "Zak",
-            "label_bbox_px": [
-              838.16,
-              352.0,
-              888.16,
-              370.0
-            ],
-            "label_center_px": [
-              863.16,
-              361.0
-            ],
-            "legend_swatch_bbox_px": [
-              788.16,
-              347.0,
-              816.16,
-              375.0
-            ],
-            "mark_bbox_px": [
-              409.443,
-              326.0,
-              684.194,
-              584.347
-            ],
-            "mark_center_px": [
-              521.613,
-              460.482
-            ],
-            "mark_fill_rgb": [
-              192,
-              181,
-              1
-            ],
-            "mark_outline_rgb": [
-              106,
-              100,
-              1
-            ],
-            "percentage_bbox_px": [
-              492.613,
-              451.482,
-              550.613,
-              469.482
-            ],
-            "percentage_center_px": [
-              521.613,
-              460.482
-            ],
-            "scene_variant": "pie",
-            "start_angle_deg": 21.6,
-            "value": 21,
-            "x_rank": 3
-          },
-          "entity_id": "mark_Zak",
+          "entity_id": "mark_Nole",
           "entity_type": "slice"
         },
         {
           "attrs": {
             "end_angle_deg": 270.0,
-            "label": "Bast",
+            "label": "Ly",
             "label_bbox_px": [
               838.16,
-              394.0,
-              897.16,
-              412.0
+              370.5,
+              869.16,
+              393.5
             ],
             "label_center_px": [
-              867.66,
-              403.0
+              853.66,
+              382.0
             ],
             "legend_swatch_bbox_px": [
               788.16,
-              389.0,
+              368.0,
               816.16,
-              417.0
+              396.0
             ],
             "mark_bbox_px": [
-              182.194,
+              425.729,
               65.6,
               442.08,
-              584.347
+              326.0
             ],
             "mark_center_px": [
-              286.148,
-              316.19
+              437.172,
+              169.837
             ],
             "mark_fill_rgb": [
-              200,
-              50,
-              147
+              184,
+              124,
+              8
             ],
             "mark_outline_rgb": [
-              110,
-              28,
-              81
+              101,
+              68,
+              4
             ],
             "percentage_bbox_px": [
-              257.148,
-              307.19,
-              315.148,
-              325.19
+              412.898,
+              40.736,
+              453.898,
+              58.736
             ],
             "percentage_center_px": [
-              286.148,
-              316.19
+              433.398,
+              49.736
             ],
             "scene_variant": "pie",
-            "start_angle_deg": 97.2,
-            "value": 48,
-            "x_rank": 4
+            "start_angle_deg": 266.4,
+            "value": 1,
+            "x_rank": 3
           },
-          "entity_id": "mark_Bast",
+          "entity_id": "mark_Ly",
           "entity_type": "slice"
         }
       ],
       "relations": {
-        "answer_value": 71,
+        "answer_value": 94,
         "evidence_labels": [
-          "Jair",
-          "Swor",
-          "Tavy",
-          "Zak",
-          "Bast"
+          "Behn",
+          "Mays",
+          "Nole",
+          "Ly"
         ],
         "query_category_label": "",
         "query_series_label": "",
         "query_subset_labels": [
-          "Jair",
-          "Bast"
+          "Behn",
+          "Mays"
         ],
         "scene_variant": "pie",
         "task_variant": "combined_share_subset"
@@ -926,19 +833,17 @@
     },
     "witness_symbolic": {
       "labels": [
-        "Jair",
-        "Swor",
-        "Tavy",
-        "Zak",
-        "Bast"
+        "Behn",
+        "Mays",
+        "Nole",
+        "Ly"
       ],
       "type": "integer_list",
       "values": [
-        23,
-        4,
-        4,
-        21,
-        48
+        35,
+        59,
+        5,
+        1
       ]
     }
   },

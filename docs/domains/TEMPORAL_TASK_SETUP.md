@@ -174,7 +174,11 @@ Capture the active v1 contract for the `temporal` domain.
    - a highlighted reference event for the first two variants only,
    - the optimization variant uses the same planner scaffold without a reference event,
    - prompt-facing evidence stays on event blocks rather than widening to empty schedule regions or header chrome.
-7. Trace contract:
+7. Query contract:
+   - `overlap_count` asks how many other scheduled events overlap the highlighted reference event,
+   - `longer_than_reference_count` asks how many other scheduled events are longer than the highlighted reference event,
+   - `maximum_non_overlapping_count` asks for the size of the unique maximum-cardinality non-overlapping event subset.
+8. Trace contract:
    - `render_map.event_bboxes_by_id` stores one bbox per event block,
    - `render_map.answer_event_ids` stores the witness event ids,
    - `execution_trace.events` records the start/end slot, start/end time text, lane index, duration, and reference flag for every event,

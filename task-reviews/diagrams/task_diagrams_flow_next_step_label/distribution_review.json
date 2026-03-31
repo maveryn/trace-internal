@@ -9,12 +9,12 @@
       "direct_next_step"
     ],
     "generated_variant_counts": {
-      "branch_next_step": 110,
+      "branch_next_step": 101,
       "direct_next_step": 100
     },
     "generation_error_counts": {},
     "target_count_per_variant": 100,
-    "total_generated": 210
+    "total_generated": 201
   },
   "domain": "diagrams",
   "failed_variants": [],
@@ -38,7 +38,7 @@
         "status": "not_applicable_non_numeric_answers"
       },
       "min_unique_answers": {
-        "observed": 159,
+        "observed": 151,
         "pass": true,
         "threshold": 5
       }
@@ -54,59 +54,51 @@
         "count": 3
       },
       {
-        "answer_label": "Create Ticket",
+        "answer_label": "Close Form",
         "count": 3
       },
       {
-        "answer_label": "Deliver Draft",
+        "answer_label": "Confirm Shipment",
         "count": 3
       },
       {
-        "answer_label": "Package Payment",
+        "answer_label": "Issue Summary",
         "count": 3
       },
       {
-        "answer_label": "Package Report",
+        "answer_label": "Package Record",
         "count": 3
       },
       {
-        "answer_label": "Prepare Profile",
+        "answer_label": "Release Approval",
         "count": 3
       },
       {
-        "answer_label": "Submit File",
-        "count": 3
-      },
-      {
-        "answer_label": "Update Request",
-        "count": 3
-      },
-      {
-        "answer_label": "Update Return",
-        "count": 3
-      },
-      {
-        "answer_label": "Approve Plan",
+        "answer_label": "Approve Notice",
         "count": 2
       },
       {
-        "answer_label": "Archive Invoice",
+        "answer_label": "Archive Draft",
         "count": 2
       },
       {
-        "answer_label": "Check Form",
+        "answer_label": "Archive Form",
         "count": 2
       },
       {
-        "answer_label": "Check Notice",
+        "answer_label": "Archive Profile",
         "count": 2
       },
       {
-        "answer_label": "Check Shipment",
+        "answer_label": "Check Payment",
         "count": 2
       },
       {
-        "answer_label": "Close Record",
+        "answer_label": "Close Approval",
+        "count": 2
+      },
+      {
+        "answer_label": "Close Order",
         "count": 2
       },
       {
@@ -114,31 +106,51 @@
         "count": 2
       },
       {
-        "answer_label": "Confirm Form",
+        "answer_label": "Confirm Invoice",
         "count": 2
       },
       {
-        "answer_label": "Confirm Packet",
+        "answer_label": "Create Approval",
         "count": 2
       },
       {
-        "answer_label": "Issue File",
+        "answer_label": "Create Booking",
         "count": 2
       },
       {
-        "answer_label": "Issue Shipment",
+        "answer_label": "Create Packet",
         "count": 2
       },
       {
-        "answer_label": "Log Packet",
+        "answer_label": "Create Summary",
         "count": 2
       },
       {
-        "answer_label": "Log Summary",
+        "answer_label": "Deliver Invoice",
         "count": 2
       },
       {
-        "answer_label": "Package File",
+        "answer_label": "Issue Approval",
+        "count": 2
+      },
+      {
+        "answer_label": "Issue Claim",
+        "count": 2
+      },
+      {
+        "answer_label": "Log Invoice",
+        "count": 2
+      },
+      {
+        "answer_label": "Package Draft",
+        "count": 2
+      },
+      {
+        "answer_label": "Package Order",
+        "count": 2
+      },
+      {
+        "answer_label": "Package Request",
         "count": 2
       },
       {
@@ -146,35 +158,67 @@
         "count": 2
       },
       {
-        "answer_label": "Prepare Booking",
+        "answer_label": "Record Order",
         "count": 2
       },
       {
-        "answer_label": "Record Draft",
+        "answer_label": "Record Payment",
         "count": 2
       },
       {
-        "answer_label": "Release Claim",
+        "answer_label": "Release Order",
         "count": 2
       },
       {
-        "answer_label": "Review Invoice",
+        "answer_label": "Release Record",
         "count": 2
       },
       {
-        "answer_label": "Review Record",
+        "answer_label": "Release Report",
         "count": 2
       },
       {
-        "answer_label": "Route Draft",
+        "answer_label": "Release Summary",
         "count": 2
       },
       {
-        "answer_label": "Update Approval",
+        "answer_label": "Review Order",
         "count": 2
       },
       {
-        "answer_label": "Update Notice",
+        "answer_label": "Route Shipment",
+        "count": 2
+      },
+      {
+        "answer_label": "Schedule Approval",
+        "count": 2
+      },
+      {
+        "answer_label": "Schedule Booking",
+        "count": 2
+      },
+      {
+        "answer_label": "Schedule Report",
+        "count": 2
+      },
+      {
+        "answer_label": "Update Draft",
+        "count": 2
+      },
+      {
+        "answer_label": "Update Payment",
+        "count": 2
+      },
+      {
+        "answer_label": "Verify Booking",
+        "count": 2
+      },
+      {
+        "answer_label": "Verify Payment",
+        "count": 2
+      },
+      {
+        "answer_label": "Verify Report",
         "count": 2
       },
       {
@@ -186,7 +230,7 @@
         "count": 1
       },
       {
-        "answer_label": "Approve Packet",
+        "answer_label": "Approve Payment",
         "count": 1
       },
       {
@@ -194,43 +238,27 @@
         "count": 1
       },
       {
-        "answer_label": "Approve Return",
+        "answer_label": "Approve Shipment",
         "count": 1
       },
       {
-        "answer_label": "Archive Approval",
+        "answer_label": "Approve Summary",
         "count": 1
       },
       {
-        "answer_label": "Archive Booking",
+        "answer_label": "Archive Packet",
         "count": 1
       },
       {
-        "answer_label": "Archive Claim",
+        "answer_label": "Archive Summary",
         "count": 1
       },
       {
-        "answer_label": "Archive Draft",
+        "answer_label": "Check Booking",
         "count": 1
       },
       {
-        "answer_label": "Archive Payment",
-        "count": 1
-      },
-      {
-        "answer_label": "Archive Plan",
-        "count": 1
-      },
-      {
-        "answer_label": "Archive Report",
-        "count": 1
-      },
-      {
-        "answer_label": "Archive Request",
-        "count": 1
-      },
-      {
-        "answer_label": "Archive Return",
+        "answer_label": "Check Claim",
         "count": 1
       },
       {
@@ -242,23 +270,15 @@
         "count": 1
       },
       {
-        "answer_label": "Check Packet",
+        "answer_label": "Check Notice",
         "count": 1
       },
       {
-        "answer_label": "Check Report",
+        "answer_label": "Check Record",
         "count": 1
       },
       {
-        "answer_label": "Check Request",
-        "count": 1
-      },
-      {
-        "answer_label": "Check Return",
-        "count": 1
-      },
-      {
-        "answer_label": "Check Summary",
+        "answer_label": "Check Ticket",
         "count": 1
       },
       {
@@ -266,15 +286,11 @@
         "count": 1
       },
       {
-        "answer_label": "Close Draft",
+        "answer_label": "Close Invoice",
         "count": 1
       },
       {
-        "answer_label": "Close Form",
-        "count": 1
-      },
-      {
-        "answer_label": "Close Plan",
+        "answer_label": "Close Record",
         "count": 1
       },
       {
@@ -290,19 +306,19 @@
         "count": 1
       },
       {
+        "answer_label": "Confirm Booking",
+        "count": 1
+      },
+      {
         "answer_label": "Confirm Claim",
         "count": 1
       },
       {
-        "answer_label": "Confirm Payment",
+        "answer_label": "Confirm Form",
         "count": 1
       },
       {
-        "answer_label": "Confirm Record",
-        "count": 1
-      },
-      {
-        "answer_label": "Confirm Report",
+        "answer_label": "Confirm Profile",
         "count": 1
       },
       {
@@ -310,11 +326,19 @@
         "count": 1
       },
       {
-        "answer_label": "Confirm Return",
+        "answer_label": "Confirm Summary",
         "count": 1
       },
       {
-        "answer_label": "Create File",
+        "answer_label": "Confirm Ticket",
+        "count": 1
+      },
+      {
+        "answer_label": "Create Claim",
+        "count": 1
+      },
+      {
+        "answer_label": "Create Draft",
         "count": 1
       },
       {
@@ -322,19 +346,19 @@
         "count": 1
       },
       {
-        "answer_label": "Create Plan",
+        "answer_label": "Create Request",
         "count": 1
       },
       {
-        "answer_label": "Create Record",
+        "answer_label": "Create Return",
         "count": 1
       },
       {
-        "answer_label": "Deliver Notice",
+        "answer_label": "Create Ticket",
         "count": 1
       },
       {
-        "answer_label": "Deliver Order",
+        "answer_label": "Deliver Payment",
         "count": 1
       },
       {
@@ -342,11 +366,7 @@
         "count": 1
       },
       {
-        "answer_label": "Deliver Request",
-        "count": 1
-      },
-      {
-        "answer_label": "Inspect Draft",
+        "answer_label": "Deliver Record",
         "count": 1
       },
       {
@@ -354,15 +374,15 @@
         "count": 1
       },
       {
+        "answer_label": "Inspect Invoice",
+        "count": 1
+      },
+      {
+        "answer_label": "Inspect Notice",
+        "count": 1
+      },
+      {
         "answer_label": "Inspect Order",
-        "count": 1
-      },
-      {
-        "answer_label": "Inspect Packet",
-        "count": 1
-      },
-      {
-        "answer_label": "Inspect Profile",
         "count": 1
       },
       {
@@ -374,7 +394,15 @@
         "count": 1
       },
       {
-        "answer_label": "Issue Approval",
+        "answer_label": "Inspect Return",
+        "count": 1
+      },
+      {
+        "answer_label": "Inspect Shipment",
+        "count": 1
+      },
+      {
+        "answer_label": "Issue Form",
         "count": 1
       },
       {
@@ -382,15 +410,7 @@
         "count": 1
       },
       {
-        "answer_label": "Issue Report",
-        "count": 1
-      },
-      {
-        "answer_label": "Issue Return",
-        "count": 1
-      },
-      {
-        "answer_label": "Issue Summary",
+        "answer_label": "Issue Request",
         "count": 1
       },
       {
@@ -398,15 +418,31 @@
         "count": 1
       },
       {
+        "answer_label": "Log Claim",
+        "count": 1
+      },
+      {
         "answer_label": "Log Draft",
         "count": 1
       },
       {
-        "answer_label": "Log Report",
+        "answer_label": "Log Packet",
         "count": 1
       },
       {
-        "answer_label": "Log Request",
+        "answer_label": "Log Payment",
+        "count": 1
+      },
+      {
+        "answer_label": "Log Plan",
+        "count": 1
+      },
+      {
+        "answer_label": "Log Profile",
+        "count": 1
+      },
+      {
+        "answer_label": "Log Return",
         "count": 1
       },
       {
@@ -418,15 +454,7 @@
         "count": 1
       },
       {
-        "answer_label": "Package Draft",
-        "count": 1
-      },
-      {
-        "answer_label": "Package Order",
-        "count": 1
-      },
-      {
-        "answer_label": "Package Packet",
+        "answer_label": "Package Claim",
         "count": 1
       },
       {
@@ -434,27 +462,27 @@
         "count": 1
       },
       {
-        "answer_label": "Package Record",
+        "answer_label": "Package Shipment",
         "count": 1
       },
       {
-        "answer_label": "Package Ticket",
+        "answer_label": "Prepare Order",
         "count": 1
       },
       {
-        "answer_label": "Prepare Claim",
+        "answer_label": "Prepare Payment",
         "count": 1
       },
       {
-        "answer_label": "Prepare Draft",
+        "answer_label": "Prepare Plan",
         "count": 1
       },
       {
-        "answer_label": "Prepare Packet",
+        "answer_label": "Prepare Profile",
         "count": 1
       },
       {
-        "answer_label": "Prepare Request",
+        "answer_label": "Prepare Report",
         "count": 1
       },
       {
@@ -466,15 +494,7 @@
         "count": 1
       },
       {
-        "answer_label": "Record Approval",
-        "count": 1
-      },
-      {
-        "answer_label": "Record Claim",
-        "count": 1
-      },
-      {
-        "answer_label": "Record Plan",
+        "answer_label": "Record Profile",
         "count": 1
       },
       {
@@ -482,23 +502,15 @@
         "count": 1
       },
       {
-        "answer_label": "Record Report",
+        "answer_label": "Release Claim",
         "count": 1
       },
       {
-        "answer_label": "Record Return",
+        "answer_label": "Release File",
         "count": 1
       },
       {
-        "answer_label": "Release Booking",
-        "count": 1
-      },
-      {
-        "answer_label": "Release Draft",
-        "count": 1
-      },
-      {
-        "answer_label": "Release Form",
+        "answer_label": "Release Plan",
         "count": 1
       },
       {
@@ -510,27 +522,27 @@
         "count": 1
       },
       {
-        "answer_label": "Release Return",
-        "count": 1
-      },
-      {
         "answer_label": "Release Ticket",
         "count": 1
       },
       {
-        "answer_label": "Review Booking",
+        "answer_label": "Review File",
         "count": 1
       },
       {
-        "answer_label": "Review Packet",
+        "answer_label": "Review Plan",
         "count": 1
       },
       {
-        "answer_label": "Review Return",
+        "answer_label": "Review Profile",
         "count": 1
       },
       {
-        "answer_label": "Review Shipment",
+        "answer_label": "Review Report",
+        "count": 1
+      },
+      {
+        "answer_label": "Review Summary",
         "count": 1
       },
       {
@@ -538,11 +550,7 @@
         "count": 1
       },
       {
-        "answer_label": "Route File",
-        "count": 1
-      },
-      {
-        "answer_label": "Route Form",
+        "answer_label": "Route Draft",
         "count": 1
       },
       {
@@ -550,15 +558,11 @@
         "count": 1
       },
       {
-        "answer_label": "Route Packet",
-        "count": 1
-      },
-      {
         "answer_label": "Route Payment",
         "count": 1
       },
       {
-        "answer_label": "Route Profile",
+        "answer_label": "Route Plan",
         "count": 1
       },
       {
@@ -566,23 +570,11 @@
         "count": 1
       },
       {
-        "answer_label": "Route Request",
+        "answer_label": "Route Return",
         "count": 1
       },
       {
-        "answer_label": "Schedule Claim",
-        "count": 1
-      },
-      {
-        "answer_label": "Schedule Draft",
-        "count": 1
-      },
-      {
-        "answer_label": "Schedule Form",
-        "count": 1
-      },
-      {
-        "answer_label": "Schedule Order",
+        "answer_label": "Schedule Invoice",
         "count": 1
       },
       {
@@ -590,11 +582,7 @@
         "count": 1
       },
       {
-        "answer_label": "Schedule Payment",
-        "count": 1
-      },
-      {
-        "answer_label": "Schedule Plan",
+        "answer_label": "Schedule Profile",
         "count": 1
       },
       {
@@ -602,27 +590,11 @@
         "count": 1
       },
       {
-        "answer_label": "Schedule Return",
-        "count": 1
-      },
-      {
-        "answer_label": "Schedule Ticket",
-        "count": 1
-      },
-      {
-        "answer_label": "Submit Approval",
-        "count": 1
-      },
-      {
         "answer_label": "Submit Draft",
         "count": 1
       },
       {
-        "answer_label": "Submit Invoice",
-        "count": 1
-      },
-      {
-        "answer_label": "Submit Notice",
+        "answer_label": "Submit File",
         "count": 1
       },
       {
@@ -630,31 +602,27 @@
         "count": 1
       },
       {
-        "answer_label": "Submit Packet",
+        "answer_label": "Submit Record",
         "count": 1
       },
       {
-        "answer_label": "Submit Payment",
+        "answer_label": "Update Approval",
         "count": 1
       },
       {
-        "answer_label": "Submit Plan",
+        "answer_label": "Update File",
         "count": 1
       },
       {
-        "answer_label": "Submit Report",
+        "answer_label": "Update Form",
         "count": 1
       },
       {
-        "answer_label": "Submit Request",
+        "answer_label": "Update Invoice",
         "count": 1
       },
       {
-        "answer_label": "Update Draft",
-        "count": 1
-      },
-      {
-        "answer_label": "Update Order",
+        "answer_label": "Update Notice",
         "count": 1
       },
       {
@@ -662,19 +630,15 @@
         "count": 1
       },
       {
+        "answer_label": "Update Request",
+        "count": 1
+      },
+      {
         "answer_label": "Update Ticket",
         "count": 1
       },
       {
-        "answer_label": "Verify Draft",
-        "count": 1
-      },
-      {
-        "answer_label": "Verify File",
-        "count": 1
-      },
-      {
-        "answer_label": "Verify Notice",
+        "answer_label": "Verify Invoice",
         "count": 1
       },
       {
@@ -682,11 +646,15 @@
         "count": 1
       },
       {
-        "answer_label": "Verify Profile",
+        "answer_label": "Verify Request",
+        "count": 1
+      },
+      {
+        "answer_label": "Verify Return",
         "count": 1
       }
     ],
-    "unique_answers": 159
+    "unique_answers": 151
   },
   "pass": true,
   "per_task_variant": {
@@ -696,7 +664,7 @@
       },
       "checks": {
         "max_answer_frequency": {
-          "observed": 0.03,
+          "observed": 0.02,
           "pass": true,
           "threshold": 0.25
         },
@@ -706,87 +674,111 @@
           "status": "not_applicable_non_numeric_answers"
         },
         "min_unique_answers": {
-          "observed": 91,
+          "observed": 83,
           "pass": true,
           "threshold": 5
         }
       },
       "five_bin_numeric": null,
-      "max_answer_count": 3,
-      "max_answer_frequency": 0.03,
+      "max_answer_count": 2,
+      "max_answer_frequency": 0.02,
       "pass": true,
       "sample_count": 100,
       "top_answers": [
         {
-          "answer_label": "Prepare Profile",
-          "count": 3
-        },
-        {
-          "answer_label": "Check Form",
+          "answer_label": "Approve Notice",
           "count": 2
-        },
-        {
-          "answer_label": "Close Report",
-          "count": 2
-        },
-        {
-          "answer_label": "Confirm Form",
-          "count": 2
-        },
-        {
-          "answer_label": "Confirm Packet",
-          "count": 2
-        },
-        {
-          "answer_label": "Package Payment",
-          "count": 2
-        },
-        {
-          "answer_label": "Record Draft",
-          "count": 2
-        },
-        {
-          "answer_label": "Submit File",
-          "count": 2
-        },
-        {
-          "answer_label": "Approve Packet",
-          "count": 1
-        },
-        {
-          "answer_label": "Approve Plan",
-          "count": 1
-        },
-        {
-          "answer_label": "Archive Approval",
-          "count": 1
-        },
-        {
-          "answer_label": "Archive Booking",
-          "count": 1
-        },
-        {
-          "answer_label": "Archive Draft",
-          "count": 1
-        },
-        {
-          "answer_label": "Archive Invoice",
-          "count": 1
-        },
-        {
-          "answer_label": "Archive Payment",
-          "count": 1
-        },
-        {
-          "answer_label": "Archive Plan",
-          "count": 1
-        },
-        {
-          "answer_label": "Archive Report",
-          "count": 1
         },
         {
           "answer_label": "Archive Shipment",
+          "count": 2
+        },
+        {
+          "answer_label": "Close Approval",
+          "count": 2
+        },
+        {
+          "answer_label": "Close Form",
+          "count": 2
+        },
+        {
+          "answer_label": "Close Order",
+          "count": 2
+        },
+        {
+          "answer_label": "Confirm Invoice",
+          "count": 2
+        },
+        {
+          "answer_label": "Create Approval",
+          "count": 2
+        },
+        {
+          "answer_label": "Create Booking",
+          "count": 2
+        },
+        {
+          "answer_label": "Deliver Invoice",
+          "count": 2
+        },
+        {
+          "answer_label": "Issue Claim",
+          "count": 2
+        },
+        {
+          "answer_label": "Issue Summary",
+          "count": 2
+        },
+        {
+          "answer_label": "Package Record",
+          "count": 2
+        },
+        {
+          "answer_label": "Package Return",
+          "count": 2
+        },
+        {
+          "answer_label": "Release Approval",
+          "count": 2
+        },
+        {
+          "answer_label": "Review Order",
+          "count": 2
+        },
+        {
+          "answer_label": "Schedule Booking",
+          "count": 2
+        },
+        {
+          "answer_label": "Verify Report",
+          "count": 2
+        },
+        {
+          "answer_label": "Approve Booking",
+          "count": 1
+        },
+        {
+          "answer_label": "Approve Shipment",
+          "count": 1
+        },
+        {
+          "answer_label": "Approve Summary",
+          "count": 1
+        },
+        {
+          "answer_label": "Archive Form",
+          "count": 1
+        },
+        {
+          "answer_label": "Archive Packet",
+          "count": 1
+        },
+        {
+          "answer_label": "Archive Summary",
+          "count": 1
+        },
+        {
+          "answer_label": "Check Booking",
           "count": 1
         },
         {
@@ -794,75 +786,59 @@
           "count": 1
         },
         {
-          "answer_label": "Check Invoice",
+          "answer_label": "Check Notice",
           "count": 1
         },
         {
-          "answer_label": "Check Report",
+          "answer_label": "Check Payment",
           "count": 1
         },
         {
-          "answer_label": "Check Return",
+          "answer_label": "Close Invoice",
           "count": 1
         },
         {
-          "answer_label": "Check Shipment",
+          "answer_label": "Confirm Form",
           "count": 1
         },
         {
-          "answer_label": "Close Booking",
+          "answer_label": "Confirm Shipment",
           "count": 1
         },
         {
-          "answer_label": "Close Draft",
+          "answer_label": "Create Claim",
           "count": 1
         },
         {
-          "answer_label": "Close Plan",
+          "answer_label": "Create Draft",
           "count": 1
         },
         {
-          "answer_label": "Close Record",
+          "answer_label": "Create Packet",
           "count": 1
         },
         {
-          "answer_label": "Close Return",
+          "answer_label": "Create Request",
           "count": 1
         },
         {
-          "answer_label": "Close Summary",
+          "answer_label": "Create Summary",
           "count": 1
         },
         {
-          "answer_label": "Confirm Claim",
+          "answer_label": "Deliver Record",
           "count": 1
         },
         {
-          "answer_label": "Confirm Payment",
+          "answer_label": "Inspect Form",
           "count": 1
         },
         {
-          "answer_label": "Create File",
+          "answer_label": "Inspect Notice",
           "count": 1
         },
         {
-          "answer_label": "Deliver Notice",
-          "count": 1
-        },
-        {
-          "answer_label": "Deliver Order",
-          "count": 1
-        },
-        {
-          "answer_label": "Deliver Plan",
-          "count": 1
-        },
-        {
-          "answer_label": "Inspect Draft",
-          "count": 1
-        },
-        {
-          "answer_label": "Inspect Profile",
+          "answer_label": "Inspect Order",
           "count": 1
         },
         {
@@ -882,11 +858,7 @@
           "count": 1
         },
         {
-          "answer_label": "Issue Shipment",
-          "count": 1
-        },
-        {
-          "answer_label": "Issue Summary",
+          "answer_label": "Issue Request",
           "count": 1
         },
         {
@@ -894,15 +866,15 @@
           "count": 1
         },
         {
-          "answer_label": "Log Draft",
+          "answer_label": "Log Claim",
           "count": 1
         },
         {
-          "answer_label": "Log Packet",
+          "answer_label": "Log Invoice",
           "count": 1
         },
         {
-          "answer_label": "Log Summary",
+          "answer_label": "Log Plan",
           "count": 1
         },
         {
@@ -910,63 +882,47 @@
           "count": 1
         },
         {
-          "answer_label": "Package Draft",
+          "answer_label": "Package Claim",
           "count": 1
         },
         {
-          "answer_label": "Package File",
+          "answer_label": "Package Order",
           "count": 1
         },
         {
-          "answer_label": "Package Packet",
+          "answer_label": "Package Request",
           "count": 1
         },
         {
-          "answer_label": "Package Plan",
+          "answer_label": "Prepare Order",
           "count": 1
         },
         {
-          "answer_label": "Package Report",
+          "answer_label": "Prepare Plan",
           "count": 1
         },
         {
-          "answer_label": "Package Return",
+          "answer_label": "Prepare Profile",
           "count": 1
         },
         {
-          "answer_label": "Package Ticket",
+          "answer_label": "Record Payment",
           "count": 1
         },
         {
-          "answer_label": "Prepare Booking",
+          "answer_label": "Record Profile",
           "count": 1
         },
         {
-          "answer_label": "Prepare Claim",
+          "answer_label": "Record Record",
           "count": 1
         },
         {
-          "answer_label": "Prepare Draft",
+          "answer_label": "Release Order",
           "count": 1
         },
         {
-          "answer_label": "Prepare Packet",
-          "count": 1
-        },
-        {
-          "answer_label": "Prepare Ticket",
-          "count": 1
-        },
-        {
-          "answer_label": "Record Report",
-          "count": 1
-        },
-        {
-          "answer_label": "Release Booking",
-          "count": 1
-        },
-        {
-          "answer_label": "Release Claim",
+          "answer_label": "Release Plan",
           "count": 1
         },
         {
@@ -974,19 +930,23 @@
           "count": 1
         },
         {
-          "answer_label": "Release Ticket",
+          "answer_label": "Release Record",
           "count": 1
         },
         {
-          "answer_label": "Review Booking",
+          "answer_label": "Review Plan",
           "count": 1
         },
         {
-          "answer_label": "Review Record",
+          "answer_label": "Review Profile",
           "count": 1
         },
         {
-          "answer_label": "Review Shipment",
+          "answer_label": "Review Report",
+          "count": 1
+        },
+        {
+          "answer_label": "Review Summary",
           "count": 1
         },
         {
@@ -994,7 +954,7 @@
           "count": 1
         },
         {
-          "answer_label": "Route Packet",
+          "answer_label": "Route Notice",
           "count": 1
         },
         {
@@ -1006,11 +966,15 @@
           "count": 1
         },
         {
-          "answer_label": "Schedule Claim",
+          "answer_label": "Route Return",
           "count": 1
         },
         {
-          "answer_label": "Schedule Draft",
+          "answer_label": "Route Shipment",
+          "count": 1
+        },
+        {
+          "answer_label": "Schedule Invoice",
           "count": 1
         },
         {
@@ -1018,23 +982,7 @@
           "count": 1
         },
         {
-          "answer_label": "Schedule Payment",
-          "count": 1
-        },
-        {
-          "answer_label": "Schedule Plan",
-          "count": 1
-        },
-        {
-          "answer_label": "Schedule Request",
-          "count": 1
-        },
-        {
-          "answer_label": "Schedule Return",
-          "count": 1
-        },
-        {
-          "answer_label": "Schedule Ticket",
+          "answer_label": "Schedule Report",
           "count": 1
         },
         {
@@ -1042,19 +990,15 @@
           "count": 1
         },
         {
-          "answer_label": "Submit Order",
+          "answer_label": "Submit File",
           "count": 1
         },
         {
-          "answer_label": "Submit Payment",
+          "answer_label": "Update Approval",
           "count": 1
         },
         {
-          "answer_label": "Submit Plan",
-          "count": 1
-        },
-        {
-          "answer_label": "Submit Report",
+          "answer_label": "Update File",
           "count": 1
         },
         {
@@ -1062,27 +1006,19 @@
           "count": 1
         },
         {
-          "answer_label": "Update Request",
-          "count": 1
-        },
-        {
-          "answer_label": "Update Return",
-          "count": 1
-        },
-        {
           "answer_label": "Update Ticket",
           "count": 1
         },
         {
-          "answer_label": "Verify Draft",
+          "answer_label": "Verify Invoice",
           "count": 1
         },
         {
-          "answer_label": "Verify Profile",
+          "answer_label": "Verify Return",
           "count": 1
         }
       ],
-      "unique_answers": 91
+      "unique_answers": 83
     },
     "direct_next_step": {
       "answer_type_counts": {
@@ -1090,7 +1026,7 @@
       },
       "checks": {
         "max_answer_frequency": {
-          "observed": 0.03,
+          "observed": 0.02,
           "pass": true,
           "threshold": 0.25
         },
@@ -1106,65 +1042,69 @@
         }
       },
       "five_bin_numeric": null,
-      "max_answer_count": 3,
-      "max_answer_frequency": 0.03,
+      "max_answer_count": 2,
+      "max_answer_frequency": 0.02,
       "pass": true,
       "sample_count": 100,
       "top_answers": [
         {
-          "answer_label": "Create Ticket",
-          "count": 3
-        },
-        {
-          "answer_label": "Deliver Draft",
-          "count": 3
-        },
-        {
-          "answer_label": "Archive Shipment",
+          "answer_label": "Archive Draft",
           "count": 2
         },
         {
-          "answer_label": "Check Notice",
+          "answer_label": "Archive Profile",
           "count": 2
         },
         {
-          "answer_label": "Issue File",
+          "answer_label": "Close Report",
           "count": 2
         },
         {
-          "answer_label": "Package Report",
+          "answer_label": "Confirm Shipment",
           "count": 2
         },
         {
-          "answer_label": "Review Invoice",
+          "answer_label": "Package Draft",
           "count": 2
         },
         {
-          "answer_label": "Update Approval",
+          "answer_label": "Record Order",
           "count": 2
         },
         {
-          "answer_label": "Update Notice",
+          "answer_label": "Release Report",
           "count": 2
         },
         {
-          "answer_label": "Update Request",
+          "answer_label": "Release Summary",
           "count": 2
         },
         {
-          "answer_label": "Update Return",
+          "answer_label": "Schedule Approval",
           "count": 2
         },
         {
-          "answer_label": "Approve Booking",
-          "count": 1
+          "answer_label": "Update Draft",
+          "count": 2
+        },
+        {
+          "answer_label": "Update Payment",
+          "count": 2
+        },
+        {
+          "answer_label": "Verify Booking",
+          "count": 2
+        },
+        {
+          "answer_label": "Verify Payment",
+          "count": 2
         },
         {
           "answer_label": "Approve Order",
           "count": 1
         },
         {
-          "answer_label": "Approve Plan",
+          "answer_label": "Approve Payment",
           "count": 1
         },
         {
@@ -1172,39 +1112,35 @@
           "count": 1
         },
         {
-          "answer_label": "Approve Return",
+          "answer_label": "Archive Form",
           "count": 1
         },
         {
-          "answer_label": "Archive Claim",
+          "answer_label": "Archive Shipment",
           "count": 1
         },
         {
-          "answer_label": "Archive Invoice",
+          "answer_label": "Check Claim",
           "count": 1
         },
         {
-          "answer_label": "Archive Request",
+          "answer_label": "Check Invoice",
           "count": 1
         },
         {
-          "answer_label": "Archive Return",
+          "answer_label": "Check Payment",
           "count": 1
         },
         {
-          "answer_label": "Check Packet",
+          "answer_label": "Check Record",
           "count": 1
         },
         {
-          "answer_label": "Check Request",
+          "answer_label": "Check Ticket",
           "count": 1
         },
         {
-          "answer_label": "Check Shipment",
-          "count": 1
-        },
-        {
-          "answer_label": "Check Summary",
+          "answer_label": "Close Booking",
           "count": 1
         },
         {
@@ -1216,15 +1152,27 @@
           "count": 1
         },
         {
+          "answer_label": "Close Return",
+          "count": 1
+        },
+        {
           "answer_label": "Close Shipment",
           "count": 1
         },
         {
-          "answer_label": "Confirm Record",
+          "answer_label": "Close Summary",
           "count": 1
         },
         {
-          "answer_label": "Confirm Report",
+          "answer_label": "Confirm Booking",
+          "count": 1
+        },
+        {
+          "answer_label": "Confirm Claim",
+          "count": 1
+        },
+        {
+          "answer_label": "Confirm Profile",
           "count": 1
         },
         {
@@ -1232,7 +1180,11 @@
           "count": 1
         },
         {
-          "answer_label": "Confirm Return",
+          "answer_label": "Confirm Summary",
+          "count": 1
+        },
+        {
+          "answer_label": "Confirm Ticket",
           "count": 1
         },
         {
@@ -1240,39 +1192,59 @@
           "count": 1
         },
         {
-          "answer_label": "Create Plan",
+          "answer_label": "Create Packet",
           "count": 1
         },
         {
-          "answer_label": "Create Record",
+          "answer_label": "Create Return",
           "count": 1
         },
         {
-          "answer_label": "Deliver Request",
+          "answer_label": "Create Summary",
           "count": 1
         },
         {
-          "answer_label": "Inspect Form",
+          "answer_label": "Create Ticket",
           "count": 1
         },
         {
-          "answer_label": "Inspect Order",
+          "answer_label": "Deliver Payment",
           "count": 1
         },
         {
-          "answer_label": "Inspect Packet",
+          "answer_label": "Deliver Plan",
           "count": 1
         },
         {
-          "answer_label": "Issue Report",
+          "answer_label": "Inspect Invoice",
           "count": 1
         },
         {
-          "answer_label": "Issue Return",
+          "answer_label": "Inspect Return",
           "count": 1
         },
         {
-          "answer_label": "Issue Shipment",
+          "answer_label": "Inspect Shipment",
+          "count": 1
+        },
+        {
+          "answer_label": "Issue Approval",
+          "count": 1
+        },
+        {
+          "answer_label": "Issue Form",
+          "count": 1
+        },
+        {
+          "answer_label": "Issue Summary",
+          "count": 1
+        },
+        {
+          "answer_label": "Log Draft",
+          "count": 1
+        },
+        {
+          "answer_label": "Log Invoice",
           "count": 1
         },
         {
@@ -1280,15 +1252,15 @@
           "count": 1
         },
         {
-          "answer_label": "Log Report",
+          "answer_label": "Log Payment",
           "count": 1
         },
         {
-          "answer_label": "Log Request",
+          "answer_label": "Log Profile",
           "count": 1
         },
         {
-          "answer_label": "Log Summary",
+          "answer_label": "Log Return",
           "count": 1
         },
         {
@@ -1296,15 +1268,11 @@
           "count": 1
         },
         {
-          "answer_label": "Package File",
-          "count": 1
-        },
-        {
           "answer_label": "Package Order",
           "count": 1
         },
         {
-          "answer_label": "Package Payment",
+          "answer_label": "Package Plan",
           "count": 1
         },
         {
@@ -1312,15 +1280,19 @@
           "count": 1
         },
         {
-          "answer_label": "Package Return",
+          "answer_label": "Package Request",
           "count": 1
         },
         {
-          "answer_label": "Prepare Booking",
+          "answer_label": "Package Shipment",
           "count": 1
         },
         {
-          "answer_label": "Prepare Request",
+          "answer_label": "Prepare Payment",
+          "count": 1
+        },
+        {
+          "answer_label": "Prepare Report",
           "count": 1
         },
         {
@@ -1328,23 +1300,15 @@
           "count": 1
         },
         {
-          "answer_label": "Record Approval",
+          "answer_label": "Prepare Ticket",
           "count": 1
         },
         {
-          "answer_label": "Record Claim",
+          "answer_label": "Record Payment",
           "count": 1
         },
         {
-          "answer_label": "Record Plan",
-          "count": 1
-        },
-        {
-          "answer_label": "Record Record",
-          "count": 1
-        },
-        {
-          "answer_label": "Record Return",
+          "answer_label": "Release Approval",
           "count": 1
         },
         {
@@ -1352,11 +1316,15 @@
           "count": 1
         },
         {
-          "answer_label": "Release Draft",
+          "answer_label": "Release File",
           "count": 1
         },
         {
-          "answer_label": "Release Form",
+          "answer_label": "Release Order",
+          "count": 1
+        },
+        {
+          "answer_label": "Release Record",
           "count": 1
         },
         {
@@ -1364,19 +1332,11 @@
           "count": 1
         },
         {
-          "answer_label": "Release Return",
+          "answer_label": "Release Ticket",
           "count": 1
         },
         {
-          "answer_label": "Review Packet",
-          "count": 1
-        },
-        {
-          "answer_label": "Review Record",
-          "count": 1
-        },
-        {
-          "answer_label": "Review Return",
+          "answer_label": "Review File",
           "count": 1
         },
         {
@@ -1384,79 +1344,55 @@
           "count": 1
         },
         {
-          "answer_label": "Route Draft",
+          "answer_label": "Route Plan",
           "count": 1
         },
         {
-          "answer_label": "Route File",
+          "answer_label": "Route Shipment",
           "count": 1
         },
         {
-          "answer_label": "Route Form",
+          "answer_label": "Schedule Profile",
           "count": 1
         },
         {
-          "answer_label": "Route Notice",
+          "answer_label": "Schedule Report",
           "count": 1
         },
         {
-          "answer_label": "Route Profile",
+          "answer_label": "Schedule Request",
           "count": 1
         },
         {
-          "answer_label": "Route Request",
+          "answer_label": "Submit Order",
           "count": 1
         },
         {
-          "answer_label": "Schedule Form",
+          "answer_label": "Submit Record",
           "count": 1
         },
         {
-          "answer_label": "Schedule Order",
+          "answer_label": "Update Form",
           "count": 1
         },
         {
-          "answer_label": "Submit Approval",
+          "answer_label": "Update Invoice",
           "count": 1
         },
         {
-          "answer_label": "Submit File",
+          "answer_label": "Update Notice",
           "count": 1
         },
         {
-          "answer_label": "Submit Invoice",
-          "count": 1
-        },
-        {
-          "answer_label": "Submit Notice",
-          "count": 1
-        },
-        {
-          "answer_label": "Submit Packet",
-          "count": 1
-        },
-        {
-          "answer_label": "Submit Request",
-          "count": 1
-        },
-        {
-          "answer_label": "Update Draft",
-          "count": 1
-        },
-        {
-          "answer_label": "Update Order",
-          "count": 1
-        },
-        {
-          "answer_label": "Verify File",
-          "count": 1
-        },
-        {
-          "answer_label": "Verify Notice",
+          "answer_label": "Update Request",
           "count": 1
         },
         {
           "answer_label": "Verify Packet",
+          "count": 1
+        },
+        {
+          "answer_label": "Verify Request",
           "count": 1
         }
       ],

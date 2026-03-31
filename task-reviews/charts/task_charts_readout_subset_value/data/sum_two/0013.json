@@ -1,65 +1,70 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 40
+    "value": 25
   },
   "evidence_gt": {
     "type": "integer_list",
     "value": [
-      20,
-      20
+      21,
+      4
     ]
   },
   "image": {
     "format": "png",
     "path": "charts/task_charts_readout_subset_value/images/sum_two/0013.png"
   },
-  "instance_seed": 2445408611952023,
-  "prompt": "Work from the labeled chart shown in the image: a labeled dot plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Use the chart values for the specified labels and answer the question. For labels U and B, what is the sum of their values?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question.\nAnswer field: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[7,11],\"answer\":18}",
+  "instance_seed": 867615438094923,
+  "prompt": "Look at the chart in the image. It shows a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Read the values of the requested labels from the chart and compute the answer. What is the total of the values shown for labels K and Y?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question.\nAnswer field: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[7,11],\"answer\":18}",
   "prompt_variants": {
-    "answer_and_evidence": "Work from the labeled chart shown in the image: a labeled dot plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Use the chart values for the specified labels and answer the question. For labels U and B, what is the sum of their values?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question.\nAnswer field: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[7,11],\"answer\":18}",
-    "answer_only": "Work from the labeled chart shown in the image: a labeled dot plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Use the chart values for the specified labels and answer the question. For labels U and B, what is the sum of their values?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":18}"
+    "answer_and_evidence": "Look at the chart in the image. It shows a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Read the values of the requested labels from the chart and compute the answer. What is the total of the values shown for labels K and Y?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question.\nAnswer field: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[7,11],\"answer\":18}",
+    "answer_only": "Look at the chart in the image. It shows a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Read the values of the requested labels from the chart and compute the answer. What is the total of the values shown for labels K and Y?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":18}"
   },
   "task": "task_charts_readout_subset_value",
   "task_variant": "sum_two",
   "trace_payload": {
     "execution_trace": {
-      "answer_value": 40,
+      "answer_value": 25,
+      "composition_total": 100,
       "labels": [
-        "C",
+        "E",
+        "K",
+        "P",
+        "F",
+        "Y",
+        "L",
         "B",
-        "A",
-        "U",
-        "S"
+        "R"
       ],
       "mark_color_distance_space": "lab",
-      "mark_color_min_distance": 40.0,
-      "mark_color_sampling_policy": "random_rgb",
-      "mark_count": 5,
+      "mark_color_min_distance": 58.0,
+      "mark_color_sampling_policy": "random_rgb_palette",
+      "mark_count": 8,
       "mark_count_range": [
         5,
-        10
+        8
       ],
       "mark_fill_rgb": [
-        10,
-        3,
-        158
+        49,
+        140,
+        69
       ],
       "mark_outline_rgb": [
-        6,
-        2,
-        87
+        27,
+        77,
+        38
       ],
+      "pie_like_mark_color_channel_max": 200,
       "query_labels": [
-        "U",
-        "B"
+        "K",
+        "Y"
       ],
       "query_values": [
-        20,
-        20
+        21,
+        4
       ],
       "question_format": "numeric_open",
-      "scene_variant": "dot_plot",
+      "scene_variant": "pie",
       "scene_variant_probabilities": {
         "area": 0.1,
         "bar": 0.1,
@@ -72,84 +77,175 @@
         "radar": 0.1,
         "scatter": 0.1
       },
-      "target_answer": 40,
+      "slice_fill_palette_rgb": [
+        [
+          49,
+          140,
+          69
+        ],
+        [
+          170,
+          36,
+          188
+        ],
+        [
+          2,
+          112,
+          176
+        ],
+        [
+          149,
+          62,
+          70
+        ],
+        [
+          187,
+          151,
+          12
+        ],
+        [
+          8,
+          4,
+          14
+        ],
+        [
+          43,
+          3,
+          82
+        ],
+        [
+          103,
+          200,
+          32
+        ]
+      ],
+      "slice_outline_palette_rgb": [
+        [
+          27,
+          77,
+          38
+        ],
+        [
+          94,
+          20,
+          103
+        ],
+        [
+          1,
+          62,
+          97
+        ],
+        [
+          82,
+          34,
+          38
+        ],
+        [
+          103,
+          83,
+          7
+        ],
+        [
+          4,
+          2,
+          8
+        ],
+        [
+          24,
+          2,
+          45
+        ],
+        [
+          57,
+          110,
+          18
+        ]
+      ],
+      "target_answer": 25,
       "target_answer_range": [
         2,
-        40
+        94
       ],
       "task_variant": "sum_two",
       "task_variant_probabilities": {
-        "difference_two_abs": 0.2,
-        "max_two": 0.2,
-        "mean_two": 0.2,
-        "min_two": 0.2,
-        "sum_two": 0.2
+        "difference_two_abs": 0.0,
+        "max_two": 0.0,
+        "mean_two": 0.0,
+        "min_two": 0.0,
+        "sum_two": 1.0
       },
-      "value_max": 20,
+      "value_max": 99,
       "value_min": 1,
+      "value_semantics": "percentage",
       "values": [
-        6,
-        20,
-        15,
-        20,
-        18
+        1,
+        21,
+        10,
+        27,
+        4,
+        31,
+        3,
+        3
       ],
       "values_by_label": {
-        "A": 15,
-        "B": 20,
-        "C": 6,
-        "S": 18,
-        "U": 20
+        "B": 3,
+        "E": 1,
+        "F": 27,
+        "K": 21,
+        "L": 31,
+        "P": 10,
+        "R": 3,
+        "Y": 4
       }
     },
     "projected_evidence": {
       "bbox_set": [
         [
-          547.4,
-          58.095,
-          563.4,
-          74.095
+          319.32,
+          68.889,
+          523.164,
+          276.0
         ],
         [
-          282.6,
-          58.095,
-          298.6,
-          74.095
+          168.044,
+          276.0,
+          319.32,
+          451.215
         ]
       ],
       "integer_list": [
-        20,
-        20
+        21,
+        4
       ],
       "pixel_point_map": {
-        "B": [
-          290.6,
-          66.095
+        "K": [
+          401.661,
+          182.602
         ],
-        "U": [
-          555.4,
-          66.095
+        "Y": [
+          239.953,
+          371.938
         ]
       },
       "pixel_point_set": [
         [
-          555.4,
-          66.095
+          401.661,
+          182.602
         ],
         [
-          290.6,
-          66.095
+          239.953,
+          371.938
         ]
       ]
     },
     "query_spec": {
       "params": {
-        "mark_count": 5,
+        "mark_count": 8,
         "query_labels": [
-          "U",
-          "B"
+          "K",
+          "Y"
         ],
-        "scene_variant": "dot_plot",
+        "scene_variant": "pie",
         "scene_variant_probabilities": {
           "area": 0.1,
           "bar": 0.1,
@@ -162,18 +258,18 @@
           "radar": 0.1,
           "scatter": 0.1
         },
-        "target_answer": 40,
+        "target_answer": 25,
         "target_answer_range": [
           2,
-          40
+          94
         ],
         "task_variant": "sum_two",
         "task_variant_probabilities": {
-          "difference_two_abs": 0.2,
-          "max_two": 0.2,
-          "mean_two": 0.2,
-          "min_two": 0.2,
-          "sum_two": 0.2
+          "difference_two_abs": 0.0,
+          "max_two": 0.0,
+          "mean_two": 0.0,
+          "min_two": 0.0,
+          "sum_two": 1.0
         }
       },
       "prompt_variant": {
@@ -188,16 +284,16 @@
           "json_example_answer_only": "{\"answer\":18}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "object_description": "a labeled dot plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis",
-          "query_label_a": "U",
-          "query_label_b": "B"
+          "object_description": "a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices",
+          "query_label_a": "K",
+          "query_label_b": "Y"
         },
         "task_family_key": "labeled_chart_readout",
-        "task_family_variant_index": 2,
+        "task_family_variant_index": 3,
         "task_key": "subset_value_query",
-        "task_variant_index": 1,
+        "task_variant_index": 2,
         "task_variant_key": "sum_two",
-        "task_variant_template_index": 0,
+        "task_variant_template_index": 2,
         "template_paths": [
           "charts/readout/charts_readout_v1.json"
         ],
@@ -223,16 +319,16 @@
               "json_example_answer_only": "{\"answer\":18}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a labeled dot plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis",
-              "query_label_a": "U",
-              "query_label_b": "B"
+              "object_description": "a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices",
+              "query_label_a": "K",
+              "query_label_b": "Y"
             },
             "task_family_key": "labeled_chart_readout",
-            "task_family_variant_index": 2,
+            "task_family_variant_index": 3,
             "task_key": "subset_value_query",
-            "task_variant_index": 1,
+            "task_variant_index": 2,
             "task_variant_key": "sum_two",
-            "task_variant_template_index": 0,
+            "task_variant_template_index": 2,
             "template_paths": [
               "charts/readout/charts_readout_v1.json"
             ],
@@ -243,12 +339,12 @@
               "task_variant:sum_two": 5
             }
           },
-          "prompt": "Work from the labeled chart shown in the image: a labeled dot plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Use the chart values for the specified labels and answer the question. For labels U and B, what is the sum of their values?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question.\nAnswer field: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[7,11],\"answer\":18}"
+          "prompt": "Look at the chart in the image. It shows a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Read the values of the requested labels from the chart and compute the answer. What is the total of the values shown for labels K and Y?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question.\nAnswer field: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[7,11],\"answer\":18}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 4,
+            "answer_or_evidence_variant_index": 1,
             "prompt_bundle_id": "charts_readout_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -258,16 +354,16 @@
               "json_example_answer_only": "{\"answer\":18}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a labeled dot plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis",
-              "query_label_a": "U",
-              "query_label_b": "B"
+              "object_description": "a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices",
+              "query_label_a": "K",
+              "query_label_b": "Y"
             },
             "task_family_key": "labeled_chart_readout",
-            "task_family_variant_index": 2,
+            "task_family_variant_index": 3,
             "task_key": "subset_value_query",
-            "task_variant_index": 1,
+            "task_variant_index": 2,
             "task_variant_key": "sum_two",
-            "task_variant_template_index": 0,
+            "task_variant_template_index": 2,
             "template_paths": [
               "charts/readout/charts_readout_v1.json"
             ],
@@ -278,7 +374,7 @@
               "task_variant:sum_two": 5
             }
           },
-          "prompt": "Work from the labeled chart shown in the image: a labeled dot plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Use the chart values for the specified labels and answer the question. For labels U and B, what is the sum of their values?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":18}"
+          "prompt": "Look at the chart in the image. It shows a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Read the values of the requested labels from the chart and compute the answer. What is the total of the values shown for labels K and Y?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":18}"
         }
       },
       "task_variant": "sum_two",
@@ -287,25 +383,37 @@
     "render_map": {
       "image_id": "img0",
       "label_centers_px": {
-        "A": [
-          423.0,
-          154.571
-        ],
         "B": [
-          290.6,
-          44.095
+          625.14,
+          374.0
         ],
-        "C": [
-          158.2,
-          353.429
+        "E": [
+          624.14,
+          122.0
         ],
-        "S": [
-          687.8,
-          88.286
+        "F": [
+          624.14,
+          248.0
         ],
-        "U": [
-          555.4,
-          44.095
+        "K": [
+          625.64,
+          164.0
+        ],
+        "L": [
+          623.64,
+          332.0
+        ],
+        "P": [
+          624.64,
+          206.0
+        ],
+        "R": [
+          625.14,
+          416.0
+        ],
+        "Y": [
+          625.64,
+          290.0
         ]
       },
       "plot_bbox_px": [
@@ -341,18 +449,103 @@
       "coord_space": "pixel",
       "mark_style": {
         "mark_color_distance_space": "lab",
-        "mark_color_min_distance": 40.0,
+        "mark_color_min_distance": 58.0,
         "mark_fill_rgb": [
-          10,
-          3,
-          158
+          49,
+          140,
+          69
         ],
         "mark_outline_rgb": [
-          6,
-          2,
-          87
+          27,
+          77,
+          38
         ],
-        "sampling_policy": "random_rgb"
+        "pie_like_mark_color_channel_max": 200,
+        "sampling_policy": "random_rgb_palette",
+        "slice_fill_palette_rgb": [
+          [
+            49,
+            140,
+            69
+          ],
+          [
+            170,
+            36,
+            188
+          ],
+          [
+            2,
+            112,
+            176
+          ],
+          [
+            149,
+            62,
+            70
+          ],
+          [
+            187,
+            151,
+            12
+          ],
+          [
+            8,
+            4,
+            14
+          ],
+          [
+            43,
+            3,
+            82
+          ],
+          [
+            103,
+            200,
+            32
+          ]
+        ],
+        "slice_outline_palette_rgb": [
+          [
+            27,
+            77,
+            38
+          ],
+          [
+            94,
+            20,
+            103
+          ],
+          [
+            1,
+            62,
+            97
+          ],
+          [
+            82,
+            34,
+            38
+          ],
+          [
+            103,
+            83,
+            7
+          ],
+          [
+            4,
+            2,
+            8
+          ],
+          [
+            24,
+            2,
+            45
+          ],
+          [
+            57,
+            110,
+            18
+          ]
+        ]
       },
       "plot_bbox_px": [
         92,
@@ -376,13 +569,13 @@
         "edits": [],
         "enabled": false
       },
-      "scene_variant": "dot_plot",
+      "scene_variant": "pie",
       "text_style": {
         "label_font_size_px": 22,
         "label_stroke_width_px": 2,
         "tick_font_size_px": 18
       },
-      "y_axis_max": 21,
+      "y_axis_max": 32,
       "y_ticks": [
         0,
         1,
@@ -405,206 +598,511 @@
         18,
         19,
         20,
-        21
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32
       ]
     },
     "scene_ir": {
       "entities": [
         {
           "attrs": {
-            "label": "C",
+            "end_angle_deg": -86.4,
+            "label": "E",
+            "label_bbox_px": [
+              616.64,
+              114.0,
+              631.64,
+              130.0
+            ],
             "label_center_px": [
-              158.2,
-              353.429
+              624.14,
+              122.0
+            ],
+            "legend_swatch_bbox_px": [
+              568.64,
+              108.0,
+              596.64,
+              136.0
             ],
             "mark_bbox_px": [
-              150.2,
-              367.429,
-              166.2,
-              383.429
+              319.32,
+              68.48,
+              332.35,
+              276.0
             ],
             "mark_center_px": [
-              158.2,
-              375.429
+              323.231,
+              151.549
             ],
             "mark_fill_rgb": [
-              10,
-              3,
-              158
+              49,
+              140,
+              69
             ],
             "mark_outline_rgb": [
-              6,
-              2,
-              87
+              27,
+              77,
+              38
             ],
-            "scene_variant": "dot_plot",
-            "value": 6,
+            "percentage_bbox_px": [
+              307.841,
+              44.59,
+              344.841,
+              60.59
+            ],
+            "percentage_center_px": [
+              326.341,
+              52.59
+            ],
+            "scene_variant": "pie",
+            "start_angle_deg": -90.0,
+            "value": 1,
             "x_rank": 0
           },
-          "entity_id": "mark_C",
-          "entity_type": "point"
+          "entity_id": "mark_E",
+          "entity_type": "slice"
         },
         {
           "attrs": {
-            "label": "B",
+            "end_angle_deg": -10.8,
+            "label": "K",
+            "label_bbox_px": [
+              616.64,
+              156.0,
+              634.64,
+              172.0
+            ],
             "label_center_px": [
-              290.6,
-              44.095
+              625.64,
+              164.0
+            ],
+            "legend_swatch_bbox_px": [
+              568.64,
+              150.0,
+              596.64,
+              178.0
             ],
             "mark_bbox_px": [
-              282.6,
-              58.095,
-              298.6,
-              74.095
+              319.32,
+              68.889,
+              523.164,
+              276.0
             ],
             "mark_center_px": [
-              290.6,
-              66.095
+              401.661,
+              182.602
             ],
             "mark_fill_rgb": [
-              10,
-              3,
-              158
+              170,
+              36,
+              188
             ],
             "mark_outline_rgb": [
-              6,
-              2,
-              87
+              94,
+              20,
+              103
             ],
-            "scene_variant": "dot_plot",
-            "value": 20,
+            "percentage_bbox_px": [
+              375.661,
+              174.602,
+              427.661,
+              190.602
+            ],
+            "percentage_center_px": [
+              401.661,
+              182.602
+            ],
+            "scene_variant": "pie",
+            "start_angle_deg": -86.4,
+            "value": 21,
             "x_rank": 1
           },
-          "entity_id": "mark_B",
-          "entity_type": "point"
+          "entity_id": "mark_K",
+          "entity_type": "slice"
         },
         {
           "attrs": {
-            "label": "A",
+            "end_angle_deg": 25.2,
+            "label": "P",
+            "label_bbox_px": [
+              616.64,
+              198.0,
+              632.64,
+              214.0
+            ],
             "label_center_px": [
-              423.0,
-              154.571
+              624.64,
+              206.0
+            ],
+            "legend_swatch_bbox_px": [
+              568.64,
+              192.0,
+              596.64,
+              220.0
             ],
             "mark_bbox_px": [
-              415.0,
-              168.571,
-              431.0,
-              184.571
+              319.32,
+              237.115,
+              525.204,
+              364.358
             ],
             "mark_center_px": [
-              423.0,
-              176.571
+              442.85,
+              291.605
             ],
             "mark_fill_rgb": [
-              10,
-              3,
-              158
+              2,
+              112,
+              176
             ],
             "mark_outline_rgb": [
-              6,
-              2,
-              87
+              1,
+              62,
+              97
             ],
-            "scene_variant": "dot_plot",
-            "value": 15,
+            "percentage_bbox_px": [
+              416.85,
+              283.605,
+              468.85,
+              299.605
+            ],
+            "percentage_center_px": [
+              442.85,
+              291.605
+            ],
+            "scene_variant": "pie",
+            "start_angle_deg": -10.8,
+            "value": 10,
             "x_rank": 2
           },
-          "entity_id": "mark_A",
-          "entity_type": "point"
+          "entity_id": "mark_P",
+          "entity_type": "slice"
         },
         {
           "attrs": {
-            "label": "U",
+            "end_angle_deg": 122.4,
+            "label": "F",
+            "label_bbox_px": [
+              616.64,
+              240.0,
+              631.64,
+              256.0
+            ],
             "label_center_px": [
-              555.4,
-              44.095
+              624.14,
+              248.0
+            ],
+            "legend_swatch_bbox_px": [
+              568.64,
+              234.0,
+              596.64,
+              262.0
             ],
             "mark_bbox_px": [
-              547.4,
-              58.095,
-              563.4,
-              74.095
+              208.125,
+              276.0,
+              507.09,
+              483.52
             ],
             "mark_center_px": [
-              555.4,
-              66.095
+              354.058,
+              395.568
             ],
             "mark_fill_rgb": [
-              10,
-              3,
-              158
+              149,
+              62,
+              70
             ],
             "mark_outline_rgb": [
-              6,
-              2,
-              87
+              82,
+              34,
+              38
             ],
-            "scene_variant": "dot_plot",
-            "value": 20,
+            "percentage_bbox_px": [
+              328.058,
+              387.568,
+              380.058,
+              403.568
+            ],
+            "percentage_center_px": [
+              354.058,
+              395.568
+            ],
+            "scene_variant": "pie",
+            "start_angle_deg": 25.2,
+            "value": 27,
             "x_rank": 3
           },
-          "entity_id": "mark_U",
-          "entity_type": "point"
+          "entity_id": "mark_F",
+          "entity_type": "slice"
         },
         {
           "attrs": {
-            "label": "S",
+            "end_angle_deg": 136.8,
+            "label": "Y",
+            "label_bbox_px": [
+              616.64,
+              282.0,
+              634.64,
+              298.0
+            ],
             "label_center_px": [
-              687.8,
-              88.286
+              625.64,
+              290.0
+            ],
+            "legend_swatch_bbox_px": [
+              568.64,
+              276.0,
+              596.64,
+              304.0
             ],
             "mark_bbox_px": [
-              679.8,
-              102.286,
-              695.8,
-              118.286
+              168.044,
+              276.0,
+              319.32,
+              451.215
             ],
             "mark_center_px": [
-              687.8,
-              110.286
+              239.953,
+              371.938
             ],
             "mark_fill_rgb": [
-              10,
-              3,
-              158
+              187,
+              151,
+              12
             ],
             "mark_outline_rgb": [
-              6,
-              2,
-              87
+              103,
+              83,
+              7
             ],
-            "scene_variant": "dot_plot",
-            "value": 18,
+            "percentage_bbox_px": [
+              158.343,
+              440.225,
+              195.343,
+              456.225
+            ],
+            "percentage_center_px": [
+              176.843,
+              448.225
+            ],
+            "scene_variant": "pie",
+            "start_angle_deg": 122.4,
+            "value": 4,
             "x_rank": 4
           },
-          "entity_id": "mark_S",
-          "entity_type": "point"
+          "entity_id": "mark_Y",
+          "entity_type": "slice"
+        },
+        {
+          "attrs": {
+            "end_angle_deg": 248.4,
+            "label": "L",
+            "label_bbox_px": [
+              616.64,
+              324.0,
+              630.64,
+              340.0
+            ],
+            "label_center_px": [
+              623.64,
+              332.0
+            ],
+            "legend_swatch_bbox_px": [
+              568.64,
+              318.0,
+              596.64,
+              346.0
+            ],
+            "mark_bbox_px": [
+              112.477,
+              83.053,
+              319.32,
+              418.057
+            ],
+            "mark_center_px": [
+              197.807,
+              248.839
+            ],
+            "mark_fill_rgb": [
+              8,
+              4,
+              14
+            ],
+            "mark_outline_rgb": [
+              4,
+              2,
+              8
+            ],
+            "percentage_bbox_px": [
+              171.807,
+              240.839,
+              223.807,
+              256.839
+            ],
+            "percentage_center_px": [
+              197.807,
+              248.839
+            ],
+            "scene_variant": "pie",
+            "start_angle_deg": 136.8,
+            "value": 31,
+            "x_rank": 5
+          },
+          "entity_id": "mark_L",
+          "entity_type": "slice"
+        },
+        {
+          "attrs": {
+            "end_angle_deg": 259.2,
+            "label": "B",
+            "label_bbox_px": [
+              616.64,
+              366.0,
+              633.64,
+              382.0
+            ],
+            "label_center_px": [
+              625.14,
+              374.0
+            ],
+            "legend_swatch_bbox_px": [
+              568.64,
+              360.0,
+              596.64,
+              388.0
+            ],
+            "mark_bbox_px": [
+              242.927,
+              72.156,
+              319.32,
+              276.0
+            ],
+            "mark_center_px": [
+              284.582,
+              156.432
+            ],
+            "mark_fill_rgb": [
+              43,
+              3,
+              82
+            ],
+            "mark_outline_rgb": [
+              24,
+              2,
+              45
+            ],
+            "percentage_bbox_px": [
+              238.46,
+              53.355,
+              275.46,
+              69.355
+            ],
+            "percentage_center_px": [
+              256.96,
+              61.355
+            ],
+            "scene_variant": "pie",
+            "start_angle_deg": 248.4,
+            "value": 3,
+            "x_rank": 6
+          },
+          "entity_id": "mark_B",
+          "entity_type": "slice"
+        },
+        {
+          "attrs": {
+            "end_angle_deg": 270.0,
+            "label": "R",
+            "label_bbox_px": [
+              616.64,
+              408.0,
+              633.64,
+              424.0
+            ],
+            "label_center_px": [
+              625.14,
+              416.0
+            ],
+            "legend_swatch_bbox_px": [
+              568.64,
+              402.0,
+              596.64,
+              430.0
+            ],
+            "mark_bbox_px": [
+              280.435,
+              68.48,
+              319.32,
+              276.0
+            ],
+            "mark_center_px": [
+              307.602,
+              152.041
+            ],
+            "mark_fill_rgb": [
+              103,
+              200,
+              32
+            ],
+            "mark_outline_rgb": [
+              57,
+              110,
+              18
+            ],
+            "percentage_bbox_px": [
+              279.785,
+              45.472,
+              316.785,
+              61.472
+            ],
+            "percentage_center_px": [
+              298.285,
+              53.472
+            ],
+            "scene_variant": "pie",
+            "start_angle_deg": 259.2,
+            "value": 3,
+            "x_rank": 7
+          },
+          "entity_id": "mark_R",
+          "entity_type": "slice"
         }
       ],
       "relations": {
-        "answer_value": 40,
+        "answer_value": 25,
         "query_labels": [
-          "U",
-          "B"
+          "K",
+          "Y"
         ],
         "query_values": [
-          20,
-          20
+          21,
+          4
         ],
-        "scene_variant": "dot_plot",
+        "scene_variant": "pie",
         "task_variant": "sum_two"
       },
-      "scene_kind": "chart_dot_plot_readout"
+      "scene_kind": "chart_pie_readout"
     },
     "witness_symbolic": {
       "query_labels": [
-        "U",
-        "B"
+        "K",
+        "Y"
       ],
       "type": "integer_list",
       "values": [
-        20,
-        20
+        21,
+        4
       ]
     }
   },

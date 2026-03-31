@@ -1,7 +1,7 @@
 {
   "answer_gt": {
     "type": "string",
-    "value": "leviyoung@brightdesk.io"
+    "value": "hanadavis@brightdesk.io"
   },
   "evidence_gt": {
     "type": "bbox_set",
@@ -15,7 +15,7 @@
       [
         218.0,
         511.5,
-        571.0,
+        578.0,
         540.5
       ]
     ]
@@ -24,18 +24,18 @@
     "format": "png",
     "path": "documents/task_documents_readout_field_value/images/lookup_contact/0012.png"
   },
-  "instance_seed": 2700953495492414,
-  "prompt": "Look at the document in the image: a structured application form with labeled fields and boxed sections. Locate the field and then answer: What is the email address? Answer with the exact text shown.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value.\nAnswer rule: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"ava.lee@example.com\"}",
+  "instance_seed": 3681343835412550,
+  "prompt": "Look at the document in the image: a structured application form with labeled fields and boxed sections. Read the document and answer this question: What is the email address? Answer with the exact text shown.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value.\nAnswer requirement: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"ava.lee@example.com\"}",
   "prompt_variants": {
-    "answer_and_evidence": "Look at the document in the image: a structured application form with labeled fields and boxed sections. Locate the field and then answer: What is the email address? Answer with the exact text shown.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value.\nAnswer rule: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"ava.lee@example.com\"}",
-    "answer_only": "Look at the document in the image: a structured application form with labeled fields and boxed sections. Locate the field and then answer: What is the email address? Answer with the exact text shown.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"answer\":\"ava.lee@example.com\"}"
+    "answer_and_evidence": "Look at the document in the image: a structured application form with labeled fields and boxed sections. Read the document and answer this question: What is the email address? Answer with the exact text shown.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value.\nAnswer requirement: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"ava.lee@example.com\"}",
+    "answer_only": "Look at the document in the image: a structured application form with labeled fields and boxed sections. Read the document and answer this question: What is the email address? Answer with the exact text shown.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"answer\":\"ava.lee@example.com\"}"
   },
   "task": "task_documents_readout_field_value",
   "task_variant": "lookup_contact",
   "trace_payload": {
     "answer_gt": {
       "type": "string",
-      "value": "leviyoung@brightdesk.io"
+      "value": "hanadavis@brightdesk.io"
     },
     "background": {
       "available_styles": [
@@ -64,7 +64,7 @@
         [
           218.0,
           511.5,
-          571.0,
+          578.0,
           540.5
         ]
       ]
@@ -76,7 +76,7 @@
           "field_category": "lookup_name",
           "field_id": "applicant_name",
           "field_label": "Applicant Name",
-          "field_value": "Levi Young",
+          "field_value": "Hana Davis",
           "label_bbox_id": "applicant_name:label",
           "question_name": "applicant name",
           "value_bbox_id": "applicant_name:value"
@@ -85,7 +85,7 @@
           "field_category": "lookup_identifier",
           "field_id": "reference_id",
           "field_label": "Reference ID",
-          "field_value": "REF-20647",
+          "field_value": "REF-28219",
           "label_bbox_id": "reference_id:label",
           "question_name": "reference ID",
           "value_bbox_id": "reference_id:value"
@@ -94,7 +94,7 @@
           "field_category": "lookup_date",
           "field_id": "submission_date",
           "field_label": "Submission Date",
-          "field_value": "06/28/2026",
+          "field_value": "02/25/2026",
           "label_bbox_id": "submission_date:label",
           "question_name": "submission date",
           "value_bbox_id": "submission_date:value"
@@ -103,7 +103,7 @@
           "field_category": "lookup_contact",
           "field_id": "contact_phone",
           "field_label": "Phone",
-          "field_value": "(929) 823-6641",
+          "field_value": "(212) 985-8604",
           "label_bbox_id": "contact_phone:label",
           "question_name": "phone number",
           "value_bbox_id": "contact_phone:value"
@@ -112,7 +112,7 @@
           "field_category": "lookup_contact",
           "field_id": "contact_email",
           "field_label": "Email",
-          "field_value": "leviyoung@brightdesk.io",
+          "field_value": "hanadavis@brightdesk.io",
           "label_bbox_id": "contact_email:label",
           "question_name": "email address",
           "value_bbox_id": "contact_email:value"
@@ -121,7 +121,7 @@
           "field_category": "lookup_name",
           "field_id": "department",
           "field_label": "Department",
-          "field_value": "Enrollment",
+          "field_value": "Planning",
           "label_bbox_id": "department:label",
           "question_name": "department",
           "value_bbox_id": "department:value"
@@ -130,7 +130,7 @@
           "field_category": "lookup_name",
           "field_id": "city",
           "field_label": "City",
-          "field_value": "Mapleton",
+          "field_value": "Brookfield",
           "label_bbox_id": "city:label",
           "question_name": "city",
           "value_bbox_id": "city:value"
@@ -139,7 +139,7 @@
           "field_category": "lookup_amount",
           "field_id": "fee_amount",
           "field_label": "Fee Amount",
-          "field_value": "$60.60",
+          "field_value": "$109.68",
           "label_bbox_id": "fee_amount:label",
           "question_name": "fee amount",
           "value_bbox_id": "fee_amount:value"
@@ -148,7 +148,7 @@
           "field_category": "lookup_name",
           "field_id": "reviewer_name",
           "field_label": "Reviewer",
-          "field_value": "Owen Chen",
+          "field_value": "Emma Ellis",
           "label_bbox_id": "reviewer_name:label",
           "question_name": "reviewer name",
           "value_bbox_id": "reviewer_name:value"
@@ -157,7 +157,7 @@
       "query_field_category": "lookup_contact",
       "query_field_id": "contact_email",
       "query_field_label": "Email",
-      "query_field_value": "leviyoung@brightdesk.io",
+      "query_field_value": "hanadavis@brightdesk.io",
       "query_label_bbox_id": "contact_email:label",
       "query_value_bbox_id": "contact_email:value",
       "question_format": "document_field_lookup",
@@ -194,7 +194,7 @@
         [
           218.0,
           511.5,
-          571.0,
+          578.0,
           540.5
         ]
       ]
@@ -223,7 +223,7 @@
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 4,
+        "answer_or_evidence_variant_index": 2,
         "prompt_bundle_id": "documents_readout_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -239,7 +239,7 @@
         "task_family_key": "structured_document",
         "task_family_variant_index": 1,
         "task_key": "field_lookup_query",
-        "task_variant_index": 4,
+        "task_variant_index": 1,
         "task_variant_key": "lookup_contact",
         "task_variant_template_index": 0,
         "template_paths": [
@@ -257,7 +257,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 4,
+            "answer_or_evidence_variant_index": 2,
             "prompt_bundle_id": "documents_readout_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -273,7 +273,7 @@
             "task_family_key": "structured_document",
             "task_family_variant_index": 1,
             "task_key": "field_lookup_query",
-            "task_variant_index": 4,
+            "task_variant_index": 1,
             "task_variant_key": "lookup_contact",
             "task_variant_template_index": 0,
             "template_paths": [
@@ -286,7 +286,7 @@
               "task_variant:lookup_contact": 5
             }
           },
-          "prompt": "Look at the document in the image: a structured application form with labeled fields and boxed sections. Locate the field and then answer: What is the email address? Answer with the exact text shown.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value.\nAnswer rule: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"ava.lee@example.com\"}"
+          "prompt": "Look at the document in the image: a structured application form with labeled fields and boxed sections. Read the document and answer this question: What is the email address? Answer with the exact text shown.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value.\nAnswer requirement: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"ava.lee@example.com\"}"
         },
         "answer_only": {
           "metadata": {
@@ -307,7 +307,7 @@
             "task_family_key": "structured_document",
             "task_family_variant_index": 1,
             "task_key": "field_lookup_query",
-            "task_variant_index": 4,
+            "task_variant_index": 1,
             "task_variant_key": "lookup_contact",
             "task_variant_template_index": 0,
             "template_paths": [
@@ -320,7 +320,7 @@
               "task_variant:lookup_contact": 5
             }
           },
-          "prompt": "Look at the document in the image: a structured application form with labeled fields and boxed sections. Locate the field and then answer: What is the email address? Answer with the exact text shown.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"answer\":\"ava.lee@example.com\"}"
+          "prompt": "Look at the document in the image: a structured application form with labeled fields and boxed sections. Read the document and answer this question: What is the email address? Answer with the exact text shown.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"answer\":\"ava.lee@example.com\"}"
         }
       },
       "task_variant": "lookup_contact",
@@ -442,20 +442,20 @@
       "field_value_bboxes_px": {
         "applicant_name:value": [
           218.0,
-          259.5,
-          375.0,
-          288.5
+          262.5,
+          381.0,
+          285.5
         ],
         "city:value": [
           218.0,
-          637.5,
-          350.0,
-          666.5
+          640.5,
+          362.0,
+          663.5
         ],
         "contact_email:value": [
           218.0,
           511.5,
-          571.0,
+          578.0,
           540.5
         ],
         "contact_phone:value": [
@@ -466,14 +466,14 @@
         ],
         "department:value": [
           666.0,
-          514.5,
-          822.0,
-          537.5
+          511.5,
+          790.0,
+          540.5
         ],
         "fee_amount:value": [
           666.0,
           638.5,
-          767.0,
+          785.0,
           665.5
         ],
         "reference_id:value": [
@@ -485,7 +485,7 @@
         "reviewer_name:value": [
           218.0,
           766.5,
-          382.0,
+          375.0,
           789.5
         ],
         "submission_date:value": [
@@ -511,7 +511,7 @@
     "render_spec": {
       "canvas_height": 920,
       "canvas_width": 1280,
-      "geometry_seed": 2700953495492414,
+      "geometry_seed": 3681343835412550,
       "page_shadow_offset_px": 14,
       "receipt_page_height_px": 760,
       "receipt_page_width_px": 520,
@@ -573,14 +573,14 @@
           "bbox_id": "applicant_name:value",
           "bbox_px": [
             218.0,
-            259.5,
-            375.0,
-            288.5
+            262.5,
+            381.0,
+            285.5
           ],
           "entity_id": "applicant_name:value",
           "entity_type": "document_field_value",
           "field_id": "applicant_name",
-          "text": "Levi Young"
+          "text": "Hana Davis"
         },
         {
           "bbox_id": "reference_id",
@@ -618,7 +618,7 @@
           "entity_id": "reference_id:value",
           "entity_type": "document_field_value",
           "field_id": "reference_id",
-          "text": "REF-20647"
+          "text": "REF-28219"
         },
         {
           "bbox_id": "submission_date",
@@ -656,7 +656,7 @@
           "entity_id": "submission_date:value",
           "entity_type": "document_field_value",
           "field_id": "submission_date",
-          "text": "06/28/2026"
+          "text": "02/25/2026"
         },
         {
           "bbox_id": "contact_phone",
@@ -694,7 +694,7 @@
           "entity_id": "contact_phone:value",
           "entity_type": "document_field_value",
           "field_id": "contact_phone",
-          "text": "(929) 823-6641"
+          "text": "(212) 985-8604"
         },
         {
           "bbox_id": "contact_email",
@@ -726,13 +726,13 @@
           "bbox_px": [
             218.0,
             511.5,
-            571.0,
+            578.0,
             540.5
           ],
           "entity_id": "contact_email:value",
           "entity_type": "document_field_value",
           "field_id": "contact_email",
-          "text": "leviyoung@brightdesk.io"
+          "text": "hanadavis@brightdesk.io"
         },
         {
           "bbox_id": "department",
@@ -763,14 +763,14 @@
           "bbox_id": "department:value",
           "bbox_px": [
             666.0,
-            514.5,
-            822.0,
-            537.5
+            511.5,
+            790.0,
+            540.5
           ],
           "entity_id": "department:value",
           "entity_type": "document_field_value",
           "field_id": "department",
-          "text": "Enrollment"
+          "text": "Planning"
         },
         {
           "bbox_id": "city",
@@ -801,14 +801,14 @@
           "bbox_id": "city:value",
           "bbox_px": [
             218.0,
-            637.5,
-            350.0,
-            666.5
+            640.5,
+            362.0,
+            663.5
           ],
           "entity_id": "city:value",
           "entity_type": "document_field_value",
           "field_id": "city",
-          "text": "Mapleton"
+          "text": "Brookfield"
         },
         {
           "bbox_id": "fee_amount",
@@ -840,13 +840,13 @@
           "bbox_px": [
             666.0,
             638.5,
-            767.0,
+            785.0,
             665.5
           ],
           "entity_id": "fee_amount:value",
           "entity_type": "document_field_value",
           "field_id": "fee_amount",
-          "text": "$60.60"
+          "text": "$109.68"
         },
         {
           "bbox_id": "reviewer_name",
@@ -878,13 +878,13 @@
           "bbox_px": [
             218.0,
             766.5,
-            382.0,
+            375.0,
             789.5
           ],
           "entity_id": "reviewer_name:value",
           "entity_type": "document_field_value",
           "field_id": "reviewer_name",
-          "text": "Owen Chen"
+          "text": "Emma Ellis"
         }
       ],
       "relations": {

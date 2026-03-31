@@ -1,7 +1,7 @@
 {
   "answer_gt": {
     "type": "string",
-    "value": "Apr 22, 2026"
+    "value": "Apr 29, 2026"
   },
   "evidence_gt": {
     "type": "bbox_set",
@@ -18,18 +18,18 @@
     "format": "png",
     "path": "documents/task_documents_relation_section_extremum_value/images/latest_date_in_section/0002.png"
   },
-  "instance_seed": 4686044892651664,
-  "prompt": "Use the structured document in the image: a receipt-style document with visible section headers and labeled totals rows. Use the section headers and labeled fields to answer: In the Dates section, what is the latest date shown? Return the exact date shown. Respond with the exact winning date text from that section.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly one bounding box for the winning value.\nAnswer format: set \"answer\" to the exact winning value text shown in the named section.\nExample JSON:\n{\"evidence\":[[150,260,364,294]],\"answer\":\"2026-04-27\"}",
+  "instance_seed": 3460917559928801,
+  "prompt": "Look at the document in the image: a receipt-style document with visible section headers and labeled totals rows. Locate the relevant section before answering: In the Dates section, what is the latest date shown? Return the exact date shown. Respond with the exact winning date text from that section.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly one bounding box for the winning value.\nAnswer requirement: set \"answer\" to the exact winning value text shown in the named section.\nExample JSON:\n{\"evidence\":[[150,260,364,294]],\"answer\":\"2026-04-27\"}",
   "prompt_variants": {
-    "answer_and_evidence": "Use the structured document in the image: a receipt-style document with visible section headers and labeled totals rows. Use the section headers and labeled fields to answer: In the Dates section, what is the latest date shown? Return the exact date shown. Respond with the exact winning date text from that section.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly one bounding box for the winning value.\nAnswer format: set \"answer\" to the exact winning value text shown in the named section.\nExample JSON:\n{\"evidence\":[[150,260,364,294]],\"answer\":\"2026-04-27\"}",
-    "answer_only": "Use the structured document in the image: a receipt-style document with visible section headers and labeled totals rows. Use the section headers and labeled fields to answer: In the Dates section, what is the latest date shown? Return the exact date shown. Respond with the exact winning date text from that section.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the exact winning value text shown in the named section.\nExample JSON:\n{\"answer\":\"2026-04-27\"}"
+    "answer_and_evidence": "Look at the document in the image: a receipt-style document with visible section headers and labeled totals rows. Locate the relevant section before answering: In the Dates section, what is the latest date shown? Return the exact date shown. Respond with the exact winning date text from that section.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly one bounding box for the winning value.\nAnswer requirement: set \"answer\" to the exact winning value text shown in the named section.\nExample JSON:\n{\"evidence\":[[150,260,364,294]],\"answer\":\"2026-04-27\"}",
+    "answer_only": "Look at the document in the image: a receipt-style document with visible section headers and labeled totals rows. Locate the relevant section before answering: In the Dates section, what is the latest date shown? Return the exact date shown. Respond with the exact winning date text from that section.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the exact winning value text shown in the named section.\nExample JSON:\n{\"answer\":\"2026-04-27\"}"
   },
   "task": "task_documents_relation_section_extremum_value",
   "task_variant": "latest_date_in_section",
   "trace_payload": {
     "answer_gt": {
       "type": "string",
-      "value": "Apr 22, 2026"
+      "value": "Apr 29, 2026"
     },
     "background": {
       "available_styles": [
@@ -59,9 +59,9 @@
     },
     "execution_trace": {
       "candidate_sort_values": {
-        "pickup_date": 739718,
-        "purchase_date": 739713,
-        "return_date": 739728
+        "pickup_date": 739717,
+        "purchase_date": 739716,
+        "return_date": 739735
       },
       "compared_field_ids": [
         "purchase_date",
@@ -85,7 +85,7 @@
           "comparison_kind": "other",
           "field_id": "store_name",
           "field_label": "Store Name",
-          "field_value": "Civic Supply",
+          "field_value": "Evergreen Works",
           "label_bbox_id": "store_name:label",
           "section_id": "store_details",
           "section_label": "Store Details",
@@ -95,7 +95,7 @@
           "comparison_kind": "other",
           "field_id": "receipt_number",
           "field_label": "Receipt No.",
-          "field_value": "R-16776",
+          "field_value": "R-91427",
           "label_bbox_id": "receipt_number:label",
           "section_id": "store_details",
           "section_label": "Store Details",
@@ -105,7 +105,7 @@
           "comparison_kind": "other",
           "field_id": "cashier_name",
           "field_label": "Cashier",
-          "field_value": "Levi Gomez",
+          "field_value": "Mara Rivera",
           "label_bbox_id": "cashier_name:label",
           "section_id": "store_details",
           "section_label": "Store Details",
@@ -115,7 +115,7 @@
           "comparison_kind": "date",
           "field_id": "purchase_date",
           "field_label": "Purchase Date",
-          "field_value": "Apr 07, 2026",
+          "field_value": "Apr 10, 2026",
           "label_bbox_id": "purchase_date:label",
           "section_id": "dates",
           "section_label": "Dates",
@@ -125,7 +125,7 @@
           "comparison_kind": "date",
           "field_id": "pickup_date",
           "field_label": "Pickup Date",
-          "field_value": "Apr 12, 2026",
+          "field_value": "Apr 11, 2026",
           "label_bbox_id": "pickup_date:label",
           "section_id": "dates",
           "section_label": "Dates",
@@ -135,7 +135,7 @@
           "comparison_kind": "date",
           "field_id": "return_date",
           "field_label": "Return Date",
-          "field_value": "Apr 22, 2026",
+          "field_value": "Apr 29, 2026",
           "label_bbox_id": "return_date:label",
           "section_id": "dates",
           "section_label": "Dates",
@@ -145,7 +145,7 @@
           "comparison_kind": "amount",
           "field_id": "subtotal_amount",
           "field_label": "Subtotal",
-          "field_value": "$94.47",
+          "field_value": "$47.29",
           "label_bbox_id": "subtotal_amount:label",
           "section_id": "totals",
           "section_label": "Totals",
@@ -155,7 +155,7 @@
           "comparison_kind": "amount",
           "field_id": "tax_amount",
           "field_label": "Tax",
-          "field_value": "$8.02",
+          "field_value": "$8.62",
           "label_bbox_id": "tax_amount:label",
           "section_id": "totals",
           "section_label": "Totals",
@@ -165,7 +165,7 @@
           "comparison_kind": "amount",
           "field_id": "total_paid",
           "field_label": "Total Paid",
-          "field_value": "$102.49",
+          "field_value": "$55.91",
           "label_bbox_id": "total_paid:label",
           "section_id": "totals",
           "section_label": "Totals",
@@ -211,8 +211,8 @@
       "view_family": "structured_document",
       "winning_field_id": "return_date",
       "winning_field_label": "Return Date",
-      "winning_field_value": "Apr 22, 2026",
-      "winning_sort_value": 739728,
+      "winning_field_value": "Apr 29, 2026",
+      "winning_sort_value": 739735,
       "winning_value_bbox_id": "return_date:value"
     },
     "post_image_noise": {
@@ -265,7 +265,7 @@
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 1,
+        "answer_or_evidence_variant_index": 2,
         "prompt_bundle_id": "documents_relation_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -279,9 +279,9 @@
           "question_text": "In the Dates section, what is the latest date shown? Return the exact date shown."
         },
         "task_family_key": "structured_document_sections",
-        "task_family_variant_index": 3,
+        "task_family_variant_index": 1,
         "task_key": "section_extremum_query",
-        "task_variant_index": 3,
+        "task_variant_index": 4,
         "task_variant_key": "latest_date_in_section",
         "task_variant_template_index": 2,
         "template_paths": [
@@ -299,7 +299,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 1,
+            "answer_or_evidence_variant_index": 2,
             "prompt_bundle_id": "documents_relation_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -313,9 +313,9 @@
               "question_text": "In the Dates section, what is the latest date shown? Return the exact date shown."
             },
             "task_family_key": "structured_document_sections",
-            "task_family_variant_index": 3,
+            "task_family_variant_index": 1,
             "task_key": "section_extremum_query",
-            "task_variant_index": 3,
+            "task_variant_index": 4,
             "task_variant_key": "latest_date_in_section",
             "task_variant_template_index": 2,
             "template_paths": [
@@ -328,12 +328,12 @@
               "task_variant:latest_date_in_section": 5
             }
           },
-          "prompt": "Use the structured document in the image: a receipt-style document with visible section headers and labeled totals rows. Use the section headers and labeled fields to answer: In the Dates section, what is the latest date shown? Return the exact date shown. Respond with the exact winning date text from that section.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly one bounding box for the winning value.\nAnswer format: set \"answer\" to the exact winning value text shown in the named section.\nExample JSON:\n{\"evidence\":[[150,260,364,294]],\"answer\":\"2026-04-27\"}"
+          "prompt": "Look at the document in the image: a receipt-style document with visible section headers and labeled totals rows. Locate the relevant section before answering: In the Dates section, what is the latest date shown? Return the exact date shown. Respond with the exact winning date text from that section.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly one bounding box for the winning value.\nAnswer requirement: set \"answer\" to the exact winning value text shown in the named section.\nExample JSON:\n{\"evidence\":[[150,260,364,294]],\"answer\":\"2026-04-27\"}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 3,
+            "answer_or_evidence_variant_index": 0,
             "prompt_bundle_id": "documents_relation_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -347,9 +347,9 @@
               "question_text": "In the Dates section, what is the latest date shown? Return the exact date shown."
             },
             "task_family_key": "structured_document_sections",
-            "task_family_variant_index": 3,
+            "task_family_variant_index": 1,
             "task_key": "section_extremum_query",
-            "task_variant_index": 3,
+            "task_variant_index": 4,
             "task_variant_key": "latest_date_in_section",
             "task_variant_template_index": 2,
             "template_paths": [
@@ -362,7 +362,7 @@
               "task_variant:latest_date_in_section": 5
             }
           },
-          "prompt": "Use the structured document in the image: a receipt-style document with visible section headers and labeled totals rows. Use the section headers and labeled fields to answer: In the Dates section, what is the latest date shown? Return the exact date shown. Respond with the exact winning date text from that section.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the exact winning value text shown in the named section.\nExample JSON:\n{\"answer\":\"2026-04-27\"}"
+          "prompt": "Look at the document in the image: a receipt-style document with visible section headers and labeled totals rows. Locate the relevant section before answering: In the Dates section, what is the latest date shown? Return the exact date shown. Respond with the exact winning date text from that section.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the exact winning value text shown in the named section.\nExample JSON:\n{\"answer\":\"2026-04-27\"}"
         }
       },
       "task_variant": "latest_date_in_section",
@@ -483,7 +483,7 @@
       },
       "field_value_bboxes_px": {
         "cashier_name:value": [
-          697.0,
+          693.0,
           350.5,
           864.0,
           373.5
@@ -513,7 +513,7 @@
           586.0
         ],
         "store_name:value": [
-          688.0,
+          619.0,
           207.5,
           864.0,
           236.5
@@ -531,7 +531,7 @@
           725.5
         ],
         "total_paid:value": [
-          745.0,
+          763.0,
           768.5,
           864.0,
           795.5
@@ -552,7 +552,7 @@
         ],
         "store_details": [
           394.0,
-          172.0,
+          163.5,
           886.0,
           404.0
         ],
@@ -565,22 +565,22 @@
       },
       "section_label_bboxes_px": {
         "dates": [
-          427.0,
-          376.0,
-          491.0,
-          392.0
+          410.0,
+          372.0,
+          508.0,
+          394.0
         ],
         "store_details": [
-          460.0,
-          181.0,
-          550.0,
-          193.0
+          410.0,
+          169.5,
+          600.0,
+          187.5
         ],
         "totals": [
-          427.5,
-          586.0,
-          495.5,
-          602.0
+          410.0,
+          582.0,
+          513.0,
+          604.0
         ]
       },
       "title_bbox_px": [
@@ -593,7 +593,7 @@
     "render_spec": {
       "canvas_height": 920,
       "canvas_width": 1280,
-      "geometry_seed": 4686044892651664,
+      "geometry_seed": 3460917559928801,
       "page_shadow_offset_px": 14,
       "receipt_page_height_px": 760,
       "receipt_page_width_px": 520,
@@ -630,7 +630,7 @@
           "bbox_id": "store_details",
           "bbox_px": [
             394.0,
-            172.0,
+            163.5,
             886.0,
             404.0
           ],
@@ -705,7 +705,7 @@
         {
           "bbox_id": "store_name:value",
           "bbox_px": [
-            688.0,
+            619.0,
             207.5,
             864.0,
             236.5
@@ -713,7 +713,7 @@
           "entity_id": "store_name:value",
           "entity_type": "document_field_value",
           "field_id": "store_name",
-          "text": "Civic Supply"
+          "text": "Evergreen Works"
         },
         {
           "bbox_id": "receipt_number",
@@ -751,7 +751,7 @@
           "entity_id": "receipt_number:value",
           "entity_type": "document_field_value",
           "field_id": "receipt_number",
-          "text": "R-16776"
+          "text": "R-91427"
         },
         {
           "bbox_id": "cashier_name",
@@ -781,7 +781,7 @@
         {
           "bbox_id": "cashier_name:value",
           "bbox_px": [
-            697.0,
+            693.0,
             350.5,
             864.0,
             373.5
@@ -789,7 +789,7 @@
           "entity_id": "cashier_name:value",
           "entity_type": "document_field_value",
           "field_id": "cashier_name",
-          "text": "Levi Gomez"
+          "text": "Mara Rivera"
         },
         {
           "bbox_id": "purchase_date",
@@ -827,7 +827,7 @@
           "entity_id": "purchase_date:value",
           "entity_type": "document_field_value",
           "field_id": "purchase_date",
-          "text": "Apr 07, 2026"
+          "text": "Apr 10, 2026"
         },
         {
           "bbox_id": "pickup_date",
@@ -865,7 +865,7 @@
           "entity_id": "pickup_date:value",
           "entity_type": "document_field_value",
           "field_id": "pickup_date",
-          "text": "Apr 12, 2026"
+          "text": "Apr 11, 2026"
         },
         {
           "bbox_id": "return_date",
@@ -903,7 +903,7 @@
           "entity_id": "return_date:value",
           "entity_type": "document_field_value",
           "field_id": "return_date",
-          "text": "Apr 22, 2026"
+          "text": "Apr 29, 2026"
         },
         {
           "bbox_id": "subtotal_amount",
@@ -941,7 +941,7 @@
           "entity_id": "subtotal_amount:value",
           "entity_type": "document_field_value",
           "field_id": "subtotal_amount",
-          "text": "$94.47"
+          "text": "$47.29"
         },
         {
           "bbox_id": "tax_amount",
@@ -979,7 +979,7 @@
           "entity_id": "tax_amount:value",
           "entity_type": "document_field_value",
           "field_id": "tax_amount",
-          "text": "$8.02"
+          "text": "$8.62"
         },
         {
           "bbox_id": "total_paid",
@@ -1009,7 +1009,7 @@
         {
           "bbox_id": "total_paid:value",
           "bbox_px": [
-            745.0,
+            763.0,
             768.5,
             864.0,
             795.5
@@ -1017,15 +1017,15 @@
           "entity_id": "total_paid:value",
           "entity_type": "document_field_value",
           "field_id": "total_paid",
-          "text": "$102.49"
+          "text": "$55.91"
         },
         {
           "bbox_id": "store_details:label",
           "bbox_px": [
-            460.0,
-            181.0,
-            550.0,
-            193.0
+            410.0,
+            169.5,
+            600.0,
+            187.5
           ],
           "entity_id": "store_details:label",
           "entity_type": "document_section_label",
@@ -1035,10 +1035,10 @@
         {
           "bbox_id": "dates:label",
           "bbox_px": [
-            427.0,
-            376.0,
-            491.0,
-            392.0
+            410.0,
+            372.0,
+            508.0,
+            394.0
           ],
           "entity_id": "dates:label",
           "entity_type": "document_section_label",
@@ -1048,10 +1048,10 @@
         {
           "bbox_id": "totals:label",
           "bbox_px": [
-            427.5,
-            586.0,
-            495.5,
-            602.0
+            410.0,
+            582.0,
+            513.0,
+            604.0
           ],
           "entity_id": "totals:label",
           "entity_type": "document_section_label",

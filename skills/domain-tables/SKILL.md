@@ -70,6 +70,7 @@ For current table coverage and active task families, use:
 - `docs/domains/TASK_FAMILY_VARIANTS.md`
 
 ## Pair with
+- `skills/domain-audit/SKILL.md`
 - `skills/task-design/SKILL.md`
 - `skills/task-complexity/SKILL.md`
 - `skills/task-implementation/SKILL.md`

@@ -1,7 +1,7 @@
 {
   "answer_gt": {
     "type": "string",
-    "value": "03/10/2026"
+    "value": "03/09/2026"
   },
   "evidence_gt": {
     "type": "bbox_set",
@@ -18,18 +18,18 @@
     "format": "png",
     "path": "documents/task_documents_relation_section_extremum_value/images/latest_date_in_section/0023.png"
   },
-  "instance_seed": 7456119624590184,
-  "prompt": "Look at the document in the image: a structured application form with visible section headers and labeled fields. Locate the relevant section before answering: In the Schedule section, what is the latest date shown? Return the exact date shown. Answer using the exact date value.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly one bounding box for the winning value.\nAnswer format: set \"answer\" to the exact winning value text shown in the named section.\nExample JSON:\n{\"evidence\":[[150,260,364,294]],\"answer\":\"2026-04-27\"}",
+  "instance_seed": 743139929049727,
+  "prompt": "You are given a structured application form with visible section headers and labeled fields. Use the section headers and labeled fields to answer: In the Schedule section, what is the latest date shown? Return the exact date shown. Respond with the exact winning date text from that section.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing exactly one bounding box for the winning value.\nAnswer: set \"answer\" to the exact winning value text shown in the named section.\nExample JSON:\n{\"evidence\":[[150,260,364,294]],\"answer\":\"2026-04-27\"}",
   "prompt_variants": {
-    "answer_and_evidence": "Look at the document in the image: a structured application form with visible section headers and labeled fields. Locate the relevant section before answering: In the Schedule section, what is the latest date shown? Return the exact date shown. Answer using the exact date value.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly one bounding box for the winning value.\nAnswer format: set \"answer\" to the exact winning value text shown in the named section.\nExample JSON:\n{\"evidence\":[[150,260,364,294]],\"answer\":\"2026-04-27\"}",
-    "answer_only": "Look at the document in the image: a structured application form with visible section headers and labeled fields. Locate the relevant section before answering: In the Schedule section, what is the latest date shown? Return the exact date shown. Answer using the exact date value.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the exact winning value text shown in the named section.\nExample JSON:\n{\"answer\":\"2026-04-27\"}"
+    "answer_and_evidence": "You are given a structured application form with visible section headers and labeled fields. Use the section headers and labeled fields to answer: In the Schedule section, what is the latest date shown? Return the exact date shown. Respond with the exact winning date text from that section.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing exactly one bounding box for the winning value.\nAnswer: set \"answer\" to the exact winning value text shown in the named section.\nExample JSON:\n{\"evidence\":[[150,260,364,294]],\"answer\":\"2026-04-27\"}",
+    "answer_only": "You are given a structured application form with visible section headers and labeled fields. Use the section headers and labeled fields to answer: In the Schedule section, what is the latest date shown? Return the exact date shown. Respond with the exact winning date text from that section.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the exact winning value text shown in the named section.\nExample JSON:\n{\"answer\":\"2026-04-27\"}"
   },
   "task": "task_documents_relation_section_extremum_value",
   "task_variant": "latest_date_in_section",
   "trace_payload": {
     "answer_gt": {
       "type": "string",
-      "value": "03/10/2026"
+      "value": "03/09/2026"
     },
     "background": {
       "available_styles": [
@@ -59,9 +59,9 @@
     },
     "execution_trace": {
       "candidate_sort_values": {
-        "approval_date": 739685,
-        "review_date": 739675,
-        "submission_date": 739663
+        "approval_date": 739684,
+        "review_date": 739669,
+        "submission_date": 739657
       },
       "compared_field_ids": [
         "submission_date",
@@ -85,7 +85,7 @@
           "comparison_kind": "other",
           "field_id": "applicant_name",
           "field_label": "Applicant Name",
-          "field_value": "Lena Chen",
+          "field_value": "Milo Howard",
           "label_bbox_id": "applicant_name:label",
           "section_id": "profile",
           "section_label": "Profile",
@@ -95,7 +95,7 @@
           "comparison_kind": "other",
           "field_id": "reference_id",
           "field_label": "Reference ID",
-          "field_value": "REF-58505",
+          "field_value": "REF-52549",
           "label_bbox_id": "reference_id:label",
           "section_id": "profile",
           "section_label": "Profile",
@@ -105,7 +105,7 @@
           "comparison_kind": "other",
           "field_id": "department",
           "field_label": "Department",
-          "field_value": "Enrollment",
+          "field_value": "Operations",
           "label_bbox_id": "department:label",
           "section_id": "profile",
           "section_label": "Profile",
@@ -115,7 +115,7 @@
           "comparison_kind": "other",
           "field_id": "contact_phone",
           "field_label": "Phone",
-          "field_value": "(704) 712-9896",
+          "field_value": "(929) 779-1305",
           "label_bbox_id": "contact_phone:label",
           "section_id": "contact",
           "section_label": "Contact",
@@ -125,7 +125,7 @@
           "comparison_kind": "other",
           "field_id": "contact_email",
           "field_label": "Email",
-          "field_value": "lenachen@example.com",
+          "field_value": "milohoward@mailhub.net",
           "label_bbox_id": "contact_email:label",
           "section_id": "contact",
           "section_label": "Contact",
@@ -135,7 +135,7 @@
           "comparison_kind": "date",
           "field_id": "submission_date",
           "field_label": "Submission Date",
-          "field_value": "02/16/2026",
+          "field_value": "02/10/2026",
           "label_bbox_id": "submission_date:label",
           "section_id": "schedule",
           "section_label": "Schedule",
@@ -145,7 +145,7 @@
           "comparison_kind": "date",
           "field_id": "review_date",
           "field_label": "Review Date",
-          "field_value": "02/28/2026",
+          "field_value": "02/22/2026",
           "label_bbox_id": "review_date:label",
           "section_id": "schedule",
           "section_label": "Schedule",
@@ -155,7 +155,7 @@
           "comparison_kind": "date",
           "field_id": "approval_date",
           "field_label": "Approval Date",
-          "field_value": "03/10/2026",
+          "field_value": "03/09/2026",
           "label_bbox_id": "approval_date:label",
           "section_id": "schedule",
           "section_label": "Schedule",
@@ -165,7 +165,7 @@
           "comparison_kind": "other",
           "field_id": "processing_fee",
           "field_label": "Processing Fee",
-          "field_value": "$142.70",
+          "field_value": "$105.91",
           "label_bbox_id": "processing_fee:label",
           "section_id": "filing",
           "section_label": "Filing",
@@ -217,8 +217,8 @@
       "view_family": "structured_document",
       "winning_field_id": "approval_date",
       "winning_field_label": "Approval Date",
-      "winning_field_value": "03/10/2026",
-      "winning_sort_value": 739685,
+      "winning_field_value": "03/09/2026",
+      "winning_sort_value": 739684,
       "winning_value_bbox_id": "approval_date:value"
     },
     "post_image_noise": {
@@ -271,7 +271,7 @@
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 1,
+        "answer_or_evidence_variant_index": 0,
         "prompt_bundle_id": "documents_relation_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -285,11 +285,11 @@
           "question_text": "In the Schedule section, what is the latest date shown? Return the exact date shown."
         },
         "task_family_key": "structured_document_sections",
-        "task_family_variant_index": 1,
+        "task_family_variant_index": 2,
         "task_key": "section_extremum_query",
-        "task_variant_index": 4,
+        "task_variant_index": 3,
         "task_variant_key": "latest_date_in_section",
-        "task_variant_template_index": 4,
+        "task_variant_template_index": 2,
         "template_paths": [
           "documents/relation/documents_relation_v1.json"
         ],
@@ -305,7 +305,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 1,
+            "answer_or_evidence_variant_index": 0,
             "prompt_bundle_id": "documents_relation_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -319,11 +319,11 @@
               "question_text": "In the Schedule section, what is the latest date shown? Return the exact date shown."
             },
             "task_family_key": "structured_document_sections",
-            "task_family_variant_index": 1,
+            "task_family_variant_index": 2,
             "task_key": "section_extremum_query",
-            "task_variant_index": 4,
+            "task_variant_index": 3,
             "task_variant_key": "latest_date_in_section",
-            "task_variant_template_index": 4,
+            "task_variant_template_index": 2,
             "template_paths": [
               "documents/relation/documents_relation_v1.json"
             ],
@@ -334,12 +334,12 @@
               "task_variant:latest_date_in_section": 5
             }
           },
-          "prompt": "Look at the document in the image: a structured application form with visible section headers and labeled fields. Locate the relevant section before answering: In the Schedule section, what is the latest date shown? Return the exact date shown. Answer using the exact date value.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly one bounding box for the winning value.\nAnswer format: set \"answer\" to the exact winning value text shown in the named section.\nExample JSON:\n{\"evidence\":[[150,260,364,294]],\"answer\":\"2026-04-27\"}"
+          "prompt": "You are given a structured application form with visible section headers and labeled fields. Use the section headers and labeled fields to answer: In the Schedule section, what is the latest date shown? Return the exact date shown. Respond with the exact winning date text from that section.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing exactly one bounding box for the winning value.\nAnswer: set \"answer\" to the exact winning value text shown in the named section.\nExample JSON:\n{\"evidence\":[[150,260,364,294]],\"answer\":\"2026-04-27\"}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 4,
+            "answer_or_evidence_variant_index": 0,
             "prompt_bundle_id": "documents_relation_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -353,11 +353,11 @@
               "question_text": "In the Schedule section, what is the latest date shown? Return the exact date shown."
             },
             "task_family_key": "structured_document_sections",
-            "task_family_variant_index": 1,
+            "task_family_variant_index": 2,
             "task_key": "section_extremum_query",
-            "task_variant_index": 4,
+            "task_variant_index": 3,
             "task_variant_key": "latest_date_in_section",
-            "task_variant_template_index": 4,
+            "task_variant_template_index": 2,
             "template_paths": [
               "documents/relation/documents_relation_v1.json"
             ],
@@ -368,7 +368,7 @@
               "task_variant:latest_date_in_section": 5
             }
           },
-          "prompt": "Look at the document in the image: a structured application form with visible section headers and labeled fields. Locate the relevant section before answering: In the Schedule section, what is the latest date shown? Return the exact date shown. Answer using the exact date value.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the exact winning value text shown in the named section.\nExample JSON:\n{\"answer\":\"2026-04-27\"}"
+          "prompt": "You are given a structured application form with visible section headers and labeled fields. Use the section headers and labeled fields to answer: In the Schedule section, what is the latest date shown? Return the exact date shown. Respond with the exact winning date text from that section.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the exact winning value text shown in the named section.\nExample JSON:\n{\"answer\":\"2026-04-27\"}"
         }
       },
       "task_variant": "latest_date_in_section",
@@ -491,7 +491,7 @@
         "applicant_name:value": [
           218.0,
           262.5,
-          370.0,
+          394.0,
           285.5
         ],
         "approval_date:value": [
@@ -502,9 +502,9 @@
         ],
         "contact_email:value": [
           218.0,
-          511.5,
-          565.0,
-          540.5
+          512.0,
+          582.0,
+          540.0
         ],
         "contact_phone:value": [
           666.0,
@@ -514,9 +514,9 @@
         ],
         "department:value": [
           218.0,
-          388.5,
-          374.0,
-          411.5
+          385.5,
+          375.0,
+          414.5
         ],
         "processing_fee:value": [
           218.0,
@@ -577,28 +577,28 @@
       },
       "section_label_bboxes_px": {
         "contact": [
-          227.0,
-          308.0,
-          312.0,
-          324.0
+          208.0,
+          304.0,
+          331.0,
+          326.0
         ],
         "filing": [
-          231.5,
-          685.5,
-          281.5,
-          702.5
+          208.0,
+          682.0,
+          305.0,
+          704.0
         ],
         "profile": [
-          226.0,
-          182.0,
-          299.0,
-          198.0
+          208.0,
+          178.0,
+          317.0,
+          200.0
         ],
         "schedule": [
-          227.5,
-          434.0,
-          329.5,
-          450.0
+          208.0,
+          430.0,
+          349.0,
+          452.0
         ]
       },
       "title_bbox_px": [
@@ -611,7 +611,7 @@
     "render_spec": {
       "canvas_height": 920,
       "canvas_width": 1280,
-      "geometry_seed": 7456119624590184,
+      "geometry_seed": 743139929049727,
       "page_shadow_offset_px": 14,
       "receipt_page_height_px": 760,
       "receipt_page_width_px": 520,
@@ -739,13 +739,13 @@
           "bbox_px": [
             218.0,
             262.5,
-            370.0,
+            394.0,
             285.5
           ],
           "entity_id": "applicant_name:value",
           "entity_type": "document_field_value",
           "field_id": "applicant_name",
-          "text": "Lena Chen"
+          "text": "Milo Howard"
         },
         {
           "bbox_id": "reference_id",
@@ -783,7 +783,7 @@
           "entity_id": "reference_id:value",
           "entity_type": "document_field_value",
           "field_id": "reference_id",
-          "text": "REF-58505"
+          "text": "REF-52549"
         },
         {
           "bbox_id": "department",
@@ -814,14 +814,14 @@
           "bbox_id": "department:value",
           "bbox_px": [
             218.0,
-            388.5,
-            374.0,
-            411.5
+            385.5,
+            375.0,
+            414.5
           ],
           "entity_id": "department:value",
           "entity_type": "document_field_value",
           "field_id": "department",
-          "text": "Enrollment"
+          "text": "Operations"
         },
         {
           "bbox_id": "contact_phone",
@@ -859,7 +859,7 @@
           "entity_id": "contact_phone:value",
           "entity_type": "document_field_value",
           "field_id": "contact_phone",
-          "text": "(704) 712-9896"
+          "text": "(929) 779-1305"
         },
         {
           "bbox_id": "contact_email",
@@ -890,14 +890,14 @@
           "bbox_id": "contact_email:value",
           "bbox_px": [
             218.0,
-            511.5,
-            565.0,
-            540.5
+            512.0,
+            582.0,
+            540.0
           ],
           "entity_id": "contact_email:value",
           "entity_type": "document_field_value",
           "field_id": "contact_email",
-          "text": "lenachen@example.com"
+          "text": "milohoward@mailhub.net"
         },
         {
           "bbox_id": "submission_date",
@@ -935,7 +935,7 @@
           "entity_id": "submission_date:value",
           "entity_type": "document_field_value",
           "field_id": "submission_date",
-          "text": "02/16/2026"
+          "text": "02/10/2026"
         },
         {
           "bbox_id": "review_date",
@@ -973,7 +973,7 @@
           "entity_id": "review_date:value",
           "entity_type": "document_field_value",
           "field_id": "review_date",
-          "text": "02/28/2026"
+          "text": "02/22/2026"
         },
         {
           "bbox_id": "approval_date",
@@ -1011,7 +1011,7 @@
           "entity_id": "approval_date:value",
           "entity_type": "document_field_value",
           "field_id": "approval_date",
-          "text": "03/10/2026"
+          "text": "03/09/2026"
         },
         {
           "bbox_id": "processing_fee",
@@ -1049,15 +1049,15 @@
           "entity_id": "processing_fee:value",
           "entity_type": "document_field_value",
           "field_id": "processing_fee",
-          "text": "$142.70"
+          "text": "$105.91"
         },
         {
           "bbox_id": "profile:label",
           "bbox_px": [
-            226.0,
-            182.0,
-            299.0,
-            198.0
+            208.0,
+            178.0,
+            317.0,
+            200.0
           ],
           "entity_id": "profile:label",
           "entity_type": "document_section_label",
@@ -1067,10 +1067,10 @@
         {
           "bbox_id": "contact:label",
           "bbox_px": [
-            227.0,
-            308.0,
-            312.0,
-            324.0
+            208.0,
+            304.0,
+            331.0,
+            326.0
           ],
           "entity_id": "contact:label",
           "entity_type": "document_section_label",
@@ -1080,10 +1080,10 @@
         {
           "bbox_id": "schedule:label",
           "bbox_px": [
-            227.5,
-            434.0,
-            329.5,
-            450.0
+            208.0,
+            430.0,
+            349.0,
+            452.0
           ],
           "entity_id": "schedule:label",
           "entity_type": "document_section_label",
@@ -1093,10 +1093,10 @@
         {
           "bbox_id": "filing:label",
           "bbox_px": [
-            231.5,
-            685.5,
-            281.5,
-            702.5
+            208.0,
+            682.0,
+            305.0,
+            704.0
           ],
           "entity_id": "filing:label",
           "entity_type": "document_section_label",

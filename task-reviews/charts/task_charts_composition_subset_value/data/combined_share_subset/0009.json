@@ -1,31 +1,33 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 67
+    "value": 31
   },
   "evidence_gt": {
     "type": "integer_list",
     "value": [
-      33,
-      58,
-      9
+      61,
+      19,
+      12,
+      7,
+      1
     ]
   },
   "image": {
     "format": "png",
     "path": "charts/task_charts_composition_subset_value/images/combined_share_subset/0009.png"
   },
-  "instance_seed": 1374258480211052,
-  "prompt": "Use the composition chart in the image. It shows a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Use the printed segment or slice values to answer the composition question. What percentage of the whole chart comes from labels Maze and Joh combined?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array [v1, v2, ...] listing the slice percentages in legend order for the whole chart.\nAnswer requirement: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[18,27,22,33],\"answer\":45}",
+  "instance_seed": 4744677326101466,
+  "prompt": "The image shows a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Read the composition values shown in the chart and answer the question. What total percentage do labels Fay and Arne contribute together?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array [v1, v2, ...] listing the slice percentages in legend order for the whole chart.\nAnswer requirement: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[18,27,22,33],\"answer\":45}",
   "prompt_variants": {
-    "answer_and_evidence": "Use the composition chart in the image. It shows a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Use the printed segment or slice values to answer the composition question. What percentage of the whole chart comes from labels Maze and Joh combined?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array [v1, v2, ...] listing the slice percentages in legend order for the whole chart.\nAnswer requirement: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[18,27,22,33],\"answer\":45}",
-    "answer_only": "Use the composition chart in the image. It shows a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Use the printed segment or slice values to answer the composition question. What percentage of the whole chart comes from labels Maze and Joh combined?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":45}"
+    "answer_and_evidence": "The image shows a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Read the composition values shown in the chart and answer the question. What total percentage do labels Fay and Arne contribute together?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array [v1, v2, ...] listing the slice percentages in legend order for the whole chart.\nAnswer requirement: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[18,27,22,33],\"answer\":45}",
+    "answer_only": "The image shows a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Read the composition values shown in the chart and answer the question. What total percentage do labels Fay and Arne contribute together?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":45}"
   },
   "task": "task_charts_composition_subset_value",
   "task_variant": "combined_share_subset",
   "trace_payload": {
     "execution_trace": {
-      "answer_value": 67,
+      "answer_value": 31,
       "category_count": 0,
       "category_count_range": [
         0,
@@ -35,34 +37,38 @@
       "composition_scope": "chart",
       "composition_total": 100,
       "evidence_labels": [
-        "Hope",
-        "Maze",
-        "Joh"
+        "Lani",
+        "Fay",
+        "Arne",
+        "Venu",
+        "Aila"
       ],
       "evidence_values": [
-        33,
-        58,
-        9
+        61,
+        19,
+        12,
+        7,
+        1
       ],
       "mark_color_distance_space": "lab",
       "mark_color_min_distance": 58.0,
       "mark_color_sampling_policy": "random_rgb_palette",
       "mark_fill_rgb": [
-        170,
-        33,
-        69
+        1,
+        88,
+        79
       ],
       "mark_outline_rgb": [
-        94,
-        18,
-        38
+        1,
+        48,
+        43
       ],
       "pie_like_mark_color_channel_max": 200,
       "query_category_label": "",
       "query_series_label": "",
       "query_subset_labels": [
-        "Maze",
-        "Joh"
+        "Fay",
+        "Arne"
       ],
       "question_format": "numeric_open",
       "scene_mode": "pie_like",
@@ -71,125 +77,181 @@
         "donut": 0.5,
         "pie": 0.5
       },
-      "series_count": 3,
+      "series_count": 5,
       "series_count_range": [
         3,
         5
       ],
       "series_labels": [
-        "Hope",
-        "Maze",
-        "Joh"
+        "Lani",
+        "Fay",
+        "Arne",
+        "Venu",
+        "Aila"
       ],
       "slice_fill_palette_rgb": [
         [
-          170,
-          33,
-          69
+          1,
+          88,
+          79
         ],
         [
-          36,
-          92,
-          129
+          142,
+          50,
+          102
         ],
         [
-          97,
-          46,
-          182
+          90,
+          24,
+          185
+        ],
+        [
+          196,
+          75,
+          6
+        ],
+        [
+          17,
+          192,
+          31
         ]
       ],
       "slice_outline_palette_rgb": [
         [
-          94,
-          18,
-          38
+          1,
+          48,
+          43
         ],
         [
-          20,
-          51,
-          71
+          78,
+          28,
+          56
         ],
         [
-          53,
-          25,
-          100
+          50,
+          13,
+          102
+        ],
+        [
+          108,
+          41,
+          3
+        ],
+        [
+          9,
+          106,
+          17
         ]
       ],
-      "target_answer": 67,
+      "target_answer": 31,
       "target_answer_range": [
         5,
         95
       ],
       "task_variant": "combined_share_subset",
       "task_variant_probabilities": {
-        "combined_share_subset": 0.3333333333333333,
-        "stack_segment_value": 0.3333333333333333,
-        "stack_total_at_label": 0.3333333333333333
+        "combined_share_subset": 1.0,
+        "stack_segment_value": 0.0,
+        "stack_total_at_label": 0.0
       },
       "value_semantics": "percentage",
       "values": [
-        33,
-        58,
-        9
+        61,
+        19,
+        12,
+        7,
+        1
       ],
       "values_by_label": {
-        "Hope": 33,
-        "Joh": 9,
-        "Maze": 58
+        "Aila": 1,
+        "Arne": 12,
+        "Fay": 19,
+        "Lani": 61,
+        "Venu": 7
       }
     },
     "projected_evidence": {
       "bbox_set": [
         [
-          442.08,
+          276.095,
           65.6,
-          701.432,
-          451.449
+          701.264,
+          585.06
         ],
         [
-          182.836,
-          106.137,
-          670.27,
-          583.607
+          181.712,
+          245.532,
+          442.08,
+          526.642
         ],
         [
-          302.551,
+          194.425,
+          97.81,
+          442.08,
+          326.0
+        ],
+        [
+          316.631,
+          66.114,
+          442.08,
+          326.0
+        ],
+        [
+          425.729,
           65.6,
           442.08,
           326.0
         ]
       ],
       "integer_list": [
-        33,
-        58,
-        9
+        61,
+        19,
+        12,
+        7,
+        1
       ],
       "pixel_point_map": {
-        "Hope": [
-          601.217,
-          231.886
+        "Aila": [
+          436.273,
+          141.207
         ],
-        "Joh": [
+        "Arne": [
+          299.624,
+          208.151
+        ],
+        "Fay": [
+          264.537,
+          377.581
+        ],
+        "Lani": [
+          616.034,
+          388.627
+        ],
+        "Venu": [
           390.499,
           148.457
-        ],
-        "Maze": [
-          315.518,
-          460.775
         ]
       },
       "pixel_point_set": [
         [
-          601.217,
-          231.886
+          616.034,
+          388.627
         ],
         [
-          315.518,
-          460.775
+          264.537,
+          377.581
+        ],
+        [
+          299.624,
+          208.151
         ],
         [
           390.499,
           148.457
+        ],
+        [
+          436.273,
+          141.207
         ]
       ]
     },
@@ -203,29 +265,29 @@
         "query_category_label": "",
         "query_series_label": "",
         "query_subset_labels": [
-          "Maze",
-          "Joh"
+          "Fay",
+          "Arne"
         ],
         "scene_variant": "donut",
         "scene_variant_probabilities": {
           "donut": 0.5,
           "pie": 0.5
         },
-        "series_count": 3,
+        "series_count": 5,
         "series_count_range": [
           3,
           5
         ],
-        "target_answer": 67,
+        "target_answer": 31,
         "target_answer_range": [
           5,
           95
         ],
         "task_variant": "combined_share_subset",
         "task_variant_probabilities": {
-          "combined_share_subset": 0.3333333333333333,
-          "stack_segment_value": 0.3333333333333333,
-          "stack_total_at_label": 0.3333333333333333
+          "combined_share_subset": 1.0,
+          "stack_segment_value": 0.0,
+          "stack_total_at_label": 0.0
         }
       },
       "prompt_variant": {
@@ -242,16 +304,16 @@
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
           "object_description": "a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices",
           "query_category_label": "",
-          "query_label_a": "Maze",
-          "query_label_b": "Joh",
+          "query_label_a": "Fay",
+          "query_label_b": "Arne",
           "query_series_label": ""
         },
         "task_family_key": "composition_chart_value",
-        "task_family_variant_index": 1,
+        "task_family_variant_index": 0,
         "task_key": "subset_value_query",
-        "task_variant_index": 0,
+        "task_variant_index": 1,
         "task_variant_key": "combined_share_subset",
-        "task_variant_template_index": 2,
+        "task_variant_template_index": 4,
         "template_paths": [
           "charts/composition/charts_composition_v1.json"
         ],
@@ -279,16 +341,16 @@
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices",
               "query_category_label": "",
-              "query_label_a": "Maze",
-              "query_label_b": "Joh",
+              "query_label_a": "Fay",
+              "query_label_b": "Arne",
               "query_series_label": ""
             },
             "task_family_key": "composition_chart_value",
-            "task_family_variant_index": 1,
+            "task_family_variant_index": 0,
             "task_key": "subset_value_query",
-            "task_variant_index": 0,
+            "task_variant_index": 1,
             "task_variant_key": "combined_share_subset",
-            "task_variant_template_index": 2,
+            "task_variant_template_index": 4,
             "template_paths": [
               "charts/composition/charts_composition_v1.json"
             ],
@@ -299,12 +361,12 @@
               "task_variant:combined_share_subset": 5
             }
           },
-          "prompt": "Use the composition chart in the image. It shows a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Use the printed segment or slice values to answer the composition question. What percentage of the whole chart comes from labels Maze and Joh combined?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array [v1, v2, ...] listing the slice percentages in legend order for the whole chart.\nAnswer requirement: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[18,27,22,33],\"answer\":45}"
+          "prompt": "The image shows a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Read the composition values shown in the chart and answer the question. What total percentage do labels Fay and Arne contribute together?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array [v1, v2, ...] listing the slice percentages in legend order for the whole chart.\nAnswer requirement: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[18,27,22,33],\"answer\":45}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 2,
+            "answer_or_evidence_variant_index": 1,
             "prompt_bundle_id": "charts_composition_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -316,16 +378,16 @@
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices",
               "query_category_label": "",
-              "query_label_a": "Maze",
-              "query_label_b": "Joh",
+              "query_label_a": "Fay",
+              "query_label_b": "Arne",
               "query_series_label": ""
             },
             "task_family_key": "composition_chart_value",
-            "task_family_variant_index": 1,
+            "task_family_variant_index": 0,
             "task_key": "subset_value_query",
-            "task_variant_index": 0,
+            "task_variant_index": 1,
             "task_variant_key": "combined_share_subset",
-            "task_variant_template_index": 2,
+            "task_variant_template_index": 4,
             "template_paths": [
               "charts/composition/charts_composition_v1.json"
             ],
@@ -336,7 +398,7 @@
               "task_variant:combined_share_subset": 5
             }
           },
-          "prompt": "Use the composition chart in the image. It shows a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Use the printed segment or slice values to answer the composition question. What percentage of the whole chart comes from labels Maze and Joh combined?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":45}"
+          "prompt": "The image shows a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Read the composition values shown in the chart and answer the question. What total percentage do labels Fay and Arne contribute together?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":45}"
         }
       },
       "task_variant": "combined_share_subset",
@@ -345,17 +407,25 @@
     "render_map": {
       "image_id": "img0",
       "label_centers_px": {
-        "Hope": [
-          872.66,
+        "Aila": [
+          863.66,
+          403.0
+        ],
+        "Arne": [
+          870.16,
+          319.0
+        ],
+        "Fay": [
+          862.16,
           277.0
         ],
-        "Joh": [
-          860.16,
-          361.0
+        "Lani": [
+          866.16,
+          235.0
         ],
-        "Maze": [
-          873.16,
-          319.0
+        "Venu": [
+          872.66,
+          361.0
         ]
       },
       "plot_bbox_px": [
@@ -393,49 +463,69 @@
         "mark_color_distance_space": "lab",
         "mark_color_min_distance": 58.0,
         "mark_fill_rgb": [
-          170,
-          33,
-          69
+          1,
+          88,
+          79
         ],
         "mark_outline_rgb": [
-          94,
-          18,
-          38
+          1,
+          48,
+          43
         ],
         "pie_like_mark_color_channel_max": 200,
         "sampling_policy": "random_rgb_palette",
         "slice_fill_palette_rgb": [
           [
-            170,
-            33,
-            69
+            1,
+            88,
+            79
           ],
           [
-            36,
-            92,
-            129
+            142,
+            50,
+            102
           ],
           [
-            97,
-            46,
-            182
+            90,
+            24,
+            185
+          ],
+          [
+            196,
+            75,
+            6
+          ],
+          [
+            17,
+            192,
+            31
           ]
         ],
         "slice_outline_palette_rgb": [
           [
-            94,
-            18,
-            38
+            1,
+            48,
+            43
           ],
           [
-            20,
-            51,
-            71
+            78,
+            28,
+            56
           ],
           [
-            53,
-            25,
-            100
+            50,
+            13,
+            102
+          ],
+          [
+            108,
+            41,
+            3
+          ],
+          [
+            9,
+            106,
+            17
           ]
         ]
       },
@@ -467,7 +557,7 @@
         "label_stroke_width_px": 2,
         "tick_font_size_px": 20
       },
-      "y_axis_max": 59,
+      "y_axis_max": 62,
       "y_ticks": [
         0,
         1,
@@ -528,23 +618,84 @@
         56,
         57,
         58,
-        59
+        59,
+        60,
+        61,
+        62
       ]
     },
     "scene_ir": {
       "entities": [
         {
           "attrs": {
-            "end_angle_deg": 28.8,
-            "label": "Hope",
+            "end_angle_deg": 129.6,
+            "label": "Lani",
+            "label_bbox_px": [
+              838.16,
+              226.0,
+              894.16,
+              244.0
+            ],
+            "label_center_px": [
+              866.16,
+              235.0
+            ],
+            "legend_swatch_bbox_px": [
+              788.16,
+              221.0,
+              816.16,
+              249.0
+            ],
+            "mark_bbox_px": [
+              276.095,
+              65.6,
+              701.264,
+              585.06
+            ],
+            "mark_center_px": [
+              616.034,
+              388.627
+            ],
+            "mark_fill_rgb": [
+              1,
+              88,
+              79
+            ],
+            "mark_outline_rgb": [
+              1,
+              48,
+              43
+            ],
+            "percentage_bbox_px": [
+              587.034,
+              379.627,
+              645.034,
+              397.627
+            ],
+            "percentage_center_px": [
+              616.034,
+              388.627
+            ],
+            "scene_variant": "donut",
+            "start_angle_deg": -90.0,
+            "value": 61,
+            "x_rank": 0
+          },
+          "entity_id": "mark_Lani",
+          "entity_type": "slice"
+        },
+        {
+          "attrs": {
+            "end_angle_deg": 198.0,
+            "label": "Fay",
             "label_bbox_px": [
               838.16,
               265.5,
-              907.16,
+              886.16,
               288.5
             ],
             "label_center_px": [
-              872.66,
+              862.16,
               277.0
             ],
             "legend_swatch_bbox_px": [
@@ -554,55 +705,55 @@
               291.0
             ],
             "mark_bbox_px": [
+              181.712,
+              245.532,
               442.08,
-              65.6,
-              701.432,
-              451.449
+              526.642
             ],
             "mark_center_px": [
-              601.217,
-              231.886
+              264.537,
+              377.581
             ],
             "mark_fill_rgb": [
-              170,
-              33,
-              69
+              142,
+              50,
+              102
             ],
             "mark_outline_rgb": [
-              94,
-              18,
-              38
+              78,
+              28,
+              56
             ],
             "percentage_bbox_px": [
-              572.217,
-              222.886,
-              630.217,
-              240.886
+              235.537,
+              368.581,
+              293.537,
+              386.581
             ],
             "percentage_center_px": [
-              601.217,
-              231.886
+              264.537,
+              377.581
             ],
             "scene_variant": "donut",
-            "start_angle_deg": -90.0,
-            "value": 33,
-            "x_rank": 0
+            "start_angle_deg": 129.6,
+            "value": 19,
+            "x_rank": 1
           },
-          "entity_id": "mark_Hope",
+          "entity_id": "mark_Fay",
           "entity_type": "slice"
         },
         {
           "attrs": {
-            "end_angle_deg": 237.6,
-            "label": "Maze",
+            "end_angle_deg": 241.2,
+            "label": "Arne",
             "label_bbox_px": [
               838.16,
               310.0,
-              908.16,
+              902.16,
               328.0
             ],
             "label_center_px": [
-              873.16,
+              870.16,
               319.0
             ],
             "legend_swatch_bbox_px": [
@@ -612,55 +763,55 @@
               333.0
             ],
             "mark_bbox_px": [
-              182.836,
-              106.137,
-              670.27,
-              583.607
+              194.425,
+              97.81,
+              442.08,
+              326.0
             ],
             "mark_center_px": [
-              315.518,
-              460.775
+              299.624,
+              208.151
             ],
             "mark_fill_rgb": [
-              36,
-              92,
-              129
+              90,
+              24,
+              185
             ],
             "mark_outline_rgb": [
-              20,
-              51,
-              71
+              50,
+              13,
+              102
             ],
             "percentage_bbox_px": [
-              286.518,
-              451.775,
-              344.518,
-              469.775
+              270.624,
+              199.151,
+              328.624,
+              217.151
             ],
             "percentage_center_px": [
-              315.518,
-              460.775
+              299.624,
+              208.151
             ],
             "scene_variant": "donut",
-            "start_angle_deg": 28.8,
-            "value": 58,
-            "x_rank": 1
+            "start_angle_deg": 198.0,
+            "value": 12,
+            "x_rank": 2
           },
-          "entity_id": "mark_Maze",
+          "entity_id": "mark_Arne",
           "entity_type": "slice"
         },
         {
           "attrs": {
-            "end_angle_deg": 270.0,
-            "label": "Joh",
+            "end_angle_deg": 266.4,
+            "label": "Venu",
             "label_bbox_px": [
               838.16,
-              349.5,
-              882.16,
-              372.5
+              352.0,
+              907.16,
+              370.0
             ],
             "label_center_px": [
-              860.16,
+              872.66,
               361.0
             ],
             "legend_swatch_bbox_px": [
@@ -670,8 +821,8 @@
               375.0
             ],
             "mark_bbox_px": [
-              302.551,
-              65.6,
+              316.631,
+              66.114,
               442.08,
               326.0
             ],
@@ -680,14 +831,14 @@
               148.457
             ],
             "mark_fill_rgb": [
-              97,
-              46,
-              182
+              196,
+              75,
+              6
             ],
             "mark_outline_rgb": [
-              53,
-              25,
-              100
+              108,
+              41,
+              3
             ],
             "percentage_bbox_px": [
               369.999,
@@ -700,26 +851,86 @@
               148.457
             ],
             "scene_variant": "donut",
-            "start_angle_deg": 237.6,
-            "value": 9,
-            "x_rank": 2
+            "start_angle_deg": 241.2,
+            "value": 7,
+            "x_rank": 3
           },
-          "entity_id": "mark_Joh",
+          "entity_id": "mark_Venu",
+          "entity_type": "slice"
+        },
+        {
+          "attrs": {
+            "end_angle_deg": 270.0,
+            "label": "Aila",
+            "label_bbox_px": [
+              838.16,
+              394.0,
+              889.16,
+              412.0
+            ],
+            "label_center_px": [
+              863.66,
+              403.0
+            ],
+            "legend_swatch_bbox_px": [
+              788.16,
+              389.0,
+              816.16,
+              417.0
+            ],
+            "mark_bbox_px": [
+              425.729,
+              65.6,
+              442.08,
+              326.0
+            ],
+            "mark_center_px": [
+              436.273,
+              141.207
+            ],
+            "mark_fill_rgb": [
+              17,
+              192,
+              31
+            ],
+            "mark_outline_rgb": [
+              9,
+              106,
+              17
+            ],
+            "percentage_bbox_px": [
+              412.898,
+              40.736,
+              453.898,
+              58.736
+            ],
+            "percentage_center_px": [
+              433.398,
+              49.736
+            ],
+            "scene_variant": "donut",
+            "start_angle_deg": 266.4,
+            "value": 1,
+            "x_rank": 4
+          },
+          "entity_id": "mark_Aila",
           "entity_type": "slice"
         }
       ],
       "relations": {
-        "answer_value": 67,
+        "answer_value": 31,
         "evidence_labels": [
-          "Hope",
-          "Maze",
-          "Joh"
+          "Lani",
+          "Fay",
+          "Arne",
+          "Venu",
+          "Aila"
         ],
         "query_category_label": "",
         "query_series_label": "",
         "query_subset_labels": [
-          "Maze",
-          "Joh"
+          "Fay",
+          "Arne"
         ],
         "scene_variant": "donut",
         "task_variant": "combined_share_subset"
@@ -728,15 +939,19 @@
     },
     "witness_symbolic": {
       "labels": [
-        "Hope",
-        "Maze",
-        "Joh"
+        "Lani",
+        "Fay",
+        "Arne",
+        "Venu",
+        "Aila"
       ],
       "type": "integer_list",
       "values": [
-        33,
-        58,
-        9
+        61,
+        19,
+        12,
+        7,
+        1
       ]
     }
   },

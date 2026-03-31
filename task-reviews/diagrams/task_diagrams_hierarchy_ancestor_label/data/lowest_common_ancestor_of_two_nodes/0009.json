@@ -1,7 +1,7 @@
 {
   "answer_gt": {
     "type": "string",
-    "value": "Dong"
+    "value": "Etom"
   },
   "evidence_gt": {
     "type": "bbox_set",
@@ -18,11 +18,11 @@
     "format": "png",
     "path": "diagrams/task_diagrams_hierarchy_ancestor_label/images/lowest_common_ancestor_of_two_nodes/0009.png"
   },
-  "instance_seed": 3348992816087131,
-  "prompt": "Work from the labeled parent-child structure: a hierarchical org chart with labeled boxes and parent-child connector lines. What is the lowest common ancestor of Dosh and Shih? Return the exact label shown. Return the exact visible label.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct ancestor box.\nAnswer format: set \"answer\" to the exact visible ancestor label.\nExample JSON:\n{\"evidence\":[[558,530,722,602]],\"answer\":\"Cott\"}",
+  "instance_seed": 8384374793269193,
+  "prompt": "Look at the hierarchy diagram in the image: a hierarchical org chart with labeled boxes and parent-child connector lines. Use the hierarchy to answer: What is the lowest common ancestor of Fi and Seto? Return the exact label shown. Give the full label exactly as shown.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct ancestor box.\nAnswer requirement: set \"answer\" to the exact visible ancestor label.\nExample JSON:\n{\"evidence\":[[558,530,722,602]],\"answer\":\"Cott\"}",
   "prompt_variants": {
-    "answer_and_evidence": "Work from the labeled parent-child structure: a hierarchical org chart with labeled boxes and parent-child connector lines. What is the lowest common ancestor of Dosh and Shih? Return the exact label shown. Return the exact visible label.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct ancestor box.\nAnswer format: set \"answer\" to the exact visible ancestor label.\nExample JSON:\n{\"evidence\":[[558,530,722,602]],\"answer\":\"Cott\"}",
-    "answer_only": "Work from the labeled parent-child structure: a hierarchical org chart with labeled boxes and parent-child connector lines. What is the lowest common ancestor of Dosh and Shih? Return the exact label shown. Return the exact visible label.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the exact visible ancestor label.\nExample JSON:\n{\"answer\":\"Cott\"}"
+    "answer_and_evidence": "Look at the hierarchy diagram in the image: a hierarchical org chart with labeled boxes and parent-child connector lines. Use the hierarchy to answer: What is the lowest common ancestor of Fi and Seto? Return the exact label shown. Give the full label exactly as shown.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct ancestor box.\nAnswer requirement: set \"answer\" to the exact visible ancestor label.\nExample JSON:\n{\"evidence\":[[558,530,722,602]],\"answer\":\"Cott\"}",
+    "answer_only": "Look at the hierarchy diagram in the image: a hierarchical org chart with labeled boxes and parent-child connector lines. Use the hierarchy to answer: What is the lowest common ancestor of Fi and Seto? Return the exact label shown. Give the full label exactly as shown.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the exact visible ancestor label.\nExample JSON:\n{\"answer\":\"Cott\"}"
   },
   "task": "task_diagrams_hierarchy_ancestor_label",
   "task_variant": "lowest_common_ancestor_of_two_nodes",
@@ -46,7 +46,7 @@
       "answer_node_bbox_id": "node_bbox_7",
       "answer_node_depth": 3,
       "answer_node_id": "node_7",
-      "answer_node_label": "Dong",
+      "answer_node_label": "Etom",
       "edge_specs": [
         {
           "edge_id": "edge_0",
@@ -107,7 +107,7 @@
           "is_leaf": false,
           "node_bbox_id": "node_bbox_0",
           "node_id": "node_0",
-          "node_label": "Ozen",
+          "node_label": "Lita",
           "node_label_bbox_id": "node_label_bbox_0",
           "parent_node_id": null
         },
@@ -116,7 +116,7 @@
           "is_leaf": false,
           "node_bbox_id": "node_bbox_1",
           "node_id": "node_1",
-          "node_label": "Kalb",
+          "node_label": "Elma",
           "node_label_bbox_id": "node_label_bbox_1",
           "parent_node_id": "node_0"
         },
@@ -125,7 +125,7 @@
           "is_leaf": false,
           "node_bbox_id": "node_bbox_2",
           "node_id": "node_2",
-          "node_label": "Ozzy",
+          "node_label": "Dodd",
           "node_label_bbox_id": "node_label_bbox_2",
           "parent_node_id": "node_0"
         },
@@ -134,7 +134,7 @@
           "is_leaf": false,
           "node_bbox_id": "node_bbox_3",
           "node_id": "node_3",
-          "node_label": "Hull",
+          "node_label": "Inez",
           "node_label_bbox_id": "node_label_bbox_3",
           "parent_node_id": "node_0"
         },
@@ -143,7 +143,7 @@
           "is_leaf": true,
           "node_bbox_id": "node_bbox_4",
           "node_id": "node_4",
-          "node_label": "Nava",
+          "node_label": "Root",
           "node_label_bbox_id": "node_label_bbox_4",
           "parent_node_id": "node_1"
         },
@@ -152,7 +152,7 @@
           "is_leaf": true,
           "node_bbox_id": "node_bbox_5",
           "node_id": "node_5",
-          "node_label": "Kane",
+          "node_label": "Mia",
           "node_label_bbox_id": "node_label_bbox_5",
           "parent_node_id": "node_1"
         },
@@ -161,7 +161,7 @@
           "is_leaf": false,
           "node_bbox_id": "node_bbox_6",
           "node_id": "node_6",
-          "node_label": "Cote",
+          "node_label": "Vani",
           "node_label_bbox_id": "node_label_bbox_6",
           "parent_node_id": "node_2"
         },
@@ -170,7 +170,7 @@
           "is_leaf": false,
           "node_bbox_id": "node_bbox_7",
           "node_id": "node_7",
-          "node_label": "Dong",
+          "node_label": "Etom",
           "node_label_bbox_id": "node_label_bbox_7",
           "parent_node_id": "node_6"
         },
@@ -179,7 +179,7 @@
           "is_leaf": true,
           "node_bbox_id": "node_bbox_8",
           "node_id": "node_8",
-          "node_label": "Dosh",
+          "node_label": "Fi",
           "node_label_bbox_id": "node_label_bbox_8",
           "parent_node_id": "node_7"
         },
@@ -188,7 +188,7 @@
           "is_leaf": true,
           "node_bbox_id": "node_bbox_9",
           "node_id": "node_9",
-          "node_label": "Shih",
+          "node_label": "Seto",
           "node_label_bbox_id": "node_label_bbox_9",
           "parent_node_id": "node_7"
         },
@@ -197,7 +197,7 @@
           "is_leaf": true,
           "node_bbox_id": "node_bbox_10",
           "node_id": "node_10",
-          "node_label": "Toby",
+          "node_label": "Rex",
           "node_label_bbox_id": "node_label_bbox_10",
           "parent_node_id": "node_3"
         }
@@ -211,12 +211,12 @@
         "node_9"
       ],
       "query_node_labels": [
-        "Dosh",
-        "Shih"
+        "Fi",
+        "Seto"
       ],
       "query_relationship": "lowest_common_ancestor",
       "question_format": "hierarchy_ancestor_label",
-      "question_text": "What is the lowest common ancestor of Dosh and Shih? Return the exact label shown.",
+      "question_text": "What is the lowest common ancestor of Fi and Seto? Return the exact label shown.",
       "root_node_id": "node_0",
       "scene_title": "Organization Chart",
       "scene_variant": "org_chart",
@@ -273,7 +273,7 @@
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 1,
+        "answer_or_evidence_variant_index": 2,
         "prompt_bundle_id": "diagrams_hierarchy_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -284,14 +284,14 @@
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
           "object_description": "a hierarchical org chart with labeled boxes and parent-child connector lines",
-          "question_text": "What is the lowest common ancestor of Dosh and Shih? Return the exact label shown."
+          "question_text": "What is the lowest common ancestor of Fi and Seto? Return the exact label shown."
         },
         "task_family_key": "hierarchy_diagram",
-        "task_family_variant_index": 4,
+        "task_family_variant_index": 1,
         "task_key": "ancestor_query",
-        "task_variant_index": 0,
+        "task_variant_index": 1,
         "task_variant_key": "lowest_common_ancestor_of_two_nodes",
-        "task_variant_template_index": 1,
+        "task_variant_template_index": 3,
         "template_paths": [
           "diagrams/hierarchy/diagrams_hierarchy_v1.json"
         ],
@@ -307,7 +307,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 1,
+            "answer_or_evidence_variant_index": 2,
             "prompt_bundle_id": "diagrams_hierarchy_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -318,14 +318,14 @@
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a hierarchical org chart with labeled boxes and parent-child connector lines",
-              "question_text": "What is the lowest common ancestor of Dosh and Shih? Return the exact label shown."
+              "question_text": "What is the lowest common ancestor of Fi and Seto? Return the exact label shown."
             },
             "task_family_key": "hierarchy_diagram",
-            "task_family_variant_index": 4,
+            "task_family_variant_index": 1,
             "task_key": "ancestor_query",
-            "task_variant_index": 0,
+            "task_variant_index": 1,
             "task_variant_key": "lowest_common_ancestor_of_two_nodes",
-            "task_variant_template_index": 1,
+            "task_variant_template_index": 3,
             "template_paths": [
               "diagrams/hierarchy/diagrams_hierarchy_v1.json"
             ],
@@ -336,12 +336,12 @@
               "task_variant:lowest_common_ancestor_of_two_nodes": 5
             }
           },
-          "prompt": "Work from the labeled parent-child structure: a hierarchical org chart with labeled boxes and parent-child connector lines. What is the lowest common ancestor of Dosh and Shih? Return the exact label shown. Return the exact visible label.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct ancestor box.\nAnswer format: set \"answer\" to the exact visible ancestor label.\nExample JSON:\n{\"evidence\":[[558,530,722,602]],\"answer\":\"Cott\"}"
+          "prompt": "Look at the hierarchy diagram in the image: a hierarchical org chart with labeled boxes and parent-child connector lines. Use the hierarchy to answer: What is the lowest common ancestor of Fi and Seto? Return the exact label shown. Give the full label exactly as shown.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct ancestor box.\nAnswer requirement: set \"answer\" to the exact visible ancestor label.\nExample JSON:\n{\"evidence\":[[558,530,722,602]],\"answer\":\"Cott\"}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 1,
+            "answer_or_evidence_variant_index": 4,
             "prompt_bundle_id": "diagrams_hierarchy_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -352,14 +352,14 @@
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a hierarchical org chart with labeled boxes and parent-child connector lines",
-              "question_text": "What is the lowest common ancestor of Dosh and Shih? Return the exact label shown."
+              "question_text": "What is the lowest common ancestor of Fi and Seto? Return the exact label shown."
             },
             "task_family_key": "hierarchy_diagram",
-            "task_family_variant_index": 4,
+            "task_family_variant_index": 1,
             "task_key": "ancestor_query",
-            "task_variant_index": 0,
+            "task_variant_index": 1,
             "task_variant_key": "lowest_common_ancestor_of_two_nodes",
-            "task_variant_template_index": 1,
+            "task_variant_template_index": 3,
             "template_paths": [
               "diagrams/hierarchy/diagrams_hierarchy_v1.json"
             ],
@@ -370,7 +370,7 @@
               "task_variant:lowest_common_ancestor_of_two_nodes": 5
             }
           },
-          "prompt": "Work from the labeled parent-child structure: a hierarchical org chart with labeled boxes and parent-child connector lines. What is the lowest common ancestor of Dosh and Shih? Return the exact label shown. Return the exact visible label.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the exact visible ancestor label.\nExample JSON:\n{\"answer\":\"Cott\"}"
+          "prompt": "Look at the hierarchy diagram in the image: a hierarchical org chart with labeled boxes and parent-child connector lines. Use the hierarchy to answer: What is the lowest common ancestor of Fi and Seto? Return the exact label shown. Give the full label exactly as shown.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the exact visible ancestor label.\nExample JSON:\n{\"answer\":\"Cott\"}"
         }
       },
       "task_variant": "lowest_common_ancestor_of_two_nodes",
@@ -509,69 +509,69 @@
       },
       "node_label_bboxes_px": {
         "node_label_bbox_0": [
-          682.167,
+          690.667,
           200.0,
-          751.167,
+          742.667,
           220.0
         ],
         "node_label_bbox_1": [
-          264.0,
+          261.5,
           333.5,
-          326.0,
+          328.5,
           353.5
         ],
         "node_label_bbox_10": [
-          1066.5,
-          464.5,
-          1133.5,
-          489.5
+          1074.0,
+          467.0,
+          1126.0,
+          487.0
         ],
         "node_label_bbox_2": [
-          722.0,
-          331.0,
-          788.0,
-          356.0
+          719.0,
+          333.5,
+          791.0,
+          353.5
         ],
         "node_label_bbox_3": [
-          1072.5,
+          1071.0,
           333.5,
-          1127.5,
+          1129.0,
           353.5
         ],
         "node_label_bbox_4": [
-          145.0,
+          148.5,
           467.0,
-          215.0,
+          211.5,
           487.0
         ],
         "node_label_bbox_5": [
-          375.0,
+          385.0,
           467.0,
-          445.0,
+          435.0,
           487.0
         ],
         "node_label_bbox_6": [
-          723.5,
+          724.0,
           467.0,
-          786.5,
+          786.0,
           487.0
         ],
         "node_label_bbox_7": [
-          719.0,
-          598.0,
-          791.0,
-          623.0
+          720.0,
+          600.5,
+          790.0,
+          620.5
         ],
         "node_label_bbox_8": [
-          605.5,
+          627.0,
           734.0,
-          674.5,
+          653.0,
           754.0
         ],
         "node_label_bbox_9": [
-          839.5,
+          839.0,
           734.0,
-          900.5,
+          901.0,
           754.0
         ]
       },
@@ -592,7 +592,7 @@
       "canvas_height": 880,
       "canvas_width": 1280,
       "connector_width_px": 5,
-      "geometry_seed": 3348992816087131,
+      "geometry_seed": 8384374793269193,
       "node_height_px": 72,
       "node_width_px": 164,
       "scene_variant": "org_chart"
@@ -751,19 +751,19 @@
           "entity_id": "node_bbox_0",
           "entity_type": "diagram_node",
           "node_id": "node_0",
-          "text": "Ozen"
+          "text": "Lita"
         },
         {
           "bbox_xyxy": [
-            682.167,
+            690.667,
             200.0,
-            751.167,
+            742.667,
             220.0
           ],
           "entity_id": "node_label_bbox_0",
           "entity_type": "diagram_node_label",
           "node_id": "node_0",
-          "text": "Ozen"
+          "text": "Lita"
         },
         {
           "bbox_xyxy": [
@@ -776,19 +776,19 @@
           "entity_id": "node_bbox_1",
           "entity_type": "diagram_node",
           "node_id": "node_1",
-          "text": "Kalb"
+          "text": "Elma"
         },
         {
           "bbox_xyxy": [
-            264.0,
+            261.5,
             333.5,
-            326.0,
+            328.5,
             353.5
           ],
           "entity_id": "node_label_bbox_1",
           "entity_type": "diagram_node_label",
           "node_id": "node_1",
-          "text": "Kalb"
+          "text": "Elma"
         },
         {
           "bbox_xyxy": [
@@ -801,19 +801,19 @@
           "entity_id": "node_bbox_2",
           "entity_type": "diagram_node",
           "node_id": "node_2",
-          "text": "Ozzy"
+          "text": "Dodd"
         },
         {
           "bbox_xyxy": [
-            722.0,
-            331.0,
-            788.0,
-            356.0
+            719.0,
+            333.5,
+            791.0,
+            353.5
           ],
           "entity_id": "node_label_bbox_2",
           "entity_type": "diagram_node_label",
           "node_id": "node_2",
-          "text": "Ozzy"
+          "text": "Dodd"
         },
         {
           "bbox_xyxy": [
@@ -826,19 +826,19 @@
           "entity_id": "node_bbox_3",
           "entity_type": "diagram_node",
           "node_id": "node_3",
-          "text": "Hull"
+          "text": "Inez"
         },
         {
           "bbox_xyxy": [
-            1072.5,
+            1071.0,
             333.5,
-            1127.5,
+            1129.0,
             353.5
           ],
           "entity_id": "node_label_bbox_3",
           "entity_type": "diagram_node_label",
           "node_id": "node_3",
-          "text": "Hull"
+          "text": "Inez"
         },
         {
           "bbox_xyxy": [
@@ -851,19 +851,19 @@
           "entity_id": "node_bbox_4",
           "entity_type": "diagram_node",
           "node_id": "node_4",
-          "text": "Nava"
+          "text": "Root"
         },
         {
           "bbox_xyxy": [
-            145.0,
+            148.5,
             467.0,
-            215.0,
+            211.5,
             487.0
           ],
           "entity_id": "node_label_bbox_4",
           "entity_type": "diagram_node_label",
           "node_id": "node_4",
-          "text": "Nava"
+          "text": "Root"
         },
         {
           "bbox_xyxy": [
@@ -876,19 +876,19 @@
           "entity_id": "node_bbox_5",
           "entity_type": "diagram_node",
           "node_id": "node_5",
-          "text": "Kane"
+          "text": "Mia"
         },
         {
           "bbox_xyxy": [
-            375.0,
+            385.0,
             467.0,
-            445.0,
+            435.0,
             487.0
           ],
           "entity_id": "node_label_bbox_5",
           "entity_type": "diagram_node_label",
           "node_id": "node_5",
-          "text": "Kane"
+          "text": "Mia"
         },
         {
           "bbox_xyxy": [
@@ -901,19 +901,19 @@
           "entity_id": "node_bbox_6",
           "entity_type": "diagram_node",
           "node_id": "node_6",
-          "text": "Cote"
+          "text": "Vani"
         },
         {
           "bbox_xyxy": [
-            723.5,
+            724.0,
             467.0,
-            786.5,
+            786.0,
             487.0
           ],
           "entity_id": "node_label_bbox_6",
           "entity_type": "diagram_node_label",
           "node_id": "node_6",
-          "text": "Cote"
+          "text": "Vani"
         },
         {
           "bbox_xyxy": [
@@ -926,19 +926,19 @@
           "entity_id": "node_bbox_7",
           "entity_type": "diagram_node",
           "node_id": "node_7",
-          "text": "Dong"
+          "text": "Etom"
         },
         {
           "bbox_xyxy": [
-            719.0,
-            598.0,
-            791.0,
-            623.0
+            720.0,
+            600.5,
+            790.0,
+            620.5
           ],
           "entity_id": "node_label_bbox_7",
           "entity_type": "diagram_node_label",
           "node_id": "node_7",
-          "text": "Dong"
+          "text": "Etom"
         },
         {
           "bbox_xyxy": [
@@ -951,19 +951,19 @@
           "entity_id": "node_bbox_8",
           "entity_type": "diagram_node",
           "node_id": "node_8",
-          "text": "Dosh"
+          "text": "Fi"
         },
         {
           "bbox_xyxy": [
-            605.5,
+            627.0,
             734.0,
-            674.5,
+            653.0,
             754.0
           ],
           "entity_id": "node_label_bbox_8",
           "entity_type": "diagram_node_label",
           "node_id": "node_8",
-          "text": "Dosh"
+          "text": "Fi"
         },
         {
           "bbox_xyxy": [
@@ -976,19 +976,19 @@
           "entity_id": "node_bbox_9",
           "entity_type": "diagram_node",
           "node_id": "node_9",
-          "text": "Shih"
+          "text": "Seto"
         },
         {
           "bbox_xyxy": [
-            839.5,
+            839.0,
             734.0,
-            900.5,
+            901.0,
             754.0
           ],
           "entity_id": "node_label_bbox_9",
           "entity_type": "diagram_node_label",
           "node_id": "node_9",
-          "text": "Shih"
+          "text": "Seto"
         },
         {
           "bbox_xyxy": [
@@ -1001,19 +1001,19 @@
           "entity_id": "node_bbox_10",
           "entity_type": "diagram_node",
           "node_id": "node_10",
-          "text": "Toby"
+          "text": "Rex"
         },
         {
           "bbox_xyxy": [
-            1066.5,
-            464.5,
-            1133.5,
-            489.5
+            1074.0,
+            467.0,
+            1126.0,
+            487.0
           ],
           "entity_id": "node_label_bbox_10",
           "entity_type": "diagram_node_label",
           "node_id": "node_10",
-          "text": "Toby"
+          "text": "Rex"
         }
       ],
       "relations": {

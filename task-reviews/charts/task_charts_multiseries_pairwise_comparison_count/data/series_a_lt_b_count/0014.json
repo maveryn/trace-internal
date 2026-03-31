@@ -1,301 +1,276 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 6
+    "value": 4
   },
   "evidence_gt": {
     "type": "label_set",
     "value": [
       "A",
-      "D",
-      "G",
-      "M",
-      "T",
-      "Z"
+      "C",
+      "F",
+      "L"
     ]
   },
   "image": {
     "format": "png",
     "path": "charts/task_charts_multiseries_pairwise_comparison_count/images/series_a_lt_b_count/0014.png"
   },
-  "instance_seed": 968408998606219,
-  "prompt": "The image shows a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Determine how many category labels satisfy the requested pairwise series comparison. Count the category labels where Behm is below Xeno.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer format: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+  "instance_seed": 4913043779594259,
+  "prompt": "The image shows a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Compare the two queried series category by category. Find how many category labels show Hope lower than Ines.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer requirement: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
   "prompt_variants": {
-    "answer_and_evidence": "The image shows a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Determine how many category labels satisfy the requested pairwise series comparison. Count the category labels where Behm is below Xeno.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer format: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
-    "answer_only": "The image shows a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Determine how many category labels satisfy the requested pairwise series comparison. Count the category labels where Behm is below Xeno.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
+    "answer_and_evidence": "The image shows a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Compare the two queried series category by category. Find how many category labels show Hope lower than Ines.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer requirement: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+    "answer_only": "The image shows a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Compare the two queried series category by category. Find how many category labels show Hope lower than Ines.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
   },
   "task": "task_charts_multiseries_pairwise_comparison_count",
   "task_variant": "series_a_lt_b_count",
   "trace_payload": {
     "execution_trace": {
-      "answer_value": 6,
-      "category_count": 10,
+      "answer_value": 4,
+      "category_count": 8,
       "category_count_range": [
         5,
         10
       ],
       "category_labels": [
-        "J",
         "K",
-        "G",
-        "V",
-        "E",
-        "D",
-        "M",
-        "T",
         "A",
-        "Z"
+        "V",
+        "W",
+        "C",
+        "L",
+        "F",
+        "J"
       ],
       "comparison": "less_than",
       "evidence_labels": [
         "A",
-        "D",
-        "G",
-        "M",
-        "T",
-        "Z"
+        "C",
+        "F",
+        "L"
       ],
-      "left_series_label": "Behm",
+      "left_series_label": "Hope",
       "mark_color_distance_space": "lab",
       "mark_color_min_distance": 40.0,
       "mark_color_sampling_policy": "random_rgb_palette",
       "queried_series_labels": [
-        "Behm",
-        "Xeno"
+        "Hope",
+        "Ines"
       ],
       "question_format": "numeric_open",
-      "right_series_label": "Xeno",
-      "scene_variant": "grouped_horizontal_bar",
+      "right_series_label": "Ines",
+      "scene_variant": "grouped_bar",
       "scene_variant_probabilities": {
         "grouped_bar": 0.25,
         "grouped_horizontal_bar": 0.25,
         "grouped_lollipop": 0.25,
         "multi_line": 0.25
       },
-      "series_count": 2,
+      "series_count": 3,
       "series_count_range": [
         2,
         3
       ],
       "series_fill_palette_rgb": [
         [
-          76,
-          60,
-          177
+          69,
+          180,
+          204
         ],
         [
-          124,
-          105,
-          48
+          127,
+          34,
+          57
+        ],
+        [
+          43,
+          23,
+          122
         ]
       ],
       "series_labels": [
-        "Behm",
-        "Xeno"
+        "Hope",
+        "Olga",
+        "Ines"
       ],
       "series_outline_palette_rgb": [
         [
-          42,
-          33,
-          97
+          38,
+          99,
+          112
         ],
         [
-          68,
-          58,
-          26
+          70,
+          19,
+          31
+        ],
+        [
+          24,
+          13,
+          67
         ]
       ],
-      "target_answer": 6,
+      "target_answer": 4,
       "target_answer_range": [
         0,
         8
       ],
       "task_variant": "series_a_lt_b_count",
       "task_variant_probabilities": {
-        "series_a_gt_b_count": 0.5,
-        "series_a_lt_b_count": 0.5
+        "series_a_gt_b_count": 0.0,
+        "series_a_lt_b_count": 1.0
       },
       "values_by_category": {
         "A": {
-          "Behm": 8,
-          "Xeno": 11
+          "Hope": 11,
+          "Ines": 20,
+          "Olga": 19
         },
-        "D": {
-          "Behm": 2,
-          "Xeno": 13
+        "C": {
+          "Hope": 13,
+          "Ines": 19,
+          "Olga": 14
         },
-        "E": {
-          "Behm": 15,
-          "Xeno": 11
-        },
-        "G": {
-          "Behm": 1,
-          "Xeno": 10
+        "F": {
+          "Hope": 1,
+          "Ines": 10,
+          "Olga": 9
         },
         "J": {
-          "Behm": 11,
-          "Xeno": 10
+          "Hope": 10,
+          "Ines": 1,
+          "Olga": 8
         },
         "K": {
-          "Behm": 19,
-          "Xeno": 1
+          "Hope": 17,
+          "Ines": 10,
+          "Olga": 16
         },
-        "M": {
-          "Behm": 5,
-          "Xeno": 16
-        },
-        "T": {
-          "Behm": 16,
-          "Xeno": 20
+        "L": {
+          "Hope": 3,
+          "Ines": 9,
+          "Olga": 7
         },
         "V": {
-          "Behm": 18,
-          "Xeno": 12
+          "Hope": 18,
+          "Ines": 2,
+          "Olga": 8
         },
-        "Z": {
-          "Behm": 2,
-          "Xeno": 3
+        "W": {
+          "Hope": 17,
+          "Ines": 1,
+          "Olga": 4
         }
       }
     },
     "projected_evidence": {
       "bbox_set": [
         [
-          53.5,
-          442.913,
-          491.143,
-          467.887
+          208.967,
+          67.048,
+          260.783,
+          562.0
         ],
         [
-          53.0,
-          297.713,
-          563.714,
-          322.687
+          494.717,
+          90.095,
+          546.533,
+          562.0
         ],
         [
-          53.0,
-          152.513,
-          454.857,
-          177.487
+          685.217,
+          297.524,
+          737.033,
+          562.0
         ],
         [
-          51.0,
-          346.113,
-          672.571,
-          371.087
-        ],
-        [
-          54.5,
-          394.513,
-          817.714,
-          419.487
-        ],
-        [
-          54.0,
-          491.313,
-          200.857,
-          516.287
+          589.967,
+          320.571,
+          641.783,
+          562.0
         ]
       ],
       "label_set": [
         "A",
-        "D",
-        "G",
-        "M",
-        "T",
-        "Z"
+        "C",
+        "F",
+        "L"
       ],
       "pixel_point_map": {
         "A": [
-          62.0,
-          455.4
+          234.875,
+          554.0
         ],
-        "D": [
-          62.0,
-          310.2
+        "C": [
+          520.625,
+          554.0
         ],
-        "G": [
-          62.0,
-          165.0
+        "F": [
+          711.125,
+          554.0
         ],
-        "M": [
-          62.0,
-          358.6
-        ],
-        "T": [
-          62.0,
-          407.0
-        ],
-        "Z": [
-          62.0,
-          503.8
+        "L": [
+          615.875,
+          554.0
         ]
       },
       "pixel_point_set": [
         [
-          62.0,
-          455.4
+          234.875,
+          554.0
         ],
         [
-          62.0,
-          310.2
+          520.625,
+          554.0
         ],
         [
-          62.0,
-          165.0
+          711.125,
+          554.0
         ],
         [
-          62.0,
-          358.6
-        ],
-        [
-          62.0,
-          407.0
-        ],
-        [
-          62.0,
-          503.8
+          615.875,
+          554.0
         ]
       ]
     },
     "query_spec": {
       "params": {
-        "category_count": 10,
+        "category_count": 8,
         "category_count_range": [
           5,
           10
         ],
         "comparison": "less_than",
         "queried_series_labels": [
-          "Behm",
-          "Xeno"
+          "Hope",
+          "Ines"
         ],
-        "scene_variant": "grouped_horizontal_bar",
+        "scene_variant": "grouped_bar",
         "scene_variant_probabilities": {
           "grouped_bar": 0.25,
           "grouped_horizontal_bar": 0.25,
           "grouped_lollipop": 0.25,
           "multi_line": 0.25
         },
-        "series_count": 2,
+        "series_count": 3,
         "series_count_range": [
           2,
           3
         ],
-        "target_answer": 6,
+        "target_answer": 4,
         "target_answer_range": [
           0,
           8
         ],
         "task_variant": "series_a_lt_b_count",
         "task_variant_probabilities": {
-          "series_a_gt_b_count": 0.5,
-          "series_a_lt_b_count": 0.5
+          "series_a_gt_b_count": 0.0,
+          "series_a_lt_b_count": 1.0
         }
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 1,
+        "answer_or_evidence_variant_index": 2,
         "prompt_bundle_id": "charts_multiseries_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -305,16 +280,16 @@
           "json_example_answer_only": "{\"answer\":2}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "left_series": "Behm",
-          "object_description": "a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category",
-          "right_series": "Xeno"
+          "left_series": "Hope",
+          "object_description": "a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category",
+          "right_series": "Ines"
         },
         "task_family_key": "multiseries_chart_comparison",
         "task_family_variant_index": 0,
         "task_key": "pairwise_comparison_count_query",
-        "task_variant_index": 2,
+        "task_variant_index": 0,
         "task_variant_key": "series_a_lt_b_count",
-        "task_variant_template_index": 1,
+        "task_variant_template_index": 4,
         "template_paths": [
           "charts/multiseries/charts_multiseries_v1.json"
         ],
@@ -330,7 +305,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 1,
+            "answer_or_evidence_variant_index": 2,
             "prompt_bundle_id": "charts_multiseries_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -340,16 +315,16 @@
               "json_example_answer_only": "{\"answer\":2}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "left_series": "Behm",
-              "object_description": "a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category",
-              "right_series": "Xeno"
+              "left_series": "Hope",
+              "object_description": "a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category",
+              "right_series": "Ines"
             },
             "task_family_key": "multiseries_chart_comparison",
             "task_family_variant_index": 0,
             "task_key": "pairwise_comparison_count_query",
-            "task_variant_index": 2,
+            "task_variant_index": 0,
             "task_variant_key": "series_a_lt_b_count",
-            "task_variant_template_index": 1,
+            "task_variant_template_index": 4,
             "template_paths": [
               "charts/multiseries/charts_multiseries_v1.json"
             ],
@@ -360,7 +335,7 @@
               "task_variant:series_a_lt_b_count": 5
             }
           },
-          "prompt": "The image shows a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Determine how many category labels satisfy the requested pairwise series comparison. Count the category labels where Behm is below Xeno.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer format: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}"
+          "prompt": "The image shows a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Compare the two queried series category by category. Find how many category labels show Hope lower than Ines.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer requirement: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}"
         },
         "answer_only": {
           "metadata": {
@@ -375,16 +350,16 @@
               "json_example_answer_only": "{\"answer\":2}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "left_series": "Behm",
-              "object_description": "a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category",
-              "right_series": "Xeno"
+              "left_series": "Hope",
+              "object_description": "a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category",
+              "right_series": "Ines"
             },
             "task_family_key": "multiseries_chart_comparison",
             "task_family_variant_index": 0,
             "task_key": "pairwise_comparison_count_query",
-            "task_variant_index": 2,
+            "task_variant_index": 0,
             "task_variant_key": "series_a_lt_b_count",
-            "task_variant_template_index": 1,
+            "task_variant_template_index": 4,
             "template_paths": [
               "charts/multiseries/charts_multiseries_v1.json"
             ],
@@ -395,7 +370,7 @@
               "task_variant:series_a_lt_b_count": 5
             }
           },
-          "prompt": "The image shows a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Determine how many category labels satisfy the requested pairwise series comparison. Count the category labels where Behm is below Xeno.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
+          "prompt": "The image shows a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Compare the two queried series category by category. Find how many category labels show Hope lower than Ines.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
         }
       },
       "task_variant": "series_a_lt_b_count",
@@ -404,44 +379,36 @@
     "render_map": {
       "category_label_centers_px": {
         "A": [
-          62.0,
-          455.4
+          234.875,
+          554.0
         ],
-        "D": [
-          62.0,
-          310.2
+        "C": [
+          520.625,
+          554.0
         ],
-        "E": [
-          62.0,
-          261.8
-        ],
-        "G": [
-          62.0,
-          165.0
+        "F": [
+          711.125,
+          554.0
         ],
         "J": [
-          62.0,
-          68.2
+          806.375,
+          554.0
         ],
         "K": [
-          62.0,
-          116.6
+          139.625,
+          554.0
         ],
-        "M": [
-          62.0,
-          358.6
-        ],
-        "T": [
-          62.0,
-          407.0
+        "L": [
+          615.875,
+          554.0
         ],
         "V": [
-          62.0,
-          213.4
+          330.125,
+          554.0
         ],
-        "Z": [
-          62.0,
-          503.8
+        "W": [
+          425.375,
+          554.0
         ]
       },
       "image_id": "img0",
@@ -482,26 +449,36 @@
         "sampling_policy": "random_rgb_palette",
         "series_fill_palette_rgb": [
           [
-            76,
-            60,
-            177
+            69,
+            180,
+            204
           ],
           [
-            124,
-            105,
-            48
+            127,
+            34,
+            57
+          ],
+          [
+            43,
+            23,
+            122
           ]
         ],
         "series_outline_palette_rgb": [
           [
-            42,
-            33,
-            97
+            38,
+            99,
+            112
           ],
           [
-            68,
-            58,
-            26
+            70,
+            19,
+            31
+          ],
+          [
+            24,
+            13,
+            67
           ]
         ]
       },
@@ -527,7 +504,7 @@
         "edits": [],
         "enabled": false
       },
-      "scene_variant": "grouped_horizontal_bar",
+      "scene_variant": "grouped_bar",
       "text_style": {
         "label_font_size_px": 22,
         "label_stroke_width_px": 2,
@@ -564,841 +541,1009 @@
         {
           "attrs": {
             "category_group_bbox_px": [
-              57.0,
-              55.713,
-              491.143,
-              80.687
+              113.717,
+              136.19,
+              165.533,
+              562.0
             ],
-            "category_label": "J",
+            "category_label": "K",
             "category_label_center_px": [
-              62.0,
-              68.2
+              139.625,
+              554.0
             ],
             "category_rank": 0,
             "mark_bbox_px": [
-              92.0,
-              55.713,
-              491.143,
-              66.167
+              113.717,
+              136.19,
+              127.433,
+              528.0
             ],
             "mark_center_px": [
-              291.571,
-              60.94
+              120.575,
+              136.19
             ],
             "mark_fill_rgb": [
-              76,
-              60,
-              177
+              69,
+              180,
+              204
             ],
             "mark_outline_rgb": [
-              42,
-              33,
-              97
+              38,
+              99,
+              112
             ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Behm",
+            "scene_variant": "grouped_bar",
+            "series_label": "Hope",
+            "series_rank": 0,
+            "value": 17
+          },
+          "entity_id": "mark_K_Hope",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              113.717,
+              136.19,
+              165.533,
+              562.0
+            ],
+            "category_label": "K",
+            "category_label_center_px": [
+              139.625,
+              554.0
+            ],
+            "category_rank": 0,
+            "mark_bbox_px": [
+              132.767,
+              159.238,
+              146.483,
+              528.0
+            ],
+            "mark_center_px": [
+              139.625,
+              159.238
+            ],
+            "mark_fill_rgb": [
+              127,
+              34,
+              57
+            ],
+            "mark_outline_rgb": [
+              70,
+              19,
+              31
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Olga",
+            "series_rank": 1,
+            "value": 16
+          },
+          "entity_id": "mark_K_Olga",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              113.717,
+              136.19,
+              165.533,
+              562.0
+            ],
+            "category_label": "K",
+            "category_label_center_px": [
+              139.625,
+              554.0
+            ],
+            "category_rank": 0,
+            "mark_bbox_px": [
+              151.817,
+              297.524,
+              165.533,
+              528.0
+            ],
+            "mark_center_px": [
+              158.675,
+              297.524
+            ],
+            "mark_fill_rgb": [
+              43,
+              23,
+              122
+            ],
+            "mark_outline_rgb": [
+              24,
+              13,
+              67
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Ines",
+            "series_rank": 2,
+            "value": 10
+          },
+          "entity_id": "mark_K_Ines",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              208.967,
+              67.048,
+              260.783,
+              562.0
+            ],
+            "category_label": "A",
+            "category_label_center_px": [
+              234.875,
+              554.0
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              208.967,
+              274.476,
+              222.683,
+              528.0
+            ],
+            "mark_center_px": [
+              215.825,
+              274.476
+            ],
+            "mark_fill_rgb": [
+              69,
+              180,
+              204
+            ],
+            "mark_outline_rgb": [
+              38,
+              99,
+              112
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Hope",
             "series_rank": 0,
             "value": 11
           },
-          "entity_id": "mark_J_Behm",
+          "entity_id": "mark_A_Hope",
           "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              57.0,
-              55.713,
-              491.143,
-              80.687
+              208.967,
+              67.048,
+              260.783,
+              562.0
             ],
-            "category_label": "J",
+            "category_label": "A",
             "category_label_center_px": [
-              62.0,
-              68.2
-            ],
-            "category_rank": 0,
-            "mark_bbox_px": [
-              92.0,
-              70.233,
-              454.857,
-              80.687
-            ],
-            "mark_center_px": [
-              273.429,
-              75.46
-            ],
-            "mark_fill_rgb": [
-              124,
-              105,
-              48
-            ],
-            "mark_outline_rgb": [
-              68,
-              58,
-              26
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Xeno",
-            "series_rank": 1,
-            "value": 10
-          },
-          "entity_id": "mark_J_Xeno",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              53.0,
-              104.113,
-              781.429,
-              129.087
-            ],
-            "category_label": "K",
-            "category_label_center_px": [
-              62.0,
-              116.6
+              234.875,
+              554.0
             ],
             "category_rank": 1,
             "mark_bbox_px": [
-              92.0,
-              104.113,
-              781.429,
-              114.567
+              228.017,
+              90.095,
+              241.733,
+              528.0
             ],
             "mark_center_px": [
-              436.714,
-              109.34
+              234.875,
+              90.095
             ],
             "mark_fill_rgb": [
-              76,
-              60,
-              177
+              127,
+              34,
+              57
             ],
             "mark_outline_rgb": [
-              42,
-              33,
-              97
+              70,
+              19,
+              31
             ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Behm",
-            "series_rank": 0,
+            "scene_variant": "grouped_bar",
+            "series_label": "Olga",
+            "series_rank": 1,
             "value": 19
           },
-          "entity_id": "mark_K_Behm",
+          "entity_id": "mark_A_Olga",
           "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              53.0,
-              104.113,
-              781.429,
-              129.087
+              208.967,
+              67.048,
+              260.783,
+              562.0
             ],
-            "category_label": "K",
+            "category_label": "A",
             "category_label_center_px": [
-              62.0,
-              116.6
+              234.875,
+              554.0
             ],
             "category_rank": 1,
             "mark_bbox_px": [
-              92.0,
-              118.633,
-              128.286,
-              129.087
+              247.067,
+              67.048,
+              260.783,
+              528.0
             ],
             "mark_center_px": [
-              110.143,
-              123.86
+              253.925,
+              67.048
             ],
             "mark_fill_rgb": [
-              124,
-              105,
-              48
+              43,
+              23,
+              122
             ],
             "mark_outline_rgb": [
-              68,
-              58,
-              26
+              24,
+              13,
+              67
             ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Xeno",
-            "series_rank": 1,
-            "value": 1
+            "scene_variant": "grouped_bar",
+            "series_label": "Ines",
+            "series_rank": 2,
+            "value": 20
           },
-          "entity_id": "mark_K_Xeno",
+          "entity_id": "mark_A_Ines",
           "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              53.0,
-              152.513,
-              454.857,
-              177.487
-            ],
-            "category_label": "G",
-            "category_label_center_px": [
-              62.0,
-              165.0
-            ],
-            "category_rank": 2,
-            "mark_bbox_px": [
-              92.0,
-              152.513,
-              128.286,
-              162.967
-            ],
-            "mark_center_px": [
-              110.143,
-              157.74
-            ],
-            "mark_fill_rgb": [
-              76,
-              60,
-              177
-            ],
-            "mark_outline_rgb": [
-              42,
-              33,
-              97
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Behm",
-            "series_rank": 0,
-            "value": 1
-          },
-          "entity_id": "mark_G_Behm",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              53.0,
-              152.513,
-              454.857,
-              177.487
-            ],
-            "category_label": "G",
-            "category_label_center_px": [
-              62.0,
-              165.0
-            ],
-            "category_rank": 2,
-            "mark_bbox_px": [
-              92.0,
-              167.033,
-              454.857,
-              177.487
-            ],
-            "mark_center_px": [
-              273.429,
-              172.26
-            ],
-            "mark_fill_rgb": [
-              124,
-              105,
-              48
-            ],
-            "mark_outline_rgb": [
-              68,
-              58,
-              26
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Xeno",
-            "series_rank": 1,
-            "value": 10
-          },
-          "entity_id": "mark_G_Xeno",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              53.5,
-              200.913,
-              745.143,
-              225.887
+              304.217,
+              113.143,
+              356.033,
+              562.0
             ],
             "category_label": "V",
             "category_label_center_px": [
-              62.0,
-              213.4
+              330.125,
+              554.0
             ],
-            "category_rank": 3,
+            "category_rank": 2,
             "mark_bbox_px": [
-              92.0,
-              200.913,
-              745.143,
-              211.367
+              304.217,
+              113.143,
+              317.933,
+              528.0
             ],
             "mark_center_px": [
-              418.571,
-              206.14
+              311.075,
+              113.143
             ],
             "mark_fill_rgb": [
-              76,
-              60,
-              177
+              69,
+              180,
+              204
             ],
             "mark_outline_rgb": [
-              42,
-              33,
-              97
+              38,
+              99,
+              112
             ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Behm",
+            "scene_variant": "grouped_bar",
+            "series_label": "Hope",
             "series_rank": 0,
             "value": 18
           },
-          "entity_id": "mark_V_Behm",
+          "entity_id": "mark_V_Hope",
           "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              53.5,
-              200.913,
-              745.143,
-              225.887
+              304.217,
+              113.143,
+              356.033,
+              562.0
             ],
             "category_label": "V",
             "category_label_center_px": [
-              62.0,
-              213.4
+              330.125,
+              554.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              323.267,
+              343.619,
+              336.983,
+              528.0
+            ],
+            "mark_center_px": [
+              330.125,
+              343.619
+            ],
+            "mark_fill_rgb": [
+              127,
+              34,
+              57
+            ],
+            "mark_outline_rgb": [
+              70,
+              19,
+              31
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Olga",
+            "series_rank": 1,
+            "value": 8
+          },
+          "entity_id": "mark_V_Olga",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              304.217,
+              113.143,
+              356.033,
+              562.0
+            ],
+            "category_label": "V",
+            "category_label_center_px": [
+              330.125,
+              554.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              342.317,
+              481.905,
+              356.033,
+              528.0
+            ],
+            "mark_center_px": [
+              349.175,
+              481.905
+            ],
+            "mark_fill_rgb": [
+              43,
+              23,
+              122
+            ],
+            "mark_outline_rgb": [
+              24,
+              13,
+              67
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Ines",
+            "series_rank": 2,
+            "value": 2
+          },
+          "entity_id": "mark_V_Ines",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              399.467,
+              136.19,
+              451.283,
+              562.0
+            ],
+            "category_label": "W",
+            "category_label_center_px": [
+              425.375,
+              554.0
             ],
             "category_rank": 3,
             "mark_bbox_px": [
-              92.0,
-              215.433,
-              527.429,
-              225.887
+              399.467,
+              136.19,
+              413.183,
+              528.0
             ],
             "mark_center_px": [
-              309.714,
-              220.66
+              406.325,
+              136.19
             ],
             "mark_fill_rgb": [
-              124,
-              105,
-              48
+              69,
+              180,
+              204
             ],
             "mark_outline_rgb": [
-              68,
-              58,
-              26
+              38,
+              99,
+              112
             ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Xeno",
-            "series_rank": 1,
-            "value": 12
+            "scene_variant": "grouped_bar",
+            "series_label": "Hope",
+            "series_rank": 0,
+            "value": 17
           },
-          "entity_id": "mark_V_Xeno",
+          "entity_id": "mark_W_Hope",
           "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              54.5,
-              249.313,
-              636.286,
-              274.287
+              399.467,
+              136.19,
+              451.283,
+              562.0
             ],
-            "category_label": "E",
+            "category_label": "W",
             "category_label_center_px": [
-              62.0,
-              261.8
+              425.375,
+              554.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              418.517,
+              435.81,
+              432.233,
+              528.0
+            ],
+            "mark_center_px": [
+              425.375,
+              435.81
+            ],
+            "mark_fill_rgb": [
+              127,
+              34,
+              57
+            ],
+            "mark_outline_rgb": [
+              70,
+              19,
+              31
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Olga",
+            "series_rank": 1,
+            "value": 4
+          },
+          "entity_id": "mark_W_Olga",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              399.467,
+              136.19,
+              451.283,
+              562.0
+            ],
+            "category_label": "W",
+            "category_label_center_px": [
+              425.375,
+              554.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              437.567,
+              504.952,
+              451.283,
+              528.0
+            ],
+            "mark_center_px": [
+              444.425,
+              504.952
+            ],
+            "mark_fill_rgb": [
+              43,
+              23,
+              122
+            ],
+            "mark_outline_rgb": [
+              24,
+              13,
+              67
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Ines",
+            "series_rank": 2,
+            "value": 1
+          },
+          "entity_id": "mark_W_Ines",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              494.717,
+              90.095,
+              546.533,
+              562.0
+            ],
+            "category_label": "C",
+            "category_label_center_px": [
+              520.625,
+              554.0
             ],
             "category_rank": 4,
             "mark_bbox_px": [
-              92.0,
-              249.313,
-              636.286,
-              259.767
+              494.717,
+              228.381,
+              508.433,
+              528.0
             ],
             "mark_center_px": [
-              364.143,
-              254.54
+              501.575,
+              228.381
             ],
             "mark_fill_rgb": [
-              76,
-              60,
-              177
+              69,
+              180,
+              204
             ],
             "mark_outline_rgb": [
-              42,
-              33,
-              97
+              38,
+              99,
+              112
             ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Behm",
+            "scene_variant": "grouped_bar",
+            "series_label": "Hope",
             "series_rank": 0,
-            "value": 15
-          },
-          "entity_id": "mark_E_Behm",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              54.5,
-              249.313,
-              636.286,
-              274.287
-            ],
-            "category_label": "E",
-            "category_label_center_px": [
-              62.0,
-              261.8
-            ],
-            "category_rank": 4,
-            "mark_bbox_px": [
-              92.0,
-              263.833,
-              491.143,
-              274.287
-            ],
-            "mark_center_px": [
-              291.571,
-              269.06
-            ],
-            "mark_fill_rgb": [
-              124,
-              105,
-              48
-            ],
-            "mark_outline_rgb": [
-              68,
-              58,
-              26
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Xeno",
-            "series_rank": 1,
-            "value": 11
-          },
-          "entity_id": "mark_E_Xeno",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              53.0,
-              297.713,
-              563.714,
-              322.687
-            ],
-            "category_label": "D",
-            "category_label_center_px": [
-              62.0,
-              310.2
-            ],
-            "category_rank": 5,
-            "mark_bbox_px": [
-              92.0,
-              297.713,
-              164.571,
-              308.167
-            ],
-            "mark_center_px": [
-              128.286,
-              302.94
-            ],
-            "mark_fill_rgb": [
-              76,
-              60,
-              177
-            ],
-            "mark_outline_rgb": [
-              42,
-              33,
-              97
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Behm",
-            "series_rank": 0,
-            "value": 2
-          },
-          "entity_id": "mark_D_Behm",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              53.0,
-              297.713,
-              563.714,
-              322.687
-            ],
-            "category_label": "D",
-            "category_label_center_px": [
-              62.0,
-              310.2
-            ],
-            "category_rank": 5,
-            "mark_bbox_px": [
-              92.0,
-              312.233,
-              563.714,
-              322.687
-            ],
-            "mark_center_px": [
-              327.857,
-              317.46
-            ],
-            "mark_fill_rgb": [
-              124,
-              105,
-              48
-            ],
-            "mark_outline_rgb": [
-              68,
-              58,
-              26
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Xeno",
-            "series_rank": 1,
             "value": 13
           },
-          "entity_id": "mark_D_Xeno",
+          "entity_id": "mark_C_Hope",
           "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              51.0,
-              346.113,
-              672.571,
-              371.087
+              494.717,
+              90.095,
+              546.533,
+              562.0
             ],
-            "category_label": "M",
+            "category_label": "C",
             "category_label_center_px": [
-              62.0,
-              358.6
+              520.625,
+              554.0
             ],
-            "category_rank": 6,
+            "category_rank": 4,
             "mark_bbox_px": [
-              92.0,
-              346.113,
-              273.429,
-              356.567
+              513.767,
+              205.333,
+              527.483,
+              528.0
             ],
             "mark_center_px": [
-              182.714,
-              351.34
+              520.625,
+              205.333
             ],
             "mark_fill_rgb": [
-              76,
-              60,
-              177
+              127,
+              34,
+              57
             ],
             "mark_outline_rgb": [
-              42,
-              33,
-              97
+              70,
+              19,
+              31
             ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Behm",
-            "series_rank": 0,
-            "value": 5
-          },
-          "entity_id": "mark_M_Behm",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              51.0,
-              346.113,
-              672.571,
-              371.087
-            ],
-            "category_label": "M",
-            "category_label_center_px": [
-              62.0,
-              358.6
-            ],
-            "category_rank": 6,
-            "mark_bbox_px": [
-              92.0,
-              360.633,
-              672.571,
-              371.087
-            ],
-            "mark_center_px": [
-              382.286,
-              365.86
-            ],
-            "mark_fill_rgb": [
-              124,
-              105,
-              48
-            ],
-            "mark_outline_rgb": [
-              68,
-              58,
-              26
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Xeno",
+            "scene_variant": "grouped_bar",
+            "series_label": "Olga",
             "series_rank": 1,
-            "value": 16
+            "value": 14
           },
-          "entity_id": "mark_M_Xeno",
+          "entity_id": "mark_C_Olga",
           "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              54.5,
-              394.513,
-              817.714,
-              419.487
+              494.717,
+              90.095,
+              546.533,
+              562.0
             ],
-            "category_label": "T",
+            "category_label": "C",
             "category_label_center_px": [
-              62.0,
-              407.0
+              520.625,
+              554.0
             ],
-            "category_rank": 7,
+            "category_rank": 4,
             "mark_bbox_px": [
-              92.0,
-              394.513,
-              672.571,
-              404.967
+              532.817,
+              90.095,
+              546.533,
+              528.0
             ],
             "mark_center_px": [
-              382.286,
-              399.74
+              539.675,
+              90.095
             ],
             "mark_fill_rgb": [
-              76,
-              60,
-              177
+              43,
+              23,
+              122
             ],
             "mark_outline_rgb": [
-              42,
-              33,
-              97
+              24,
+              13,
+              67
             ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Behm",
+            "scene_variant": "grouped_bar",
+            "series_label": "Ines",
+            "series_rank": 2,
+            "value": 19
+          },
+          "entity_id": "mark_C_Ines",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              589.967,
+              320.571,
+              641.783,
+              562.0
+            ],
+            "category_label": "L",
+            "category_label_center_px": [
+              615.875,
+              554.0
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              589.967,
+              458.857,
+              603.683,
+              528.0
+            ],
+            "mark_center_px": [
+              596.825,
+              458.857
+            ],
+            "mark_fill_rgb": [
+              69,
+              180,
+              204
+            ],
+            "mark_outline_rgb": [
+              38,
+              99,
+              112
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Hope",
             "series_rank": 0,
-            "value": 16
-          },
-          "entity_id": "mark_T_Behm",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              54.5,
-              394.513,
-              817.714,
-              419.487
-            ],
-            "category_label": "T",
-            "category_label_center_px": [
-              62.0,
-              407.0
-            ],
-            "category_rank": 7,
-            "mark_bbox_px": [
-              92.0,
-              409.033,
-              817.714,
-              419.487
-            ],
-            "mark_center_px": [
-              454.857,
-              414.26
-            ],
-            "mark_fill_rgb": [
-              124,
-              105,
-              48
-            ],
-            "mark_outline_rgb": [
-              68,
-              58,
-              26
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Xeno",
-            "series_rank": 1,
-            "value": 20
-          },
-          "entity_id": "mark_T_Xeno",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              53.5,
-              442.913,
-              491.143,
-              467.887
-            ],
-            "category_label": "A",
-            "category_label_center_px": [
-              62.0,
-              455.4
-            ],
-            "category_rank": 8,
-            "mark_bbox_px": [
-              92.0,
-              442.913,
-              382.286,
-              453.367
-            ],
-            "mark_center_px": [
-              237.143,
-              448.14
-            ],
-            "mark_fill_rgb": [
-              76,
-              60,
-              177
-            ],
-            "mark_outline_rgb": [
-              42,
-              33,
-              97
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Behm",
-            "series_rank": 0,
-            "value": 8
-          },
-          "entity_id": "mark_A_Behm",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              53.5,
-              442.913,
-              491.143,
-              467.887
-            ],
-            "category_label": "A",
-            "category_label_center_px": [
-              62.0,
-              455.4
-            ],
-            "category_rank": 8,
-            "mark_bbox_px": [
-              92.0,
-              457.433,
-              491.143,
-              467.887
-            ],
-            "mark_center_px": [
-              291.571,
-              462.66
-            ],
-            "mark_fill_rgb": [
-              124,
-              105,
-              48
-            ],
-            "mark_outline_rgb": [
-              68,
-              58,
-              26
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Xeno",
-            "series_rank": 1,
-            "value": 11
-          },
-          "entity_id": "mark_A_Xeno",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              54.0,
-              491.313,
-              200.857,
-              516.287
-            ],
-            "category_label": "Z",
-            "category_label_center_px": [
-              62.0,
-              503.8
-            ],
-            "category_rank": 9,
-            "mark_bbox_px": [
-              92.0,
-              491.313,
-              164.571,
-              501.767
-            ],
-            "mark_center_px": [
-              128.286,
-              496.54
-            ],
-            "mark_fill_rgb": [
-              76,
-              60,
-              177
-            ],
-            "mark_outline_rgb": [
-              42,
-              33,
-              97
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Behm",
-            "series_rank": 0,
-            "value": 2
-          },
-          "entity_id": "mark_Z_Behm",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              54.0,
-              491.313,
-              200.857,
-              516.287
-            ],
-            "category_label": "Z",
-            "category_label_center_px": [
-              62.0,
-              503.8
-            ],
-            "category_rank": 9,
-            "mark_bbox_px": [
-              92.0,
-              505.833,
-              200.857,
-              516.287
-            ],
-            "mark_center_px": [
-              146.429,
-              511.06
-            ],
-            "mark_fill_rgb": [
-              124,
-              105,
-              48
-            ],
-            "mark_outline_rgb": [
-              68,
-              58,
-              26
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Xeno",
-            "series_rank": 1,
             "value": 3
           },
-          "entity_id": "mark_Z_Xeno",
+          "entity_id": "mark_L_Hope",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              589.967,
+              320.571,
+              641.783,
+              562.0
+            ],
+            "category_label": "L",
+            "category_label_center_px": [
+              615.875,
+              554.0
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              609.017,
+              366.667,
+              622.733,
+              528.0
+            ],
+            "mark_center_px": [
+              615.875,
+              366.667
+            ],
+            "mark_fill_rgb": [
+              127,
+              34,
+              57
+            ],
+            "mark_outline_rgb": [
+              70,
+              19,
+              31
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Olga",
+            "series_rank": 1,
+            "value": 7
+          },
+          "entity_id": "mark_L_Olga",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              589.967,
+              320.571,
+              641.783,
+              562.0
+            ],
+            "category_label": "L",
+            "category_label_center_px": [
+              615.875,
+              554.0
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              628.067,
+              320.571,
+              641.783,
+              528.0
+            ],
+            "mark_center_px": [
+              634.925,
+              320.571
+            ],
+            "mark_fill_rgb": [
+              43,
+              23,
+              122
+            ],
+            "mark_outline_rgb": [
+              24,
+              13,
+              67
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Ines",
+            "series_rank": 2,
+            "value": 9
+          },
+          "entity_id": "mark_L_Ines",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              685.217,
+              297.524,
+              737.033,
+              562.0
+            ],
+            "category_label": "F",
+            "category_label_center_px": [
+              711.125,
+              554.0
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              685.217,
+              504.952,
+              698.933,
+              528.0
+            ],
+            "mark_center_px": [
+              692.075,
+              504.952
+            ],
+            "mark_fill_rgb": [
+              69,
+              180,
+              204
+            ],
+            "mark_outline_rgb": [
+              38,
+              99,
+              112
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Hope",
+            "series_rank": 0,
+            "value": 1
+          },
+          "entity_id": "mark_F_Hope",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              685.217,
+              297.524,
+              737.033,
+              562.0
+            ],
+            "category_label": "F",
+            "category_label_center_px": [
+              711.125,
+              554.0
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              704.267,
+              320.571,
+              717.983,
+              528.0
+            ],
+            "mark_center_px": [
+              711.125,
+              320.571
+            ],
+            "mark_fill_rgb": [
+              127,
+              34,
+              57
+            ],
+            "mark_outline_rgb": [
+              70,
+              19,
+              31
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Olga",
+            "series_rank": 1,
+            "value": 9
+          },
+          "entity_id": "mark_F_Olga",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              685.217,
+              297.524,
+              737.033,
+              562.0
+            ],
+            "category_label": "F",
+            "category_label_center_px": [
+              711.125,
+              554.0
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              723.317,
+              297.524,
+              737.033,
+              528.0
+            ],
+            "mark_center_px": [
+              730.175,
+              297.524
+            ],
+            "mark_fill_rgb": [
+              43,
+              23,
+              122
+            ],
+            "mark_outline_rgb": [
+              24,
+              13,
+              67
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Ines",
+            "series_rank": 2,
+            "value": 10
+          },
+          "entity_id": "mark_F_Ines",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              780.467,
+              297.524,
+              832.283,
+              564.0
+            ],
+            "category_label": "J",
+            "category_label_center_px": [
+              806.375,
+              554.0
+            ],
+            "category_rank": 7,
+            "mark_bbox_px": [
+              780.467,
+              297.524,
+              794.183,
+              528.0
+            ],
+            "mark_center_px": [
+              787.325,
+              297.524
+            ],
+            "mark_fill_rgb": [
+              69,
+              180,
+              204
+            ],
+            "mark_outline_rgb": [
+              38,
+              99,
+              112
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Hope",
+            "series_rank": 0,
+            "value": 10
+          },
+          "entity_id": "mark_J_Hope",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              780.467,
+              297.524,
+              832.283,
+              564.0
+            ],
+            "category_label": "J",
+            "category_label_center_px": [
+              806.375,
+              554.0
+            ],
+            "category_rank": 7,
+            "mark_bbox_px": [
+              799.517,
+              343.619,
+              813.233,
+              528.0
+            ],
+            "mark_center_px": [
+              806.375,
+              343.619
+            ],
+            "mark_fill_rgb": [
+              127,
+              34,
+              57
+            ],
+            "mark_outline_rgb": [
+              70,
+              19,
+              31
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Olga",
+            "series_rank": 1,
+            "value": 8
+          },
+          "entity_id": "mark_J_Olga",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              780.467,
+              297.524,
+              832.283,
+              564.0
+            ],
+            "category_label": "J",
+            "category_label_center_px": [
+              806.375,
+              554.0
+            ],
+            "category_rank": 7,
+            "mark_bbox_px": [
+              818.567,
+              504.952,
+              832.283,
+              528.0
+            ],
+            "mark_center_px": [
+              825.425,
+              504.952
+            ],
+            "mark_fill_rgb": [
+              43,
+              23,
+              122
+            ],
+            "mark_outline_rgb": [
+              24,
+              13,
+              67
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Ines",
+            "series_rank": 2,
+            "value": 1
+          },
+          "entity_id": "mark_J_Ines",
           "entity_type": "bar"
         }
       ],
@@ -1406,29 +1551,25 @@
         "comparison": "less_than",
         "evidence_labels": [
           "A",
-          "D",
-          "G",
-          "M",
-          "T",
-          "Z"
+          "C",
+          "F",
+          "L"
         ],
         "queried_series_labels": [
-          "Behm",
-          "Xeno"
+          "Hope",
+          "Ines"
         ],
-        "scene_variant": "grouped_horizontal_bar",
+        "scene_variant": "grouped_bar",
         "task_variant": "series_a_lt_b_count"
       },
-      "scene_kind": "chart_grouped_horizontal_bar_multiseries"
+      "scene_kind": "chart_grouped_bar_multiseries"
     },
     "witness_symbolic": {
       "labels": [
         "A",
-        "D",
-        "G",
-        "M",
-        "T",
-        "Z"
+        "C",
+        "F",
+        "L"
       ],
       "type": "label_set"
     }

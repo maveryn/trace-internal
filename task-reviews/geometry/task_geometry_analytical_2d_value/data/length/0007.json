@@ -1,23 +1,24 @@
 {
   "answer_gt": {
     "type": "number",
-    "value": 38.2
+    "value": 35.8
   },
   "evidence_gt": {
     "type": "measurement_ref_map",
     "value": {
-      "IG": 54
+      "QT": 29,
+      "ST": 21
     }
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_2d_value/images/length/0007.png"
   },
-  "instance_seed": 1359013588389506,
-  "prompt": "Work from the annotated scene showing a geometric scene with measurement annotations. Read the marked measurements and answer: The square is inscribed in the circle, and a diameter is annotated. What is the length of segment FG?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: IG.\nAnswer: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"IG\":2},\"answer\":42.3}",
+  "instance_seed": 6812002334660249,
+  "prompt": "The image shows a geometric scene with measurement annotations. Question: The triangle includes an altitude to the base. What is the length of segment QS?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: ST, QT.\nAnswer: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"ST\":2,\"QT\":3},\"answer\":42.3}",
   "prompt_variants": {
-    "answer_and_evidence": "Work from the annotated scene showing a geometric scene with measurement annotations. Read the marked measurements and answer: The square is inscribed in the circle, and a diameter is annotated. What is the length of segment FG?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: IG.\nAnswer: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"IG\":2},\"answer\":42.3}",
-    "answer_only": "Work from the annotated scene showing a geometric scene with measurement annotations. Read the marked measurements and answer: The square is inscribed in the circle, and a diameter is annotated. What is the length of segment FG?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"answer\":42.3}"
+    "answer_and_evidence": "The image shows a geometric scene with measurement annotations. Question: The triangle includes an altitude to the base. What is the length of segment QS?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: ST, QT.\nAnswer: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"ST\":2,\"QT\":3},\"answer\":42.3}",
+    "answer_only": "The image shows a geometric scene with measurement annotations. Question: The triangle includes an altitude to the base. What is the length of segment QS?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"answer\":42.3}"
   },
   "task": "task_geometry_analytical_2d_value",
   "task_variant": "length",
@@ -25,24 +26,28 @@
     "execution_trace": {
       "answer_max": 100,
       "answer_min": 3,
-      "answer_scalar": 382,
+      "answer_scalar": 358,
       "answer_type": "number",
-      "answer_value": 38.2,
+      "answer_value": 35.8,
       "evidence_map": {
-        "IG": 54
+        "QT": 29,
+        "ST": 21
       },
       "evidence_role_tokens": {
-        "diameter": "IG"
+        "base_part": "QT",
+        "height": "ST"
       },
       "evidence_role_values": {
-        "diameter": 54
+        "base_part": 29,
+        "height": 21
       },
       "evidence_roles": [
-        "diameter"
+        "height",
+        "base_part"
       ],
-      "formula_expression": "diameter / sqrt(2)",
-      "legacy_query_variant": "inscribed_square_side",
-      "legacy_scene_variant": "circle",
+      "formula_expression": "sqrt(height^2 + base_part^2)",
+      "legacy_query_variant": "triangle_altitude_side",
+      "legacy_scene_variant": "triangle",
       "legacy_task_id": "task_geometry_analytical_2d_length",
       "query_variant": "length",
       "query_variant_probabilities": {
@@ -51,11 +56,12 @@
         "length": 1.0,
         "perimeter": 0.0
       },
-      "raw_answer_value": 38.18376618407357,
+      "raw_answer_value": 35.805027579936315,
       "required_annotations": [
-        "IG"
+        "ST",
+        "QT"
       ],
-      "scene_variant": "circle",
+      "scene_variant": "triangle",
       "scene_variant_probabilities": {
         "circle": 0.2,
         "composite_region": 0.0,
@@ -66,7 +72,7 @@
         "trapezoid": 0.2,
         "triangle": 0.2
       },
-      "target_annotation": "FG",
+      "target_annotation": "QS",
       "task_variant": "length",
       "task_variant_probabilities": {
         "area": 0.0,
@@ -76,33 +82,44 @@
       },
       "variant_probabilities": {
         "circle_chord_length": 0.0,
-        "inscribed_square_side": 1.0,
+        "inscribed_square_side": 0.0,
         "isosceles_trapezoid_leg": 0.0,
         "rectangle_diagonal_side": 0.0,
         "rhombus_diagonal_side": 0.0,
-        "triangle_altitude_side": 0.0
+        "triangle_altitude_side": 1.0
       }
     },
     "projected_evidence": {
       "annotation_labels": {
-        "diameter": "IG"
+        "base_part": "QT",
+        "height": "ST"
       },
       "id_set": [
-        "IG"
+        "ST",
+        "QT"
       ],
       "measurement_ref_map": {
-        "IG": 54
+        "QT": 29,
+        "ST": 21
       },
       "pixel_annotation_centers": {
-        "IG": [
-          360.0,
-          331.3666666666667
+        "QT": [
+          248.46843749999996,
+          368.5112401029871
+        ],
+        "ST": [
+          440.8402083333333,
+          231.5236359363204
         ]
       },
       "pixel_point_set": [
         [
-          360.0,
-          331.3666666666667
+          440.8402083333333,
+          231.5236359363204
+        ],
+        [
+          248.46843749999996,
+          368.5112401029871
         ]
       ]
     },
@@ -110,8 +127,8 @@
       "params": {
         "answer_max": 100,
         "answer_min": 3,
-        "legacy_query_variant": "inscribed_square_side",
-        "legacy_scene_variant": "circle",
+        "legacy_query_variant": "triangle_altitude_side",
+        "legacy_scene_variant": "triangle",
         "legacy_task_id": "task_geometry_analytical_2d_length",
         "query_variant": "length",
         "query_variant_probabilities": {
@@ -120,7 +137,7 @@
           "length": 1.0,
           "perimeter": 0.0
         },
-        "scene_variant": "circle",
+        "scene_variant": "triangle",
         "scene_variant_probabilities": {
           "circle": 0.2,
           "composite_region": 0.0,
@@ -131,7 +148,7 @@
           "trapezoid": 0.2,
           "triangle": 0.2
         },
-        "task_variant": "inscribed_square_side",
+        "task_variant": "triangle_altitude_side",
         "variant_probabilities": {
           "area": 0.0,
           "composite_area": 0.0,
@@ -146,18 +163,18 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the length value rounded to one decimal place",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: IG",
-          "json_example": "{\"evidence\":{\"IG\":2},\"answer\":42.3}",
+          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: ST, QT",
+          "json_example": "{\"evidence\":{\"ST\":2,\"QT\":3},\"answer\":42.3}",
           "json_example_answer_only": "{\"answer\":42.3}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
           "object_description": "a geometric scene with measurement annotations",
-          "question_text": "The square is inscribed in the circle, and a diameter is annotated. What is the length of segment FG?"
+          "question_text": "The triangle includes an altitude to the base. What is the length of segment QS?"
         },
         "task_family_key": "analytical_length_scene",
-        "task_family_variant_index": 4,
+        "task_family_variant_index": 1,
         "task_key": "analytical_length_query",
-        "task_variant_index": 3,
+        "task_variant_index": 1,
         "task_variant_key": null,
         "task_variant_template_index": null,
         "template_paths": [
@@ -179,18 +196,18 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the length value rounded to one decimal place",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: IG",
-              "json_example": "{\"evidence\":{\"IG\":2},\"answer\":42.3}",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: ST, QT",
+              "json_example": "{\"evidence\":{\"ST\":2,\"QT\":3},\"answer\":42.3}",
               "json_example_answer_only": "{\"answer\":42.3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a geometric scene with measurement annotations",
-              "question_text": "The square is inscribed in the circle, and a diameter is annotated. What is the length of segment FG?"
+              "question_text": "The triangle includes an altitude to the base. What is the length of segment QS?"
             },
             "task_family_key": "analytical_length_scene",
-            "task_family_variant_index": 4,
+            "task_family_variant_index": 1,
             "task_key": "analytical_length_query",
-            "task_variant_index": 3,
+            "task_variant_index": 1,
             "task_variant_key": null,
             "task_variant_template_index": null,
             "template_paths": [
@@ -202,28 +219,28 @@
               "task_family:analytical_length_scene": 5
             }
           },
-          "prompt": "Work from the annotated scene showing a geometric scene with measurement annotations. Read the marked measurements and answer: The square is inscribed in the circle, and a diameter is annotated. What is the length of segment FG?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: IG.\nAnswer: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"IG\":2},\"answer\":42.3}"
+          "prompt": "The image shows a geometric scene with measurement annotations. Question: The triangle includes an altitude to the base. What is the length of segment QS?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: ST, QT.\nAnswer: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"ST\":2,\"QT\":3},\"answer\":42.3}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 4,
+            "answer_or_evidence_variant_index": 1,
             "prompt_bundle_id": "geometry_analytical_length_v1",
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the length value rounded to one decimal place",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: IG",
-              "json_example": "{\"evidence\":{\"IG\":2},\"answer\":42.3}",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: ST, QT",
+              "json_example": "{\"evidence\":{\"ST\":2,\"QT\":3},\"answer\":42.3}",
               "json_example_answer_only": "{\"answer\":42.3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a geometric scene with measurement annotations",
-              "question_text": "The square is inscribed in the circle, and a diameter is annotated. What is the length of segment FG?"
+              "question_text": "The triangle includes an altitude to the base. What is the length of segment QS?"
             },
             "task_family_key": "analytical_length_scene",
-            "task_family_variant_index": 4,
+            "task_family_variant_index": 1,
             "task_key": "analytical_length_query",
-            "task_variant_index": 3,
+            "task_variant_index": 1,
             "task_variant_key": null,
             "task_variant_template_index": null,
             "template_paths": [
@@ -235,7 +252,7 @@
               "task_family:analytical_length_scene": 5
             }
           },
-          "prompt": "Work from the annotated scene showing a geometric scene with measurement annotations. Read the marked measurements and answer: The square is inscribed in the circle, and a diameter is annotated. What is the length of segment FG?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"answer\":42.3}"
+          "prompt": "The image shows a geometric scene with measurement annotations. Question: The triangle includes an altitude to the base. What is the length of segment QS?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"answer\":42.3}"
         }
       },
       "task_variant": "length",
@@ -243,21 +260,26 @@
     },
     "render_map": {
       "annotation_centers": {
-        "IG": [
-          360.0,
-          331.3666666666667
+        "QT": [
+          248.46843749999996,
+          368.5112401029871
+        ],
+        "ST": [
+          440.8402083333333,
+          231.5236359363204
         ]
       },
       "annotation_labels": {
-        "diameter": "IG"
+        "base_part": "QT",
+        "height": "ST"
       },
       "coord_space": "pixel",
       "instance_anchor": {
         "bbox": [
-          108.4,
-          108.4,
-          611.6,
-          611.6
+          83.82999999999998,
+          112.30269843632044,
+          447.16999999999996,
+          350.7445734363204
         ],
         "coord_space": "pixel"
       }
@@ -272,45 +294,47 @@
         ],
         "enabled": true,
         "render_scale": 3,
-        "selected_style": "solid_cool",
+        "selected_style": "solid_warm",
         "style_spec": {
           "color": [
-            246,
-            248,
-            252
+            252,
+            249,
+            245
           ],
           "kind": "solid"
         }
       },
-      "canvas_size": 720,
+      "canvas_size": 531,
       "coord_space": "pixel",
       "graph_coordinate_frame": {
         "coord_space": "graph_unit",
-        "full_cells_x": 10,
-        "full_cells_y": 10,
+        "full_cells_x": 8,
+        "full_cells_y": 8,
+        "origin_fraction_x": 0.5,
+        "origin_fraction_y": 0.5,
         "origin_pixel": [
-          360,
-          360
+          265,
+          265
         ],
         "outer_margin_px": 16,
         "partial_edge_cells": true,
-        "spacing_px": 65,
-        "target_cells_x": 11,
-        "target_cells_y": 11,
+        "spacing_px": 53,
+        "target_cells_x": 10,
+        "target_cells_y": 10,
         "x_positive": "right",
         "y_positive": "up"
       },
       "graph_paper_grid": {
-        "full_cells_x": 10,
-        "full_cells_y": 10,
+        "full_cells_x": 8,
+        "full_cells_y": 8,
         "partial_edge_cells": true,
-        "spacing_px": 65,
-        "target_cells_x": 11,
-        "target_cells_y": 11
+        "spacing_px": 53,
+        "target_cells_x": 10,
+        "target_cells_y": 10
       },
-      "legacy_scene_variant": "circle",
+      "legacy_scene_variant": "triangle",
       "post_image_noise": {
-        "applied": false,
+        "applied": true,
         "apply_prob": 0.5,
         "edit_count_range": [
           1,
@@ -322,26 +346,33 @@
           "jpeg",
           "noise"
         ],
-        "edits": [],
+        "edits": [
+          {
+            "params": {
+              "radius": 0.314572
+            },
+            "type": "blur"
+          }
+        ],
         "enabled": true
       },
       "query_variant": "length",
-      "scene_variant": "circle",
+      "scene_variant": "triangle",
       "shape_style": {
         "label_color": [
-          106,
-          38,
-          17
+          53,
+          67,
+          52
         ],
         "label_stroke_color": [
-          248,
-          254,
-          252
+          252,
+          253,
+          253
         ],
         "line_color": [
-          106,
-          38,
-          17
+          53,
+          67,
+          52
         ]
       }
     },
@@ -351,60 +382,45 @@
           "attrs": {
             "vertices": [
               [
-                360.0,
-                108.4
+                83.82999999999998,
+                350.7445734363204
               ],
               [
-                611.6,
-                360.0
+                447.16999999999996,
+                350.7445734363204
               ],
               [
-                360.0,
-                611.6
-              ],
-              [
-                108.4,
-                360.0
+                413.10687499999995,
+                112.30269843632044
               ]
             ]
           },
-          "entity_id": "square_1",
-          "entity_type": "square"
-        },
-        {
-          "attrs": {
-            "center": [
-              360.0,
-              360.0
-            ],
-            "radius_px": 252
-          },
-          "entity_id": "circle_1",
-          "entity_type": "circle"
+          "entity_id": "triangle_1",
+          "entity_type": "triangle"
         },
         {
           "attrs": {
             "helper": true,
             "point_a": [
-              108.4,
-              360.0
+              413.10687499999995,
+              112.30269843632044
             ],
             "point_b": [
-              611.6,
-              360.0
+              413.10687499999995,
+              350.7445734363204
             ]
           },
-          "entity_id": "diameter_1",
-          "entity_type": "diameter"
+          "entity_id": "altitude_1",
+          "entity_type": "altitude"
         }
       ],
       "frames": {
         "graph_unit": {
           "origin_pixel": [
-            360,
-            360
+            265,
+            265
           ],
-          "spacing_px": 65,
+          "spacing_px": 53,
           "x_positive": "right",
           "y_positive": "up"
         },
@@ -418,29 +434,33 @@
         }
       },
       "relations": {
-        "legacy_query_variant": "inscribed_square_side",
-        "legacy_scene_variant": "circle",
+        "legacy_query_variant": "triangle_altitude_side",
+        "legacy_scene_variant": "triangle",
         "legacy_task_id": "task_geometry_analytical_2d_length",
         "query_variant": "length",
-        "scene_variant": "circle"
+        "scene_variant": "triangle"
       },
       "scene_kind": "geometry_2d_analytical_length"
     },
     "witness_symbolic": {
       "annotation_ids": [
-        "IG"
+        "ST",
+        "QT"
       ],
       "annotation_labels": {
-        "diameter": "IG"
+        "base_part": "QT",
+        "height": "ST"
       },
       "annotation_values": {
-        "IG": 54
+        "QT": 29,
+        "ST": 21
       },
-      "formula_expression": "diameter / sqrt(2)",
+      "formula_expression": "sqrt(height^2 + base_part^2)",
       "measurement_ref_map": {
-        "IG": 54
+        "QT": 29,
+        "ST": 21
       },
-      "task_variant": "inscribed_square_side",
+      "task_variant": "triangle_altitude_side",
       "type": "annotation_measurement_map"
     }
   },

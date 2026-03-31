@@ -1,33 +1,33 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 9
+    "value": 71
   },
   "evidence_gt": {
     "type": "integer_list",
     "value": [
-      8,
-      2,
-      7,
-      33,
-      50
+      1,
+      13,
+      16,
+      58,
+      12
     ]
   },
   "image": {
     "format": "png",
     "path": "charts/task_charts_composition_subset_value/images/combined_share_subset/0011.png"
   },
-  "instance_seed": 7794838463813218,
-  "prompt": "The image shows a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Use the chart's printed segment or slice values to compute the answer. Using labels Dora and Warp, what combined share of the chart do they make up?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array [v1, v2, ...] listing the slice percentages in legend order for the whole chart.\nAnswer requirement: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[18,27,22,33],\"answer\":45}",
+  "instance_seed": 4454466129863875,
+  "prompt": "You are given a composition chart: a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Use the printed segment or slice values to answer the composition question. Add the chart percentages for labels Mona and Drye. What total percentage do they contribute?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array [v1, v2, ...] listing the slice percentages in legend order for the whole chart.\nAnswer field: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[18,27,22,33],\"answer\":45}",
   "prompt_variants": {
-    "answer_and_evidence": "The image shows a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Use the chart's printed segment or slice values to compute the answer. Using labels Dora and Warp, what combined share of the chart do they make up?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array [v1, v2, ...] listing the slice percentages in legend order for the whole chart.\nAnswer requirement: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[18,27,22,33],\"answer\":45}",
-    "answer_only": "The image shows a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Use the chart's printed segment or slice values to compute the answer. Using labels Dora and Warp, what combined share of the chart do they make up?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":45}"
+    "answer_and_evidence": "You are given a composition chart: a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Use the printed segment or slice values to answer the composition question. Add the chart percentages for labels Mona and Drye. What total percentage do they contribute?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array [v1, v2, ...] listing the slice percentages in legend order for the whole chart.\nAnswer field: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[18,27,22,33],\"answer\":45}",
+    "answer_only": "You are given a composition chart: a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Use the printed segment or slice values to answer the composition question. Add the chart percentages for labels Mona and Drye. What total percentage do they contribute?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":45}"
   },
   "task": "task_charts_composition_subset_value",
   "task_variant": "combined_share_subset",
   "trace_payload": {
     "execution_trace": {
-      "answer_value": 9,
+      "answer_value": 71,
       "category_count": 0,
       "category_count_range": [
         0,
@@ -37,42 +37,42 @@
       "composition_scope": "chart",
       "composition_total": 100,
       "evidence_labels": [
-        "Rori",
-        "Dora",
-        "Warp",
-        "Ot",
-        "Mylo"
+        "Alys",
+        "Mona",
+        "Ciri",
+        "Drye",
+        "Esta"
       ],
       "evidence_values": [
-        8,
-        2,
-        7,
-        33,
-        50
+        1,
+        13,
+        16,
+        58,
+        12
       ],
       "mark_color_distance_space": "lab",
       "mark_color_min_distance": 58.0,
       "mark_color_sampling_policy": "random_rgb_palette",
       "mark_fill_rgb": [
-        125,
-        0,
-        22
+        35,
+        160,
+        57
       ],
       "mark_outline_rgb": [
-        69,
-        0,
-        12
+        19,
+        88,
+        31
       ],
       "pie_like_mark_color_channel_max": 200,
       "query_category_label": "",
       "query_series_label": "",
       "query_subset_labels": [
-        "Dora",
-        "Warp"
+        "Mona",
+        "Drye"
       ],
       "question_format": "numeric_open",
       "scene_mode": "pie_like",
-      "scene_variant": "donut",
+      "scene_variant": "pie",
       "scene_variant_probabilities": {
         "donut": 0.5,
         "pie": 0.5
@@ -83,91 +83,91 @@
         5
       ],
       "series_labels": [
-        "Rori",
-        "Dora",
-        "Warp",
-        "Ot",
-        "Mylo"
+        "Alys",
+        "Mona",
+        "Ciri",
+        "Drye",
+        "Esta"
       ],
       "slice_fill_palette_rgb": [
         [
-          125,
-          0,
-          22
+          35,
+          160,
+          57
         ],
         [
-          29,
-          94,
-          132
+          58,
+          55,
+          11
         ],
         [
-          130,
-          149,
-          34
+          195,
+          6,
+          30
         ],
         [
-          145,
-          47,
-          138
+          100,
+          43,
+          200
         ],
         [
-          0,
-          51,
-          4
+          27,
+          64,
+          115
         ]
       ],
       "slice_outline_palette_rgb": [
         [
-          69,
-          0,
-          12
+          19,
+          88,
+          31
         ],
         [
-          16,
-          52,
-          73
+          32,
+          30,
+          6
         ],
         [
-          72,
-          82,
-          19
+          107,
+          3,
+          16
         ],
         [
-          80,
-          26,
-          76
+          55,
+          24,
+          110
         ],
         [
-          0,
-          28,
-          2
+          15,
+          35,
+          63
         ]
       ],
-      "target_answer": 9,
+      "target_answer": 71,
       "target_answer_range": [
         5,
         95
       ],
       "task_variant": "combined_share_subset",
       "task_variant_probabilities": {
-        "combined_share_subset": 0.3333333333333333,
-        "stack_segment_value": 0.3333333333333333,
-        "stack_total_at_label": 0.3333333333333333
+        "combined_share_subset": 1.0,
+        "stack_segment_value": 0.0,
+        "stack_total_at_label": 0.0
       },
       "value_semantics": "percentage",
       "values": [
-        8,
-        2,
-        7,
-        33,
-        50
+        1,
+        13,
+        16,
+        58,
+        12
       ],
       "values_by_label": {
-        "Dora": 2,
-        "Mylo": 50,
-        "Ot": 33,
-        "Rori": 8,
-        "Warp": 7
+        "Alys": 1,
+        "Ciri": 16,
+        "Drye": 58,
+        "Esta": 12,
+        "Mona": 13
       }
     },
     "projected_evidence": {
@@ -175,83 +175,83 @@
         [
           442.08,
           65.6,
-          567.529,
+          458.431,
           326.0
         ],
         [
           442.08,
-          97.81,
-          595.139,
+          66.114,
+          642.722,
           326.0
         ],
         [
           442.08,
-          115.332,
-          670.27,
-          326.0
+          160.015,
+          701.966,
+          406.468
         ],
         [
-          442.08,
-          200.551,
-          701.432,
-          586.4
+          182.836,
+          136.177,
+          689.735,
+          586.172
         ],
         [
-          181.68,
+          263.824,
           65.6,
           442.08,
-          586.4
+          326.0
         ]
       ],
       "integer_list": [
-        8,
-        2,
-        7,
-        33,
-        50
+        1,
+        13,
+        16,
+        58,
+        12
       ],
       "pixel_point_map": {
-        "Dora": [
-          541.146,
-          169.897
+        "Alys": [
+          446.988,
+          169.837
         ],
-        "Mylo": [
-          257.196,
-          326.0
+        "Ciri": [
+          595.553,
+          296.724
         ],
-        "Ot": [
-          601.217,
-          420.114
+        "Drye": [
+          358.362,
+          457.918
         ],
-        "Rori": [
-          488.059,
-          146.924
+        "Esta": [
+          384.564,
+          180.732
         ],
-        "Warp": [
-          580.764,
-          203.734
+        "Mona": [
+          513.011,
+          186.789
         ]
       },
       "pixel_point_set": [
         [
-          488.059,
-          146.924
+          446.988,
+          169.837
         ],
         [
-          541.146,
-          169.897
+          513.011,
+          186.789
         ],
         [
-          580.764,
-          203.734
+          595.553,
+          296.724
         ],
         [
-          601.217,
-          420.114
+          358.362,
+          457.918
         ],
         [
-          257.196,
-          326.0
+          384.564,
+          180.732
         ]
       ]
     },
@@ -265,10 +265,10 @@
         "query_category_label": "",
         "query_series_label": "",
         "query_subset_labels": [
-          "Dora",
-          "Warp"
+          "Mona",
+          "Drye"
         ],
-        "scene_variant": "donut",
+        "scene_variant": "pie",
         "scene_variant_probabilities": {
           "donut": 0.5,
           "pie": 0.5
@@ -278,21 +278,21 @@
           3,
           5
         ],
-        "target_answer": 9,
+        "target_answer": 71,
         "target_answer_range": [
           5,
           95
         ],
         "task_variant": "combined_share_subset",
         "task_variant_probabilities": {
-          "combined_share_subset": 0.3333333333333333,
-          "stack_segment_value": 0.3333333333333333,
-          "stack_total_at_label": 0.3333333333333333
+          "combined_share_subset": 1.0,
+          "stack_segment_value": 0.0,
+          "stack_total_at_label": 0.0
         }
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 2,
+        "answer_or_evidence_variant_index": 3,
         "prompt_bundle_id": "charts_composition_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -302,18 +302,18 @@
           "json_example_answer_only": "{\"answer\":45}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "object_description": "a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices",
+          "object_description": "a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices",
           "query_category_label": "",
-          "query_label_a": "Dora",
-          "query_label_b": "Warp",
+          "query_label_a": "Mona",
+          "query_label_b": "Drye",
           "query_series_label": ""
         },
         "task_family_key": "composition_chart_value",
-        "task_family_variant_index": 0,
+        "task_family_variant_index": 4,
         "task_key": "subset_value_query",
-        "task_variant_index": 2,
+        "task_variant_index": 0,
         "task_variant_key": "combined_share_subset",
-        "task_variant_template_index": 3,
+        "task_variant_template_index": 1,
         "template_paths": [
           "charts/composition/charts_composition_v1.json"
         ],
@@ -329,7 +329,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 2,
+            "answer_or_evidence_variant_index": 3,
             "prompt_bundle_id": "charts_composition_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -339,18 +339,18 @@
               "json_example_answer_only": "{\"answer\":45}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices",
+              "object_description": "a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices",
               "query_category_label": "",
-              "query_label_a": "Dora",
-              "query_label_b": "Warp",
+              "query_label_a": "Mona",
+              "query_label_b": "Drye",
               "query_series_label": ""
             },
             "task_family_key": "composition_chart_value",
-            "task_family_variant_index": 0,
+            "task_family_variant_index": 4,
             "task_key": "subset_value_query",
-            "task_variant_index": 2,
+            "task_variant_index": 0,
             "task_variant_key": "combined_share_subset",
-            "task_variant_template_index": 3,
+            "task_variant_template_index": 1,
             "template_paths": [
               "charts/composition/charts_composition_v1.json"
             ],
@@ -361,7 +361,7 @@
               "task_variant:combined_share_subset": 5
             }
           },
-          "prompt": "The image shows a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Use the chart's printed segment or slice values to compute the answer. Using labels Dora and Warp, what combined share of the chart do they make up?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array [v1, v2, ...] listing the slice percentages in legend order for the whole chart.\nAnswer requirement: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[18,27,22,33],\"answer\":45}"
+          "prompt": "You are given a composition chart: a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Use the printed segment or slice values to answer the composition question. Add the chart percentages for labels Mona and Drye. What total percentage do they contribute?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array [v1, v2, ...] listing the slice percentages in legend order for the whole chart.\nAnswer field: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[18,27,22,33],\"answer\":45}"
         },
         "answer_only": {
           "metadata": {
@@ -376,18 +376,18 @@
               "json_example_answer_only": "{\"answer\":45}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices",
+              "object_description": "a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices",
               "query_category_label": "",
-              "query_label_a": "Dora",
-              "query_label_b": "Warp",
+              "query_label_a": "Mona",
+              "query_label_b": "Drye",
               "query_series_label": ""
             },
             "task_family_key": "composition_chart_value",
-            "task_family_variant_index": 0,
+            "task_family_variant_index": 4,
             "task_key": "subset_value_query",
-            "task_variant_index": 2,
+            "task_variant_index": 0,
             "task_variant_key": "combined_share_subset",
-            "task_variant_template_index": 3,
+            "task_variant_template_index": 1,
             "template_paths": [
               "charts/composition/charts_composition_v1.json"
             ],
@@ -398,7 +398,7 @@
               "task_variant:combined_share_subset": 5
             }
           },
-          "prompt": "The image shows a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Use the chart's printed segment or slice values to compute the answer. Using labels Dora and Warp, what combined share of the chart do they make up?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":45}"
+          "prompt": "You are given a composition chart: a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Use the printed segment or slice values to answer the composition question. Add the chart percentages for labels Mona and Drye. What total percentage do they contribute?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":45}"
         }
       },
       "task_variant": "combined_share_subset",
@@ -407,25 +407,25 @@
     "render_map": {
       "image_id": "img0",
       "label_centers_px": {
-        "Dora": [
-          870.16,
-          277.0
-        ],
-        "Mylo": [
-          870.16,
-          403.0
-        ],
-        "Ot": [
-          853.66,
-          361.0
-        ],
-        "Rori": [
-          865.16,
+        "Alys": [
+          866.66,
           235.0
         ],
-        "Warp": [
-          873.66,
+        "Ciri": [
+          861.16,
           319.0
+        ],
+        "Drye": [
+          870.16,
+          361.0
+        ],
+        "Esta": [
+          866.66,
+          403.0
+        ],
+        "Mona": [
+          874.66,
+          277.0
         ]
       },
       "plot_bbox_px": [
@@ -463,69 +463,69 @@
         "mark_color_distance_space": "lab",
         "mark_color_min_distance": 58.0,
         "mark_fill_rgb": [
-          125,
-          0,
-          22
+          35,
+          160,
+          57
         ],
         "mark_outline_rgb": [
-          69,
-          0,
-          12
+          19,
+          88,
+          31
         ],
         "pie_like_mark_color_channel_max": 200,
         "sampling_policy": "random_rgb_palette",
         "slice_fill_palette_rgb": [
           [
-            125,
-            0,
-            22
+            35,
+            160,
+            57
           ],
           [
-            29,
-            94,
-            132
+            58,
+            55,
+            11
           ],
           [
-            130,
-            149,
-            34
+            195,
+            6,
+            30
           ],
           [
-            145,
-            47,
-            138
+            100,
+            43,
+            200
           ],
           [
-            0,
-            51,
-            4
+            27,
+            64,
+            115
           ]
         ],
         "slice_outline_palette_rgb": [
           [
-            69,
-            0,
-            12
+            19,
+            88,
+            31
           ],
           [
-            16,
-            52,
-            73
+            32,
+            30,
+            6
           ],
           [
-            72,
-            82,
-            19
+            107,
+            3,
+            16
           ],
           [
-            80,
-            26,
-            76
+            55,
+            24,
+            110
           ],
           [
-            0,
-            28,
-            2
+            15,
+            35,
+            63
           ]
         ]
       },
@@ -551,13 +551,13 @@
         "edits": [],
         "enabled": false
       },
-      "scene_variant": "donut",
+      "scene_variant": "pie",
       "text_style": {
         "label_font_size_px": 24,
         "label_stroke_width_px": 2,
         "tick_font_size_px": 20
       },
-      "y_axis_max": 51,
+      "y_axis_max": 59,
       "y_ticks": [
         0,
         1,
@@ -610,23 +610,31 @@
         48,
         49,
         50,
-        51
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59
       ]
     },
     "scene_ir": {
       "entities": [
         {
           "attrs": {
-            "end_angle_deg": -61.2,
-            "label": "Rori",
+            "end_angle_deg": -86.4,
+            "label": "Alys",
             "label_bbox_px": [
               838.16,
-              226.0,
-              892.16,
-              244.0
+              223.5,
+              895.16,
+              246.5
             ],
             "label_center_px": [
-              865.16,
+              866.66,
               235.0
             ],
             "legend_swatch_bbox_px": [
@@ -638,53 +646,53 @@
             "mark_bbox_px": [
               442.08,
               65.6,
-              567.529,
+              458.431,
               326.0
             ],
             "mark_center_px": [
-              488.059,
-              146.924
+              446.988,
+              169.837
             ],
             "mark_fill_rgb": [
-              125,
-              0,
-              22
+              35,
+              160,
+              57
             ],
             "mark_outline_rgb": [
-              69,
-              0,
-              12
+              19,
+              88,
+              31
             ],
             "percentage_bbox_px": [
-              467.559,
-              137.924,
-              508.559,
-              155.924
+              430.262,
+              40.736,
+              471.262,
+              58.736
             ],
             "percentage_center_px": [
-              488.059,
-              146.924
+              450.762,
+              49.736
             ],
-            "scene_variant": "donut",
+            "scene_variant": "pie",
             "start_angle_deg": -90.0,
-            "value": 8,
+            "value": 1,
             "x_rank": 0
           },
-          "entity_id": "mark_Rori",
+          "entity_id": "mark_Alys",
           "entity_type": "slice"
         },
         {
           "attrs": {
-            "end_angle_deg": -54.0,
-            "label": "Dora",
+            "end_angle_deg": -39.6,
+            "label": "Mona",
             "label_bbox_px": [
               838.16,
               268.0,
-              902.16,
+              911.16,
               286.0
             ],
             "label_center_px": [
-              870.16,
+              874.66,
               277.0
             ],
             "legend_swatch_bbox_px": [
@@ -695,54 +703,54 @@
             ],
             "mark_bbox_px": [
               442.08,
-              97.81,
-              595.139,
+              66.114,
+              642.722,
               326.0
             ],
             "mark_center_px": [
-              541.146,
-              169.897
+              513.011,
+              186.789
             ],
             "mark_fill_rgb": [
-              29,
-              94,
-              132
+              58,
+              55,
+              11
             ],
             "mark_outline_rgb": [
-              16,
-              52,
-              73
+              32,
+              30,
+              6
             ],
             "percentage_bbox_px": [
-              569.683,
-              83.628,
-              610.683,
-              101.628
+              484.011,
+              177.789,
+              542.011,
+              195.789
             ],
             "percentage_center_px": [
-              590.183,
-              92.628
+              513.011,
+              186.789
             ],
-            "scene_variant": "donut",
-            "start_angle_deg": -61.2,
-            "value": 2,
+            "scene_variant": "pie",
+            "start_angle_deg": -86.4,
+            "value": 13,
             "x_rank": 1
           },
-          "entity_id": "mark_Dora",
+          "entity_id": "mark_Mona",
           "entity_type": "slice"
         },
         {
           "attrs": {
-            "end_angle_deg": -28.8,
-            "label": "Warp",
+            "end_angle_deg": 18.0,
+            "label": "Ciri",
             "label_bbox_px": [
               838.16,
-              307.5,
-              909.16,
-              330.5
+              310.0,
+              884.16,
+              328.0
             ],
             "label_center_px": [
-              873.66,
+              861.16,
               319.0
             ],
             "legend_swatch_bbox_px": [
@@ -753,54 +761,54 @@
             ],
             "mark_bbox_px": [
               442.08,
-              115.332,
-              670.27,
-              326.0
+              160.015,
+              701.966,
+              406.468
             ],
             "mark_center_px": [
-              580.764,
-              203.734
+              595.553,
+              296.724
             ],
             "mark_fill_rgb": [
-              130,
-              149,
-              34
+              195,
+              6,
+              30
             ],
             "mark_outline_rgb": [
-              72,
-              82,
-              19
+              107,
+              3,
+              16
             ],
             "percentage_bbox_px": [
-              560.264,
-              194.734,
-              601.264,
-              212.734
+              566.553,
+              287.724,
+              624.553,
+              305.724
             ],
             "percentage_center_px": [
-              580.764,
-              203.734
+              595.553,
+              296.724
             ],
-            "scene_variant": "donut",
-            "start_angle_deg": -54.0,
-            "value": 7,
+            "scene_variant": "pie",
+            "start_angle_deg": -39.6,
+            "value": 16,
             "x_rank": 2
           },
-          "entity_id": "mark_Warp",
+          "entity_id": "mark_Ciri",
           "entity_type": "slice"
         },
         {
           "attrs": {
-            "end_angle_deg": 90.0,
-            "label": "Ot",
+            "end_angle_deg": 226.8,
+            "label": "Drye",
             "label_bbox_px": [
               838.16,
-              352.0,
-              869.16,
-              370.0
+              349.5,
+              902.16,
+              372.5
             ],
             "label_center_px": [
-              853.66,
+              870.16,
               361.0
             ],
             "legend_swatch_bbox_px": [
@@ -810,55 +818,55 @@
               375.0
             ],
             "mark_bbox_px": [
-              442.08,
-              200.551,
-              701.432,
-              586.4
+              182.836,
+              136.177,
+              689.735,
+              586.172
             ],
             "mark_center_px": [
-              601.217,
-              420.114
+              358.362,
+              457.918
             ],
             "mark_fill_rgb": [
-              145,
-              47,
-              138
+              100,
+              43,
+              200
             ],
             "mark_outline_rgb": [
-              80,
-              26,
-              76
+              55,
+              24,
+              110
             ],
             "percentage_bbox_px": [
-              572.217,
-              411.114,
-              630.217,
-              429.114
+              329.362,
+              448.918,
+              387.362,
+              466.918
             ],
             "percentage_center_px": [
-              601.217,
-              420.114
+              358.362,
+              457.918
             ],
-            "scene_variant": "donut",
-            "start_angle_deg": -28.8,
-            "value": 33,
+            "scene_variant": "pie",
+            "start_angle_deg": 18.0,
+            "value": 58,
             "x_rank": 3
           },
-          "entity_id": "mark_Ot",
+          "entity_id": "mark_Drye",
           "entity_type": "slice"
         },
         {
           "attrs": {
             "end_angle_deg": 270.0,
-            "label": "Mylo",
+            "label": "Esta",
             "label_bbox_px": [
               838.16,
-              391.5,
-              902.16,
-              414.5
+              394.0,
+              895.16,
+              412.0
             ],
             "label_center_px": [
-              870.16,
+              866.66,
               403.0
             ],
             "legend_swatch_bbox_px": [
@@ -868,79 +876,79 @@
               417.0
             ],
             "mark_bbox_px": [
-              181.68,
+              263.824,
               65.6,
               442.08,
-              586.4
+              326.0
             ],
             "mark_center_px": [
-              257.196,
-              326.0
+              384.564,
+              180.732
             ],
             "mark_fill_rgb": [
-              0,
-              51,
-              4
+              27,
+              64,
+              115
             ],
             "mark_outline_rgb": [
-              0,
-              28,
-              2
+              15,
+              35,
+              63
             ],
             "percentage_bbox_px": [
-              228.196,
-              317.0,
-              286.196,
-              335.0
+              355.564,
+              171.732,
+              413.564,
+              189.732
             ],
             "percentage_center_px": [
-              257.196,
-              326.0
+              384.564,
+              180.732
             ],
-            "scene_variant": "donut",
-            "start_angle_deg": 90.0,
-            "value": 50,
+            "scene_variant": "pie",
+            "start_angle_deg": 226.8,
+            "value": 12,
             "x_rank": 4
           },
-          "entity_id": "mark_Mylo",
+          "entity_id": "mark_Esta",
           "entity_type": "slice"
         }
       ],
       "relations": {
-        "answer_value": 9,
+        "answer_value": 71,
         "evidence_labels": [
-          "Rori",
-          "Dora",
-          "Warp",
-          "Ot",
-          "Mylo"
+          "Alys",
+          "Mona",
+          "Ciri",
+          "Drye",
+          "Esta"
         ],
         "query_category_label": "",
         "query_series_label": "",
         "query_subset_labels": [
-          "Dora",
-          "Warp"
+          "Mona",
+          "Drye"
         ],
-        "scene_variant": "donut",
+        "scene_variant": "pie",
         "task_variant": "combined_share_subset"
       },
-      "scene_kind": "chart_donut_composition"
+      "scene_kind": "chart_pie_composition"
     },
     "witness_symbolic": {
       "labels": [
-        "Rori",
-        "Dora",
-        "Warp",
-        "Ot",
-        "Mylo"
+        "Alys",
+        "Mona",
+        "Ciri",
+        "Drye",
+        "Esta"
       ],
       "type": "integer_list",
       "values": [
-        8,
-        2,
-        7,
-        33,
-        50
+        1,
+        13,
+        16,
+        58,
+        12
       ]
     }
   },

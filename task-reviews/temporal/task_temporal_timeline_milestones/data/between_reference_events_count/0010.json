@@ -1,15 +1,21 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 1
+    "value": 2
   },
   "evidence_gt": {
     "type": "bbox_set",
     "value": [
       [
-        173.786,
+        710.929,
         304.16,
-        274.786,
+        811.929,
+        374.16
+      ],
+      [
+        845.214,
+        304.16,
+        946.214,
         374.16
       ]
     ]
@@ -18,11 +24,11 @@
     "format": "png",
     "path": "temporal/task_temporal_timeline_milestones/images/between_reference_events_count/0010.png"
   },
-  "instance_seed": 1379461068411248,
-  "prompt": "Use the timeline in the image. It shows one labeled milestone timeline for December 2028 with dated event cards and two highlighted reference events. Answer the question using the timeline. Among the labeled events, how many lie between the two highlighted reference events?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for all event cards strictly between the two highlighted reference events.\nAnswer field: set \"answer\" to the integer count of events strictly between the two highlighted reference events.\nExample JSON:\n{\"evidence\":[[412,410,516,480],[538,158,642,228]],\"answer\":2}",
+  "instance_seed": 3469263444802102,
+  "prompt": "Use the timeline in the image. It shows one labeled milestone timeline for May 2030 with dated event cards and two highlighted reference events. Answer the question using the timeline. Among the labeled events, how many lie between the two highlighted reference events?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for all event cards strictly between the two highlighted reference events.\nAnswer requirement: set \"answer\" to the integer count of events strictly between the two highlighted reference events.\nExample JSON:\n{\"evidence\":[[412,410,516,480],[538,158,642,228]],\"answer\":2}",
   "prompt_variants": {
-    "answer_and_evidence": "Use the timeline in the image. It shows one labeled milestone timeline for December 2028 with dated event cards and two highlighted reference events. Answer the question using the timeline. Among the labeled events, how many lie between the two highlighted reference events?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for all event cards strictly between the two highlighted reference events.\nAnswer field: set \"answer\" to the integer count of events strictly between the two highlighted reference events.\nExample JSON:\n{\"evidence\":[[412,410,516,480],[538,158,642,228]],\"answer\":2}",
-    "answer_only": "Use the timeline in the image. It shows one labeled milestone timeline for December 2028 with dated event cards and two highlighted reference events. Answer the question using the timeline. Among the labeled events, how many lie between the two highlighted reference events?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the integer count of events strictly between the two highlighted reference events.\nExample JSON:\n{\"answer\":2}"
+    "answer_and_evidence": "Use the timeline in the image. It shows one labeled milestone timeline for May 2030 with dated event cards and two highlighted reference events. Answer the question using the timeline. Among the labeled events, how many lie between the two highlighted reference events?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for all event cards strictly between the two highlighted reference events.\nAnswer requirement: set \"answer\" to the integer count of events strictly between the two highlighted reference events.\nExample JSON:\n{\"evidence\":[[412,410,516,480],[538,158,642,228]],\"answer\":2}",
+    "answer_only": "Use the timeline in the image. It shows one labeled milestone timeline for May 2030 with dated event cards and two highlighted reference events. Answer the question using the timeline. Among the labeled events, how many lie between the two highlighted reference events?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the integer count of events strictly between the two highlighted reference events.\nExample JSON:\n{\"answer\":2}"
   },
   "task": "task_temporal_timeline_milestones",
   "task_variant": "between_reference_events_count",
@@ -42,24 +48,25 @@
         "yellow": 0.1
       },
       "answer_event_ids": [
-        "event_b"
+        "event_f",
+        "event_g"
       ],
-      "answer_value": 1,
+      "answer_value": 2,
       "event_count": 8,
       "events": [
         {
           "card_side": "above",
-          "date_text": "Dec 01",
-          "day_of_month": 1,
+          "date_text": "May 06",
+          "day_of_month": 6,
           "event_id": "event_a",
           "label": "A",
           "order_index": 0,
-          "reference_kind": "primary"
+          "reference_kind": "none"
         },
         {
           "card_side": "above",
-          "date_text": "Dec 05",
-          "day_of_month": 5,
+          "date_text": "May 07",
+          "day_of_month": 7,
           "event_id": "event_b",
           "label": "B",
           "order_index": 1,
@@ -67,17 +74,17 @@
         },
         {
           "card_side": "above",
-          "date_text": "Dec 07",
-          "day_of_month": 7,
+          "date_text": "May 12",
+          "day_of_month": 12,
           "event_id": "event_c",
           "label": "C",
           "order_index": 2,
-          "reference_kind": "secondary"
+          "reference_kind": "none"
         },
         {
           "card_side": "above",
-          "date_text": "Dec 09",
-          "day_of_month": 9,
+          "date_text": "May 19",
+          "day_of_month": 19,
           "event_id": "event_d",
           "label": "D",
           "order_index": 3,
@@ -85,17 +92,17 @@
         },
         {
           "card_side": "above",
-          "date_text": "Dec 13",
-          "day_of_month": 13,
+          "date_text": "May 22",
+          "day_of_month": 22,
           "event_id": "event_e",
           "label": "E",
           "order_index": 4,
-          "reference_kind": "none"
+          "reference_kind": "primary"
         },
         {
           "card_side": "above",
-          "date_text": "Dec 14",
-          "day_of_month": 14,
+          "date_text": "May 28",
+          "day_of_month": 28,
           "event_id": "event_f",
           "label": "F",
           "order_index": 5,
@@ -103,8 +110,8 @@
         },
         {
           "card_side": "above",
-          "date_text": "Dec 16",
-          "day_of_month": 16,
+          "date_text": "May 29",
+          "day_of_month": 29,
           "event_id": "event_g",
           "label": "G",
           "order_index": 6,
@@ -112,19 +119,19 @@
         },
         {
           "card_side": "above",
-          "date_text": "Dec 24",
-          "day_of_month": 24,
+          "date_text": "May 31",
+          "day_of_month": 31,
           "event_id": "event_h",
           "label": "H",
           "order_index": 7,
-          "reference_kind": "none"
+          "reference_kind": "secondary"
         }
       ],
-      "month": 12,
-      "month_name": "December",
+      "month": 5,
+      "month_name": "May",
       "reference_event_ids": [
-        "event_a",
-        "event_c"
+        "event_e",
+        "event_h"
       ],
       "scene_variant": "minimal",
       "scene_variant_probabilities": {
@@ -132,7 +139,7 @@
         "minimal": 0.3333333333333333,
         "roadmap": 0.3333333333333333
       },
-      "style_variant": "marker",
+      "style_variant": "accented",
       "style_variant_probabilities": {
         "accented": 0.3333333333333333,
         "marker": 0.3333333333333333,
@@ -144,14 +151,20 @@
         "between_reference_events_count": 1.0,
         "position_of_reference": 0.0
       },
-      "year": 2028
+      "year": 2030
     },
     "projected_evidence": {
       "bbox_set": [
         [
-          173.786,
+          710.929,
           304.16,
-          274.786,
+          811.929,
+          374.16
+        ],
+        [
+          845.214,
+          304.16,
+          946.214,
           374.16
         ]
       ]
@@ -195,8 +208,8 @@
           8,
           9
         ],
-        "month": 12,
-        "month_name": "December",
+        "month": 5,
+        "month_name": "May",
         "position_support": [
           1,
           2,
@@ -213,7 +226,7 @@
           "minimal": 0.3333333333333333,
           "roadmap": 0.3333333333333333
         },
-        "style_variant": "marker",
+        "style_variant": "accented",
         "style_variant_probabilities": {
           "accented": 0.3333333333333333,
           "marker": 0.3333333333333333,
@@ -225,11 +238,11 @@
           "between_reference_events_count": 1.0,
           "position_of_reference": 0.0
         },
-        "year": 2028
+        "year": 2030
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 3,
+        "answer_or_evidence_variant_index": 2,
         "prompt_bundle_id": "temporal_timeline_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -239,7 +252,7 @@
           "json_example_answer_only": "{\"answer\":2}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "object_description": "one labeled milestone timeline for December 2028 with dated event cards and two highlighted reference events"
+          "object_description": "one labeled milestone timeline for May 2030 with dated event cards and two highlighted reference events"
         },
         "task_family_key": "milestone_timeline",
         "task_family_variant_index": 4,
@@ -262,7 +275,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 3,
+            "answer_or_evidence_variant_index": 2,
             "prompt_bundle_id": "temporal_timeline_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -272,7 +285,7 @@
               "json_example_answer_only": "{\"answer\":2}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "one labeled milestone timeline for December 2028 with dated event cards and two highlighted reference events"
+              "object_description": "one labeled milestone timeline for May 2030 with dated event cards and two highlighted reference events"
             },
             "task_family_key": "milestone_timeline",
             "task_family_variant_index": 4,
@@ -290,12 +303,12 @@
               "task_variant:between_reference_events_count": 5
             }
           },
-          "prompt": "Use the timeline in the image. It shows one labeled milestone timeline for December 2028 with dated event cards and two highlighted reference events. Answer the question using the timeline. Among the labeled events, how many lie between the two highlighted reference events?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for all event cards strictly between the two highlighted reference events.\nAnswer field: set \"answer\" to the integer count of events strictly between the two highlighted reference events.\nExample JSON:\n{\"evidence\":[[412,410,516,480],[538,158,642,228]],\"answer\":2}"
+          "prompt": "Use the timeline in the image. It shows one labeled milestone timeline for May 2030 with dated event cards and two highlighted reference events. Answer the question using the timeline. Among the labeled events, how many lie between the two highlighted reference events?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for all event cards strictly between the two highlighted reference events.\nAnswer requirement: set \"answer\" to the integer count of events strictly between the two highlighted reference events.\nExample JSON:\n{\"evidence\":[[412,410,516,480],[538,158,642,228]],\"answer\":2}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 2,
+            "answer_or_evidence_variant_index": 0,
             "prompt_bundle_id": "temporal_timeline_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -305,7 +318,7 @@
               "json_example_answer_only": "{\"answer\":2}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "one labeled milestone timeline for December 2028 with dated event cards and two highlighted reference events"
+              "object_description": "one labeled milestone timeline for May 2030 with dated event cards and two highlighted reference events"
             },
             "task_family_key": "milestone_timeline",
             "task_family_variant_index": 4,
@@ -323,7 +336,7 @@
               "task_variant:between_reference_events_count": 5
             }
           },
-          "prompt": "Use the timeline in the image. It shows one labeled milestone timeline for December 2028 with dated event cards and two highlighted reference events. Answer the question using the timeline. Among the labeled events, how many lie between the two highlighted reference events?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the integer count of events strictly between the two highlighted reference events.\nExample JSON:\n{\"answer\":2}"
+          "prompt": "Use the timeline in the image. It shows one labeled milestone timeline for May 2030 with dated event cards and two highlighted reference events. Answer the question using the timeline. Among the labeled events, how many lie between the two highlighted reference events?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the integer count of events strictly between the two highlighted reference events.\nExample JSON:\n{\"answer\":2}"
         }
       },
       "task_variant": "between_reference_events_count",
@@ -331,7 +344,8 @@
     },
     "render_map": {
       "answer_event_ids": [
-        "event_b"
+        "event_f",
+        "event_g"
       ],
       "axis_bbox_px": [
         90.0,
@@ -397,8 +411,8 @@
         666.0
       ],
       "reference_event_ids": [
-        "event_a",
-        "event_c"
+        "event_e",
+        "event_h"
       ],
       "scene_bbox_px": [
         34.0,
@@ -406,7 +420,7 @@
         1086.0,
         666.0
       ],
-      "subtitle_text": "December 2028",
+      "subtitle_text": "May 2030",
       "title_text": "Milestone timeline"
     },
     "render_spec": {
@@ -455,14 +469,14 @@
         "accent_color_name": "red",
         "resolved_colors_rgb": {
           "axis_line": [
-            133,
-            29,
-            29
+            218,
+            187,
+            187
           ],
           "event_fill": [
-            255,
-            255,
-            255
+            251,
+            218,
+            218
           ],
           "event_outline": [
             133,
@@ -470,14 +484,14 @@
             29
           ],
           "panel_fill": [
-            255,
-            255,
-            255
+            253,
+            241,
+            241
           ],
           "panel_outline": [
-            97,
-            21,
-            21
+            133,
+            29,
+            29
           ],
           "primary_reference_fill": [
             230,
@@ -490,8 +504,8 @@
             50
           ]
         },
-        "style_variant": "marker",
-        "subtitle_text": "December 2028",
+        "style_variant": "accented",
+        "subtitle_text": "May 2030",
         "title_text": "Milestone timeline"
       }
     },
@@ -505,7 +519,7 @@
             374.16
           ],
           "card_side": "above",
-          "date_text": "Dec 01",
+          "date_text": "May 06",
           "event_id": "event_a",
           "label": "A",
           "marker_center_px": [
@@ -513,7 +527,7 @@
             434.16
           ],
           "order_index": 0,
-          "reference_kind": "primary",
+          "reference_kind": "none",
           "type": "timeline_event_card"
         },
         {
@@ -524,7 +538,7 @@
             374.16
           ],
           "card_side": "above",
-          "date_text": "Dec 05",
+          "date_text": "May 07",
           "event_id": "event_b",
           "label": "B",
           "marker_center_px": [
@@ -543,7 +557,7 @@
             374.16
           ],
           "card_side": "above",
-          "date_text": "Dec 07",
+          "date_text": "May 12",
           "event_id": "event_c",
           "label": "C",
           "marker_center_px": [
@@ -551,7 +565,7 @@
             434.16
           ],
           "order_index": 2,
-          "reference_kind": "secondary",
+          "reference_kind": "none",
           "type": "timeline_event_card"
         },
         {
@@ -562,7 +576,7 @@
             374.16
           ],
           "card_side": "above",
-          "date_text": "Dec 09",
+          "date_text": "May 19",
           "event_id": "event_d",
           "label": "D",
           "marker_center_px": [
@@ -581,7 +595,7 @@
             374.16
           ],
           "card_side": "above",
-          "date_text": "Dec 13",
+          "date_text": "May 22",
           "event_id": "event_e",
           "label": "E",
           "marker_center_px": [
@@ -589,7 +603,7 @@
             434.16
           ],
           "order_index": 4,
-          "reference_kind": "none",
+          "reference_kind": "primary",
           "type": "timeline_event_card"
         },
         {
@@ -600,7 +614,7 @@
             374.16
           ],
           "card_side": "above",
-          "date_text": "Dec 14",
+          "date_text": "May 28",
           "event_id": "event_f",
           "label": "F",
           "marker_center_px": [
@@ -619,7 +633,7 @@
             374.16
           ],
           "card_side": "above",
-          "date_text": "Dec 16",
+          "date_text": "May 29",
           "event_id": "event_g",
           "label": "G",
           "marker_center_px": [
@@ -638,7 +652,7 @@
             374.16
           ],
           "card_side": "above",
-          "date_text": "Dec 24",
+          "date_text": "May 31",
           "event_id": "event_h",
           "label": "H",
           "marker_center_px": [
@@ -646,22 +660,22 @@
             434.16
           ],
           "order_index": 7,
-          "reference_kind": "none",
+          "reference_kind": "secondary",
           "type": "timeline_event_card"
         }
       ],
       "relations": {
         "accent_color_name": "red",
-        "month": 12,
-        "month_name": "December",
+        "month": 5,
+        "month_name": "May",
         "reference_event_ids": [
-          "event_a",
-          "event_c"
+          "event_e",
+          "event_h"
         ],
         "scene_variant": "minimal",
-        "style_variant": "marker",
+        "style_variant": "accented",
         "task_variant": "between_reference_events_count",
-        "year": 2028
+        "year": 2030
       },
       "scene_kind": "temporal_milestone_timeline"
     },
@@ -669,9 +683,15 @@
       "type": "bbox_set",
       "value": [
         [
-          173.786,
+          710.929,
           304.16,
-          274.786,
+          811.929,
+          374.16
+        ],
+        [
+          845.214,
+          304.16,
+          946.214,
           374.16
         ]
       ]

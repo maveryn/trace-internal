@@ -1,65 +1,66 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 20
+    "value": 19
   },
   "evidence_gt": {
     "type": "integer_list",
     "value": [
-      17,
-      20
+      19,
+      6
     ]
   },
   "image": {
     "format": "png",
     "path": "charts/task_charts_readout_subset_value/images/max_two/0019.png"
   },
-  "instance_seed": 786512579238356,
-  "prompt": "Use the labeled chart in the image. It shows a labeled dot plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Read the values of the requested labels from the chart and compute the answer. For labels F and D, what is the larger of their two values?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question.\nAnswer field: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[6,13],\"answer\":13}",
+  "instance_seed": 3118773133045051,
+  "prompt": "The image shows a labeled lollipop chart. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Determine the requested value from the two specified chart labels. Find the higher of the two chart values for labels X and W.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question.\nAnswer rule: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[6,13],\"answer\":13}",
   "prompt_variants": {
-    "answer_and_evidence": "Use the labeled chart in the image. It shows a labeled dot plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Read the values of the requested labels from the chart and compute the answer. For labels F and D, what is the larger of their two values?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question.\nAnswer field: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[6,13],\"answer\":13}",
-    "answer_only": "Use the labeled chart in the image. It shows a labeled dot plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Read the values of the requested labels from the chart and compute the answer. For labels F and D, what is the larger of their two values?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":13}"
+    "answer_and_evidence": "The image shows a labeled lollipop chart. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Determine the requested value from the two specified chart labels. Find the higher of the two chart values for labels X and W.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question.\nAnswer rule: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[6,13],\"answer\":13}",
+    "answer_only": "The image shows a labeled lollipop chart. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Determine the requested value from the two specified chart labels. Find the higher of the two chart values for labels X and W.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":13}"
   },
   "task": "task_charts_readout_subset_value",
   "task_variant": "max_two",
   "trace_payload": {
     "execution_trace": {
-      "answer_value": 20,
+      "answer_value": 19,
       "labels": [
-        "D",
-        "F",
-        "G",
-        "T",
-        "B"
+        "R",
+        "W",
+        "U",
+        "C",
+        "X",
+        "S"
       ],
       "mark_color_distance_space": "lab",
       "mark_color_min_distance": 40.0,
       "mark_color_sampling_policy": "random_rgb",
-      "mark_count": 5,
+      "mark_count": 6,
       "mark_count_range": [
         5,
         10
       ],
       "mark_fill_rgb": [
-        0,
+        142,
         165,
-        169
+        0
       ],
       "mark_outline_rgb": [
-        0,
+        78,
         91,
-        93
+        0
       ],
       "query_labels": [
-        "F",
-        "D"
+        "X",
+        "W"
       ],
       "query_values": [
-        17,
-        20
+        19,
+        6
       ],
       "question_format": "numeric_open",
-      "scene_variant": "dot_plot",
+      "scene_variant": "lollipop",
       "scene_variant_probabilities": {
         "area": 0.1,
         "bar": 0.1,
@@ -72,84 +73,86 @@
         "radar": 0.1,
         "scatter": 0.1
       },
-      "target_answer": 20,
+      "target_answer": 19,
       "target_answer_range": [
         1,
         20
       ],
       "task_variant": "max_two",
       "task_variant_probabilities": {
-        "difference_two_abs": 0.2,
-        "max_two": 0.2,
-        "mean_two": 0.2,
-        "min_two": 0.2,
-        "sum_two": 0.2
+        "difference_two_abs": 0.0,
+        "max_two": 1.0,
+        "mean_two": 0.0,
+        "min_two": 0.0,
+        "sum_two": 0.0
       },
       "value_max": 20,
       "value_min": 1,
       "values": [
         20,
-        17,
-        2,
-        8,
-        1
+        6,
+        13,
+        11,
+        19,
+        7
       ],
       "values_by_label": {
-        "B": 1,
-        "D": 20,
-        "F": 17,
-        "G": 2,
-        "T": 8
+        "C": 11,
+        "R": 20,
+        "S": 7,
+        "U": 13,
+        "W": 6,
+        "X": 19
       }
     },
     "projected_evidence": {
       "bbox_set": [
         [
-          282.6,
-          124.381,
-          298.6,
-          140.381
+          580.5,
+          80.19,
+          596.5,
+          96.19
         ],
         [
-          150.2,
-          58.095,
-          166.2,
-          74.095
+          249.5,
+          367.429,
+          265.5,
+          383.429
         ]
       ],
       "integer_list": [
-        17,
-        20
+        19,
+        6
       ],
       "pixel_point_map": {
-        "D": [
-          158.2,
-          66.095
+        "W": [
+          257.5,
+          375.429
         ],
-        "F": [
-          290.6,
-          132.381
+        "X": [
+          588.5,
+          88.19
         ]
       },
       "pixel_point_set": [
         [
-          290.6,
-          132.381
+          588.5,
+          88.19
         ],
         [
-          158.2,
-          66.095
+          257.5,
+          375.429
         ]
       ]
     },
     "query_spec": {
       "params": {
-        "mark_count": 5,
+        "mark_count": 6,
         "query_labels": [
-          "F",
-          "D"
+          "X",
+          "W"
         ],
-        "scene_variant": "dot_plot",
+        "scene_variant": "lollipop",
         "scene_variant_probabilities": {
           "area": 0.1,
           "bar": 0.1,
@@ -162,23 +165,23 @@
           "radar": 0.1,
           "scatter": 0.1
         },
-        "target_answer": 20,
+        "target_answer": 19,
         "target_answer_range": [
           1,
           20
         ],
         "task_variant": "max_two",
         "task_variant_probabilities": {
-          "difference_two_abs": 0.2,
-          "max_two": 0.2,
-          "mean_two": 0.2,
-          "min_two": 0.2,
-          "sum_two": 0.2
+          "difference_two_abs": 0.0,
+          "max_two": 1.0,
+          "mean_two": 0.0,
+          "min_two": 0.0,
+          "sum_two": 0.0
         }
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 3,
+        "answer_or_evidence_variant_index": 4,
         "prompt_bundle_id": "charts_readout_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -188,16 +191,16 @@
           "json_example_answer_only": "{\"answer\":13}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "object_description": "a labeled dot plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis",
-          "query_label_a": "F",
-          "query_label_b": "D"
+          "object_description": "a labeled lollipop chart. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis",
+          "query_label_a": "X",
+          "query_label_b": "W"
         },
         "task_family_key": "labeled_chart_readout",
-        "task_family_variant_index": 1,
+        "task_family_variant_index": 0,
         "task_key": "subset_value_query",
-        "task_variant_index": 2,
+        "task_variant_index": 4,
         "task_variant_key": "max_two",
-        "task_variant_template_index": 0,
+        "task_variant_template_index": 3,
         "template_paths": [
           "charts/readout/charts_readout_v1.json"
         ],
@@ -213,41 +216,6 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 3,
-            "prompt_bundle_id": "charts_readout_v1",
-            "schema_version": "v1",
-            "slot_values": {
-              "answer_hint": "set \"answer\" to the requested integer value",
-              "evidence_hint": "set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question",
-              "json_example": "{\"evidence\":[6,13],\"answer\":13}",
-              "json_example_answer_only": "{\"answer\":13}",
-              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
-              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a labeled dot plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis",
-              "query_label_a": "F",
-              "query_label_b": "D"
-            },
-            "task_family_key": "labeled_chart_readout",
-            "task_family_variant_index": 1,
-            "task_key": "subset_value_query",
-            "task_variant_index": 2,
-            "task_variant_key": "max_two",
-            "task_variant_template_index": 0,
-            "template_paths": [
-              "charts/readout/charts_readout_v1.json"
-            ],
-            "variant_count_by_key": {
-              "answer_or_evidence:answer_and_evidence": 5,
-              "task:subset_value_query": 5,
-              "task_family:labeled_chart_readout": 5,
-              "task_variant:max_two": 5
-            }
-          },
-          "prompt": "Use the labeled chart in the image. It shows a labeled dot plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Read the values of the requested labels from the chart and compute the answer. For labels F and D, what is the larger of their two values?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question.\nAnswer field: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[6,13],\"answer\":13}"
-        },
-        "answer_only": {
-          "metadata": {
-            "answer_or_evidence_key": "answer_only",
             "answer_or_evidence_variant_index": 4,
             "prompt_bundle_id": "charts_readout_v1",
             "schema_version": "v1",
@@ -258,16 +226,51 @@
               "json_example_answer_only": "{\"answer\":13}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a labeled dot plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis",
-              "query_label_a": "F",
-              "query_label_b": "D"
+              "object_description": "a labeled lollipop chart. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis",
+              "query_label_a": "X",
+              "query_label_b": "W"
             },
             "task_family_key": "labeled_chart_readout",
-            "task_family_variant_index": 1,
+            "task_family_variant_index": 0,
             "task_key": "subset_value_query",
-            "task_variant_index": 2,
+            "task_variant_index": 4,
             "task_variant_key": "max_two",
-            "task_variant_template_index": 0,
+            "task_variant_template_index": 3,
+            "template_paths": [
+              "charts/readout/charts_readout_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:subset_value_query": 5,
+              "task_family:labeled_chart_readout": 5,
+              "task_variant:max_two": 5
+            }
+          },
+          "prompt": "The image shows a labeled lollipop chart. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Determine the requested value from the two specified chart labels. Find the higher of the two chart values for labels X and W.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question.\nAnswer rule: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[6,13],\"answer\":13}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "charts_readout_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the requested integer value",
+              "evidence_hint": "set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question",
+              "json_example": "{\"evidence\":[6,13],\"answer\":13}",
+              "json_example_answer_only": "{\"answer\":13}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a labeled lollipop chart. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis",
+              "query_label_a": "X",
+              "query_label_b": "W"
+            },
+            "task_family_key": "labeled_chart_readout",
+            "task_family_variant_index": 0,
+            "task_key": "subset_value_query",
+            "task_variant_index": 4,
+            "task_variant_key": "max_two",
+            "task_variant_template_index": 3,
             "template_paths": [
               "charts/readout/charts_readout_v1.json"
             ],
@@ -278,7 +281,7 @@
               "task_variant:max_two": 5
             }
           },
-          "prompt": "Use the labeled chart in the image. It shows a labeled dot plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Read the values of the requested labels from the chart and compute the answer. For labels F and D, what is the larger of their two values?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":13}"
+          "prompt": "The image shows a labeled lollipop chart. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Determine the requested value from the two specified chart labels. Find the higher of the two chart values for labels X and W.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":13}"
         }
       },
       "task_variant": "max_two",
@@ -287,25 +290,29 @@
     "render_map": {
       "image_id": "img0",
       "label_centers_px": {
-        "B": [
-          687.8,
-          463.905
+        "C": [
+          478.167,
+          242.952
         ],
-        "D": [
-          158.2,
+        "R": [
+          147.167,
           44.095
         ],
-        "F": [
-          290.6,
-          110.381
+        "S": [
+          698.833,
+          331.333
         ],
-        "G": [
-          423.0,
-          441.81
+        "U": [
+          367.833,
+          198.762
         ],
-        "T": [
-          555.4,
-          309.238
+        "W": [
+          257.5,
+          353.429
+        ],
+        "X": [
+          588.5,
+          66.19
         ]
       },
       "plot_bbox_px": [
@@ -343,14 +350,14 @@
         "mark_color_distance_space": "lab",
         "mark_color_min_distance": 40.0,
         "mark_fill_rgb": [
-          0,
+          142,
           165,
-          169
+          0
         ],
         "mark_outline_rgb": [
-          0,
+          78,
           91,
-          93
+          0
         ],
         "sampling_policy": "random_rgb"
       },
@@ -376,7 +383,7 @@
         "edits": [],
         "enabled": false
       },
-      "scene_variant": "dot_plot",
+      "scene_variant": "lollipop",
       "text_style": {
         "label_font_size_px": 22,
         "label_stroke_width_px": 2,
@@ -412,199 +419,233 @@
       "entities": [
         {
           "attrs": {
-            "label": "D",
+            "label": "R",
             "label_center_px": [
-              158.2,
+              147.167,
               44.095
             ],
             "mark_bbox_px": [
-              150.2,
+              139.167,
               58.095,
-              166.2,
+              155.167,
               74.095
             ],
             "mark_center_px": [
-              158.2,
+              147.167,
               66.095
             ],
             "mark_fill_rgb": [
-              0,
+              142,
               165,
-              169
+              0
             ],
             "mark_outline_rgb": [
-              0,
+              78,
               91,
-              93
+              0
             ],
-            "scene_variant": "dot_plot",
+            "scene_variant": "lollipop",
             "value": 20,
             "x_rank": 0
           },
-          "entity_id": "mark_D",
+          "entity_id": "mark_R",
           "entity_type": "point"
         },
         {
           "attrs": {
-            "label": "F",
+            "label": "W",
             "label_center_px": [
-              290.6,
-              110.381
+              257.5,
+              353.429
             ],
             "mark_bbox_px": [
-              282.6,
-              124.381,
-              298.6,
-              140.381
+              249.5,
+              367.429,
+              265.5,
+              383.429
             ],
             "mark_center_px": [
-              290.6,
-              132.381
+              257.5,
+              375.429
             ],
             "mark_fill_rgb": [
-              0,
+              142,
               165,
-              169
+              0
             ],
             "mark_outline_rgb": [
-              0,
+              78,
               91,
-              93
+              0
             ],
-            "scene_variant": "dot_plot",
-            "value": 17,
+            "scene_variant": "lollipop",
+            "value": 6,
             "x_rank": 1
           },
-          "entity_id": "mark_F",
+          "entity_id": "mark_W",
           "entity_type": "point"
         },
         {
           "attrs": {
-            "label": "G",
+            "label": "U",
             "label_center_px": [
-              423.0,
-              441.81
+              367.833,
+              198.762
             ],
             "mark_bbox_px": [
-              415.0,
-              455.81,
-              431.0,
-              471.81
+              359.833,
+              212.762,
+              375.833,
+              228.762
             ],
             "mark_center_px": [
-              423.0,
-              463.81
+              367.833,
+              220.762
             ],
             "mark_fill_rgb": [
-              0,
+              142,
               165,
-              169
+              0
             ],
             "mark_outline_rgb": [
-              0,
+              78,
               91,
-              93
+              0
             ],
-            "scene_variant": "dot_plot",
-            "value": 2,
+            "scene_variant": "lollipop",
+            "value": 13,
             "x_rank": 2
           },
-          "entity_id": "mark_G",
+          "entity_id": "mark_U",
           "entity_type": "point"
         },
         {
           "attrs": {
-            "label": "T",
+            "label": "C",
             "label_center_px": [
-              555.4,
-              309.238
+              478.167,
+              242.952
             ],
             "mark_bbox_px": [
-              547.4,
-              323.238,
-              563.4,
-              339.238
+              470.167,
+              256.952,
+              486.167,
+              272.952
             ],
             "mark_center_px": [
-              555.4,
-              331.238
+              478.167,
+              264.952
             ],
             "mark_fill_rgb": [
-              0,
+              142,
               165,
-              169
+              0
             ],
             "mark_outline_rgb": [
-              0,
+              78,
               91,
-              93
+              0
             ],
-            "scene_variant": "dot_plot",
-            "value": 8,
+            "scene_variant": "lollipop",
+            "value": 11,
             "x_rank": 3
           },
-          "entity_id": "mark_T",
+          "entity_id": "mark_C",
           "entity_type": "point"
         },
         {
           "attrs": {
-            "label": "B",
+            "label": "X",
             "label_center_px": [
-              687.8,
-              463.905
+              588.5,
+              66.19
             ],
             "mark_bbox_px": [
-              679.8,
-              477.905,
-              695.8,
-              493.905
+              580.5,
+              80.19,
+              596.5,
+              96.19
             ],
             "mark_center_px": [
-              687.8,
-              485.905
+              588.5,
+              88.19
             ],
             "mark_fill_rgb": [
-              0,
+              142,
               165,
-              169
+              0
             ],
             "mark_outline_rgb": [
-              0,
+              78,
               91,
-              93
+              0
             ],
-            "scene_variant": "dot_plot",
-            "value": 1,
+            "scene_variant": "lollipop",
+            "value": 19,
             "x_rank": 4
           },
-          "entity_id": "mark_B",
+          "entity_id": "mark_X",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "S",
+            "label_center_px": [
+              698.833,
+              331.333
+            ],
+            "mark_bbox_px": [
+              690.833,
+              345.333,
+              706.833,
+              361.333
+            ],
+            "mark_center_px": [
+              698.833,
+              353.333
+            ],
+            "mark_fill_rgb": [
+              142,
+              165,
+              0
+            ],
+            "mark_outline_rgb": [
+              78,
+              91,
+              0
+            ],
+            "scene_variant": "lollipop",
+            "value": 7,
+            "x_rank": 5
+          },
+          "entity_id": "mark_S",
           "entity_type": "point"
         }
       ],
       "relations": {
-        "answer_value": 20,
+        "answer_value": 19,
         "query_labels": [
-          "F",
-          "D"
+          "X",
+          "W"
         ],
         "query_values": [
-          17,
-          20
+          19,
+          6
         ],
-        "scene_variant": "dot_plot",
+        "scene_variant": "lollipop",
         "task_variant": "max_two"
       },
-      "scene_kind": "chart_dot_plot_readout"
+      "scene_kind": "chart_lollipop_readout"
     },
     "witness_symbolic": {
       "query_labels": [
-        "F",
-        "D"
+        "X",
+        "W"
       ],
       "type": "integer_list",
       "values": [
-        17,
-        20
+        19,
+        6
       ]
     }
   },

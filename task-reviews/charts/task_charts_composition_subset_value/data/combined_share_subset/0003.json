@@ -1,31 +1,32 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 10
+    "value": 25
   },
   "evidence_gt": {
     "type": "integer_list",
     "value": [
-      90,
-      8,
-      2
+      61,
+      2,
+      14,
+      23
     ]
   },
   "image": {
     "format": "png",
     "path": "charts/task_charts_composition_subset_value/images/combined_share_subset/0003.png"
   },
-  "instance_seed": 6941676907821492,
-  "prompt": "You are given a composition chart: a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Read the relevant composition values directly from the chart and answer the question. Add the chart percentages for labels Felt and Yule. What total percentage do they contribute?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array [v1, v2, ...] listing the slice percentages in legend order for the whole chart.\nAnswer rule: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[18,27,22,33],\"answer\":45}",
+  "instance_seed": 7346659143612773,
+  "prompt": "Use the composition chart in the image. It shows a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Read the composition values shown in the chart and answer the question. Using labels Noll and Uzzi, what combined share of the chart do they make up?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array [v1, v2, ...] listing the slice percentages in legend order for the whole chart.\nAnswer requirement: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[18,27,22,33],\"answer\":45}",
   "prompt_variants": {
-    "answer_and_evidence": "You are given a composition chart: a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Read the relevant composition values directly from the chart and answer the question. Add the chart percentages for labels Felt and Yule. What total percentage do they contribute?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array [v1, v2, ...] listing the slice percentages in legend order for the whole chart.\nAnswer rule: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[18,27,22,33],\"answer\":45}",
-    "answer_only": "You are given a composition chart: a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Read the relevant composition values directly from the chart and answer the question. Add the chart percentages for labels Felt and Yule. What total percentage do they contribute?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":45}"
+    "answer_and_evidence": "Use the composition chart in the image. It shows a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Read the composition values shown in the chart and answer the question. Using labels Noll and Uzzi, what combined share of the chart do they make up?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array [v1, v2, ...] listing the slice percentages in legend order for the whole chart.\nAnswer requirement: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[18,27,22,33],\"answer\":45}",
+    "answer_only": "Use the composition chart in the image. It shows a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Read the composition values shown in the chart and answer the question. Using labels Noll and Uzzi, what combined share of the chart do they make up?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":45}"
   },
   "task": "task_charts_composition_subset_value",
   "task_variant": "combined_share_subset",
   "trace_payload": {
     "execution_trace": {
-      "answer_value": 10,
+      "answer_value": 25,
       "category_count": 0,
       "category_count_range": [
         0,
@@ -35,34 +36,36 @@
       "composition_scope": "chart",
       "composition_total": 100,
       "evidence_labels": [
-        "Maje",
-        "Felt",
-        "Yule"
+        "Lund",
+        "Noll",
+        "Jari",
+        "Uzzi"
       ],
       "evidence_values": [
-        90,
-        8,
-        2
+        61,
+        2,
+        14,
+        23
       ],
       "mark_color_distance_space": "lab",
       "mark_color_min_distance": 58.0,
       "mark_color_sampling_policy": "random_rgb_palette",
       "mark_fill_rgb": [
-        124,
-        79,
-        197
+        105,
+        166,
+        57
       ],
       "mark_outline_rgb": [
-        68,
-        43,
-        108
+        58,
+        91,
+        31
       ],
       "pie_like_mark_color_channel_max": 200,
       "query_category_label": "",
       "query_series_label": "",
       "query_subset_labels": [
-        "Felt",
-        "Yule"
+        "Noll",
+        "Uzzi"
       ],
       "question_format": "numeric_open",
       "scene_mode": "pie_like",
@@ -71,125 +74,153 @@
         "donut": 0.5,
         "pie": 0.5
       },
-      "series_count": 3,
+      "series_count": 4,
       "series_count_range": [
         3,
         5
       ],
       "series_labels": [
-        "Maje",
-        "Felt",
-        "Yule"
+        "Lund",
+        "Noll",
+        "Jari",
+        "Uzzi"
       ],
       "slice_fill_palette_rgb": [
         [
-          124,
-          79,
-          197
+          105,
+          166,
+          57
         ],
         [
-          157,
-          197,
-          45
+          180,
+          7,
+          19
         ],
         [
-          69,
-          78,
-          34
+          189,
+          74,
+          147
+        ],
+        [
+          7,
+          104,
+          151
         ]
       ],
       "slice_outline_palette_rgb": [
         [
-          68,
-          43,
-          108
+          58,
+          91,
+          31
         ],
         [
-          86,
-          108,
-          25
+          99,
+          4,
+          10
         ],
         [
-          38,
-          43,
-          19
+          104,
+          41,
+          81
+        ],
+        [
+          4,
+          57,
+          83
         ]
       ],
-      "target_answer": 10,
+      "target_answer": 25,
       "target_answer_range": [
         5,
         95
       ],
       "task_variant": "combined_share_subset",
       "task_variant_probabilities": {
-        "combined_share_subset": 0.3333333333333333,
-        "stack_segment_value": 0.3333333333333333,
-        "stack_total_at_label": 0.3333333333333333
+        "combined_share_subset": 1.0,
+        "stack_segment_value": 0.0,
+        "stack_total_at_label": 0.0
       },
       "value_semantics": "percentage",
       "values": [
-        90,
-        8,
-        2
+        61,
+        2,
+        14,
+        23
       ],
       "values_by_label": {
-        "Felt": 8,
-        "Maje": 90,
-        "Yule": 2
+        "Jari": 14,
+        "Lund": 61,
+        "Noll": 2,
+        "Uzzi": 23
       }
     },
     "projected_evidence": {
       "bbox_set": [
         [
-          181.68,
+          276.095,
           65.6,
-          702.48,
-          586.4
+          701.264,
+          585.06
         ],
         [
-          289.021,
-          67.653,
+          252.257,
+          326.0,
           442.08,
-          326.0
+          526.642
         ],
         [
-          409.443,
+          183.733,
+          293.363,
+          442.08,
+          504.256
+        ],
+        [
+          183.733,
           65.6,
           442.08,
           326.0
         ]
       ],
       "integer_list": [
-        90,
-        8,
-        2
+        61,
+        2,
+        14,
+        23
       ],
       "pixel_point_map": {
-        "Felt": [
-          384.564,
-          180.732
+        "Jari": [
+          293.487,
+          374.281
         ],
-        "Maje": [
-          490.361,
-          474.593
+        "Lund": [
+          589.083,
+          378.924
         ],
-        "Yule": [
-          432.27,
-          170.068
+        "Noll": [
+          335.126,
+          439.894
+        ],
+        "Uzzi": [
+          338.757,
+          208.803
         ]
       },
       "pixel_point_set": [
         [
-          490.361,
-          474.593
+          589.083,
+          378.924
         ],
         [
-          384.564,
-          180.732
+          335.126,
+          439.894
         ],
         [
-          432.27,
-          170.068
+          293.487,
+          374.281
+        ],
+        [
+          338.757,
+          208.803
         ]
       ]
     },
@@ -203,34 +234,34 @@
         "query_category_label": "",
         "query_series_label": "",
         "query_subset_labels": [
-          "Felt",
-          "Yule"
+          "Noll",
+          "Uzzi"
         ],
         "scene_variant": "pie",
         "scene_variant_probabilities": {
           "donut": 0.5,
           "pie": 0.5
         },
-        "series_count": 3,
+        "series_count": 4,
         "series_count_range": [
           3,
           5
         ],
-        "target_answer": 10,
+        "target_answer": 25,
         "target_answer_range": [
           5,
           95
         ],
         "task_variant": "combined_share_subset",
         "task_variant_probabilities": {
-          "combined_share_subset": 0.3333333333333333,
-          "stack_segment_value": 0.3333333333333333,
-          "stack_total_at_label": 0.3333333333333333
+          "combined_share_subset": 1.0,
+          "stack_segment_value": 0.0,
+          "stack_total_at_label": 0.0
         }
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 4,
+        "answer_or_evidence_variant_index": 2,
         "prompt_bundle_id": "charts_composition_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -242,16 +273,16 @@
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
           "object_description": "a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices",
           "query_category_label": "",
-          "query_label_a": "Felt",
-          "query_label_b": "Yule",
+          "query_label_a": "Noll",
+          "query_label_b": "Uzzi",
           "query_series_label": ""
         },
         "task_family_key": "composition_chart_value",
-        "task_family_variant_index": 4,
+        "task_family_variant_index": 1,
         "task_key": "subset_value_query",
-        "task_variant_index": 3,
+        "task_variant_index": 1,
         "task_variant_key": "combined_share_subset",
-        "task_variant_template_index": 1,
+        "task_variant_template_index": 3,
         "template_paths": [
           "charts/composition/charts_composition_v1.json"
         ],
@@ -267,7 +298,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 4,
+            "answer_or_evidence_variant_index": 2,
             "prompt_bundle_id": "charts_composition_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -279,16 +310,16 @@
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices",
               "query_category_label": "",
-              "query_label_a": "Felt",
-              "query_label_b": "Yule",
+              "query_label_a": "Noll",
+              "query_label_b": "Uzzi",
               "query_series_label": ""
             },
             "task_family_key": "composition_chart_value",
-            "task_family_variant_index": 4,
+            "task_family_variant_index": 1,
             "task_key": "subset_value_query",
-            "task_variant_index": 3,
+            "task_variant_index": 1,
             "task_variant_key": "combined_share_subset",
-            "task_variant_template_index": 1,
+            "task_variant_template_index": 3,
             "template_paths": [
               "charts/composition/charts_composition_v1.json"
             ],
@@ -299,7 +330,7 @@
               "task_variant:combined_share_subset": 5
             }
           },
-          "prompt": "You are given a composition chart: a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Read the relevant composition values directly from the chart and answer the question. Add the chart percentages for labels Felt and Yule. What total percentage do they contribute?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array [v1, v2, ...] listing the slice percentages in legend order for the whole chart.\nAnswer rule: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[18,27,22,33],\"answer\":45}"
+          "prompt": "Use the composition chart in the image. It shows a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Read the composition values shown in the chart and answer the question. Using labels Noll and Uzzi, what combined share of the chart do they make up?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array [v1, v2, ...] listing the slice percentages in legend order for the whole chart.\nAnswer requirement: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[18,27,22,33],\"answer\":45}"
         },
         "answer_only": {
           "metadata": {
@@ -316,16 +347,16 @@
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices",
               "query_category_label": "",
-              "query_label_a": "Felt",
-              "query_label_b": "Yule",
+              "query_label_a": "Noll",
+              "query_label_b": "Uzzi",
               "query_series_label": ""
             },
             "task_family_key": "composition_chart_value",
-            "task_family_variant_index": 4,
+            "task_family_variant_index": 1,
             "task_key": "subset_value_query",
-            "task_variant_index": 3,
+            "task_variant_index": 1,
             "task_variant_key": "combined_share_subset",
-            "task_variant_template_index": 1,
+            "task_variant_template_index": 3,
             "template_paths": [
               "charts/composition/charts_composition_v1.json"
             ],
@@ -336,7 +367,7 @@
               "task_variant:combined_share_subset": 5
             }
           },
-          "prompt": "You are given a composition chart: a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Read the relevant composition values directly from the chart and answer the question. Add the chart percentages for labels Felt and Yule. What total percentage do they contribute?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":45}"
+          "prompt": "Use the composition chart in the image. It shows a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Read the composition values shown in the chart and answer the question. Using labels Noll and Uzzi, what combined share of the chart do they make up?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":45}"
         }
       },
       "task_variant": "combined_share_subset",
@@ -345,17 +376,21 @@
     "render_map": {
       "image_id": "img0",
       "label_centers_px": {
-        "Felt": [
-          863.66,
-          319.0
+        "Jari": [
+          861.66,
+          340.0
         ],
-        "Maje": [
-          870.16,
-          277.0
+        "Lund": [
+          871.16,
+          256.0
         ],
-        "Yule": [
-          867.66,
-          361.0
+        "Noll": [
+          864.16,
+          298.0
+        ],
+        "Uzzi": [
+          865.66,
+          382.0
         ]
       },
       "plot_bbox_px": [
@@ -393,49 +428,59 @@
         "mark_color_distance_space": "lab",
         "mark_color_min_distance": 58.0,
         "mark_fill_rgb": [
-          124,
-          79,
-          197
+          105,
+          166,
+          57
         ],
         "mark_outline_rgb": [
-          68,
-          43,
-          108
+          58,
+          91,
+          31
         ],
         "pie_like_mark_color_channel_max": 200,
         "sampling_policy": "random_rgb_palette",
         "slice_fill_palette_rgb": [
           [
-            124,
-            79,
-            197
+            105,
+            166,
+            57
           ],
           [
-            157,
-            197,
-            45
+            180,
+            7,
+            19
           ],
           [
-            69,
-            78,
-            34
+            189,
+            74,
+            147
+          ],
+          [
+            7,
+            104,
+            151
           ]
         ],
         "slice_outline_palette_rgb": [
           [
-            68,
-            43,
-            108
+            58,
+            91,
+            31
           ],
           [
-            86,
-            108,
-            25
+            99,
+            4,
+            10
           ],
           [
-            38,
-            43,
-            19
+            104,
+            41,
+            81
+          ],
+          [
+            4,
+            57,
+            83
           ]
         ]
       },
@@ -467,7 +512,7 @@
         "label_stroke_width_px": 2,
         "tick_font_size_px": 20
       },
-      "y_axis_max": 91,
+      "y_axis_max": 62,
       "y_ticks": [
         0,
         1,
@@ -531,227 +576,257 @@
         59,
         60,
         61,
-        62,
-        63,
-        64,
-        65,
-        66,
-        67,
-        68,
-        69,
-        70,
-        71,
-        72,
-        73,
-        74,
-        75,
-        76,
-        77,
-        78,
-        79,
-        80,
-        81,
-        82,
-        83,
-        84,
-        85,
-        86,
-        87,
-        88,
-        89,
-        90,
-        91
+        62
       ]
     },
     "scene_ir": {
       "entities": [
         {
           "attrs": {
-            "end_angle_deg": 234.0,
-            "label": "Maje",
+            "end_angle_deg": 129.6,
+            "label": "Lund",
             "label_bbox_px": [
               838.16,
-              265.5,
-              902.16,
-              288.5
+              247.0,
+              904.16,
+              265.0
             ],
             "label_center_px": [
-              870.16,
-              277.0
+              871.16,
+              256.0
             ],
             "legend_swatch_bbox_px": [
               788.16,
-              263.0,
+              242.0,
               816.16,
-              291.0
+              270.0
             ],
             "mark_bbox_px": [
-              181.68,
+              276.095,
               65.6,
-              702.48,
-              586.4
+              701.264,
+              585.06
             ],
             "mark_center_px": [
-              490.361,
-              474.593
+              589.083,
+              378.924
             ],
             "mark_fill_rgb": [
-              124,
-              79,
-              197
+              105,
+              166,
+              57
             ],
             "mark_outline_rgb": [
-              68,
-              43,
-              108
+              58,
+              91,
+              31
             ],
             "percentage_bbox_px": [
-              461.361,
-              465.593,
-              519.361,
-              483.593
+              560.083,
+              369.924,
+              618.083,
+              387.924
             ],
             "percentage_center_px": [
-              490.361,
-              474.593
+              589.083,
+              378.924
             ],
             "scene_variant": "pie",
             "start_angle_deg": -90.0,
-            "value": 90,
+            "value": 61,
             "x_rank": 0
           },
-          "entity_id": "mark_Maje",
+          "entity_id": "mark_Lund",
           "entity_type": "slice"
         },
         {
           "attrs": {
-            "end_angle_deg": 262.8,
-            "label": "Felt",
+            "end_angle_deg": 136.8,
+            "label": "Noll",
             "label_bbox_px": [
               838.16,
-              310.0,
-              889.16,
-              328.0
+              289.0,
+              890.16,
+              307.0
             ],
             "label_center_px": [
-              863.66,
-              319.0
+              864.16,
+              298.0
             ],
             "legend_swatch_bbox_px": [
               788.16,
-              305.0,
+              284.0,
               816.16,
-              333.0
+              312.0
             ],
             "mark_bbox_px": [
-              289.021,
-              67.653,
+              252.257,
+              326.0,
               442.08,
-              326.0
+              526.642
             ],
             "mark_center_px": [
-              384.564,
-              180.732
+              335.126,
+              439.894
             ],
             "mark_fill_rgb": [
-              157,
-              197,
-              45
+              180,
+              7,
+              19
             ],
             "mark_outline_rgb": [
-              86,
-              108,
-              25
+              99,
+              4,
+              10
             ],
             "percentage_bbox_px": [
-              364.064,
-              171.732,
-              405.064,
-              189.732
+              232.371,
+              518.487,
+              273.371,
+              536.487
             ],
             "percentage_center_px": [
-              384.564,
-              180.732
+              252.871,
+              527.487
             ],
             "scene_variant": "pie",
-            "start_angle_deg": 234.0,
-            "value": 8,
+            "start_angle_deg": 129.6,
+            "value": 2,
             "x_rank": 1
           },
-          "entity_id": "mark_Felt",
+          "entity_id": "mark_Noll",
+          "entity_type": "slice"
+        },
+        {
+          "attrs": {
+            "end_angle_deg": 187.2,
+            "label": "Jari",
+            "label_bbox_px": [
+              838.16,
+              328.5,
+              885.16,
+              351.5
+            ],
+            "label_center_px": [
+              861.66,
+              340.0
+            ],
+            "legend_swatch_bbox_px": [
+              788.16,
+              326.0,
+              816.16,
+              354.0
+            ],
+            "mark_bbox_px": [
+              183.733,
+              293.363,
+              442.08,
+              504.256
+            ],
+            "mark_center_px": [
+              293.487,
+              374.281
+            ],
+            "mark_fill_rgb": [
+              189,
+              74,
+              147
+            ],
+            "mark_outline_rgb": [
+              104,
+              41,
+              81
+            ],
+            "percentage_bbox_px": [
+              264.487,
+              365.281,
+              322.487,
+              383.281
+            ],
+            "percentage_center_px": [
+              293.487,
+              374.281
+            ],
+            "scene_variant": "pie",
+            "start_angle_deg": 136.8,
+            "value": 14,
+            "x_rank": 2
+          },
+          "entity_id": "mark_Jari",
           "entity_type": "slice"
         },
         {
           "attrs": {
             "end_angle_deg": 270.0,
-            "label": "Yule",
+            "label": "Uzzi",
             "label_bbox_px": [
               838.16,
-              352.0,
-              897.16,
-              370.0
+              373.0,
+              893.16,
+              391.0
             ],
             "label_center_px": [
-              867.66,
-              361.0
+              865.66,
+              382.0
             ],
             "legend_swatch_bbox_px": [
               788.16,
-              347.0,
+              368.0,
               816.16,
-              375.0
+              396.0
             ],
             "mark_bbox_px": [
-              409.443,
+              183.733,
               65.6,
               442.08,
               326.0
             ],
             "mark_center_px": [
-              432.27,
-              170.068
+              338.757,
+              208.803
             ],
             "mark_fill_rgb": [
-              69,
-              78,
-              34
+              7,
+              104,
+              151
             ],
             "mark_outline_rgb": [
-              38,
-              43,
-              19
+              4,
+              57,
+              83
             ],
             "percentage_bbox_px": [
-              404.225,
-              41.145,
-              445.225,
-              59.145
+              309.757,
+              199.803,
+              367.757,
+              217.803
             ],
             "percentage_center_px": [
-              424.725,
-              50.145
+              338.757,
+              208.803
             ],
             "scene_variant": "pie",
-            "start_angle_deg": 262.8,
-            "value": 2,
-            "x_rank": 2
+            "start_angle_deg": 187.2,
+            "value": 23,
+            "x_rank": 3
           },
-          "entity_id": "mark_Yule",
+          "entity_id": "mark_Uzzi",
           "entity_type": "slice"
         }
       ],
       "relations": {
-        "answer_value": 10,
+        "answer_value": 25,
         "evidence_labels": [
-          "Maje",
-          "Felt",
-          "Yule"
+          "Lund",
+          "Noll",
+          "Jari",
+          "Uzzi"
         ],
         "query_category_label": "",
         "query_series_label": "",
         "query_subset_labels": [
-          "Felt",
-          "Yule"
+          "Noll",
+          "Uzzi"
         ],
         "scene_variant": "pie",
         "task_variant": "combined_share_subset"
@@ -760,15 +835,17 @@
     },
     "witness_symbolic": {
       "labels": [
-        "Maje",
-        "Felt",
-        "Yule"
+        "Lund",
+        "Noll",
+        "Jari",
+        "Uzzi"
       ],
       "type": "integer_list",
       "values": [
-        90,
-        8,
-        2
+        61,
+        2,
+        14,
+        23
       ]
     }
   },

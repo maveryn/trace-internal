@@ -1,18 +1,12 @@
 {
   "answer_gt": {
     "type": "string",
-    "value": "Ten"
+    "value": "Hako"
   },
   "evidence_gt": {
     "type": "bbox_set",
     "value": [
       [
-        286.08,
-        132.0,
-        486.72,
-        208.0
-      ],
-      [
         687.36,
         132.0,
         888.0,
@@ -20,9 +14,9 @@
       ],
       [
         286.08,
-        208.0,
+        132.0,
         486.72,
-        284.0
+        208.0
       ],
       [
         687.36,
@@ -32,9 +26,9 @@
       ],
       [
         286.08,
-        284.0,
+        208.0,
         486.72,
-        360.0
+        284.0
       ],
       [
         687.36,
@@ -44,9 +38,9 @@
       ],
       [
         286.08,
-        360.0,
+        284.0,
         486.72,
-        436.0
+        360.0
       ],
       [
         687.36,
@@ -56,9 +50,9 @@
       ],
       [
         286.08,
-        436.0,
+        360.0,
         486.72,
-        512.0
+        436.0
       ],
       [
         687.36,
@@ -68,14 +62,20 @@
       ],
       [
         286.08,
+        436.0,
+        486.72,
+        512.0
+      ],
+      [
+        687.36,
         512.0,
-        486.72,
+        888.0,
         588.0
       ],
       [
-        687.36,
+        286.08,
         512.0,
-        888.0,
+        486.72,
         588.0
       ]
     ]
@@ -84,26 +84,26 @@
     "format": "png",
     "path": "tables/task_tables_statistics_filtered_subset_label/images/filtered_argmin/0007.png"
   },
-  "instance_seed": 5289846076896734,
-  "prompt": "Look at the table in the image. It shows a ledger-style table with one Name column, several numeric columns, strong horizontal rules, and minimal vertical separators. Find the row name with the requested target-column extremum after applying the stated row filter. Among the rows with values in Temp greater than 0, which row has the lowest value in the Wins column?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing the ordered supporting cell pairs [filter cell, target cell] for each selected row in top-to-bottom row order.\nAnswer field: set \"answer\" to the exact row-name string from the filtered rows.\nExample JSON:\n{\"evidence\":[[260,180,372,236],[374,180,486,236],[260,236,372,292],[374,236,486,292]],\"answer\":\"Milo\"}",
+  "instance_seed": 4301478528166720,
+  "prompt": "Work from the styled table shown in the image: a card-style table with one Name column, several numeric columns, a rounded outer frame, and a shaded header row. Determine which selected row wins under the requested target-column extremum after applying the filter condition. After filtering to rows where values in Temp greater than 0, identify the row with the minimum Pts value.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the ordered supporting cell pairs [filter cell, target cell] for each selected row in top-to-bottom row order.\nAnswer requirement: set \"answer\" to the exact row-name string from the filtered rows.\nExample JSON:\n{\"evidence\":[[260,180,372,236],[374,180,486,236],[260,236,372,292],[374,236,486,292]],\"answer\":\"Milo\"}",
   "prompt_variants": {
-    "answer_and_evidence": "Look at the table in the image. It shows a ledger-style table with one Name column, several numeric columns, strong horizontal rules, and minimal vertical separators. Find the row name with the requested target-column extremum after applying the stated row filter. Among the rows with values in Temp greater than 0, which row has the lowest value in the Wins column?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing the ordered supporting cell pairs [filter cell, target cell] for each selected row in top-to-bottom row order.\nAnswer field: set \"answer\" to the exact row-name string from the filtered rows.\nExample JSON:\n{\"evidence\":[[260,180,372,236],[374,180,486,236],[260,236,372,292],[374,236,486,292]],\"answer\":\"Milo\"}",
-    "answer_only": "Look at the table in the image. It shows a ledger-style table with one Name column, several numeric columns, strong horizontal rules, and minimal vertical separators. Find the row name with the requested target-column extremum after applying the stated row filter. Among the rows with values in Temp greater than 0, which row has the lowest value in the Wins column?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the exact row-name string from the filtered rows.\nExample JSON:\n{\"answer\":\"Milo\"}"
+    "answer_and_evidence": "Work from the styled table shown in the image: a card-style table with one Name column, several numeric columns, a rounded outer frame, and a shaded header row. Determine which selected row wins under the requested target-column extremum after applying the filter condition. After filtering to rows where values in Temp greater than 0, identify the row with the minimum Pts value.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the ordered supporting cell pairs [filter cell, target cell] for each selected row in top-to-bottom row order.\nAnswer requirement: set \"answer\" to the exact row-name string from the filtered rows.\nExample JSON:\n{\"evidence\":[[260,180,372,236],[374,180,486,236],[260,236,372,292],[374,236,486,292]],\"answer\":\"Milo\"}",
+    "answer_only": "Work from the styled table shown in the image: a card-style table with one Name column, several numeric columns, a rounded outer frame, and a shaded header row. Determine which selected row wins under the requested target-column extremum after applying the filter condition. After filtering to rows where values in Temp greater than 0, identify the row with the minimum Pts value.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the exact row-name string from the filtered rows.\nExample JSON:\n{\"answer\":\"Milo\"}"
   },
   "task": "task_tables_statistics_filtered_subset_label",
   "task_variant": "filtered_argmin",
   "trace_payload": {
     "execution_trace": {
-      "answer_row_index": 4,
-      "answer_row_label": "Ten",
-      "answer_value": 12,
+      "answer_row_index": 3,
+      "answer_row_label": "Hako",
+      "answer_value": 2,
       "column_headers": [
-        "Temp",
-        "Dist",
-        "Wins"
+        "Pts",
+        "Cost",
+        "Temp"
       ],
       "filter_column": "Temp",
-      "filter_column_index": 0,
+      "filter_column_index": 2,
       "filter_variant": "above_threshold",
       "numeric_column_count": 3,
       "numeric_column_count_range": [
@@ -117,14 +117,14 @@
         10
       ],
       "row_labels": [
-        "Dobb",
-        "Lian",
-        "Nell",
-        "Elsa",
-        "Ten",
-        "Hoyt"
+        "Ries",
+        "Badr",
+        "Nina",
+        "Hako",
+        "Mroz",
+        "Horn"
       ],
-      "scene_variant": "ledger",
+      "scene_variant": "card_table",
       "scene_variant_probabilities": {
         "card_table": 0.25,
         "ledger": 0.25,
@@ -140,29 +140,29 @@
         5
       ],
       "selected_row_labels": [
-        "Dobb",
-        "Lian",
-        "Nell",
-        "Elsa",
-        "Ten",
-        "Hoyt"
+        "Ries",
+        "Badr",
+        "Nina",
+        "Hako",
+        "Mroz",
+        "Horn"
       ],
       "supporting_cell_ids": [
-        "cell_r1_c1",
         "cell_r1_c3",
-        "cell_r2_c1",
+        "cell_r1_c1",
         "cell_r2_c3",
-        "cell_r3_c1",
+        "cell_r2_c1",
         "cell_r3_c3",
-        "cell_r4_c1",
+        "cell_r3_c1",
         "cell_r4_c3",
-        "cell_r5_c1",
+        "cell_r4_c1",
         "cell_r5_c3",
-        "cell_r6_c1",
-        "cell_r6_c3"
+        "cell_r5_c1",
+        "cell_r6_c3",
+        "cell_r6_c1"
       ],
-      "target_column": "Wins",
-      "target_column_index": 2,
+      "target_column": "Pts",
+      "target_column_index": 0,
       "task_variant": "filtered_argmin",
       "task_variant_probabilities": {
         "filtered_argmax": 0.0,
@@ -174,47 +174,41 @@
         32
       ],
       "values_by_row": {
-        "Dobb": {
-          "Dist": 15,
-          "Temp": 7,
-          "Wins": 30
+        "Badr": {
+          "Cost": 18,
+          "Pts": 22,
+          "Temp": 5
         },
-        "Elsa": {
-          "Dist": 6,
-          "Temp": 18,
-          "Wins": 16
+        "Hako": {
+          "Cost": 4,
+          "Pts": 2,
+          "Temp": 27
         },
-        "Hoyt": {
-          "Dist": 1,
-          "Temp": 30,
-          "Wins": 14
+        "Horn": {
+          "Cost": 22,
+          "Pts": 11,
+          "Temp": 3
         },
-        "Lian": {
-          "Dist": 26,
-          "Temp": 30,
-          "Wins": 26
+        "Mroz": {
+          "Cost": 3,
+          "Pts": 15,
+          "Temp": 6
         },
-        "Nell": {
-          "Dist": 29,
-          "Temp": 25,
-          "Wins": 22
+        "Nina": {
+          "Cost": 2,
+          "Pts": 10,
+          "Temp": 18
         },
-        "Ten": {
-          "Dist": 16,
-          "Temp": 1,
-          "Wins": 12
+        "Ries": {
+          "Cost": 17,
+          "Pts": 7,
+          "Temp": 18
         }
       }
     },
     "projected_evidence": {
       "bbox_set": [
         [
-          286.08,
-          132.0,
-          486.72,
-          208.0
-        ],
-        [
           687.36,
           132.0,
           888.0,
@@ -222,9 +216,9 @@
         ],
         [
           286.08,
-          208.0,
+          132.0,
           486.72,
-          284.0
+          208.0
         ],
         [
           687.36,
@@ -234,9 +228,9 @@
         ],
         [
           286.08,
-          284.0,
+          208.0,
           486.72,
-          360.0
+          284.0
         ],
         [
           687.36,
@@ -246,9 +240,9 @@
         ],
         [
           286.08,
-          360.0,
+          284.0,
           486.72,
-          436.0
+          360.0
         ],
         [
           687.36,
@@ -258,9 +252,9 @@
         ],
         [
           286.08,
-          436.0,
+          360.0,
           486.72,
-          512.0
+          436.0
         ],
         [
           687.36,
@@ -270,14 +264,20 @@
         ],
         [
           286.08,
+          436.0,
+          486.72,
+          512.0
+        ],
+        [
+          687.36,
           512.0,
-          486.72,
+          888.0,
           588.0
         ],
         [
-          687.36,
+          286.08,
           512.0,
-          888.0,
+          486.72,
           588.0
         ]
       ]
@@ -288,14 +288,14 @@
         "filter_variant": "above_threshold",
         "numeric_column_count": 3,
         "row_count": 6,
-        "scene_variant": "ledger",
+        "scene_variant": "card_table",
         "scene_variant_probabilities": {
           "card_table": 0.25,
           "ledger": 0.25,
           "spreadsheet": 0.25,
           "zebra": 0.25
         },
-        "target_column": "Wins",
+        "target_column": "Pts",
         "task_variant": "filtered_argmin",
         "task_variant_probabilities": {
           "filtered_argmax": 0.0,
@@ -304,7 +304,7 @@
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 3,
+        "answer_or_evidence_variant_index": 2,
         "prompt_bundle_id": "tables_statistics_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -315,16 +315,16 @@
           "json_example_answer_only": "{\"answer\":\"Milo\"}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "object_description": "a ledger-style table with one Name column, several numeric columns, strong horizontal rules, and minimal vertical separators",
+          "object_description": "a card-style table with one Name column, several numeric columns, a rounded outer frame, and a shaded header row",
           "query_filter_column": "Temp",
-          "query_target_column": "Wins"
+          "query_target_column": "Pts"
         },
         "task_family_key": "styled_table_statistics",
-        "task_family_variant_index": 3,
+        "task_family_variant_index": 2,
         "task_key": "filtered_subset_label_query",
-        "task_variant_index": 3,
+        "task_variant_index": 1,
         "task_variant_key": "filtered_argmin",
-        "task_variant_template_index": 0,
+        "task_variant_template_index": 4,
         "template_paths": [
           "tables/statistics/tables_statistics_v1.json"
         ],
@@ -340,7 +340,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 3,
+            "answer_or_evidence_variant_index": 2,
             "prompt_bundle_id": "tables_statistics_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -351,16 +351,16 @@
               "json_example_answer_only": "{\"answer\":\"Milo\"}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a ledger-style table with one Name column, several numeric columns, strong horizontal rules, and minimal vertical separators",
+              "object_description": "a card-style table with one Name column, several numeric columns, a rounded outer frame, and a shaded header row",
               "query_filter_column": "Temp",
-              "query_target_column": "Wins"
+              "query_target_column": "Pts"
             },
             "task_family_key": "styled_table_statistics",
-            "task_family_variant_index": 3,
+            "task_family_variant_index": 2,
             "task_key": "filtered_subset_label_query",
-            "task_variant_index": 3,
+            "task_variant_index": 1,
             "task_variant_key": "filtered_argmin",
-            "task_variant_template_index": 0,
+            "task_variant_template_index": 4,
             "template_paths": [
               "tables/statistics/tables_statistics_v1.json"
             ],
@@ -371,12 +371,12 @@
               "task_variant:filtered_argmin": 5
             }
           },
-          "prompt": "Look at the table in the image. It shows a ledger-style table with one Name column, several numeric columns, strong horizontal rules, and minimal vertical separators. Find the row name with the requested target-column extremum after applying the stated row filter. Among the rows with values in Temp greater than 0, which row has the lowest value in the Wins column?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing the ordered supporting cell pairs [filter cell, target cell] for each selected row in top-to-bottom row order.\nAnswer field: set \"answer\" to the exact row-name string from the filtered rows.\nExample JSON:\n{\"evidence\":[[260,180,372,236],[374,180,486,236],[260,236,372,292],[374,236,486,292]],\"answer\":\"Milo\"}"
+          "prompt": "Work from the styled table shown in the image: a card-style table with one Name column, several numeric columns, a rounded outer frame, and a shaded header row. Determine which selected row wins under the requested target-column extremum after applying the filter condition. After filtering to rows where values in Temp greater than 0, identify the row with the minimum Pts value.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the ordered supporting cell pairs [filter cell, target cell] for each selected row in top-to-bottom row order.\nAnswer requirement: set \"answer\" to the exact row-name string from the filtered rows.\nExample JSON:\n{\"evidence\":[[260,180,372,236],[374,180,486,236],[260,236,372,292],[374,236,486,292]],\"answer\":\"Milo\"}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 3,
+            "answer_or_evidence_variant_index": 2,
             "prompt_bundle_id": "tables_statistics_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -387,16 +387,16 @@
               "json_example_answer_only": "{\"answer\":\"Milo\"}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a ledger-style table with one Name column, several numeric columns, strong horizontal rules, and minimal vertical separators",
+              "object_description": "a card-style table with one Name column, several numeric columns, a rounded outer frame, and a shaded header row",
               "query_filter_column": "Temp",
-              "query_target_column": "Wins"
+              "query_target_column": "Pts"
             },
             "task_family_key": "styled_table_statistics",
-            "task_family_variant_index": 3,
+            "task_family_variant_index": 2,
             "task_key": "filtered_subset_label_query",
-            "task_variant_index": 3,
+            "task_variant_index": 1,
             "task_variant_key": "filtered_argmin",
-            "task_variant_template_index": 0,
+            "task_variant_template_index": 4,
             "template_paths": [
               "tables/statistics/tables_statistics_v1.json"
             ],
@@ -407,7 +407,7 @@
               "task_variant:filtered_argmin": 5
             }
           },
-          "prompt": "Look at the table in the image. It shows a ledger-style table with one Name column, several numeric columns, strong horizontal rules, and minimal vertical separators. Find the row name with the requested target-column extremum after applying the stated row filter. Among the rows with values in Temp greater than 0, which row has the lowest value in the Wins column?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the exact row-name string from the filtered rows.\nExample JSON:\n{\"answer\":\"Milo\"}"
+          "prompt": "Work from the styled table shown in the image: a card-style table with one Name column, several numeric columns, a rounded outer frame, and a shaded header row. Determine which selected row wins under the requested target-column extremum after applying the filter condition. After filtering to rows where values in Temp greater than 0, identify the row with the minimum Pts value.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the exact row-name string from the filtered rows.\nExample JSON:\n{\"answer\":\"Milo\"}"
         }
       },
       "task_variant": "filtered_argmin",
@@ -585,19 +585,19 @@
         ]
       },
       "column_region_bboxes_px": {
-        "Dist": [
+        "Cost": [
           486.72,
           132.0,
           687.36,
           588.0
         ],
-        "Temp": [
+        "Pts": [
           286.08,
           132.0,
           486.72,
           588.0
         ],
-        "Wins": [
+        "Temp": [
           687.36,
           132.0,
           888.0,
@@ -605,19 +605,19 @@
         ]
       },
       "header_bboxes_px": {
-        "Dist": [
+        "Cost": [
           486.72,
           56.0,
           687.36,
           132.0
         ],
-        "Temp": [
+        "Pts": [
           286.08,
           56.0,
           486.72,
           132.0
         ],
-        "Wins": [
+        "Temp": [
           687.36,
           56.0,
           888.0,
@@ -626,79 +626,79 @@
       },
       "image_id": "img0",
       "row_label_bboxes_px": {
-        "Dobb": [
-          52.0,
-          132.0,
-          286.08,
-          208.0
-        ],
-        "Elsa": [
-          52.0,
-          360.0,
-          286.08,
-          436.0
-        ],
-        "Hoyt": [
-          52.0,
-          512.0,
-          286.08,
-          588.0
-        ],
-        "Lian": [
+        "Badr": [
           52.0,
           208.0,
           286.08,
           284.0
         ],
-        "Nell": [
+        "Hako": [
+          52.0,
+          360.0,
+          286.08,
+          436.0
+        ],
+        "Horn": [
+          52.0,
+          512.0,
+          286.08,
+          588.0
+        ],
+        "Mroz": [
+          52.0,
+          436.0,
+          286.08,
+          512.0
+        ],
+        "Nina": [
           52.0,
           284.0,
           286.08,
           360.0
         ],
-        "Ten": [
+        "Ries": [
           52.0,
-          436.0,
+          132.0,
           286.08,
-          512.0
+          208.0
         ]
       },
       "row_region_bboxes_px": {
-        "Dobb": [
-          286.08,
-          132.0,
-          888.0,
-          208.0
-        ],
-        "Elsa": [
-          286.08,
-          360.0,
-          888.0,
-          436.0
-        ],
-        "Hoyt": [
-          286.08,
-          512.0,
-          888.0,
-          588.0
-        ],
-        "Lian": [
+        "Badr": [
           286.08,
           208.0,
           888.0,
           284.0
         ],
-        "Nell": [
+        "Hako": [
+          286.08,
+          360.0,
+          888.0,
+          436.0
+        ],
+        "Horn": [
+          286.08,
+          512.0,
+          888.0,
+          588.0
+        ],
+        "Mroz": [
+          286.08,
+          436.0,
+          888.0,
+          512.0
+        ],
+        "Nina": [
           286.08,
           284.0,
           888.0,
           360.0
         ],
-        "Ten": [
+        "Ries": [
           286.08,
-          436.0,
+          132.0,
           888.0,
-          512.0
+          208.0
         ]
       },
       "table_bbox_px": [
@@ -747,7 +747,7 @@
         "edits": [],
         "enabled": false
       },
-      "scene_variant": "ledger",
+      "scene_variant": "card_table",
       "table_bbox_px": [
         52.0,
         56.0,
@@ -789,16 +789,16 @@
         {
           "attrs": {
             "cell_role": "header",
-            "column_header": "Temp",
+            "column_header": "Pts",
             "column_index": 1,
             "row_index": 0,
             "row_label": null,
-            "text": "Temp",
+            "text": "Pts",
             "text_bbox_px": [
-              349.4,
-              82.5,
-              423.4,
-              105.5
+              364.9,
+              85.0,
+              407.9,
+              103.0
             ],
             "value": null
           },
@@ -814,15 +814,15 @@
         {
           "attrs": {
             "cell_role": "header",
-            "column_header": "Dist",
+            "column_header": "Cost",
             "column_index": 2,
             "row_index": 0,
             "row_label": null,
-            "text": "Dist",
+            "text": "Cost",
             "text_bbox_px": [
-              560.54,
+              557.54,
               85.0,
-              613.54,
+              616.54,
               103.0
             ],
             "value": null
@@ -839,16 +839,16 @@
         {
           "attrs": {
             "cell_role": "header",
-            "column_header": "Wins",
+            "column_header": "Temp",
             "column_index": 3,
             "row_index": 0,
             "row_label": null,
-            "text": "Wins",
+            "text": "Temp",
             "text_bbox_px": [
-              755.18,
-              85.0,
-              820.18,
-              103.0
+              750.68,
+              82.5,
+              824.68,
+              105.5
             ],
             "value": null
           },
@@ -867,12 +867,12 @@
             "column_header": "Name",
             "column_index": 0,
             "row_index": 1,
-            "row_label": "Dobb",
-            "text": "Dobb",
+            "row_label": "Ries",
+            "text": "Ries",
             "text_bbox_px": [
               66.0,
               161.0,
-              136.0,
+              122.0,
               179.0
             ],
             "value": null
@@ -889,10 +889,10 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Temp",
+            "column_header": "Pts",
             "column_index": 1,
             "row_index": 1,
-            "row_label": "Dobb",
+            "row_label": "Ries",
             "text": "7",
             "text_bbox_px": [
               379.4,
@@ -914,18 +914,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Dist",
+            "column_header": "Cost",
             "column_index": 2,
             "row_index": 1,
-            "row_label": "Dobb",
-            "text": "15",
+            "row_label": "Ries",
+            "text": "17",
             "text_bbox_px": [
               573.04,
               162.0,
               601.04,
               178.0
             ],
-            "value": 15
+            "value": 17
           },
           "bbox_px": [
             486.72,
@@ -939,18 +939,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Wins",
+            "column_header": "Temp",
             "column_index": 3,
             "row_index": 1,
-            "row_label": "Dobb",
-            "text": "30",
+            "row_label": "Ries",
+            "text": "18",
             "text_bbox_px": [
               773.68,
               162.0,
               801.68,
               178.0
             ],
-            "value": 30
+            "value": 18
           },
           "bbox_px": [
             687.36,
@@ -967,12 +967,12 @@
             "column_header": "Name",
             "column_index": 0,
             "row_index": 2,
-            "row_label": "Lian",
-            "text": "Lian",
+            "row_label": "Badr",
+            "text": "Badr",
             "text_bbox_px": [
               66.0,
               237.0,
-              122.0,
+              129.0,
               255.0
             ],
             "value": null
@@ -989,18 +989,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Temp",
+            "column_header": "Pts",
             "column_index": 1,
             "row_index": 2,
-            "row_label": "Lian",
-            "text": "30",
+            "row_label": "Badr",
+            "text": "22",
             "text_bbox_px": [
               372.4,
               238.0,
               400.4,
               254.0
             ],
-            "value": 30
+            "value": 22
           },
           "bbox_px": [
             286.08,
@@ -1014,18 +1014,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Dist",
+            "column_header": "Cost",
             "column_index": 2,
             "row_index": 2,
-            "row_label": "Lian",
-            "text": "26",
+            "row_label": "Badr",
+            "text": "18",
             "text_bbox_px": [
               573.04,
               238.0,
               601.04,
               254.0
             ],
-            "value": 26
+            "value": 18
           },
           "bbox_px": [
             486.72,
@@ -1039,18 +1039,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Wins",
+            "column_header": "Temp",
             "column_index": 3,
             "row_index": 2,
-            "row_label": "Lian",
-            "text": "26",
+            "row_label": "Badr",
+            "text": "5",
             "text_bbox_px": [
-              773.68,
+              780.68,
               238.0,
-              801.68,
+              794.68,
               254.0
             ],
-            "value": 26
+            "value": 5
           },
           "bbox_px": [
             687.36,
@@ -1067,12 +1067,12 @@
             "column_header": "Name",
             "column_index": 0,
             "row_index": 3,
-            "row_label": "Nell",
-            "text": "Nell",
+            "row_label": "Nina",
+            "text": "Nina",
             "text_bbox_px": [
               66.0,
               313.0,
-              118.0,
+              127.0,
               331.0
             ],
             "value": null
@@ -1089,18 +1089,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Temp",
+            "column_header": "Pts",
             "column_index": 1,
             "row_index": 3,
-            "row_label": "Nell",
-            "text": "25",
+            "row_label": "Nina",
+            "text": "10",
             "text_bbox_px": [
               372.4,
               314.0,
               400.4,
               330.0
             ],
-            "value": 25
+            "value": 10
           },
           "bbox_px": [
             286.08,
@@ -1114,18 +1114,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Dist",
+            "column_header": "Cost",
             "column_index": 2,
             "row_index": 3,
-            "row_label": "Nell",
-            "text": "29",
+            "row_label": "Nina",
+            "text": "2",
             "text_bbox_px": [
-              573.04,
+              580.04,
               314.0,
-              601.04,
+              594.04,
               330.0
             ],
-            "value": 29
+            "value": 2
           },
           "bbox_px": [
             486.72,
@@ -1139,18 +1139,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Wins",
+            "column_header": "Temp",
             "column_index": 3,
             "row_index": 3,
-            "row_label": "Nell",
-            "text": "22",
+            "row_label": "Nina",
+            "text": "18",
             "text_bbox_px": [
               773.68,
               314.0,
               801.68,
               330.0
             ],
-            "value": 22
+            "value": 18
           },
           "bbox_px": [
             687.36,
@@ -1167,12 +1167,12 @@
             "column_header": "Name",
             "column_index": 0,
             "row_index": 4,
-            "row_label": "Elsa",
-            "text": "Elsa",
+            "row_label": "Hako",
+            "text": "Hako",
             "text_bbox_px": [
               66.0,
               389.0,
-              120.0,
+              134.0,
               407.0
             ],
             "value": null
@@ -1189,18 +1189,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Temp",
+            "column_header": "Pts",
             "column_index": 1,
             "row_index": 4,
-            "row_label": "Elsa",
-            "text": "18",
+            "row_label": "Hako",
+            "text": "2",
             "text_bbox_px": [
-              372.4,
+              379.4,
               390.0,
-              400.4,
+              393.4,
               406.0
             ],
-            "value": 18
+            "value": 2
           },
           "bbox_px": [
             286.08,
@@ -1214,18 +1214,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Dist",
+            "column_header": "Cost",
             "column_index": 2,
             "row_index": 4,
-            "row_label": "Elsa",
-            "text": "6",
+            "row_label": "Hako",
+            "text": "4",
             "text_bbox_px": [
               580.04,
               390.0,
               594.04,
               406.0
             ],
-            "value": 6
+            "value": 4
           },
           "bbox_px": [
             486.72,
@@ -1239,18 +1239,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Wins",
+            "column_header": "Temp",
             "column_index": 3,
             "row_index": 4,
-            "row_label": "Elsa",
-            "text": "16",
+            "row_label": "Hako",
+            "text": "27",
             "text_bbox_px": [
               773.68,
               390.0,
               801.68,
               406.0
             ],
-            "value": 16
+            "value": 27
           },
           "bbox_px": [
             687.36,
@@ -1267,12 +1267,12 @@
             "column_header": "Name",
             "column_index": 0,
             "row_index": 5,
-            "row_label": "Ten",
-            "text": "Ten",
+            "row_label": "Mroz",
+            "text": "Mroz",
             "text_bbox_px": [
               66.0,
               465.0,
-              115.0,
+              132.0,
               483.0
             ],
             "value": null
@@ -1289,18 +1289,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Temp",
+            "column_header": "Pts",
             "column_index": 1,
             "row_index": 5,
-            "row_label": "Ten",
-            "text": "1",
+            "row_label": "Mroz",
+            "text": "15",
             "text_bbox_px": [
-              379.4,
+              372.4,
               466.0,
-              393.4,
+              400.4,
               482.0
             ],
-            "value": 1
+            "value": 15
           },
           "bbox_px": [
             286.08,
@@ -1314,18 +1314,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Dist",
+            "column_header": "Cost",
             "column_index": 2,
             "row_index": 5,
-            "row_label": "Ten",
-            "text": "16",
+            "row_label": "Mroz",
+            "text": "3",
             "text_bbox_px": [
-              573.04,
+              580.04,
               466.0,
-              601.04,
+              594.04,
               482.0
             ],
-            "value": 16
+            "value": 3
           },
           "bbox_px": [
             486.72,
@@ -1339,18 +1339,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Wins",
+            "column_header": "Temp",
             "column_index": 3,
             "row_index": 5,
-            "row_label": "Ten",
-            "text": "12",
+            "row_label": "Mroz",
+            "text": "6",
             "text_bbox_px": [
-              773.68,
+              780.68,
               466.0,
-              801.68,
+              794.68,
               482.0
             ],
-            "value": 12
+            "value": 6
           },
           "bbox_px": [
             687.36,
@@ -1367,13 +1367,13 @@
             "column_header": "Name",
             "column_index": 0,
             "row_index": 6,
-            "row_label": "Hoyt",
-            "text": "Hoyt",
+            "row_label": "Horn",
+            "text": "Horn",
             "text_bbox_px": [
               66.0,
-              538.5,
-              129.0,
-              561.5
+              541.0,
+              131.0,
+              559.0
             ],
             "value": null
           },
@@ -1389,18 +1389,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Temp",
+            "column_header": "Pts",
             "column_index": 1,
             "row_index": 6,
-            "row_label": "Hoyt",
-            "text": "30",
+            "row_label": "Horn",
+            "text": "11",
             "text_bbox_px": [
               372.4,
               542.0,
               400.4,
               558.0
             ],
-            "value": 30
+            "value": 11
           },
           "bbox_px": [
             286.08,
@@ -1414,18 +1414,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Dist",
+            "column_header": "Cost",
             "column_index": 2,
             "row_index": 6,
-            "row_label": "Hoyt",
-            "text": "1",
+            "row_label": "Horn",
+            "text": "22",
             "text_bbox_px": [
-              580.04,
+              573.04,
               542.0,
-              594.04,
+              601.04,
               558.0
             ],
-            "value": 1
+            "value": 22
           },
           "bbox_px": [
             486.72,
@@ -1439,18 +1439,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Wins",
+            "column_header": "Temp",
             "column_index": 3,
             "row_index": 6,
-            "row_label": "Hoyt",
-            "text": "14",
+            "row_label": "Horn",
+            "text": "3",
             "text_bbox_px": [
-              773.68,
+              780.68,
               542.0,
-              801.68,
+              794.68,
               558.0
             ],
-            "value": 14
+            "value": 3
           },
           "bbox_px": [
             687.36,
@@ -1463,50 +1463,44 @@
         }
       ],
       "relations": {
-        "answer_row_index": 4,
-        "answer_row_label": "Ten",
-        "answer_value": 12,
+        "answer_row_index": 3,
+        "answer_row_label": "Hako",
+        "answer_value": 2,
         "filter_column": "Temp",
         "filter_variant": "above_threshold",
-        "scene_variant": "ledger",
+        "scene_variant": "card_table",
         "selected_row_labels": [
-          "Dobb",
-          "Lian",
-          "Nell",
-          "Elsa",
-          "Ten",
-          "Hoyt"
+          "Ries",
+          "Badr",
+          "Nina",
+          "Hako",
+          "Mroz",
+          "Horn"
         ],
         "supporting_cell_ids": [
-          "cell_r1_c1",
           "cell_r1_c3",
-          "cell_r2_c1",
+          "cell_r1_c1",
           "cell_r2_c3",
-          "cell_r3_c1",
+          "cell_r2_c1",
           "cell_r3_c3",
-          "cell_r4_c1",
+          "cell_r3_c1",
           "cell_r4_c3",
-          "cell_r5_c1",
+          "cell_r4_c1",
           "cell_r5_c3",
-          "cell_r6_c1",
-          "cell_r6_c3"
+          "cell_r5_c1",
+          "cell_r6_c3",
+          "cell_r6_c1"
         ],
-        "target_column": "Wins",
+        "target_column": "Pts",
         "task_variant": "filtered_argmin",
         "threshold_value": 0
       },
-      "scene_kind": "table_ledger_statistics"
+      "scene_kind": "table_card_table_statistics"
     },
     "witness_symbolic": {
       "type": "bbox_set",
       "value": [
         [
-          286.08,
-          132.0,
-          486.72,
-          208.0
-        ],
-        [
           687.36,
           132.0,
           888.0,
@@ -1514,9 +1508,9 @@
         ],
         [
           286.08,
-          208.0,
+          132.0,
           486.72,
-          284.0
+          208.0
         ],
         [
           687.36,
@@ -1526,9 +1520,9 @@
         ],
         [
           286.08,
-          284.0,
+          208.0,
           486.72,
-          360.0
+          284.0
         ],
         [
           687.36,
@@ -1538,9 +1532,9 @@
         ],
         [
           286.08,
-          360.0,
+          284.0,
           486.72,
-          436.0
+          360.0
         ],
         [
           687.36,
@@ -1550,9 +1544,9 @@
         ],
         [
           286.08,
-          436.0,
+          360.0,
           486.72,
-          512.0
+          436.0
         ],
         [
           687.36,
@@ -1562,14 +1556,20 @@
         ],
         [
           286.08,
+          436.0,
+          486.72,
+          512.0
+        ],
+        [
+          687.36,
           512.0,
-          486.72,
+          888.0,
           588.0
         ],
         [
-          687.36,
+          286.08,
           512.0,
-          888.0,
+          486.72,
           588.0
         ]
       ]

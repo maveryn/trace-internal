@@ -1,24 +1,24 @@
 {
   "answer_gt": {
     "type": "number",
-    "value": 15.7
+    "value": 7.5
   },
   "evidence_gt": {
     "type": "measurement_ref_map",
     "value": {
-      "RT": 21,
-      "ST": 14
+      "KM": 11,
+      "LM": 8
     }
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_2d_value/images/length/0000.png"
   },
-  "instance_seed": 5020367887317041,
-  "prompt": "Look at the annotated image showing a geometric scene with measurement annotations. The rectangle shows one side and its diagonal. What is the length of segment RS?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: ST, RT.\nAnswer field: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"ST\":2,\"RT\":3},\"answer\":42.3}",
+  "instance_seed": 8760042980948476,
+  "prompt": "Work from the annotated scene showing a geometric scene with measurement annotations. Read the marked measurements and answer: The rectangle shows one side and its diagonal. What is the length of segment KL?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: LM, KM.\nAnswer: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"LM\":2,\"KM\":3},\"answer\":42.3}",
   "prompt_variants": {
-    "answer_and_evidence": "Look at the annotated image showing a geometric scene with measurement annotations. The rectangle shows one side and its diagonal. What is the length of segment RS?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: ST, RT.\nAnswer field: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"ST\":2,\"RT\":3},\"answer\":42.3}",
-    "answer_only": "Look at the annotated image showing a geometric scene with measurement annotations. The rectangle shows one side and its diagonal. What is the length of segment RS?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"answer\":42.3}"
+    "answer_and_evidence": "Work from the annotated scene showing a geometric scene with measurement annotations. Read the marked measurements and answer: The rectangle shows one side and its diagonal. What is the length of segment KL?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: LM, KM.\nAnswer: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"LM\":2,\"KM\":3},\"answer\":42.3}",
+    "answer_only": "Work from the annotated scene showing a geometric scene with measurement annotations. Read the marked measurements and answer: The rectangle shows one side and its diagonal. What is the length of segment KL?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"answer\":42.3}"
   },
   "task": "task_geometry_analytical_2d_value",
   "task_variant": "length",
@@ -26,20 +26,20 @@
     "execution_trace": {
       "answer_max": 100,
       "answer_min": 3,
-      "answer_scalar": 157,
+      "answer_scalar": 75,
       "answer_type": "number",
-      "answer_value": 15.7,
+      "answer_value": 7.5,
       "evidence_map": {
-        "RT": 21,
-        "ST": 14
+        "KM": 11,
+        "LM": 8
       },
       "evidence_role_tokens": {
-        "diagonal": "RT",
-        "known_side": "ST"
+        "diagonal": "KM",
+        "known_side": "LM"
       },
       "evidence_role_values": {
-        "diagonal": 21,
-        "known_side": 14
+        "diagonal": 11,
+        "known_side": 8
       },
       "evidence_roles": [
         "known_side",
@@ -56,10 +56,10 @@
         "length": 1.0,
         "perimeter": 0.0
       },
-      "raw_answer_value": 15.652475842498529,
+      "raw_answer_value": 7.54983443527075,
       "required_annotations": [
-        "ST",
-        "RT"
+        "LM",
+        "KM"
       ],
       "scene_variant": "rectangle",
       "scene_variant_probabilities": {
@@ -72,7 +72,7 @@
         "trapezoid": 0.2,
         "triangle": 0.2
       },
-      "target_annotation": "RS",
+      "target_annotation": "KL",
       "task_variant": "length",
       "task_variant_probabilities": {
         "area": 0.0,
@@ -91,35 +91,35 @@
     },
     "projected_evidence": {
       "annotation_labels": {
-        "diagonal": "RT",
-        "known_side": "ST"
+        "diagonal": "KM",
+        "known_side": "LM"
       },
       "id_set": [
-        "ST",
-        "RT"
+        "LM",
+        "KM"
       ],
       "measurement_ref_map": {
-        "RT": 21,
-        "ST": 14
+        "KM": 11,
+        "LM": 8
       },
       "pixel_annotation_centers": {
-        "RT": [
-          332.46666666666664,
-          332.24919569766377
+        "KM": [
+          315.4321274561744,
+          309.04137868271874
         ],
-        "ST": [
-          558.0866666666666,
-          310.4848007166658
+        "LM": [
+          499.8211858221018,
+          289.0
         ]
       },
       "pixel_point_set": [
         [
-          558.0866666666666,
-          310.4848007166658
+          499.8211858221018,
+          289.0
         ],
         [
-          332.46666666666664,
-          332.24919569766377
+          315.4321274561744,
+          309.04137868271874
         ]
       ]
     },
@@ -158,23 +158,23 @@
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 3,
+        "answer_or_evidence_variant_index": 0,
         "prompt_bundle_id": "geometry_analytical_length_v1",
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the length value rounded to one decimal place",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: ST, RT",
-          "json_example": "{\"evidence\":{\"ST\":2,\"RT\":3},\"answer\":42.3}",
+          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: LM, KM",
+          "json_example": "{\"evidence\":{\"LM\":2,\"KM\":3},\"answer\":42.3}",
           "json_example_answer_only": "{\"answer\":42.3}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
           "object_description": "a geometric scene with measurement annotations",
-          "question_text": "The rectangle shows one side and its diagonal. What is the length of segment RS?"
+          "question_text": "The rectangle shows one side and its diagonal. What is the length of segment KL?"
         },
         "task_family_key": "analytical_length_scene",
-        "task_family_variant_index": 2,
+        "task_family_variant_index": 4,
         "task_key": "analytical_length_query",
-        "task_variant_index": 0,
+        "task_variant_index": 3,
         "task_variant_key": null,
         "task_variant_template_index": null,
         "template_paths": [
@@ -191,23 +191,23 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 3,
+            "answer_or_evidence_variant_index": 0,
             "prompt_bundle_id": "geometry_analytical_length_v1",
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the length value rounded to one decimal place",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: ST, RT",
-              "json_example": "{\"evidence\":{\"ST\":2,\"RT\":3},\"answer\":42.3}",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: LM, KM",
+              "json_example": "{\"evidence\":{\"LM\":2,\"KM\":3},\"answer\":42.3}",
               "json_example_answer_only": "{\"answer\":42.3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a geometric scene with measurement annotations",
-              "question_text": "The rectangle shows one side and its diagonal. What is the length of segment RS?"
+              "question_text": "The rectangle shows one side and its diagonal. What is the length of segment KL?"
             },
             "task_family_key": "analytical_length_scene",
-            "task_family_variant_index": 2,
+            "task_family_variant_index": 4,
             "task_key": "analytical_length_query",
-            "task_variant_index": 0,
+            "task_variant_index": 3,
             "task_variant_key": null,
             "task_variant_template_index": null,
             "template_paths": [
@@ -219,28 +219,28 @@
               "task_family:analytical_length_scene": 5
             }
           },
-          "prompt": "Look at the annotated image showing a geometric scene with measurement annotations. The rectangle shows one side and its diagonal. What is the length of segment RS?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: ST, RT.\nAnswer field: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"ST\":2,\"RT\":3},\"answer\":42.3}"
+          "prompt": "Work from the annotated scene showing a geometric scene with measurement annotations. Read the marked measurements and answer: The rectangle shows one side and its diagonal. What is the length of segment KL?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: LM, KM.\nAnswer: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"LM\":2,\"KM\":3},\"answer\":42.3}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 4,
+            "answer_or_evidence_variant_index": 3,
             "prompt_bundle_id": "geometry_analytical_length_v1",
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the length value rounded to one decimal place",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: ST, RT",
-              "json_example": "{\"evidence\":{\"ST\":2,\"RT\":3},\"answer\":42.3}",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: LM, KM",
+              "json_example": "{\"evidence\":{\"LM\":2,\"KM\":3},\"answer\":42.3}",
               "json_example_answer_only": "{\"answer\":42.3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a geometric scene with measurement annotations",
-              "question_text": "The rectangle shows one side and its diagonal. What is the length of segment RS?"
+              "question_text": "The rectangle shows one side and its diagonal. What is the length of segment KL?"
             },
             "task_family_key": "analytical_length_scene",
-            "task_family_variant_index": 2,
+            "task_family_variant_index": 4,
             "task_key": "analytical_length_query",
-            "task_variant_index": 0,
+            "task_variant_index": 3,
             "task_variant_key": null,
             "task_variant_template_index": null,
             "template_paths": [
@@ -252,7 +252,7 @@
               "task_family:analytical_length_scene": 5
             }
           },
-          "prompt": "Look at the annotated image showing a geometric scene with measurement annotations. The rectangle shows one side and its diagonal. What is the length of segment RS?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"answer\":42.3}"
+          "prompt": "Work from the annotated scene showing a geometric scene with measurement annotations. Read the marked measurements and answer: The rectangle shows one side and its diagonal. What is the length of segment KL?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"answer\":42.3}"
         }
       },
       "task_variant": "length",
@@ -260,26 +260,26 @@
     },
     "render_map": {
       "annotation_centers": {
-        "RT": [
-          332.46666666666664,
-          332.24919569766377
+        "KM": [
+          315.4321274561744,
+          309.04137868271874
         ],
-        "ST": [
-          558.0866666666666,
-          310.4848007166658
+        "LM": [
+          499.8211858221018,
+          289.0
         ]
       },
       "annotation_labels": {
-        "diagonal": "RT",
-        "known_side": "ST"
+        "diagonal": "KM",
+        "known_side": "LM"
       },
       "coord_space": "pixel",
       "instance_anchor": {
         "bbox": [
-          96.18,
-          116.55509716406408,
-          529.8199999999999,
-          504.4145042692675
+          106.33700848418633,
+          89.94,
+          482.0545191554352,
+          488.06
         ],
         "coord_space": "pixel"
       }
@@ -294,45 +294,47 @@
         ],
         "enabled": true,
         "render_scale": 3,
-        "selected_style": "solid_cool",
+        "selected_style": "solid_offwhite",
         "style_spec": {
           "color": [
-            246,
-            248,
+            252,
+            252,
             252
           ],
           "kind": "solid"
         }
       },
-      "canvas_size": 626,
+      "canvas_size": 578,
       "coord_space": "pixel",
       "graph_coordinate_frame": {
         "coord_space": "graph_unit",
-        "full_cells_x": 10,
-        "full_cells_y": 10,
+        "full_cells_x": 6,
+        "full_cells_y": 6,
+        "origin_fraction_x": 0.5,
+        "origin_fraction_y": 0.5,
         "origin_pixel": [
-          312,
-          312
+          288,
+          288
         ],
         "outer_margin_px": 16,
         "partial_edge_cells": true,
-        "spacing_px": 57,
-        "target_cells_x": 11,
-        "target_cells_y": 11,
+        "spacing_px": 72,
+        "target_cells_x": 8,
+        "target_cells_y": 8,
         "x_positive": "right",
         "y_positive": "up"
       },
       "graph_paper_grid": {
-        "full_cells_x": 10,
-        "full_cells_y": 10,
+        "full_cells_x": 6,
+        "full_cells_y": 6,
         "partial_edge_cells": true,
-        "spacing_px": 57,
-        "target_cells_x": 11,
-        "target_cells_y": 11
+        "spacing_px": 72,
+        "target_cells_x": 8,
+        "target_cells_y": 8
       },
       "legacy_scene_variant": "rectangle",
       "post_image_noise": {
-        "applied": false,
+        "applied": true,
         "apply_prob": 0.5,
         "edit_count_range": [
           1,
@@ -344,26 +346,33 @@
           "jpeg",
           "noise"
         ],
-        "edits": [],
+        "edits": [
+          {
+            "params": {
+              "quality": 93.0
+            },
+            "type": "jpeg"
+          }
+        ],
         "enabled": true
       },
       "query_variant": "length",
       "scene_variant": "rectangle",
       "shape_style": {
         "label_color": [
-          31,
-          140,
-          45
+          73,
+          34,
+          38
         ],
         "label_stroke_color": [
-          250,
-          255,
-          249
+          249,
+          251,
+          251
         ],
         "line_color": [
-          31,
-          140,
-          45
+          73,
+          34,
+          38
         ]
       }
     },
@@ -373,20 +382,20 @@
           "attrs": {
             "vertices": [
               [
-                96.18,
-                504.4145042692675
+                106.33700848418633,
+                488.06
               ],
               [
-                529.8199999999999,
-                504.4145042692675
+                482.0545191554352,
+                488.06
               ],
               [
-                529.8199999999999,
-                116.55509716406408
+                482.0545191554352,
+                89.94
               ],
               [
-                96.18,
-                116.55509716406408
+                106.33700848418633,
+                89.94
               ]
             ]
           },
@@ -397,12 +406,12 @@
           "attrs": {
             "helper": true,
             "point_a": [
-              96.18,
-              504.4145042692675
+              106.33700848418633,
+              488.06
             ],
             "point_b": [
-              529.8199999999999,
-              116.55509716406408
+              482.0545191554352,
+              89.94
             ]
           },
           "entity_id": "diagonal_1",
@@ -412,10 +421,10 @@
       "frames": {
         "graph_unit": {
           "origin_pixel": [
-            312,
-            312
+            288,
+            288
           ],
-          "spacing_px": 57,
+          "spacing_px": 72,
           "x_positive": "right",
           "y_positive": "up"
         },
@@ -439,21 +448,21 @@
     },
     "witness_symbolic": {
       "annotation_ids": [
-        "ST",
-        "RT"
+        "LM",
+        "KM"
       ],
       "annotation_labels": {
-        "diagonal": "RT",
-        "known_side": "ST"
+        "diagonal": "KM",
+        "known_side": "LM"
       },
       "annotation_values": {
-        "RT": 21,
-        "ST": 14
+        "KM": 11,
+        "LM": 8
       },
       "formula_expression": "sqrt(diagonal^2 - known_side^2)",
       "measurement_ref_map": {
-        "RT": 21,
-        "ST": 14
+        "KM": 11,
+        "LM": 8
       },
       "task_variant": "rectangle_diagonal_side",
       "type": "annotation_measurement_map"

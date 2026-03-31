@@ -1,79 +1,65 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 4
+    "value": 1
   },
   "evidence_gt": {
     "type": "label_set",
     "value": [
-      "M",
-      "S",
-      "U",
-      "X"
+      "N"
     ]
   },
   "image": {
     "format": "png",
     "path": "charts/task_charts_trend_structure_value/images/trough_count/0022.png"
   },
-  "instance_seed": 8681805790621883,
-  "prompt": "Work from the ordered chart shown in the image: an ordered labeled area chart with visible point markers from left to right. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Treat consecutive labels in displayed order as adjacent. Determine the requested trend-structure value. Find how many local troughs the ordered chart contains.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the labels of all local troughs.\nAnswer requirement: set \"answer\" to the requested count or streak length as an integer.\nExample JSON:\n{\"evidence\":[\"F\",\"M\"],\"answer\":2}",
+  "instance_seed": 4166191996491843,
+  "prompt": "Work from the ordered chart shown in the image: an ordered labeled area chart with visible point markers from left to right. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Treat consecutive labels in displayed order as adjacent. Use the chart's displayed order to answer the question. Count the local troughs in displayed order. A local trough is lower than both adjacent labels.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the labels of all local troughs.\nAnswer requirement: set \"answer\" to the requested count or streak length as an integer.\nExample JSON:\n{\"evidence\":[\"F\",\"M\"],\"answer\":2}",
   "prompt_variants": {
-    "answer_and_evidence": "Work from the ordered chart shown in the image: an ordered labeled area chart with visible point markers from left to right. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Treat consecutive labels in displayed order as adjacent. Determine the requested trend-structure value. Find how many local troughs the ordered chart contains.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the labels of all local troughs.\nAnswer requirement: set \"answer\" to the requested count or streak length as an integer.\nExample JSON:\n{\"evidence\":[\"F\",\"M\"],\"answer\":2}",
-    "answer_only": "Work from the ordered chart shown in the image: an ordered labeled area chart with visible point markers from left to right. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Treat consecutive labels in displayed order as adjacent. Determine the requested trend-structure value. Find how many local troughs the ordered chart contains.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the requested count or streak length as an integer.\nExample JSON:\n{\"answer\":2}"
+    "answer_and_evidence": "Work from the ordered chart shown in the image: an ordered labeled area chart with visible point markers from left to right. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Treat consecutive labels in displayed order as adjacent. Use the chart's displayed order to answer the question. Count the local troughs in displayed order. A local trough is lower than both adjacent labels.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the labels of all local troughs.\nAnswer requirement: set \"answer\" to the requested count or streak length as an integer.\nExample JSON:\n{\"evidence\":[\"F\",\"M\"],\"answer\":2}",
+    "answer_only": "Work from the ordered chart shown in the image: an ordered labeled area chart with visible point markers from left to right. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Treat consecutive labels in displayed order as adjacent. Use the chart's displayed order to answer the question. Count the local troughs in displayed order. A local trough is lower than both adjacent labels.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the requested count or streak length as an integer.\nExample JSON:\n{\"answer\":2}"
   },
   "task": "task_charts_trend_structure_value",
   "task_variant": "trough_count",
   "trace_payload": {
     "execution_trace": {
-      "answer_value": 4,
+      "answer_value": 1,
       "evidence_labels": [
-        "M",
-        "S",
-        "U",
-        "X"
+        "N"
       ],
       "evidence_point_indices": [
-        1,
-        3,
-        5,
-        8
+        6
       ],
       "labels": [
-        "Z",
+        "A",
         "S",
-        "G",
-        "U",
-        "C",
-        "M",
+        "K",
+        "F",
+        "L",
         "V",
-        "T",
-        "X",
-        "F"
+        "N",
+        "W"
       ],
       "mark_color_distance_space": "lab",
       "mark_color_min_distance": 40.0,
       "mark_color_sampling_policy": "random_rgb",
-      "mark_count": 10,
+      "mark_count": 8,
       "mark_count_range": [
         6,
         10
       ],
       "mark_fill_rgb": [
-        11,
-        26,
-        74
+        139,
+        94,
+        61
       ],
       "mark_outline_rgb": [
-        6,
-        14,
-        41
+        76,
+        52,
+        34
       ],
       "ordered_evidence_labels": [
-        "S",
-        "U",
-        "M",
-        "X"
+        "N"
       ],
       "question_format": "numeric_open",
       "scene_variant": "area",
@@ -86,140 +72,87 @@
         "lollipop": 0.16666666666666666
       },
       "step_directions": [
+        "up",
+        "up",
+        "up",
+        "up",
         "down",
-        "up",
-        "down",
-        "up",
-        "down",
-        "up",
-        "up",
         "down",
         "up"
       ],
       "step_signs": [
+        1,
+        1,
+        1,
+        1,
         -1,
-        1,
-        -1,
-        1,
-        -1,
-        1,
-        1,
         -1,
         1
       ],
-      "target_answer": 4,
+      "target_answer": 1,
       "target_answer_range": [
         0,
         4
       ],
       "task_variant": "trough_count",
       "task_variant_probabilities": {
-        "longest_decreasing_streak": 0.25,
-        "longest_increasing_streak": 0.25,
-        "peak_count": 0.25,
-        "trough_count": 0.25
+        "longest_decreasing_streak": 0.0,
+        "longest_increasing_streak": 0.0,
+        "peak_count": 0.0,
+        "trough_count": 1.0
       },
       "turning_kind": "trough",
       "value_max": 20,
       "value_min": 1,
       "values": [
-        4,
-        2,
-        4,
-        2,
-        4,
-        2,
-        4,
-        6,
-        4,
-        6
+        7,
+        9,
+        11,
+        13,
+        15,
+        13,
+        11,
+        13
       ],
       "values_by_label": {
-        "C": 4,
-        "F": 6,
-        "G": 4,
-        "M": 2,
-        "S": 2,
-        "T": 6,
-        "U": 2,
-        "V": 4,
-        "X": 4,
-        "Z": 4
+        "A": 7,
+        "F": 13,
+        "K": 11,
+        "L": 15,
+        "N": 11,
+        "S": 9,
+        "V": 13,
+        "W": 13
       }
     },
     "projected_evidence": {
       "bbox_set": [
         [
-          448.1,
-          367.429,
-          464.1,
-          383.429
-        ],
-        [
-          183.3,
-          367.429,
-          199.3,
-          383.429
-        ],
-        [
-          315.7,
-          367.429,
-          331.7,
-          383.429
-        ],
-        [
-          646.7,
-          234.857,
-          662.7,
-          250.857
+          621.875,
+          181.0,
+          637.875,
+          197.0
         ]
       ],
       "label_set": [
-        "M",
-        "S",
-        "U",
-        "X"
+        "N"
       ],
       "pixel_point_map": {
-        "M": [
-          456.1,
-          375.429
-        ],
-        "S": [
-          191.3,
-          375.429
-        ],
-        "U": [
-          323.7,
-          375.429
-        ],
-        "X": [
-          654.7,
-          242.857
+        "N": [
+          629.875,
+          189.0
         ]
       },
       "pixel_point_set": [
         [
-          456.1,
-          375.429
-        ],
-        [
-          191.3,
-          375.429
-        ],
-        [
-          323.7,
-          375.429
-        ],
-        [
-          654.7,
-          242.857
+          629.875,
+          189.0
         ]
       ]
     },
     "query_spec": {
       "params": {
-        "mark_count": 10,
+        "mark_count": 8,
         "scene_variant": "area",
         "scene_variant_probabilities": {
           "area": 0.16666666666666666,
@@ -229,17 +162,17 @@
           "line": 0.16666666666666666,
           "lollipop": 0.16666666666666666
         },
-        "target_answer": 4,
+        "target_answer": 1,
         "target_answer_range": [
           0,
           4
         ],
         "task_variant": "trough_count",
         "task_variant_probabilities": {
-          "longest_decreasing_streak": 0.25,
-          "longest_increasing_streak": 0.25,
-          "peak_count": 0.25,
-          "trough_count": 0.25
+          "longest_decreasing_streak": 0.0,
+          "longest_increasing_streak": 0.0,
+          "peak_count": 0.0,
+          "trough_count": 1.0
         }
       },
       "prompt_variant": {
@@ -259,9 +192,9 @@
         "task_family_key": "ordered_chart_trend",
         "task_family_variant_index": 2,
         "task_key": "structure_value_query",
-        "task_variant_index": 1,
+        "task_variant_index": 4,
         "task_variant_key": "trough_count",
-        "task_variant_template_index": 4,
+        "task_variant_template_index": 1,
         "template_paths": [
           "charts/trend/charts_trend_v1.json"
         ],
@@ -292,9 +225,9 @@
             "task_family_key": "ordered_chart_trend",
             "task_family_variant_index": 2,
             "task_key": "structure_value_query",
-            "task_variant_index": 1,
+            "task_variant_index": 4,
             "task_variant_key": "trough_count",
-            "task_variant_template_index": 4,
+            "task_variant_template_index": 1,
             "template_paths": [
               "charts/trend/charts_trend_v1.json"
             ],
@@ -305,12 +238,12 @@
               "task_variant:trough_count": 5
             }
           },
-          "prompt": "Work from the ordered chart shown in the image: an ordered labeled area chart with visible point markers from left to right. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Treat consecutive labels in displayed order as adjacent. Determine the requested trend-structure value. Find how many local troughs the ordered chart contains.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the labels of all local troughs.\nAnswer requirement: set \"answer\" to the requested count or streak length as an integer.\nExample JSON:\n{\"evidence\":[\"F\",\"M\"],\"answer\":2}"
+          "prompt": "Work from the ordered chart shown in the image: an ordered labeled area chart with visible point markers from left to right. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Treat consecutive labels in displayed order as adjacent. Use the chart's displayed order to answer the question. Count the local troughs in displayed order. A local trough is lower than both adjacent labels.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the labels of all local troughs.\nAnswer requirement: set \"answer\" to the requested count or streak length as an integer.\nExample JSON:\n{\"evidence\":[\"F\",\"M\"],\"answer\":2}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 2,
+            "answer_or_evidence_variant_index": 3,
             "prompt_bundle_id": "charts_trend_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -325,9 +258,9 @@
             "task_family_key": "ordered_chart_trend",
             "task_family_variant_index": 2,
             "task_key": "structure_value_query",
-            "task_variant_index": 1,
+            "task_variant_index": 4,
             "task_variant_key": "trough_count",
-            "task_variant_template_index": 4,
+            "task_variant_template_index": 1,
             "template_paths": [
               "charts/trend/charts_trend_v1.json"
             ],
@@ -338,7 +271,7 @@
               "task_variant:trough_count": 5
             }
           },
-          "prompt": "Work from the ordered chart shown in the image: an ordered labeled area chart with visible point markers from left to right. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Treat consecutive labels in displayed order as adjacent. Determine the requested trend-structure value. Find how many local troughs the ordered chart contains.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the requested count or streak length as an integer.\nExample JSON:\n{\"answer\":2}"
+          "prompt": "Work from the ordered chart shown in the image: an ordered labeled area chart with visible point markers from left to right. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Treat consecutive labels in displayed order as adjacent. Use the chart's displayed order to answer the question. Count the local troughs in displayed order. A local trough is lower than both adjacent labels.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the requested count or streak length as an integer.\nExample JSON:\n{\"answer\":2}"
         }
       },
       "task_variant": "trough_count",
@@ -347,45 +280,37 @@
     "render_map": {
       "image_id": "img0",
       "label_centers_px": {
-        "C": [
-          389.9,
-          220.857
+        "A": [
+          133.375,
+          283.0
         ],
         "F": [
-          720.9,
-          88.286
+          381.625,
+          109.0
         ],
-        "G": [
-          257.5,
-          220.857
+        "K": [
+          298.875,
+          167.0
         ],
-        "M": [
-          456.1,
-          353.429
+        "L": [
+          464.375,
+          51.0
+        ],
+        "N": [
+          629.875,
+          167.0
         ],
         "S": [
-          191.3,
-          353.429
-        ],
-        "T": [
-          588.5,
-          88.286
-        ],
-        "U": [
-          323.7,
-          353.429
+          216.125,
+          225.0
         ],
         "V": [
-          522.3,
-          220.857
+          547.125,
+          109.0
         ],
-        "X": [
-          654.7,
-          220.857
-        ],
-        "Z": [
-          125.1,
-          220.857
+        "W": [
+          712.625,
+          109.0
         ]
       },
       "plot_bbox_px": [
@@ -423,14 +348,14 @@
         "mark_color_distance_space": "lab",
         "mark_color_min_distance": 40.0,
         "mark_fill_rgb": [
-          11,
-          26,
-          74
+          139,
+          94,
+          61
         ],
         "mark_outline_rgb": [
-          6,
-          14,
-          41
+          76,
+          52,
+          34
         ],
         "sampling_policy": "random_rgb"
       },
@@ -462,7 +387,7 @@
         "label_stroke_width_px": 2,
         "tick_font_size_px": 18
       },
-      "y_axis_max": 7,
+      "y_axis_max": 16,
       "y_ticks": [
         0,
         1,
@@ -471,74 +396,83 @@
         4,
         5,
         6,
-        7
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16
       ]
     },
     "scene_ir": {
       "entities": [
         {
           "attrs": {
-            "label": "Z",
+            "label": "A",
             "label_center_px": [
-              125.1,
-              220.857
+              133.375,
+              283.0
             ],
             "mark_bbox_px": [
-              117.1,
-              234.857,
-              133.1,
-              250.857
+              125.375,
+              297.0,
+              141.375,
+              313.0
             ],
             "mark_center_px": [
-              125.1,
-              242.857
+              133.375,
+              305.0
             ],
             "mark_fill_rgb": [
-              11,
-              26,
-              74
+              139,
+              94,
+              61
             ],
             "mark_outline_rgb": [
-              6,
-              14,
-              41
+              76,
+              52,
+              34
             ],
             "scene_variant": "area",
-            "value": 4,
+            "value": 7,
             "x_rank": 0
           },
-          "entity_id": "mark_Z",
+          "entity_id": "mark_A",
           "entity_type": "point"
         },
         {
           "attrs": {
             "label": "S",
             "label_center_px": [
-              191.3,
-              353.429
+              216.125,
+              225.0
             ],
             "mark_bbox_px": [
-              183.3,
-              367.429,
-              199.3,
-              383.429
+              208.125,
+              239.0,
+              224.125,
+              255.0
             ],
             "mark_center_px": [
-              191.3,
-              375.429
+              216.125,
+              247.0
             ],
             "mark_fill_rgb": [
-              11,
-              26,
-              74
+              139,
+              94,
+              61
             ],
             "mark_outline_rgb": [
-              6,
-              14,
-              41
+              76,
+              52,
+              34
             ],
             "scene_variant": "area",
-            "value": 2,
+            "value": 9,
             "x_rank": 1
           },
           "entity_id": "mark_S",
@@ -546,316 +480,235 @@
         },
         {
           "attrs": {
-            "label": "G",
+            "label": "K",
             "label_center_px": [
-              257.5,
-              220.857
+              298.875,
+              167.0
             ],
             "mark_bbox_px": [
-              249.5,
-              234.857,
-              265.5,
-              250.857
+              290.875,
+              181.0,
+              306.875,
+              197.0
             ],
             "mark_center_px": [
-              257.5,
-              242.857
+              298.875,
+              189.0
             ],
             "mark_fill_rgb": [
-              11,
-              26,
-              74
+              139,
+              94,
+              61
             ],
             "mark_outline_rgb": [
-              6,
-              14,
-              41
+              76,
+              52,
+              34
             ],
             "scene_variant": "area",
-            "value": 4,
+            "value": 11,
             "x_rank": 2
           },
-          "entity_id": "mark_G",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "label": "U",
-            "label_center_px": [
-              323.7,
-              353.429
-            ],
-            "mark_bbox_px": [
-              315.7,
-              367.429,
-              331.7,
-              383.429
-            ],
-            "mark_center_px": [
-              323.7,
-              375.429
-            ],
-            "mark_fill_rgb": [
-              11,
-              26,
-              74
-            ],
-            "mark_outline_rgb": [
-              6,
-              14,
-              41
-            ],
-            "scene_variant": "area",
-            "value": 2,
-            "x_rank": 3
-          },
-          "entity_id": "mark_U",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "label": "C",
-            "label_center_px": [
-              389.9,
-              220.857
-            ],
-            "mark_bbox_px": [
-              381.9,
-              234.857,
-              397.9,
-              250.857
-            ],
-            "mark_center_px": [
-              389.9,
-              242.857
-            ],
-            "mark_fill_rgb": [
-              11,
-              26,
-              74
-            ],
-            "mark_outline_rgb": [
-              6,
-              14,
-              41
-            ],
-            "scene_variant": "area",
-            "value": 4,
-            "x_rank": 4
-          },
-          "entity_id": "mark_C",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "label": "M",
-            "label_center_px": [
-              456.1,
-              353.429
-            ],
-            "mark_bbox_px": [
-              448.1,
-              367.429,
-              464.1,
-              383.429
-            ],
-            "mark_center_px": [
-              456.1,
-              375.429
-            ],
-            "mark_fill_rgb": [
-              11,
-              26,
-              74
-            ],
-            "mark_outline_rgb": [
-              6,
-              14,
-              41
-            ],
-            "scene_variant": "area",
-            "value": 2,
-            "x_rank": 5
-          },
-          "entity_id": "mark_M",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "label": "V",
-            "label_center_px": [
-              522.3,
-              220.857
-            ],
-            "mark_bbox_px": [
-              514.3,
-              234.857,
-              530.3,
-              250.857
-            ],
-            "mark_center_px": [
-              522.3,
-              242.857
-            ],
-            "mark_fill_rgb": [
-              11,
-              26,
-              74
-            ],
-            "mark_outline_rgb": [
-              6,
-              14,
-              41
-            ],
-            "scene_variant": "area",
-            "value": 4,
-            "x_rank": 6
-          },
-          "entity_id": "mark_V",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "label": "T",
-            "label_center_px": [
-              588.5,
-              88.286
-            ],
-            "mark_bbox_px": [
-              580.5,
-              102.286,
-              596.5,
-              118.286
-            ],
-            "mark_center_px": [
-              588.5,
-              110.286
-            ],
-            "mark_fill_rgb": [
-              11,
-              26,
-              74
-            ],
-            "mark_outline_rgb": [
-              6,
-              14,
-              41
-            ],
-            "scene_variant": "area",
-            "value": 6,
-            "x_rank": 7
-          },
-          "entity_id": "mark_T",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "label": "X",
-            "label_center_px": [
-              654.7,
-              220.857
-            ],
-            "mark_bbox_px": [
-              646.7,
-              234.857,
-              662.7,
-              250.857
-            ],
-            "mark_center_px": [
-              654.7,
-              242.857
-            ],
-            "mark_fill_rgb": [
-              11,
-              26,
-              74
-            ],
-            "mark_outline_rgb": [
-              6,
-              14,
-              41
-            ],
-            "scene_variant": "area",
-            "value": 4,
-            "x_rank": 8
-          },
-          "entity_id": "mark_X",
+          "entity_id": "mark_K",
           "entity_type": "point"
         },
         {
           "attrs": {
             "label": "F",
             "label_center_px": [
-              720.9,
-              88.286
+              381.625,
+              109.0
             ],
             "mark_bbox_px": [
-              712.9,
-              102.286,
-              728.9,
-              118.286
+              373.625,
+              123.0,
+              389.625,
+              139.0
             ],
             "mark_center_px": [
-              720.9,
-              110.286
+              381.625,
+              131.0
             ],
             "mark_fill_rgb": [
-              11,
-              26,
-              74
+              139,
+              94,
+              61
             ],
             "mark_outline_rgb": [
-              6,
-              14,
-              41
+              76,
+              52,
+              34
             ],
             "scene_variant": "area",
-            "value": 6,
-            "x_rank": 9
+            "value": 13,
+            "x_rank": 3
           },
           "entity_id": "mark_F",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "L",
+            "label_center_px": [
+              464.375,
+              51.0
+            ],
+            "mark_bbox_px": [
+              456.375,
+              65.0,
+              472.375,
+              81.0
+            ],
+            "mark_center_px": [
+              464.375,
+              73.0
+            ],
+            "mark_fill_rgb": [
+              139,
+              94,
+              61
+            ],
+            "mark_outline_rgb": [
+              76,
+              52,
+              34
+            ],
+            "scene_variant": "area",
+            "value": 15,
+            "x_rank": 4
+          },
+          "entity_id": "mark_L",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "V",
+            "label_center_px": [
+              547.125,
+              109.0
+            ],
+            "mark_bbox_px": [
+              539.125,
+              123.0,
+              555.125,
+              139.0
+            ],
+            "mark_center_px": [
+              547.125,
+              131.0
+            ],
+            "mark_fill_rgb": [
+              139,
+              94,
+              61
+            ],
+            "mark_outline_rgb": [
+              76,
+              52,
+              34
+            ],
+            "scene_variant": "area",
+            "value": 13,
+            "x_rank": 5
+          },
+          "entity_id": "mark_V",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "N",
+            "label_center_px": [
+              629.875,
+              167.0
+            ],
+            "mark_bbox_px": [
+              621.875,
+              181.0,
+              637.875,
+              197.0
+            ],
+            "mark_center_px": [
+              629.875,
+              189.0
+            ],
+            "mark_fill_rgb": [
+              139,
+              94,
+              61
+            ],
+            "mark_outline_rgb": [
+              76,
+              52,
+              34
+            ],
+            "scene_variant": "area",
+            "value": 11,
+            "x_rank": 6
+          },
+          "entity_id": "mark_N",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "W",
+            "label_center_px": [
+              712.625,
+              109.0
+            ],
+            "mark_bbox_px": [
+              704.625,
+              123.0,
+              720.625,
+              139.0
+            ],
+            "mark_center_px": [
+              712.625,
+              131.0
+            ],
+            "mark_fill_rgb": [
+              139,
+              94,
+              61
+            ],
+            "mark_outline_rgb": [
+              76,
+              52,
+              34
+            ],
+            "scene_variant": "area",
+            "value": 13,
+            "x_rank": 7
+          },
+          "entity_id": "mark_W",
           "entity_type": "point"
         }
       ],
       "relations": {
         "evidence_labels": [
-          "M",
-          "S",
-          "U",
-          "X"
+          "N"
         ],
         "evidence_point_indices": [
-          1,
-          3,
-          5,
-          8
+          6
         ],
         "ordered_evidence_labels": [
-          "S",
-          "U",
-          "M",
-          "X"
+          "N"
         ],
         "scene_variant": "area",
         "step_directions": [
+          "up",
+          "up",
+          "up",
+          "up",
           "down",
-          "up",
-          "down",
-          "up",
-          "down",
-          "up",
-          "up",
           "down",
           "up"
         ],
         "step_signs": [
+          1,
+          1,
+          1,
+          1,
           -1,
-          1,
-          -1,
-          1,
-          -1,
-          1,
-          1,
           -1,
           1
         ],
@@ -866,10 +719,7 @@
     },
     "witness_symbolic": {
       "labels": [
-        "M",
-        "S",
-        "U",
-        "X"
+        "N"
       ],
       "type": "label_set"
     }

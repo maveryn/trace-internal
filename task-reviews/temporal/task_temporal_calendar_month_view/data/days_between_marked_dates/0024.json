@@ -1,22 +1,22 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 5
+    "value": 16
   },
   "evidence_gt": {
     "type": "bbox_set",
     "value": [
       [
+        154.0,
+        270.0,
+        258.0,
+        376.0
+      ],
+      [
         378.0,
         498.0,
         482.0,
         604.0
-      ],
-      [
-        154.0,
-        612.0,
-        258.0,
-        718.0
       ]
     ]
   },
@@ -24,11 +24,11 @@
     "format": "png",
     "path": "temporal/task_temporal_calendar_month_view/images/days_between_marked_dates/0024.png"
   },
-  "instance_seed": 735264695886199,
-  "prompt": "Look at the month-view calendar in the image. It shows one month-view calendar for March 2024 with weekday headers, date cells, and several marked dates. Determine the answer from the shown calendar. How many calendar days separate the two marked dates?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing exactly two bounding boxes [x1, y1, x2, y2] for the two marked date cells.\nAnswer field: set \"answer\" to the integer number of days between the two marked dates.\nExample JSON:\n{\"evidence\":[[250,448,352,544],[560,448,662,544]],\"answer\":9}",
+  "instance_seed": 549388005201959,
+  "prompt": "Look at the month-view calendar in the image. It shows one month-view calendar for May 2026 with weekday headers, date cells, and several marked dates. Answer the question using the calendar. Count the number of days between the two marked dates.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing exactly two bounding boxes [x1, y1, x2, y2] for the two marked date cells.\nAnswer field: set \"answer\" to the integer number of days between the two marked dates.\nExample JSON:\n{\"evidence\":[[250,448,352,544],[560,448,662,544]],\"answer\":9}",
   "prompt_variants": {
-    "answer_and_evidence": "Look at the month-view calendar in the image. It shows one month-view calendar for March 2024 with weekday headers, date cells, and several marked dates. Determine the answer from the shown calendar. How many calendar days separate the two marked dates?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing exactly two bounding boxes [x1, y1, x2, y2] for the two marked date cells.\nAnswer field: set \"answer\" to the integer number of days between the two marked dates.\nExample JSON:\n{\"evidence\":[[250,448,352,544],[560,448,662,544]],\"answer\":9}",
-    "answer_only": "Look at the month-view calendar in the image. It shows one month-view calendar for March 2024 with weekday headers, date cells, and several marked dates. Determine the answer from the shown calendar. How many calendar days separate the two marked dates?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the integer number of days between the two marked dates.\nExample JSON:\n{\"answer\":9}"
+    "answer_and_evidence": "Look at the month-view calendar in the image. It shows one month-view calendar for May 2026 with weekday headers, date cells, and several marked dates. Answer the question using the calendar. Count the number of days between the two marked dates.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing exactly two bounding boxes [x1, y1, x2, y2] for the two marked date cells.\nAnswer field: set \"answer\" to the integer number of days between the two marked dates.\nExample JSON:\n{\"evidence\":[[250,448,352,544],[560,448,662,544]],\"answer\":9}",
+    "answer_only": "Look at the month-view calendar in the image. It shows one month-view calendar for May 2026 with weekday headers, date cells, and several marked dates. Answer the question using the calendar. Count the number of days between the two marked dates.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the integer number of days between the two marked dates.\nExample JSON:\n{\"answer\":9}"
   },
   "task": "task_temporal_calendar_month_view",
   "task_variant": "days_between_marked_dates",
@@ -47,35 +47,35 @@
         "red": 0.1,
         "yellow": 0.1
       },
-      "answer_value": 5,
+      "answer_value": 16,
       "days_in_month": 31,
       "evidence_dates": [
-        21,
-        26
+        5,
+        21
       ],
       "marked_dates": [
-        21,
-        26
+        5,
+        21
       ],
-      "month": 3,
-      "month_name": "March",
+      "month": 5,
+      "month_name": "May",
       "query_occurrence": null,
       "query_weekday_index": null,
       "row_count": 5,
-      "scene_variant": "outline",
+      "scene_variant": "classic",
       "scene_variant_probabilities": {
         "classic": 0.3333333333333333,
         "minimal": 0.3333333333333333,
         "outline": 0.3333333333333333
       },
       "start_weekday_index": 4,
-      "style_variant": "marker",
+      "style_variant": "studio",
       "style_variant_probabilities": {
         "accented": 0.3333333333333333,
         "marker": 0.3333333333333333,
         "studio": 0.3333333333333333
       },
-      "target_day_gap": 5,
+      "target_day_gap": 16,
       "task_variant": "days_between_marked_dates",
       "task_variant_probabilities": {
         "count_marked_weekend_days": 0.0,
@@ -86,21 +86,21 @@
         5,
         6
       ],
-      "year": 2024
+      "year": 2026
     },
     "projected_evidence": {
       "bbox_set": [
+        [
+          154.0,
+          270.0,
+          258.0,
+          376.0
+        ],
         [
           378.0,
           498.0,
           482.0,
           604.0
-        ],
-        [
-          154.0,
-          612.0,
-          258.0,
-          718.0
         ]
       ]
     },
@@ -162,23 +162,23 @@
           3,
           4
         ],
-        "month": 3,
-        "month_name": "March",
+        "month": 5,
+        "month_name": "May",
         "row_count": 5,
-        "scene_variant": "outline",
+        "scene_variant": "classic",
         "scene_variant_probabilities": {
           "classic": 0.3333333333333333,
           "minimal": 0.3333333333333333,
           "outline": 0.3333333333333333
         },
         "start_weekday_index": 4,
-        "style_variant": "marker",
+        "style_variant": "studio",
         "style_variant_probabilities": {
           "accented": 0.3333333333333333,
           "marker": 0.3333333333333333,
           "studio": 0.3333333333333333
         },
-        "target_day_gap": 5,
+        "target_day_gap": 16,
         "task_variant": "days_between_marked_dates",
         "task_variant_probabilities": {
           "count_marked_weekend_days": 0.0,
@@ -189,7 +189,7 @@
           5,
           6
         ],
-        "year": 2024
+        "year": 2026
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
@@ -203,14 +203,14 @@
           "json_example_answer_only": "{\"answer\":9}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "object_description": "one month-view calendar for March 2024 with weekday headers, date cells, and several marked dates"
+          "object_description": "one month-view calendar for May 2026 with weekday headers, date cells, and several marked dates"
         },
         "task_family_key": "month_calendar",
         "task_family_variant_index": 1,
         "task_key": "calendar_month_query",
-        "task_variant_index": 4,
+        "task_variant_index": 0,
         "task_variant_key": "days_between_marked_dates",
-        "task_variant_template_index": 3,
+        "task_variant_template_index": 1,
         "template_paths": [
           "temporal/calendar/temporal_calendar_v1.json"
         ],
@@ -236,14 +236,14 @@
               "json_example_answer_only": "{\"answer\":9}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "one month-view calendar for March 2024 with weekday headers, date cells, and several marked dates"
+              "object_description": "one month-view calendar for May 2026 with weekday headers, date cells, and several marked dates"
             },
             "task_family_key": "month_calendar",
             "task_family_variant_index": 1,
             "task_key": "calendar_month_query",
-            "task_variant_index": 4,
+            "task_variant_index": 0,
             "task_variant_key": "days_between_marked_dates",
-            "task_variant_template_index": 3,
+            "task_variant_template_index": 1,
             "template_paths": [
               "temporal/calendar/temporal_calendar_v1.json"
             ],
@@ -254,12 +254,12 @@
               "task_variant:days_between_marked_dates": 5
             }
           },
-          "prompt": "Look at the month-view calendar in the image. It shows one month-view calendar for March 2024 with weekday headers, date cells, and several marked dates. Determine the answer from the shown calendar. How many calendar days separate the two marked dates?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing exactly two bounding boxes [x1, y1, x2, y2] for the two marked date cells.\nAnswer field: set \"answer\" to the integer number of days between the two marked dates.\nExample JSON:\n{\"evidence\":[[250,448,352,544],[560,448,662,544]],\"answer\":9}"
+          "prompt": "Look at the month-view calendar in the image. It shows one month-view calendar for May 2026 with weekday headers, date cells, and several marked dates. Answer the question using the calendar. Count the number of days between the two marked dates.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing exactly two bounding boxes [x1, y1, x2, y2] for the two marked date cells.\nAnswer field: set \"answer\" to the integer number of days between the two marked dates.\nExample JSON:\n{\"evidence\":[[250,448,352,544],[560,448,662,544]],\"answer\":9}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 4,
+            "answer_or_evidence_variant_index": 0,
             "prompt_bundle_id": "temporal_calendar_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -269,14 +269,14 @@
               "json_example_answer_only": "{\"answer\":9}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "one month-view calendar for March 2024 with weekday headers, date cells, and several marked dates"
+              "object_description": "one month-view calendar for May 2026 with weekday headers, date cells, and several marked dates"
             },
             "task_family_key": "month_calendar",
             "task_family_variant_index": 1,
             "task_key": "calendar_month_query",
-            "task_variant_index": 4,
+            "task_variant_index": 0,
             "task_variant_key": "days_between_marked_dates",
-            "task_variant_template_index": 3,
+            "task_variant_template_index": 1,
             "template_paths": [
               "temporal/calendar/temporal_calendar_v1.json"
             ],
@@ -287,14 +287,14 @@
               "task_variant:days_between_marked_dates": 5
             }
           },
-          "prompt": "Look at the month-view calendar in the image. It shows one month-view calendar for March 2024 with weekday headers, date cells, and several marked dates. Determine the answer from the shown calendar. How many calendar days separate the two marked dates?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the integer number of days between the two marked dates.\nExample JSON:\n{\"answer\":9}"
+          "prompt": "Look at the month-view calendar in the image. It shows one month-view calendar for May 2026 with weekday headers, date cells, and several marked dates. Answer the question using the calendar. Count the number of days between the two marked dates.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the integer number of days between the two marked dates.\nExample JSON:\n{\"answer\":9}"
         }
       },
       "task_variant": "days_between_marked_dates",
       "template_id": "temporal_calendar_v1"
     },
     "render_map": {
-      "calendar_title_text": "March 2024",
+      "calendar_title_text": "May 2026",
       "date_cells_by_day": {
         "1": [
           490.0,
@@ -484,13 +484,13 @@
         ]
       },
       "evidence_dates": [
-        21,
-        26
+        5,
+        21
       ],
       "image_id": "img0",
       "marked_dates": [
-        21,
-        26
+        5,
+        21
       ],
       "scene_bbox_px": [
         34.0,
@@ -517,7 +517,7 @@
       },
       "calendar_style": {
         "accent_color_name": "orange",
-        "marker_kind": "ring",
+        "marker_kind": "fill",
         "resolved_colors_rgb": {
           "date_text": [
             46,
@@ -525,19 +525,19 @@
             62
           ],
           "grid_line": [
-            222,
-            206,
-            188
+            227,
+            219,
+            211
           ],
           "marker_fill": [
-            255,
-            255,
-            255
+            250,
+            222,
+            191
           ],
           "marker_outline": [
-            238,
-            136,
-            26
+            138,
+            79,
+            15
           ],
           "panel_fill": [
             255,
@@ -545,29 +545,29 @@
             255
           ],
           "panel_outline": [
+            208,
+            196,
+            182
+          ],
+          "title_text": [
             100,
             57,
             11
           ],
-          "title_text": [
-            138,
-            79,
-            15
-          ],
           "weekday_fill": [
-            255,
-            255,
-            255
+            253,
+            238,
+            223
           ],
           "weekday_text": [
-            138,
-            79,
-            15
+            100,
+            57,
+            11
           ]
         },
         "row_count": 5,
-        "style_variant": "marker",
-        "title_text": "March 2024"
+        "style_variant": "studio",
+        "title_text": "May 2026"
       },
       "canvas_height": 760,
       "canvas_width": 860,
@@ -594,7 +594,7 @@
         826.0,
         726.0
       ],
-      "scene_variant": "outline"
+      "scene_variant": "classic"
     },
     "scene_ir": {
       "entities": [
@@ -602,11 +602,11 @@
           "attrs": {
             "date_number": 1,
             "is_marked": false,
-            "month": 3,
-            "month_name": "March",
+            "month": 5,
+            "month_name": "May",
             "week_row_index": 0,
             "weekday_index": 4,
-            "year": 2024
+            "year": 2026
           },
           "bbox_px": [
             490.0,
@@ -621,11 +621,11 @@
           "attrs": {
             "date_number": 2,
             "is_marked": false,
-            "month": 3,
-            "month_name": "March",
+            "month": 5,
+            "month_name": "May",
             "week_row_index": 0,
             "weekday_index": 5,
-            "year": 2024
+            "year": 2026
           },
           "bbox_px": [
             602.0,
@@ -640,11 +640,11 @@
           "attrs": {
             "date_number": 3,
             "is_marked": false,
-            "month": 3,
-            "month_name": "March",
+            "month": 5,
+            "month_name": "May",
             "week_row_index": 0,
             "weekday_index": 6,
-            "year": 2024
+            "year": 2026
           },
           "bbox_px": [
             714.0,
@@ -659,11 +659,11 @@
           "attrs": {
             "date_number": 4,
             "is_marked": false,
-            "month": 3,
-            "month_name": "March",
+            "month": 5,
+            "month_name": "May",
             "week_row_index": 1,
             "weekday_index": 0,
-            "year": 2024
+            "year": 2026
           },
           "bbox_px": [
             42.0,
@@ -677,12 +677,12 @@
         {
           "attrs": {
             "date_number": 5,
-            "is_marked": false,
-            "month": 3,
-            "month_name": "March",
+            "is_marked": true,
+            "month": 5,
+            "month_name": "May",
             "week_row_index": 1,
             "weekday_index": 1,
-            "year": 2024
+            "year": 2026
           },
           "bbox_px": [
             154.0,
@@ -697,11 +697,11 @@
           "attrs": {
             "date_number": 6,
             "is_marked": false,
-            "month": 3,
-            "month_name": "March",
+            "month": 5,
+            "month_name": "May",
             "week_row_index": 1,
             "weekday_index": 2,
-            "year": 2024
+            "year": 2026
           },
           "bbox_px": [
             266.0,
@@ -716,11 +716,11 @@
           "attrs": {
             "date_number": 7,
             "is_marked": false,
-            "month": 3,
-            "month_name": "March",
+            "month": 5,
+            "month_name": "May",
             "week_row_index": 1,
             "weekday_index": 3,
-            "year": 2024
+            "year": 2026
           },
           "bbox_px": [
             378.0,
@@ -735,11 +735,11 @@
           "attrs": {
             "date_number": 8,
             "is_marked": false,
-            "month": 3,
-            "month_name": "March",
+            "month": 5,
+            "month_name": "May",
             "week_row_index": 1,
             "weekday_index": 4,
-            "year": 2024
+            "year": 2026
           },
           "bbox_px": [
             490.0,
@@ -754,11 +754,11 @@
           "attrs": {
             "date_number": 9,
             "is_marked": false,
-            "month": 3,
-            "month_name": "March",
+            "month": 5,
+            "month_name": "May",
             "week_row_index": 1,
             "weekday_index": 5,
-            "year": 2024
+            "year": 2026
           },
           "bbox_px": [
             602.0,
@@ -773,11 +773,11 @@
           "attrs": {
             "date_number": 10,
             "is_marked": false,
-            "month": 3,
-            "month_name": "March",
+            "month": 5,
+            "month_name": "May",
             "week_row_index": 1,
             "weekday_index": 6,
-            "year": 2024
+            "year": 2026
           },
           "bbox_px": [
             714.0,
@@ -792,11 +792,11 @@
           "attrs": {
             "date_number": 11,
             "is_marked": false,
-            "month": 3,
-            "month_name": "March",
+            "month": 5,
+            "month_name": "May",
             "week_row_index": 2,
             "weekday_index": 0,
-            "year": 2024
+            "year": 2026
           },
           "bbox_px": [
             42.0,
@@ -811,11 +811,11 @@
           "attrs": {
             "date_number": 12,
             "is_marked": false,
-            "month": 3,
-            "month_name": "March",
+            "month": 5,
+            "month_name": "May",
             "week_row_index": 2,
             "weekday_index": 1,
-            "year": 2024
+            "year": 2026
           },
           "bbox_px": [
             154.0,
@@ -830,11 +830,11 @@
           "attrs": {
             "date_number": 13,
             "is_marked": false,
-            "month": 3,
-            "month_name": "March",
+            "month": 5,
+            "month_name": "May",
             "week_row_index": 2,
             "weekday_index": 2,
-            "year": 2024
+            "year": 2026
           },
           "bbox_px": [
             266.0,
@@ -849,11 +849,11 @@
           "attrs": {
             "date_number": 14,
             "is_marked": false,
-            "month": 3,
-            "month_name": "March",
+            "month": 5,
+            "month_name": "May",
             "week_row_index": 2,
             "weekday_index": 3,
-            "year": 2024
+            "year": 2026
           },
           "bbox_px": [
             378.0,
@@ -868,11 +868,11 @@
           "attrs": {
             "date_number": 15,
             "is_marked": false,
-            "month": 3,
-            "month_name": "March",
+            "month": 5,
+            "month_name": "May",
             "week_row_index": 2,
             "weekday_index": 4,
-            "year": 2024
+            "year": 2026
           },
           "bbox_px": [
             490.0,
@@ -887,11 +887,11 @@
           "attrs": {
             "date_number": 16,
             "is_marked": false,
-            "month": 3,
-            "month_name": "March",
+            "month": 5,
+            "month_name": "May",
             "week_row_index": 2,
             "weekday_index": 5,
-            "year": 2024
+            "year": 2026
           },
           "bbox_px": [
             602.0,
@@ -906,11 +906,11 @@
           "attrs": {
             "date_number": 17,
             "is_marked": false,
-            "month": 3,
-            "month_name": "March",
+            "month": 5,
+            "month_name": "May",
             "week_row_index": 2,
             "weekday_index": 6,
-            "year": 2024
+            "year": 2026
           },
           "bbox_px": [
             714.0,
@@ -925,11 +925,11 @@
           "attrs": {
             "date_number": 18,
             "is_marked": false,
-            "month": 3,
-            "month_name": "March",
+            "month": 5,
+            "month_name": "May",
             "week_row_index": 3,
             "weekday_index": 0,
-            "year": 2024
+            "year": 2026
           },
           "bbox_px": [
             42.0,
@@ -944,11 +944,11 @@
           "attrs": {
             "date_number": 19,
             "is_marked": false,
-            "month": 3,
-            "month_name": "March",
+            "month": 5,
+            "month_name": "May",
             "week_row_index": 3,
             "weekday_index": 1,
-            "year": 2024
+            "year": 2026
           },
           "bbox_px": [
             154.0,
@@ -963,11 +963,11 @@
           "attrs": {
             "date_number": 20,
             "is_marked": false,
-            "month": 3,
-            "month_name": "March",
+            "month": 5,
+            "month_name": "May",
             "week_row_index": 3,
             "weekday_index": 2,
-            "year": 2024
+            "year": 2026
           },
           "bbox_px": [
             266.0,
@@ -982,11 +982,11 @@
           "attrs": {
             "date_number": 21,
             "is_marked": true,
-            "month": 3,
-            "month_name": "March",
+            "month": 5,
+            "month_name": "May",
             "week_row_index": 3,
             "weekday_index": 3,
-            "year": 2024
+            "year": 2026
           },
           "bbox_px": [
             378.0,
@@ -1001,11 +1001,11 @@
           "attrs": {
             "date_number": 22,
             "is_marked": false,
-            "month": 3,
-            "month_name": "March",
+            "month": 5,
+            "month_name": "May",
             "week_row_index": 3,
             "weekday_index": 4,
-            "year": 2024
+            "year": 2026
           },
           "bbox_px": [
             490.0,
@@ -1020,11 +1020,11 @@
           "attrs": {
             "date_number": 23,
             "is_marked": false,
-            "month": 3,
-            "month_name": "March",
+            "month": 5,
+            "month_name": "May",
             "week_row_index": 3,
             "weekday_index": 5,
-            "year": 2024
+            "year": 2026
           },
           "bbox_px": [
             602.0,
@@ -1039,11 +1039,11 @@
           "attrs": {
             "date_number": 24,
             "is_marked": false,
-            "month": 3,
-            "month_name": "March",
+            "month": 5,
+            "month_name": "May",
             "week_row_index": 3,
             "weekday_index": 6,
-            "year": 2024
+            "year": 2026
           },
           "bbox_px": [
             714.0,
@@ -1058,11 +1058,11 @@
           "attrs": {
             "date_number": 25,
             "is_marked": false,
-            "month": 3,
-            "month_name": "March",
+            "month": 5,
+            "month_name": "May",
             "week_row_index": 4,
             "weekday_index": 0,
-            "year": 2024
+            "year": 2026
           },
           "bbox_px": [
             42.0,
@@ -1076,12 +1076,12 @@
         {
           "attrs": {
             "date_number": 26,
-            "is_marked": true,
-            "month": 3,
-            "month_name": "March",
+            "is_marked": false,
+            "month": 5,
+            "month_name": "May",
             "week_row_index": 4,
             "weekday_index": 1,
-            "year": 2024
+            "year": 2026
           },
           "bbox_px": [
             154.0,
@@ -1096,11 +1096,11 @@
           "attrs": {
             "date_number": 27,
             "is_marked": false,
-            "month": 3,
-            "month_name": "March",
+            "month": 5,
+            "month_name": "May",
             "week_row_index": 4,
             "weekday_index": 2,
-            "year": 2024
+            "year": 2026
           },
           "bbox_px": [
             266.0,
@@ -1115,11 +1115,11 @@
           "attrs": {
             "date_number": 28,
             "is_marked": false,
-            "month": 3,
-            "month_name": "March",
+            "month": 5,
+            "month_name": "May",
             "week_row_index": 4,
             "weekday_index": 3,
-            "year": 2024
+            "year": 2026
           },
           "bbox_px": [
             378.0,
@@ -1134,11 +1134,11 @@
           "attrs": {
             "date_number": 29,
             "is_marked": false,
-            "month": 3,
-            "month_name": "March",
+            "month": 5,
+            "month_name": "May",
             "week_row_index": 4,
             "weekday_index": 4,
-            "year": 2024
+            "year": 2026
           },
           "bbox_px": [
             490.0,
@@ -1153,11 +1153,11 @@
           "attrs": {
             "date_number": 30,
             "is_marked": false,
-            "month": 3,
-            "month_name": "March",
+            "month": 5,
+            "month_name": "May",
             "week_row_index": 4,
             "weekday_index": 5,
-            "year": 2024
+            "year": 2026
           },
           "bbox_px": [
             602.0,
@@ -1172,11 +1172,11 @@
           "attrs": {
             "date_number": 31,
             "is_marked": false,
-            "month": 3,
-            "month_name": "March",
+            "month": 5,
+            "month_name": "May",
             "week_row_index": 4,
             "weekday_index": 6,
-            "year": 2024
+            "year": 2026
           },
           "bbox_px": [
             714.0,
@@ -1191,15 +1191,15 @@
       "relations": {
         "accent_color_name": "orange",
         "marked_dates": [
-          21,
-          26
+          5,
+          21
         ],
-        "month": 3,
-        "month_name": "March",
-        "scene_variant": "outline",
-        "style_variant": "marker",
+        "month": 5,
+        "month_name": "May",
+        "scene_variant": "classic",
+        "style_variant": "studio",
         "task_variant": "days_between_marked_dates",
-        "year": 2024
+        "year": 2026
       },
       "scene_kind": "temporal_month_calendar"
     },
@@ -1207,16 +1207,16 @@
       "type": "bbox_set",
       "value": [
         [
+          154.0,
+          270.0,
+          258.0,
+          376.0
+        ],
+        [
           378.0,
           498.0,
           482.0,
           604.0
-        ],
-        [
-          154.0,
-          612.0,
-          258.0,
-          718.0
         ]
       ]
     }

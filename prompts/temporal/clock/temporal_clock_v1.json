@@ -60,14 +60,14 @@
       "Identify the labeled clock with the earliest shown time. Answer with the single clock label.",
       "Among the labeled clocks, which one shows the earliest time? Answer with the single clock label.",
       "Find the clock showing the earliest time. Answer with the single clock label.",
-      "Which clock is earliest on the 12-hour times shown? Answer with the single clock label."
+      "Which labeled clock shows the earliest time among the clocks shown? Answer with the single clock label."
     ],
     "latest_time": [
       "Which labeled clock shows the latest time? Answer with the single clock label.",
       "Identify the labeled clock with the latest shown time. Answer with the single clock label.",
       "Among the labeled clocks, which one shows the latest time? Answer with the single clock label.",
       "Find the clock showing the latest time. Answer with the single clock label.",
-      "Which clock is latest on the 12-hour times shown? Answer with the single clock label."
+      "Which labeled clock shows the latest time among the clocks shown? Answer with the single clock label."
     ]
   },
   "required_slots_by_key": {

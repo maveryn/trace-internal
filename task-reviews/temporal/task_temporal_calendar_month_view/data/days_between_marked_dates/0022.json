@@ -1,22 +1,22 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 16
+    "value": 7
   },
   "evidence_gt": {
     "type": "bbox_set",
     "value": [
       [
-        154.0,
-        156.0,
-        258.0,
-        262.0
+        42.0,
+        384.0,
+        146.0,
+        490.0
       ],
       [
-        378.0,
-        384.0,
-        482.0,
-        490.0
+        42.0,
+        498.0,
+        146.0,
+        604.0
       ]
     ]
   },
@@ -24,17 +24,17 @@
     "format": "png",
     "path": "temporal/task_temporal_calendar_month_view/images/days_between_marked_dates/0022.png"
   },
-  "instance_seed": 621808865274997,
-  "prompt": "Look at the month-view calendar in the image. It shows one month-view calendar for November 2022 with weekday headers, date cells, and several marked dates. Read the calendar carefully and answer the question. How many calendar days separate the two marked dates?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing exactly two bounding boxes [x1, y1, x2, y2] for the two marked date cells.\nAnswer field: set \"answer\" to the integer number of days between the two marked dates.\nExample JSON:\n{\"evidence\":[[250,448,352,544],[560,448,662,544]],\"answer\":9}",
+  "instance_seed": 5636950217533881,
+  "prompt": "You are given an image with one month-view calendar for January 2025 with weekday headers, date cells, and several marked dates. Determine the answer from the shown calendar. How many days are between the two marked dates?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing exactly two bounding boxes [x1, y1, x2, y2] for the two marked date cells.\nAnswer: set \"answer\" to the integer number of days between the two marked dates.\nExample JSON:\n{\"evidence\":[[250,448,352,544],[560,448,662,544]],\"answer\":9}",
   "prompt_variants": {
-    "answer_and_evidence": "Look at the month-view calendar in the image. It shows one month-view calendar for November 2022 with weekday headers, date cells, and several marked dates. Read the calendar carefully and answer the question. How many calendar days separate the two marked dates?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing exactly two bounding boxes [x1, y1, x2, y2] for the two marked date cells.\nAnswer field: set \"answer\" to the integer number of days between the two marked dates.\nExample JSON:\n{\"evidence\":[[250,448,352,544],[560,448,662,544]],\"answer\":9}",
-    "answer_only": "Look at the month-view calendar in the image. It shows one month-view calendar for November 2022 with weekday headers, date cells, and several marked dates. Read the calendar carefully and answer the question. How many calendar days separate the two marked dates?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the integer number of days between the two marked dates.\nExample JSON:\n{\"answer\":9}"
+    "answer_and_evidence": "You are given an image with one month-view calendar for January 2025 with weekday headers, date cells, and several marked dates. Determine the answer from the shown calendar. How many days are between the two marked dates?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing exactly two bounding boxes [x1, y1, x2, y2] for the two marked date cells.\nAnswer: set \"answer\" to the integer number of days between the two marked dates.\nExample JSON:\n{\"evidence\":[[250,448,352,544],[560,448,662,544]],\"answer\":9}",
+    "answer_only": "You are given an image with one month-view calendar for January 2025 with weekday headers, date cells, and several marked dates. Determine the answer from the shown calendar. How many days are between the two marked dates?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the integer number of days between the two marked dates.\nExample JSON:\n{\"answer\":9}"
   },
   "task": "task_temporal_calendar_month_view",
   "task_variant": "days_between_marked_dates",
   "trace_payload": {
     "execution_trace": {
-      "accent_color_name": "purple",
+      "accent_color_name": "blue",
       "accent_color_name_probabilities": {
         "blue": 0.1,
         "brown": 0.1,
@@ -47,35 +47,35 @@
         "red": 0.1,
         "yellow": 0.1
       },
-      "answer_value": 16,
-      "days_in_month": 30,
+      "answer_value": 7,
+      "days_in_month": 31,
       "evidence_dates": [
-        1,
-        17
+        13,
+        20
       ],
       "marked_dates": [
-        1,
-        17
+        13,
+        20
       ],
-      "month": 11,
-      "month_name": "November",
+      "month": 1,
+      "month_name": "January",
       "query_occurrence": null,
       "query_weekday_index": null,
       "row_count": 5,
-      "scene_variant": "minimal",
+      "scene_variant": "outline",
       "scene_variant_probabilities": {
         "classic": 0.3333333333333333,
         "minimal": 0.3333333333333333,
         "outline": 0.3333333333333333
       },
-      "start_weekday_index": 1,
-      "style_variant": "studio",
+      "start_weekday_index": 2,
+      "style_variant": "marker",
       "style_variant_probabilities": {
         "accented": 0.3333333333333333,
         "marker": 0.3333333333333333,
         "studio": 0.3333333333333333
       },
-      "target_day_gap": 16,
+      "target_day_gap": 7,
       "task_variant": "days_between_marked_dates",
       "task_variant_probabilities": {
         "count_marked_weekend_days": 0.0,
@@ -86,27 +86,27 @@
         5,
         6
       ],
-      "year": 2022
+      "year": 2025
     },
     "projected_evidence": {
       "bbox_set": [
         [
-          154.0,
-          156.0,
-          258.0,
-          262.0
+          42.0,
+          384.0,
+          146.0,
+          490.0
         ],
         [
-          378.0,
-          384.0,
-          482.0,
-          490.0
+          42.0,
+          498.0,
+          146.0,
+          604.0
         ]
       ]
     },
     "query_spec": {
       "params": {
-        "accent_color_name": "purple",
+        "accent_color_name": "blue",
         "accent_color_name_probabilities": {
           "blue": 0.1,
           "brown": 0.1,
@@ -148,7 +148,7 @@
           19,
           20
         ],
-        "days_in_month": 30,
+        "days_in_month": 31,
         "marked_weekday_distractor_support": [
           1,
           2,
@@ -162,23 +162,23 @@
           3,
           4
         ],
-        "month": 11,
-        "month_name": "November",
+        "month": 1,
+        "month_name": "January",
         "row_count": 5,
-        "scene_variant": "minimal",
+        "scene_variant": "outline",
         "scene_variant_probabilities": {
           "classic": 0.3333333333333333,
           "minimal": 0.3333333333333333,
           "outline": 0.3333333333333333
         },
-        "start_weekday_index": 1,
-        "style_variant": "studio",
+        "start_weekday_index": 2,
+        "style_variant": "marker",
         "style_variant_probabilities": {
           "accented": 0.3333333333333333,
           "marker": 0.3333333333333333,
           "studio": 0.3333333333333333
         },
-        "target_day_gap": 16,
+        "target_day_gap": 7,
         "task_variant": "days_between_marked_dates",
         "task_variant_probabilities": {
           "count_marked_weekend_days": 0.0,
@@ -189,11 +189,11 @@
           5,
           6
         ],
-        "year": 2022
+        "year": 2025
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 3,
+        "answer_or_evidence_variant_index": 0,
         "prompt_bundle_id": "temporal_calendar_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -203,14 +203,14 @@
           "json_example_answer_only": "{\"answer\":9}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "object_description": "one month-view calendar for November 2022 with weekday headers, date cells, and several marked dates"
+          "object_description": "one month-view calendar for January 2025 with weekday headers, date cells, and several marked dates"
         },
         "task_family_key": "month_calendar",
-        "task_family_variant_index": 1,
+        "task_family_variant_index": 2,
         "task_key": "calendar_month_query",
-        "task_variant_index": 2,
+        "task_variant_index": 4,
         "task_variant_key": "days_between_marked_dates",
-        "task_variant_template_index": 3,
+        "task_variant_template_index": 0,
         "template_paths": [
           "temporal/calendar/temporal_calendar_v1.json"
         ],
@@ -226,7 +226,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 3,
+            "answer_or_evidence_variant_index": 0,
             "prompt_bundle_id": "temporal_calendar_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -236,14 +236,14 @@
               "json_example_answer_only": "{\"answer\":9}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "one month-view calendar for November 2022 with weekday headers, date cells, and several marked dates"
+              "object_description": "one month-view calendar for January 2025 with weekday headers, date cells, and several marked dates"
             },
             "task_family_key": "month_calendar",
-            "task_family_variant_index": 1,
+            "task_family_variant_index": 2,
             "task_key": "calendar_month_query",
-            "task_variant_index": 2,
+            "task_variant_index": 4,
             "task_variant_key": "days_between_marked_dates",
-            "task_variant_template_index": 3,
+            "task_variant_template_index": 0,
             "template_paths": [
               "temporal/calendar/temporal_calendar_v1.json"
             ],
@@ -254,12 +254,12 @@
               "task_variant:days_between_marked_dates": 5
             }
           },
-          "prompt": "Look at the month-view calendar in the image. It shows one month-view calendar for November 2022 with weekday headers, date cells, and several marked dates. Read the calendar carefully and answer the question. How many calendar days separate the two marked dates?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing exactly two bounding boxes [x1, y1, x2, y2] for the two marked date cells.\nAnswer field: set \"answer\" to the integer number of days between the two marked dates.\nExample JSON:\n{\"evidence\":[[250,448,352,544],[560,448,662,544]],\"answer\":9}"
+          "prompt": "You are given an image with one month-view calendar for January 2025 with weekday headers, date cells, and several marked dates. Determine the answer from the shown calendar. How many days are between the two marked dates?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing exactly two bounding boxes [x1, y1, x2, y2] for the two marked date cells.\nAnswer: set \"answer\" to the integer number of days between the two marked dates.\nExample JSON:\n{\"evidence\":[[250,448,352,544],[560,448,662,544]],\"answer\":9}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 1,
+            "answer_or_evidence_variant_index": 3,
             "prompt_bundle_id": "temporal_calendar_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -269,14 +269,14 @@
               "json_example_answer_only": "{\"answer\":9}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "one month-view calendar for November 2022 with weekday headers, date cells, and several marked dates"
+              "object_description": "one month-view calendar for January 2025 with weekday headers, date cells, and several marked dates"
             },
             "task_family_key": "month_calendar",
-            "task_family_variant_index": 1,
+            "task_family_variant_index": 2,
             "task_key": "calendar_month_query",
-            "task_variant_index": 2,
+            "task_variant_index": 4,
             "task_variant_key": "days_between_marked_dates",
-            "task_variant_template_index": 3,
+            "task_variant_template_index": 0,
             "template_paths": [
               "temporal/calendar/temporal_calendar_v1.json"
             ],
@@ -287,204 +287,210 @@
               "task_variant:days_between_marked_dates": 5
             }
           },
-          "prompt": "Look at the month-view calendar in the image. It shows one month-view calendar for November 2022 with weekday headers, date cells, and several marked dates. Read the calendar carefully and answer the question. How many calendar days separate the two marked dates?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the integer number of days between the two marked dates.\nExample JSON:\n{\"answer\":9}"
+          "prompt": "You are given an image with one month-view calendar for January 2025 with weekday headers, date cells, and several marked dates. Determine the answer from the shown calendar. How many days are between the two marked dates?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the integer number of days between the two marked dates.\nExample JSON:\n{\"answer\":9}"
         }
       },
       "task_variant": "days_between_marked_dates",
       "template_id": "temporal_calendar_v1"
     },
     "render_map": {
-      "calendar_title_text": "November 2022",
+      "calendar_title_text": "January 2025",
       "date_cells_by_day": {
         "1": [
-          154.0,
+          266.0,
           156.0,
-          258.0,
+          370.0,
           262.0
         ],
         "10": [
-          378.0,
+          490.0,
           270.0,
-          482.0,
+          594.0,
           376.0
         ],
         "11": [
-          490.0,
+          602.0,
           270.0,
-          594.0,
+          706.0,
           376.0
         ],
         "12": [
-          602.0,
+          714.0,
           270.0,
-          706.0,
+          818.0,
           376.0
         ],
         "13": [
-          714.0,
-          270.0,
-          818.0,
-          376.0
-        ],
-        "14": [
           42.0,
           384.0,
           146.0,
+          490.0
+        ],
+        "14": [
+          154.0,
+          384.0,
+          258.0,
           490.0
         ],
         "15": [
-          154.0,
+          266.0,
           384.0,
-          258.0,
+          370.0,
           490.0
         ],
         "16": [
-          266.0,
+          378.0,
           384.0,
-          370.0,
+          482.0,
           490.0
         ],
         "17": [
-          378.0,
+          490.0,
           384.0,
-          482.0,
+          594.0,
           490.0
         ],
         "18": [
-          490.0,
+          602.0,
           384.0,
-          594.0,
+          706.0,
           490.0
         ],
         "19": [
-          602.0,
+          714.0,
           384.0,
-          706.0,
+          818.0,
           490.0
         ],
         "2": [
-          266.0,
+          378.0,
           156.0,
-          370.0,
+          482.0,
           262.0
         ],
         "20": [
-          714.0,
-          384.0,
-          818.0,
-          490.0
-        ],
-        "21": [
           42.0,
           498.0,
           146.0,
+          604.0
+        ],
+        "21": [
+          154.0,
+          498.0,
+          258.0,
           604.0
         ],
         "22": [
-          154.0,
+          266.0,
           498.0,
-          258.0,
+          370.0,
           604.0
         ],
         "23": [
-          266.0,
+          378.0,
           498.0,
-          370.0,
+          482.0,
           604.0
         ],
         "24": [
-          378.0,
+          490.0,
           498.0,
-          482.0,
+          594.0,
           604.0
         ],
         "25": [
-          490.0,
+          602.0,
           498.0,
-          594.0,
+          706.0,
           604.0
         ],
         "26": [
-          602.0,
-          498.0,
-          706.0,
-          604.0
-        ],
-        "27": [
           714.0,
           498.0,
           818.0,
           604.0
         ],
-        "28": [
+        "27": [
           42.0,
           612.0,
           146.0,
           718.0
         ],
-        "29": [
+        "28": [
           154.0,
           612.0,
           258.0,
           718.0
         ],
-        "3": [
-          378.0,
-          156.0,
-          482.0,
-          262.0
-        ],
-        "30": [
+        "29": [
           266.0,
           612.0,
           370.0,
           718.0
         ],
-        "4": [
+        "3": [
           490.0,
           156.0,
           594.0,
           262.0
         ],
-        "5": [
+        "30": [
+          378.0,
+          612.0,
+          482.0,
+          718.0
+        ],
+        "31": [
+          490.0,
+          612.0,
+          594.0,
+          718.0
+        ],
+        "4": [
           602.0,
           156.0,
           706.0,
           262.0
         ],
-        "6": [
+        "5": [
           714.0,
           156.0,
           818.0,
           262.0
         ],
-        "7": [
+        "6": [
           42.0,
           270.0,
           146.0,
           376.0
         ],
-        "8": [
+        "7": [
           154.0,
           270.0,
           258.0,
           376.0
         ],
-        "9": [
+        "8": [
           266.0,
           270.0,
           370.0,
+          376.0
+        ],
+        "9": [
+          378.0,
+          270.0,
+          482.0,
           376.0
         ]
       },
       "evidence_dates": [
-        1,
-        17
+        13,
+        20
       ],
       "image_id": "img0",
       "marked_dates": [
-        1,
-        17
+        13,
+        20
       ],
       "scene_bbox_px": [
         34.0,
@@ -510,8 +516,8 @@
         }
       },
       "calendar_style": {
-        "accent_color_name": "purple",
-        "marker_kind": "fill",
+        "accent_color_name": "blue",
+        "marker_kind": "ring",
         "resolved_colors_rgb": {
           "date_text": [
             46,
@@ -519,19 +525,19 @@
             62
           ],
           "grid_line": [
-            220,
-            213,
-            224
+            191,
+            203,
+            221
           ],
           "marker_fill": [
-            226,
-            200,
-            240
+            255,
+            255,
+            255
           ],
           "marker_outline": [
-            87,
-            34,
-            117
+            45,
+            117,
+            230
           ],
           "panel_fill": [
             255,
@@ -539,29 +545,29 @@
             255
           ],
           "panel_outline": [
-            197,
-            186,
-            204
+            19,
+            49,
+            97
           ],
           "title_text": [
-            63,
-            24,
-            85
+            26,
+            68,
+            133
           ],
           "weekday_fill": [
-            240,
-            227,
-            248
+            255,
+            255,
+            255
           ],
           "weekday_text": [
-            63,
-            24,
-            85
+            26,
+            68,
+            133
           ]
         },
         "row_count": 5,
-        "style_variant": "studio",
-        "title_text": "November 2022"
+        "style_variant": "marker",
+        "title_text": "January 2025"
       },
       "canvas_height": 760,
       "canvas_width": 860,
@@ -588,24 +594,24 @@
         826.0,
         726.0
       ],
-      "scene_variant": "minimal"
+      "scene_variant": "outline"
     },
     "scene_ir": {
       "entities": [
         {
           "attrs": {
             "date_number": 1,
-            "is_marked": true,
-            "month": 11,
-            "month_name": "November",
+            "is_marked": false,
+            "month": 1,
+            "month_name": "January",
             "week_row_index": 0,
-            "weekday_index": 1,
-            "year": 2022
+            "weekday_index": 2,
+            "year": 2025
           },
           "bbox_px": [
-            154.0,
+            266.0,
             156.0,
-            258.0,
+            370.0,
             262.0
           ],
           "entity_id": "date_1",
@@ -615,16 +621,16 @@
           "attrs": {
             "date_number": 2,
             "is_marked": false,
-            "month": 11,
-            "month_name": "November",
+            "month": 1,
+            "month_name": "January",
             "week_row_index": 0,
-            "weekday_index": 2,
-            "year": 2022
+            "weekday_index": 3,
+            "year": 2025
           },
           "bbox_px": [
-            266.0,
+            378.0,
             156.0,
-            370.0,
+            482.0,
             262.0
           ],
           "entity_id": "date_2",
@@ -634,16 +640,16 @@
           "attrs": {
             "date_number": 3,
             "is_marked": false,
-            "month": 11,
-            "month_name": "November",
+            "month": 1,
+            "month_name": "January",
             "week_row_index": 0,
-            "weekday_index": 3,
-            "year": 2022
+            "weekday_index": 4,
+            "year": 2025
           },
           "bbox_px": [
-            378.0,
+            490.0,
             156.0,
-            482.0,
+            594.0,
             262.0
           ],
           "entity_id": "date_3",
@@ -653,16 +659,16 @@
           "attrs": {
             "date_number": 4,
             "is_marked": false,
-            "month": 11,
-            "month_name": "November",
+            "month": 1,
+            "month_name": "January",
             "week_row_index": 0,
-            "weekday_index": 4,
-            "year": 2022
+            "weekday_index": 5,
+            "year": 2025
           },
           "bbox_px": [
-            490.0,
+            602.0,
             156.0,
-            594.0,
+            706.0,
             262.0
           ],
           "entity_id": "date_4",
@@ -672,16 +678,16 @@
           "attrs": {
             "date_number": 5,
             "is_marked": false,
-            "month": 11,
-            "month_name": "November",
+            "month": 1,
+            "month_name": "January",
             "week_row_index": 0,
-            "weekday_index": 5,
-            "year": 2022
+            "weekday_index": 6,
+            "year": 2025
           },
           "bbox_px": [
-            602.0,
+            714.0,
             156.0,
-            706.0,
+            818.0,
             262.0
           ],
           "entity_id": "date_5",
@@ -691,17 +697,17 @@
           "attrs": {
             "date_number": 6,
             "is_marked": false,
-            "month": 11,
-            "month_name": "November",
-            "week_row_index": 0,
-            "weekday_index": 6,
-            "year": 2022
+            "month": 1,
+            "month_name": "January",
+            "week_row_index": 1,
+            "weekday_index": 0,
+            "year": 2025
           },
           "bbox_px": [
-            714.0,
-            156.0,
-            818.0,
-            262.0
+            42.0,
+            270.0,
+            146.0,
+            376.0
           ],
           "entity_id": "date_6",
           "entity_type": "calendar_date_cell"
@@ -710,16 +716,16 @@
           "attrs": {
             "date_number": 7,
             "is_marked": false,
-            "month": 11,
-            "month_name": "November",
+            "month": 1,
+            "month_name": "January",
             "week_row_index": 1,
-            "weekday_index": 0,
-            "year": 2022
+            "weekday_index": 1,
+            "year": 2025
           },
           "bbox_px": [
-            42.0,
+            154.0,
             270.0,
-            146.0,
+            258.0,
             376.0
           ],
           "entity_id": "date_7",
@@ -729,16 +735,16 @@
           "attrs": {
             "date_number": 8,
             "is_marked": false,
-            "month": 11,
-            "month_name": "November",
+            "month": 1,
+            "month_name": "January",
             "week_row_index": 1,
-            "weekday_index": 1,
-            "year": 2022
+            "weekday_index": 2,
+            "year": 2025
           },
           "bbox_px": [
-            154.0,
+            266.0,
             270.0,
-            258.0,
+            370.0,
             376.0
           ],
           "entity_id": "date_8",
@@ -748,16 +754,16 @@
           "attrs": {
             "date_number": 9,
             "is_marked": false,
-            "month": 11,
-            "month_name": "November",
+            "month": 1,
+            "month_name": "January",
             "week_row_index": 1,
-            "weekday_index": 2,
-            "year": 2022
+            "weekday_index": 3,
+            "year": 2025
           },
           "bbox_px": [
-            266.0,
+            378.0,
             270.0,
-            370.0,
+            482.0,
             376.0
           ],
           "entity_id": "date_9",
@@ -767,16 +773,16 @@
           "attrs": {
             "date_number": 10,
             "is_marked": false,
-            "month": 11,
-            "month_name": "November",
+            "month": 1,
+            "month_name": "January",
             "week_row_index": 1,
-            "weekday_index": 3,
-            "year": 2022
+            "weekday_index": 4,
+            "year": 2025
           },
           "bbox_px": [
-            378.0,
+            490.0,
             270.0,
-            482.0,
+            594.0,
             376.0
           ],
           "entity_id": "date_10",
@@ -786,16 +792,16 @@
           "attrs": {
             "date_number": 11,
             "is_marked": false,
-            "month": 11,
-            "month_name": "November",
+            "month": 1,
+            "month_name": "January",
             "week_row_index": 1,
-            "weekday_index": 4,
-            "year": 2022
+            "weekday_index": 5,
+            "year": 2025
           },
           "bbox_px": [
-            490.0,
+            602.0,
             270.0,
-            594.0,
+            706.0,
             376.0
           ],
           "entity_id": "date_11",
@@ -805,16 +811,16 @@
           "attrs": {
             "date_number": 12,
             "is_marked": false,
-            "month": 11,
-            "month_name": "November",
+            "month": 1,
+            "month_name": "January",
             "week_row_index": 1,
-            "weekday_index": 5,
-            "year": 2022
+            "weekday_index": 6,
+            "year": 2025
           },
           "bbox_px": [
-            602.0,
+            714.0,
             270.0,
-            706.0,
+            818.0,
             376.0
           ],
           "entity_id": "date_12",
@@ -823,18 +829,18 @@
         {
           "attrs": {
             "date_number": 13,
-            "is_marked": false,
-            "month": 11,
-            "month_name": "November",
-            "week_row_index": 1,
-            "weekday_index": 6,
-            "year": 2022
+            "is_marked": true,
+            "month": 1,
+            "month_name": "January",
+            "week_row_index": 2,
+            "weekday_index": 0,
+            "year": 2025
           },
           "bbox_px": [
-            714.0,
-            270.0,
-            818.0,
-            376.0
+            42.0,
+            384.0,
+            146.0,
+            490.0
           ],
           "entity_id": "date_13",
           "entity_type": "calendar_date_cell"
@@ -843,16 +849,16 @@
           "attrs": {
             "date_number": 14,
             "is_marked": false,
-            "month": 11,
-            "month_name": "November",
+            "month": 1,
+            "month_name": "January",
             "week_row_index": 2,
-            "weekday_index": 0,
-            "year": 2022
+            "weekday_index": 1,
+            "year": 2025
           },
           "bbox_px": [
-            42.0,
+            154.0,
             384.0,
-            146.0,
+            258.0,
             490.0
           ],
           "entity_id": "date_14",
@@ -862,16 +868,16 @@
           "attrs": {
             "date_number": 15,
             "is_marked": false,
-            "month": 11,
-            "month_name": "November",
+            "month": 1,
+            "month_name": "January",
             "week_row_index": 2,
-            "weekday_index": 1,
-            "year": 2022
+            "weekday_index": 2,
+            "year": 2025
           },
           "bbox_px": [
-            154.0,
+            266.0,
             384.0,
-            258.0,
+            370.0,
             490.0
           ],
           "entity_id": "date_15",
@@ -881,16 +887,16 @@
           "attrs": {
             "date_number": 16,
             "is_marked": false,
-            "month": 11,
-            "month_name": "November",
+            "month": 1,
+            "month_name": "January",
             "week_row_index": 2,
-            "weekday_index": 2,
-            "year": 2022
+            "weekday_index": 3,
+            "year": 2025
           },
           "bbox_px": [
-            266.0,
+            378.0,
             384.0,
-            370.0,
+            482.0,
             490.0
           ],
           "entity_id": "date_16",
@@ -899,17 +905,17 @@
         {
           "attrs": {
             "date_number": 17,
-            "is_marked": true,
-            "month": 11,
-            "month_name": "November",
+            "is_marked": false,
+            "month": 1,
+            "month_name": "January",
             "week_row_index": 2,
-            "weekday_index": 3,
-            "year": 2022
+            "weekday_index": 4,
+            "year": 2025
           },
           "bbox_px": [
-            378.0,
+            490.0,
             384.0,
-            482.0,
+            594.0,
             490.0
           ],
           "entity_id": "date_17",
@@ -919,16 +925,16 @@
           "attrs": {
             "date_number": 18,
             "is_marked": false,
-            "month": 11,
-            "month_name": "November",
+            "month": 1,
+            "month_name": "January",
             "week_row_index": 2,
-            "weekday_index": 4,
-            "year": 2022
+            "weekday_index": 5,
+            "year": 2025
           },
           "bbox_px": [
-            490.0,
+            602.0,
             384.0,
-            594.0,
+            706.0,
             490.0
           ],
           "entity_id": "date_18",
@@ -938,16 +944,16 @@
           "attrs": {
             "date_number": 19,
             "is_marked": false,
-            "month": 11,
-            "month_name": "November",
+            "month": 1,
+            "month_name": "January",
             "week_row_index": 2,
-            "weekday_index": 5,
-            "year": 2022
+            "weekday_index": 6,
+            "year": 2025
           },
           "bbox_px": [
-            602.0,
+            714.0,
             384.0,
-            706.0,
+            818.0,
             490.0
           ],
           "entity_id": "date_19",
@@ -956,18 +962,18 @@
         {
           "attrs": {
             "date_number": 20,
-            "is_marked": false,
-            "month": 11,
-            "month_name": "November",
-            "week_row_index": 2,
-            "weekday_index": 6,
-            "year": 2022
+            "is_marked": true,
+            "month": 1,
+            "month_name": "January",
+            "week_row_index": 3,
+            "weekday_index": 0,
+            "year": 2025
           },
           "bbox_px": [
-            714.0,
-            384.0,
-            818.0,
-            490.0
+            42.0,
+            498.0,
+            146.0,
+            604.0
           ],
           "entity_id": "date_20",
           "entity_type": "calendar_date_cell"
@@ -976,16 +982,16 @@
           "attrs": {
             "date_number": 21,
             "is_marked": false,
-            "month": 11,
-            "month_name": "November",
+            "month": 1,
+            "month_name": "January",
             "week_row_index": 3,
-            "weekday_index": 0,
-            "year": 2022
+            "weekday_index": 1,
+            "year": 2025
           },
           "bbox_px": [
-            42.0,
+            154.0,
             498.0,
-            146.0,
+            258.0,
             604.0
           ],
           "entity_id": "date_21",
@@ -995,16 +1001,16 @@
           "attrs": {
             "date_number": 22,
             "is_marked": false,
-            "month": 11,
-            "month_name": "November",
+            "month": 1,
+            "month_name": "January",
             "week_row_index": 3,
-            "weekday_index": 1,
-            "year": 2022
+            "weekday_index": 2,
+            "year": 2025
           },
           "bbox_px": [
-            154.0,
+            266.0,
             498.0,
-            258.0,
+            370.0,
             604.0
           ],
           "entity_id": "date_22",
@@ -1014,16 +1020,16 @@
           "attrs": {
             "date_number": 23,
             "is_marked": false,
-            "month": 11,
-            "month_name": "November",
+            "month": 1,
+            "month_name": "January",
             "week_row_index": 3,
-            "weekday_index": 2,
-            "year": 2022
+            "weekday_index": 3,
+            "year": 2025
           },
           "bbox_px": [
-            266.0,
+            378.0,
             498.0,
-            370.0,
+            482.0,
             604.0
           ],
           "entity_id": "date_23",
@@ -1033,16 +1039,16 @@
           "attrs": {
             "date_number": 24,
             "is_marked": false,
-            "month": 11,
-            "month_name": "November",
+            "month": 1,
+            "month_name": "January",
             "week_row_index": 3,
-            "weekday_index": 3,
-            "year": 2022
+            "weekday_index": 4,
+            "year": 2025
           },
           "bbox_px": [
-            378.0,
+            490.0,
             498.0,
-            482.0,
+            594.0,
             604.0
           ],
           "entity_id": "date_24",
@@ -1052,16 +1058,16 @@
           "attrs": {
             "date_number": 25,
             "is_marked": false,
-            "month": 11,
-            "month_name": "November",
+            "month": 1,
+            "month_name": "January",
             "week_row_index": 3,
-            "weekday_index": 4,
-            "year": 2022
+            "weekday_index": 5,
+            "year": 2025
           },
           "bbox_px": [
-            490.0,
+            602.0,
             498.0,
-            594.0,
+            706.0,
             604.0
           ],
           "entity_id": "date_25",
@@ -1071,16 +1077,16 @@
           "attrs": {
             "date_number": 26,
             "is_marked": false,
-            "month": 11,
-            "month_name": "November",
+            "month": 1,
+            "month_name": "January",
             "week_row_index": 3,
-            "weekday_index": 5,
-            "year": 2022
+            "weekday_index": 6,
+            "year": 2025
           },
           "bbox_px": [
-            602.0,
+            714.0,
             498.0,
-            706.0,
+            818.0,
             604.0
           ],
           "entity_id": "date_26",
@@ -1090,17 +1096,17 @@
           "attrs": {
             "date_number": 27,
             "is_marked": false,
-            "month": 11,
-            "month_name": "November",
-            "week_row_index": 3,
-            "weekday_index": 6,
-            "year": 2022
+            "month": 1,
+            "month_name": "January",
+            "week_row_index": 4,
+            "weekday_index": 0,
+            "year": 2025
           },
           "bbox_px": [
-            714.0,
-            498.0,
-            818.0,
-            604.0
+            42.0,
+            612.0,
+            146.0,
+            718.0
           ],
           "entity_id": "date_27",
           "entity_type": "calendar_date_cell"
@@ -1109,16 +1115,16 @@
           "attrs": {
             "date_number": 28,
             "is_marked": false,
-            "month": 11,
-            "month_name": "November",
+            "month": 1,
+            "month_name": "January",
             "week_row_index": 4,
-            "weekday_index": 0,
-            "year": 2022
+            "weekday_index": 1,
+            "year": 2025
           },
           "bbox_px": [
-            42.0,
+            154.0,
             612.0,
-            146.0,
+            258.0,
             718.0
           ],
           "entity_id": "date_28",
@@ -1128,16 +1134,16 @@
           "attrs": {
             "date_number": 29,
             "is_marked": false,
-            "month": 11,
-            "month_name": "November",
+            "month": 1,
+            "month_name": "January",
             "week_row_index": 4,
-            "weekday_index": 1,
-            "year": 2022
+            "weekday_index": 2,
+            "year": 2025
           },
           "bbox_px": [
-            154.0,
+            266.0,
             612.0,
-            258.0,
+            370.0,
             718.0
           ],
           "entity_id": "date_29",
@@ -1147,34 +1153,53 @@
           "attrs": {
             "date_number": 30,
             "is_marked": false,
-            "month": 11,
-            "month_name": "November",
+            "month": 1,
+            "month_name": "January",
             "week_row_index": 4,
-            "weekday_index": 2,
-            "year": 2022
+            "weekday_index": 3,
+            "year": 2025
           },
           "bbox_px": [
-            266.0,
+            378.0,
             612.0,
-            370.0,
+            482.0,
             718.0
           ],
           "entity_id": "date_30",
           "entity_type": "calendar_date_cell"
+        },
+        {
+          "attrs": {
+            "date_number": 31,
+            "is_marked": false,
+            "month": 1,
+            "month_name": "January",
+            "week_row_index": 4,
+            "weekday_index": 4,
+            "year": 2025
+          },
+          "bbox_px": [
+            490.0,
+            612.0,
+            594.0,
+            718.0
+          ],
+          "entity_id": "date_31",
+          "entity_type": "calendar_date_cell"
         }
       ],
       "relations": {
-        "accent_color_name": "purple",
+        "accent_color_name": "blue",
         "marked_dates": [
-          1,
-          17
+          13,
+          20
         ],
-        "month": 11,
-        "month_name": "November",
-        "scene_variant": "minimal",
-        "style_variant": "studio",
+        "month": 1,
+        "month_name": "January",
+        "scene_variant": "outline",
+        "style_variant": "marker",
         "task_variant": "days_between_marked_dates",
-        "year": 2022
+        "year": 2025
       },
       "scene_kind": "temporal_month_calendar"
     },
@@ -1182,16 +1207,16 @@
       "type": "bbox_set",
       "value": [
         [
-          154.0,
-          156.0,
-          258.0,
-          262.0
+          42.0,
+          384.0,
+          146.0,
+          490.0
         ],
         [
-          378.0,
-          384.0,
-          482.0,
-          490.0
+          42.0,
+          498.0,
+          146.0,
+          604.0
         ]
       ]
     }

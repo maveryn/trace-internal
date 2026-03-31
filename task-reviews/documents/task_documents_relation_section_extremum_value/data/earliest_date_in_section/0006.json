@@ -1,7 +1,7 @@
 {
   "answer_gt": {
     "type": "string",
-    "value": "2026-03-02"
+    "value": "2026-03-13"
   },
   "evidence_gt": {
     "type": "bbox_set",
@@ -18,18 +18,18 @@
     "format": "png",
     "path": "documents/task_documents_relation_section_extremum_value/images/earliest_date_in_section/0006.png"
   },
-  "instance_seed": 381558532469731,
-  "prompt": "Read the named sections in this document: an invoice with visible named sections, labeled header fields, and summary blocks. Read the document and answer this question: In the Dates section, what is the earliest date shown? Return the exact date shown. Answer with the exact date text shown.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly one bounding box for the winning value.\nAnswer requirement: set \"answer\" to the exact winning value text shown in the named section.\nExample JSON:\n{\"evidence\":[[150,260,364,294]],\"answer\":\"2026-03-18\"}",
+  "instance_seed": 8223580219582132,
+  "prompt": "Read the named sections in this document: an invoice with visible named sections, labeled header fields, and summary blocks. Locate the relevant section before answering: In the Dates section, what is the earliest date shown? Return the exact date shown. Answer with the exact date text shown.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing exactly one bounding box for the winning value.\nAnswer rule: set \"answer\" to the exact winning value text shown in the named section.\nExample JSON:\n{\"evidence\":[[150,260,364,294]],\"answer\":\"2026-03-18\"}",
   "prompt_variants": {
-    "answer_and_evidence": "Read the named sections in this document: an invoice with visible named sections, labeled header fields, and summary blocks. Read the document and answer this question: In the Dates section, what is the earliest date shown? Return the exact date shown. Answer with the exact date text shown.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly one bounding box for the winning value.\nAnswer requirement: set \"answer\" to the exact winning value text shown in the named section.\nExample JSON:\n{\"evidence\":[[150,260,364,294]],\"answer\":\"2026-03-18\"}",
-    "answer_only": "Read the named sections in this document: an invoice with visible named sections, labeled header fields, and summary blocks. Read the document and answer this question: In the Dates section, what is the earliest date shown? Return the exact date shown. Answer with the exact date text shown.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the exact winning value text shown in the named section.\nExample JSON:\n{\"answer\":\"2026-03-18\"}"
+    "answer_and_evidence": "Read the named sections in this document: an invoice with visible named sections, labeled header fields, and summary blocks. Locate the relevant section before answering: In the Dates section, what is the earliest date shown? Return the exact date shown. Answer with the exact date text shown.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing exactly one bounding box for the winning value.\nAnswer rule: set \"answer\" to the exact winning value text shown in the named section.\nExample JSON:\n{\"evidence\":[[150,260,364,294]],\"answer\":\"2026-03-18\"}",
+    "answer_only": "Read the named sections in this document: an invoice with visible named sections, labeled header fields, and summary blocks. Locate the relevant section before answering: In the Dates section, what is the earliest date shown? Return the exact date shown. Answer with the exact date text shown.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the exact winning value text shown in the named section.\nExample JSON:\n{\"answer\":\"2026-03-18\"}"
   },
   "task": "task_documents_relation_section_extremum_value",
   "task_variant": "earliest_date_in_section",
   "trace_payload": {
     "answer_gt": {
       "type": "string",
-      "value": "2026-03-02"
+      "value": "2026-03-13"
     },
     "background": {
       "available_styles": [
@@ -59,9 +59,9 @@
     },
     "execution_trace": {
       "candidate_sort_values": {
-        "due_date": 739694,
-        "issue_date": 739677,
-        "service_date": 739684
+        "due_date": 739711,
+        "issue_date": 739688,
+        "service_date": 739689
       },
       "compared_field_ids": [
         "issue_date",
@@ -85,7 +85,7 @@
           "comparison_kind": "other",
           "field_id": "vendor_name",
           "field_label": "Vendor",
-          "field_value": "Central Market",
+          "field_value": "Cedar Market",
           "label_bbox_id": "vendor_name:label",
           "section_id": "parties",
           "section_label": "Parties",
@@ -95,7 +95,7 @@
           "comparison_kind": "other",
           "field_id": "customer_name",
           "field_label": "Customer",
-          "field_value": "Luca Bailey",
+          "field_value": "Ada Moore",
           "label_bbox_id": "customer_name:label",
           "section_id": "parties",
           "section_label": "Parties",
@@ -105,7 +105,7 @@
           "comparison_kind": "other",
           "field_id": "invoice_number",
           "field_label": "Invoice Number",
-          "field_value": "INV-76144",
+          "field_value": "INV-88363",
           "label_bbox_id": "invoice_number:label",
           "section_id": "parties",
           "section_label": "Parties",
@@ -115,7 +115,7 @@
           "comparison_kind": "other",
           "field_id": "account_id",
           "field_label": "Account ID",
-          "field_value": "ACC-7259",
+          "field_value": "ACC-2579",
           "label_bbox_id": "account_id:label",
           "section_id": "account",
           "section_label": "Account",
@@ -125,7 +125,7 @@
           "comparison_kind": "other",
           "field_id": "contact_email",
           "field_label": "Contact Email",
-          "field_value": "centralmarket@northpost.co",
+          "field_value": "cedarmarket@example.com",
           "label_bbox_id": "contact_email:label",
           "section_id": "account",
           "section_label": "Account",
@@ -135,7 +135,7 @@
           "comparison_kind": "date",
           "field_id": "issue_date",
           "field_label": "Issue Date",
-          "field_value": "2026-03-02",
+          "field_value": "2026-03-13",
           "label_bbox_id": "issue_date:label",
           "section_id": "dates",
           "section_label": "Dates",
@@ -145,7 +145,7 @@
           "comparison_kind": "date",
           "field_id": "service_date",
           "field_label": "Service Date",
-          "field_value": "2026-03-09",
+          "field_value": "2026-03-14",
           "label_bbox_id": "service_date:label",
           "section_id": "dates",
           "section_label": "Dates",
@@ -155,7 +155,7 @@
           "comparison_kind": "date",
           "field_id": "due_date",
           "field_label": "Due Date",
-          "field_value": "2026-03-19",
+          "field_value": "2026-04-05",
           "label_bbox_id": "due_date:label",
           "section_id": "dates",
           "section_label": "Dates",
@@ -165,7 +165,7 @@
           "comparison_kind": "amount",
           "field_id": "subtotal_amount",
           "field_label": "Subtotal",
-          "field_value": "$241.02",
+          "field_value": "$161.91",
           "label_bbox_id": "subtotal_amount:label",
           "section_id": "billing_summary",
           "section_label": "Billing Summary",
@@ -175,7 +175,7 @@
           "comparison_kind": "amount",
           "field_id": "tax_amount",
           "field_label": "Tax",
-          "field_value": "$7.64",
+          "field_value": "$10.12",
           "label_bbox_id": "tax_amount:label",
           "section_id": "billing_summary",
           "section_label": "Billing Summary",
@@ -185,7 +185,7 @@
           "comparison_kind": "amount",
           "field_id": "total_due",
           "field_label": "Total Due",
-          "field_value": "$248.66",
+          "field_value": "$172.03",
           "label_bbox_id": "total_due:label",
           "section_id": "billing_summary",
           "section_label": "Billing Summary",
@@ -239,8 +239,8 @@
       "view_family": "structured_document",
       "winning_field_id": "issue_date",
       "winning_field_label": "Issue Date",
-      "winning_field_value": "2026-03-02",
-      "winning_sort_value": 739677,
+      "winning_field_value": "2026-03-13",
+      "winning_sort_value": 739688,
       "winning_value_bbox_id": "issue_date:value"
     },
     "post_image_noise": {
@@ -293,7 +293,7 @@
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 2,
+        "answer_or_evidence_variant_index": 4,
         "prompt_bundle_id": "documents_relation_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -309,7 +309,7 @@
         "task_family_key": "structured_document_sections",
         "task_family_variant_index": 4,
         "task_key": "section_extremum_query",
-        "task_variant_index": 1,
+        "task_variant_index": 4,
         "task_variant_key": "earliest_date_in_section",
         "task_variant_template_index": 0,
         "template_paths": [
@@ -327,40 +327,6 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 2,
-            "prompt_bundle_id": "documents_relation_v1",
-            "schema_version": "v1",
-            "slot_values": {
-              "answer_hint": "set \"answer\" to the exact winning value text shown in the named section",
-              "evidence_hint": "set \"evidence\" to an array containing exactly one bounding box for the winning value",
-              "json_example": "{\"evidence\":[[150,260,364,294]],\"answer\":\"2026-03-18\"}",
-              "json_example_answer_only": "{\"answer\":\"2026-03-18\"}",
-              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
-              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "an invoice with visible named sections, labeled header fields, and summary blocks",
-              "question_text": "In the Dates section, what is the earliest date shown? Return the exact date shown."
-            },
-            "task_family_key": "structured_document_sections",
-            "task_family_variant_index": 4,
-            "task_key": "section_extremum_query",
-            "task_variant_index": 1,
-            "task_variant_key": "earliest_date_in_section",
-            "task_variant_template_index": 0,
-            "template_paths": [
-              "documents/relation/documents_relation_v1.json"
-            ],
-            "variant_count_by_key": {
-              "answer_or_evidence:answer_and_evidence": 5,
-              "task:section_extremum_query": 5,
-              "task_family:structured_document_sections": 5,
-              "task_variant:earliest_date_in_section": 5
-            }
-          },
-          "prompt": "Read the named sections in this document: an invoice with visible named sections, labeled header fields, and summary blocks. Read the document and answer this question: In the Dates section, what is the earliest date shown? Return the exact date shown. Answer with the exact date text shown.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly one bounding box for the winning value.\nAnswer requirement: set \"answer\" to the exact winning value text shown in the named section.\nExample JSON:\n{\"evidence\":[[150,260,364,294]],\"answer\":\"2026-03-18\"}"
-        },
-        "answer_only": {
-          "metadata": {
-            "answer_or_evidence_key": "answer_only",
             "answer_or_evidence_variant_index": 4,
             "prompt_bundle_id": "documents_relation_v1",
             "schema_version": "v1",
@@ -377,7 +343,41 @@
             "task_family_key": "structured_document_sections",
             "task_family_variant_index": 4,
             "task_key": "section_extremum_query",
-            "task_variant_index": 1,
+            "task_variant_index": 4,
+            "task_variant_key": "earliest_date_in_section",
+            "task_variant_template_index": 0,
+            "template_paths": [
+              "documents/relation/documents_relation_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:section_extremum_query": 5,
+              "task_family:structured_document_sections": 5,
+              "task_variant:earliest_date_in_section": 5
+            }
+          },
+          "prompt": "Read the named sections in this document: an invoice with visible named sections, labeled header fields, and summary blocks. Locate the relevant section before answering: In the Dates section, what is the earliest date shown? Return the exact date shown. Answer with the exact date text shown.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing exactly one bounding box for the winning value.\nAnswer rule: set \"answer\" to the exact winning value text shown in the named section.\nExample JSON:\n{\"evidence\":[[150,260,364,294]],\"answer\":\"2026-03-18\"}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 2,
+            "prompt_bundle_id": "documents_relation_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the exact winning value text shown in the named section",
+              "evidence_hint": "set \"evidence\" to an array containing exactly one bounding box for the winning value",
+              "json_example": "{\"evidence\":[[150,260,364,294]],\"answer\":\"2026-03-18\"}",
+              "json_example_answer_only": "{\"answer\":\"2026-03-18\"}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "an invoice with visible named sections, labeled header fields, and summary blocks",
+              "question_text": "In the Dates section, what is the earliest date shown? Return the exact date shown."
+            },
+            "task_family_key": "structured_document_sections",
+            "task_family_variant_index": 4,
+            "task_key": "section_extremum_query",
+            "task_variant_index": 4,
             "task_variant_key": "earliest_date_in_section",
             "task_variant_template_index": 0,
             "template_paths": [
@@ -390,7 +390,7 @@
               "task_variant:earliest_date_in_section": 5
             }
           },
-          "prompt": "Read the named sections in this document: an invoice with visible named sections, labeled header fields, and summary blocks. Read the document and answer this question: In the Dates section, what is the earliest date shown? Return the exact date shown. Answer with the exact date text shown.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the exact winning value text shown in the named section.\nExample JSON:\n{\"answer\":\"2026-03-18\"}"
+          "prompt": "Read the named sections in this document: an invoice with visible named sections, labeled header fields, and summary blocks. Locate the relevant section before answering: In the Dates section, what is the earliest date shown? Return the exact date shown. Answer with the exact date text shown.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the exact winning value text shown in the named section.\nExample JSON:\n{\"answer\":\"2026-03-18\"}"
         }
       },
       "task_variant": "earliest_date_in_section",
@@ -543,14 +543,14 @@
         "contact_email:value": [
           811.333,
           373.0,
-          1069.333,
+          1068.333,
           393.0
         ],
         "customer_name:value": [
           665.0,
-          252.5,
-          828.0,
-          281.5
+          255.5,
+          817.0,
+          278.5
         ],
         "due_date:value": [
           214.0,
@@ -585,7 +585,7 @@
         "tax_amount:value": [
           214.0,
           722.5,
-          297.0,
+          315.0,
           749.5
         ],
         "total_due:value": [
@@ -597,7 +597,7 @@
         "vendor_name:value": [
           214.0,
           255.5,
-          425.0,
+          406.0,
           278.5
         ]
       },
@@ -628,35 +628,35 @@
         ],
         "parties": [
           188.0,
-          172.0,
+          170.0,
           1092.0,
           432.0
         ]
       },
       "section_label_bboxes_px": {
         "account": [
-          521.667,
-          296.0,
-          610.667,
-          312.0
+          502.667,
+          292.0,
+          629.667,
+          314.0
         ],
         "billing_summary": [
-          246.0,
-          527.5,
-          395.0,
-          544.5
+          204.0,
+          524.0,
+          437.0,
+          546.0
         ],
         "dates": [
-          221.0,
-          412.0,
-          285.0,
-          428.0
+          204.0,
+          408.0,
+          302.0,
+          430.0
         ],
         "parties": [
-          227.0,
-          181.5,
-          296.0,
-          196.5
+          204.0,
+          176.0,
+          319.0,
+          198.0
         ]
       },
       "title_bbox_px": [
@@ -669,7 +669,7 @@
     "render_spec": {
       "canvas_height": 920,
       "canvas_width": 1280,
-      "geometry_seed": 381558532469731,
+      "geometry_seed": 8223580219582132,
       "page_shadow_offset_px": 14,
       "receipt_page_height_px": 760,
       "receipt_page_width_px": 520,
@@ -706,7 +706,7 @@
           "bbox_id": "parties",
           "bbox_px": [
             188.0,
-            172.0,
+            170.0,
             1092.0,
             432.0
           ],
@@ -799,13 +799,13 @@
           "bbox_px": [
             214.0,
             255.5,
-            425.0,
+            406.0,
             278.5
           ],
           "entity_id": "vendor_name:value",
           "entity_type": "document_field_value",
           "field_id": "vendor_name",
-          "text": "Central Market"
+          "text": "Cedar Market"
         },
         {
           "bbox_id": "customer_name",
@@ -836,14 +836,14 @@
           "bbox_id": "customer_name:value",
           "bbox_px": [
             665.0,
-            252.5,
-            828.0,
-            281.5
+            255.5,
+            817.0,
+            278.5
           ],
           "entity_id": "customer_name:value",
           "entity_type": "document_field_value",
           "field_id": "customer_name",
-          "text": "Luca Bailey"
+          "text": "Ada Moore"
         },
         {
           "bbox_id": "invoice_number",
@@ -881,7 +881,7 @@
           "entity_id": "invoice_number:value",
           "entity_type": "document_field_value",
           "field_id": "invoice_number",
-          "text": "INV-76144"
+          "text": "INV-88363"
         },
         {
           "bbox_id": "account_id",
@@ -919,7 +919,7 @@
           "entity_id": "account_id:value",
           "entity_type": "document_field_value",
           "field_id": "account_id",
-          "text": "ACC-7259"
+          "text": "ACC-2579"
         },
         {
           "bbox_id": "contact_email",
@@ -951,13 +951,13 @@
           "bbox_px": [
             811.333,
             373.0,
-            1069.333,
+            1068.333,
             393.0
           ],
           "entity_id": "contact_email:value",
           "entity_type": "document_field_value",
           "field_id": "contact_email",
-          "text": "centralmarket@northpost.co"
+          "text": "cedarmarket@example.com"
         },
         {
           "bbox_id": "issue_date",
@@ -995,7 +995,7 @@
           "entity_id": "issue_date:value",
           "entity_type": "document_field_value",
           "field_id": "issue_date",
-          "text": "2026-03-02"
+          "text": "2026-03-13"
         },
         {
           "bbox_id": "service_date",
@@ -1033,7 +1033,7 @@
           "entity_id": "service_date:value",
           "entity_type": "document_field_value",
           "field_id": "service_date",
-          "text": "2026-03-09"
+          "text": "2026-03-14"
         },
         {
           "bbox_id": "due_date",
@@ -1071,7 +1071,7 @@
           "entity_id": "due_date:value",
           "entity_type": "document_field_value",
           "field_id": "due_date",
-          "text": "2026-03-19"
+          "text": "2026-04-05"
         },
         {
           "bbox_id": "subtotal_amount",
@@ -1109,7 +1109,7 @@
           "entity_id": "subtotal_amount:value",
           "entity_type": "document_field_value",
           "field_id": "subtotal_amount",
-          "text": "$241.02"
+          "text": "$161.91"
         },
         {
           "bbox_id": "tax_amount",
@@ -1141,13 +1141,13 @@
           "bbox_px": [
             214.0,
             722.5,
-            297.0,
+            315.0,
             749.5
           ],
           "entity_id": "tax_amount:value",
           "entity_type": "document_field_value",
           "field_id": "tax_amount",
-          "text": "$7.64"
+          "text": "$10.12"
         },
         {
           "bbox_id": "total_due",
@@ -1185,15 +1185,15 @@
           "entity_id": "total_due:value",
           "entity_type": "document_field_value",
           "field_id": "total_due",
-          "text": "$248.66"
+          "text": "$172.03"
         },
         {
           "bbox_id": "parties:label",
           "bbox_px": [
-            227.0,
-            181.5,
-            296.0,
-            196.5
+            204.0,
+            176.0,
+            319.0,
+            198.0
           ],
           "entity_id": "parties:label",
           "entity_type": "document_section_label",
@@ -1203,10 +1203,10 @@
         {
           "bbox_id": "account:label",
           "bbox_px": [
-            521.667,
-            296.0,
-            610.667,
-            312.0
+            502.667,
+            292.0,
+            629.667,
+            314.0
           ],
           "entity_id": "account:label",
           "entity_type": "document_section_label",
@@ -1216,10 +1216,10 @@
         {
           "bbox_id": "dates:label",
           "bbox_px": [
-            221.0,
-            412.0,
-            285.0,
-            428.0
+            204.0,
+            408.0,
+            302.0,
+            430.0
           ],
           "entity_id": "dates:label",
           "entity_type": "document_section_label",
@@ -1229,10 +1229,10 @@
         {
           "bbox_id": "billing_summary:label",
           "bbox_px": [
-            246.0,
-            527.5,
-            395.0,
-            544.5
+            204.0,
+            524.0,
+            437.0,
+            546.0
           ],
           "entity_id": "billing_summary:label",
           "entity_type": "document_section_label",

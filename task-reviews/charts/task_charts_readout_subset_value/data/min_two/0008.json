@@ -1,70 +1,65 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 20
+    "value": 13
   },
   "evidence_gt": {
     "type": "integer_list",
     "value": [
-      20,
-      20
+      13,
+      18
     ]
   },
   "image": {
     "format": "png",
     "path": "charts/task_charts_readout_subset_value/images/min_two/0008.png"
   },
-  "instance_seed": 698932268784639,
-  "prompt": "You are given a labeled chart: a labeled scatter plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Read the values of the requested labels from the chart and compute the answer. Between labels L and X, what is the lesser value?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question.\nAnswer field: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[6,13],\"answer\":6}",
+  "instance_seed": 2762772874567359,
+  "prompt": "Use the labeled chart in the image. It shows a labeled line chart with visible point markers. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Use the labeled chart values for the named labels to answer the question. Using labels D and N, what is the smaller value?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question.\nAnswer format: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[6,13],\"answer\":6}",
   "prompt_variants": {
-    "answer_and_evidence": "You are given a labeled chart: a labeled scatter plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Read the values of the requested labels from the chart and compute the answer. Between labels L and X, what is the lesser value?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question.\nAnswer field: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[6,13],\"answer\":6}",
-    "answer_only": "You are given a labeled chart: a labeled scatter plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Read the values of the requested labels from the chart and compute the answer. Between labels L and X, what is the lesser value?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":6}"
+    "answer_and_evidence": "Use the labeled chart in the image. It shows a labeled line chart with visible point markers. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Use the labeled chart values for the named labels to answer the question. Using labels D and N, what is the smaller value?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question.\nAnswer format: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[6,13],\"answer\":6}",
+    "answer_only": "Use the labeled chart in the image. It shows a labeled line chart with visible point markers. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Use the labeled chart values for the named labels to answer the question. Using labels D and N, what is the smaller value?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":6}"
   },
   "task": "task_charts_readout_subset_value",
   "task_variant": "min_two",
   "trace_payload": {
     "execution_trace": {
-      "answer_value": 20,
+      "answer_value": 13,
       "labels": [
+        "J",
         "Y",
-        "L",
-        "X",
-        "G",
-        "E",
-        "V",
-        "F",
+        "R",
         "N",
-        "B",
-        "Q"
+        "D"
       ],
       "mark_color_distance_space": "lab",
       "mark_color_min_distance": 40.0,
       "mark_color_sampling_policy": "random_rgb",
-      "mark_count": 10,
+      "mark_count": 5,
       "mark_count_range": [
         5,
         10
       ],
       "mark_fill_rgb": [
-        115,
-        117,
-        67
+        152,
+        89,
+        156
       ],
       "mark_outline_rgb": [
-        63,
-        64,
-        37
+        84,
+        49,
+        86
       ],
       "query_labels": [
-        "L",
-        "X"
+        "D",
+        "N"
       ],
       "query_values": [
-        20,
-        20
+        13,
+        18
       ],
       "question_format": "numeric_open",
-      "scene_variant": "scatter",
+      "scene_variant": "line",
       "scene_variant_probabilities": {
         "area": 0.1,
         "bar": 0.1,
@@ -77,94 +72,84 @@
         "radar": 0.1,
         "scatter": 0.1
       },
-      "target_answer": 20,
+      "target_answer": 13,
       "target_answer_range": [
         1,
         20
       ],
       "task_variant": "min_two",
       "task_variant_probabilities": {
-        "difference_two_abs": 0.2,
-        "max_two": 0.2,
-        "mean_two": 0.2,
-        "min_two": 0.2,
-        "sum_two": 0.2
+        "difference_two_abs": 0.0,
+        "max_two": 0.0,
+        "mean_two": 0.0,
+        "min_two": 1.0,
+        "sum_two": 0.0
       },
       "value_max": 20,
       "value_min": 1,
       "values": [
-        10,
-        20,
-        20,
+        3,
+        7,
+        13,
         18,
-        12,
-        15,
-        18,
-        20,
-        9,
-        1
+        13
       ],
       "values_by_label": {
-        "B": 9,
-        "E": 12,
-        "F": 18,
-        "G": 18,
-        "L": 20,
-        "N": 20,
-        "Q": 1,
-        "V": 15,
-        "X": 20,
-        "Y": 10
+        "D": 13,
+        "J": 3,
+        "N": 18,
+        "R": 13,
+        "Y": 7
       }
     },
     "projected_evidence": {
       "bbox_set": [
         [
-          180.529,
-          58.095,
-          196.529,
-          74.095
+          679.8,
+          182.526,
+          695.8,
+          198.526
         ],
         [
-          249.412,
-          58.095,
-          265.412,
-          74.095
+          547.4,
+          60.421,
+          563.4,
+          76.421
         ]
       ],
       "integer_list": [
-        20,
-        20
+        13,
+        18
       ],
       "pixel_point_map": {
-        "L": [
-          188.529,
-          66.095
+        "D": [
+          687.8,
+          190.526
         ],
-        "X": [
-          257.412,
-          66.095
+        "N": [
+          555.4,
+          68.421
         ]
       },
       "pixel_point_set": [
         [
-          188.529,
-          66.095
+          687.8,
+          190.526
         ],
         [
-          257.412,
-          66.095
+          555.4,
+          68.421
         ]
       ]
     },
     "query_spec": {
       "params": {
-        "mark_count": 10,
+        "mark_count": 5,
         "query_labels": [
-          "L",
-          "X"
+          "D",
+          "N"
         ],
-        "scene_variant": "scatter",
+        "scene_variant": "line",
         "scene_variant_probabilities": {
           "area": 0.1,
           "bar": 0.1,
@@ -177,23 +162,23 @@
           "radar": 0.1,
           "scatter": 0.1
         },
-        "target_answer": 20,
+        "target_answer": 13,
         "target_answer_range": [
           1,
           20
         ],
         "task_variant": "min_two",
         "task_variant_probabilities": {
-          "difference_two_abs": 0.2,
-          "max_two": 0.2,
-          "mean_two": 0.2,
-          "min_two": 0.2,
-          "sum_two": 0.2
+          "difference_two_abs": 0.0,
+          "max_two": 0.0,
+          "mean_two": 0.0,
+          "min_two": 1.0,
+          "sum_two": 0.0
         }
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 3,
+        "answer_or_evidence_variant_index": 1,
         "prompt_bundle_id": "charts_readout_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -203,16 +188,16 @@
           "json_example_answer_only": "{\"answer\":6}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "object_description": "a labeled scatter plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis",
-          "query_label_a": "L",
-          "query_label_b": "X"
+          "object_description": "a labeled line chart with visible point markers. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis",
+          "query_label_a": "D",
+          "query_label_b": "N"
         },
         "task_family_key": "labeled_chart_readout",
-        "task_family_variant_index": 4,
+        "task_family_variant_index": 1,
         "task_key": "subset_value_query",
-        "task_variant_index": 2,
+        "task_variant_index": 3,
         "task_variant_key": "min_two",
-        "task_variant_template_index": 2,
+        "task_variant_template_index": 4,
         "template_paths": [
           "charts/readout/charts_readout_v1.json"
         ],
@@ -228,41 +213,6 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 3,
-            "prompt_bundle_id": "charts_readout_v1",
-            "schema_version": "v1",
-            "slot_values": {
-              "answer_hint": "set \"answer\" to the requested integer value",
-              "evidence_hint": "set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question",
-              "json_example": "{\"evidence\":[6,13],\"answer\":6}",
-              "json_example_answer_only": "{\"answer\":6}",
-              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
-              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a labeled scatter plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis",
-              "query_label_a": "L",
-              "query_label_b": "X"
-            },
-            "task_family_key": "labeled_chart_readout",
-            "task_family_variant_index": 4,
-            "task_key": "subset_value_query",
-            "task_variant_index": 2,
-            "task_variant_key": "min_two",
-            "task_variant_template_index": 2,
-            "template_paths": [
-              "charts/readout/charts_readout_v1.json"
-            ],
-            "variant_count_by_key": {
-              "answer_or_evidence:answer_and_evidence": 5,
-              "task:subset_value_query": 5,
-              "task_family:labeled_chart_readout": 5,
-              "task_variant:min_two": 5
-            }
-          },
-          "prompt": "You are given a labeled chart: a labeled scatter plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Read the values of the requested labels from the chart and compute the answer. Between labels L and X, what is the lesser value?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question.\nAnswer field: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[6,13],\"answer\":6}"
-        },
-        "answer_only": {
-          "metadata": {
-            "answer_or_evidence_key": "answer_only",
             "answer_or_evidence_variant_index": 1,
             "prompt_bundle_id": "charts_readout_v1",
             "schema_version": "v1",
@@ -273,16 +223,51 @@
               "json_example_answer_only": "{\"answer\":6}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a labeled scatter plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis",
-              "query_label_a": "L",
-              "query_label_b": "X"
+              "object_description": "a labeled line chart with visible point markers. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis",
+              "query_label_a": "D",
+              "query_label_b": "N"
             },
             "task_family_key": "labeled_chart_readout",
-            "task_family_variant_index": 4,
+            "task_family_variant_index": 1,
             "task_key": "subset_value_query",
-            "task_variant_index": 2,
+            "task_variant_index": 3,
             "task_variant_key": "min_two",
-            "task_variant_template_index": 2,
+            "task_variant_template_index": 4,
+            "template_paths": [
+              "charts/readout/charts_readout_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:subset_value_query": 5,
+              "task_family:labeled_chart_readout": 5,
+              "task_variant:min_two": 5
+            }
+          },
+          "prompt": "Use the labeled chart in the image. It shows a labeled line chart with visible point markers. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Use the labeled chart values for the named labels to answer the question. Using labels D and N, what is the smaller value?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question.\nAnswer format: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[6,13],\"answer\":6}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 4,
+            "prompt_bundle_id": "charts_readout_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the requested integer value",
+              "evidence_hint": "set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question",
+              "json_example": "{\"evidence\":[6,13],\"answer\":6}",
+              "json_example_answer_only": "{\"answer\":6}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a labeled line chart with visible point markers. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis",
+              "query_label_a": "D",
+              "query_label_b": "N"
+            },
+            "task_family_key": "labeled_chart_readout",
+            "task_family_variant_index": 1,
+            "task_key": "subset_value_query",
+            "task_variant_index": 3,
+            "task_variant_key": "min_two",
+            "task_variant_template_index": 4,
             "template_paths": [
               "charts/readout/charts_readout_v1.json"
             ],
@@ -293,7 +278,7 @@
               "task_variant:min_two": 5
             }
           },
-          "prompt": "You are given a labeled chart: a labeled scatter plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Read the values of the requested labels from the chart and compute the answer. Between labels L and X, what is the lesser value?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":6}"
+          "prompt": "Use the labeled chart in the image. It shows a labeled line chart with visible point markers. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Use the labeled chart values for the named labels to answer the question. Using labels D and N, what is the smaller value?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":6}"
         }
       },
       "task_variant": "min_two",
@@ -302,45 +287,25 @@
     "render_map": {
       "image_id": "img0",
       "label_centers_px": {
-        "B": [
-          646.365,
-          287.143
+        "D": [
+          687.8,
+          168.526
         ],
-        "E": [
-          391.721,
-          220.857
-        ],
-        "F": [
-          510.975,
-          88.286
-        ],
-        "G": [
-          329.47,
-          88.286
-        ],
-        "L": [
-          188.529,
-          44.095
+        "J": [
+          158.2,
+          412.737
         ],
         "N": [
-          580.401,
-          44.095
+          555.4,
+          46.421
         ],
-        "Q": [
-          710.45,
-          463.905
-        ],
-        "V": [
-          453.959,
-          154.571
-        ],
-        "X": [
-          257.412,
-          44.095
+        "R": [
+          423.0,
+          168.526
         ],
         "Y": [
-          131.219,
-          265.048
+          290.6,
+          315.053
         ]
       },
       "plot_bbox_px": [
@@ -378,14 +343,14 @@
         "mark_color_distance_space": "lab",
         "mark_color_min_distance": 40.0,
         "mark_fill_rgb": [
-          115,
-          117,
-          67
+          152,
+          89,
+          156
         ],
         "mark_outline_rgb": [
-          63,
-          64,
-          37
+          84,
+          49,
+          86
         ],
         "sampling_policy": "random_rgb"
       },
@@ -411,13 +376,13 @@
         "edits": [],
         "enabled": false
       },
-      "scene_variant": "scatter",
+      "scene_variant": "line",
       "text_style": {
         "label_font_size_px": 22,
         "label_stroke_width_px": 2,
         "tick_font_size_px": 18
       },
-      "y_axis_max": 21,
+      "y_axis_max": 19,
       "y_ticks": [
         0,
         1,
@@ -438,378 +403,206 @@
         16,
         17,
         18,
-        19,
-        20,
-        21
+        19
       ]
     },
     "scene_ir": {
       "entities": [
         {
           "attrs": {
-            "label": "Y",
+            "label": "J",
             "label_center_px": [
-              131.219,
-              265.048
+              158.2,
+              412.737
             ],
             "mark_bbox_px": [
-              123.219,
-              279.048,
-              139.219,
-              295.048
+              150.2,
+              426.737,
+              166.2,
+              442.737
             ],
             "mark_center_px": [
-              131.219,
-              287.048
+              158.2,
+              434.737
             ],
             "mark_fill_rgb": [
-              115,
-              117,
-              67
+              152,
+              89,
+              156
             ],
             "mark_outline_rgb": [
-              63,
-              64,
-              37
+              84,
+              49,
+              86
             ],
-            "scene_variant": "scatter",
-            "value": 10,
+            "scene_variant": "line",
+            "value": 3,
             "x_rank": 0
+          },
+          "entity_id": "mark_J",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "Y",
+            "label_center_px": [
+              290.6,
+              315.053
+            ],
+            "mark_bbox_px": [
+              282.6,
+              329.053,
+              298.6,
+              345.053
+            ],
+            "mark_center_px": [
+              290.6,
+              337.053
+            ],
+            "mark_fill_rgb": [
+              152,
+              89,
+              156
+            ],
+            "mark_outline_rgb": [
+              84,
+              49,
+              86
+            ],
+            "scene_variant": "line",
+            "value": 7,
+            "x_rank": 1
           },
           "entity_id": "mark_Y",
           "entity_type": "point"
         },
         {
           "attrs": {
-            "label": "L",
+            "label": "R",
             "label_center_px": [
-              188.529,
-              44.095
+              423.0,
+              168.526
             ],
             "mark_bbox_px": [
-              180.529,
-              58.095,
-              196.529,
-              74.095
+              415.0,
+              182.526,
+              431.0,
+              198.526
             ],
             "mark_center_px": [
-              188.529,
-              66.095
+              423.0,
+              190.526
             ],
             "mark_fill_rgb": [
-              115,
-              117,
-              67
+              152,
+              89,
+              156
             ],
             "mark_outline_rgb": [
-              63,
-              64,
-              37
+              84,
+              49,
+              86
             ],
-            "scene_variant": "scatter",
-            "value": 20,
-            "x_rank": 1
-          },
-          "entity_id": "mark_L",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "label": "X",
-            "label_center_px": [
-              257.412,
-              44.095
-            ],
-            "mark_bbox_px": [
-              249.412,
-              58.095,
-              265.412,
-              74.095
-            ],
-            "mark_center_px": [
-              257.412,
-              66.095
-            ],
-            "mark_fill_rgb": [
-              115,
-              117,
-              67
-            ],
-            "mark_outline_rgb": [
-              63,
-              64,
-              37
-            ],
-            "scene_variant": "scatter",
-            "value": 20,
+            "scene_variant": "line",
+            "value": 13,
             "x_rank": 2
           },
-          "entity_id": "mark_X",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "label": "G",
-            "label_center_px": [
-              329.47,
-              88.286
-            ],
-            "mark_bbox_px": [
-              321.47,
-              102.286,
-              337.47,
-              118.286
-            ],
-            "mark_center_px": [
-              329.47,
-              110.286
-            ],
-            "mark_fill_rgb": [
-              115,
-              117,
-              67
-            ],
-            "mark_outline_rgb": [
-              63,
-              64,
-              37
-            ],
-            "scene_variant": "scatter",
-            "value": 18,
-            "x_rank": 3
-          },
-          "entity_id": "mark_G",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "label": "E",
-            "label_center_px": [
-              391.721,
-              220.857
-            ],
-            "mark_bbox_px": [
-              383.721,
-              234.857,
-              399.721,
-              250.857
-            ],
-            "mark_center_px": [
-              391.721,
-              242.857
-            ],
-            "mark_fill_rgb": [
-              115,
-              117,
-              67
-            ],
-            "mark_outline_rgb": [
-              63,
-              64,
-              37
-            ],
-            "scene_variant": "scatter",
-            "value": 12,
-            "x_rank": 4
-          },
-          "entity_id": "mark_E",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "label": "V",
-            "label_center_px": [
-              453.959,
-              154.571
-            ],
-            "mark_bbox_px": [
-              445.959,
-              168.571,
-              461.959,
-              184.571
-            ],
-            "mark_center_px": [
-              453.959,
-              176.571
-            ],
-            "mark_fill_rgb": [
-              115,
-              117,
-              67
-            ],
-            "mark_outline_rgb": [
-              63,
-              64,
-              37
-            ],
-            "scene_variant": "scatter",
-            "value": 15,
-            "x_rank": 5
-          },
-          "entity_id": "mark_V",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "label": "F",
-            "label_center_px": [
-              510.975,
-              88.286
-            ],
-            "mark_bbox_px": [
-              502.975,
-              102.286,
-              518.975,
-              118.286
-            ],
-            "mark_center_px": [
-              510.975,
-              110.286
-            ],
-            "mark_fill_rgb": [
-              115,
-              117,
-              67
-            ],
-            "mark_outline_rgb": [
-              63,
-              64,
-              37
-            ],
-            "scene_variant": "scatter",
-            "value": 18,
-            "x_rank": 6
-          },
-          "entity_id": "mark_F",
+          "entity_id": "mark_R",
           "entity_type": "point"
         },
         {
           "attrs": {
             "label": "N",
             "label_center_px": [
-              580.401,
-              44.095
+              555.4,
+              46.421
             ],
             "mark_bbox_px": [
-              572.401,
-              58.095,
-              588.401,
-              74.095
+              547.4,
+              60.421,
+              563.4,
+              76.421
             ],
             "mark_center_px": [
-              580.401,
-              66.095
+              555.4,
+              68.421
             ],
             "mark_fill_rgb": [
-              115,
-              117,
-              67
+              152,
+              89,
+              156
             ],
             "mark_outline_rgb": [
-              63,
-              64,
-              37
+              84,
+              49,
+              86
             ],
-            "scene_variant": "scatter",
-            "value": 20,
-            "x_rank": 7
+            "scene_variant": "line",
+            "value": 18,
+            "x_rank": 3
           },
           "entity_id": "mark_N",
           "entity_type": "point"
         },
         {
           "attrs": {
-            "label": "B",
+            "label": "D",
             "label_center_px": [
-              646.365,
-              287.143
+              687.8,
+              168.526
             ],
             "mark_bbox_px": [
-              638.365,
-              301.143,
-              654.365,
-              317.143
+              679.8,
+              182.526,
+              695.8,
+              198.526
             ],
             "mark_center_px": [
-              646.365,
-              309.143
+              687.8,
+              190.526
             ],
             "mark_fill_rgb": [
-              115,
-              117,
-              67
+              152,
+              89,
+              156
             ],
             "mark_outline_rgb": [
-              63,
-              64,
-              37
+              84,
+              49,
+              86
             ],
-            "scene_variant": "scatter",
-            "value": 9,
-            "x_rank": 8
+            "scene_variant": "line",
+            "value": 13,
+            "x_rank": 4
           },
-          "entity_id": "mark_B",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "label": "Q",
-            "label_center_px": [
-              710.45,
-              463.905
-            ],
-            "mark_bbox_px": [
-              702.45,
-              477.905,
-              718.45,
-              493.905
-            ],
-            "mark_center_px": [
-              710.45,
-              485.905
-            ],
-            "mark_fill_rgb": [
-              115,
-              117,
-              67
-            ],
-            "mark_outline_rgb": [
-              63,
-              64,
-              37
-            ],
-            "scene_variant": "scatter",
-            "value": 1,
-            "x_rank": 9
-          },
-          "entity_id": "mark_Q",
+          "entity_id": "mark_D",
           "entity_type": "point"
         }
       ],
       "relations": {
-        "answer_value": 20,
+        "answer_value": 13,
         "query_labels": [
-          "L",
-          "X"
+          "D",
+          "N"
         ],
         "query_values": [
-          20,
-          20
+          13,
+          18
         ],
-        "scene_variant": "scatter",
+        "scene_variant": "line",
         "task_variant": "min_two"
       },
-      "scene_kind": "chart_scatter_readout"
+      "scene_kind": "chart_line_readout"
     },
     "witness_symbolic": {
       "query_labels": [
-        "L",
-        "X"
+        "D",
+        "N"
       ],
       "type": "integer_list",
       "values": [
-        20,
-        20
+        13,
+        18
       ]
     }
   },

@@ -1,24 +1,24 @@
 {
   "answer_gt": {
     "type": "number",
-    "value": 13.9
+    "value": 19.6
   },
   "evidence_gt": {
     "type": "measurement_ref_map",
     "value": {
-      "XY": 7,
-      "XZ": 1
+      "FG": 11,
+      "FH": 5
     }
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_2d_value/images/length/0024.png"
   },
-  "instance_seed": 711276081293831,
-  "prompt": "You are given an image showing a geometric scene with measurement annotations. Read the marked measurements and answer: The circle shows a chord and the perpendicular distance from the center to that chord. What is the length of segment AB?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: XY, XZ.\nAnswer rule: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"XY\":2,\"XZ\":3},\"answer\":42.3}",
+  "instance_seed": 4006274008629850,
+  "prompt": "You are given an image showing a geometric scene with measurement annotations. The circle shows a chord and the perpendicular distance from the center to that chord. What is the length of segment IJ?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: FG, FH.\nAnswer rule: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"FG\":2,\"FH\":3},\"answer\":42.3}",
   "prompt_variants": {
-    "answer_and_evidence": "You are given an image showing a geometric scene with measurement annotations. Read the marked measurements and answer: The circle shows a chord and the perpendicular distance from the center to that chord. What is the length of segment AB?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: XY, XZ.\nAnswer rule: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"XY\":2,\"XZ\":3},\"answer\":42.3}",
-    "answer_only": "You are given an image showing a geometric scene with measurement annotations. Read the marked measurements and answer: The circle shows a chord and the perpendicular distance from the center to that chord. What is the length of segment AB?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"answer\":42.3}"
+    "answer_and_evidence": "You are given an image showing a geometric scene with measurement annotations. The circle shows a chord and the perpendicular distance from the center to that chord. What is the length of segment IJ?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: FG, FH.\nAnswer rule: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"FG\":2,\"FH\":3},\"answer\":42.3}",
+    "answer_only": "You are given an image showing a geometric scene with measurement annotations. The circle shows a chord and the perpendicular distance from the center to that chord. What is the length of segment IJ?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"answer\":42.3}"
   },
   "task": "task_geometry_analytical_2d_value",
   "task_variant": "length",
@@ -26,20 +26,20 @@
     "execution_trace": {
       "answer_max": 100,
       "answer_min": 3,
-      "answer_scalar": 139,
+      "answer_scalar": 196,
       "answer_type": "number",
-      "answer_value": 13.9,
+      "answer_value": 19.6,
       "evidence_map": {
-        "XY": 7,
-        "XZ": 1
+        "FG": 11,
+        "FH": 5
       },
       "evidence_role_tokens": {
-        "offset": "XZ",
-        "radius": "XY"
+        "offset": "FH",
+        "radius": "FG"
       },
       "evidence_role_values": {
-        "offset": 1,
-        "radius": 7
+        "offset": 5,
+        "radius": 11
       },
       "evidence_roles": [
         "radius",
@@ -56,10 +56,10 @@
         "length": 1.0,
         "perimeter": 0.0
       },
-      "raw_answer_value": 13.856406460551018,
+      "raw_answer_value": 19.595917942265423,
       "required_annotations": [
-        "XY",
-        "XZ"
+        "FG",
+        "FH"
       ],
       "scene_variant": "circle",
       "scene_variant_probabilities": {
@@ -72,7 +72,7 @@
         "trapezoid": 0.2,
         "triangle": 0.2
       },
-      "target_annotation": "AB",
+      "target_annotation": "IJ",
       "task_variant": "length",
       "task_variant_probabilities": {
         "area": 0.0,
@@ -91,35 +91,35 @@
     },
     "projected_evidence": {
       "annotation_labels": {
-        "offset": "XZ",
-        "radius": "XY"
+        "offset": "FH",
+        "radius": "FG"
       },
       "id_set": [
-        "XY",
-        "XZ"
+        "FG",
+        "FH"
       ],
       "measurement_ref_map": {
-        "XY": 7,
-        "XZ": 1
+        "FG": 11,
+        "FH": 5
       },
       "pixel_annotation_centers": {
-        "XY": [
-          552.059,
-          389.93333333333334
+        "FG": [
+          385.838,
+          278.93333333333334
         ],
-        "XZ": [
-          351.56666666666666,
-          350.1209285714286
+        "FH": [
+          243.5666666666667,
+          216.415
         ]
       },
       "pixel_point_set": [
         [
-          552.059,
-          389.93333333333334
+          385.838,
+          278.93333333333334
         ],
         [
-          351.56666666666666,
-          350.1209285714286
+          243.5666666666667,
+          216.415
         ]
       ]
     },
@@ -163,18 +163,18 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the length value rounded to one decimal place",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: XY, XZ",
-          "json_example": "{\"evidence\":{\"XY\":2,\"XZ\":3},\"answer\":42.3}",
+          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: FG, FH",
+          "json_example": "{\"evidence\":{\"FG\":2,\"FH\":3},\"answer\":42.3}",
           "json_example_answer_only": "{\"answer\":42.3}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
           "object_description": "a geometric scene with measurement annotations",
-          "question_text": "The circle shows a chord and the perpendicular distance from the center to that chord. What is the length of segment AB?"
+          "question_text": "The circle shows a chord and the perpendicular distance from the center to that chord. What is the length of segment IJ?"
         },
         "task_family_key": "analytical_length_scene",
         "task_family_variant_index": 0,
         "task_key": "analytical_length_query",
-        "task_variant_index": 3,
+        "task_variant_index": 0,
         "task_variant_key": null,
         "task_variant_template_index": null,
         "template_paths": [
@@ -196,18 +196,18 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the length value rounded to one decimal place",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: XY, XZ",
-              "json_example": "{\"evidence\":{\"XY\":2,\"XZ\":3},\"answer\":42.3}",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: FG, FH",
+              "json_example": "{\"evidence\":{\"FG\":2,\"FH\":3},\"answer\":42.3}",
               "json_example_answer_only": "{\"answer\":42.3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a geometric scene with measurement annotations",
-              "question_text": "The circle shows a chord and the perpendicular distance from the center to that chord. What is the length of segment AB?"
+              "question_text": "The circle shows a chord and the perpendicular distance from the center to that chord. What is the length of segment IJ?"
             },
             "task_family_key": "analytical_length_scene",
             "task_family_variant_index": 0,
             "task_key": "analytical_length_query",
-            "task_variant_index": 3,
+            "task_variant_index": 0,
             "task_variant_key": null,
             "task_variant_template_index": null,
             "template_paths": [
@@ -219,7 +219,7 @@
               "task_family:analytical_length_scene": 5
             }
           },
-          "prompt": "You are given an image showing a geometric scene with measurement annotations. Read the marked measurements and answer: The circle shows a chord and the perpendicular distance from the center to that chord. What is the length of segment AB?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: XY, XZ.\nAnswer rule: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"XY\":2,\"XZ\":3},\"answer\":42.3}"
+          "prompt": "You are given an image showing a geometric scene with measurement annotations. The circle shows a chord and the perpendicular distance from the center to that chord. What is the length of segment IJ?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: FG, FH.\nAnswer rule: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"FG\":2,\"FH\":3},\"answer\":42.3}"
         },
         "answer_only": {
           "metadata": {
@@ -229,18 +229,18 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the length value rounded to one decimal place",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: XY, XZ",
-              "json_example": "{\"evidence\":{\"XY\":2,\"XZ\":3},\"answer\":42.3}",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: FG, FH",
+              "json_example": "{\"evidence\":{\"FG\":2,\"FH\":3},\"answer\":42.3}",
               "json_example_answer_only": "{\"answer\":42.3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a geometric scene with measurement annotations",
-              "question_text": "The circle shows a chord and the perpendicular distance from the center to that chord. What is the length of segment AB?"
+              "question_text": "The circle shows a chord and the perpendicular distance from the center to that chord. What is the length of segment IJ?"
             },
             "task_family_key": "analytical_length_scene",
             "task_family_variant_index": 0,
             "task_key": "analytical_length_query",
-            "task_variant_index": 3,
+            "task_variant_index": 0,
             "task_variant_key": null,
             "task_variant_template_index": null,
             "template_paths": [
@@ -252,7 +252,7 @@
               "task_family:analytical_length_scene": 5
             }
           },
-          "prompt": "You are given an image showing a geometric scene with measurement annotations. Read the marked measurements and answer: The circle shows a chord and the perpendicular distance from the center to that chord. What is the length of segment AB?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"answer\":42.3}"
+          "prompt": "You are given an image showing a geometric scene with measurement annotations. The circle shows a chord and the perpendicular distance from the center to that chord. What is the length of segment IJ?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"answer\":42.3}"
         }
       },
       "task_variant": "length",
@@ -260,26 +260,26 @@
     },
     "render_map": {
       "annotation_centers": {
-        "XY": [
-          552.059,
-          389.93333333333334
+        "FG": [
+          385.838,
+          278.93333333333334
         ],
-        "XZ": [
-          351.56666666666666,
-          350.1209285714286
+        "FH": [
+          243.5666666666667,
+          216.415
         ]
       },
       "annotation_labels": {
-        "offset": "XZ",
-        "radius": "XY"
+        "offset": "FH",
+        "radius": "FG"
       },
       "coord_space": "pixel",
       "instance_anchor": {
         "bbox": [
-          113.7902754519202,
-          333.44714285714286,
-          629.87,
-          370.5
+          102.14836337165383,
+          179.93636363636364,
+          439.34000000000003,
+          261.0
         ],
         "coord_space": "pixel"
       }
@@ -294,41 +294,43 @@
         ],
         "enabled": true,
         "render_scale": 3,
-        "selected_style": "solid_warm",
+        "selected_style": "solid_cool",
         "style_spec": {
           "color": [
-            252,
-            249,
-            245
+            246,
+            248,
+            252
           ],
           "kind": "solid"
         }
       },
-      "canvas_size": 741,
+      "canvas_size": 522,
       "coord_space": "pixel",
       "graph_coordinate_frame": {
         "coord_space": "graph_unit",
-        "full_cells_x": 6,
-        "full_cells_y": 6,
+        "full_cells_x": 10,
+        "full_cells_y": 10,
+        "origin_fraction_x": 0.5,
+        "origin_fraction_y": 0.5,
         "origin_pixel": [
-          370,
-          370
+          260,
+          260
         ],
         "outer_margin_px": 16,
         "partial_edge_cells": true,
-        "spacing_px": 93,
-        "target_cells_x": 8,
-        "target_cells_y": 8,
+        "spacing_px": 47,
+        "target_cells_x": 11,
+        "target_cells_y": 11,
         "x_positive": "right",
         "y_positive": "up"
       },
       "graph_paper_grid": {
-        "full_cells_x": 6,
-        "full_cells_y": 6,
+        "full_cells_x": 10,
+        "full_cells_y": 10,
         "partial_edge_cells": true,
-        "spacing_px": 93,
-        "target_cells_x": 8,
-        "target_cells_y": 8
+        "spacing_px": 47,
+        "target_cells_x": 11,
+        "target_cells_y": 11
       },
       "legacy_scene_variant": "circle",
       "post_image_noise": {
@@ -347,9 +349,9 @@
         "edits": [
           {
             "params": {
-              "alpha": 0.010215
+              "quality": 86.0
             },
-            "type": "noise"
+            "type": "jpeg"
           }
         ],
         "enabled": true
@@ -358,19 +360,19 @@
       "scene_variant": "circle",
       "shape_style": {
         "label_color": [
-          19,
-          55,
-          24
+          61,
+          85,
+          58
         ],
         "label_stroke_color": [
-          254,
-          250,
+          248,
+          253,
           253
         ],
         "line_color": [
-          19,
-          55,
-          24
+          61,
+          85,
+          58
         ]
       }
     },
@@ -379,10 +381,10 @@
         {
           "attrs": {
             "center": [
-              370.5,
-              370.5
+              261.0,
+              261.0
             ],
-            "radius_px": 259
+            "radius_px": 178
           },
           "entity_id": "circle_1",
           "entity_type": "circle"
@@ -391,12 +393,12 @@
           "attrs": {
             "helper": true,
             "point_a": [
-              370.5,
-              370.5
+              261.0,
+              261.0
             ],
             "point_b": [
-              629.87,
-              370.5
+              439.34000000000003,
+              261.0
             ]
           },
           "entity_id": "radius_1",
@@ -406,12 +408,12 @@
           "attrs": {
             "helper": true,
             "point_a": [
-              370.5,
-              370.5
+              261.0,
+              261.0
             ],
             "point_b": [
-              370.5,
-              333.44714285714286
+              261.0,
+              179.93636363636364
             ]
           },
           "entity_id": "distance_1",
@@ -421,12 +423,12 @@
           "attrs": {
             "helper": false,
             "point_a": [
-              113.7902754519202,
-              333.44714285714286
+              102.14836337165383,
+              179.93636363636364
             ],
             "point_b": [
-              627.2097245480797,
-              333.44714285714286
+              419.85163662834617,
+              179.93636363636364
             ]
           },
           "entity_id": "chord_1",
@@ -436,10 +438,10 @@
       "frames": {
         "graph_unit": {
           "origin_pixel": [
-            370,
-            370
+            260,
+            260
           ],
-          "spacing_px": 93,
+          "spacing_px": 47,
           "x_positive": "right",
           "y_positive": "up"
         },
@@ -463,21 +465,21 @@
     },
     "witness_symbolic": {
       "annotation_ids": [
-        "XY",
-        "XZ"
+        "FG",
+        "FH"
       ],
       "annotation_labels": {
-        "offset": "XZ",
-        "radius": "XY"
+        "offset": "FH",
+        "radius": "FG"
       },
       "annotation_values": {
-        "XY": 7,
-        "XZ": 1
+        "FG": 11,
+        "FH": 5
       },
       "formula_expression": "2 * sqrt(radius^2 - offset^2)",
       "measurement_ref_map": {
-        "XY": 7,
-        "XZ": 1
+        "FG": 11,
+        "FH": 5
       },
       "task_variant": "circle_chord_length",
       "type": "annotation_measurement_map"

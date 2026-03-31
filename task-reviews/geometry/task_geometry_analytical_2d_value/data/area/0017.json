@@ -1,24 +1,24 @@
 {
   "answer_gt": {
-    "type": "pi_expression",
-    "value": "418π"
+    "type": "integer",
+    "value": 20
   },
   "evidence_gt": {
     "type": "measurement_ref_map",
     "value": {
-      "NO": 22,
-      "NP": 19
+      "UV": 4,
+      "WX": 10
     }
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_2d_value/images/area/0017.png"
   },
-  "instance_seed": 3934543131929004,
-  "prompt": "Look at the annotated image showing a geometric shape with measurement annotations. The ellipse has annotated semimajor and semiminor axes. What is its area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: NO, NP.\nAnswer format: set \"answer\" to the area value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":{\"NO\":2,\"NP\":3},\"answer\":\"12π\"}",
+  "instance_seed": 3727584272189146,
+  "prompt": "Work from the annotated figure showing a geometric shape with measurement annotations. Read the marked measurements and answer: The rhombus has both diagonals annotated. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: UV, WX.\nAnswer field: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"UV\":2,\"WX\":3},\"answer\":8}",
   "prompt_variants": {
-    "answer_and_evidence": "Look at the annotated image showing a geometric shape with measurement annotations. The ellipse has annotated semimajor and semiminor axes. What is its area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: NO, NP.\nAnswer format: set \"answer\" to the area value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":{\"NO\":2,\"NP\":3},\"answer\":\"12π\"}",
-    "answer_only": "Look at the annotated image showing a geometric shape with measurement annotations. The ellipse has annotated semimajor and semiminor axes. What is its area? Express the result in kπ form.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the area value in the form kπ (for example 12π).\nExample JSON:\n{\"answer\":\"12π\"}"
+    "answer_and_evidence": "Work from the annotated figure showing a geometric shape with measurement annotations. Read the marked measurements and answer: The rhombus has both diagonals annotated. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: UV, WX.\nAnswer field: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"UV\":2,\"WX\":3},\"answer\":8}",
+    "answer_only": "Work from the annotated figure showing a geometric shape with measurement annotations. Read the marked measurements and answer: The rhombus has both diagonals annotated. What is its area in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"answer\":8}"
   },
   "task": "task_geometry_analytical_2d_value",
   "task_variant": "area",
@@ -26,33 +26,33 @@
     "execution_trace": {
       "answer_max": 2500,
       "answer_min": 8,
-      "answer_scalar": 418,
-      "answer_type": "pi_expression",
-      "answer_value": "418π",
-      "case_id": "ellipse_explicit",
+      "answer_scalar": 20,
+      "answer_type": "integer",
+      "answer_value": 20,
+      "case_id": "rhombus_explicit",
       "evidence_annotations": {
-        "a": "NO",
-        "b": "NP"
+        "d1": "UV",
+        "d2": "WX"
       },
       "evidence_ids": [
-        "NO",
-        "NP"
+        "UV",
+        "WX"
       ],
       "evidence_label_values": {
-        "a": 22,
-        "b": 19
+        "d1": 4,
+        "d2": 10
       },
       "evidence_map": {
-        "NO": 22,
-        "NP": 19
+        "UV": 4,
+        "WX": 10
       },
       "evidence_roles": [
-        "a",
-        "b"
+        "d1",
+        "d2"
       ],
-      "formula_expression": "A = π * a * b",
-      "legacy_query_variant": "ellipse_explicit",
-      "legacy_scene_variant": "ellipse",
+      "formula_expression": "A = (d1 * d2) / 2",
+      "legacy_query_variant": "rhombus_explicit",
+      "legacy_scene_variant": "rhombus",
       "legacy_task_id": "task_geometry_analytical_2d_area",
       "mode_probabilities": {
         "derived": 0.5,
@@ -67,10 +67,10 @@
       },
       "reasoning_mode": "explicit",
       "required_annotations": [
-        "NO",
-        "NP"
+        "UV",
+        "WX"
       ],
-      "scene_variant": "ellipse",
+      "scene_variant": "rhombus",
       "scene_variant_probabilities": {
         "circle": 0.14285714285714285,
         "composite_region": 0.0,
@@ -83,14 +83,14 @@
       },
       "shape_probabilities": {
         "circle": 0.0,
-        "ellipse": 1.0,
+        "ellipse": 0.0,
         "parallelogram": 0.0,
         "rectangle": 0.0,
-        "rhombus": 0.0,
+        "rhombus": 1.0,
         "trapezoid": 0.0,
         "triangle": 0.0
       },
-      "shape_variant": "ellipse",
+      "shape_variant": "rhombus",
       "task_variant": "area",
       "task_variant_probabilities": {
         "area": 1.0,
@@ -101,35 +101,35 @@
     },
     "projected_evidence": {
       "annotation_labels": {
-        "a": "NO",
-        "b": "NP"
+        "d1": "UV",
+        "d2": "WX"
       },
       "id_set": [
-        "NO",
-        "NP"
+        "UV",
+        "WX"
       ],
       "measurement_ref_map": {
-        "NO": 22,
-        "NP": 19
+        "UV": 4,
+        "WX": 10
       },
       "pixel_annotation_centers": {
-        "NO": [
-          372.0,
-          444.0
+        "UV": [
+          222.0,
+          578.0
         ],
-        "NP": [
-          290.0,
-          567.0
+        "WX": [
+          214.4,
+          547.0
         ]
       },
       "pixel_point_set": [
         [
-          372.0,
-          444.0
+          222.0,
+          578.0
         ],
         [
-          290.0,
-          567.0
+          214.4,
+          547.0
         ]
       ]
     },
@@ -137,8 +137,8 @@
       "params": {
         "answer_max": 2500,
         "answer_min": 8,
-        "legacy_query_variant": "ellipse_explicit",
-        "legacy_scene_variant": "ellipse",
+        "legacy_query_variant": "rhombus_explicit",
+        "legacy_scene_variant": "rhombus",
         "legacy_task_id": "task_geometry_analytical_2d_area",
         "mode_probabilities": {
           "derived": 0.5,
@@ -152,7 +152,7 @@
           "perimeter": 0.0
         },
         "reasoning_mode": "explicit",
-        "scene_variant": "ellipse",
+        "scene_variant": "rhombus",
         "scene_variant_probabilities": {
           "circle": 0.14285714285714285,
           "composite_region": 0.0,
@@ -165,14 +165,14 @@
         },
         "shape_probabilities": {
           "circle": 0.0,
-          "ellipse": 1.0,
+          "ellipse": 0.0,
           "parallelogram": 0.0,
           "rectangle": 0.0,
-          "rhombus": 0.0,
+          "rhombus": 1.0,
           "trapezoid": 0.0,
           "triangle": 0.0
         },
-        "shape_variant": "ellipse",
+        "shape_variant": "rhombus",
         "variant_probabilities": {
           "area": 1.0,
           "composite_area": 0.0,
@@ -182,23 +182,23 @@
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 1,
+        "answer_or_evidence_variant_index": 3,
         "prompt_bundle_id": "geometry_analytical_area_v1",
         "schema_version": "v1",
         "slot_values": {
-          "answer_hint": "set \"answer\" to the area value in the form kπ (for example 12π)",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: NO, NP",
-          "json_example": "{\"evidence\":{\"NO\":2,\"NP\":3},\"answer\":\"12π\"}",
-          "json_example_answer_only": "{\"answer\":\"12π\"}",
+          "answer_hint": "set \"answer\" to the area value as an integer",
+          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: UV, WX",
+          "json_example": "{\"evidence\":{\"UV\":2,\"WX\":3},\"answer\":8}",
+          "json_example_answer_only": "{\"answer\":8}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
           "object_description": "a geometric shape with measurement annotations",
-          "question_text": "The ellipse has annotated semimajor and semiminor axes. What is its area? Express the result in kπ form."
+          "question_text": "The rhombus has both diagonals annotated. What is its area in square units?"
         },
         "task_family_key": "analytical_single_shape",
-        "task_family_variant_index": 2,
+        "task_family_variant_index": 4,
         "task_key": "analytical_area_query",
-        "task_variant_index": 0,
+        "task_variant_index": 3,
         "task_variant_key": null,
         "task_variant_template_index": null,
         "template_paths": [
@@ -215,23 +215,23 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 1,
+            "answer_or_evidence_variant_index": 3,
             "prompt_bundle_id": "geometry_analytical_area_v1",
             "schema_version": "v1",
             "slot_values": {
-              "answer_hint": "set \"answer\" to the area value in the form kπ (for example 12π)",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: NO, NP",
-              "json_example": "{\"evidence\":{\"NO\":2,\"NP\":3},\"answer\":\"12π\"}",
-              "json_example_answer_only": "{\"answer\":\"12π\"}",
+              "answer_hint": "set \"answer\" to the area value as an integer",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: UV, WX",
+              "json_example": "{\"evidence\":{\"UV\":2,\"WX\":3},\"answer\":8}",
+              "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a geometric shape with measurement annotations",
-              "question_text": "The ellipse has annotated semimajor and semiminor axes. What is its area? Express the result in kπ form."
+              "question_text": "The rhombus has both diagonals annotated. What is its area in square units?"
             },
             "task_family_key": "analytical_single_shape",
-            "task_family_variant_index": 2,
+            "task_family_variant_index": 4,
             "task_key": "analytical_area_query",
-            "task_variant_index": 0,
+            "task_variant_index": 3,
             "task_variant_key": null,
             "task_variant_template_index": null,
             "template_paths": [
@@ -243,28 +243,28 @@
               "task_family:analytical_single_shape": 5
             }
           },
-          "prompt": "Look at the annotated image showing a geometric shape with measurement annotations. The ellipse has annotated semimajor and semiminor axes. What is its area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: NO, NP.\nAnswer format: set \"answer\" to the area value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":{\"NO\":2,\"NP\":3},\"answer\":\"12π\"}"
+          "prompt": "Work from the annotated figure showing a geometric shape with measurement annotations. Read the marked measurements and answer: The rhombus has both diagonals annotated. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: UV, WX.\nAnswer field: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"UV\":2,\"WX\":3},\"answer\":8}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 2,
+            "answer_or_evidence_variant_index": 0,
             "prompt_bundle_id": "geometry_analytical_area_v1",
             "schema_version": "v1",
             "slot_values": {
-              "answer_hint": "set \"answer\" to the area value in the form kπ (for example 12π)",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: NO, NP",
-              "json_example": "{\"evidence\":{\"NO\":2,\"NP\":3},\"answer\":\"12π\"}",
-              "json_example_answer_only": "{\"answer\":\"12π\"}",
+              "answer_hint": "set \"answer\" to the area value as an integer",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: UV, WX",
+              "json_example": "{\"evidence\":{\"UV\":2,\"WX\":3},\"answer\":8}",
+              "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a geometric shape with measurement annotations",
-              "question_text": "The ellipse has annotated semimajor and semiminor axes. What is its area? Express the result in kπ form."
+              "question_text": "The rhombus has both diagonals annotated. What is its area in square units?"
             },
             "task_family_key": "analytical_single_shape",
-            "task_family_variant_index": 2,
+            "task_family_variant_index": 4,
             "task_key": "analytical_area_query",
-            "task_variant_index": 0,
+            "task_variant_index": 3,
             "task_variant_key": null,
             "task_variant_template_index": null,
             "template_paths": [
@@ -276,7 +276,7 @@
               "task_family:analytical_single_shape": 5
             }
           },
-          "prompt": "Look at the annotated image showing a geometric shape with measurement annotations. The ellipse has annotated semimajor and semiminor axes. What is its area? Express the result in kπ form.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the area value in the form kπ (for example 12π).\nExample JSON:\n{\"answer\":\"12π\"}"
+          "prompt": "Work from the annotated figure showing a geometric shape with measurement annotations. Read the marked measurements and answer: The rhombus has both diagonals annotated. What is its area in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"answer\":8}"
         }
       },
       "task_variant": "area",
@@ -284,32 +284,48 @@
     },
     "render_map": {
       "annotation_centers": {
-        "NO": [
-          372.0,
-          444.0
+        "UV": [
+          222.0,
+          578.0
         ],
-        "NP": [
-          290.0,
-          567.0
+        "WX": [
+          214.4,
+          547.0
         ]
       },
       "annotation_labels": {
-        "a": "NO",
-        "b": "NP"
+        "d1": "UV",
+        "d2": "WX"
       },
       "coord_space": "pixel",
       "entity_id": "shape_1",
       "instance_anchor": {
-        "bbox": [
-          42.0,
-          282.0,
-          482.0,
-          662.0
-        ],
         "coord_space": "pixel",
         "point": [
-          262.0,
-          472.0
+          192.0,
+          572.0
+        ],
+        "polyline": [
+          [
+            192.0,
+            572.0
+          ],
+          [
+            212.0,
+            622.0
+          ],
+          [
+            232.0,
+            572.0
+          ],
+          [
+            212.0,
+            522.0
+          ],
+          [
+            192.0,
+            572.0
+          ]
         ]
       }
     },
@@ -333,35 +349,37 @@
           "kind": "solid"
         }
       },
-      "canvas_size": 706,
+      "canvas_size": 666,
       "coord_space": "pixel",
       "graph_coordinate_frame": {
         "coord_space": "graph_unit",
-        "full_cells_x": 8,
-        "full_cells_y": 8,
+        "full_cells_x": 6,
+        "full_cells_y": 6,
+        "origin_fraction_x": 0.5,
+        "origin_fraction_y": 0.5,
         "origin_pixel": [
-          352,
-          352
+          332,
+          332
         ],
         "outer_margin_px": 16,
         "partial_edge_cells": true,
-        "spacing_px": 78,
-        "target_cells_x": 9,
-        "target_cells_y": 9,
+        "spacing_px": 95,
+        "target_cells_x": 7,
+        "target_cells_y": 7,
         "x_positive": "right",
         "y_positive": "up"
       },
       "graph_paper_grid": {
-        "full_cells_x": 8,
-        "full_cells_y": 8,
+        "full_cells_x": 6,
+        "full_cells_y": 6,
         "partial_edge_cells": true,
-        "spacing_px": 78,
-        "target_cells_x": 9,
-        "target_cells_y": 9
+        "spacing_px": 95,
+        "target_cells_x": 7,
+        "target_cells_y": 7
       },
-      "legacy_scene_variant": "ellipse",
+      "legacy_scene_variant": "rhombus",
       "post_image_noise": {
-        "applied": true,
+        "applied": false,
         "apply_prob": 0.5,
         "edit_count_range": [
           1,
@@ -373,33 +391,26 @@
           "jpeg",
           "noise"
         ],
-        "edits": [
-          {
-            "params": {
-              "quality": 84.0
-            },
-            "type": "jpeg"
-          }
-        ],
+        "edits": [],
         "enabled": true
       },
       "query_variant": "area",
-      "scene_variant": "ellipse",
+      "scene_variant": "rhombus",
       "shape_style": {
         "label_color": [
-          93,
-          76,
-          59
+          131,
+          137,
+          57
         ],
         "label_stroke_color": [
-          251,
-          248,
-          255
+          252,
+          255,
+          249
         ],
         "line_color": [
-          93,
-          76,
-          59
+          131,
+          137,
+          57
         ]
       }
     },
@@ -407,27 +418,41 @@
       "entities": [
         {
           "attrs": {
-            "area_pi_coefficient": 418,
-            "center": [
-              262.0,
-              472.0
-            ],
+            "area_square_units": 20,
+            "diagonal1_units": 4,
+            "diagonal2_units": 10,
             "reasoning_mode": "explicit",
-            "semi_axis_x_units": 22,
-            "semi_axis_y_units": 19,
-            "shape_variant": "ellipse"
+            "shape_variant": "rhombus",
+            "vertices": [
+              [
+                192.0,
+                572.0
+              ],
+              [
+                212.0,
+                622.0
+              ],
+              [
+                232.0,
+                572.0
+              ],
+              [
+                212.0,
+                522.0
+              ]
+            ]
           },
           "entity_id": "shape_1",
-          "entity_type": "ellipse"
+          "entity_type": "rhombus"
         }
       ],
       "frames": {
         "graph_unit": {
           "origin_pixel": [
-            352,
-            352
+            332,
+            332
           ],
-          "spacing_px": 78,
+          "spacing_px": 95,
           "x_positive": "right",
           "y_positive": "up"
         },
@@ -441,35 +466,35 @@
         }
       },
       "relations": {
-        "legacy_query_variant": "ellipse_explicit",
-        "legacy_scene_variant": "ellipse",
+        "legacy_query_variant": "rhombus_explicit",
+        "legacy_scene_variant": "rhombus",
         "legacy_task_id": "task_geometry_analytical_2d_area",
         "query_variant": "area",
-        "scene_variant": "ellipse"
+        "scene_variant": "rhombus"
       },
       "scene_kind": "geometry_2d_analytical_area"
     },
     "witness_symbolic": {
       "annotation_ids": [
-        "NO",
-        "NP"
+        "UV",
+        "WX"
       ],
       "annotation_labels": {
-        "a": "NO",
-        "b": "NP"
+        "d1": "UV",
+        "d2": "WX"
       },
       "annotation_values": {
-        "NO": 22,
-        "NP": 19
+        "UV": 4,
+        "WX": 10
       },
-      "case_id": "ellipse_explicit",
-      "formula_expression": "A = π * a * b",
+      "case_id": "rhombus_explicit",
+      "formula_expression": "A = (d1 * d2) / 2",
       "measurement_ref_map": {
-        "NO": 22,
-        "NP": 19
+        "UV": 4,
+        "WX": 10
       },
       "reasoning_mode": "explicit",
-      "shape_variant": "ellipse",
+      "shape_variant": "rhombus",
       "type": "annotation_measurement_map"
     }
   },

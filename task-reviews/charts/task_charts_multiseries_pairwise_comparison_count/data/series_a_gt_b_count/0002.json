@@ -11,46 +11,42 @@
     "format": "png",
     "path": "charts/task_charts_multiseries_pairwise_comparison_count/images/series_a_gt_b_count/0002.png"
   },
-  "instance_seed": 6564581467279521,
-  "prompt": "Use the chart in the image. It shows a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Compare the two queried series category by category. Count the category labels where Olpe exceeds Avie.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer format: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
+  "instance_seed": 6338857101353540,
+  "prompt": "Look at the multiseries chart in the image. It shows a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Use the chart to compare the queried pair of series across the category labels. Find how many category labels show Fu higher than Keir.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
   "prompt_variants": {
-    "answer_and_evidence": "Use the chart in the image. It shows a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Compare the two queried series category by category. Count the category labels where Olpe exceeds Avie.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer format: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
-    "answer_only": "Use the chart in the image. It shows a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Compare the two queried series category by category. Count the category labels where Olpe exceeds Avie.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":3}"
+    "answer_and_evidence": "Look at the multiseries chart in the image. It shows a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Use the chart to compare the queried pair of series across the category labels. Find how many category labels show Fu higher than Keir.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
+    "answer_only": "Look at the multiseries chart in the image. It shows a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Use the chart to compare the queried pair of series across the category labels. Find how many category labels show Fu higher than Keir.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":3}"
   },
   "task": "task_charts_multiseries_pairwise_comparison_count",
   "task_variant": "series_a_gt_b_count",
   "trace_payload": {
     "execution_trace": {
       "answer_value": 0,
-      "category_count": 10,
+      "category_count": 6,
       "category_count_range": [
         5,
         10
       ],
       "category_labels": [
-        "W",
-        "U",
-        "J",
-        "R",
+        "X",
+        "L",
         "Y",
-        "D",
-        "N",
-        "A",
-        "Z",
-        "E"
+        "G",
+        "P",
+        "Z"
       ],
       "comparison": "greater_than",
       "evidence_labels": [],
-      "left_series_label": "Olpe",
+      "left_series_label": "Fu",
       "mark_color_distance_space": "lab",
       "mark_color_min_distance": 40.0,
       "mark_color_sampling_policy": "random_rgb_palette",
       "queried_series_labels": [
-        "Olpe",
-        "Avie"
+        "Fu",
+        "Keir"
       ],
       "question_format": "numeric_open",
-      "right_series_label": "Avie",
+      "right_series_label": "Keir",
       "scene_variant": "grouped_bar",
       "scene_variant_probabilities": {
         "grouped_bar": 0.25,
@@ -58,37 +54,48 @@
         "grouped_lollipop": 0.25,
         "multi_line": 0.25
       },
-      "series_count": 2,
+      "series_count": 3,
       "series_count_range": [
         2,
         3
       ],
       "series_fill_palette_rgb": [
         [
-          73,
-          31,
-          199
+          172,
+          135,
+          196
         ],
         [
-          32,
-          154,
-          133
+          45,
+          103,
+          127
+        ],
+        [
+          14,
+          168,
+          78
         ]
       ],
       "series_labels": [
-        "Olpe",
-        "Avie"
+        "Fu",
+        "Keir",
+        "Eddy"
       ],
       "series_outline_palette_rgb": [
         [
-          40,
-          17,
-          109
+          95,
+          74,
+          108
         ],
         [
-          18,
-          85,
-          73
+          25,
+          57,
+          70
+        ],
+        [
+          8,
+          92,
+          43
         ]
       ],
       "target_answer": 0,
@@ -98,49 +105,39 @@
       ],
       "task_variant": "series_a_gt_b_count",
       "task_variant_probabilities": {
-        "series_a_gt_b_count": 0.5,
-        "series_a_lt_b_count": 0.5
+        "series_a_gt_b_count": 1.0,
+        "series_a_lt_b_count": 0.0
       },
       "values_by_category": {
-        "A": {
-          "Avie": 8,
-          "Olpe": 7
+        "G": {
+          "Eddy": 15,
+          "Fu": 13,
+          "Keir": 17
         },
-        "D": {
-          "Avie": 6,
-          "Olpe": 3
+        "L": {
+          "Eddy": 8,
+          "Fu": 4,
+          "Keir": 9
         },
-        "E": {
-          "Avie": 19,
-          "Olpe": 2
+        "P": {
+          "Eddy": 12,
+          "Fu": 11,
+          "Keir": 20
         },
-        "J": {
-          "Avie": 3,
-          "Olpe": 1
-        },
-        "N": {
-          "Avie": 14,
-          "Olpe": 2
-        },
-        "R": {
-          "Avie": 12,
-          "Olpe": 8
-        },
-        "U": {
-          "Avie": 19,
-          "Olpe": 13
-        },
-        "W": {
-          "Avie": 17,
-          "Olpe": 3
+        "X": {
+          "Eddy": 12,
+          "Fu": 3,
+          "Keir": 16
         },
         "Y": {
-          "Avie": 20,
-          "Olpe": 14
+          "Eddy": 11,
+          "Fu": 5,
+          "Keir": 12
         },
         "Z": {
-          "Avie": 9,
-          "Olpe": 1
+          "Eddy": 12,
+          "Fu": 4,
+          "Keir": 15
         }
       }
     },
@@ -152,15 +149,15 @@
     },
     "query_spec": {
       "params": {
-        "category_count": 10,
+        "category_count": 6,
         "category_count_range": [
           5,
           10
         ],
         "comparison": "greater_than",
         "queried_series_labels": [
-          "Olpe",
-          "Avie"
+          "Fu",
+          "Keir"
         ],
         "scene_variant": "grouped_bar",
         "scene_variant_probabilities": {
@@ -169,7 +166,7 @@
           "grouped_lollipop": 0.25,
           "multi_line": 0.25
         },
-        "series_count": 2,
+        "series_count": 3,
         "series_count_range": [
           2,
           3
@@ -181,13 +178,13 @@
         ],
         "task_variant": "series_a_gt_b_count",
         "task_variant_probabilities": {
-          "series_a_gt_b_count": 0.5,
-          "series_a_lt_b_count": 0.5
+          "series_a_gt_b_count": 1.0,
+          "series_a_lt_b_count": 0.0
         }
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 1,
+        "answer_or_evidence_variant_index": 4,
         "prompt_bundle_id": "charts_multiseries_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -197,16 +194,16 @@
           "json_example_answer_only": "{\"answer\":3}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "left_series": "Olpe",
+          "left_series": "Fu",
           "object_description": "a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category",
-          "right_series": "Avie"
+          "right_series": "Keir"
         },
         "task_family_key": "multiseries_chart_comparison",
-        "task_family_variant_index": 1,
+        "task_family_variant_index": 3,
         "task_key": "pairwise_comparison_count_query",
-        "task_variant_index": 0,
+        "task_variant_index": 1,
         "task_variant_key": "series_a_gt_b_count",
-        "task_variant_template_index": 1,
+        "task_variant_template_index": 4,
         "template_paths": [
           "charts/multiseries/charts_multiseries_v1.json"
         ],
@@ -222,7 +219,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 1,
+            "answer_or_evidence_variant_index": 4,
             "prompt_bundle_id": "charts_multiseries_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -232,16 +229,16 @@
               "json_example_answer_only": "{\"answer\":3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "left_series": "Olpe",
+              "left_series": "Fu",
               "object_description": "a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category",
-              "right_series": "Avie"
+              "right_series": "Keir"
             },
             "task_family_key": "multiseries_chart_comparison",
-            "task_family_variant_index": 1,
+            "task_family_variant_index": 3,
             "task_key": "pairwise_comparison_count_query",
-            "task_variant_index": 0,
+            "task_variant_index": 1,
             "task_variant_key": "series_a_gt_b_count",
-            "task_variant_template_index": 1,
+            "task_variant_template_index": 4,
             "template_paths": [
               "charts/multiseries/charts_multiseries_v1.json"
             ],
@@ -252,12 +249,12 @@
               "task_variant:series_a_gt_b_count": 5
             }
           },
-          "prompt": "Use the chart in the image. It shows a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Compare the two queried series category by category. Count the category labels where Olpe exceeds Avie.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer format: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}"
+          "prompt": "Look at the multiseries chart in the image. It shows a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Use the chart to compare the queried pair of series across the category labels. Find how many category labels show Fu higher than Keir.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 1,
+            "answer_or_evidence_variant_index": 0,
             "prompt_bundle_id": "charts_multiseries_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -267,16 +264,16 @@
               "json_example_answer_only": "{\"answer\":3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "left_series": "Olpe",
+              "left_series": "Fu",
               "object_description": "a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category",
-              "right_series": "Avie"
+              "right_series": "Keir"
             },
             "task_family_key": "multiseries_chart_comparison",
-            "task_family_variant_index": 1,
+            "task_family_variant_index": 3,
             "task_key": "pairwise_comparison_count_query",
-            "task_variant_index": 0,
+            "task_variant_index": 1,
             "task_variant_key": "series_a_gt_b_count",
-            "task_variant_template_index": 1,
+            "task_variant_template_index": 4,
             "template_paths": [
               "charts/multiseries/charts_multiseries_v1.json"
             ],
@@ -287,7 +284,7 @@
               "task_variant:series_a_gt_b_count": 5
             }
           },
-          "prompt": "Use the chart in the image. It shows a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Compare the two queried series category by category. Count the category labels where Olpe exceeds Avie.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":3}"
+          "prompt": "Look at the multiseries chart in the image. It shows a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Use the chart to compare the queried pair of series across the category labels. Find how many category labels show Fu higher than Keir.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":3}"
         }
       },
       "task_variant": "series_a_gt_b_count",
@@ -295,44 +292,28 @@
     },
     "render_map": {
       "category_label_centers_px": {
-        "A": [
-          663.5,
+        "G": [
+          536.5,
           554.0
         ],
-        "D": [
-          511.1,
-          554.0
-        ],
-        "E": [
-          815.9,
-          554.0
-        ],
-        "J": [
+        "L": [
           282.5,
           554.0
         ],
-        "N": [
-          587.3,
+        "P": [
+          663.5,
           554.0
         ],
-        "R": [
-          358.7,
-          554.0
-        ],
-        "U": [
-          206.3,
-          554.0
-        ],
-        "W": [
-          130.1,
+        "X": [
+          155.5,
           554.0
         ],
         "Y": [
-          434.9,
+          409.5,
           554.0
         ],
         "Z": [
-          739.7,
+          790.5,
           554.0
         ]
       },
@@ -374,26 +355,36 @@
         "sampling_policy": "random_rgb_palette",
         "series_fill_palette_rgb": [
           [
-            73,
-            31,
-            199
+            172,
+            135,
+            196
           ],
           [
-            32,
-            154,
-            133
+            45,
+            103,
+            127
+          ],
+          [
+            14,
+            168,
+            78
           ]
         ],
         "series_outline_palette_rgb": [
           [
-            40,
-            17,
-            109
+            95,
+            74,
+            108
           ],
           [
-            18,
-            85,
-            73
+            25,
+            57,
+            70
+          ],
+          [
+            8,
+            92,
+            43
           ]
         ]
       },
@@ -456,841 +447,757 @@
         {
           "attrs": {
             "category_group_bbox_px": [
-              110.44,
-              136.19,
-              149.76,
+              120.956,
+              159.238,
+              190.044,
               562.0
             ],
-            "category_label": "W",
+            "category_label": "X",
             "category_label_center_px": [
-              130.1,
+              155.5,
               554.0
             ],
             "category_rank": 0,
             "mark_bbox_px": [
-              110.44,
+              120.956,
               458.857,
-              126.9,
+              139.244,
               528.0
             ],
             "mark_center_px": [
-              118.67,
+              130.1,
               458.857
             ],
             "mark_fill_rgb": [
-              73,
-              31,
-              199
+              172,
+              135,
+              196
             ],
             "mark_outline_rgb": [
-              40,
-              17,
-              109
+              95,
+              74,
+              108
             ],
             "scene_variant": "grouped_bar",
-            "series_label": "Olpe",
+            "series_label": "Fu",
             "series_rank": 0,
             "value": 3
           },
-          "entity_id": "mark_W_Olpe",
+          "entity_id": "mark_X_Fu",
           "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              110.44,
-              136.19,
-              149.76,
+              120.956,
+              159.238,
+              190.044,
               562.0
             ],
-            "category_label": "W",
+            "category_label": "X",
             "category_label_center_px": [
-              130.1,
+              155.5,
               554.0
             ],
             "category_rank": 0,
             "mark_bbox_px": [
-              133.3,
-              136.19,
-              149.76,
+              146.356,
+              159.238,
+              164.644,
               528.0
             ],
             "mark_center_px": [
-              141.53,
-              136.19
+              155.5,
+              159.238
             ],
             "mark_fill_rgb": [
-              32,
-              154,
-              133
+              45,
+              103,
+              127
             ],
             "mark_outline_rgb": [
-              18,
-              85,
-              73
+              25,
+              57,
+              70
             ],
             "scene_variant": "grouped_bar",
-            "series_label": "Avie",
+            "series_label": "Keir",
             "series_rank": 1,
-            "value": 17
+            "value": 16
           },
-          "entity_id": "mark_W_Avie",
+          "entity_id": "mark_X_Keir",
           "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              186.64,
-              90.095,
-              225.96,
+              120.956,
+              159.238,
+              190.044,
               562.0
             ],
-            "category_label": "U",
+            "category_label": "X",
             "category_label_center_px": [
-              206.3,
+              155.5,
               554.0
             ],
-            "category_rank": 1,
+            "category_rank": 0,
             "mark_bbox_px": [
-              186.64,
-              228.381,
-              203.1,
-              528.0
-            ],
-            "mark_center_px": [
-              194.87,
-              228.381
-            ],
-            "mark_fill_rgb": [
-              73,
-              31,
-              199
-            ],
-            "mark_outline_rgb": [
-              40,
-              17,
-              109
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Olpe",
-            "series_rank": 0,
-            "value": 13
-          },
-          "entity_id": "mark_U_Olpe",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              186.64,
-              90.095,
-              225.96,
-              562.0
-            ],
-            "category_label": "U",
-            "category_label_center_px": [
-              206.3,
-              554.0
-            ],
-            "category_rank": 1,
-            "mark_bbox_px": [
-              209.5,
-              90.095,
-              225.96,
-              528.0
-            ],
-            "mark_center_px": [
-              217.73,
-              90.095
-            ],
-            "mark_fill_rgb": [
-              32,
-              154,
-              133
-            ],
-            "mark_outline_rgb": [
-              18,
-              85,
-              73
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Avie",
-            "series_rank": 1,
-            "value": 19
-          },
-          "entity_id": "mark_U_Avie",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              262.84,
-              458.857,
-              302.16,
-              564.0
-            ],
-            "category_label": "J",
-            "category_label_center_px": [
-              282.5,
-              554.0
-            ],
-            "category_rank": 2,
-            "mark_bbox_px": [
-              262.84,
-              504.952,
-              279.3,
-              528.0
-            ],
-            "mark_center_px": [
-              271.07,
-              504.952
-            ],
-            "mark_fill_rgb": [
-              73,
-              31,
-              199
-            ],
-            "mark_outline_rgb": [
-              40,
-              17,
-              109
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Olpe",
-            "series_rank": 0,
-            "value": 1
-          },
-          "entity_id": "mark_J_Olpe",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              262.84,
-              458.857,
-              302.16,
-              564.0
-            ],
-            "category_label": "J",
-            "category_label_center_px": [
-              282.5,
-              554.0
-            ],
-            "category_rank": 2,
-            "mark_bbox_px": [
-              285.7,
-              458.857,
-              302.16,
-              528.0
-            ],
-            "mark_center_px": [
-              293.93,
-              458.857
-            ],
-            "mark_fill_rgb": [
-              32,
-              154,
-              133
-            ],
-            "mark_outline_rgb": [
-              18,
-              85,
-              73
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Avie",
-            "series_rank": 1,
-            "value": 3
-          },
-          "entity_id": "mark_J_Avie",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              339.04,
+              171.756,
               251.429,
-              378.36,
-              562.0
-            ],
-            "category_label": "R",
-            "category_label_center_px": [
-              358.7,
-              554.0
-            ],
-            "category_rank": 3,
-            "mark_bbox_px": [
-              339.04,
-              343.619,
-              355.5,
+              190.044,
               528.0
             ],
             "mark_center_px": [
-              347.27,
-              343.619
-            ],
-            "mark_fill_rgb": [
-              73,
-              31,
-              199
-            ],
-            "mark_outline_rgb": [
-              40,
-              17,
-              109
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Olpe",
-            "series_rank": 0,
-            "value": 8
-          },
-          "entity_id": "mark_R_Olpe",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              339.04,
-              251.429,
-              378.36,
-              562.0
-            ],
-            "category_label": "R",
-            "category_label_center_px": [
-              358.7,
-              554.0
-            ],
-            "category_rank": 3,
-            "mark_bbox_px": [
-              361.9,
-              251.429,
-              378.36,
-              528.0
-            ],
-            "mark_center_px": [
-              370.13,
+              180.9,
               251.429
             ],
             "mark_fill_rgb": [
-              32,
-              154,
-              133
+              14,
+              168,
+              78
             ],
             "mark_outline_rgb": [
-              18,
-              85,
-              73
+              8,
+              92,
+              43
             ],
             "scene_variant": "grouped_bar",
-            "series_label": "Avie",
-            "series_rank": 1,
+            "series_label": "Eddy",
+            "series_rank": 2,
             "value": 12
           },
-          "entity_id": "mark_R_Avie",
+          "entity_id": "mark_X_Eddy",
           "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              415.24,
-              67.048,
-              454.56,
-              562.0
-            ],
-            "category_label": "Y",
-            "category_label_center_px": [
-              434.9,
-              554.0
-            ],
-            "category_rank": 4,
-            "mark_bbox_px": [
-              415.24,
-              205.333,
-              431.7,
-              528.0
-            ],
-            "mark_center_px": [
-              423.47,
-              205.333
-            ],
-            "mark_fill_rgb": [
-              73,
-              31,
-              199
-            ],
-            "mark_outline_rgb": [
-              40,
-              17,
-              109
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Olpe",
-            "series_rank": 0,
-            "value": 14
-          },
-          "entity_id": "mark_Y_Olpe",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              415.24,
-              67.048,
-              454.56,
-              562.0
-            ],
-            "category_label": "Y",
-            "category_label_center_px": [
-              434.9,
-              554.0
-            ],
-            "category_rank": 4,
-            "mark_bbox_px": [
-              438.1,
-              67.048,
-              454.56,
-              528.0
-            ],
-            "mark_center_px": [
-              446.33,
-              67.048
-            ],
-            "mark_fill_rgb": [
-              32,
-              154,
-              133
-            ],
-            "mark_outline_rgb": [
-              18,
-              85,
-              73
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Avie",
-            "series_rank": 1,
-            "value": 20
-          },
-          "entity_id": "mark_Y_Avie",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              491.44,
-              389.714,
-              530.76,
-              562.0
-            ],
-            "category_label": "D",
-            "category_label_center_px": [
-              511.1,
-              554.0
-            ],
-            "category_rank": 5,
-            "mark_bbox_px": [
-              491.44,
-              458.857,
-              507.9,
-              528.0
-            ],
-            "mark_center_px": [
-              499.67,
-              458.857
-            ],
-            "mark_fill_rgb": [
-              73,
-              31,
-              199
-            ],
-            "mark_outline_rgb": [
-              40,
-              17,
-              109
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Olpe",
-            "series_rank": 0,
-            "value": 3
-          },
-          "entity_id": "mark_D_Olpe",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              491.44,
-              389.714,
-              530.76,
-              562.0
-            ],
-            "category_label": "D",
-            "category_label_center_px": [
-              511.1,
-              554.0
-            ],
-            "category_rank": 5,
-            "mark_bbox_px": [
-              514.3,
-              389.714,
-              530.76,
-              528.0
-            ],
-            "mark_center_px": [
-              522.53,
-              389.714
-            ],
-            "mark_fill_rgb": [
-              32,
-              154,
-              133
-            ],
-            "mark_outline_rgb": [
-              18,
-              85,
-              73
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Avie",
-            "series_rank": 1,
-            "value": 6
-          },
-          "entity_id": "mark_D_Avie",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              567.64,
-              205.333,
-              606.96,
-              562.0
-            ],
-            "category_label": "N",
-            "category_label_center_px": [
-              587.3,
-              554.0
-            ],
-            "category_rank": 6,
-            "mark_bbox_px": [
-              567.64,
-              481.905,
-              584.1,
-              528.0
-            ],
-            "mark_center_px": [
-              575.87,
-              481.905
-            ],
-            "mark_fill_rgb": [
-              73,
-              31,
-              199
-            ],
-            "mark_outline_rgb": [
-              40,
-              17,
-              109
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Olpe",
-            "series_rank": 0,
-            "value": 2
-          },
-          "entity_id": "mark_N_Olpe",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              567.64,
-              205.333,
-              606.96,
-              562.0
-            ],
-            "category_label": "N",
-            "category_label_center_px": [
-              587.3,
-              554.0
-            ],
-            "category_rank": 6,
-            "mark_bbox_px": [
-              590.5,
-              205.333,
-              606.96,
-              528.0
-            ],
-            "mark_center_px": [
-              598.73,
-              205.333
-            ],
-            "mark_fill_rgb": [
-              32,
-              154,
-              133
-            ],
-            "mark_outline_rgb": [
-              18,
-              85,
-              73
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Avie",
-            "series_rank": 1,
-            "value": 14
-          },
-          "entity_id": "mark_N_Avie",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              643.84,
-              343.619,
-              683.16,
-              562.0
-            ],
-            "category_label": "A",
-            "category_label_center_px": [
-              663.5,
-              554.0
-            ],
-            "category_rank": 7,
-            "mark_bbox_px": [
-              643.84,
-              366.667,
-              660.3,
-              528.0
-            ],
-            "mark_center_px": [
-              652.07,
-              366.667
-            ],
-            "mark_fill_rgb": [
-              73,
-              31,
-              199
-            ],
-            "mark_outline_rgb": [
-              40,
-              17,
-              109
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Olpe",
-            "series_rank": 0,
-            "value": 7
-          },
-          "entity_id": "mark_A_Olpe",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              643.84,
-              343.619,
-              683.16,
-              562.0
-            ],
-            "category_label": "A",
-            "category_label_center_px": [
-              663.5,
-              554.0
-            ],
-            "category_rank": 7,
-            "mark_bbox_px": [
-              666.7,
-              343.619,
-              683.16,
-              528.0
-            ],
-            "mark_center_px": [
-              674.93,
-              343.619
-            ],
-            "mark_fill_rgb": [
-              32,
-              154,
-              133
-            ],
-            "mark_outline_rgb": [
-              18,
-              85,
-              73
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Avie",
-            "series_rank": 1,
-            "value": 8
-          },
-          "entity_id": "mark_A_Avie",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              720.04,
+              247.956,
               320.571,
-              759.36,
+              317.044,
               562.0
             ],
-            "category_label": "Z",
+            "category_label": "L",
             "category_label_center_px": [
-              739.7,
+              282.5,
               554.0
             ],
-            "category_rank": 8,
+            "category_rank": 1,
             "mark_bbox_px": [
-              720.04,
-              504.952,
-              736.5,
+              247.956,
+              435.81,
+              266.244,
               528.0
             ],
             "mark_center_px": [
-              728.27,
-              504.952
+              257.1,
+              435.81
             ],
             "mark_fill_rgb": [
-              73,
-              31,
-              199
+              172,
+              135,
+              196
             ],
             "mark_outline_rgb": [
-              40,
-              17,
-              109
+              95,
+              74,
+              108
             ],
             "scene_variant": "grouped_bar",
-            "series_label": "Olpe",
+            "series_label": "Fu",
             "series_rank": 0,
-            "value": 1
+            "value": 4
           },
-          "entity_id": "mark_Z_Olpe",
+          "entity_id": "mark_L_Fu",
           "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              720.04,
+              247.956,
               320.571,
-              759.36,
+              317.044,
               562.0
             ],
-            "category_label": "Z",
+            "category_label": "L",
             "category_label_center_px": [
-              739.7,
+              282.5,
               554.0
             ],
-            "category_rank": 8,
+            "category_rank": 1,
             "mark_bbox_px": [
-              742.9,
+              273.356,
               320.571,
-              759.36,
+              291.644,
               528.0
             ],
             "mark_center_px": [
-              751.13,
+              282.5,
               320.571
             ],
             "mark_fill_rgb": [
-              32,
-              154,
-              133
+              45,
+              103,
+              127
             ],
             "mark_outline_rgb": [
-              18,
-              85,
-              73
+              25,
+              57,
+              70
             ],
             "scene_variant": "grouped_bar",
-            "series_label": "Avie",
+            "series_label": "Keir",
             "series_rank": 1,
             "value": 9
           },
-          "entity_id": "mark_Z_Avie",
+          "entity_id": "mark_L_Keir",
           "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              796.24,
-              90.095,
-              835.56,
+              247.956,
+              320.571,
+              317.044,
               562.0
             ],
-            "category_label": "E",
+            "category_label": "L",
             "category_label_center_px": [
-              815.9,
+              282.5,
               554.0
             ],
-            "category_rank": 9,
+            "category_rank": 1,
             "mark_bbox_px": [
-              796.24,
-              481.905,
-              812.7,
+              298.756,
+              343.619,
+              317.044,
               528.0
             ],
             "mark_center_px": [
-              804.47,
-              481.905
+              307.9,
+              343.619
             ],
             "mark_fill_rgb": [
-              73,
-              31,
-              199
+              14,
+              168,
+              78
             ],
             "mark_outline_rgb": [
-              40,
-              17,
-              109
+              8,
+              92,
+              43
             ],
             "scene_variant": "grouped_bar",
-            "series_label": "Olpe",
+            "series_label": "Eddy",
+            "series_rank": 2,
+            "value": 8
+          },
+          "entity_id": "mark_L_Eddy",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              374.956,
+              251.429,
+              444.044,
+              562.0
+            ],
+            "category_label": "Y",
+            "category_label_center_px": [
+              409.5,
+              554.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              374.956,
+              412.762,
+              393.244,
+              528.0
+            ],
+            "mark_center_px": [
+              384.1,
+              412.762
+            ],
+            "mark_fill_rgb": [
+              172,
+              135,
+              196
+            ],
+            "mark_outline_rgb": [
+              95,
+              74,
+              108
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Fu",
             "series_rank": 0,
-            "value": 2
+            "value": 5
           },
-          "entity_id": "mark_E_Olpe",
+          "entity_id": "mark_Y_Fu",
           "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              796.24,
-              90.095,
-              835.56,
+              374.956,
+              251.429,
+              444.044,
               562.0
             ],
-            "category_label": "E",
+            "category_label": "Y",
             "category_label_center_px": [
-              815.9,
+              409.5,
               554.0
             ],
-            "category_rank": 9,
+            "category_rank": 2,
             "mark_bbox_px": [
-              819.1,
-              90.095,
-              835.56,
+              400.356,
+              251.429,
+              418.644,
               528.0
             ],
             "mark_center_px": [
-              827.33,
-              90.095
+              409.5,
+              251.429
             ],
             "mark_fill_rgb": [
-              32,
-              154,
-              133
+              45,
+              103,
+              127
             ],
             "mark_outline_rgb": [
-              18,
-              85,
-              73
+              25,
+              57,
+              70
             ],
             "scene_variant": "grouped_bar",
-            "series_label": "Avie",
+            "series_label": "Keir",
             "series_rank": 1,
-            "value": 19
+            "value": 12
           },
-          "entity_id": "mark_E_Avie",
+          "entity_id": "mark_Y_Keir",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              374.956,
+              251.429,
+              444.044,
+              562.0
+            ],
+            "category_label": "Y",
+            "category_label_center_px": [
+              409.5,
+              554.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              425.756,
+              274.476,
+              444.044,
+              528.0
+            ],
+            "mark_center_px": [
+              434.9,
+              274.476
+            ],
+            "mark_fill_rgb": [
+              14,
+              168,
+              78
+            ],
+            "mark_outline_rgb": [
+              8,
+              92,
+              43
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Eddy",
+            "series_rank": 2,
+            "value": 11
+          },
+          "entity_id": "mark_Y_Eddy",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              501.956,
+              136.19,
+              571.044,
+              562.0
+            ],
+            "category_label": "G",
+            "category_label_center_px": [
+              536.5,
+              554.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              501.956,
+              228.381,
+              520.244,
+              528.0
+            ],
+            "mark_center_px": [
+              511.1,
+              228.381
+            ],
+            "mark_fill_rgb": [
+              172,
+              135,
+              196
+            ],
+            "mark_outline_rgb": [
+              95,
+              74,
+              108
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Fu",
+            "series_rank": 0,
+            "value": 13
+          },
+          "entity_id": "mark_G_Fu",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              501.956,
+              136.19,
+              571.044,
+              562.0
+            ],
+            "category_label": "G",
+            "category_label_center_px": [
+              536.5,
+              554.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              527.356,
+              136.19,
+              545.644,
+              528.0
+            ],
+            "mark_center_px": [
+              536.5,
+              136.19
+            ],
+            "mark_fill_rgb": [
+              45,
+              103,
+              127
+            ],
+            "mark_outline_rgb": [
+              25,
+              57,
+              70
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Keir",
+            "series_rank": 1,
+            "value": 17
+          },
+          "entity_id": "mark_G_Keir",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              501.956,
+              136.19,
+              571.044,
+              562.0
+            ],
+            "category_label": "G",
+            "category_label_center_px": [
+              536.5,
+              554.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              552.756,
+              182.286,
+              571.044,
+              528.0
+            ],
+            "mark_center_px": [
+              561.9,
+              182.286
+            ],
+            "mark_fill_rgb": [
+              14,
+              168,
+              78
+            ],
+            "mark_outline_rgb": [
+              8,
+              92,
+              43
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Eddy",
+            "series_rank": 2,
+            "value": 15
+          },
+          "entity_id": "mark_G_Eddy",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              628.956,
+              67.048,
+              698.044,
+              562.0
+            ],
+            "category_label": "P",
+            "category_label_center_px": [
+              663.5,
+              554.0
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              628.956,
+              274.476,
+              647.244,
+              528.0
+            ],
+            "mark_center_px": [
+              638.1,
+              274.476
+            ],
+            "mark_fill_rgb": [
+              172,
+              135,
+              196
+            ],
+            "mark_outline_rgb": [
+              95,
+              74,
+              108
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Fu",
+            "series_rank": 0,
+            "value": 11
+          },
+          "entity_id": "mark_P_Fu",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              628.956,
+              67.048,
+              698.044,
+              562.0
+            ],
+            "category_label": "P",
+            "category_label_center_px": [
+              663.5,
+              554.0
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              654.356,
+              67.048,
+              672.644,
+              528.0
+            ],
+            "mark_center_px": [
+              663.5,
+              67.048
+            ],
+            "mark_fill_rgb": [
+              45,
+              103,
+              127
+            ],
+            "mark_outline_rgb": [
+              25,
+              57,
+              70
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Keir",
+            "series_rank": 1,
+            "value": 20
+          },
+          "entity_id": "mark_P_Keir",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              628.956,
+              67.048,
+              698.044,
+              562.0
+            ],
+            "category_label": "P",
+            "category_label_center_px": [
+              663.5,
+              554.0
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              679.756,
+              251.429,
+              698.044,
+              528.0
+            ],
+            "mark_center_px": [
+              688.9,
+              251.429
+            ],
+            "mark_fill_rgb": [
+              14,
+              168,
+              78
+            ],
+            "mark_outline_rgb": [
+              8,
+              92,
+              43
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Eddy",
+            "series_rank": 2,
+            "value": 12
+          },
+          "entity_id": "mark_P_Eddy",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              755.956,
+              182.286,
+              825.044,
+              562.0
+            ],
+            "category_label": "Z",
+            "category_label_center_px": [
+              790.5,
+              554.0
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              755.956,
+              435.81,
+              774.244,
+              528.0
+            ],
+            "mark_center_px": [
+              765.1,
+              435.81
+            ],
+            "mark_fill_rgb": [
+              172,
+              135,
+              196
+            ],
+            "mark_outline_rgb": [
+              95,
+              74,
+              108
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Fu",
+            "series_rank": 0,
+            "value": 4
+          },
+          "entity_id": "mark_Z_Fu",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              755.956,
+              182.286,
+              825.044,
+              562.0
+            ],
+            "category_label": "Z",
+            "category_label_center_px": [
+              790.5,
+              554.0
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              781.356,
+              182.286,
+              799.644,
+              528.0
+            ],
+            "mark_center_px": [
+              790.5,
+              182.286
+            ],
+            "mark_fill_rgb": [
+              45,
+              103,
+              127
+            ],
+            "mark_outline_rgb": [
+              25,
+              57,
+              70
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Keir",
+            "series_rank": 1,
+            "value": 15
+          },
+          "entity_id": "mark_Z_Keir",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              755.956,
+              182.286,
+              825.044,
+              562.0
+            ],
+            "category_label": "Z",
+            "category_label_center_px": [
+              790.5,
+              554.0
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              806.756,
+              251.429,
+              825.044,
+              528.0
+            ],
+            "mark_center_px": [
+              815.9,
+              251.429
+            ],
+            "mark_fill_rgb": [
+              14,
+              168,
+              78
+            ],
+            "mark_outline_rgb": [
+              8,
+              92,
+              43
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Eddy",
+            "series_rank": 2,
+            "value": 12
+          },
+          "entity_id": "mark_Z_Eddy",
           "entity_type": "bar"
         }
       ],
@@ -1298,8 +1205,8 @@
         "comparison": "greater_than",
         "evidence_labels": [],
         "queried_series_labels": [
-          "Olpe",
-          "Avie"
+          "Fu",
+          "Keir"
         ],
         "scene_variant": "grouped_bar",
         "task_variant": "series_a_gt_b_count"

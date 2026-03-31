@@ -1,7 +1,7 @@
 {
   "answer_gt": {
     "type": "string",
-    "value": "$33.11"
+    "value": "$38.93"
   },
   "evidence_gt": {
     "type": "bbox_set",
@@ -24,18 +24,18 @@
     "format": "png",
     "path": "documents/task_documents_arithmetic_section_expression_value/images/difference_two_amounts_in_section/0019.png"
   },
-  "instance_seed": 6388661796480387,
-  "prompt": "Use the structured document in the image: a receipt-style document with visible section headers and labeled totals rows. Find the named section and then answer: In the Totals section, what is Items Total minus Discount? Return the amount as $0.00. Compute the exact amount from the shown values.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing one bounding box for each referenced operand value, in the same order as the expression in the prompt.\nAnswer rule: set \"answer\" to the computed amount formatted exactly as $0.00.\nExample JSON:\n{\"evidence\":[[150,260,364,294],[150,320,364,354]],\"answer\":\"$42.50\"}",
+  "instance_seed": 2923217756137123,
+  "prompt": "Look at the document in the image: a receipt-style document with visible section headers and labeled totals rows. In the Totals section, what is Items Total minus Discount? Return the amount as $0.00. Answer using the resulting amount only.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing one bounding box for each referenced operand value, in the same order as the expression in the prompt.\nAnswer rule: set \"answer\" to the computed amount formatted exactly as $0.00.\nExample JSON:\n{\"evidence\":[[150,260,364,294],[150,320,364,354]],\"answer\":\"$42.50\"}",
   "prompt_variants": {
-    "answer_and_evidence": "Use the structured document in the image: a receipt-style document with visible section headers and labeled totals rows. Find the named section and then answer: In the Totals section, what is Items Total minus Discount? Return the amount as $0.00. Compute the exact amount from the shown values.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing one bounding box for each referenced operand value, in the same order as the expression in the prompt.\nAnswer rule: set \"answer\" to the computed amount formatted exactly as $0.00.\nExample JSON:\n{\"evidence\":[[150,260,364,294],[150,320,364,354]],\"answer\":\"$42.50\"}",
-    "answer_only": "Use the structured document in the image: a receipt-style document with visible section headers and labeled totals rows. Find the named section and then answer: In the Totals section, what is Items Total minus Discount? Return the amount as $0.00. Compute the exact amount from the shown values.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the computed amount formatted exactly as $0.00.\nExample JSON:\n{\"answer\":\"$42.50\"}"
+    "answer_and_evidence": "Look at the document in the image: a receipt-style document with visible section headers and labeled totals rows. In the Totals section, what is Items Total minus Discount? Return the amount as $0.00. Answer using the resulting amount only.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing one bounding box for each referenced operand value, in the same order as the expression in the prompt.\nAnswer rule: set \"answer\" to the computed amount formatted exactly as $0.00.\nExample JSON:\n{\"evidence\":[[150,260,364,294],[150,320,364,354]],\"answer\":\"$42.50\"}",
+    "answer_only": "Look at the document in the image: a receipt-style document with visible section headers and labeled totals rows. In the Totals section, what is Items Total minus Discount? Return the amount as $0.00. Answer using the resulting amount only.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the computed amount formatted exactly as $0.00.\nExample JSON:\n{\"answer\":\"$42.50\"}"
   },
   "task": "task_documents_arithmetic_section_expression_value",
   "task_variant": "difference_two_amounts_in_section",
   "trace_payload": {
     "answer_gt": {
       "type": "string",
-      "value": "$33.11"
+      "value": "$38.93"
     },
     "background": {
       "available_styles": [
@@ -71,8 +71,8 @@
     },
     "execution_trace": {
       "expression_operand_cents": [
-        3965,
-        654
+        4375,
+        482
       ],
       "field_count": 9,
       "field_specs": [
@@ -80,7 +80,7 @@
           "comparison_kind": "other",
           "field_id": "store_name",
           "field_label": "Store Name",
-          "field_value": "Elm Co.",
+          "field_value": "Maple Office",
           "label_bbox_id": "store_name:label",
           "section_id": "store_details",
           "section_label": "Store Details",
@@ -90,7 +90,7 @@
           "comparison_kind": "other",
           "field_id": "receipt_number",
           "field_label": "Receipt No.",
-          "field_value": "R-21820",
+          "field_value": "R-62084",
           "label_bbox_id": "receipt_number:label",
           "section_id": "store_details",
           "section_label": "Store Details",
@@ -100,7 +100,7 @@
           "comparison_kind": "other",
           "field_id": "cashier_name",
           "field_label": "Cashier",
-          "field_value": "Ben Howard",
+          "field_value": "Emma Lopez",
           "label_bbox_id": "cashier_name:label",
           "section_id": "store_details",
           "section_label": "Store Details",
@@ -110,7 +110,7 @@
           "comparison_kind": "other",
           "field_id": "purchase_date",
           "field_label": "Purchase Date",
-          "field_value": "Apr 19, 2026",
+          "field_value": "Apr 15, 2026",
           "label_bbox_id": "purchase_date:label",
           "section_id": "purchase_info",
           "section_label": "Purchase Info",
@@ -120,7 +120,7 @@
           "comparison_kind": "other",
           "field_id": "member_id",
           "field_label": "Member ID",
-          "field_value": "M-3173",
+          "field_value": "M-5771",
           "label_bbox_id": "member_id:label",
           "section_id": "purchase_info",
           "section_label": "Purchase Info",
@@ -130,7 +130,7 @@
           "comparison_kind": "other",
           "field_id": "register_id",
           "field_label": "Register ID",
-          "field_value": "REG-613",
+          "field_value": "REG-329",
           "label_bbox_id": "register_id:label",
           "section_id": "purchase_info",
           "section_label": "Purchase Info",
@@ -140,7 +140,7 @@
           "comparison_kind": "amount",
           "field_id": "items_total",
           "field_label": "Items Total",
-          "field_value": "$39.65",
+          "field_value": "$43.75",
           "label_bbox_id": "items_total:label",
           "section_id": "totals",
           "section_label": "Totals",
@@ -150,7 +150,7 @@
           "comparison_kind": "amount",
           "field_id": "tax_amount",
           "field_label": "Tax",
-          "field_value": "$5.12",
+          "field_value": "$9.17",
           "label_bbox_id": "tax_amount:label",
           "section_id": "totals",
           "section_label": "Totals",
@@ -160,7 +160,7 @@
           "comparison_kind": "amount",
           "field_id": "discount_amount",
           "field_label": "Discount",
-          "field_value": "$6.54",
+          "field_value": "$4.82",
           "label_bbox_id": "discount_amount:label",
           "section_id": "totals",
           "section_label": "Totals",
@@ -176,8 +176,8 @@
         "Discount"
       ],
       "operand_field_values": [
-        "$39.65",
-        "$6.54"
+        "$43.75",
+        "$4.82"
       ],
       "operand_value_bbox_ids": [
         "items_total:value",
@@ -190,8 +190,8 @@
       "query_section_label": "Totals",
       "question_format": "document_section_expression_value",
       "question_text": "In the Totals section, what is Items Total minus Discount? Return the amount as $0.00.",
-      "result_cents": 3311,
-      "result_value": "$33.11",
+      "result_cents": 3893,
+      "result_value": "$38.93",
       "scene_title": "Receipt",
       "scene_variant": "receipt_sheet",
       "section_specs": [
@@ -295,11 +295,11 @@
           "question_text": "In the Totals section, what is Items Total minus Discount? Return the amount as $0.00."
         },
         "task_family_key": "structured_document_sections",
-        "task_family_variant_index": 3,
+        "task_family_variant_index": 1,
         "task_key": "section_expression_query",
-        "task_variant_index": 2,
+        "task_variant_index": 0,
         "task_variant_key": "difference_two_amounts_in_section",
-        "task_variant_template_index": 0,
+        "task_variant_template_index": 4,
         "template_paths": [
           "documents/arithmetic/documents_arithmetic_v1.json"
         ],
@@ -329,11 +329,11 @@
               "question_text": "In the Totals section, what is Items Total minus Discount? Return the amount as $0.00."
             },
             "task_family_key": "structured_document_sections",
-            "task_family_variant_index": 3,
+            "task_family_variant_index": 1,
             "task_key": "section_expression_query",
-            "task_variant_index": 2,
+            "task_variant_index": 0,
             "task_variant_key": "difference_two_amounts_in_section",
-            "task_variant_template_index": 0,
+            "task_variant_template_index": 4,
             "template_paths": [
               "documents/arithmetic/documents_arithmetic_v1.json"
             ],
@@ -344,12 +344,12 @@
               "task_variant:difference_two_amounts_in_section": 5
             }
           },
-          "prompt": "Use the structured document in the image: a receipt-style document with visible section headers and labeled totals rows. Find the named section and then answer: In the Totals section, what is Items Total minus Discount? Return the amount as $0.00. Compute the exact amount from the shown values.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing one bounding box for each referenced operand value, in the same order as the expression in the prompt.\nAnswer rule: set \"answer\" to the computed amount formatted exactly as $0.00.\nExample JSON:\n{\"evidence\":[[150,260,364,294],[150,320,364,354]],\"answer\":\"$42.50\"}"
+          "prompt": "Look at the document in the image: a receipt-style document with visible section headers and labeled totals rows. In the Totals section, what is Items Total minus Discount? Return the amount as $0.00. Answer using the resulting amount only.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing one bounding box for each referenced operand value, in the same order as the expression in the prompt.\nAnswer rule: set \"answer\" to the computed amount formatted exactly as $0.00.\nExample JSON:\n{\"evidence\":[[150,260,364,294],[150,320,364,354]],\"answer\":\"$42.50\"}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 2,
+            "answer_or_evidence_variant_index": 0,
             "prompt_bundle_id": "documents_arithmetic_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -363,11 +363,11 @@
               "question_text": "In the Totals section, what is Items Total minus Discount? Return the amount as $0.00."
             },
             "task_family_key": "structured_document_sections",
-            "task_family_variant_index": 3,
+            "task_family_variant_index": 1,
             "task_key": "section_expression_query",
-            "task_variant_index": 2,
+            "task_variant_index": 0,
             "task_variant_key": "difference_two_amounts_in_section",
-            "task_variant_template_index": 0,
+            "task_variant_template_index": 4,
             "template_paths": [
               "documents/arithmetic/documents_arithmetic_v1.json"
             ],
@@ -378,7 +378,7 @@
               "task_variant:difference_two_amounts_in_section": 5
             }
           },
-          "prompt": "Use the structured document in the image: a receipt-style document with visible section headers and labeled totals rows. Find the named section and then answer: In the Totals section, what is Items Total minus Discount? Return the amount as $0.00. Compute the exact amount from the shown values.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the computed amount formatted exactly as $0.00.\nExample JSON:\n{\"answer\":\"$42.50\"}"
+          "prompt": "Look at the document in the image: a receipt-style document with visible section headers and labeled totals rows. In the Totals section, what is Items Total minus Discount? Return the amount as $0.00. Answer using the resulting amount only.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the computed amount formatted exactly as $0.00.\nExample JSON:\n{\"answer\":\"$42.50\"}"
         }
       },
       "task_variant": "difference_two_amounts_in_section",
@@ -499,10 +499,10 @@
       },
       "field_value_bboxes_px": {
         "cashier_name:value": [
-          691.0,
-          350.5,
+          681.0,
+          348.0,
           864.0,
-          373.5
+          376.0
         ],
         "discount_amount:value": [
           781.0,
@@ -541,10 +541,10 @@
           583.0
         ],
         "store_name:value": [
-          754.0,
-          210.5,
+          687.0,
+          207.5,
           864.0,
-          233.5
+          236.5
         ],
         "tax_amount:value": [
           781.0,
@@ -609,7 +609,7 @@
     "render_spec": {
       "canvas_height": 920,
       "canvas_width": 1280,
-      "geometry_seed": 6388661796480387,
+      "geometry_seed": 2923217756137123,
       "page_shadow_offset_px": 14,
       "receipt_page_height_px": 760,
       "receipt_page_width_px": 520,
@@ -721,15 +721,15 @@
         {
           "bbox_id": "store_name:value",
           "bbox_px": [
-            754.0,
-            210.5,
+            687.0,
+            207.5,
             864.0,
-            233.5
+            236.5
           ],
           "entity_id": "store_name:value",
           "entity_type": "document_field_value",
           "field_id": "store_name",
-          "text": "Elm Co."
+          "text": "Maple Office"
         },
         {
           "bbox_id": "receipt_number",
@@ -767,7 +767,7 @@
           "entity_id": "receipt_number:value",
           "entity_type": "document_field_value",
           "field_id": "receipt_number",
-          "text": "R-21820"
+          "text": "R-62084"
         },
         {
           "bbox_id": "cashier_name",
@@ -797,15 +797,15 @@
         {
           "bbox_id": "cashier_name:value",
           "bbox_px": [
-            691.0,
-            350.5,
+            681.0,
+            348.0,
             864.0,
-            373.5
+            376.0
           ],
           "entity_id": "cashier_name:value",
           "entity_type": "document_field_value",
           "field_id": "cashier_name",
-          "text": "Ben Howard"
+          "text": "Emma Lopez"
         },
         {
           "bbox_id": "purchase_date",
@@ -843,7 +843,7 @@
           "entity_id": "purchase_date:value",
           "entity_type": "document_field_value",
           "field_id": "purchase_date",
-          "text": "Apr 19, 2026"
+          "text": "Apr 15, 2026"
         },
         {
           "bbox_id": "member_id",
@@ -881,7 +881,7 @@
           "entity_id": "member_id:value",
           "entity_type": "document_field_value",
           "field_id": "member_id",
-          "text": "M-3173"
+          "text": "M-5771"
         },
         {
           "bbox_id": "register_id",
@@ -919,7 +919,7 @@
           "entity_id": "register_id:value",
           "entity_type": "document_field_value",
           "field_id": "register_id",
-          "text": "REG-613"
+          "text": "REG-329"
         },
         {
           "bbox_id": "items_total",
@@ -957,7 +957,7 @@
           "entity_id": "items_total:value",
           "entity_type": "document_field_value",
           "field_id": "items_total",
-          "text": "$39.65"
+          "text": "$43.75"
         },
         {
           "bbox_id": "tax_amount",
@@ -995,7 +995,7 @@
           "entity_id": "tax_amount:value",
           "entity_type": "document_field_value",
           "field_id": "tax_amount",
-          "text": "$5.12"
+          "text": "$9.17"
         },
         {
           "bbox_id": "discount_amount",
@@ -1033,7 +1033,7 @@
           "entity_id": "discount_amount:value",
           "entity_type": "document_field_value",
           "field_id": "discount_amount",
-          "text": "$6.54"
+          "text": "$4.82"
         },
         {
           "bbox_id": "store_details:label",

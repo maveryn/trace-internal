@@ -100,6 +100,7 @@ Use this whenever the task lives under `domain=icons`.
 - `trace/tasks/icons/shared/anchor_marking.py`
 
 ## Pair with
+- `skills/domain-audit/SKILL.md`
 - `skills/task-design/SKILL.md`
 - `skills/task-complexity/SKILL.md`
 - `skills/task-implementation/SKILL.md`

@@ -1,24 +1,25 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 432
+    "value": 120
   },
   "evidence_gt": {
     "type": "measurement_ref_map",
     "value": {
-      "VW": 18,
-      "XY": 48
+      "JK": 10,
+      "JL": 13,
+      "JM": 5
     }
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_2d_value/images/area/0014.png"
   },
-  "instance_seed": 7181281970393504,
-  "prompt": "Work from the annotated figure showing a geometric shape with measurement annotations. The rhombus has both diagonals annotated. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: VW, XY.\nAnswer field: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"VW\":2,\"XY\":3},\"answer\":8}",
+  "instance_seed": 1224530519230415,
+  "prompt": "Look at the annotated image showing a geometric shape with measurement annotations. The parallelogram shows a base, one side length, and the horizontal offset. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: JK, JL, JM.\nAnswer requirement: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"JK\":2,\"JL\":3,\"JM\":4},\"answer\":8}",
   "prompt_variants": {
-    "answer_and_evidence": "Work from the annotated figure showing a geometric shape with measurement annotations. The rhombus has both diagonals annotated. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: VW, XY.\nAnswer field: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"VW\":2,\"XY\":3},\"answer\":8}",
-    "answer_only": "Work from the annotated figure showing a geometric shape with measurement annotations. The rhombus has both diagonals annotated. What is its area in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"answer\":8}"
+    "answer_and_evidence": "Look at the annotated image showing a geometric shape with measurement annotations. The parallelogram shows a base, one side length, and the horizontal offset. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: JK, JL, JM.\nAnswer requirement: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"JK\":2,\"JL\":3,\"JM\":4},\"answer\":8}",
+    "answer_only": "Look at the annotated image showing a geometric shape with measurement annotations. The parallelogram shows a base, one side length, and the horizontal offset. What is its area in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"answer\":8}"
   },
   "task": "task_geometry_analytical_2d_value",
   "task_variant": "area",
@@ -26,33 +27,38 @@
     "execution_trace": {
       "answer_max": 2500,
       "answer_min": 8,
-      "answer_scalar": 432,
+      "answer_scalar": 120,
       "answer_type": "integer",
-      "answer_value": 432,
-      "case_id": "rhombus_explicit",
+      "answer_value": 120,
+      "case_id": "parallelogram_derived",
       "evidence_annotations": {
-        "d1": "VW",
-        "d2": "XY"
+        "b": "JK",
+        "o": "JM",
+        "s": "JL"
       },
       "evidence_ids": [
-        "VW",
-        "XY"
+        "JK",
+        "JL",
+        "JM"
       ],
       "evidence_label_values": {
-        "d1": 18,
-        "d2": 48
+        "b": 10,
+        "o": 5,
+        "s": 13
       },
       "evidence_map": {
-        "VW": 18,
-        "XY": 48
+        "JK": 10,
+        "JL": 13,
+        "JM": 5
       },
       "evidence_roles": [
-        "d1",
-        "d2"
+        "b",
+        "s",
+        "o"
       ],
-      "formula_expression": "A = (d1 * d2) / 2",
-      "legacy_query_variant": "rhombus_explicit",
-      "legacy_scene_variant": "rhombus",
+      "formula_expression": "A = b * sqrt(s^2 - o^2)",
+      "legacy_query_variant": "parallelogram_derived",
+      "legacy_scene_variant": "parallelogram",
       "legacy_task_id": "task_geometry_analytical_2d_area",
       "mode_probabilities": {
         "derived": 0.5,
@@ -65,12 +71,13 @@
         "length": 0.0,
         "perimeter": 0.0
       },
-      "reasoning_mode": "explicit",
+      "reasoning_mode": "derived",
       "required_annotations": [
-        "VW",
-        "XY"
+        "JK",
+        "JL",
+        "JM"
       ],
-      "scene_variant": "rhombus",
+      "scene_variant": "parallelogram",
       "scene_variant_probabilities": {
         "circle": 0.14285714285714285,
         "composite_region": 0.0,
@@ -84,13 +91,13 @@
       "shape_probabilities": {
         "circle": 0.0,
         "ellipse": 0.0,
-        "parallelogram": 0.0,
+        "parallelogram": 1.0,
         "rectangle": 0.0,
-        "rhombus": 1.0,
+        "rhombus": 0.0,
         "trapezoid": 0.0,
         "triangle": 0.0
       },
-      "shape_variant": "rhombus",
+      "shape_variant": "parallelogram",
       "task_variant": "area",
       "task_variant_probabilities": {
         "area": 1.0,
@@ -101,35 +108,46 @@
     },
     "projected_evidence": {
       "annotation_labels": {
-        "d1": "VW",
-        "d2": "XY"
+        "b": "JK",
+        "o": "JM",
+        "s": "JL"
       },
       "id_set": [
-        "VW",
-        "XY"
+        "JK",
+        "JL",
+        "JM"
       ],
       "measurement_ref_map": {
-        "VW": 18,
-        "XY": 48
+        "JK": 10,
+        "JL": 13,
+        "JM": 5
       },
       "pixel_annotation_centers": {
-        "VW": [
-          519.0,
-          372.8
+        "JK": [
+          457.0,
+          149.0
         ],
-        "XY": [
-          484.8,
-          224.0
+        "JL": [
+          406.1538461538462,
+          247.76923076923075
+        ],
+        "JM": [
+          418.9511360730137,
+          158.36429099242545
         ]
       },
       "pixel_point_set": [
         [
-          519.0,
-          372.8
+          457.0,
+          149.0
         ],
         [
-          484.8,
-          224.0
+          406.1538461538462,
+          247.76923076923075
+        ],
+        [
+          418.9511360730137,
+          158.36429099242545
         ]
       ]
     },
@@ -137,8 +155,8 @@
       "params": {
         "answer_max": 2500,
         "answer_min": 8,
-        "legacy_query_variant": "rhombus_explicit",
-        "legacy_scene_variant": "rhombus",
+        "legacy_query_variant": "parallelogram_derived",
+        "legacy_scene_variant": "parallelogram",
         "legacy_task_id": "task_geometry_analytical_2d_area",
         "mode_probabilities": {
           "derived": 0.5,
@@ -151,8 +169,8 @@
           "length": 0.0,
           "perimeter": 0.0
         },
-        "reasoning_mode": "explicit",
-        "scene_variant": "rhombus",
+        "reasoning_mode": "derived",
+        "scene_variant": "parallelogram",
         "scene_variant_probabilities": {
           "circle": 0.14285714285714285,
           "composite_region": 0.0,
@@ -166,13 +184,13 @@
         "shape_probabilities": {
           "circle": 0.0,
           "ellipse": 0.0,
-          "parallelogram": 0.0,
+          "parallelogram": 1.0,
           "rectangle": 0.0,
-          "rhombus": 1.0,
+          "rhombus": 0.0,
           "trapezoid": 0.0,
           "triangle": 0.0
         },
-        "shape_variant": "rhombus",
+        "shape_variant": "parallelogram",
         "variant_probabilities": {
           "area": 1.0,
           "composite_area": 0.0,
@@ -182,21 +200,21 @@
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 3,
+        "answer_or_evidence_variant_index": 2,
         "prompt_bundle_id": "geometry_analytical_area_v1",
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the area value as an integer",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: VW, XY",
-          "json_example": "{\"evidence\":{\"VW\":2,\"XY\":3},\"answer\":8}",
+          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: JK, JL, JM",
+          "json_example": "{\"evidence\":{\"JK\":2,\"JL\":3,\"JM\":4},\"answer\":8}",
           "json_example_answer_only": "{\"answer\":8}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
           "object_description": "a geometric shape with measurement annotations",
-          "question_text": "The rhombus has both diagonals annotated. What is its area in square units?"
+          "question_text": "The parallelogram shows a base, one side length, and the horizontal offset. What is its area in square units?"
         },
         "task_family_key": "analytical_single_shape",
-        "task_family_variant_index": 4,
+        "task_family_variant_index": 2,
         "task_key": "analytical_area_query",
         "task_variant_index": 0,
         "task_variant_key": null,
@@ -215,21 +233,21 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 3,
+            "answer_or_evidence_variant_index": 2,
             "prompt_bundle_id": "geometry_analytical_area_v1",
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the area value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: VW, XY",
-              "json_example": "{\"evidence\":{\"VW\":2,\"XY\":3},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: JK, JL, JM",
+              "json_example": "{\"evidence\":{\"JK\":2,\"JL\":3,\"JM\":4},\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a geometric shape with measurement annotations",
-              "question_text": "The rhombus has both diagonals annotated. What is its area in square units?"
+              "question_text": "The parallelogram shows a base, one side length, and the horizontal offset. What is its area in square units?"
             },
             "task_family_key": "analytical_single_shape",
-            "task_family_variant_index": 4,
+            "task_family_variant_index": 2,
             "task_key": "analytical_area_query",
             "task_variant_index": 0,
             "task_variant_key": null,
@@ -243,7 +261,7 @@
               "task_family:analytical_single_shape": 5
             }
           },
-          "prompt": "Work from the annotated figure showing a geometric shape with measurement annotations. The rhombus has both diagonals annotated. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: VW, XY.\nAnswer field: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"VW\":2,\"XY\":3},\"answer\":8}"
+          "prompt": "Look at the annotated image showing a geometric shape with measurement annotations. The parallelogram shows a base, one side length, and the horizontal offset. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: JK, JL, JM.\nAnswer requirement: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"JK\":2,\"JL\":3,\"JM\":4},\"answer\":8}"
         },
         "answer_only": {
           "metadata": {
@@ -253,16 +271,16 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the area value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: VW, XY",
-              "json_example": "{\"evidence\":{\"VW\":2,\"XY\":3},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: JK, JL, JM",
+              "json_example": "{\"evidence\":{\"JK\":2,\"JL\":3,\"JM\":4},\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a geometric shape with measurement annotations",
-              "question_text": "The rhombus has both diagonals annotated. What is its area in square units?"
+              "question_text": "The parallelogram shows a base, one side length, and the horizontal offset. What is its area in square units?"
             },
             "task_family_key": "analytical_single_shape",
-            "task_family_variant_index": 4,
+            "task_family_variant_index": 2,
             "task_key": "analytical_area_query",
             "task_variant_index": 0,
             "task_variant_key": null,
@@ -276,7 +294,7 @@
               "task_family:analytical_single_shape": 5
             }
           },
-          "prompt": "Work from the annotated figure showing a geometric shape with measurement annotations. The rhombus has both diagonals annotated. What is its area in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"answer\":8}"
+          "prompt": "Look at the annotated image showing a geometric shape with measurement annotations. The parallelogram shows a base, one side length, and the horizontal offset. What is its area in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"answer\":8}"
         }
       },
       "task_variant": "area",
@@ -284,47 +302,52 @@
     },
     "render_map": {
       "annotation_centers": {
-        "VW": [
-          519.0,
-          372.8
+        "JK": [
+          457.0,
+          149.0
         ],
-        "XY": [
-          484.8,
-          224.0
+        "JL": [
+          406.1538461538462,
+          247.76923076923075
+        ],
+        "JM": [
+          418.9511360730137,
+          158.36429099242545
         ]
       },
       "annotation_labels": {
-        "d1": "VW",
-        "d2": "XY"
+        "b": "JK",
+        "o": "JM",
+        "s": "JL"
       },
       "coord_space": "pixel",
       "entity_id": "shape_1",
       "instance_anchor": {
         "coord_space": "pixel",
         "point": [
-          384.0,
-          344.0
+          407.0,
+          177.0
         ],
         "polyline": [
           [
-            384.0,
-            344.0
+            407.0,
+            177.0
           ],
           [
-            474.0,
-            584.0
+            507.0,
+            177.0
           ],
           [
-            564.0,
-            344.0
+            557.0,
+            297.0
           ],
           [
-            474.0,
-            104.0
+            457.0,
+            297.0
           ],
           [
-            384.0,
-            344.0
+            407.0,
+            177.0
           ]
         ]
       }
@@ -349,33 +372,35 @@
           "kind": "solid"
         }
       },
-      "canvas_size": 689,
+      "canvas_size": 695,
       "coord_space": "pixel",
       "graph_coordinate_frame": {
         "coord_space": "graph_unit",
-        "full_cells_x": 8,
-        "full_cells_y": 8,
+        "full_cells_x": 6,
+        "full_cells_y": 6,
+        "origin_fraction_x": 0.5,
+        "origin_fraction_y": 0.5,
         "origin_pixel": [
-          344,
-          344
+          347,
+          347
         ],
         "outer_margin_px": 16,
         "partial_edge_cells": true,
-        "spacing_px": 77,
-        "target_cells_x": 9,
-        "target_cells_y": 9,
+        "spacing_px": 99,
+        "target_cells_x": 7,
+        "target_cells_y": 7,
         "x_positive": "right",
         "y_positive": "up"
       },
       "graph_paper_grid": {
-        "full_cells_x": 8,
-        "full_cells_y": 8,
+        "full_cells_x": 6,
+        "full_cells_y": 6,
         "partial_edge_cells": true,
-        "spacing_px": 77,
-        "target_cells_x": 9,
-        "target_cells_y": 9
+        "spacing_px": 99,
+        "target_cells_x": 7,
+        "target_cells_y": 7
       },
-      "legacy_scene_variant": "rhombus",
+      "legacy_scene_variant": "parallelogram",
       "post_image_noise": {
         "applied": false,
         "apply_prob": 0.5,
@@ -393,22 +418,22 @@
         "enabled": true
       },
       "query_variant": "area",
-      "scene_variant": "rhombus",
+      "scene_variant": "parallelogram",
       "shape_style": {
         "label_color": [
-          93,
-          70,
-          98
+          97,
+          53,
+          74
         ],
         "label_stroke_color": [
-          250,
+          251,
           254,
-          252
+          250
         ],
         "line_color": [
-          93,
-          70,
-          98
+          97,
+          53,
+          74
         ]
       }
     },
@@ -416,41 +441,43 @@
       "entities": [
         {
           "attrs": {
-            "area_square_units": 432,
-            "diagonal1_units": 18,
-            "diagonal2_units": 48,
-            "reasoning_mode": "explicit",
-            "shape_variant": "rhombus",
+            "area_square_units": 120,
+            "base_units": 10,
+            "inferred_height_units": 12,
+            "offset_units": 5,
+            "reasoning_mode": "derived",
+            "shape_variant": "parallelogram",
+            "side_units": 13,
             "vertices": [
               [
-                384.0,
-                344.0
+                407.0,
+                177.0
               ],
               [
-                474.0,
-                584.0
+                507.0,
+                177.0
               ],
               [
-                564.0,
-                344.0
+                557.0,
+                297.0
               ],
               [
-                474.0,
-                104.0
+                457.0,
+                297.0
               ]
             ]
           },
           "entity_id": "shape_1",
-          "entity_type": "rhombus"
+          "entity_type": "parallelogram"
         }
       ],
       "frames": {
         "graph_unit": {
           "origin_pixel": [
-            344,
-            344
+            347,
+            347
           ],
-          "spacing_px": 77,
+          "spacing_px": 99,
           "x_positive": "right",
           "y_positive": "up"
         },
@@ -464,35 +491,39 @@
         }
       },
       "relations": {
-        "legacy_query_variant": "rhombus_explicit",
-        "legacy_scene_variant": "rhombus",
+        "legacy_query_variant": "parallelogram_derived",
+        "legacy_scene_variant": "parallelogram",
         "legacy_task_id": "task_geometry_analytical_2d_area",
         "query_variant": "area",
-        "scene_variant": "rhombus"
+        "scene_variant": "parallelogram"
       },
       "scene_kind": "geometry_2d_analytical_area"
     },
     "witness_symbolic": {
       "annotation_ids": [
-        "VW",
-        "XY"
+        "JK",
+        "JL",
+        "JM"
       ],
       "annotation_labels": {
-        "d1": "VW",
-        "d2": "XY"
+        "b": "JK",
+        "o": "JM",
+        "s": "JL"
       },
       "annotation_values": {
-        "VW": 18,
-        "XY": 48
+        "JK": 10,
+        "JL": 13,
+        "JM": 5
       },
-      "case_id": "rhombus_explicit",
-      "formula_expression": "A = (d1 * d2) / 2",
+      "case_id": "parallelogram_derived",
+      "formula_expression": "A = b * sqrt(s^2 - o^2)",
       "measurement_ref_map": {
-        "VW": 18,
-        "XY": 48
+        "JK": 10,
+        "JL": 13,
+        "JM": 5
       },
-      "reasoning_mode": "explicit",
-      "shape_variant": "rhombus",
+      "reasoning_mode": "derived",
+      "shape_variant": "parallelogram",
       "type": "annotation_measurement_map"
     }
   },

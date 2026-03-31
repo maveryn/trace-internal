@@ -11,11 +11,11 @@
     "format": "png",
     "path": "documents/task_documents_selection_checkbox_count/images/checked_box_count/0012.png"
   },
-  "instance_seed": 3140126981835264,
-  "prompt": "Look at the document in the image: an invoice with visible named sections, header fields, and checkbox groups. Read the document and answer this question: In the Billing Flags section, how many checkboxes are checked? Respond with the integer count of checked boxes.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing one bounding box for each counted checkbox, in reading order.\nAnswer field: set \"answer\" to the number of counted checkboxes.\nExample JSON:\n{\"evidence\":[[154,252,178,276],[154,304,178,328]],\"answer\":2}",
+  "instance_seed": 7632593085224394,
+  "prompt": "Look at the document in the image: an invoice with visible named sections, header fields, and checkbox groups. Find the named section and then answer: In the Delivery Options section, how many checkboxes are checked? Return only the number of checked boxes.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing one bounding box for each counted checkbox, in reading order.\nAnswer field: set \"answer\" to the number of counted checkboxes.\nExample JSON:\n{\"evidence\":[[154,252,178,276],[154,304,178,328]],\"answer\":2}",
   "prompt_variants": {
-    "answer_and_evidence": "Look at the document in the image: an invoice with visible named sections, header fields, and checkbox groups. Read the document and answer this question: In the Billing Flags section, how many checkboxes are checked? Respond with the integer count of checked boxes.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing one bounding box for each counted checkbox, in reading order.\nAnswer field: set \"answer\" to the number of counted checkboxes.\nExample JSON:\n{\"evidence\":[[154,252,178,276],[154,304,178,328]],\"answer\":2}",
-    "answer_only": "Look at the document in the image: an invoice with visible named sections, header fields, and checkbox groups. Read the document and answer this question: In the Billing Flags section, how many checkboxes are checked? Respond with the integer count of checked boxes.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the number of counted checkboxes.\nExample JSON:\n{\"answer\":2}"
+    "answer_and_evidence": "Look at the document in the image: an invoice with visible named sections, header fields, and checkbox groups. Find the named section and then answer: In the Delivery Options section, how many checkboxes are checked? Return only the number of checked boxes.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing one bounding box for each counted checkbox, in reading order.\nAnswer field: set \"answer\" to the number of counted checkboxes.\nExample JSON:\n{\"evidence\":[[154,252,178,276],[154,304,178,328]],\"answer\":2}",
+    "answer_only": "Look at the document in the image: an invoice with visible named sections, header fields, and checkbox groups. Find the named section and then answer: In the Delivery Options section, how many checkboxes are checked? Return only the number of checked boxes.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the number of counted checkboxes.\nExample JSON:\n{\"answer\":2}"
   },
   "task": "task_documents_selection_checkbox_count",
   "task_variant": "checked_box_count",
@@ -58,21 +58,21 @@
             },
             {
               "checkbox_bbox_id": "delivery_options:1:checkbox",
-              "checked": true,
+              "checked": false,
               "item_id": "delivery_options:1",
               "label": "Priority Delivery",
               "label_bbox_id": "delivery_options:1:label"
             },
             {
               "checkbox_bbox_id": "delivery_options:2:checkbox",
-              "checked": true,
+              "checked": false,
               "item_id": "delivery_options:2",
               "label": "Signature Required",
               "label_bbox_id": "delivery_options:2:label"
             },
             {
               "checkbox_bbox_id": "delivery_options:3:checkbox",
-              "checked": true,
+              "checked": false,
               "item_id": "delivery_options:3",
               "label": "Weekend Dropoff",
               "label_bbox_id": "delivery_options:3:label"
@@ -85,28 +85,28 @@
           "items": [
             {
               "checkbox_bbox_id": "billing_flags:0:checkbox",
-              "checked": false,
+              "checked": true,
               "item_id": "billing_flags:0",
               "label": "Paid Deposit",
               "label_bbox_id": "billing_flags:0:label"
             },
             {
               "checkbox_bbox_id": "billing_flags:1:checkbox",
-              "checked": false,
+              "checked": true,
               "item_id": "billing_flags:1",
               "label": "Paper Invoice",
               "label_bbox_id": "billing_flags:1:label"
             },
             {
               "checkbox_bbox_id": "billing_flags:2:checkbox",
-              "checked": false,
+              "checked": true,
               "item_id": "billing_flags:2",
               "label": "Auto Renew",
               "label_bbox_id": "billing_flags:2:label"
             },
             {
               "checkbox_bbox_id": "billing_flags:3:checkbox",
-              "checked": false,
+              "checked": true,
               "item_id": "billing_flags:3",
               "label": "Tax Exempt",
               "label_bbox_id": "billing_flags:3:label"
@@ -120,45 +120,45 @@
         {
           "field_id": "vendor_name",
           "field_label": "Vendor",
-          "field_value": "Juniper Office",
+          "field_value": "Orbit Supply",
           "label_bbox_id": "vendor_name:label",
           "value_bbox_id": "vendor_name:value"
         },
         {
           "field_id": "invoice_number",
           "field_label": "Invoice Number",
-          "field_value": "INV-17228",
+          "field_value": "INV-60443",
           "label_bbox_id": "invoice_number:label",
           "value_bbox_id": "invoice_number:value"
         },
         {
           "field_id": "due_date",
           "field_label": "Due Date",
-          "field_value": "2026-06-21",
+          "field_value": "2026-05-19",
           "label_bbox_id": "due_date:label",
           "value_bbox_id": "due_date:value"
         }
       ],
       "evidence_checkbox_bbox_ids": [],
       "field_count": 3,
-      "query_section_id": "billing_flags",
-      "query_section_label": "Billing Flags",
+      "query_section_id": "delivery_options",
+      "query_section_label": "Delivery Options",
       "query_selection_strategy": "combined_hash_mod_support",
       "question_format": "document_checkbox_count",
-      "question_text": "In the Billing Flags section, how many checkboxes are checked?",
+      "question_text": "In the Delivery Options section, how many checkboxes are checked?",
       "scene_title": "Invoice",
       "scene_variant": "invoice_sheet",
       "target_checkbox_ids": [
-        "billing_flags:0",
-        "billing_flags:1",
-        "billing_flags:2",
-        "billing_flags:3"
+        "delivery_options:0",
+        "delivery_options:1",
+        "delivery_options:2",
+        "delivery_options:3"
       ],
       "target_checkbox_states": {
-        "billing_flags:0": false,
-        "billing_flags:1": false,
-        "billing_flags:2": false,
-        "billing_flags:3": false
+        "delivery_options:0": false,
+        "delivery_options:1": false,
+        "delivery_options:2": false,
+        "delivery_options:3": false
       },
       "task_variant": "checked_box_count",
       "view_family": "structured_document"
@@ -215,14 +215,14 @@
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
           "object_description": "an invoice with visible named sections, header fields, and checkbox groups",
-          "question_text": "In the Billing Flags section, how many checkboxes are checked?"
+          "question_text": "In the Delivery Options section, how many checkboxes are checked?"
         },
         "task_family_key": "structured_document_sections",
         "task_family_variant_index": 1,
         "task_key": "checkbox_count_query",
-        "task_variant_index": 1,
+        "task_variant_index": 2,
         "task_variant_key": "checked_box_count",
-        "task_variant_template_index": 2,
+        "task_variant_template_index": 1,
         "template_paths": [
           "documents/selection/documents_selection_v1.json"
         ],
@@ -249,14 +249,14 @@
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "an invoice with visible named sections, header fields, and checkbox groups",
-              "question_text": "In the Billing Flags section, how many checkboxes are checked?"
+              "question_text": "In the Delivery Options section, how many checkboxes are checked?"
             },
             "task_family_key": "structured_document_sections",
             "task_family_variant_index": 1,
             "task_key": "checkbox_count_query",
-            "task_variant_index": 1,
+            "task_variant_index": 2,
             "task_variant_key": "checked_box_count",
-            "task_variant_template_index": 2,
+            "task_variant_template_index": 1,
             "template_paths": [
               "documents/selection/documents_selection_v1.json"
             ],
@@ -267,12 +267,12 @@
               "task_variant:checked_box_count": 5
             }
           },
-          "prompt": "Look at the document in the image: an invoice with visible named sections, header fields, and checkbox groups. Read the document and answer this question: In the Billing Flags section, how many checkboxes are checked? Respond with the integer count of checked boxes.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing one bounding box for each counted checkbox, in reading order.\nAnswer field: set \"answer\" to the number of counted checkboxes.\nExample JSON:\n{\"evidence\":[[154,252,178,276],[154,304,178,328]],\"answer\":2}"
+          "prompt": "Look at the document in the image: an invoice with visible named sections, header fields, and checkbox groups. Find the named section and then answer: In the Delivery Options section, how many checkboxes are checked? Return only the number of checked boxes.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing one bounding box for each counted checkbox, in reading order.\nAnswer field: set \"answer\" to the number of counted checkboxes.\nExample JSON:\n{\"evidence\":[[154,252,178,276],[154,304,178,328]],\"answer\":2}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 2,
+            "answer_or_evidence_variant_index": 3,
             "prompt_bundle_id": "documents_selection_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -283,14 +283,14 @@
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "an invoice with visible named sections, header fields, and checkbox groups",
-              "question_text": "In the Billing Flags section, how many checkboxes are checked?"
+              "question_text": "In the Delivery Options section, how many checkboxes are checked?"
             },
             "task_family_key": "structured_document_sections",
             "task_family_variant_index": 1,
             "task_key": "checkbox_count_query",
-            "task_variant_index": 1,
+            "task_variant_index": 2,
             "task_variant_key": "checked_box_count",
-            "task_variant_template_index": 2,
+            "task_variant_template_index": 1,
             "template_paths": [
               "documents/selection/documents_selection_v1.json"
             ],
@@ -301,7 +301,7 @@
               "task_variant:checked_box_count": 5
             }
           },
-          "prompt": "Look at the document in the image: an invoice with visible named sections, header fields, and checkbox groups. Read the document and answer this question: In the Billing Flags section, how many checkboxes are checked? Respond with the integer count of checked boxes.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the number of counted checkboxes.\nExample JSON:\n{\"answer\":2}"
+          "prompt": "Look at the document in the image: an invoice with visible named sections, header fields, and checkbox groups. Find the named section and then answer: In the Delivery Options section, how many checkboxes are checked? Return only the number of checked boxes.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the number of counted checkboxes.\nExample JSON:\n{\"answer\":2}"
         }
       },
       "task_variant": "checked_box_count",
@@ -464,7 +464,7 @@
         "vendor_name:value": [
           214.0,
           242.5,
-          408.0,
+          393.0,
           271.5
         ]
       },
@@ -512,7 +512,7 @@
     "render_spec": {
       "canvas_height": 920,
       "canvas_width": 1280,
-      "geometry_seed": 3140126981835264,
+      "geometry_seed": 7632593085224394,
       "page_shadow_offset_px": 14,
       "receipt_page_height_px": 760,
       "receipt_page_width_px": 520,
@@ -575,13 +575,13 @@
           "bbox_px": [
             214.0,
             242.5,
-            408.0,
+            393.0,
             271.5
           ],
           "entity_id": "vendor_name:value",
           "entity_type": "document_field_value",
           "field_id": "vendor_name",
-          "text": "Juniper Office"
+          "text": "Orbit Supply"
         },
         {
           "bbox_id": "invoice_number",
@@ -619,7 +619,7 @@
           "entity_id": "invoice_number:value",
           "entity_type": "document_field_value",
           "field_id": "invoice_number",
-          "text": "INV-17228"
+          "text": "INV-60443"
         },
         {
           "bbox_id": "due_date",
@@ -657,7 +657,7 @@
           "entity_id": "due_date:value",
           "entity_type": "document_field_value",
           "field_id": "due_date",
-          "text": "2026-06-21"
+          "text": "2026-05-19"
         },
         {
           "bbox_id": "delivery_options",
@@ -726,7 +726,7 @@
             238.0,
             405.0
           ],
-          "checked": true,
+          "checked": false,
           "entity_id": "delivery_options:1:checkbox",
           "entity_type": "document_checkbox",
           "item_id": "delivery_options:1",
@@ -754,7 +754,7 @@
             238.0,
             461.0
           ],
-          "checked": true,
+          "checked": false,
           "entity_id": "delivery_options:2:checkbox",
           "entity_type": "document_checkbox",
           "item_id": "delivery_options:2",
@@ -782,7 +782,7 @@
             238.0,
             517.0
           ],
-          "checked": true,
+          "checked": false,
           "entity_id": "delivery_options:3:checkbox",
           "entity_type": "document_checkbox",
           "item_id": "delivery_options:3",
@@ -841,7 +841,7 @@
             690.0,
             349.0
           ],
-          "checked": false,
+          "checked": true,
           "entity_id": "billing_flags:0:checkbox",
           "entity_type": "document_checkbox",
           "item_id": "billing_flags:0",
@@ -869,7 +869,7 @@
             690.0,
             405.0
           ],
-          "checked": false,
+          "checked": true,
           "entity_id": "billing_flags:1:checkbox",
           "entity_type": "document_checkbox",
           "item_id": "billing_flags:1",
@@ -897,7 +897,7 @@
             690.0,
             461.0
           ],
-          "checked": false,
+          "checked": true,
           "entity_id": "billing_flags:2:checkbox",
           "entity_type": "document_checkbox",
           "item_id": "billing_flags:2",
@@ -925,7 +925,7 @@
             690.0,
             517.0
           ],
-          "checked": false,
+          "checked": true,
           "entity_id": "billing_flags:3:checkbox",
           "entity_type": "document_checkbox",
           "item_id": "billing_flags:3",
@@ -947,8 +947,8 @@
         }
       ],
       "relations": {
-        "query_section_id": "billing_flags",
-        "query_section_label": "Billing Flags",
+        "query_section_id": "delivery_options",
+        "query_section_label": "Delivery Options",
         "scene_variant": "invoice_sheet",
         "task_variant": "checked_box_count",
         "view_family": "structured_document"
@@ -957,7 +957,7 @@
     },
     "witness_symbolic": {
       "bbox_id_sequence": [],
-      "section_id": "billing_flags"
+      "section_id": "delivery_options"
     }
   },
   "versions": {

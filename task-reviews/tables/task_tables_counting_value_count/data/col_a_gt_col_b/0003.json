@@ -1,34 +1,58 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 2
+    "value": 4
   },
   "evidence_gt": {
     "type": "bbox_set",
     "value": [
       [
         286.08,
-        346.182,
-        436.56,
-        394.545
+        233.333,
+        486.72,
+        292.444
       ],
       [
-        737.52,
-        346.182,
+        687.36,
+        233.333,
         888.0,
-        394.545
+        292.444
       ],
       [
         286.08,
-        394.545,
-        436.56,
-        442.909
+        410.667,
+        486.72,
+        469.778
       ],
       [
-        737.52,
-        394.545,
+        687.36,
+        410.667,
         888.0,
-        442.909
+        469.778
+      ],
+      [
+        286.08,
+        469.778,
+        486.72,
+        528.889
+      ],
+      [
+        687.36,
+        469.778,
+        888.0,
+        528.889
+      ],
+      [
+        286.08,
+        528.889,
+        486.72,
+        588.0
+      ],
+      [
+        687.36,
+        528.889,
+        888.0,
+        588.0
       ]
     ]
   },
@@ -36,59 +60,60 @@
     "format": "png",
     "path": "tables/task_tables_counting_value_count/images/col_a_gt_col_b/0003.png"
   },
-  "instance_seed": 2075133188753220,
-  "prompt": "The image shows a spreadsheet-style table with one Name column, several numeric columns, full grid lines, and a shaded header row. Find the number of rows whose two queried column values satisfy the comparison. How many rows show Mass > Age?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every matching row, ordered top-to-bottom, with the two queried column cells kept in the same order as the prompt for each row; use [] if none match.\nAnswer field: set \"answer\" to the exact integer count of matching rows.\nExample JSON:\n{\"evidence\":[[260,180,372,236],[374,180,486,236],[260,236,372,292],[374,236,486,292]],\"answer\":2}",
+  "instance_seed": 6002518011245683,
+  "prompt": "Work from the styled table shown in the image: a card-style table with one Name column, several numeric columns, a rounded outer frame, and a shaded header row. Find the number of rows whose two queried column values satisfy the comparison. Find the number of rows where the Dist entry exceeds the Gain entry.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every matching row, ordered top-to-bottom, with the two queried column cells kept in the same order as the prompt for each row; use [] if none match.\nAnswer rule: set \"answer\" to the exact integer count of matching rows.\nExample JSON:\n{\"evidence\":[[260,180,372,236],[374,180,486,236],[260,236,372,292],[374,236,486,292]],\"answer\":2}",
   "prompt_variants": {
-    "answer_and_evidence": "The image shows a spreadsheet-style table with one Name column, several numeric columns, full grid lines, and a shaded header row. Find the number of rows whose two queried column values satisfy the comparison. How many rows show Mass > Age?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every matching row, ordered top-to-bottom, with the two queried column cells kept in the same order as the prompt for each row; use [] if none match.\nAnswer field: set \"answer\" to the exact integer count of matching rows.\nExample JSON:\n{\"evidence\":[[260,180,372,236],[374,180,486,236],[260,236,372,292],[374,236,486,292]],\"answer\":2}",
-    "answer_only": "The image shows a spreadsheet-style table with one Name column, several numeric columns, full grid lines, and a shaded header row. Find the number of rows whose two queried column values satisfy the comparison. How many rows show Mass > Age?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the exact integer count of matching rows.\nExample JSON:\n{\"answer\":2}"
+    "answer_and_evidence": "Work from the styled table shown in the image: a card-style table with one Name column, several numeric columns, a rounded outer frame, and a shaded header row. Find the number of rows whose two queried column values satisfy the comparison. Find the number of rows where the Dist entry exceeds the Gain entry.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every matching row, ordered top-to-bottom, with the two queried column cells kept in the same order as the prompt for each row; use [] if none match.\nAnswer rule: set \"answer\" to the exact integer count of matching rows.\nExample JSON:\n{\"evidence\":[[260,180,372,236],[374,180,486,236],[260,236,372,292],[374,236,486,292]],\"answer\":2}",
+    "answer_only": "Work from the styled table shown in the image: a card-style table with one Name column, several numeric columns, a rounded outer frame, and a shaded header row. Find the number of rows whose two queried column values satisfy the comparison. Find the number of rows where the Dist entry exceeds the Gain entry.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the exact integer count of matching rows.\nExample JSON:\n{\"answer\":2}"
   },
   "task": "task_tables_counting_value_count",
   "task_variant": "col_a_gt_col_b",
   "trace_payload": {
     "execution_trace": {
-      "answer_value": 2,
+      "answer_value": 4,
       "column_headers": [
-        "Mass",
-        "Time",
-        "Rate",
-        "Age"
+        "Dist",
+        "Wins",
+        "Gain"
       ],
       "matching_row_indices": [
+        2,
         5,
-        6
+        6,
+        7
       ],
       "matching_row_labels": [
-        "Amie",
-        "Iey"
+        "Curr",
+        "Adar",
+        "Bret",
+        "Chic"
       ],
-      "numeric_column_count": 4,
+      "numeric_column_count": 3,
       "numeric_column_count_range": [
         3,
         5
       ],
-      "query_column_a": "Mass",
+      "query_column_a": "Dist",
       "query_column_a_index": 0,
-      "query_column_b": "Age",
-      "query_column_b_index": 3,
+      "query_column_b": "Gain",
+      "query_column_b_index": 2,
       "question_format": "column_pair_count",
-      "row_count": 10,
+      "row_count": 8,
       "row_count_range": [
         5,
         10
       ],
       "row_labels": [
-        "Fern",
-        "Arny",
-        "Pooi",
-        "Voe",
-        "Feld",
-        "Amie",
-        "Iey",
-        "Roee",
-        "Ko",
-        "Joab"
+        "Garv",
+        "Bren",
+        "Curr",
+        "Dosi",
+        "Zeus",
+        "Adar",
+        "Bret",
+        "Chic"
       ],
-      "scene_variant": "spreadsheet",
+      "scene_variant": "card_table",
       "scene_variant_probabilities": {
         "card_table": 0.25,
         "ledger": 0.25,
@@ -96,10 +121,14 @@
         "zebra": 0.25
       },
       "supporting_cell_ids": [
+        "cell_r3_c1",
+        "cell_r3_c3",
         "cell_r6_c1",
-        "cell_r6_c4",
+        "cell_r6_c3",
         "cell_r7_c1",
-        "cell_r7_c4"
+        "cell_r7_c3",
+        "cell_r8_c1",
+        "cell_r8_c3"
       ],
       "task_variant": "col_a_gt_col_b",
       "task_variant_probabilities": {
@@ -114,65 +143,45 @@
         32
       ],
       "values_by_row": {
-        "Amie": {
-          "Age": 10,
-          "Mass": 16,
-          "Rate": 6,
-          "Time": 3
+        "Adar": {
+          "Dist": 19,
+          "Gain": 11,
+          "Wins": 11
         },
-        "Arny": {
-          "Age": 19,
-          "Mass": 1,
-          "Rate": 30,
-          "Time": 24
+        "Bren": {
+          "Dist": 4,
+          "Gain": 32,
+          "Wins": 9
         },
-        "Feld": {
-          "Age": 14,
-          "Mass": 11,
-          "Rate": 27,
-          "Time": 24
+        "Bret": {
+          "Dist": 32,
+          "Gain": 26,
+          "Wins": 21
         },
-        "Fern": {
-          "Age": 31,
-          "Mass": 29,
-          "Rate": 12,
-          "Time": 19
+        "Chic": {
+          "Dist": 28,
+          "Gain": 27,
+          "Wins": 12
         },
-        "Iey": {
-          "Age": 11,
-          "Mass": 16,
-          "Rate": 10,
-          "Time": 8
+        "Curr": {
+          "Dist": 30,
+          "Gain": 26,
+          "Wins": 28
         },
-        "Joab": {
-          "Age": 27,
-          "Mass": 13,
-          "Rate": 19,
-          "Time": 3
+        "Dosi": {
+          "Dist": 27,
+          "Gain": 30,
+          "Wins": 28
         },
-        "Ko": {
-          "Age": 20,
-          "Mass": 18,
-          "Rate": 14,
-          "Time": 25
+        "Garv": {
+          "Dist": 27,
+          "Gain": 31,
+          "Wins": 5
         },
-        "Pooi": {
-          "Age": 32,
-          "Mass": 30,
-          "Rate": 27,
-          "Time": 10
-        },
-        "Roee": {
-          "Age": 32,
-          "Mass": 31,
-          "Rate": 16,
-          "Time": 27
-        },
-        "Voe": {
-          "Age": 9,
-          "Mass": 7,
-          "Rate": 2,
-          "Time": 32
+        "Zeus": {
+          "Dist": 20,
+          "Gain": 32,
+          "Wins": 17
         }
       }
     },
@@ -180,37 +189,61 @@
       "bbox_set": [
         [
           286.08,
-          346.182,
-          436.56,
-          394.545
+          233.333,
+          486.72,
+          292.444
         ],
         [
-          737.52,
-          346.182,
+          687.36,
+          233.333,
           888.0,
-          394.545
+          292.444
         ],
         [
           286.08,
-          394.545,
-          436.56,
-          442.909
+          410.667,
+          486.72,
+          469.778
         ],
         [
-          737.52,
-          394.545,
+          687.36,
+          410.667,
           888.0,
-          442.909
+          469.778
+        ],
+        [
+          286.08,
+          469.778,
+          486.72,
+          528.889
+        ],
+        [
+          687.36,
+          469.778,
+          888.0,
+          528.889
+        ],
+        [
+          286.08,
+          528.889,
+          486.72,
+          588.0
+        ],
+        [
+          687.36,
+          528.889,
+          888.0,
+          588.0
         ]
       ]
     },
     "query_spec": {
       "params": {
-        "numeric_column_count": 4,
-        "query_column_a": "Mass",
-        "query_column_b": "Age",
-        "row_count": 10,
-        "scene_variant": "spreadsheet",
+        "numeric_column_count": 3,
+        "query_column_a": "Dist",
+        "query_column_b": "Gain",
+        "row_count": 8,
+        "scene_variant": "card_table",
         "scene_variant_probabilities": {
           "card_table": 0.25,
           "ledger": 0.25,
@@ -228,7 +261,7 @@
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 3,
+        "answer_or_evidence_variant_index": 4,
         "prompt_bundle_id": "tables_counting_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -238,16 +271,16 @@
           "json_example_answer_only": "{\"answer\":2}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "object_description": "a spreadsheet-style table with one Name column, several numeric columns, full grid lines, and a shaded header row",
-          "query_column_a": "Mass",
-          "query_column_b": "Age"
+          "object_description": "a card-style table with one Name column, several numeric columns, a rounded outer frame, and a shaded header row",
+          "query_column_a": "Dist",
+          "query_column_b": "Gain"
         },
         "task_family_key": "styled_table_counting",
-        "task_family_variant_index": 0,
+        "task_family_variant_index": 2,
         "task_key": "column_pair_count_query",
         "task_variant_index": 3,
         "task_variant_key": "col_a_gt_col_b",
-        "task_variant_template_index": 2,
+        "task_variant_template_index": 4,
         "template_paths": [
           "tables/counting/tables_counting_v1.json"
         ],
@@ -263,7 +296,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 3,
+            "answer_or_evidence_variant_index": 4,
             "prompt_bundle_id": "tables_counting_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -273,16 +306,16 @@
               "json_example_answer_only": "{\"answer\":2}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a spreadsheet-style table with one Name column, several numeric columns, full grid lines, and a shaded header row",
-              "query_column_a": "Mass",
-              "query_column_b": "Age"
+              "object_description": "a card-style table with one Name column, several numeric columns, a rounded outer frame, and a shaded header row",
+              "query_column_a": "Dist",
+              "query_column_b": "Gain"
             },
             "task_family_key": "styled_table_counting",
-            "task_family_variant_index": 0,
+            "task_family_variant_index": 2,
             "task_key": "column_pair_count_query",
             "task_variant_index": 3,
             "task_variant_key": "col_a_gt_col_b",
-            "task_variant_template_index": 2,
+            "task_variant_template_index": 4,
             "template_paths": [
               "tables/counting/tables_counting_v1.json"
             ],
@@ -293,12 +326,12 @@
               "task_variant:col_a_gt_col_b": 5
             }
           },
-          "prompt": "The image shows a spreadsheet-style table with one Name column, several numeric columns, full grid lines, and a shaded header row. Find the number of rows whose two queried column values satisfy the comparison. How many rows show Mass > Age?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every matching row, ordered top-to-bottom, with the two queried column cells kept in the same order as the prompt for each row; use [] if none match.\nAnswer field: set \"answer\" to the exact integer count of matching rows.\nExample JSON:\n{\"evidence\":[[260,180,372,236],[374,180,486,236],[260,236,372,292],[374,236,486,292]],\"answer\":2}"
+          "prompt": "Work from the styled table shown in the image: a card-style table with one Name column, several numeric columns, a rounded outer frame, and a shaded header row. Find the number of rows whose two queried column values satisfy the comparison. Find the number of rows where the Dist entry exceeds the Gain entry.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every matching row, ordered top-to-bottom, with the two queried column cells kept in the same order as the prompt for each row; use [] if none match.\nAnswer rule: set \"answer\" to the exact integer count of matching rows.\nExample JSON:\n{\"evidence\":[[260,180,372,236],[374,180,486,236],[260,236,372,292],[374,236,486,292]],\"answer\":2}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 1,
+            "answer_or_evidence_variant_index": 2,
             "prompt_bundle_id": "tables_counting_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -308,16 +341,16 @@
               "json_example_answer_only": "{\"answer\":2}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a spreadsheet-style table with one Name column, several numeric columns, full grid lines, and a shaded header row",
-              "query_column_a": "Mass",
-              "query_column_b": "Age"
+              "object_description": "a card-style table with one Name column, several numeric columns, a rounded outer frame, and a shaded header row",
+              "query_column_a": "Dist",
+              "query_column_b": "Gain"
             },
             "task_family_key": "styled_table_counting",
-            "task_family_variant_index": 0,
+            "task_family_variant_index": 2,
             "task_key": "column_pair_count_query",
             "task_variant_index": 3,
             "task_variant_key": "col_a_gt_col_b",
-            "task_variant_template_index": 2,
+            "task_variant_template_index": 4,
             "template_paths": [
               "tables/counting/tables_counting_v1.json"
             ],
@@ -328,7 +361,7 @@
               "task_variant:col_a_gt_col_b": 5
             }
           },
-          "prompt": "The image shows a spreadsheet-style table with one Name column, several numeric columns, full grid lines, and a shaded header row. Find the number of rows whose two queried column values satisfy the comparison. How many rows show Mass > Age?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the exact integer count of matching rows.\nExample JSON:\n{\"answer\":2}"
+          "prompt": "Work from the styled table shown in the image: a card-style table with one Name column, several numeric columns, a rounded outer frame, and a shaded header row. Find the number of rows whose two queried column values satisfy the comparison. Find the number of rows where the Dist entry exceeds the Gain entry.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the exact integer count of matching rows.\nExample JSON:\n{\"answer\":2}"
         }
       },
       "task_variant": "col_a_gt_col_b",
@@ -340,508 +373,358 @@
           52.0,
           56.0,
           286.08,
-          104.364
+          115.111
         ],
         "cell_r0_c1": [
           286.08,
           56.0,
-          436.56,
-          104.364
+          486.72,
+          115.111
         ],
         "cell_r0_c2": [
-          436.56,
+          486.72,
           56.0,
-          587.04,
-          104.364
+          687.36,
+          115.111
         ],
         "cell_r0_c3": [
-          587.04,
-          56.0,
-          737.52,
-          104.364
-        ],
-        "cell_r0_c4": [
-          737.52,
+          687.36,
           56.0,
           888.0,
-          104.364
-        ],
-        "cell_r10_c0": [
-          52.0,
-          539.636,
-          286.08,
-          588.0
-        ],
-        "cell_r10_c1": [
-          286.08,
-          539.636,
-          436.56,
-          588.0
-        ],
-        "cell_r10_c2": [
-          436.56,
-          539.636,
-          587.04,
-          588.0
-        ],
-        "cell_r10_c3": [
-          587.04,
-          539.636,
-          737.52,
-          588.0
-        ],
-        "cell_r10_c4": [
-          737.52,
-          539.636,
-          888.0,
-          588.0
+          115.111
         ],
         "cell_r1_c0": [
           52.0,
-          104.364,
+          115.111,
           286.08,
-          152.727
+          174.222
         ],
         "cell_r1_c1": [
           286.08,
-          104.364,
-          436.56,
-          152.727
+          115.111,
+          486.72,
+          174.222
         ],
         "cell_r1_c2": [
-          436.56,
-          104.364,
-          587.04,
-          152.727
+          486.72,
+          115.111,
+          687.36,
+          174.222
         ],
         "cell_r1_c3": [
-          587.04,
-          104.364,
-          737.52,
-          152.727
-        ],
-        "cell_r1_c4": [
-          737.52,
-          104.364,
+          687.36,
+          115.111,
           888.0,
-          152.727
+          174.222
         ],
         "cell_r2_c0": [
           52.0,
-          152.727,
+          174.222,
           286.08,
-          201.091
+          233.333
         ],
         "cell_r2_c1": [
           286.08,
-          152.727,
-          436.56,
-          201.091
+          174.222,
+          486.72,
+          233.333
         ],
         "cell_r2_c2": [
-          436.56,
-          152.727,
-          587.04,
-          201.091
+          486.72,
+          174.222,
+          687.36,
+          233.333
         ],
         "cell_r2_c3": [
-          587.04,
-          152.727,
-          737.52,
-          201.091
-        ],
-        "cell_r2_c4": [
-          737.52,
-          152.727,
+          687.36,
+          174.222,
           888.0,
-          201.091
+          233.333
         ],
         "cell_r3_c0": [
           52.0,
-          201.091,
+          233.333,
           286.08,
-          249.455
+          292.444
         ],
         "cell_r3_c1": [
           286.08,
-          201.091,
-          436.56,
-          249.455
+          233.333,
+          486.72,
+          292.444
         ],
         "cell_r3_c2": [
-          436.56,
-          201.091,
-          587.04,
-          249.455
+          486.72,
+          233.333,
+          687.36,
+          292.444
         ],
         "cell_r3_c3": [
-          587.04,
-          201.091,
-          737.52,
-          249.455
-        ],
-        "cell_r3_c4": [
-          737.52,
-          201.091,
+          687.36,
+          233.333,
           888.0,
-          249.455
+          292.444
         ],
         "cell_r4_c0": [
           52.0,
-          249.455,
+          292.444,
           286.08,
-          297.818
+          351.556
         ],
         "cell_r4_c1": [
           286.08,
-          249.455,
-          436.56,
-          297.818
+          292.444,
+          486.72,
+          351.556
         ],
         "cell_r4_c2": [
-          436.56,
-          249.455,
-          587.04,
-          297.818
+          486.72,
+          292.444,
+          687.36,
+          351.556
         ],
         "cell_r4_c3": [
-          587.04,
-          249.455,
-          737.52,
-          297.818
-        ],
-        "cell_r4_c4": [
-          737.52,
-          249.455,
+          687.36,
+          292.444,
           888.0,
-          297.818
+          351.556
         ],
         "cell_r5_c0": [
           52.0,
-          297.818,
+          351.556,
           286.08,
-          346.182
+          410.667
         ],
         "cell_r5_c1": [
           286.08,
-          297.818,
-          436.56,
-          346.182
+          351.556,
+          486.72,
+          410.667
         ],
         "cell_r5_c2": [
-          436.56,
-          297.818,
-          587.04,
-          346.182
+          486.72,
+          351.556,
+          687.36,
+          410.667
         ],
         "cell_r5_c3": [
-          587.04,
-          297.818,
-          737.52,
-          346.182
-        ],
-        "cell_r5_c4": [
-          737.52,
-          297.818,
+          687.36,
+          351.556,
           888.0,
-          346.182
+          410.667
         ],
         "cell_r6_c0": [
           52.0,
-          346.182,
+          410.667,
           286.08,
-          394.545
+          469.778
         ],
         "cell_r6_c1": [
           286.08,
-          346.182,
-          436.56,
-          394.545
+          410.667,
+          486.72,
+          469.778
         ],
         "cell_r6_c2": [
-          436.56,
-          346.182,
-          587.04,
-          394.545
+          486.72,
+          410.667,
+          687.36,
+          469.778
         ],
         "cell_r6_c3": [
-          587.04,
-          346.182,
-          737.52,
-          394.545
-        ],
-        "cell_r6_c4": [
-          737.52,
-          346.182,
+          687.36,
+          410.667,
           888.0,
-          394.545
+          469.778
         ],
         "cell_r7_c0": [
           52.0,
-          394.545,
+          469.778,
           286.08,
-          442.909
+          528.889
         ],
         "cell_r7_c1": [
           286.08,
-          394.545,
-          436.56,
-          442.909
+          469.778,
+          486.72,
+          528.889
         ],
         "cell_r7_c2": [
-          436.56,
-          394.545,
-          587.04,
-          442.909
+          486.72,
+          469.778,
+          687.36,
+          528.889
         ],
         "cell_r7_c3": [
-          587.04,
-          394.545,
-          737.52,
-          442.909
-        ],
-        "cell_r7_c4": [
-          737.52,
-          394.545,
+          687.36,
+          469.778,
           888.0,
-          442.909
+          528.889
         ],
         "cell_r8_c0": [
           52.0,
-          442.909,
+          528.889,
           286.08,
-          491.273
+          588.0
         ],
         "cell_r8_c1": [
           286.08,
-          442.909,
-          436.56,
-          491.273
+          528.889,
+          486.72,
+          588.0
         ],
         "cell_r8_c2": [
-          436.56,
-          442.909,
-          587.04,
-          491.273
+          486.72,
+          528.889,
+          687.36,
+          588.0
         ],
         "cell_r8_c3": [
-          587.04,
-          442.909,
-          737.52,
-          491.273
-        ],
-        "cell_r8_c4": [
-          737.52,
-          442.909,
+          687.36,
+          528.889,
           888.0,
-          491.273
-        ],
-        "cell_r9_c0": [
-          52.0,
-          491.273,
-          286.08,
-          539.636
-        ],
-        "cell_r9_c1": [
-          286.08,
-          491.273,
-          436.56,
-          539.636
-        ],
-        "cell_r9_c2": [
-          436.56,
-          491.273,
-          587.04,
-          539.636
-        ],
-        "cell_r9_c3": [
-          587.04,
-          491.273,
-          737.52,
-          539.636
-        ],
-        "cell_r9_c4": [
-          737.52,
-          491.273,
-          888.0,
-          539.636
+          588.0
         ]
       },
       "column_region_bboxes_px": {
-        "Age": [
-          737.52,
-          104.364,
+        "Dist": [
+          286.08,
+          115.111,
+          486.72,
+          588.0
+        ],
+        "Gain": [
+          687.36,
+          115.111,
           888.0,
           588.0
         ],
-        "Mass": [
-          286.08,
-          104.364,
-          436.56,
-          588.0
-        ],
-        "Rate": [
-          587.04,
-          104.364,
-          737.52,
-          588.0
-        ],
-        "Time": [
-          436.56,
-          104.364,
-          587.04,
+        "Wins": [
+          486.72,
+          115.111,
+          687.36,
           588.0
         ]
       },
       "header_bboxes_px": {
-        "Age": [
-          737.52,
-          56.0,
-          888.0,
-          104.364
-        ],
-        "Mass": [
+        "Dist": [
           286.08,
           56.0,
-          436.56,
-          104.364
+          486.72,
+          115.111
         ],
-        "Rate": [
-          587.04,
+        "Gain": [
+          687.36,
           56.0,
-          737.52,
-          104.364
+          888.0,
+          115.111
         ],
-        "Time": [
-          436.56,
+        "Wins": [
+          486.72,
           56.0,
-          587.04,
-          104.364
+          687.36,
+          115.111
         ]
       },
       "image_id": "img0",
       "row_label_bboxes_px": {
-        "Amie": [
+        "Adar": [
           52.0,
-          346.182,
+          410.667,
           286.08,
-          394.545
+          469.778
         ],
-        "Arny": [
+        "Bren": [
           52.0,
-          152.727,
+          174.222,
           286.08,
-          201.091
+          233.333
         ],
-        "Feld": [
+        "Bret": [
           52.0,
-          297.818,
+          469.778,
           286.08,
-          346.182
+          528.889
         ],
-        "Fern": [
+        "Chic": [
           52.0,
-          104.364,
-          286.08,
-          152.727
-        ],
-        "Iey": [
-          52.0,
-          394.545,
-          286.08,
-          442.909
-        ],
-        "Joab": [
-          52.0,
-          539.636,
+          528.889,
           286.08,
           588.0
         ],
-        "Ko": [
+        "Curr": [
           52.0,
-          491.273,
+          233.333,
           286.08,
-          539.636
+          292.444
         ],
-        "Pooi": [
+        "Dosi": [
           52.0,
-          201.091,
+          292.444,
           286.08,
-          249.455
+          351.556
         ],
-        "Roee": [
+        "Garv": [
           52.0,
-          442.909,
+          115.111,
           286.08,
-          491.273
+          174.222
         ],
-        "Voe": [
+        "Zeus": [
           52.0,
-          249.455,
+          351.556,
           286.08,
-          297.818
+          410.667
         ]
       },
       "row_region_bboxes_px": {
-        "Amie": [
+        "Adar": [
           286.08,
-          346.182,
+          410.667,
           888.0,
-          394.545
+          469.778
         ],
-        "Arny": [
+        "Bren": [
           286.08,
-          152.727,
+          174.222,
           888.0,
-          201.091
+          233.333
         ],
-        "Feld": [
+        "Bret": [
           286.08,
-          297.818,
+          469.778,
           888.0,
-          346.182
+          528.889
         ],
-        "Fern": [
+        "Chic": [
           286.08,
-          104.364,
-          888.0,
-          152.727
-        ],
-        "Iey": [
-          286.08,
-          394.545,
-          888.0,
-          442.909
-        ],
-        "Joab": [
-          286.08,
-          539.636,
+          528.889,
           888.0,
           588.0
         ],
-        "Ko": [
+        "Curr": [
           286.08,
-          491.273,
+          233.333,
           888.0,
-          539.636
+          292.444
         ],
-        "Pooi": [
+        "Dosi": [
           286.08,
-          201.091,
+          292.444,
           888.0,
-          249.455
+          351.556
         ],
-        "Roee": [
+        "Garv": [
           286.08,
-          442.909,
+          115.111,
           888.0,
-          491.273
+          174.222
         ],
-        "Voe": [
+        "Zeus": [
           286.08,
-          249.455,
+          351.556,
           888.0,
-          297.818
+          410.667
         ]
       },
       "table_bbox_px": [
@@ -890,7 +773,7 @@
         "edits": [],
         "enabled": false
       },
-      "scene_variant": "spreadsheet",
+      "scene_variant": "card_table",
       "table_bbox_px": [
         52.0,
         56.0,
@@ -914,9 +797,9 @@
             "text": "Name",
             "text_bbox_px": [
               130.54,
-              71.182,
+              76.556,
               207.54,
-              89.182
+              94.556
             ],
             "value": null
           },
@@ -924,7 +807,7 @@
             52.0,
             56.0,
             286.08,
-            104.364
+            115.111
           ],
           "entity_id": "cell_r0_c0",
           "entity_type": "table_cell"
@@ -932,24 +815,24 @@
         {
           "attrs": {
             "cell_role": "header",
-            "column_header": "Mass",
+            "column_header": "Dist",
             "column_index": 1,
             "row_index": 0,
             "row_label": null,
-            "text": "Mass",
+            "text": "Dist",
             "text_bbox_px": [
-              327.32,
-              71.182,
-              395.32,
-              89.182
+              359.9,
+              76.556,
+              412.9,
+              94.556
             ],
             "value": null
           },
           "bbox_px": [
             286.08,
             56.0,
-            436.56,
-            104.364
+            486.72,
+            115.111
           ],
           "entity_id": "cell_r0_c1",
           "entity_type": "table_cell"
@@ -957,24 +840,24 @@
         {
           "attrs": {
             "cell_role": "header",
-            "column_header": "Time",
+            "column_header": "Wins",
             "column_index": 2,
             "row_index": 0,
             "row_label": null,
-            "text": "Time",
+            "text": "Wins",
             "text_bbox_px": [
-              479.3,
-              71.182,
-              544.3,
-              89.182
+              554.54,
+              76.556,
+              619.54,
+              94.556
             ],
             "value": null
           },
           "bbox_px": [
-            436.56,
+            486.72,
             56.0,
-            587.04,
-            104.364
+            687.36,
+            115.111
           ],
           "entity_id": "cell_r0_c2",
           "entity_type": "table_cell"
@@ -982,51 +865,26 @@
         {
           "attrs": {
             "cell_role": "header",
-            "column_header": "Rate",
+            "column_header": "Gain",
             "column_index": 3,
             "row_index": 0,
             "row_label": null,
-            "text": "Rate",
+            "text": "Gain",
             "text_bbox_px": [
-              631.78,
-              71.182,
-              692.78,
-              89.182
+              757.18,
+              76.556,
+              818.18,
+              94.556
             ],
             "value": null
           },
           "bbox_px": [
-            587.04,
-            56.0,
-            737.52,
-            104.364
-          ],
-          "entity_id": "cell_r0_c3",
-          "entity_type": "table_cell"
-        },
-        {
-          "attrs": {
-            "cell_role": "header",
-            "column_header": "Age",
-            "column_index": 4,
-            "row_index": 0,
-            "row_label": null,
-            "text": "Age",
-            "text_bbox_px": [
-              786.76,
-              68.682,
-              838.76,
-              91.682
-            ],
-            "value": null
-          },
-          "bbox_px": [
-            737.52,
+            687.36,
             56.0,
             888.0,
-            104.364
+            115.111
           ],
-          "entity_id": "cell_r0_c4",
+          "entity_id": "cell_r0_c3",
           "entity_type": "table_cell"
         },
         {
@@ -1035,21 +893,21 @@
             "column_header": "Name",
             "column_index": 0,
             "row_index": 1,
-            "row_label": "Fern",
-            "text": "Fern",
+            "row_label": "Garv",
+            "text": "Garv",
             "text_bbox_px": [
               66.0,
-              119.545,
-              127.0,
-              137.545
+              135.667,
+              130.0,
+              153.667
             ],
             "value": null
           },
           "bbox_px": [
             52.0,
-            104.364,
+            115.111,
             286.08,
-            152.727
+            174.222
           ],
           "entity_id": "cell_r1_c0",
           "entity_type": "table_cell"
@@ -1057,24 +915,24 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Mass",
+            "column_header": "Dist",
             "column_index": 1,
             "row_index": 1,
-            "row_label": "Fern",
-            "text": "29",
+            "row_label": "Garv",
+            "text": "27",
             "text_bbox_px": [
-              347.32,
-              120.545,
-              375.32,
-              136.545
+              372.4,
+              136.667,
+              400.4,
+              152.667
             ],
-            "value": 29
+            "value": 27
           },
           "bbox_px": [
             286.08,
-            104.364,
-            436.56,
-            152.727
+            115.111,
+            486.72,
+            174.222
           ],
           "entity_id": "cell_r1_c1",
           "entity_type": "table_cell"
@@ -1082,24 +940,24 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Time",
+            "column_header": "Wins",
             "column_index": 2,
             "row_index": 1,
-            "row_label": "Fern",
-            "text": "19",
+            "row_label": "Garv",
+            "text": "5",
             "text_bbox_px": [
-              497.8,
-              120.545,
-              525.8,
-              136.545
+              580.04,
+              136.667,
+              594.04,
+              152.667
             ],
-            "value": 19
+            "value": 5
           },
           "bbox_px": [
-            436.56,
-            104.364,
-            587.04,
-            152.727
+            486.72,
+            115.111,
+            687.36,
+            174.222
           ],
           "entity_id": "cell_r1_c2",
           "entity_type": "table_cell"
@@ -1107,51 +965,26 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Rate",
+            "column_header": "Gain",
             "column_index": 3,
             "row_index": 1,
-            "row_label": "Fern",
-            "text": "12",
-            "text_bbox_px": [
-              648.28,
-              120.545,
-              676.28,
-              136.545
-            ],
-            "value": 12
-          },
-          "bbox_px": [
-            587.04,
-            104.364,
-            737.52,
-            152.727
-          ],
-          "entity_id": "cell_r1_c3",
-          "entity_type": "table_cell"
-        },
-        {
-          "attrs": {
-            "cell_role": "value",
-            "column_header": "Age",
-            "column_index": 4,
-            "row_index": 1,
-            "row_label": "Fern",
+            "row_label": "Garv",
             "text": "31",
             "text_bbox_px": [
-              798.76,
-              120.545,
-              826.76,
-              136.545
+              773.68,
+              136.667,
+              801.68,
+              152.667
             ],
             "value": 31
           },
           "bbox_px": [
-            737.52,
-            104.364,
+            687.36,
+            115.111,
             888.0,
-            152.727
+            174.222
           ],
-          "entity_id": "cell_r1_c4",
+          "entity_id": "cell_r1_c3",
           "entity_type": "table_cell"
         },
         {
@@ -1160,21 +993,21 @@
             "column_header": "Name",
             "column_index": 0,
             "row_index": 2,
-            "row_label": "Arny",
-            "text": "Arny",
+            "row_label": "Bren",
+            "text": "Bren",
             "text_bbox_px": [
               66.0,
-              165.409,
-              130.0,
-              188.409
+              194.778,
+              129.0,
+              212.778
             ],
             "value": null
           },
           "bbox_px": [
             52.0,
-            152.727,
+            174.222,
             286.08,
-            201.091
+            233.333
           ],
           "entity_id": "cell_r2_c0",
           "entity_type": "table_cell"
@@ -1182,24 +1015,24 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Mass",
+            "column_header": "Dist",
             "column_index": 1,
             "row_index": 2,
-            "row_label": "Arny",
-            "text": "1",
+            "row_label": "Bren",
+            "text": "4",
             "text_bbox_px": [
-              354.32,
-              168.909,
-              368.32,
-              184.909
+              379.4,
+              195.778,
+              393.4,
+              211.778
             ],
-            "value": 1
+            "value": 4
           },
           "bbox_px": [
             286.08,
-            152.727,
-            436.56,
-            201.091
+            174.222,
+            486.72,
+            233.333
           ],
           "entity_id": "cell_r2_c1",
           "entity_type": "table_cell"
@@ -1207,24 +1040,24 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Time",
+            "column_header": "Wins",
             "column_index": 2,
             "row_index": 2,
-            "row_label": "Arny",
-            "text": "24",
+            "row_label": "Bren",
+            "text": "9",
             "text_bbox_px": [
-              497.8,
-              168.909,
-              525.8,
-              184.909
+              580.04,
+              195.778,
+              594.04,
+              211.778
             ],
-            "value": 24
+            "value": 9
           },
           "bbox_px": [
-            436.56,
-            152.727,
-            587.04,
-            201.091
+            486.72,
+            174.222,
+            687.36,
+            233.333
           ],
           "entity_id": "cell_r2_c2",
           "entity_type": "table_cell"
@@ -1232,51 +1065,26 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Rate",
+            "column_header": "Gain",
             "column_index": 3,
             "row_index": 2,
-            "row_label": "Arny",
-            "text": "30",
+            "row_label": "Bren",
+            "text": "32",
             "text_bbox_px": [
-              648.28,
-              168.909,
-              676.28,
-              184.909
+              773.68,
+              195.778,
+              801.68,
+              211.778
             ],
-            "value": 30
+            "value": 32
           },
           "bbox_px": [
-            587.04,
-            152.727,
-            737.52,
-            201.091
+            687.36,
+            174.222,
+            888.0,
+            233.333
           ],
           "entity_id": "cell_r2_c3",
-          "entity_type": "table_cell"
-        },
-        {
-          "attrs": {
-            "cell_role": "value",
-            "column_header": "Age",
-            "column_index": 4,
-            "row_index": 2,
-            "row_label": "Arny",
-            "text": "19",
-            "text_bbox_px": [
-              798.76,
-              168.909,
-              826.76,
-              184.909
-            ],
-            "value": 19
-          },
-          "bbox_px": [
-            737.52,
-            152.727,
-            888.0,
-            201.091
-          ],
-          "entity_id": "cell_r2_c4",
           "entity_type": "table_cell"
         },
         {
@@ -1285,21 +1093,21 @@
             "column_header": "Name",
             "column_index": 0,
             "row_index": 3,
-            "row_label": "Pooi",
-            "text": "Pooi",
+            "row_label": "Curr",
+            "text": "Curr",
             "text_bbox_px": [
               66.0,
-              216.273,
-              124.0,
-              234.273
+              253.889,
+              125.0,
+              271.889
             ],
             "value": null
           },
           "bbox_px": [
             52.0,
-            201.091,
+            233.333,
             286.08,
-            249.455
+            292.444
           ],
           "entity_id": "cell_r3_c0",
           "entity_type": "table_cell"
@@ -1307,24 +1115,24 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Mass",
+            "column_header": "Dist",
             "column_index": 1,
             "row_index": 3,
-            "row_label": "Pooi",
+            "row_label": "Curr",
             "text": "30",
             "text_bbox_px": [
-              347.32,
-              217.273,
-              375.32,
-              233.273
+              372.4,
+              254.889,
+              400.4,
+              270.889
             ],
             "value": 30
           },
           "bbox_px": [
             286.08,
-            201.091,
-            436.56,
-            249.455
+            233.333,
+            486.72,
+            292.444
           ],
           "entity_id": "cell_r3_c1",
           "entity_type": "table_cell"
@@ -1332,24 +1140,24 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Time",
+            "column_header": "Wins",
             "column_index": 2,
             "row_index": 3,
-            "row_label": "Pooi",
-            "text": "10",
+            "row_label": "Curr",
+            "text": "28",
             "text_bbox_px": [
-              497.8,
-              217.273,
-              525.8,
-              233.273
+              573.04,
+              254.889,
+              601.04,
+              270.889
             ],
-            "value": 10
+            "value": 28
           },
           "bbox_px": [
-            436.56,
-            201.091,
-            587.04,
-            249.455
+            486.72,
+            233.333,
+            687.36,
+            292.444
           ],
           "entity_id": "cell_r3_c2",
           "entity_type": "table_cell"
@@ -1357,51 +1165,26 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Rate",
+            "column_header": "Gain",
             "column_index": 3,
             "row_index": 3,
-            "row_label": "Pooi",
-            "text": "27",
+            "row_label": "Curr",
+            "text": "26",
             "text_bbox_px": [
-              648.28,
-              217.273,
-              676.28,
-              233.273
+              773.68,
+              254.889,
+              801.68,
+              270.889
             ],
-            "value": 27
+            "value": 26
           },
           "bbox_px": [
-            587.04,
-            201.091,
-            737.52,
-            249.455
+            687.36,
+            233.333,
+            888.0,
+            292.444
           ],
           "entity_id": "cell_r3_c3",
-          "entity_type": "table_cell"
-        },
-        {
-          "attrs": {
-            "cell_role": "value",
-            "column_header": "Age",
-            "column_index": 4,
-            "row_index": 3,
-            "row_label": "Pooi",
-            "text": "32",
-            "text_bbox_px": [
-              798.76,
-              217.273,
-              826.76,
-              233.273
-            ],
-            "value": 32
-          },
-          "bbox_px": [
-            737.52,
-            201.091,
-            888.0,
-            249.455
-          ],
-          "entity_id": "cell_r3_c4",
           "entity_type": "table_cell"
         },
         {
@@ -1410,21 +1193,21 @@
             "column_header": "Name",
             "column_index": 0,
             "row_index": 4,
-            "row_label": "Voe",
-            "text": "Voe",
+            "row_label": "Dosi",
+            "text": "Dosi",
             "text_bbox_px": [
               66.0,
-              264.636,
-              117.0,
-              282.636
+              313.0,
+              124.0,
+              331.0
             ],
             "value": null
           },
           "bbox_px": [
             52.0,
-            249.455,
+            292.444,
             286.08,
-            297.818
+            351.556
           ],
           "entity_id": "cell_r4_c0",
           "entity_type": "table_cell"
@@ -1432,24 +1215,24 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Mass",
+            "column_header": "Dist",
             "column_index": 1,
             "row_index": 4,
-            "row_label": "Voe",
-            "text": "7",
+            "row_label": "Dosi",
+            "text": "27",
             "text_bbox_px": [
-              354.32,
-              265.636,
-              368.32,
-              281.636
+              372.4,
+              314.0,
+              400.4,
+              330.0
             ],
-            "value": 7
+            "value": 27
           },
           "bbox_px": [
             286.08,
-            249.455,
-            436.56,
-            297.818
+            292.444,
+            486.72,
+            351.556
           ],
           "entity_id": "cell_r4_c1",
           "entity_type": "table_cell"
@@ -1457,24 +1240,24 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Time",
+            "column_header": "Wins",
             "column_index": 2,
             "row_index": 4,
-            "row_label": "Voe",
-            "text": "32",
+            "row_label": "Dosi",
+            "text": "28",
             "text_bbox_px": [
-              497.8,
-              265.636,
-              525.8,
-              281.636
+              573.04,
+              314.0,
+              601.04,
+              330.0
             ],
-            "value": 32
+            "value": 28
           },
           "bbox_px": [
-            436.56,
-            249.455,
-            587.04,
-            297.818
+            486.72,
+            292.444,
+            687.36,
+            351.556
           ],
           "entity_id": "cell_r4_c2",
           "entity_type": "table_cell"
@@ -1482,51 +1265,26 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Rate",
+            "column_header": "Gain",
             "column_index": 3,
             "row_index": 4,
-            "row_label": "Voe",
-            "text": "2",
+            "row_label": "Dosi",
+            "text": "30",
             "text_bbox_px": [
-              655.28,
-              265.636,
-              669.28,
-              281.636
+              773.68,
+              314.0,
+              801.68,
+              330.0
             ],
-            "value": 2
+            "value": 30
           },
           "bbox_px": [
-            587.04,
-            249.455,
-            737.52,
-            297.818
+            687.36,
+            292.444,
+            888.0,
+            351.556
           ],
           "entity_id": "cell_r4_c3",
-          "entity_type": "table_cell"
-        },
-        {
-          "attrs": {
-            "cell_role": "value",
-            "column_header": "Age",
-            "column_index": 4,
-            "row_index": 4,
-            "row_label": "Voe",
-            "text": "9",
-            "text_bbox_px": [
-              805.76,
-              265.636,
-              819.76,
-              281.636
-            ],
-            "value": 9
-          },
-          "bbox_px": [
-            737.52,
-            249.455,
-            888.0,
-            297.818
-          ],
-          "entity_id": "cell_r4_c4",
           "entity_type": "table_cell"
         },
         {
@@ -1535,21 +1293,21 @@
             "column_header": "Name",
             "column_index": 0,
             "row_index": 5,
-            "row_label": "Feld",
-            "text": "Feld",
+            "row_label": "Zeus",
+            "text": "Zeus",
             "text_bbox_px": [
               66.0,
-              313.0,
-              123.0,
-              331.0
+              372.111,
+              130.0,
+              390.111
             ],
             "value": null
           },
           "bbox_px": [
             52.0,
-            297.818,
+            351.556,
             286.08,
-            346.182
+            410.667
           ],
           "entity_id": "cell_r5_c0",
           "entity_type": "table_cell"
@@ -1557,24 +1315,24 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Mass",
+            "column_header": "Dist",
             "column_index": 1,
             "row_index": 5,
-            "row_label": "Feld",
-            "text": "11",
+            "row_label": "Zeus",
+            "text": "20",
             "text_bbox_px": [
-              347.32,
-              314.0,
-              375.32,
-              330.0
+              372.4,
+              373.111,
+              400.4,
+              389.111
             ],
-            "value": 11
+            "value": 20
           },
           "bbox_px": [
             286.08,
-            297.818,
-            436.56,
-            346.182
+            351.556,
+            486.72,
+            410.667
           ],
           "entity_id": "cell_r5_c1",
           "entity_type": "table_cell"
@@ -1582,24 +1340,24 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Time",
+            "column_header": "Wins",
             "column_index": 2,
             "row_index": 5,
-            "row_label": "Feld",
-            "text": "24",
+            "row_label": "Zeus",
+            "text": "17",
             "text_bbox_px": [
-              497.8,
-              314.0,
-              525.8,
-              330.0
+              573.04,
+              373.111,
+              601.04,
+              389.111
             ],
-            "value": 24
+            "value": 17
           },
           "bbox_px": [
-            436.56,
-            297.818,
-            587.04,
-            346.182
+            486.72,
+            351.556,
+            687.36,
+            410.667
           ],
           "entity_id": "cell_r5_c2",
           "entity_type": "table_cell"
@@ -1607,51 +1365,26 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Rate",
+            "column_header": "Gain",
             "column_index": 3,
             "row_index": 5,
-            "row_label": "Feld",
-            "text": "27",
+            "row_label": "Zeus",
+            "text": "32",
             "text_bbox_px": [
-              648.28,
-              314.0,
-              676.28,
-              330.0
+              773.68,
+              373.111,
+              801.68,
+              389.111
             ],
-            "value": 27
+            "value": 32
           },
           "bbox_px": [
-            587.04,
-            297.818,
-            737.52,
-            346.182
+            687.36,
+            351.556,
+            888.0,
+            410.667
           ],
           "entity_id": "cell_r5_c3",
-          "entity_type": "table_cell"
-        },
-        {
-          "attrs": {
-            "cell_role": "value",
-            "column_header": "Age",
-            "column_index": 4,
-            "row_index": 5,
-            "row_label": "Feld",
-            "text": "14",
-            "text_bbox_px": [
-              798.76,
-              314.0,
-              826.76,
-              330.0
-            ],
-            "value": 14
-          },
-          "bbox_px": [
-            737.52,
-            297.818,
-            888.0,
-            346.182
-          ],
-          "entity_id": "cell_r5_c4",
           "entity_type": "table_cell"
         },
         {
@@ -1660,21 +1393,21 @@
             "column_header": "Name",
             "column_index": 0,
             "row_index": 6,
-            "row_label": "Amie",
-            "text": "Amie",
+            "row_label": "Adar",
+            "text": "Adar",
             "text_bbox_px": [
               66.0,
-              361.364,
-              134.0,
-              379.364
+              431.222,
+              130.0,
+              449.222
             ],
             "value": null
           },
           "bbox_px": [
             52.0,
-            346.182,
+            410.667,
             286.08,
-            394.545
+            469.778
           ],
           "entity_id": "cell_r6_c0",
           "entity_type": "table_cell"
@@ -1682,24 +1415,24 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Mass",
+            "column_header": "Dist",
             "column_index": 1,
             "row_index": 6,
-            "row_label": "Amie",
-            "text": "16",
+            "row_label": "Adar",
+            "text": "19",
             "text_bbox_px": [
-              347.32,
-              362.364,
-              375.32,
-              378.364
+              372.4,
+              432.222,
+              400.4,
+              448.222
             ],
-            "value": 16
+            "value": 19
           },
           "bbox_px": [
             286.08,
-            346.182,
-            436.56,
-            394.545
+            410.667,
+            486.72,
+            469.778
           ],
           "entity_id": "cell_r6_c1",
           "entity_type": "table_cell"
@@ -1707,24 +1440,24 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Time",
+            "column_header": "Wins",
             "column_index": 2,
             "row_index": 6,
-            "row_label": "Amie",
-            "text": "3",
+            "row_label": "Adar",
+            "text": "11",
             "text_bbox_px": [
-              504.8,
-              362.364,
-              518.8,
-              378.364
+              573.04,
+              432.222,
+              601.04,
+              448.222
             ],
-            "value": 3
+            "value": 11
           },
           "bbox_px": [
-            436.56,
-            346.182,
-            587.04,
-            394.545
+            486.72,
+            410.667,
+            687.36,
+            469.778
           ],
           "entity_id": "cell_r6_c2",
           "entity_type": "table_cell"
@@ -1732,51 +1465,26 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Rate",
+            "column_header": "Gain",
             "column_index": 3,
             "row_index": 6,
-            "row_label": "Amie",
-            "text": "6",
+            "row_label": "Adar",
+            "text": "11",
             "text_bbox_px": [
-              655.28,
-              362.364,
-              669.28,
-              378.364
+              773.68,
+              432.222,
+              801.68,
+              448.222
             ],
-            "value": 6
+            "value": 11
           },
           "bbox_px": [
-            587.04,
-            346.182,
-            737.52,
-            394.545
+            687.36,
+            410.667,
+            888.0,
+            469.778
           ],
           "entity_id": "cell_r6_c3",
-          "entity_type": "table_cell"
-        },
-        {
-          "attrs": {
-            "cell_role": "value",
-            "column_header": "Age",
-            "column_index": 4,
-            "row_index": 6,
-            "row_label": "Amie",
-            "text": "10",
-            "text_bbox_px": [
-              798.76,
-              362.364,
-              826.76,
-              378.364
-            ],
-            "value": 10
-          },
-          "bbox_px": [
-            737.52,
-            346.182,
-            888.0,
-            394.545
-          ],
-          "entity_id": "cell_r6_c4",
           "entity_type": "table_cell"
         },
         {
@@ -1785,21 +1493,21 @@
             "column_header": "Name",
             "column_index": 0,
             "row_index": 7,
-            "row_label": "Iey",
-            "text": "Iey",
+            "row_label": "Bret",
+            "text": "Bret",
             "text_bbox_px": [
               66.0,
-              407.227,
-              107.0,
-              430.227
+              490.333,
+              123.0,
+              508.333
             ],
             "value": null
           },
           "bbox_px": [
             52.0,
-            394.545,
+            469.778,
             286.08,
-            442.909
+            528.889
           ],
           "entity_id": "cell_r7_c0",
           "entity_type": "table_cell"
@@ -1807,24 +1515,24 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Mass",
+            "column_header": "Dist",
             "column_index": 1,
             "row_index": 7,
-            "row_label": "Iey",
-            "text": "16",
+            "row_label": "Bret",
+            "text": "32",
             "text_bbox_px": [
-              347.32,
-              410.727,
-              375.32,
-              426.727
+              372.4,
+              491.333,
+              400.4,
+              507.333
             ],
-            "value": 16
+            "value": 32
           },
           "bbox_px": [
             286.08,
-            394.545,
-            436.56,
-            442.909
+            469.778,
+            486.72,
+            528.889
           ],
           "entity_id": "cell_r7_c1",
           "entity_type": "table_cell"
@@ -1832,24 +1540,24 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Time",
+            "column_header": "Wins",
             "column_index": 2,
             "row_index": 7,
-            "row_label": "Iey",
-            "text": "8",
+            "row_label": "Bret",
+            "text": "21",
             "text_bbox_px": [
-              504.8,
-              410.727,
-              518.8,
-              426.727
+              573.04,
+              491.333,
+              601.04,
+              507.333
             ],
-            "value": 8
+            "value": 21
           },
           "bbox_px": [
-            436.56,
-            394.545,
-            587.04,
-            442.909
+            486.72,
+            469.778,
+            687.36,
+            528.889
           ],
           "entity_id": "cell_r7_c2",
           "entity_type": "table_cell"
@@ -1857,51 +1565,26 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Rate",
+            "column_header": "Gain",
             "column_index": 3,
             "row_index": 7,
-            "row_label": "Iey",
-            "text": "10",
+            "row_label": "Bret",
+            "text": "26",
             "text_bbox_px": [
-              648.28,
-              410.727,
-              676.28,
-              426.727
+              773.68,
+              491.333,
+              801.68,
+              507.333
             ],
-            "value": 10
+            "value": 26
           },
           "bbox_px": [
-            587.04,
-            394.545,
-            737.52,
-            442.909
+            687.36,
+            469.778,
+            888.0,
+            528.889
           ],
           "entity_id": "cell_r7_c3",
-          "entity_type": "table_cell"
-        },
-        {
-          "attrs": {
-            "cell_role": "value",
-            "column_header": "Age",
-            "column_index": 4,
-            "row_index": 7,
-            "row_label": "Iey",
-            "text": "11",
-            "text_bbox_px": [
-              798.76,
-              410.727,
-              826.76,
-              426.727
-            ],
-            "value": 11
-          },
-          "bbox_px": [
-            737.52,
-            394.545,
-            888.0,
-            442.909
-          ],
-          "entity_id": "cell_r7_c4",
           "entity_type": "table_cell"
         },
         {
@@ -1910,21 +1593,21 @@
             "column_header": "Name",
             "column_index": 0,
             "row_index": 8,
-            "row_label": "Roee",
-            "text": "Roee",
+            "row_label": "Chic",
+            "text": "Chic",
             "text_bbox_px": [
               66.0,
-              458.091,
-              132.0,
-              476.091
+              549.444,
+              123.0,
+              567.444
             ],
             "value": null
           },
           "bbox_px": [
             52.0,
-            442.909,
+            528.889,
             286.08,
-            491.273
+            588.0
           ],
           "entity_id": "cell_r8_c0",
           "entity_type": "table_cell"
@@ -1932,24 +1615,24 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Mass",
+            "column_header": "Dist",
             "column_index": 1,
             "row_index": 8,
-            "row_label": "Roee",
-            "text": "31",
+            "row_label": "Chic",
+            "text": "28",
             "text_bbox_px": [
-              347.32,
-              459.091,
-              375.32,
-              475.091
+              372.4,
+              550.444,
+              400.4,
+              566.444
             ],
-            "value": 31
+            "value": 28
           },
           "bbox_px": [
             286.08,
-            442.909,
-            436.56,
-            491.273
+            528.889,
+            486.72,
+            588.0
           ],
           "entity_id": "cell_r8_c1",
           "entity_type": "table_cell"
@@ -1957,24 +1640,24 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Time",
+            "column_header": "Wins",
             "column_index": 2,
             "row_index": 8,
-            "row_label": "Roee",
-            "text": "27",
+            "row_label": "Chic",
+            "text": "12",
             "text_bbox_px": [
-              497.8,
-              459.091,
-              525.8,
-              475.091
+              573.04,
+              550.444,
+              601.04,
+              566.444
             ],
-            "value": 27
+            "value": 12
           },
           "bbox_px": [
-            436.56,
-            442.909,
-            587.04,
-            491.273
+            486.72,
+            528.889,
+            687.36,
+            588.0
           ],
           "entity_id": "cell_r8_c2",
           "entity_type": "table_cell"
@@ -1982,345 +1665,98 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Rate",
+            "column_header": "Gain",
             "column_index": 3,
             "row_index": 8,
-            "row_label": "Roee",
-            "text": "16",
-            "text_bbox_px": [
-              648.28,
-              459.091,
-              676.28,
-              475.091
-            ],
-            "value": 16
-          },
-          "bbox_px": [
-            587.04,
-            442.909,
-            737.52,
-            491.273
-          ],
-          "entity_id": "cell_r8_c3",
-          "entity_type": "table_cell"
-        },
-        {
-          "attrs": {
-            "cell_role": "value",
-            "column_header": "Age",
-            "column_index": 4,
-            "row_index": 8,
-            "row_label": "Roee",
-            "text": "32",
-            "text_bbox_px": [
-              798.76,
-              459.091,
-              826.76,
-              475.091
-            ],
-            "value": 32
-          },
-          "bbox_px": [
-            737.52,
-            442.909,
-            888.0,
-            491.273
-          ],
-          "entity_id": "cell_r8_c4",
-          "entity_type": "table_cell"
-        },
-        {
-          "attrs": {
-            "cell_role": "row_label",
-            "column_header": "Name",
-            "column_index": 0,
-            "row_index": 9,
-            "row_label": "Ko",
-            "text": "Ko",
-            "text_bbox_px": [
-              66.0,
-              506.455,
-              101.0,
-              524.455
-            ],
-            "value": null
-          },
-          "bbox_px": [
-            52.0,
-            491.273,
-            286.08,
-            539.636
-          ],
-          "entity_id": "cell_r9_c0",
-          "entity_type": "table_cell"
-        },
-        {
-          "attrs": {
-            "cell_role": "value",
-            "column_header": "Mass",
-            "column_index": 1,
-            "row_index": 9,
-            "row_label": "Ko",
-            "text": "18",
-            "text_bbox_px": [
-              347.32,
-              507.455,
-              375.32,
-              523.455
-            ],
-            "value": 18
-          },
-          "bbox_px": [
-            286.08,
-            491.273,
-            436.56,
-            539.636
-          ],
-          "entity_id": "cell_r9_c1",
-          "entity_type": "table_cell"
-        },
-        {
-          "attrs": {
-            "cell_role": "value",
-            "column_header": "Time",
-            "column_index": 2,
-            "row_index": 9,
-            "row_label": "Ko",
-            "text": "25",
-            "text_bbox_px": [
-              497.8,
-              507.455,
-              525.8,
-              523.455
-            ],
-            "value": 25
-          },
-          "bbox_px": [
-            436.56,
-            491.273,
-            587.04,
-            539.636
-          ],
-          "entity_id": "cell_r9_c2",
-          "entity_type": "table_cell"
-        },
-        {
-          "attrs": {
-            "cell_role": "value",
-            "column_header": "Rate",
-            "column_index": 3,
-            "row_index": 9,
-            "row_label": "Ko",
-            "text": "14",
-            "text_bbox_px": [
-              648.28,
-              507.455,
-              676.28,
-              523.455
-            ],
-            "value": 14
-          },
-          "bbox_px": [
-            587.04,
-            491.273,
-            737.52,
-            539.636
-          ],
-          "entity_id": "cell_r9_c3",
-          "entity_type": "table_cell"
-        },
-        {
-          "attrs": {
-            "cell_role": "value",
-            "column_header": "Age",
-            "column_index": 4,
-            "row_index": 9,
-            "row_label": "Ko",
-            "text": "20",
-            "text_bbox_px": [
-              798.76,
-              507.455,
-              826.76,
-              523.455
-            ],
-            "value": 20
-          },
-          "bbox_px": [
-            737.52,
-            491.273,
-            888.0,
-            539.636
-          ],
-          "entity_id": "cell_r9_c4",
-          "entity_type": "table_cell"
-        },
-        {
-          "attrs": {
-            "cell_role": "row_label",
-            "column_header": "Name",
-            "column_index": 0,
-            "row_index": 10,
-            "row_label": "Joab",
-            "text": "Joab",
-            "text_bbox_px": [
-              66.0,
-              552.318,
-              126.0,
-              575.318
-            ],
-            "value": null
-          },
-          "bbox_px": [
-            52.0,
-            539.636,
-            286.08,
-            588.0
-          ],
-          "entity_id": "cell_r10_c0",
-          "entity_type": "table_cell"
-        },
-        {
-          "attrs": {
-            "cell_role": "value",
-            "column_header": "Mass",
-            "column_index": 1,
-            "row_index": 10,
-            "row_label": "Joab",
-            "text": "13",
-            "text_bbox_px": [
-              347.32,
-              555.818,
-              375.32,
-              571.818
-            ],
-            "value": 13
-          },
-          "bbox_px": [
-            286.08,
-            539.636,
-            436.56,
-            588.0
-          ],
-          "entity_id": "cell_r10_c1",
-          "entity_type": "table_cell"
-        },
-        {
-          "attrs": {
-            "cell_role": "value",
-            "column_header": "Time",
-            "column_index": 2,
-            "row_index": 10,
-            "row_label": "Joab",
-            "text": "3",
-            "text_bbox_px": [
-              504.8,
-              555.818,
-              518.8,
-              571.818
-            ],
-            "value": 3
-          },
-          "bbox_px": [
-            436.56,
-            539.636,
-            587.04,
-            588.0
-          ],
-          "entity_id": "cell_r10_c2",
-          "entity_type": "table_cell"
-        },
-        {
-          "attrs": {
-            "cell_role": "value",
-            "column_header": "Rate",
-            "column_index": 3,
-            "row_index": 10,
-            "row_label": "Joab",
-            "text": "19",
-            "text_bbox_px": [
-              648.28,
-              555.818,
-              676.28,
-              571.818
-            ],
-            "value": 19
-          },
-          "bbox_px": [
-            587.04,
-            539.636,
-            737.52,
-            588.0
-          ],
-          "entity_id": "cell_r10_c3",
-          "entity_type": "table_cell"
-        },
-        {
-          "attrs": {
-            "cell_role": "value",
-            "column_header": "Age",
-            "column_index": 4,
-            "row_index": 10,
-            "row_label": "Joab",
+            "row_label": "Chic",
             "text": "27",
             "text_bbox_px": [
-              798.76,
-              555.818,
-              826.76,
-              571.818
+              773.68,
+              550.444,
+              801.68,
+              566.444
             ],
             "value": 27
           },
           "bbox_px": [
-            737.52,
-            539.636,
+            687.36,
+            528.889,
             888.0,
             588.0
           ],
-          "entity_id": "cell_r10_c4",
+          "entity_id": "cell_r8_c3",
           "entity_type": "table_cell"
         }
       ],
       "relations": {
-        "answer_value": 2,
-        "query_column_a": "Mass",
-        "query_column_b": "Age",
-        "scene_variant": "spreadsheet",
+        "answer_value": 4,
+        "query_column_a": "Dist",
+        "query_column_b": "Gain",
+        "scene_variant": "card_table",
         "supporting_cell_ids": [
+          "cell_r3_c1",
+          "cell_r3_c3",
           "cell_r6_c1",
-          "cell_r6_c4",
+          "cell_r6_c3",
           "cell_r7_c1",
-          "cell_r7_c4"
+          "cell_r7_c3",
+          "cell_r8_c1",
+          "cell_r8_c3"
         ],
         "task_variant": "col_a_gt_col_b"
       },
-      "scene_kind": "table_spreadsheet_counting"
+      "scene_kind": "table_card_table_counting"
     },
     "witness_symbolic": {
       "type": "bbox_set",
       "value": [
         [
           286.08,
-          346.182,
-          436.56,
-          394.545
+          233.333,
+          486.72,
+          292.444
         ],
         [
-          737.52,
-          346.182,
+          687.36,
+          233.333,
           888.0,
-          394.545
+          292.444
         ],
         [
           286.08,
-          394.545,
-          436.56,
-          442.909
+          410.667,
+          486.72,
+          469.778
         ],
         [
-          737.52,
-          394.545,
+          687.36,
+          410.667,
           888.0,
-          442.909
+          469.778
+        ],
+        [
+          286.08,
+          469.778,
+          486.72,
+          528.889
+        ],
+        [
+          687.36,
+          469.778,
+          888.0,
+          528.889
+        ],
+        [
+          286.08,
+          528.889,
+          486.72,
+          588.0
+        ],
+        [
+          687.36,
+          528.889,
+          888.0,
+          588.0
         ]
       ]
     }

@@ -6,18 +6,18 @@
   "evidence_gt": {
     "type": "label_set",
     "value": [
-      "R"
+      "B"
     ]
   },
   "image": {
     "format": "png",
     "path": "charts/task_charts_statistics_summary_value/images/median/0007.png"
   },
-  "instance_seed": 7804563410686478,
-  "prompt": "Work from the labeled chart shown in the image: a labeled horizontal bar chart. Each bar's numeric length can be read from the horizontal axis. Determine the requested summary value. What is the median of the displayed values?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing the label of the median mark.\nAnswer rule: set \"answer\" to the requested statistic as an integer.\nExample JSON:\n{\"evidence\":[\"M\"],\"answer\":6}",
+  "instance_seed": 8407117592663591,
+  "prompt": "Use the chart in the image. It shows a labeled bar chart. Each bar's numeric height can be read from the vertical axis. Determine the requested summary value. What is the median of the displayed values?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing the label of the median mark.\nAnswer format: set \"answer\" to the requested statistic as an integer.\nExample JSON:\n{\"evidence\":[\"M\"],\"answer\":6}",
   "prompt_variants": {
-    "answer_and_evidence": "Work from the labeled chart shown in the image: a labeled horizontal bar chart. Each bar's numeric length can be read from the horizontal axis. Determine the requested summary value. What is the median of the displayed values?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing the label of the median mark.\nAnswer rule: set \"answer\" to the requested statistic as an integer.\nExample JSON:\n{\"evidence\":[\"M\"],\"answer\":6}",
-    "answer_only": "Work from the labeled chart shown in the image: a labeled horizontal bar chart. Each bar's numeric length can be read from the horizontal axis. Determine the requested summary value. What is the median of the displayed values?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the requested statistic as an integer.\nExample JSON:\n{\"answer\":6}"
+    "answer_and_evidence": "Use the chart in the image. It shows a labeled bar chart. Each bar's numeric height can be read from the vertical axis. Determine the requested summary value. What is the median of the displayed values?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing the label of the median mark.\nAnswer format: set \"answer\" to the requested statistic as an integer.\nExample JSON:\n{\"evidence\":[\"M\"],\"answer\":6}",
+    "answer_only": "Use the chart in the image. It shows a labeled bar chart. Each bar's numeric height can be read from the vertical axis. Determine the requested summary value. What is the median of the displayed values?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the requested statistic as an integer.\nExample JSON:\n{\"answer\":6}"
   },
   "task": "task_charts_statistics_summary_value",
   "task_variant": "median",
@@ -25,36 +25,38 @@
     "execution_trace": {
       "answer_value": 10,
       "evidence_labels": [
-        "R"
+        "B"
       ],
       "labels": [
-        "J",
-        "R",
-        "M",
+        "A",
+        "L",
+        "C",
         "B",
-        "P"
+        "S",
+        "D",
+        "T"
       ],
       "mark_color_distance_space": "lab",
       "mark_color_min_distance": 40.0,
       "mark_color_sampling_policy": "random_rgb",
-      "mark_count": 5,
+      "mark_count": 7,
       "mark_count_range": [
         5,
         10
       ],
       "mark_fill_rgb": [
-        72,
-        35,
-        54
+        202,
+        128,
+        195
       ],
       "mark_outline_rgb": [
-        40,
-        19,
-        30
+        111,
+        70,
+        107
       ],
-      "median_label": "R",
+      "median_label": "B",
       "question_format": "numeric_open",
-      "scene_variant": "horizontal_bar",
+      "scene_variant": "bar",
       "scene_variant_probabilities": {
         "area": 0.14285714285714285,
         "bar": 0.14285714285714285,
@@ -65,11 +67,13 @@
         "scatter": 0.14285714285714285
       },
       "sorted_values": [
+        7,
         8,
         9,
         10,
         11,
-        12
+        12,
+        13
       ],
       "target_answer": 10,
       "target_answer_range": [
@@ -78,60 +82,64 @@
       ],
       "task_variant": "median",
       "task_variant_probabilities": {
-        "max": 0.14285714285714285,
-        "mean": 0.14285714285714285,
-        "median": 0.14285714285714285,
-        "min": 0.14285714285714285,
-        "mode": 0.14285714285714285,
-        "range": 0.14285714285714285,
-        "sum": 0.14285714285714285
+        "max": 0.0,
+        "mean": 0.0,
+        "median": 1.0,
+        "min": 0.0,
+        "mode": 0.0,
+        "range": 0.0,
+        "sum": 0.0
       },
       "value_max": 20,
       "value_min": 1,
       "values": [
-        9,
-        10,
+        8,
         11,
+        7,
+        10,
+        9,
         12,
-        8
+        13
       ],
       "values_by_label": {
-        "B": 12,
-        "J": 9,
-        "M": 11,
-        "P": 8,
-        "R": 10
+        "A": 8,
+        "B": 10,
+        "C": 7,
+        "D": 12,
+        "L": 11,
+        "S": 9,
+        "T": 13
       }
     },
     "projected_evidence": {
       "bbox_set": [
         [
-          92.0,
-          156.288,
-          601.231,
-          210.112
+          395.574,
+          176.571,
+          450.426,
+          508.0
         ]
       ],
       "label_set": [
-        "R"
+        "B"
       ],
       "pixel_point_map": {
-        "R": [
-          346.615,
-          183.2
+        "B": [
+          423.0,
+          176.571
         ]
       },
       "pixel_point_set": [
         [
-          346.615,
-          183.2
+          423.0,
+          176.571
         ]
       ]
     },
     "query_spec": {
       "params": {
-        "mark_count": 5,
-        "scene_variant": "horizontal_bar",
+        "mark_count": 7,
+        "scene_variant": "bar",
         "scene_variant_probabilities": {
           "area": 0.14285714285714285,
           "bar": 0.14285714285714285,
@@ -148,18 +156,18 @@
         ],
         "task_variant": "median",
         "task_variant_probabilities": {
-          "max": 0.14285714285714285,
-          "mean": 0.14285714285714285,
-          "median": 0.14285714285714285,
-          "min": 0.14285714285714285,
-          "mode": 0.14285714285714285,
-          "range": 0.14285714285714285,
-          "sum": 0.14285714285714285
+          "max": 0.0,
+          "mean": 0.0,
+          "median": 1.0,
+          "min": 0.0,
+          "mode": 0.0,
+          "range": 0.0,
+          "sum": 0.0
         }
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 4,
+        "answer_or_evidence_variant_index": 1,
         "prompt_bundle_id": "charts_statistics_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -169,10 +177,10 @@
           "json_example_answer_only": "{\"answer\":6}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "object_description": "a labeled horizontal bar chart. Each bar's numeric length can be read from the horizontal axis"
+          "object_description": "a labeled bar chart. Each bar's numeric height can be read from the vertical axis"
         },
         "task_family_key": "labeled_chart_statistics",
-        "task_family_variant_index": 2,
+        "task_family_variant_index": 1,
         "task_key": "summary_value_query",
         "task_variant_index": 1,
         "task_variant_key": "median",
@@ -192,7 +200,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 4,
+            "answer_or_evidence_variant_index": 1,
             "prompt_bundle_id": "charts_statistics_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -202,10 +210,10 @@
               "json_example_answer_only": "{\"answer\":6}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a labeled horizontal bar chart. Each bar's numeric length can be read from the horizontal axis"
+              "object_description": "a labeled bar chart. Each bar's numeric height can be read from the vertical axis"
             },
             "task_family_key": "labeled_chart_statistics",
-            "task_family_variant_index": 2,
+            "task_family_variant_index": 1,
             "task_key": "summary_value_query",
             "task_variant_index": 1,
             "task_variant_key": "median",
@@ -220,12 +228,12 @@
               "task_variant:median": 5
             }
           },
-          "prompt": "Work from the labeled chart shown in the image: a labeled horizontal bar chart. Each bar's numeric length can be read from the horizontal axis. Determine the requested summary value. What is the median of the displayed values?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing the label of the median mark.\nAnswer rule: set \"answer\" to the requested statistic as an integer.\nExample JSON:\n{\"evidence\":[\"M\"],\"answer\":6}"
+          "prompt": "Use the chart in the image. It shows a labeled bar chart. Each bar's numeric height can be read from the vertical axis. Determine the requested summary value. What is the median of the displayed values?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing the label of the median mark.\nAnswer format: set \"answer\" to the requested statistic as an integer.\nExample JSON:\n{\"evidence\":[\"M\"],\"answer\":6}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 0,
+            "answer_or_evidence_variant_index": 1,
             "prompt_bundle_id": "charts_statistics_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -235,10 +243,10 @@
               "json_example_answer_only": "{\"answer\":6}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a labeled horizontal bar chart. Each bar's numeric length can be read from the horizontal axis"
+              "object_description": "a labeled bar chart. Each bar's numeric height can be read from the vertical axis"
             },
             "task_family_key": "labeled_chart_statistics",
-            "task_family_variant_index": 2,
+            "task_family_variant_index": 1,
             "task_key": "summary_value_query",
             "task_variant_index": 1,
             "task_variant_key": "median",
@@ -253,7 +261,7 @@
               "task_variant:median": 5
             }
           },
-          "prompt": "Work from the labeled chart shown in the image: a labeled horizontal bar chart. Each bar's numeric length can be read from the horizontal axis. Determine the requested summary value. What is the median of the displayed values?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the requested statistic as an integer.\nExample JSON:\n{\"answer\":6}"
+          "prompt": "Use the chart in the image. It shows a labeled bar chart. Each bar's numeric height can be read from the vertical axis. Determine the requested summary value. What is the median of the displayed values?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the requested statistic as an integer.\nExample JSON:\n{\"answer\":6}"
         }
       },
       "task_variant": "median",
@@ -262,25 +270,33 @@
     "render_map": {
       "image_id": "img0",
       "label_centers_px": {
+        "A": [
+          139.286,
+          534.0
+        ],
         "B": [
-          62.0,
-          368.8
+          423.0,
+          534.0
         ],
-        "J": [
-          62.0,
-          90.4
+        "C": [
+          328.429,
+          534.0
         ],
-        "M": [
-          62.0,
-          276.0
+        "D": [
+          612.143,
+          534.0
         ],
-        "P": [
-          62.0,
-          461.6
+        "L": [
+          233.857,
+          534.0
         ],
-        "R": [
-          62.0,
-          183.2
+        "S": [
+          517.571,
+          534.0
+        ],
+        "T": [
+          706.714,
+          534.0
         ]
       },
       "plot_bbox_px": [
@@ -318,14 +334,14 @@
         "mark_color_distance_space": "lab",
         "mark_color_min_distance": 40.0,
         "mark_fill_rgb": [
-          72,
-          35,
-          54
+          202,
+          128,
+          195
         ],
         "mark_outline_rgb": [
-          40,
-          19,
-          30
+          111,
+          70,
+          107
         ],
         "sampling_policy": "random_rgb"
       },
@@ -351,13 +367,13 @@
         "edits": [],
         "enabled": false
       },
-      "scene_variant": "horizontal_bar",
+      "scene_variant": "bar",
       "text_style": {
         "label_font_size_px": 22,
         "label_stroke_width_px": 2,
         "tick_font_size_px": 18
       },
-      "y_axis_max": 13,
+      "y_axis_max": 14,
       "y_ticks": [
         0,
         1,
@@ -372,142 +388,143 @@
         10,
         11,
         12,
-        13
+        13,
+        14
       ]
     },
     "scene_ir": {
       "entities": [
         {
           "attrs": {
-            "label": "J",
+            "label": "A",
             "label_center_px": [
-              62.0,
-              90.4
+              139.286,
+              534.0
             ],
             "mark_bbox_px": [
-              92.0,
-              63.488,
-              550.308,
-              117.312
+              111.86,
+              242.857,
+              166.711,
+              508.0
             ],
             "mark_center_px": [
-              321.154,
-              90.4
+              139.286,
+              242.857
             ],
             "mark_fill_rgb": [
-              72,
-              35,
-              54
+              202,
+              128,
+              195
             ],
             "mark_outline_rgb": [
-              40,
-              19,
-              30
+              111,
+              70,
+              107
             ],
-            "scene_variant": "horizontal_bar",
-            "value": 9,
+            "scene_variant": "bar",
+            "value": 8,
             "x_rank": 0
           },
-          "entity_id": "mark_J",
+          "entity_id": "mark_A",
           "entity_type": "bar"
         },
         {
           "attrs": {
-            "label": "R",
+            "label": "L",
             "label_center_px": [
-              62.0,
-              183.2
+              233.857,
+              534.0
             ],
             "mark_bbox_px": [
-              92.0,
-              156.288,
-              601.231,
-              210.112
+              206.431,
+              143.429,
+              261.283,
+              508.0
             ],
             "mark_center_px": [
-              346.615,
-              183.2
+              233.857,
+              143.429
             ],
             "mark_fill_rgb": [
-              72,
-              35,
-              54
+              202,
+              128,
+              195
             ],
             "mark_outline_rgb": [
-              40,
-              19,
-              30
+              111,
+              70,
+              107
             ],
-            "scene_variant": "horizontal_bar",
-            "value": 10,
+            "scene_variant": "bar",
+            "value": 11,
             "x_rank": 1
           },
-          "entity_id": "mark_R",
+          "entity_id": "mark_L",
           "entity_type": "bar"
         },
         {
           "attrs": {
-            "label": "M",
+            "label": "C",
             "label_center_px": [
-              62.0,
-              276.0
+              328.429,
+              534.0
             ],
             "mark_bbox_px": [
-              92.0,
-              249.088,
-              652.154,
-              302.912
+              301.003,
+              276.0,
+              355.854,
+              508.0
             ],
             "mark_center_px": [
-              372.077,
+              328.429,
               276.0
             ],
             "mark_fill_rgb": [
-              72,
-              35,
-              54
+              202,
+              128,
+              195
             ],
             "mark_outline_rgb": [
-              40,
-              19,
-              30
+              111,
+              70,
+              107
             ],
-            "scene_variant": "horizontal_bar",
-            "value": 11,
+            "scene_variant": "bar",
+            "value": 7,
             "x_rank": 2
           },
-          "entity_id": "mark_M",
+          "entity_id": "mark_C",
           "entity_type": "bar"
         },
         {
           "attrs": {
             "label": "B",
             "label_center_px": [
-              62.0,
-              368.8
+              423.0,
+              534.0
             ],
             "mark_bbox_px": [
-              92.0,
-              341.888,
-              703.077,
-              395.712
+              395.574,
+              176.571,
+              450.426,
+              508.0
             ],
             "mark_center_px": [
-              397.538,
-              368.8
+              423.0,
+              176.571
             ],
             "mark_fill_rgb": [
-              72,
-              35,
-              54
+              202,
+              128,
+              195
             ],
             "mark_outline_rgb": [
-              40,
-              19,
-              30
+              111,
+              70,
+              107
             ],
-            "scene_variant": "horizontal_bar",
-            "value": 12,
+            "scene_variant": "bar",
+            "value": 10,
             "x_rank": 3
           },
           "entity_id": "mark_B",
@@ -515,51 +532,119 @@
         },
         {
           "attrs": {
-            "label": "P",
+            "label": "S",
             "label_center_px": [
-              62.0,
-              461.6
+              517.571,
+              534.0
             ],
             "mark_bbox_px": [
-              92.0,
-              434.688,
-              499.385,
-              488.512
+              490.146,
+              209.714,
+              544.997,
+              508.0
             ],
             "mark_center_px": [
-              295.692,
-              461.6
+              517.571,
+              209.714
             ],
             "mark_fill_rgb": [
-              72,
-              35,
-              54
+              202,
+              128,
+              195
             ],
             "mark_outline_rgb": [
-              40,
-              19,
-              30
+              111,
+              70,
+              107
             ],
-            "scene_variant": "horizontal_bar",
-            "value": 8,
+            "scene_variant": "bar",
+            "value": 9,
             "x_rank": 4
           },
-          "entity_id": "mark_P",
+          "entity_id": "mark_S",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "label": "D",
+            "label_center_px": [
+              612.143,
+              534.0
+            ],
+            "mark_bbox_px": [
+              584.717,
+              110.286,
+              639.569,
+              508.0
+            ],
+            "mark_center_px": [
+              612.143,
+              110.286
+            ],
+            "mark_fill_rgb": [
+              202,
+              128,
+              195
+            ],
+            "mark_outline_rgb": [
+              111,
+              70,
+              107
+            ],
+            "scene_variant": "bar",
+            "value": 12,
+            "x_rank": 5
+          },
+          "entity_id": "mark_D",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "label": "T",
+            "label_center_px": [
+              706.714,
+              534.0
+            ],
+            "mark_bbox_px": [
+              679.289,
+              77.143,
+              734.14,
+              508.0
+            ],
+            "mark_center_px": [
+              706.714,
+              77.143
+            ],
+            "mark_fill_rgb": [
+              202,
+              128,
+              195
+            ],
+            "mark_outline_rgb": [
+              111,
+              70,
+              107
+            ],
+            "scene_variant": "bar",
+            "value": 13,
+            "x_rank": 6
+          },
+          "entity_id": "mark_T",
           "entity_type": "bar"
         }
       ],
       "relations": {
         "evidence_labels": [
-          "R"
+          "B"
         ],
-        "scene_variant": "horizontal_bar",
+        "scene_variant": "bar",
         "task_variant": "median"
       },
-      "scene_kind": "chart_horizontal_bar_statistics"
+      "scene_kind": "chart_bar_statistics"
     },
     "witness_symbolic": {
       "labels": [
-        "R"
+        "B"
       ],
       "type": "label_set"
     }

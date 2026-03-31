@@ -6,257 +6,257 @@
   "evidence_gt": {
     "type": "label_path",
     "value": [
-      "A",
-      "D",
-      "F",
-      "C",
-      "B"
+      "8",
+      "2",
+      "5",
+      "4",
+      "9"
     ]
   },
   "image": {
     "format": "png",
     "path": "graph/task_graph_path_shortest_path_length/images/shortest_path_length/0010.png"
   },
-  "instance_seed": 7072891607642842,
-  "prompt": "Use the image containing a labeled undirected graph. Determine the answer: The graph has a unique shortest path from node A to node B. How many edges are in that path?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array of the node labels along that unique shortest path in order from node A to node B, including both endpoints.\nAnswer field: set \"answer\" to the number of edges in that path as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"D\",\"H\"],\"answer\":2}",
+  "instance_seed": 834807544620562,
+  "prompt": "The image shows a labeled undirected graph. Task: The graph has a unique shortest path from node 8 to node 9. How many edges are in that path?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array of the node labels along that unique shortest path in order from node 8 to node 9, including both endpoints.\nAnswer requirement: set \"answer\" to the number of edges in that path as an integer.\nExample JSON:\n{\"evidence\":[\"2\",\"5\",\"8\"],\"answer\":2}",
   "prompt_variants": {
-    "answer_and_evidence": "Use the image containing a labeled undirected graph. Determine the answer: The graph has a unique shortest path from node A to node B. How many edges are in that path?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array of the node labels along that unique shortest path in order from node A to node B, including both endpoints.\nAnswer field: set \"answer\" to the number of edges in that path as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"D\",\"H\"],\"answer\":2}",
-    "answer_only": "Use the image containing a labeled undirected graph. Determine the answer: The graph has a unique shortest path from node A to node B. How many edges are in that path?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the number of edges in that path as an integer.\nExample JSON:\n{\"answer\":2}"
+    "answer_and_evidence": "The image shows a labeled undirected graph. Task: The graph has a unique shortest path from node 8 to node 9. How many edges are in that path?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array of the node labels along that unique shortest path in order from node 8 to node 9, including both endpoints.\nAnswer requirement: set \"answer\" to the number of edges in that path as an integer.\nExample JSON:\n{\"evidence\":[\"2\",\"5\",\"8\"],\"answer\":2}",
+    "answer_only": "The image shows a labeled undirected graph. Task: The graph has a unique shortest path from node 8 to node 9. How many edges are in that path?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the number of edges in that path as an integer.\nExample JSON:\n{\"answer\":2}"
   },
   "task": "task_graph_path_shortest_path_length",
   "task_variant": "shortest_path_length",
   "trace_payload": {
     "execution_trace": {
       "adjacency_by_label": {
-        "A": [
-          "D"
+        "1": [
+          "5"
         ],
-        "B": [
-          "C"
+        "2": [
+          "5",
+          "8"
         ],
-        "C": [
-          "B",
-          "F",
-          "G"
+        "3": [
+          "7",
+          "8"
         ],
-        "D": [
-          "A",
-          "E",
-          "F",
-          "H"
+        "4": [
+          "5",
+          "9"
         ],
-        "E": [
-          "D",
-          "H"
+        "5": [
+          "1",
+          "2",
+          "4"
         ],
-        "F": [
-          "C",
-          "D",
-          "I"
+        "6": [
+          "9"
         ],
-        "G": [
-          "C"
+        "7": [
+          "3",
+          "8"
         ],
-        "H": [
-          "D",
-          "E"
+        "8": [
+          "2",
+          "3",
+          "7"
         ],
-        "I": [
-          "F"
+        "9": [
+          "4",
+          "6"
         ]
       },
       "attachment_count": 4,
       "crossing_count": 0,
       "degrees_by_label": {
-        "A": 1,
-        "B": 1,
-        "C": 3,
-        "D": 4,
-        "E": 2,
-        "F": 3,
-        "G": 1,
-        "H": 2,
-        "I": 1
+        "1": 1,
+        "2": 2,
+        "3": 2,
+        "4": 2,
+        "5": 3,
+        "6": 1,
+        "7": 2,
+        "8": 3,
+        "9": 2
       },
       "edge_count": 9,
       "extra_edge_count": 1,
-      "goal_label": "B",
+      "goal_label": "9",
       "graph_directionality": "undirected",
-      "label_variant": "letters",
-      "layout_transform_variant": "rotate_180",
+      "label_variant": "numbers",
+      "layout_transform_variant": "mirror_left_right",
       "layout_variant_requested": "spring",
       "layout_variant_used": "spring",
-      "node_color_name": "cyan",
+      "node_color_name": "red",
       "node_count": 9,
       "node_shape_variant": "circle",
       "predecessors_by_label": {
-        "A": [
-          "D"
+        "1": [
+          "5"
         ],
-        "B": [
-          "C"
+        "2": [
+          "5",
+          "8"
         ],
-        "C": [
-          "B",
-          "F",
-          "G"
+        "3": [
+          "7",
+          "8"
         ],
-        "D": [
-          "A",
-          "E",
-          "F",
-          "H"
+        "4": [
+          "5",
+          "9"
         ],
-        "E": [
-          "D",
-          "H"
+        "5": [
+          "1",
+          "2",
+          "4"
         ],
-        "F": [
-          "C",
-          "D",
-          "I"
+        "6": [
+          "9"
         ],
-        "G": [
-          "C"
+        "7": [
+          "3",
+          "8"
         ],
-        "H": [
-          "D",
-          "E"
+        "8": [
+          "2",
+          "3",
+          "7"
         ],
-        "I": [
-          "F"
+        "9": [
+          "4",
+          "6"
         ]
       },
       "question_format": "count_edges_in_unique_shortest_path",
       "scene_variant": "spring",
       "shortest_path_edge_labels": [
         [
-          "A",
-          "D"
+          "2",
+          "8"
         ],
         [
-          "D",
-          "F"
+          "2",
+          "5"
         ],
         [
-          "C",
-          "F"
+          "4",
+          "5"
         ],
         [
-          "B",
-          "C"
+          "4",
+          "9"
         ]
       ],
       "shortest_path_labels": [
-        "A",
-        "D",
-        "F",
-        "C",
-        "B"
+        "8",
+        "2",
+        "5",
+        "4",
+        "9"
       ],
-      "source_label": "A",
+      "source_label": "8",
       "successors_by_label": {
-        "A": [
-          "D"
+        "1": [
+          "5"
         ],
-        "B": [
-          "C"
+        "2": [
+          "5",
+          "8"
         ],
-        "C": [
-          "B",
-          "F",
-          "G"
+        "3": [
+          "7",
+          "8"
         ],
-        "D": [
-          "A",
-          "E",
-          "F",
-          "H"
+        "4": [
+          "5",
+          "9"
         ],
-        "E": [
-          "D",
-          "H"
+        "5": [
+          "1",
+          "2",
+          "4"
         ],
-        "F": [
-          "C",
-          "D",
-          "I"
+        "6": [
+          "9"
         ],
-        "G": [
-          "C"
+        "7": [
+          "3",
+          "8"
         ],
-        "H": [
-          "D",
-          "E"
+        "8": [
+          "2",
+          "3",
+          "7"
         ],
-        "I": [
-          "F"
+        "9": [
+          "4",
+          "6"
         ]
       },
       "target_shortest_path_length": 4,
       "task_variant": "shortest_path_length",
-      "topology_profile": "balanced"
+      "topology_profile": "low_degree"
     },
     "projected_evidence": {
       "label_path": [
-        "A",
-        "D",
-        "F",
-        "C",
-        "B"
+        "8",
+        "2",
+        "5",
+        "4",
+        "9"
       ],
       "pixel_bbox_set": [
         [
-          607,
-          536,
-          655,
-          584
+          650,
+          153,
+          686,
+          189
         ],
         [
-          611,
-          370,
-          659,
-          418
+          592,
+          245,
+          628,
+          281
         ],
         [
-          416,
-          243,
-          464,
-          291
+          535,
+          340,
+          571,
+          376
         ],
         [
-          201,
-          204,
-          249,
-          252
+          350,
+          418,
+          386,
+          454
         ],
         [
-          88,
-          87,
-          136,
-          135
+          188,
+          490,
+          224,
+          526
         ]
       ],
       "pixel_point_path": [
         [
-          631,
-          560
+          668,
+          171
         ],
         [
-          635,
-          394
+          610,
+          263
         ],
         [
-          440,
-          267
+          553,
+          358
         ],
         [
-          225,
-          228
+          368,
+          436
         ],
         [
-          112,
-          111
+          206,
+          508
         ]
       ],
       "type": "label_path"
@@ -264,14 +264,14 @@
     "query_spec": {
       "params": {
         "edge_count": 9,
-        "goal_label": "B",
+        "goal_label": "9",
         "graph_directionality": "undirected",
-        "label_variant": "letters",
+        "label_variant": "numbers",
         "label_variant_probabilities": {
           "letters": 0.5,
           "numbers": 0.5
         },
-        "layout_transform_variant": "rotate_180",
+        "layout_transform_variant": "mirror_left_right",
         "layout_transform_variant_probabilities": {
           "identity": 0.16666666666666666,
           "mirror_left_right": 0.16666666666666666,
@@ -286,7 +286,7 @@
           "shell": 0.3333333333333333,
           "spring": 0.3333333333333333
         },
-        "node_color_name": "cyan",
+        "node_color_name": "red",
         "node_color_name_probabilities": {
           "blue": 0.1,
           "brown": 0.1,
@@ -313,7 +313,7 @@
           "hexagon": 0.3333333333333333,
           "rounded_square": 0.3333333333333333
         },
-        "source_label": "A",
+        "source_label": "8",
         "target_shortest_path_length": 4,
         "target_shortest_path_length_probabilities": {
           "1": 0.2,
@@ -326,7 +326,7 @@
           "directed_shortest_path_length": 0.0,
           "shortest_path_length": 1.0
         },
-        "topology_profile": "balanced",
+        "topology_profile": "low_degree",
         "topology_profile_probabilities": {
           "balanced": 0.3333333333333333,
           "hub_heavy": 0.3333333333333333,
@@ -335,23 +335,23 @@
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 3,
+        "answer_or_evidence_variant_index": 2,
         "prompt_bundle_id": "graph_path_v1",
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the number of edges in that path as an integer",
-          "evidence_hint": "set \"evidence\" to an array of the node labels along that unique shortest path in order from node A to node B, including both endpoints",
-          "json_example": "{\"evidence\":[\"B\",\"D\",\"H\"],\"answer\":2}",
+          "evidence_hint": "set \"evidence\" to an array of the node labels along that unique shortest path in order from node 8 to node 9, including both endpoints",
+          "json_example": "{\"evidence\":[\"2\",\"5\",\"8\"],\"answer\":2}",
           "json_example_answer_only": "{\"answer\":2}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
           "object_description": "a labeled undirected graph",
-          "question_text": "The graph has a unique shortest path from node A to node B. How many edges are in that path?"
+          "question_text": "The graph has a unique shortest path from node 8 to node 9. How many edges are in that path?"
         },
         "task_family_key": "single_graph_path",
-        "task_family_variant_index": 3,
+        "task_family_variant_index": 1,
         "task_key": "shortest_path_length_query",
-        "task_variant_index": 4,
+        "task_variant_index": 2,
         "task_variant_key": null,
         "task_variant_template_index": null,
         "template_paths": [
@@ -368,23 +368,23 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 3,
+            "answer_or_evidence_variant_index": 2,
             "prompt_bundle_id": "graph_path_v1",
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the number of edges in that path as an integer",
-              "evidence_hint": "set \"evidence\" to an array of the node labels along that unique shortest path in order from node A to node B, including both endpoints",
-              "json_example": "{\"evidence\":[\"B\",\"D\",\"H\"],\"answer\":2}",
+              "evidence_hint": "set \"evidence\" to an array of the node labels along that unique shortest path in order from node 8 to node 9, including both endpoints",
+              "json_example": "{\"evidence\":[\"2\",\"5\",\"8\"],\"answer\":2}",
               "json_example_answer_only": "{\"answer\":2}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a labeled undirected graph",
-              "question_text": "The graph has a unique shortest path from node A to node B. How many edges are in that path?"
+              "question_text": "The graph has a unique shortest path from node 8 to node 9. How many edges are in that path?"
             },
             "task_family_key": "single_graph_path",
-            "task_family_variant_index": 3,
+            "task_family_variant_index": 1,
             "task_key": "shortest_path_length_query",
-            "task_variant_index": 4,
+            "task_variant_index": 2,
             "task_variant_key": null,
             "task_variant_template_index": null,
             "template_paths": [
@@ -396,7 +396,7 @@
               "task_family:single_graph_path": 5
             }
           },
-          "prompt": "Use the image containing a labeled undirected graph. Determine the answer: The graph has a unique shortest path from node A to node B. How many edges are in that path?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array of the node labels along that unique shortest path in order from node A to node B, including both endpoints.\nAnswer field: set \"answer\" to the number of edges in that path as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"D\",\"H\"],\"answer\":2}"
+          "prompt": "The image shows a labeled undirected graph. Task: The graph has a unique shortest path from node 8 to node 9. How many edges are in that path?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array of the node labels along that unique shortest path in order from node 8 to node 9, including both endpoints.\nAnswer requirement: set \"answer\" to the number of edges in that path as an integer.\nExample JSON:\n{\"evidence\":[\"2\",\"5\",\"8\"],\"answer\":2}"
         },
         "answer_only": {
           "metadata": {
@@ -406,18 +406,18 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the number of edges in that path as an integer",
-              "evidence_hint": "set \"evidence\" to an array of the node labels along that unique shortest path in order from node A to node B, including both endpoints",
-              "json_example": "{\"evidence\":[\"B\",\"D\",\"H\"],\"answer\":2}",
+              "evidence_hint": "set \"evidence\" to an array of the node labels along that unique shortest path in order from node 8 to node 9, including both endpoints",
+              "json_example": "{\"evidence\":[\"2\",\"5\",\"8\"],\"answer\":2}",
               "json_example_answer_only": "{\"answer\":2}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a labeled undirected graph",
-              "question_text": "The graph has a unique shortest path from node A to node B. How many edges are in that path?"
+              "question_text": "The graph has a unique shortest path from node 8 to node 9. How many edges are in that path?"
             },
             "task_family_key": "single_graph_path",
-            "task_family_variant_index": 3,
+            "task_family_variant_index": 1,
             "task_key": "shortest_path_length_query",
-            "task_variant_index": 4,
+            "task_variant_index": 2,
             "task_variant_key": null,
             "task_variant_template_index": null,
             "template_paths": [
@@ -429,7 +429,7 @@
               "task_family:single_graph_path": 5
             }
           },
-          "prompt": "Use the image containing a labeled undirected graph. Determine the answer: The graph has a unique shortest path from node A to node B. How many edges are in that path?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the number of edges in that path as an integer.\nExample JSON:\n{\"answer\":2}"
+          "prompt": "The image shows a labeled undirected graph. Task: The graph has a unique shortest path from node 8 to node 9. How many edges are in that path?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the number of edges in that path as an integer.\nExample JSON:\n{\"answer\":2}"
         }
       },
       "task_variant": "shortest_path_length",
@@ -473,9 +473,9 @@
         "arrow_length_px": 12,
         "arrow_width_px": 7,
         "background_color_rgb": [
+          254,
           249,
-          253,
-          254
+          249
         ],
         "background_meta": {
           "available_styles": [
@@ -493,46 +493,46 @@
           }
         },
         "edge_color_rgb": [
-          37,
-          141,
-          161
+          166,
+          36,
+          36
         ],
         "edge_width_px": 4,
         "label_font_size_px": 20,
         "label_stroke_rgb": [
+          133,
+          29,
+          29
+        ],
+        "label_stroke_width_px": 2,
+        "label_text_rgb": [
           255,
           255,
           255
         ],
-        "label_stroke_width_px": 2,
-        "label_text_rgb": [
-          12,
-          45,
-          52
-        ],
         "node_border_rgb": [
-          30,
-          114,
-          130
+          133,
+          29,
+          29
         ],
         "node_border_width_px": 2,
-        "node_color_name": "cyan",
+        "node_color_name": "red",
         "node_fill_rgb": [
-          52,
-          196,
-          224
+          230,
+          50,
+          50
         ],
-        "node_radius_px": 24,
+        "node_radius_px": 18,
         "node_shape_variant": "circle",
         "panel_border_rgb": [
+          248,
           198,
-          238,
-          246
+          198
         ],
         "panel_fill_rgb": [
+          254,
           243,
-          251,
-          253
+          243
         ],
         "post_image_noise_meta": {
           "applied": false,
@@ -552,9 +552,9 @@
         },
         "resolved_label_font_size_px": 20,
         "title_color_rgb": [
-          24,
-          90,
-          103
+          106,
+          23,
+          23
         ]
       }
     },
@@ -562,442 +562,442 @@
       "entities": [
         {
           "bbox_xyxy": [
-            607,
-            536,
-            655,
-            584
+            650,
+            153,
+            686,
+            189
           ],
           "center_px": [
-            631,
-            560
+            668,
+            171
           ],
-          "degree": 1,
-          "entity_id": "node_A",
+          "degree": 3,
+          "entity_id": "node_8",
           "entity_kind": "graph_node",
           "is_goal_node": false,
           "is_on_shortest_path": true,
           "is_source_node": true,
-          "label": "A",
+          "label": "8",
           "neighbors": [
-            "D"
+            "2",
+            "3",
+            "7"
           ],
           "predecessors": [
-            "D"
+            "2",
+            "3",
+            "7"
           ],
           "successors": [
-            "D"
+            "2",
+            "3",
+            "7"
           ]
         },
         {
           "bbox_xyxy": [
-            611,
-            370,
-            659,
-            418
+            592,
+            245,
+            628,
+            281
           ],
           "center_px": [
-            635,
-            394
+            610,
+            263
           ],
-          "degree": 4,
-          "entity_id": "node_D",
+          "degree": 2,
+          "entity_id": "node_2",
           "entity_kind": "graph_node",
           "is_goal_node": false,
           "is_on_shortest_path": true,
           "is_source_node": false,
-          "label": "D",
+          "label": "2",
           "neighbors": [
-            "A",
-            "E",
-            "F",
-            "H"
+            "5",
+            "8"
           ],
           "predecessors": [
-            "A",
-            "E",
-            "F",
-            "H"
+            "5",
+            "8"
           ],
           "successors": [
-            "A",
-            "E",
-            "F",
-            "H"
+            "5",
+            "8"
           ]
         },
         {
           "bbox_xyxy": [
-            416,
-            243,
-            464,
-            291
+            535,
+            340,
+            571,
+            376
           ],
           "center_px": [
-            440,
-            267
+            553,
+            358
           ],
           "degree": 3,
-          "entity_id": "node_F",
+          "entity_id": "node_5",
           "entity_kind": "graph_node",
           "is_goal_node": false,
           "is_on_shortest_path": true,
           "is_source_node": false,
-          "label": "F",
+          "label": "5",
           "neighbors": [
-            "C",
-            "D",
-            "I"
+            "1",
+            "2",
+            "4"
           ],
           "predecessors": [
-            "C",
-            "D",
-            "I"
+            "1",
+            "2",
+            "4"
           ],
           "successors": [
-            "C",
-            "D",
-            "I"
+            "1",
+            "2",
+            "4"
           ]
         },
         {
           "bbox_xyxy": [
-            201,
-            204,
-            249,
-            252
+            350,
+            418,
+            386,
+            454
           ],
           "center_px": [
-            225,
-            228
+            368,
+            436
           ],
-          "degree": 3,
-          "entity_id": "node_C",
+          "degree": 2,
+          "entity_id": "node_4",
           "entity_kind": "graph_node",
           "is_goal_node": false,
           "is_on_shortest_path": true,
           "is_source_node": false,
-          "label": "C",
+          "label": "4",
           "neighbors": [
-            "B",
-            "F",
-            "G"
+            "5",
+            "9"
           ],
           "predecessors": [
-            "B",
-            "F",
-            "G"
+            "5",
+            "9"
           ],
           "successors": [
-            "B",
-            "F",
-            "G"
+            "5",
+            "9"
           ]
         },
         {
           "bbox_xyxy": [
-            88,
-            87,
-            136,
-            135
+            188,
+            490,
+            224,
+            526
           ],
           "center_px": [
-            112,
-            111
+            206,
+            508
           ],
-          "degree": 1,
-          "entity_id": "node_B",
+          "degree": 2,
+          "entity_id": "node_9",
           "entity_kind": "graph_node",
           "is_goal_node": true,
           "is_on_shortest_path": true,
           "is_source_node": false,
-          "label": "B",
+          "label": "9",
           "neighbors": [
-            "C"
+            "4",
+            "6"
           ],
           "predecessors": [
-            "C"
+            "4",
+            "6"
           ],
           "successors": [
-            "C"
-          ]
-        },
-        {
-          "bbox_xyxy": [
-            760,
-            426,
-            808,
-            474
-          ],
-          "center_px": [
-            784,
-            450
-          ],
-          "degree": 2,
-          "entity_id": "node_H",
-          "entity_kind": "graph_node",
-          "is_goal_node": false,
-          "is_on_shortest_path": false,
-          "is_source_node": false,
-          "label": "H",
-          "neighbors": [
-            "D",
-            "E"
-          ],
-          "predecessors": [
-            "D",
-            "E"
-          ],
-          "successors": [
-            "D",
-            "E"
+            "4",
+            "6"
           ]
         },
         {
           "bbox_xyxy": [
             56,
-            270,
-            104,
-            318
+            548,
+            92,
+            584
           ],
           "center_px": [
-            80,
-            294
+            74,
+            566
           ],
           "degree": 1,
-          "entity_id": "node_G",
+          "entity_id": "node_6",
           "entity_kind": "graph_node",
           "is_goal_node": false,
           "is_on_shortest_path": false,
           "is_source_node": false,
-          "label": "G",
+          "label": "6",
           "neighbors": [
-            "C"
+            "9"
           ],
           "predecessors": [
-            "C"
+            "9"
           ],
           "successors": [
-            "C"
+            "9"
           ]
         },
         {
           "bbox_xyxy": [
-            760,
-            326,
-            808,
-            374
+            607,
+            87,
+            643,
+            123
           ],
           "center_px": [
-            784,
-            350
+            625,
+            105
           ],
           "degree": 2,
-          "entity_id": "node_E",
+          "entity_id": "node_3",
           "entity_kind": "graph_node",
           "is_goal_node": false,
           "is_on_shortest_path": false,
           "is_source_node": false,
-          "label": "E",
+          "label": "3",
           "neighbors": [
-            "D",
-            "H"
+            "7",
+            "8"
           ],
           "predecessors": [
-            "D",
-            "H"
+            "7",
+            "8"
           ],
           "successors": [
-            "D",
-            "H"
+            "7",
+            "8"
           ]
         },
         {
           "bbox_xyxy": [
-            448,
-            92,
-            496,
-            140
+            752,
+            371,
+            788,
+            407
           ],
           "center_px": [
-            472,
-            116
+            770,
+            389
           ],
           "degree": 1,
-          "entity_id": "node_I",
+          "entity_id": "node_1",
           "entity_kind": "graph_node",
           "is_goal_node": false,
           "is_on_shortest_path": false,
           "is_source_node": false,
-          "label": "I",
+          "label": "1",
           "neighbors": [
-            "F"
+            "5"
           ],
           "predecessors": [
-            "F"
+            "5"
           ],
           "successors": [
-            "F"
+            "5"
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            772,
+            95,
+            808,
+            131
+          ],
+          "center_px": [
+            790,
+            113
+          ],
+          "degree": 2,
+          "entity_id": "node_7",
+          "entity_kind": "graph_node",
+          "is_goal_node": false,
+          "is_on_shortest_path": false,
+          "is_source_node": false,
+          "label": "7",
+          "neighbors": [
+            "3",
+            "8"
+          ],
+          "predecessors": [
+            "3",
+            "8"
+          ],
+          "successors": [
+            "3",
+            "8"
           ]
         },
         {
           "directed": false,
-          "entity_id": "edge_A_D",
-          "entity_kind": "graph_edge",
-          "is_on_shortest_path": true,
-          "node_u_label": "A",
-          "node_v_label": "D",
-          "segment_px": [
-            [
-              632,
-              536
-            ],
-            [
-              634,
-              418
-            ]
-          ]
-        },
-        {
-          "directed": false,
-          "entity_id": "edge_B_C",
-          "entity_kind": "graph_edge",
-          "is_on_shortest_path": true,
-          "node_u_label": "B",
-          "node_v_label": "C",
-          "segment_px": [
-            [
-              129,
-              128
-            ],
-            [
-              208,
-              211
-            ]
-          ]
-        },
-        {
-          "directed": false,
-          "entity_id": "edge_C_F",
-          "entity_kind": "graph_edge",
-          "is_on_shortest_path": true,
-          "node_u_label": "C",
-          "node_v_label": "F",
-          "segment_px": [
-            [
-              249,
-              232
-            ],
-            [
-              416,
-              263
-            ]
-          ]
-        },
-        {
-          "directed": false,
-          "entity_id": "edge_C_G",
+          "entity_id": "edge_1_5",
           "entity_kind": "graph_edge",
           "is_on_shortest_path": false,
-          "node_u_label": "C",
-          "node_v_label": "G",
+          "node_u_label": "1",
+          "node_v_label": "5",
           "segment_px": [
             [
-              203,
-              238
+              752,
+              386
             ],
             [
-              102,
-              284
+              571,
+              361
             ]
           ]
         },
         {
           "directed": false,
-          "entity_id": "edge_D_E",
+          "entity_id": "edge_2_5",
           "entity_kind": "graph_edge",
-          "is_on_shortest_path": false,
-          "node_u_label": "D",
-          "node_v_label": "E",
+          "is_on_shortest_path": true,
+          "node_u_label": "2",
+          "node_v_label": "5",
           "segment_px": [
+            [
+              601,
+              278
+            ],
+            [
+              562,
+              343
+            ]
+          ]
+        },
+        {
+          "directed": false,
+          "entity_id": "edge_2_8",
+          "entity_kind": "graph_edge",
+          "is_on_shortest_path": true,
+          "node_u_label": "2",
+          "node_v_label": "8",
+          "segment_px": [
+            [
+              620,
+              248
+            ],
             [
               658,
-              387
-            ],
-            [
-              761,
-              357
+              186
             ]
           ]
         },
         {
           "directed": false,
-          "entity_id": "edge_D_F",
+          "entity_id": "edge_3_7",
+          "entity_kind": "graph_edge",
+          "is_on_shortest_path": false,
+          "node_u_label": "3",
+          "node_v_label": "7",
+          "segment_px": [
+            [
+              643,
+              106
+            ],
+            [
+              772,
+              112
+            ]
+          ]
+        },
+        {
+          "directed": false,
+          "entity_id": "edge_3_8",
+          "entity_kind": "graph_edge",
+          "is_on_shortest_path": false,
+          "node_u_label": "3",
+          "node_v_label": "8",
+          "segment_px": [
+            [
+              635,
+              120
+            ],
+            [
+              658,
+              156
+            ]
+          ]
+        },
+        {
+          "directed": false,
+          "entity_id": "edge_4_5",
           "entity_kind": "graph_edge",
           "is_on_shortest_path": true,
-          "node_u_label": "D",
-          "node_v_label": "F",
+          "node_u_label": "4",
+          "node_v_label": "5",
           "segment_px": [
             [
-              615,
-              381
+              385,
+              429
             ],
             [
-              460,
-              280
+              536,
+              365
             ]
           ]
         },
         {
           "directed": false,
-          "entity_id": "edge_D_H",
+          "entity_id": "edge_4_9",
           "entity_kind": "graph_edge",
-          "is_on_shortest_path": false,
-          "node_u_label": "D",
-          "node_v_label": "H",
+          "is_on_shortest_path": true,
+          "node_u_label": "4",
+          "node_v_label": "9",
           "segment_px": [
             [
-              657,
-              402
+              352,
+              443
             ],
             [
-              762,
-              442
+              222,
+              501
             ]
           ]
         },
         {
           "directed": false,
-          "entity_id": "edge_E_H",
+          "entity_id": "edge_6_9",
           "entity_kind": "graph_edge",
           "is_on_shortest_path": false,
-          "node_u_label": "E",
-          "node_v_label": "H",
+          "node_u_label": "6",
+          "node_v_label": "9",
           "segment_px": [
             [
-              784,
-              374
+              90,
+              559
             ],
             [
-              784,
-              426
+              190,
+              515
             ]
           ]
         },
         {
           "directed": false,
-          "entity_id": "edge_F_I",
+          "entity_id": "edge_7_8",
           "entity_kind": "graph_edge",
           "is_on_shortest_path": false,
-          "node_u_label": "F",
-          "node_v_label": "I",
+          "node_u_label": "7",
+          "node_v_label": "8",
           "segment_px": [
             [
-              445,
-              244
+              774,
+              121
             ],
             [
-              467,
-              139
+              684,
+              163
             ]
           ]
         }
@@ -1038,211 +1038,211 @@
       },
       "relations": {
         "adjacency_by_label": {
-          "A": [
-            "D"
+          "1": [
+            "5"
           ],
-          "B": [
-            "C"
+          "2": [
+            "5",
+            "8"
           ],
-          "C": [
-            "B",
-            "F",
-            "G"
+          "3": [
+            "7",
+            "8"
           ],
-          "D": [
-            "A",
-            "E",
-            "F",
-            "H"
+          "4": [
+            "5",
+            "9"
           ],
-          "E": [
-            "D",
-            "H"
+          "5": [
+            "1",
+            "2",
+            "4"
           ],
-          "F": [
-            "C",
-            "D",
-            "I"
+          "6": [
+            "9"
           ],
-          "G": [
-            "C"
+          "7": [
+            "3",
+            "8"
           ],
-          "H": [
-            "D",
-            "E"
+          "8": [
+            "2",
+            "3",
+            "7"
           ],
-          "I": [
-            "F"
+          "9": [
+            "4",
+            "6"
           ]
         },
         "degrees_by_label": {
-          "A": 1,
-          "B": 1,
-          "C": 3,
-          "D": 4,
-          "E": 2,
-          "F": 3,
-          "G": 1,
-          "H": 2,
-          "I": 1
+          "1": 1,
+          "2": 2,
+          "3": 2,
+          "4": 2,
+          "5": 3,
+          "6": 1,
+          "7": 2,
+          "8": 3,
+          "9": 2
         },
         "edge_labels": [
           [
-            "A",
-            "D"
+            "1",
+            "5"
           ],
           [
-            "B",
-            "C"
+            "2",
+            "5"
           ],
           [
-            "C",
-            "F"
+            "2",
+            "8"
           ],
           [
-            "C",
-            "G"
+            "3",
+            "7"
           ],
           [
-            "D",
-            "E"
+            "3",
+            "8"
           ],
           [
-            "D",
-            "F"
+            "4",
+            "5"
           ],
           [
-            "D",
-            "H"
+            "4",
+            "9"
           ],
           [
-            "E",
-            "H"
+            "6",
+            "9"
           ],
           [
-            "F",
-            "I"
+            "7",
+            "8"
           ]
         ],
-        "goal_label": "B",
+        "goal_label": "9",
         "graph_directionality": "undirected",
         "predecessors_by_label": {
-          "A": [
-            "D"
+          "1": [
+            "5"
           ],
-          "B": [
-            "C"
+          "2": [
+            "5",
+            "8"
           ],
-          "C": [
-            "B",
-            "F",
-            "G"
+          "3": [
+            "7",
+            "8"
           ],
-          "D": [
-            "A",
-            "E",
-            "F",
-            "H"
+          "4": [
+            "5",
+            "9"
           ],
-          "E": [
-            "D",
-            "H"
+          "5": [
+            "1",
+            "2",
+            "4"
           ],
-          "F": [
-            "C",
-            "D",
-            "I"
+          "6": [
+            "9"
           ],
-          "G": [
-            "C"
+          "7": [
+            "3",
+            "8"
           ],
-          "H": [
-            "D",
-            "E"
+          "8": [
+            "2",
+            "3",
+            "7"
           ],
-          "I": [
-            "F"
+          "9": [
+            "4",
+            "6"
           ]
         },
         "relation_rule": "unique_shortest_path_between_query_nodes",
         "shortest_path_edge_labels": [
           [
-            "A",
-            "D"
+            "2",
+            "8"
           ],
           [
-            "D",
-            "F"
+            "2",
+            "5"
           ],
           [
-            "C",
-            "F"
+            "4",
+            "5"
           ],
           [
-            "B",
-            "C"
+            "4",
+            "9"
           ]
         ],
         "shortest_path_labels": [
-          "A",
-          "D",
-          "F",
-          "C",
-          "B"
+          "8",
+          "2",
+          "5",
+          "4",
+          "9"
         ],
         "shortest_path_length": 4,
-        "source_label": "A",
+        "source_label": "8",
         "successors_by_label": {
-          "A": [
-            "D"
+          "1": [
+            "5"
           ],
-          "B": [
-            "C"
+          "2": [
+            "5",
+            "8"
           ],
-          "C": [
-            "B",
-            "F",
-            "G"
+          "3": [
+            "7",
+            "8"
           ],
-          "D": [
-            "A",
-            "E",
-            "F",
-            "H"
+          "4": [
+            "5",
+            "9"
           ],
-          "E": [
-            "D",
-            "H"
+          "5": [
+            "1",
+            "2",
+            "4"
           ],
-          "F": [
-            "C",
-            "D",
-            "I"
+          "6": [
+            "9"
           ],
-          "G": [
-            "C"
+          "7": [
+            "3",
+            "8"
           ],
-          "H": [
-            "D",
-            "E"
+          "8": [
+            "2",
+            "3",
+            "7"
           ],
-          "I": [
-            "F"
+          "9": [
+            "4",
+            "6"
           ]
         }
       },
       "scene_kind": "graph_shortest_path_length"
     },
     "witness_symbolic": {
-      "goal_label": "B",
+      "goal_label": "9",
       "label_path": [
-        "A",
-        "D",
-        "F",
-        "C",
-        "B"
+        "8",
+        "2",
+        "5",
+        "4",
+        "9"
       ],
-      "source_label": "A",
+      "source_label": "8",
       "type": "label_path"
     }
   },

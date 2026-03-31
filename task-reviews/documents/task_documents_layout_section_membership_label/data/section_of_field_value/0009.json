@@ -1,16 +1,16 @@
 {
   "answer_gt": {
     "type": "string",
-    "value": "Purchase Info"
+    "value": "Totals"
   },
   "evidence_gt": {
     "type": "bbox_set",
     "value": [
       [
         410.0,
-        372.0,
-        608.0,
-        394.0
+        582.0,
+        513.0,
+        604.0
       ]
     ]
   },
@@ -18,18 +18,18 @@
     "format": "png",
     "path": "documents/task_documents_layout_section_membership_label/images/section_of_field_value/0009.png"
   },
-  "instance_seed": 2937380504081126,
-  "prompt": "Use the structured document in the image: a receipt-style document with visible section headers and labeled totals rows. Which section contains the value Apr 09, 2026? Return the exact section title shown. Respond with the exact section title from the document.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing exactly one bounding box for the matching section header.\nAnswer rule: set \"answer\" to the exact section title shown in the document.\nExample JSON:\n{\"evidence\":[[132,182,260,214]],\"answer\":\"Billing Summary\"}",
+  "instance_seed": 7010301893193627,
+  "prompt": "You are given a receipt-style document with visible section headers and labeled totals rows. Read the document and answer this question: Which section contains the value $8.43? Return the exact section title shown. Respond with the exact section title from the document.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly one bounding box for the matching section header.\nAnswer format: set \"answer\" to the exact section title shown in the document.\nExample JSON:\n{\"evidence\":[[132,182,260,214]],\"answer\":\"Billing Summary\"}",
   "prompt_variants": {
-    "answer_and_evidence": "Use the structured document in the image: a receipt-style document with visible section headers and labeled totals rows. Which section contains the value Apr 09, 2026? Return the exact section title shown. Respond with the exact section title from the document.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing exactly one bounding box for the matching section header.\nAnswer rule: set \"answer\" to the exact section title shown in the document.\nExample JSON:\n{\"evidence\":[[132,182,260,214]],\"answer\":\"Billing Summary\"}",
-    "answer_only": "Use the structured document in the image: a receipt-style document with visible section headers and labeled totals rows. Which section contains the value Apr 09, 2026? Return the exact section title shown. Respond with the exact section title from the document.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the exact section title shown in the document.\nExample JSON:\n{\"answer\":\"Billing Summary\"}"
+    "answer_and_evidence": "You are given a receipt-style document with visible section headers and labeled totals rows. Read the document and answer this question: Which section contains the value $8.43? Return the exact section title shown. Respond with the exact section title from the document.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly one bounding box for the matching section header.\nAnswer format: set \"answer\" to the exact section title shown in the document.\nExample JSON:\n{\"evidence\":[[132,182,260,214]],\"answer\":\"Billing Summary\"}",
+    "answer_only": "You are given a receipt-style document with visible section headers and labeled totals rows. Read the document and answer this question: Which section contains the value $8.43? Return the exact section title shown. Respond with the exact section title from the document.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the exact section title shown in the document.\nExample JSON:\n{\"answer\":\"Billing Summary\"}"
   },
   "task": "task_documents_layout_section_membership_label",
   "task_variant": "section_of_field_value",
   "trace_payload": {
     "answer_gt": {
       "type": "string",
-      "value": "Purchase Info"
+      "value": "Totals"
     },
     "background": {
       "available_styles": [
@@ -51,9 +51,9 @@
       "value": [
         [
           410.0,
-          372.0,
-          608.0,
-          394.0
+          582.0,
+          513.0,
+          604.0
         ]
       ]
     },
@@ -64,7 +64,7 @@
           "comparison_kind": "other",
           "field_id": "store_name",
           "field_label": "Store Name",
-          "field_value": "Central Office",
+          "field_value": "Granite Works",
           "label_bbox_id": "store_name:label",
           "section_id": "store_details",
           "section_label": "Store Details",
@@ -74,7 +74,7 @@
           "comparison_kind": "other",
           "field_id": "receipt_number",
           "field_label": "Receipt No.",
-          "field_value": "R-85869",
+          "field_value": "R-71871",
           "label_bbox_id": "receipt_number:label",
           "section_id": "store_details",
           "section_label": "Store Details",
@@ -84,7 +84,7 @@
           "comparison_kind": "other",
           "field_id": "cashier_name",
           "field_label": "Cashier",
-          "field_value": "Nia Foster",
+          "field_value": "Iris Santos",
           "label_bbox_id": "cashier_name:label",
           "section_id": "store_details",
           "section_label": "Store Details",
@@ -94,7 +94,7 @@
           "comparison_kind": "other",
           "field_id": "purchase_date",
           "field_label": "Purchase Date",
-          "field_value": "Apr 09, 2026",
+          "field_value": "Apr 06, 2026",
           "label_bbox_id": "purchase_date:label",
           "section_id": "purchase_info",
           "section_label": "Purchase Info",
@@ -104,7 +104,7 @@
           "comparison_kind": "other",
           "field_id": "member_id",
           "field_label": "Member ID",
-          "field_value": "M-2930",
+          "field_value": "M-9094",
           "label_bbox_id": "member_id:label",
           "section_id": "purchase_info",
           "section_label": "Purchase Info",
@@ -114,7 +114,7 @@
           "comparison_kind": "other",
           "field_id": "register_id",
           "field_label": "Register ID",
-          "field_value": "REG-922",
+          "field_value": "REG-588",
           "label_bbox_id": "register_id:label",
           "section_id": "purchase_info",
           "section_label": "Purchase Info",
@@ -124,7 +124,7 @@
           "comparison_kind": "amount",
           "field_id": "items_total",
           "field_label": "Items Total",
-          "field_value": "$77.77",
+          "field_value": "$31.23",
           "label_bbox_id": "items_total:label",
           "section_id": "totals",
           "section_label": "Totals",
@@ -134,7 +134,7 @@
           "comparison_kind": "amount",
           "field_id": "tax_amount",
           "field_label": "Tax",
-          "field_value": "$7.50",
+          "field_value": "$5.79",
           "label_bbox_id": "tax_amount:label",
           "section_id": "totals",
           "section_label": "Totals",
@@ -144,21 +144,21 @@
           "comparison_kind": "amount",
           "field_id": "discount_amount",
           "field_label": "Discount",
-          "field_value": "$8.31",
+          "field_value": "$8.43",
           "label_bbox_id": "discount_amount:label",
           "section_id": "totals",
           "section_label": "Totals",
           "value_bbox_id": "discount_amount:value"
         }
       ],
-      "query_field_id": "purchase_date",
-      "query_field_label": "Purchase Date",
-      "query_field_value": "Apr 09, 2026",
-      "query_section_id": "purchase_info",
-      "query_section_label": "Purchase Info",
-      "query_section_label_bbox_id": "purchase_info",
+      "query_field_id": "discount_amount",
+      "query_field_label": "Discount",
+      "query_field_value": "$8.43",
+      "query_section_id": "totals",
+      "query_section_label": "Totals",
+      "query_section_label_bbox_id": "totals",
       "question_format": "document_section_membership_label",
-      "question_text": "Which section contains the value Apr 09, 2026? Return the exact section title shown.",
+      "question_text": "Which section contains the value $8.43? Return the exact section title shown.",
       "scene_title": "Receipt",
       "scene_variant": "receipt_sheet",
       "section_specs": [
@@ -213,9 +213,9 @@
       "bbox_set": [
         [
           410.0,
-          372.0,
-          608.0,
-          394.0
+          582.0,
+          513.0,
+          604.0
         ]
       ]
     },
@@ -242,7 +242,7 @@
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 4,
+        "answer_or_evidence_variant_index": 1,
         "prompt_bundle_id": "documents_layout_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -253,12 +253,12 @@
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
           "object_description": "a receipt-style document with visible section headers and labeled totals rows",
-          "question_text": "Which section contains the value Apr 09, 2026? Return the exact section title shown."
+          "question_text": "Which section contains the value $8.43? Return the exact section title shown."
         },
         "task_family_key": "structured_document_sections",
-        "task_family_variant_index": 3,
+        "task_family_variant_index": 2,
         "task_key": "section_membership_query",
-        "task_variant_index": 0,
+        "task_variant_index": 1,
         "task_variant_key": "section_of_field_value",
         "task_variant_template_index": 2,
         "template_paths": [
@@ -276,7 +276,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 4,
+            "answer_or_evidence_variant_index": 1,
             "prompt_bundle_id": "documents_layout_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -287,12 +287,12 @@
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a receipt-style document with visible section headers and labeled totals rows",
-              "question_text": "Which section contains the value Apr 09, 2026? Return the exact section title shown."
+              "question_text": "Which section contains the value $8.43? Return the exact section title shown."
             },
             "task_family_key": "structured_document_sections",
-            "task_family_variant_index": 3,
+            "task_family_variant_index": 2,
             "task_key": "section_membership_query",
-            "task_variant_index": 0,
+            "task_variant_index": 1,
             "task_variant_key": "section_of_field_value",
             "task_variant_template_index": 2,
             "template_paths": [
@@ -305,12 +305,12 @@
               "task_variant:section_of_field_value": 5
             }
           },
-          "prompt": "Use the structured document in the image: a receipt-style document with visible section headers and labeled totals rows. Which section contains the value Apr 09, 2026? Return the exact section title shown. Respond with the exact section title from the document.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing exactly one bounding box for the matching section header.\nAnswer rule: set \"answer\" to the exact section title shown in the document.\nExample JSON:\n{\"evidence\":[[132,182,260,214]],\"answer\":\"Billing Summary\"}"
+          "prompt": "You are given a receipt-style document with visible section headers and labeled totals rows. Read the document and answer this question: Which section contains the value $8.43? Return the exact section title shown. Respond with the exact section title from the document.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly one bounding box for the matching section header.\nAnswer format: set \"answer\" to the exact section title shown in the document.\nExample JSON:\n{\"evidence\":[[132,182,260,214]],\"answer\":\"Billing Summary\"}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 4,
+            "answer_or_evidence_variant_index": 0,
             "prompt_bundle_id": "documents_layout_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -321,12 +321,12 @@
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a receipt-style document with visible section headers and labeled totals rows",
-              "question_text": "Which section contains the value Apr 09, 2026? Return the exact section title shown."
+              "question_text": "Which section contains the value $8.43? Return the exact section title shown."
             },
             "task_family_key": "structured_document_sections",
-            "task_family_variant_index": 3,
+            "task_family_variant_index": 2,
             "task_key": "section_membership_query",
-            "task_variant_index": 0,
+            "task_variant_index": 1,
             "task_variant_key": "section_of_field_value",
             "task_variant_template_index": 2,
             "template_paths": [
@@ -339,7 +339,7 @@
               "task_variant:section_of_field_value": 5
             }
           },
-          "prompt": "Use the structured document in the image: a receipt-style document with visible section headers and labeled totals rows. Which section contains the value Apr 09, 2026? Return the exact section title shown. Respond with the exact section title from the document.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the exact section title shown in the document.\nExample JSON:\n{\"answer\":\"Billing Summary\"}"
+          "prompt": "You are given a receipt-style document with visible section headers and labeled totals rows. Read the document and answer this question: Which section contains the value $8.43? Return the exact section title shown. Respond with the exact section title from the document.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the exact section title shown in the document.\nExample JSON:\n{\"answer\":\"Billing Summary\"}"
         }
       },
       "task_variant": "section_of_field_value",
@@ -460,7 +460,7 @@
       },
       "field_value_bboxes_px": {
         "cashier_name:value": [
-          719.0,
+          714.0,
           350.5,
           864.0,
           373.5
@@ -502,7 +502,7 @@
           583.0
         ],
         "store_name:value": [
-          668.0,
+          660.0,
           210.5,
           864.0,
           233.5
@@ -570,7 +570,7 @@
     "render_spec": {
       "canvas_height": 920,
       "canvas_width": 1280,
-      "geometry_seed": 2937380504081126,
+      "geometry_seed": 7010301893193627,
       "page_shadow_offset_px": 14,
       "receipt_page_height_px": 760,
       "receipt_page_width_px": 520,
@@ -682,7 +682,7 @@
         {
           "bbox_id": "store_name:value",
           "bbox_px": [
-            668.0,
+            660.0,
             210.5,
             864.0,
             233.5
@@ -690,7 +690,7 @@
           "entity_id": "store_name:value",
           "entity_type": "document_field_value",
           "field_id": "store_name",
-          "text": "Central Office"
+          "text": "Granite Works"
         },
         {
           "bbox_id": "receipt_number",
@@ -728,7 +728,7 @@
           "entity_id": "receipt_number:value",
           "entity_type": "document_field_value",
           "field_id": "receipt_number",
-          "text": "R-85869"
+          "text": "R-71871"
         },
         {
           "bbox_id": "cashier_name",
@@ -758,7 +758,7 @@
         {
           "bbox_id": "cashier_name:value",
           "bbox_px": [
-            719.0,
+            714.0,
             350.5,
             864.0,
             373.5
@@ -766,7 +766,7 @@
           "entity_id": "cashier_name:value",
           "entity_type": "document_field_value",
           "field_id": "cashier_name",
-          "text": "Nia Foster"
+          "text": "Iris Santos"
         },
         {
           "bbox_id": "purchase_date",
@@ -804,7 +804,7 @@
           "entity_id": "purchase_date:value",
           "entity_type": "document_field_value",
           "field_id": "purchase_date",
-          "text": "Apr 09, 2026"
+          "text": "Apr 06, 2026"
         },
         {
           "bbox_id": "member_id",
@@ -842,7 +842,7 @@
           "entity_id": "member_id:value",
           "entity_type": "document_field_value",
           "field_id": "member_id",
-          "text": "M-2930"
+          "text": "M-9094"
         },
         {
           "bbox_id": "register_id",
@@ -880,7 +880,7 @@
           "entity_id": "register_id:value",
           "entity_type": "document_field_value",
           "field_id": "register_id",
-          "text": "REG-922"
+          "text": "REG-588"
         },
         {
           "bbox_id": "items_total",
@@ -918,7 +918,7 @@
           "entity_id": "items_total:value",
           "entity_type": "document_field_value",
           "field_id": "items_total",
-          "text": "$77.77"
+          "text": "$31.23"
         },
         {
           "bbox_id": "tax_amount",
@@ -956,7 +956,7 @@
           "entity_id": "tax_amount:value",
           "entity_type": "document_field_value",
           "field_id": "tax_amount",
-          "text": "$7.50"
+          "text": "$5.79"
         },
         {
           "bbox_id": "discount_amount",
@@ -994,7 +994,7 @@
           "entity_id": "discount_amount:value",
           "entity_type": "document_field_value",
           "field_id": "discount_amount",
-          "text": "$8.31"
+          "text": "$8.43"
         },
         {
           "bbox_id": "store_details:label",
@@ -1037,8 +1037,8 @@
         }
       ],
       "relations": {
-        "query_section_id": "purchase_info",
-        "query_section_label": "Purchase Info",
+        "query_section_id": "totals",
+        "query_section_label": "Totals",
         "scene_variant": "receipt_sheet",
         "task_variant": "section_of_field_value",
         "view_family": "structured_document"
@@ -1047,9 +1047,9 @@
     },
     "witness_symbolic": {
       "bbox_id_sequence": [
-        "purchase_info"
+        "totals"
       ],
-      "field_id": "purchase_date"
+      "field_id": "discount_amount"
     }
   },
   "versions": {

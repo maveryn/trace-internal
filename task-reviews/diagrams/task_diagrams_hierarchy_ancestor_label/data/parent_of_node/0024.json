@@ -1,16 +1,16 @@
 {
   "answer_gt": {
     "type": "string",
-    "value": "Les"
+    "value": "Mir"
   },
   "evidence_gt": {
     "type": "bbox_set",
     "value": [
       [
-        673.0,
-        307.5,
-        837.0,
-        379.5
+        558.0,
+        530.0,
+        722.0,
+        602.0
       ]
     ]
   },
@@ -18,11 +18,11 @@
     "format": "png",
     "path": "diagrams/task_diagrams_hierarchy_ancestor_label/images/parent_of_node/0024.png"
   },
-  "instance_seed": 189952578223858,
-  "prompt": "You are given a hierarchical org chart with labeled boxes and parent-child connector lines. What is the parent of Diao? Return the exact label shown. Answer with the exact label shown.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct parent box.\nAnswer requirement: set \"answer\" to the exact visible ancestor label.\nExample JSON:\n{\"evidence\":[[926,352,1090,424]],\"answer\":\"Walt\"}",
+  "instance_seed": 879306409050044,
+  "prompt": "Look at the hierarchy diagram in the image: a hierarchical org chart with labeled boxes and parent-child connector lines. Follow the parent-child structure and answer: What is the parent of Taub? Return the exact label shown. Give the full label exactly as shown.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct parent box.\nAnswer format: set \"answer\" to the exact visible ancestor label.\nExample JSON:\n{\"evidence\":[[926,352,1090,424]],\"answer\":\"Walt\"}",
   "prompt_variants": {
-    "answer_and_evidence": "You are given a hierarchical org chart with labeled boxes and parent-child connector lines. What is the parent of Diao? Return the exact label shown. Answer with the exact label shown.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct parent box.\nAnswer requirement: set \"answer\" to the exact visible ancestor label.\nExample JSON:\n{\"evidence\":[[926,352,1090,424]],\"answer\":\"Walt\"}",
-    "answer_only": "You are given a hierarchical org chart with labeled boxes and parent-child connector lines. What is the parent of Diao? Return the exact label shown. Answer with the exact label shown.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the exact visible ancestor label.\nExample JSON:\n{\"answer\":\"Walt\"}"
+    "answer_and_evidence": "Look at the hierarchy diagram in the image: a hierarchical org chart with labeled boxes and parent-child connector lines. Follow the parent-child structure and answer: What is the parent of Taub? Return the exact label shown. Give the full label exactly as shown.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct parent box.\nAnswer format: set \"answer\" to the exact visible ancestor label.\nExample JSON:\n{\"evidence\":[[926,352,1090,424]],\"answer\":\"Walt\"}",
+    "answer_only": "Look at the hierarchy diagram in the image: a hierarchical org chart with labeled boxes and parent-child connector lines. Follow the parent-child structure and answer: What is the parent of Taub? Return the exact label shown. Give the full label exactly as shown.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the exact visible ancestor label.\nExample JSON:\n{\"answer\":\"Walt\"}"
   },
   "task": "task_diagrams_hierarchy_ancestor_label",
   "task_variant": "parent_of_node",
@@ -43,10 +43,10 @@
       }
     },
     "execution_trace": {
-      "answer_node_bbox_id": "node_bbox_2",
-      "answer_node_depth": 1,
-      "answer_node_id": "node_2",
-      "answer_node_label": "Les",
+      "answer_node_bbox_id": "node_bbox_6",
+      "answer_node_depth": 2,
+      "answer_node_id": "node_6",
+      "answer_node_label": "Mir",
       "edge_specs": [
         {
           "edge_id": "edge_0",
@@ -85,12 +85,12 @@
         },
         {
           "edge_id": "edge_7",
-          "source_node_id": "node_7",
+          "source_node_id": "node_6",
           "target_node_id": "node_8"
         },
         {
           "edge_id": "edge_8",
-          "source_node_id": "node_7",
+          "source_node_id": "node_3",
           "target_node_id": "node_9"
         },
         {
@@ -100,14 +100,14 @@
         }
       ],
       "lca_span": 0,
-      "leaf_count": 5,
+      "leaf_count": 6,
       "node_specs": [
         {
           "depth": 0,
           "is_leaf": false,
           "node_bbox_id": "node_bbox_0",
           "node_id": "node_0",
-          "node_label": "Ger",
+          "node_label": "Bill",
           "node_label_bbox_id": "node_label_bbox_0",
           "parent_node_id": null
         },
@@ -116,7 +116,7 @@
           "is_leaf": false,
           "node_bbox_id": "node_bbox_1",
           "node_id": "node_1",
-          "node_label": "Soo",
+          "node_label": "Foy",
           "node_label_bbox_id": "node_label_bbox_1",
           "parent_node_id": "node_0"
         },
@@ -125,7 +125,7 @@
           "is_leaf": false,
           "node_bbox_id": "node_bbox_2",
           "node_id": "node_2",
-          "node_label": "Les",
+          "node_label": "Behn",
           "node_label_bbox_id": "node_label_bbox_2",
           "parent_node_id": "node_0"
         },
@@ -134,7 +134,7 @@
           "is_leaf": false,
           "node_bbox_id": "node_bbox_3",
           "node_id": "node_3",
-          "node_label": "Kong",
+          "node_label": "Chuu",
           "node_label_bbox_id": "node_label_bbox_3",
           "parent_node_id": "node_0"
         },
@@ -143,7 +143,7 @@
           "is_leaf": true,
           "node_bbox_id": "node_bbox_4",
           "node_id": "node_4",
-          "node_label": "Ko",
+          "node_label": "Syl",
           "node_label_bbox_id": "node_label_bbox_4",
           "parent_node_id": "node_1"
         },
@@ -152,7 +152,7 @@
           "is_leaf": true,
           "node_bbox_id": "node_bbox_5",
           "node_id": "node_5",
-          "node_label": "Rico",
+          "node_label": "Von",
           "node_label_bbox_id": "node_label_bbox_5",
           "parent_node_id": "node_1"
         },
@@ -161,68 +161,68 @@
           "is_leaf": false,
           "node_bbox_id": "node_bbox_6",
           "node_id": "node_6",
-          "node_label": "Diao",
+          "node_label": "Mir",
           "node_label_bbox_id": "node_label_bbox_6",
           "parent_node_id": "node_2"
         },
         {
           "depth": 3,
-          "is_leaf": false,
+          "is_leaf": true,
           "node_bbox_id": "node_bbox_7",
           "node_id": "node_7",
-          "node_label": "Gun",
+          "node_label": "Glad",
           "node_label_bbox_id": "node_label_bbox_7",
           "parent_node_id": "node_6"
         },
         {
-          "depth": 4,
+          "depth": 3,
           "is_leaf": true,
           "node_bbox_id": "node_bbox_8",
           "node_id": "node_8",
-          "node_label": "Cott",
+          "node_label": "Taub",
           "node_label_bbox_id": "node_label_bbox_8",
-          "parent_node_id": "node_7"
+          "parent_node_id": "node_6"
         },
         {
-          "depth": 4,
+          "depth": 2,
           "is_leaf": true,
           "node_bbox_id": "node_bbox_9",
           "node_id": "node_9",
-          "node_label": "Oran",
+          "node_label": "Bent",
           "node_label_bbox_id": "node_label_bbox_9",
-          "parent_node_id": "node_7"
+          "parent_node_id": "node_3"
         },
         {
           "depth": 2,
           "is_leaf": true,
           "node_bbox_id": "node_bbox_10",
           "node_id": "node_10",
-          "node_label": "Daly",
+          "node_label": "Kalb",
           "node_label_bbox_id": "node_label_bbox_10",
           "parent_node_id": "node_3"
         }
       ],
       "query_depths": [
-        2
+        3
       ],
       "query_node_ids": [
-        "node_6"
+        "node_8"
       ],
       "query_node_labels": [
-        "Diao"
+        "Taub"
       ],
       "query_relationship": "parent",
       "question_format": "hierarchy_ancestor_label",
-      "question_text": "What is the parent of Diao? Return the exact label shown.",
+      "question_text": "What is the parent of Taub? Return the exact label shown.",
       "root_node_id": "node_0",
-      "scene_title": "Org Overview",
+      "scene_title": "Team Structure",
       "scene_variant": "org_chart",
       "supporting_node_bbox_ids": [
-        "node_bbox_2"
+        "node_bbox_6"
       ],
       "task_variant": "parent_of_node",
-      "template_id": "deep_escalation_branch",
-      "tree_depth": 4,
+      "template_id": "mixed_depth_branch",
+      "tree_depth": 3,
       "tree_node_count": 11,
       "view_family": "org_chart_diagram"
     },
@@ -245,16 +245,16 @@
     "projected_evidence": {
       "bbox_set": [
         [
-          673.0,
-          307.5,
-          837.0,
-          379.5
+          558.0,
+          530.0,
+          722.0,
+          602.0
         ]
       ]
     },
     "query_spec": {
       "params": {
-        "leaf_count": 5,
+        "leaf_count": 6,
         "query_relationship": "parent",
         "scene_variant": "org_chart",
         "scene_variant_probabilities": {
@@ -265,12 +265,12 @@
           "lowest_common_ancestor_of_two_nodes": 0.0,
           "parent_of_node": 1.0
         },
-        "tree_depth": 4,
+        "tree_depth": 3,
         "tree_node_count": 11
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 2,
+        "answer_or_evidence_variant_index": 1,
         "prompt_bundle_id": "diagrams_hierarchy_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -281,14 +281,14 @@
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
           "object_description": "a hierarchical org chart with labeled boxes and parent-child connector lines",
-          "question_text": "What is the parent of Diao? Return the exact label shown."
+          "question_text": "What is the parent of Taub? Return the exact label shown."
         },
         "task_family_key": "hierarchy_diagram",
-        "task_family_variant_index": 2,
+        "task_family_variant_index": 1,
         "task_key": "ancestor_query",
-        "task_variant_index": 0,
+        "task_variant_index": 3,
         "task_variant_key": "parent_of_node",
-        "task_variant_template_index": 0,
+        "task_variant_template_index": 3,
         "template_paths": [
           "diagrams/hierarchy/diagrams_hierarchy_v1.json"
         ],
@@ -304,40 +304,6 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 2,
-            "prompt_bundle_id": "diagrams_hierarchy_v1",
-            "schema_version": "v1",
-            "slot_values": {
-              "answer_hint": "set \"answer\" to the exact visible ancestor label",
-              "evidence_hint": "set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct parent box",
-              "json_example": "{\"evidence\":[[926,352,1090,424]],\"answer\":\"Walt\"}",
-              "json_example_answer_only": "{\"answer\":\"Walt\"}",
-              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
-              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a hierarchical org chart with labeled boxes and parent-child connector lines",
-              "question_text": "What is the parent of Diao? Return the exact label shown."
-            },
-            "task_family_key": "hierarchy_diagram",
-            "task_family_variant_index": 2,
-            "task_key": "ancestor_query",
-            "task_variant_index": 0,
-            "task_variant_key": "parent_of_node",
-            "task_variant_template_index": 0,
-            "template_paths": [
-              "diagrams/hierarchy/diagrams_hierarchy_v1.json"
-            ],
-            "variant_count_by_key": {
-              "answer_or_evidence:answer_and_evidence": 5,
-              "task:ancestor_query": 5,
-              "task_family:hierarchy_diagram": 5,
-              "task_variant:parent_of_node": 5
-            }
-          },
-          "prompt": "You are given a hierarchical org chart with labeled boxes and parent-child connector lines. What is the parent of Diao? Return the exact label shown. Answer with the exact label shown.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct parent box.\nAnswer requirement: set \"answer\" to the exact visible ancestor label.\nExample JSON:\n{\"evidence\":[[926,352,1090,424]],\"answer\":\"Walt\"}"
-        },
-        "answer_only": {
-          "metadata": {
-            "answer_or_evidence_key": "answer_only",
             "answer_or_evidence_variant_index": 1,
             "prompt_bundle_id": "diagrams_hierarchy_v1",
             "schema_version": "v1",
@@ -349,14 +315,48 @@
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a hierarchical org chart with labeled boxes and parent-child connector lines",
-              "question_text": "What is the parent of Diao? Return the exact label shown."
+              "question_text": "What is the parent of Taub? Return the exact label shown."
             },
             "task_family_key": "hierarchy_diagram",
-            "task_family_variant_index": 2,
+            "task_family_variant_index": 1,
             "task_key": "ancestor_query",
-            "task_variant_index": 0,
+            "task_variant_index": 3,
             "task_variant_key": "parent_of_node",
-            "task_variant_template_index": 0,
+            "task_variant_template_index": 3,
+            "template_paths": [
+              "diagrams/hierarchy/diagrams_hierarchy_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:ancestor_query": 5,
+              "task_family:hierarchy_diagram": 5,
+              "task_variant:parent_of_node": 5
+            }
+          },
+          "prompt": "Look at the hierarchy diagram in the image: a hierarchical org chart with labeled boxes and parent-child connector lines. Follow the parent-child structure and answer: What is the parent of Taub? Return the exact label shown. Give the full label exactly as shown.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct parent box.\nAnswer format: set \"answer\" to the exact visible ancestor label.\nExample JSON:\n{\"evidence\":[[926,352,1090,424]],\"answer\":\"Walt\"}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 2,
+            "prompt_bundle_id": "diagrams_hierarchy_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the exact visible ancestor label",
+              "evidence_hint": "set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct parent box",
+              "json_example": "{\"evidence\":[[926,352,1090,424]],\"answer\":\"Walt\"}",
+              "json_example_answer_only": "{\"answer\":\"Walt\"}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a hierarchical org chart with labeled boxes and parent-child connector lines",
+              "question_text": "What is the parent of Taub? Return the exact label shown."
+            },
+            "task_family_key": "hierarchy_diagram",
+            "task_family_variant_index": 1,
+            "task_key": "ancestor_query",
+            "task_variant_index": 3,
+            "task_variant_key": "parent_of_node",
+            "task_variant_template_index": 3,
             "template_paths": [
               "diagrams/hierarchy/diagrams_hierarchy_v1.json"
             ],
@@ -367,7 +367,7 @@
               "task_variant:parent_of_node": 5
             }
           },
-          "prompt": "You are given a hierarchical org chart with labeled boxes and parent-child connector lines. What is the parent of Diao? Return the exact label shown. Answer with the exact label shown.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the exact visible ancestor label.\nExample JSON:\n{\"answer\":\"Walt\"}"
+          "prompt": "Look at the hierarchy diagram in the image: a hierarchical org chart with labeled boxes and parent-child connector lines. Follow the parent-child structure and answer: What is the parent of Taub? Return the exact label shown. Give the full label exactly as shown.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the exact visible ancestor label.\nExample JSON:\n{\"answer\":\"Walt\"}"
         }
       },
       "task_variant": "parent_of_node",
@@ -376,200 +376,200 @@
     "render_map": {
       "edge_bboxes_px": {
         "edge_0": [
-          295.0,
+          272.0,
           246.0,
-          716.667,
-          307.5
+          640.0,
+          352.0
         ],
         "edge_1": [
-          716.667,
+          640.0,
           246.0,
-          755.0,
-          307.5
+          640.0,
+          352.0
         ],
         "edge_2": [
-          716.667,
+          640.0,
           246.0,
-          1100.0,
-          307.5
+          1008.0,
+          352.0
         ],
         "edge_3": [
           180.0,
-          379.5,
-          295.0,
-          441.0
+          424.0,
+          272.0,
+          530.0
         ],
         "edge_4": [
-          295.0,
-          379.5,
-          410.0,
-          441.0
+          272.0,
+          424.0,
+          364.0,
+          530.0
         ],
         "edge_5": [
-          755.0,
-          379.5,
-          755.0,
-          441.0
+          640.0,
+          424.0,
+          640.0,
+          530.0
         ],
         "edge_6": [
-          755.0,
-          513.0,
-          755.0,
-          574.5
+          548.0,
+          602.0,
+          640.0,
+          708.0
         ],
         "edge_7": [
           640.0,
-          646.5,
-          755.0,
+          602.0,
+          732.0,
           708.0
         ],
         "edge_8": [
-          755.0,
-          646.5,
-          870.0,
-          708.0
+          916.0,
+          424.0,
+          1008.0,
+          530.0
         ],
         "edge_9": [
+          1008.0,
+          424.0,
           1100.0,
-          379.5,
-          1100.0,
-          441.0
+          530.0
         ]
       },
       "node_bboxes_px": {
         "node_bbox_0": [
-          634.667,
+          558.0,
           174.0,
-          798.667,
+          722.0,
           246.0
         ],
         "node_bbox_1": [
-          213.0,
-          307.5,
-          377.0,
-          379.5
+          190.0,
+          352.0,
+          354.0,
+          424.0
         ],
         "node_bbox_10": [
           1018.0,
-          441.0,
+          530.0,
           1182.0,
-          513.0
+          602.0
         ],
         "node_bbox_2": [
-          673.0,
-          307.5,
-          837.0,
-          379.5
+          558.0,
+          352.0,
+          722.0,
+          424.0
         ],
         "node_bbox_3": [
-          1018.0,
-          307.5,
-          1182.0,
-          379.5
+          926.0,
+          352.0,
+          1090.0,
+          424.0
         ],
         "node_bbox_4": [
           98.0,
-          441.0,
+          530.0,
           262.0,
-          513.0
+          602.0
         ],
         "node_bbox_5": [
-          328.0,
-          441.0,
-          492.0,
-          513.0
+          282.0,
+          530.0,
+          446.0,
+          602.0
         ],
         "node_bbox_6": [
-          673.0,
-          441.0,
-          837.0,
-          513.0
+          558.0,
+          530.0,
+          722.0,
+          602.0
         ],
         "node_bbox_7": [
-          673.0,
-          574.5,
-          837.0,
-          646.5
+          466.0,
+          708.0,
+          630.0,
+          780.0
         ],
         "node_bbox_8": [
-          558.0,
+          650.0,
           708.0,
-          722.0,
+          814.0,
           780.0
         ],
         "node_bbox_9": [
-          788.0,
-          708.0,
-          952.0,
-          780.0
+          834.0,
+          530.0,
+          998.0,
+          602.0
         ]
       },
       "node_label_bboxes_px": {
         "node_label_bbox_0": [
-          691.667,
+          618.0,
           200.0,
-          741.667,
+          662.0,
           220.0
         ],
         "node_label_bbox_1": [
-          269.5,
-          333.5,
-          320.5,
-          353.5
+          247.0,
+          375.5,
+          297.0,
+          400.5
         ],
         "node_label_bbox_10": [
           1069.0,
-          464.5,
+          556.0,
           1131.0,
-          489.5
+          576.0
         ],
         "node_label_bbox_2": [
-          731.5,
-          333.5,
-          778.5,
-          353.5
+          605.0,
+          378.0,
+          675.0,
+          398.0
         ],
         "node_label_bbox_3": [
-          1064.5,
-          331.0,
-          1135.5,
-          356.0
+          972.5,
+          378.0,
+          1043.5,
+          398.0
         ],
         "node_label_bbox_4": [
-          161.5,
-          467.0,
-          198.5,
-          487.0
+          158.5,
+          553.5,
+          201.5,
+          578.5
         ],
         "node_label_bbox_5": [
-          381.0,
-          467.0,
-          439.0,
-          487.0
+          337.0,
+          556.0,
+          391.0,
+          576.0
         ],
         "node_label_bbox_6": [
-          724.0,
-          467.0,
-          786.0,
-          487.0
+          617.0,
+          556.0,
+          663.0,
+          576.0
         ],
         "node_label_bbox_7": [
-          727.0,
-          600.5,
-          783.0,
-          620.5
+          516.5,
+          734.0,
+          579.5,
+          754.0
         ],
         "node_label_bbox_8": [
-          611.0,
+          698.0,
           734.0,
-          669.0,
+          766.0,
           754.0
         ],
         "node_label_bbox_9": [
-          836.5,
-          734.0,
-          903.5,
-          754.0
+          884.0,
+          556.0,
+          948.0,
+          576.0
         ]
       },
       "panel_bbox_px": [
@@ -579,17 +579,17 @@
         828.0
       ],
       "title_bbox_px": [
-        515.5,
-        74.5,
-        764.5,
-        107.5
+        498.0,
+        78.5,
+        782.0,
+        103.5
       ]
     },
     "render_spec": {
       "canvas_height": 880,
       "canvas_width": 1280,
       "connector_width_px": 5,
-      "geometry_seed": 189952578223858,
+      "geometry_seed": 879306409050044,
       "node_height_px": 72,
       "node_width_px": 164,
       "scene_variant": "org_chart"
@@ -608,21 +608,21 @@
         },
         {
           "bbox_xyxy": [
-            515.5,
-            74.5,
-            764.5,
-            107.5
+            498.0,
+            78.5,
+            782.0,
+            103.5
           ],
           "entity_id": "diagram_title",
           "entity_type": "diagram_title",
-          "text": "Org Overview"
+          "text": "Team Structure"
         },
         {
           "bbox_xyxy": [
-            295.0,
+            272.0,
             246.0,
-            716.667,
-            307.5
+            640.0,
+            352.0
           ],
           "entity_id": "edge_0",
           "entity_type": "diagram_edge",
@@ -631,10 +631,10 @@
         },
         {
           "bbox_xyxy": [
-            716.667,
+            640.0,
             246.0,
-            755.0,
-            307.5
+            640.0,
+            352.0
           ],
           "entity_id": "edge_1",
           "entity_type": "diagram_edge",
@@ -643,10 +643,10 @@
         },
         {
           "bbox_xyxy": [
-            716.667,
+            640.0,
             246.0,
-            1100.0,
-            307.5
+            1008.0,
+            352.0
           ],
           "entity_id": "edge_2",
           "entity_type": "diagram_edge",
@@ -656,9 +656,9 @@
         {
           "bbox_xyxy": [
             180.0,
-            379.5,
-            295.0,
-            441.0
+            424.0,
+            272.0,
+            530.0
           ],
           "entity_id": "edge_3",
           "entity_type": "diagram_edge",
@@ -667,10 +667,10 @@
         },
         {
           "bbox_xyxy": [
-            295.0,
-            379.5,
-            410.0,
-            441.0
+            272.0,
+            424.0,
+            364.0,
+            530.0
           ],
           "entity_id": "edge_4",
           "entity_type": "diagram_edge",
@@ -679,10 +679,10 @@
         },
         {
           "bbox_xyxy": [
-            755.0,
-            379.5,
-            755.0,
-            441.0
+            640.0,
+            424.0,
+            640.0,
+            530.0
           ],
           "entity_id": "edge_5",
           "entity_type": "diagram_edge",
@@ -691,10 +691,22 @@
         },
         {
           "bbox_xyxy": [
+            916.0,
+            424.0,
+            1008.0,
+            530.0
+          ],
+          "entity_id": "edge_8",
+          "entity_type": "diagram_edge",
+          "source_node_id": "node_3",
+          "target_node_id": "node_9"
+        },
+        {
+          "bbox_xyxy": [
+            1008.0,
+            424.0,
             1100.0,
-            379.5,
-            1100.0,
-            441.0
+            530.0
           ],
           "entity_id": "edge_9",
           "entity_type": "diagram_edge",
@@ -703,10 +715,10 @@
         },
         {
           "bbox_xyxy": [
-            755.0,
-            513.0,
-            755.0,
-            574.5
+            548.0,
+            602.0,
+            640.0,
+            708.0
           ],
           "entity_id": "edge_6",
           "entity_type": "diagram_edge",
@@ -716,306 +728,294 @@
         {
           "bbox_xyxy": [
             640.0,
-            646.5,
-            755.0,
+            602.0,
+            732.0,
             708.0
           ],
           "entity_id": "edge_7",
           "entity_type": "diagram_edge",
-          "source_node_id": "node_7",
+          "source_node_id": "node_6",
           "target_node_id": "node_8"
         },
         {
           "bbox_xyxy": [
-            755.0,
-            646.5,
-            870.0,
-            708.0
-          ],
-          "entity_id": "edge_8",
-          "entity_type": "diagram_edge",
-          "source_node_id": "node_7",
-          "target_node_id": "node_9"
-        },
-        {
-          "bbox_xyxy": [
-            634.667,
+            558.0,
             174.0,
-            798.667,
+            722.0,
             246.0
           ],
           "depth": 0,
           "entity_id": "node_bbox_0",
           "entity_type": "diagram_node",
           "node_id": "node_0",
-          "text": "Ger"
+          "text": "Bill"
         },
         {
           "bbox_xyxy": [
-            691.667,
+            618.0,
             200.0,
-            741.667,
+            662.0,
             220.0
           ],
           "entity_id": "node_label_bbox_0",
           "entity_type": "diagram_node_label",
           "node_id": "node_0",
-          "text": "Ger"
+          "text": "Bill"
         },
         {
           "bbox_xyxy": [
-            213.0,
-            307.5,
-            377.0,
-            379.5
+            190.0,
+            352.0,
+            354.0,
+            424.0
           ],
           "depth": 1,
           "entity_id": "node_bbox_1",
           "entity_type": "diagram_node",
           "node_id": "node_1",
-          "text": "Soo"
+          "text": "Foy"
         },
         {
           "bbox_xyxy": [
-            269.5,
-            333.5,
-            320.5,
-            353.5
+            247.0,
+            375.5,
+            297.0,
+            400.5
           ],
           "entity_id": "node_label_bbox_1",
           "entity_type": "diagram_node_label",
           "node_id": "node_1",
-          "text": "Soo"
+          "text": "Foy"
         },
         {
           "bbox_xyxy": [
-            673.0,
-            307.5,
-            837.0,
-            379.5
+            558.0,
+            352.0,
+            722.0,
+            424.0
           ],
           "depth": 1,
           "entity_id": "node_bbox_2",
           "entity_type": "diagram_node",
           "node_id": "node_2",
-          "text": "Les"
+          "text": "Behn"
         },
         {
           "bbox_xyxy": [
-            731.5,
-            333.5,
-            778.5,
-            353.5
+            605.0,
+            378.0,
+            675.0,
+            398.0
           ],
           "entity_id": "node_label_bbox_2",
           "entity_type": "diagram_node_label",
           "node_id": "node_2",
-          "text": "Les"
+          "text": "Behn"
         },
         {
           "bbox_xyxy": [
-            1018.0,
-            307.5,
-            1182.0,
-            379.5
+            926.0,
+            352.0,
+            1090.0,
+            424.0
           ],
           "depth": 1,
           "entity_id": "node_bbox_3",
           "entity_type": "diagram_node",
           "node_id": "node_3",
-          "text": "Kong"
+          "text": "Chuu"
         },
         {
           "bbox_xyxy": [
-            1064.5,
-            331.0,
-            1135.5,
-            356.0
+            972.5,
+            378.0,
+            1043.5,
+            398.0
           ],
           "entity_id": "node_label_bbox_3",
           "entity_type": "diagram_node_label",
           "node_id": "node_3",
-          "text": "Kong"
+          "text": "Chuu"
         },
         {
           "bbox_xyxy": [
             98.0,
-            441.0,
+            530.0,
             262.0,
-            513.0
+            602.0
           ],
           "depth": 2,
           "entity_id": "node_bbox_4",
           "entity_type": "diagram_node",
           "node_id": "node_4",
-          "text": "Ko"
+          "text": "Syl"
         },
         {
           "bbox_xyxy": [
-            161.5,
-            467.0,
-            198.5,
-            487.0
+            158.5,
+            553.5,
+            201.5,
+            578.5
           ],
           "entity_id": "node_label_bbox_4",
           "entity_type": "diagram_node_label",
           "node_id": "node_4",
-          "text": "Ko"
+          "text": "Syl"
         },
         {
           "bbox_xyxy": [
-            328.0,
-            441.0,
-            492.0,
-            513.0
+            282.0,
+            530.0,
+            446.0,
+            602.0
           ],
           "depth": 2,
           "entity_id": "node_bbox_5",
           "entity_type": "diagram_node",
           "node_id": "node_5",
-          "text": "Rico"
+          "text": "Von"
         },
         {
           "bbox_xyxy": [
-            381.0,
-            467.0,
-            439.0,
-            487.0
+            337.0,
+            556.0,
+            391.0,
+            576.0
           ],
           "entity_id": "node_label_bbox_5",
           "entity_type": "diagram_node_label",
           "node_id": "node_5",
-          "text": "Rico"
+          "text": "Von"
         },
         {
           "bbox_xyxy": [
-            673.0,
-            441.0,
-            837.0,
-            513.0
+            558.0,
+            530.0,
+            722.0,
+            602.0
           ],
           "depth": 2,
           "entity_id": "node_bbox_6",
           "entity_type": "diagram_node",
           "node_id": "node_6",
-          "text": "Diao"
+          "text": "Mir"
         },
         {
           "bbox_xyxy": [
-            724.0,
-            467.0,
-            786.0,
-            487.0
+            617.0,
+            556.0,
+            663.0,
+            576.0
           ],
           "entity_id": "node_label_bbox_6",
           "entity_type": "diagram_node_label",
           "node_id": "node_6",
-          "text": "Diao"
+          "text": "Mir"
         },
         {
           "bbox_xyxy": [
-            673.0,
-            574.5,
-            837.0,
-            646.5
+            466.0,
+            708.0,
+            630.0,
+            780.0
           ],
           "depth": 3,
           "entity_id": "node_bbox_7",
           "entity_type": "diagram_node",
           "node_id": "node_7",
-          "text": "Gun"
+          "text": "Glad"
         },
         {
           "bbox_xyxy": [
-            727.0,
-            600.5,
-            783.0,
-            620.5
+            516.5,
+            734.0,
+            579.5,
+            754.0
           ],
           "entity_id": "node_label_bbox_7",
           "entity_type": "diagram_node_label",
           "node_id": "node_7",
-          "text": "Gun"
+          "text": "Glad"
         },
         {
           "bbox_xyxy": [
-            558.0,
+            650.0,
             708.0,
-            722.0,
+            814.0,
             780.0
           ],
-          "depth": 4,
+          "depth": 3,
           "entity_id": "node_bbox_8",
           "entity_type": "diagram_node",
           "node_id": "node_8",
-          "text": "Cott"
+          "text": "Taub"
         },
         {
           "bbox_xyxy": [
-            611.0,
+            698.0,
             734.0,
-            669.0,
+            766.0,
             754.0
           ],
           "entity_id": "node_label_bbox_8",
           "entity_type": "diagram_node_label",
           "node_id": "node_8",
-          "text": "Cott"
+          "text": "Taub"
         },
         {
           "bbox_xyxy": [
-            788.0,
-            708.0,
-            952.0,
-            780.0
+            834.0,
+            530.0,
+            998.0,
+            602.0
           ],
-          "depth": 4,
+          "depth": 2,
           "entity_id": "node_bbox_9",
           "entity_type": "diagram_node",
           "node_id": "node_9",
-          "text": "Oran"
+          "text": "Bent"
         },
         {
           "bbox_xyxy": [
-            836.5,
-            734.0,
-            903.5,
-            754.0
+            884.0,
+            556.0,
+            948.0,
+            576.0
           ],
           "entity_id": "node_label_bbox_9",
           "entity_type": "diagram_node_label",
           "node_id": "node_9",
-          "text": "Oran"
+          "text": "Bent"
         },
         {
           "bbox_xyxy": [
             1018.0,
-            441.0,
+            530.0,
             1182.0,
-            513.0
+            602.0
           ],
           "depth": 2,
           "entity_id": "node_bbox_10",
           "entity_type": "diagram_node",
           "node_id": "node_10",
-          "text": "Daly"
+          "text": "Kalb"
         },
         {
           "bbox_xyxy": [
             1069.0,
-            464.5,
+            556.0,
             1131.0,
-            489.5
+            576.0
           ],
           "entity_id": "node_label_bbox_10",
           "entity_type": "diagram_node_label",
           "node_id": "node_10",
-          "text": "Daly"
+          "text": "Kalb"
         }
       ],
       "relations": {
-        "answer_node_bbox_id": "node_bbox_2",
-        "answer_node_id": "node_2",
+        "answer_node_bbox_id": "node_bbox_6",
+        "answer_node_id": "node_6",
         "root_node_id": "node_0",
         "scene_variant": "org_chart",
         "task_variant": "parent_of_node",
@@ -1025,7 +1025,7 @@
     },
     "witness_symbolic": {
       "ids": [
-        "node_2"
+        "node_6"
       ],
       "type": "id_set"
     }

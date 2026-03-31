@@ -1,7 +1,7 @@
 {
   "answer_gt": {
     "type": "string",
-    "value": "M-5911"
+    "value": "M-1930"
   },
   "evidence_gt": {
     "type": "bbox_set",
@@ -24,18 +24,18 @@
     "format": "png",
     "path": "documents/task_documents_readout_field_value/images/lookup_identifier/0017.png"
   },
-  "instance_seed": 4257486356397212,
-  "prompt": "Read the labeled fields in this document: a receipt-style document with labeled rows and totals. What is the member ID? Answer using the exact field value.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value.\nAnswer format: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"INV-48217\"}",
+  "instance_seed": 5665250340338978,
+  "prompt": "Read the labeled fields in this document: a receipt-style document with labeled rows and totals. Read the document and answer this question: What is the member ID? Return the exact field text as written.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value.\nAnswer rule: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"INV-48217\"}",
   "prompt_variants": {
-    "answer_and_evidence": "Read the labeled fields in this document: a receipt-style document with labeled rows and totals. What is the member ID? Answer using the exact field value.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value.\nAnswer format: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"INV-48217\"}",
-    "answer_only": "Read the labeled fields in this document: a receipt-style document with labeled rows and totals. What is the member ID? Answer using the exact field value.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"answer\":\"INV-48217\"}"
+    "answer_and_evidence": "Read the labeled fields in this document: a receipt-style document with labeled rows and totals. Read the document and answer this question: What is the member ID? Return the exact field text as written.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value.\nAnswer rule: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"INV-48217\"}",
+    "answer_only": "Read the labeled fields in this document: a receipt-style document with labeled rows and totals. Read the document and answer this question: What is the member ID? Return the exact field text as written.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"answer\":\"INV-48217\"}"
   },
   "task": "task_documents_readout_field_value",
   "task_variant": "lookup_identifier",
   "trace_payload": {
     "answer_gt": {
       "type": "string",
-      "value": "M-5911"
+      "value": "M-1930"
     },
     "background": {
       "available_styles": [
@@ -76,7 +76,7 @@
           "field_category": "lookup_name",
           "field_id": "store_name",
           "field_label": "Store Name",
-          "field_value": "Southridge Market",
+          "field_value": "Elm Market",
           "label_bbox_id": "store_name:label",
           "question_name": "store name",
           "value_bbox_id": "store_name:value"
@@ -85,7 +85,7 @@
           "field_category": "lookup_identifier",
           "field_id": "receipt_number",
           "field_label": "Receipt No.",
-          "field_value": "R-50300",
+          "field_value": "R-48599",
           "label_bbox_id": "receipt_number:label",
           "question_name": "receipt number",
           "value_bbox_id": "receipt_number:value"
@@ -94,7 +94,7 @@
           "field_category": "lookup_date",
           "field_id": "purchase_date",
           "field_label": "Purchase Date",
-          "field_value": "May 16, 2026",
+          "field_value": "Feb 28, 2026",
           "label_bbox_id": "purchase_date:label",
           "question_name": "purchase date",
           "value_bbox_id": "purchase_date:value"
@@ -103,7 +103,7 @@
           "field_category": "lookup_name",
           "field_id": "cashier_name",
           "field_label": "Cashier",
-          "field_value": "Cole Carter",
+          "field_value": "Milo Hill",
           "label_bbox_id": "cashier_name:label",
           "question_name": "cashier name",
           "value_bbox_id": "cashier_name:value"
@@ -112,7 +112,7 @@
           "field_category": "lookup_identifier",
           "field_id": "member_id",
           "field_label": "Member ID",
-          "field_value": "M-5911",
+          "field_value": "M-1930",
           "label_bbox_id": "member_id:label",
           "question_name": "member ID",
           "value_bbox_id": "member_id:value"
@@ -121,7 +121,7 @@
           "field_category": "lookup_contact",
           "field_id": "contact_phone",
           "field_label": "Phone",
-          "field_value": "(310) 134-7963",
+          "field_value": "(415) 594-2559",
           "label_bbox_id": "contact_phone:label",
           "question_name": "phone number",
           "value_bbox_id": "contact_phone:value"
@@ -130,7 +130,7 @@
           "field_category": "lookup_contact",
           "field_id": "contact_email",
           "field_label": "Email",
-          "field_value": "southridgemark@example.com",
+          "field_value": "elmmarket@brightdesk.io",
           "label_bbox_id": "contact_email:label",
           "question_name": "email address",
           "value_bbox_id": "contact_email:value"
@@ -139,7 +139,7 @@
           "field_category": "lookup_amount",
           "field_id": "tax_amount",
           "field_label": "Tax",
-          "field_value": "$3.22",
+          "field_value": "$7.05",
           "label_bbox_id": "tax_amount:label",
           "question_name": "tax amount",
           "value_bbox_id": "tax_amount:value"
@@ -148,7 +148,7 @@
           "field_category": "lookup_amount",
           "field_id": "total_paid",
           "field_label": "Total Paid",
-          "field_value": "$37.82",
+          "field_value": "$92.37",
           "label_bbox_id": "total_paid:label",
           "question_name": "total paid",
           "value_bbox_id": "total_paid:value"
@@ -157,7 +157,7 @@
       "query_field_category": "lookup_identifier",
       "query_field_id": "member_id",
       "query_field_label": "Member ID",
-      "query_field_value": "M-5911",
+      "query_field_value": "M-1930",
       "query_label_bbox_id": "member_id:label",
       "query_value_bbox_id": "member_id:value",
       "question_format": "document_field_lookup",
@@ -223,7 +223,7 @@
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 1,
+        "answer_or_evidence_variant_index": 4,
         "prompt_bundle_id": "documents_readout_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -239,9 +239,9 @@
         "task_family_key": "structured_document",
         "task_family_variant_index": 4,
         "task_key": "field_lookup_query",
-        "task_variant_index": 0,
+        "task_variant_index": 1,
         "task_variant_key": "lookup_identifier",
-        "task_variant_template_index": 4,
+        "task_variant_template_index": 1,
         "template_paths": [
           "documents/readout/documents_readout_v1.json"
         ],
@@ -257,7 +257,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 1,
+            "answer_or_evidence_variant_index": 4,
             "prompt_bundle_id": "documents_readout_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -273,9 +273,9 @@
             "task_family_key": "structured_document",
             "task_family_variant_index": 4,
             "task_key": "field_lookup_query",
-            "task_variant_index": 0,
+            "task_variant_index": 1,
             "task_variant_key": "lookup_identifier",
-            "task_variant_template_index": 4,
+            "task_variant_template_index": 1,
             "template_paths": [
               "documents/readout/documents_readout_v1.json"
             ],
@@ -286,12 +286,12 @@
               "task_variant:lookup_identifier": 5
             }
           },
-          "prompt": "Read the labeled fields in this document: a receipt-style document with labeled rows and totals. What is the member ID? Answer using the exact field value.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value.\nAnswer format: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"INV-48217\"}"
+          "prompt": "Read the labeled fields in this document: a receipt-style document with labeled rows and totals. Read the document and answer this question: What is the member ID? Return the exact field text as written.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value.\nAnswer rule: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"INV-48217\"}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 3,
+            "answer_or_evidence_variant_index": 0,
             "prompt_bundle_id": "documents_readout_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -307,9 +307,9 @@
             "task_family_key": "structured_document",
             "task_family_variant_index": 4,
             "task_key": "field_lookup_query",
-            "task_variant_index": 0,
+            "task_variant_index": 1,
             "task_variant_key": "lookup_identifier",
-            "task_variant_template_index": 4,
+            "task_variant_template_index": 1,
             "template_paths": [
               "documents/readout/documents_readout_v1.json"
             ],
@@ -320,7 +320,7 @@
               "task_variant:lookup_identifier": 5
             }
           },
-          "prompt": "Read the labeled fields in this document: a receipt-style document with labeled rows and totals. What is the member ID? Answer using the exact field value.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"answer\":\"INV-48217\"}"
+          "prompt": "Read the labeled fields in this document: a receipt-style document with labeled rows and totals. Read the document and answer this question: What is the member ID? Return the exact field text as written.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"answer\":\"INV-48217\"}"
         }
       },
       "task_variant": "lookup_identifier",
@@ -441,13 +441,13 @@
       },
       "field_value_bboxes_px": {
         "cashier_name:value": [
-          702.0,
+          751.0,
           420.5,
           864.0,
           443.5
         ],
         "contact_email:value": [
-          581.0,
+          631.0,
           632.0,
           864.0,
           652.0
@@ -465,10 +465,10 @@
           513.0
         ],
         "purchase_date:value": [
-          669.0,
-          348.0,
+          676.0,
+          348.5,
           864.0,
-          376.0
+          375.5
         ],
         "receipt_number:value": [
           743.0,
@@ -477,10 +477,10 @@
           303.0
         ],
         "store_name:value": [
-          621.0,
-          208.5,
+          703.0,
+          210.5,
           864.0,
-          235.5
+          233.5
         ],
         "tax_amount:value": [
           781.0,
@@ -511,7 +511,7 @@
     "render_spec": {
       "canvas_height": 920,
       "canvas_width": 1280,
-      "geometry_seed": 4257486356397212,
+      "geometry_seed": 5665250340338978,
       "page_shadow_offset_px": 14,
       "receipt_page_height_px": 760,
       "receipt_page_width_px": 520,
@@ -572,15 +572,15 @@
         {
           "bbox_id": "store_name:value",
           "bbox_px": [
-            621.0,
-            208.5,
+            703.0,
+            210.5,
             864.0,
-            235.5
+            233.5
           ],
           "entity_id": "store_name:value",
           "entity_type": "document_field_value",
           "field_id": "store_name",
-          "text": "Southridge Market"
+          "text": "Elm Market"
         },
         {
           "bbox_id": "receipt_number",
@@ -618,7 +618,7 @@
           "entity_id": "receipt_number:value",
           "entity_type": "document_field_value",
           "field_id": "receipt_number",
-          "text": "R-50300"
+          "text": "R-48599"
         },
         {
           "bbox_id": "purchase_date",
@@ -648,15 +648,15 @@
         {
           "bbox_id": "purchase_date:value",
           "bbox_px": [
-            669.0,
-            348.0,
+            676.0,
+            348.5,
             864.0,
-            376.0
+            375.5
           ],
           "entity_id": "purchase_date:value",
           "entity_type": "document_field_value",
           "field_id": "purchase_date",
-          "text": "May 16, 2026"
+          "text": "Feb 28, 2026"
         },
         {
           "bbox_id": "cashier_name",
@@ -686,7 +686,7 @@
         {
           "bbox_id": "cashier_name:value",
           "bbox_px": [
-            702.0,
+            751.0,
             420.5,
             864.0,
             443.5
@@ -694,7 +694,7 @@
           "entity_id": "cashier_name:value",
           "entity_type": "document_field_value",
           "field_id": "cashier_name",
-          "text": "Cole Carter"
+          "text": "Milo Hill"
         },
         {
           "bbox_id": "member_id",
@@ -732,7 +732,7 @@
           "entity_id": "member_id:value",
           "entity_type": "document_field_value",
           "field_id": "member_id",
-          "text": "M-5911"
+          "text": "M-1930"
         },
         {
           "bbox_id": "contact_phone",
@@ -770,7 +770,7 @@
           "entity_id": "contact_phone:value",
           "entity_type": "document_field_value",
           "field_id": "contact_phone",
-          "text": "(310) 134-7963"
+          "text": "(415) 594-2559"
         },
         {
           "bbox_id": "contact_email",
@@ -800,7 +800,7 @@
         {
           "bbox_id": "contact_email:value",
           "bbox_px": [
-            581.0,
+            631.0,
             632.0,
             864.0,
             652.0
@@ -808,7 +808,7 @@
           "entity_id": "contact_email:value",
           "entity_type": "document_field_value",
           "field_id": "contact_email",
-          "text": "southridgemark@example.com"
+          "text": "elmmarket@brightdesk.io"
         },
         {
           "bbox_id": "tax_amount",
@@ -846,7 +846,7 @@
           "entity_id": "tax_amount:value",
           "entity_type": "document_field_value",
           "field_id": "tax_amount",
-          "text": "$3.22"
+          "text": "$7.05"
         },
         {
           "bbox_id": "total_paid",
@@ -884,7 +884,7 @@
           "entity_id": "total_paid:value",
           "entity_type": "document_field_value",
           "field_id": "total_paid",
-          "text": "$37.82"
+          "text": "$92.37"
         }
       ],
       "relations": {

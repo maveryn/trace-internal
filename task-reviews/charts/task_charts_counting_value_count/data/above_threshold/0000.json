@@ -1,64 +1,67 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 2
+    "value": 4
   },
   "evidence_gt": {
     "type": "label_set",
     "value": [
-      "U",
-      "Y"
+      "J",
+      "K",
+      "Q",
+      "R"
     ]
   },
   "image": {
     "format": "png",
     "path": "charts/task_charts_counting_value_count/images/above_threshold/0000.png"
   },
-  "instance_seed": 772197109336267,
-  "prompt": "Use the chart in the image. It shows a labeled radar chart with one spoke per label. Each label marks one plotted point on the radar polygon, and the relevant values are the printed values near those points. Count the labeled marks that satisfy the requested value condition. Find how many labeled marks exceed 8.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing the labels of all marks with values greater than the threshold.\nAnswer field: set \"answer\" to the number of matching marks as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"K\",\"T\"],\"answer\":3}",
+  "instance_seed": 1920644884103717,
+  "prompt": "Use the chart in the image. It shows a labeled area chart with visible point markers. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Count the labeled marks that satisfy the requested value condition. Find how many labeled marks exceed 19.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the labels of all marks with values greater than the threshold.\nAnswer requirement: set \"answer\" to the number of matching marks as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"K\",\"T\"],\"answer\":3}",
   "prompt_variants": {
-    "answer_and_evidence": "Use the chart in the image. It shows a labeled radar chart with one spoke per label. Each label marks one plotted point on the radar polygon, and the relevant values are the printed values near those points. Count the labeled marks that satisfy the requested value condition. Find how many labeled marks exceed 8.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing the labels of all marks with values greater than the threshold.\nAnswer field: set \"answer\" to the number of matching marks as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"K\",\"T\"],\"answer\":3}",
-    "answer_only": "Use the chart in the image. It shows a labeled radar chart with one spoke per label. Each label marks one plotted point on the radar polygon, and the relevant values are the printed values near those points. Count the labeled marks that satisfy the requested value condition. Find how many labeled marks exceed 8.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the number of matching marks as an integer.\nExample JSON:\n{\"answer\":3}"
+    "answer_and_evidence": "Use the chart in the image. It shows a labeled area chart with visible point markers. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Count the labeled marks that satisfy the requested value condition. Find how many labeled marks exceed 19.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the labels of all marks with values greater than the threshold.\nAnswer requirement: set \"answer\" to the number of matching marks as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"K\",\"T\"],\"answer\":3}",
+    "answer_only": "Use the chart in the image. It shows a labeled area chart with visible point markers. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Count the labeled marks that satisfy the requested value condition. Find how many labeled marks exceed 19.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the number of matching marks as an integer.\nExample JSON:\n{\"answer\":3}"
   },
   "task": "task_charts_counting_value_count",
   "task_variant": "above_threshold",
   "trace_payload": {
     "execution_trace": {
-      "answer_value": 2,
+      "answer_value": 4,
       "comparison": "greater_than",
       "evidence_labels": [
-        "U",
-        "Y"
+        "J",
+        "K",
+        "Q",
+        "R"
       ],
       "labels": [
-        "U",
-        "V",
-        "F",
-        "Y",
-        "D",
-        "B",
-        "L"
+        "K",
+        "Q",
+        "Z",
+        "W",
+        "R",
+        "J"
       ],
       "mark_color_distance_space": "lab",
       "mark_color_min_distance": 40.0,
       "mark_color_sampling_policy": "random_rgb",
-      "mark_count": 7,
+      "mark_count": 6,
       "mark_count_range": [
         5,
-        7
+        10
       ],
       "mark_fill_rgb": [
-        171,
-        109,
-        174
+        182,
+        120,
+        180
       ],
       "mark_outline_rgb": [
-        94,
-        60,
-        96
+        100,
+        66,
+        99
       ],
       "question_format": "numeric_open",
-      "scene_variant": "radar",
+      "scene_variant": "area",
       "scene_variant_probabilities": {
         "area": 0.1,
         "bar": 0.1,
@@ -71,84 +74,112 @@
         "radar": 0.1,
         "scatter": 0.1
       },
-      "target_answer": 2,
+      "target_answer": 4,
       "target_answer_range": [
         0,
         10
       ],
       "task_variant": "above_threshold",
       "task_variant_probabilities": {
-        "above_threshold": 0.3333333333333333,
-        "below_threshold": 0.3333333333333333,
-        "in_interval": 0.3333333333333333
+        "above_threshold": 1.0,
+        "below_threshold": 0.0,
+        "in_interval": 0.0
       },
-      "threshold": 8,
+      "threshold": 19,
       "value_max": 20,
       "value_min": 1,
       "values": [
-        10,
-        3,
-        3,
-        17,
-        3,
+        20,
+        20,
         5,
-        3
+        2,
+        20,
+        20
       ],
       "values_by_label": {
-        "B": 5,
-        "D": 3,
-        "F": 3,
-        "L": 3,
-        "U": 10,
-        "V": 3,
-        "Y": 17
+        "J": 20,
+        "K": 20,
+        "Q": 20,
+        "R": 20,
+        "W": 2,
+        "Z": 5
       }
     },
     "projected_evidence": {
       "bbox_set": [
         [
-          415.0,
-          179.111,
-          431.0,
-          195.111
+          690.833,
+          58.095,
+          706.833,
+          74.095
         ],
         [
-          480.565,
-          404.146,
-          496.565,
-          420.146
+          139.167,
+          58.095,
+          155.167,
+          74.095
+        ],
+        [
+          249.5,
+          58.095,
+          265.5,
+          74.095
+        ],
+        [
+          580.5,
+          58.095,
+          596.5,
+          74.095
         ]
       ],
       "label_set": [
-        "U",
-        "Y"
+        "J",
+        "K",
+        "Q",
+        "R"
       ],
       "pixel_point_map": {
-        "U": [
-          423.0,
-          187.111
+        "J": [
+          698.833,
+          66.095
         ],
-        "Y": [
-          488.565,
-          412.146
+        "K": [
+          147.167,
+          66.095
+        ],
+        "Q": [
+          257.5,
+          66.095
+        ],
+        "R": [
+          588.5,
+          66.095
         ]
       },
       "pixel_point_set": [
         [
-          423.0,
-          187.111
+          698.833,
+          66.095
         ],
         [
-          488.565,
-          412.146
+          147.167,
+          66.095
+        ],
+        [
+          257.5,
+          66.095
+        ],
+        [
+          588.5,
+          66.095
         ]
       ]
     },
     "query_spec": {
       "params": {
         "comparison": "greater_than",
-        "mark_count": 7,
-        "scene_variant": "radar",
+        "mark_count": 6,
+        "scene_variant": "area",
         "scene_variant_probabilities": {
           "area": 0.1,
           "bar": 0.1,
@@ -161,22 +192,22 @@
           "radar": 0.1,
           "scatter": 0.1
         },
-        "target_answer": 2,
+        "target_answer": 4,
         "target_answer_range": [
           0,
           10
         ],
         "task_variant": "above_threshold",
         "task_variant_probabilities": {
-          "above_threshold": 0.3333333333333333,
-          "below_threshold": 0.3333333333333333,
-          "in_interval": 0.3333333333333333
+          "above_threshold": 1.0,
+          "below_threshold": 0.0,
+          "in_interval": 0.0
         },
-        "threshold": 8
+        "threshold": 19
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 3,
+        "answer_or_evidence_variant_index": 2,
         "prompt_bundle_id": "charts_counting_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -188,8 +219,8 @@
           "json_example_answer_only": "{\"answer\":3}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "object_description": "a labeled radar chart with one spoke per label. Each label marks one plotted point on the radar polygon, and the relevant values are the printed values near those points",
-          "threshold": "8"
+          "object_description": "a labeled area chart with visible point markers. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis",
+          "threshold": "19"
         },
         "task_family_key": "labeled_chart_counting",
         "task_family_variant_index": 1,
@@ -212,7 +243,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 3,
+            "answer_or_evidence_variant_index": 2,
             "prompt_bundle_id": "charts_counting_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -224,8 +255,8 @@
               "json_example_answer_only": "{\"answer\":3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a labeled radar chart with one spoke per label. Each label marks one plotted point on the radar polygon, and the relevant values are the printed values near those points",
-              "threshold": "8"
+              "object_description": "a labeled area chart with visible point markers. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis",
+              "threshold": "19"
             },
             "task_family_key": "labeled_chart_counting",
             "task_family_variant_index": 1,
@@ -243,12 +274,12 @@
               "task_variant:above_threshold": 5
             }
           },
-          "prompt": "Use the chart in the image. It shows a labeled radar chart with one spoke per label. Each label marks one plotted point on the radar polygon, and the relevant values are the printed values near those points. Count the labeled marks that satisfy the requested value condition. Find how many labeled marks exceed 8.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing the labels of all marks with values greater than the threshold.\nAnswer field: set \"answer\" to the number of matching marks as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"K\",\"T\"],\"answer\":3}"
+          "prompt": "Use the chart in the image. It shows a labeled area chart with visible point markers. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Count the labeled marks that satisfy the requested value condition. Find how many labeled marks exceed 19.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the labels of all marks with values greater than the threshold.\nAnswer requirement: set \"answer\" to the number of matching marks as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"K\",\"T\"],\"answer\":3}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 0,
+            "answer_or_evidence_variant_index": 1,
             "prompt_bundle_id": "charts_counting_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -260,8 +291,8 @@
               "json_example_answer_only": "{\"answer\":3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a labeled radar chart with one spoke per label. Each label marks one plotted point on the radar polygon, and the relevant values are the printed values near those points",
-              "threshold": "8"
+              "object_description": "a labeled area chart with visible point markers. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis",
+              "threshold": "19"
             },
             "task_family_key": "labeled_chart_counting",
             "task_family_variant_index": 1,
@@ -279,7 +310,7 @@
               "task_variant:above_threshold": 5
             }
           },
-          "prompt": "Use the chart in the image. It shows a labeled radar chart with one spoke per label. Each label marks one plotted point on the radar polygon, and the relevant values are the printed values near those points. Count the labeled marks that satisfy the requested value condition. Find how many labeled marks exceed 8.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the number of matching marks as an integer.\nExample JSON:\n{\"answer\":3}"
+          "prompt": "Use the chart in the image. It shows a labeled area chart with visible point markers. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Count the labeled marks that satisfy the requested value condition. Find how many labeled marks exceed 19.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the number of matching marks as an integer.\nExample JSON:\n{\"answer\":3}"
         }
       },
       "task_variant": "above_threshold",
@@ -288,33 +319,29 @@
     "render_map": {
       "image_id": "img0",
       "label_centers_px": {
-        "B": [
-          237.764,
-          318.279
+        "J": [
+          698.833,
+          44.095
         ],
-        "D": [
-          340.562,
-          447.184
+        "K": [
+          147.167,
+          44.095
         ],
-        "F": [
-          608.236,
-          318.279
+        "Q": [
+          257.5,
+          44.095
         ],
-        "L": [
-          274.452,
-          157.537
+        "R": [
+          588.5,
+          44.095
         ],
-        "U": [
-          423.0,
-          86.0
+        "W": [
+          478.167,
+          441.81
         ],
-        "V": [
-          571.548,
-          157.537
-        ],
-        "Y": [
-          505.438,
-          447.184
+        "Z": [
+          367.833,
+          375.524
         ]
       },
       "plot_bbox_px": [
@@ -352,14 +379,14 @@
         "mark_color_distance_space": "lab",
         "mark_color_min_distance": 40.0,
         "mark_fill_rgb": [
-          171,
-          109,
-          174
+          182,
+          120,
+          180
         ],
         "mark_outline_rgb": [
-          94,
-          60,
-          96
+          100,
+          66,
+          99
         ],
         "sampling_policy": "random_rgb"
       },
@@ -385,13 +412,13 @@
         "edits": [],
         "enabled": false
       },
-      "scene_variant": "radar",
+      "scene_variant": "area",
       "text_style": {
         "label_font_size_px": 22,
         "label_stroke_width_px": 2,
         "tick_font_size_px": 18
       },
-      "y_axis_max": 18,
+      "y_axis_max": 21,
       "y_ticks": [
         0,
         1,
@@ -411,294 +438,239 @@
         15,
         16,
         17,
-        18
+        18,
+        19,
+        20,
+        21
       ]
     },
     "scene_ir": {
       "entities": [
         {
           "attrs": {
-            "label": "U",
+            "label": "K",
             "label_center_px": [
-              423.0,
-              86.0
+              147.167,
+              44.095
             ],
             "mark_bbox_px": [
-              415.0,
-              179.111,
-              431.0,
-              195.111
+              139.167,
+              58.095,
+              155.167,
+              74.095
             ],
             "mark_center_px": [
-              423.0,
-              187.111
+              147.167,
+              66.095
             ],
             "mark_fill_rgb": [
-              171,
-              109,
-              174
+              182,
+              120,
+              180
             ],
             "mark_outline_rgb": [
-              94,
-              60,
-              96
+              100,
+              66,
+              99
             ],
-            "scene_variant": "radar",
-            "value": 10,
-            "value_center_px": [
-              423.0,
-              205.111
-            ],
+            "scene_variant": "area",
+            "value": 20,
             "x_rank": 0
           },
-          "entity_id": "mark_U",
+          "entity_id": "mark_K",
           "entity_type": "point"
         },
         {
           "attrs": {
-            "label": "V",
+            "label": "Q",
             "label_center_px": [
-              571.548,
-              157.537
+              257.5,
+              44.095
             ],
             "mark_bbox_px": [
-              435.849,
-              251.374,
-              451.849,
-              267.374
+              249.5,
+              58.095,
+              265.5,
+              74.095
             ],
             "mark_center_px": [
-              443.849,
-              259.374
+              257.5,
+              66.095
             ],
             "mark_fill_rgb": [
-              171,
-              109,
-              174
+              182,
+              120,
+              180
             ],
             "mark_outline_rgb": [
-              94,
-              60,
-              96
+              100,
+              66,
+              99
             ],
-            "scene_variant": "radar",
-            "value": 3,
-            "value_center_px": [
-              437.073,
-              264.777
-            ],
+            "scene_variant": "area",
+            "value": 20,
             "x_rank": 1
           },
-          "entity_id": "mark_V",
+          "entity_id": "mark_Q",
           "entity_type": "point"
         },
         {
           "attrs": {
-            "label": "F",
+            "label": "Z",
             "label_center_px": [
-              608.236,
-              318.279
+              367.833,
+              375.524
             ],
             "mark_bbox_px": [
-              440.998,
-              273.934,
-              456.998,
-              289.934
+              359.833,
+              389.524,
+              375.833,
+              405.524
             ],
             "mark_center_px": [
-              448.998,
-              281.934
+              367.833,
+              397.524
             ],
             "mark_fill_rgb": [
-              171,
-              109,
-              174
+              182,
+              120,
+              180
             ],
             "mark_outline_rgb": [
-              94,
-              60,
-              96
+              100,
+              66,
+              99
             ],
-            "scene_variant": "radar",
-            "value": 3,
-            "value_center_px": [
-              440.549,
-              280.005
-            ],
+            "scene_variant": "area",
+            "value": 5,
             "x_rank": 2
           },
-          "entity_id": "mark_F",
+          "entity_id": "mark_Z",
           "entity_type": "point"
         },
         {
           "attrs": {
-            "label": "Y",
+            "label": "W",
             "label_center_px": [
-              505.438,
-              447.184
+              478.167,
+              441.81
             ],
             "mark_bbox_px": [
-              480.565,
-              404.146,
-              496.565,
-              420.146
+              470.167,
+              455.81,
+              486.167,
+              471.81
             ],
             "mark_center_px": [
-              488.565,
-              412.146
+              478.167,
+              463.81
             ],
             "mark_fill_rgb": [
-              171,
-              109,
-              174
+              182,
+              120,
+              180
             ],
             "mark_outline_rgb": [
-              94,
-              60,
-              96
+              100,
+              66,
+              99
             ],
-            "scene_variant": "radar",
-            "value": 17,
-            "value_center_px": [
-              480.755,
-              395.929
-            ],
+            "scene_variant": "area",
+            "value": 2,
             "x_rank": 3
           },
-          "entity_id": "mark_Y",
+          "entity_id": "mark_W",
           "entity_type": "point"
         },
         {
           "attrs": {
-            "label": "D",
+            "label": "R",
             "label_center_px": [
-              340.562,
-              447.184
+              588.5,
+              44.095
             ],
             "mark_bbox_px": [
-              403.43,
-              292.026,
-              419.43,
-              308.026
+              580.5,
+              58.095,
+              596.5,
+              74.095
             ],
             "mark_center_px": [
-              411.43,
-              300.026
+              588.5,
+              66.095
             ],
             "mark_fill_rgb": [
-              171,
-              109,
-              174
+              182,
+              120,
+              180
             ],
             "mark_outline_rgb": [
-              94,
-              60,
-              96
+              100,
+              66,
+              99
             ],
-            "scene_variant": "radar",
-            "value": 3,
-            "value_center_px": [
-              415.19,
-              292.217
-            ],
+            "scene_variant": "area",
+            "value": 20,
             "x_rank": 4
           },
-          "entity_id": "mark_D",
+          "entity_id": "mark_R",
           "entity_type": "point"
         },
         {
           "attrs": {
-            "label": "B",
+            "label": "J",
             "label_center_px": [
-              237.764,
-              318.279
+              698.833,
+              44.095
             ],
             "mark_bbox_px": [
-              371.67,
-              277.89,
-              387.67,
-              293.89
+              690.833,
+              58.095,
+              706.833,
+              74.095
             ],
             "mark_center_px": [
-              379.67,
-              285.89
+              698.833,
+              66.095
             ],
             "mark_fill_rgb": [
-              171,
-              109,
-              174
+              182,
+              120,
+              180
             ],
             "mark_outline_rgb": [
-              94,
-              60,
-              96
+              100,
+              66,
+              99
             ],
-            "scene_variant": "radar",
-            "value": 5,
-            "value_center_px": [
-              397.219,
-              281.884
-            ],
+            "scene_variant": "area",
+            "value": 20,
             "x_rank": 5
           },
-          "entity_id": "mark_B",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "label": "L",
-            "label_center_px": [
-              274.452,
-              157.537
-            ],
-            "mark_bbox_px": [
-              394.151,
-              251.374,
-              410.151,
-              267.374
-            ],
-            "mark_center_px": [
-              402.151,
-              259.374
-            ],
-            "mark_fill_rgb": [
-              171,
-              109,
-              174
-            ],
-            "mark_outline_rgb": [
-              94,
-              60,
-              96
-            ],
-            "scene_variant": "radar",
-            "value": 3,
-            "value_center_px": [
-              408.927,
-              264.777
-            ],
-            "x_rank": 6
-          },
-          "entity_id": "mark_L",
+          "entity_id": "mark_J",
           "entity_type": "point"
         }
       ],
       "relations": {
         "comparison": "greater_than",
         "evidence_labels": [
-          "U",
-          "Y"
+          "J",
+          "K",
+          "Q",
+          "R"
         ],
-        "scene_variant": "radar",
+        "scene_variant": "area",
         "task_variant": "above_threshold",
-        "threshold": 8
+        "threshold": 19
       },
-      "scene_kind": "chart_radar_counting"
+      "scene_kind": "chart_area_counting"
     },
     "witness_symbolic": {
       "labels": [
-        "U",
-        "Y"
+        "J",
+        "K",
+        "Q",
+        "R"
       ],
       "type": "label_set"
     }

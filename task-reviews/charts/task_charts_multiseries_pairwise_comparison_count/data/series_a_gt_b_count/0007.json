@@ -1,63 +1,58 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 4
+    "value": 2
   },
   "evidence_gt": {
     "type": "label_set",
     "value": [
-      "B",
-      "L",
-      "U",
-      "V"
+      "F",
+      "P"
     ]
   },
   "image": {
     "format": "png",
     "path": "charts/task_charts_multiseries_pairwise_comparison_count/images/series_a_gt_b_count/0007.png"
   },
-  "instance_seed": 2392032175415882,
-  "prompt": "Work from the multiseries chart shown in the image: a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Work category by category and count the labels where the requested series comparison is true. Determine the number of categories where Hedi is greater than Syd.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
+  "instance_seed": 8733514851186181,
+  "prompt": "You are given a multiseries chart: a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Use the chart to compare the queried pair of series across the category labels. Find how many category labels show Nary higher than Sam.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer field: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
   "prompt_variants": {
-    "answer_and_evidence": "Work from the multiseries chart shown in the image: a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Work category by category and count the labels where the requested series comparison is true. Determine the number of categories where Hedi is greater than Syd.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
-    "answer_only": "Work from the multiseries chart shown in the image: a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Work category by category and count the labels where the requested series comparison is true. Determine the number of categories where Hedi is greater than Syd.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":3}"
+    "answer_and_evidence": "You are given a multiseries chart: a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Use the chart to compare the queried pair of series across the category labels. Find how many category labels show Nary higher than Sam.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer field: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
+    "answer_only": "You are given a multiseries chart: a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Use the chart to compare the queried pair of series across the category labels. Find how many category labels show Nary higher than Sam.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":3}"
   },
   "task": "task_charts_multiseries_pairwise_comparison_count",
   "task_variant": "series_a_gt_b_count",
   "trace_payload": {
     "execution_trace": {
-      "answer_value": 4,
-      "category_count": 6,
+      "answer_value": 2,
+      "category_count": 5,
       "category_count_range": [
         5,
         10
       ],
       "category_labels": [
-        "V",
-        "L",
-        "U",
-        "B",
-        "Z",
+        "T",
+        "P",
+        "M",
+        "G",
         "F"
       ],
       "comparison": "greater_than",
       "evidence_labels": [
-        "B",
-        "L",
-        "U",
-        "V"
+        "F",
+        "P"
       ],
-      "left_series_label": "Hedi",
+      "left_series_label": "Nary",
       "mark_color_distance_space": "lab",
       "mark_color_min_distance": 40.0,
       "mark_color_sampling_policy": "random_rgb_palette",
       "queried_series_labels": [
-        "Hedi",
-        "Syd"
+        "Nary",
+        "Sam"
       ],
       "question_format": "numeric_open",
-      "right_series_label": "Syd",
-      "scene_variant": "grouped_horizontal_bar",
+      "right_series_label": "Sam",
+      "scene_variant": "grouped_bar",
       "scene_variant_probabilities": {
         "grouped_bar": 0.25,
         "grouped_horizontal_bar": 0.25,
@@ -71,152 +66,118 @@
       ],
       "series_fill_palette_rgb": [
         [
-          68,
-          51,
-          14
+          12,
+          145,
+          69
         ],
         [
-          107,
-          165,
-          38
+          84,
+          163,
+          198
         ]
       ],
       "series_labels": [
-        "Hedi",
-        "Syd"
+        "Nary",
+        "Sam"
       ],
       "series_outline_palette_rgb": [
         [
-          37,
-          28,
-          8
+          7,
+          80,
+          38
         ],
         [
-          59,
-          91,
-          21
+          46,
+          90,
+          109
         ]
       ],
-      "target_answer": 4,
+      "target_answer": 2,
       "target_answer_range": [
         0,
         8
       ],
       "task_variant": "series_a_gt_b_count",
       "task_variant_probabilities": {
-        "series_a_gt_b_count": 0.5,
-        "series_a_lt_b_count": 0.5
+        "series_a_gt_b_count": 1.0,
+        "series_a_lt_b_count": 0.0
       },
       "values_by_category": {
-        "B": {
-          "Hedi": 18,
-          "Syd": 3
-        },
         "F": {
-          "Hedi": 1,
-          "Syd": 12
+          "Nary": 14,
+          "Sam": 9
         },
-        "L": {
-          "Hedi": 16,
-          "Syd": 11
+        "G": {
+          "Nary": 8,
+          "Sam": 12
         },
-        "U": {
-          "Hedi": 10,
-          "Syd": 8
+        "M": {
+          "Nary": 5,
+          "Sam": 19
         },
-        "V": {
-          "Hedi": 12,
-          "Syd": 1
+        "P": {
+          "Nary": 13,
+          "Sam": 10
         },
-        "Z": {
-          "Hedi": 4,
-          "Syd": 19
+        "T": {
+          "Nary": 10,
+          "Sam": 16
         }
       }
     },
     "projected_evidence": {
       "bbox_set": [
         [
-          53.5,
-          305.521,
-          777.8,
-          347.145
+          738.481,
+          189.2,
+          817.119,
+          562.0
         ],
         [
-          55.0,
-          144.188,
-          701.6,
-          185.812
-        ],
-        [
-          53.0,
-          224.855,
-          473.0,
-          266.479
-        ],
-        [
-          53.5,
-          63.521,
-          549.2,
-          105.145
+          281.281,
+          213.4,
+          359.919,
+          562.0
         ]
       ],
       "label_set": [
-        "B",
-        "L",
-        "U",
-        "V"
+        "F",
+        "P"
       ],
       "pixel_point_map": {
-        "B": [
-          62.0,
-          326.333
+        "F": [
+          777.8,
+          554.0
         ],
-        "L": [
-          62.0,
-          165.0
-        ],
-        "U": [
-          62.0,
-          245.667
-        ],
-        "V": [
-          62.0,
-          84.333
+        "P": [
+          320.6,
+          554.0
         ]
       },
       "pixel_point_set": [
         [
-          62.0,
-          326.333
+          777.8,
+          554.0
         ],
         [
-          62.0,
-          165.0
-        ],
-        [
-          62.0,
-          245.667
-        ],
-        [
-          62.0,
-          84.333
+          320.6,
+          554.0
         ]
       ]
     },
     "query_spec": {
       "params": {
-        "category_count": 6,
+        "category_count": 5,
         "category_count_range": [
           5,
           10
         ],
         "comparison": "greater_than",
         "queried_series_labels": [
-          "Hedi",
-          "Syd"
+          "Nary",
+          "Sam"
         ],
-        "scene_variant": "grouped_horizontal_bar",
+        "scene_variant": "grouped_bar",
         "scene_variant_probabilities": {
           "grouped_bar": 0.25,
           "grouped_horizontal_bar": 0.25,
@@ -228,20 +189,20 @@
           2,
           3
         ],
-        "target_answer": 4,
+        "target_answer": 2,
         "target_answer_range": [
           0,
           8
         ],
         "task_variant": "series_a_gt_b_count",
         "task_variant_probabilities": {
-          "series_a_gt_b_count": 0.5,
-          "series_a_lt_b_count": 0.5
+          "series_a_gt_b_count": 1.0,
+          "series_a_lt_b_count": 0.0
         }
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 0,
+        "answer_or_evidence_variant_index": 3,
         "prompt_bundle_id": "charts_multiseries_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -251,16 +212,16 @@
           "json_example_answer_only": "{\"answer\":3}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "left_series": "Hedi",
-          "object_description": "a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category",
-          "right_series": "Syd"
+          "left_series": "Nary",
+          "object_description": "a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category",
+          "right_series": "Sam"
         },
         "task_family_key": "multiseries_chart_comparison",
-        "task_family_variant_index": 2,
+        "task_family_variant_index": 4,
         "task_key": "pairwise_comparison_count_query",
-        "task_variant_index": 4,
+        "task_variant_index": 1,
         "task_variant_key": "series_a_gt_b_count",
-        "task_variant_template_index": 3,
+        "task_variant_template_index": 4,
         "template_paths": [
           "charts/multiseries/charts_multiseries_v1.json"
         ],
@@ -276,7 +237,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 0,
+            "answer_or_evidence_variant_index": 3,
             "prompt_bundle_id": "charts_multiseries_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -286,16 +247,16 @@
               "json_example_answer_only": "{\"answer\":3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "left_series": "Hedi",
-              "object_description": "a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category",
-              "right_series": "Syd"
+              "left_series": "Nary",
+              "object_description": "a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category",
+              "right_series": "Sam"
             },
             "task_family_key": "multiseries_chart_comparison",
-            "task_family_variant_index": 2,
+            "task_family_variant_index": 4,
             "task_key": "pairwise_comparison_count_query",
-            "task_variant_index": 4,
+            "task_variant_index": 1,
             "task_variant_key": "series_a_gt_b_count",
-            "task_variant_template_index": 3,
+            "task_variant_template_index": 4,
             "template_paths": [
               "charts/multiseries/charts_multiseries_v1.json"
             ],
@@ -306,12 +267,12 @@
               "task_variant:series_a_gt_b_count": 5
             }
           },
-          "prompt": "Work from the multiseries chart shown in the image: a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Work category by category and count the labels where the requested series comparison is true. Determine the number of categories where Hedi is greater than Syd.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}"
+          "prompt": "You are given a multiseries chart: a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Use the chart to compare the queried pair of series across the category labels. Find how many category labels show Nary higher than Sam.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer field: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 2,
+            "answer_or_evidence_variant_index": 1,
             "prompt_bundle_id": "charts_multiseries_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -321,16 +282,16 @@
               "json_example_answer_only": "{\"answer\":3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "left_series": "Hedi",
-              "object_description": "a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category",
-              "right_series": "Syd"
+              "left_series": "Nary",
+              "object_description": "a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category",
+              "right_series": "Sam"
             },
             "task_family_key": "multiseries_chart_comparison",
-            "task_family_variant_index": 2,
+            "task_family_variant_index": 4,
             "task_key": "pairwise_comparison_count_query",
-            "task_variant_index": 4,
+            "task_variant_index": 1,
             "task_variant_key": "series_a_gt_b_count",
-            "task_variant_template_index": 3,
+            "task_variant_template_index": 4,
             "template_paths": [
               "charts/multiseries/charts_multiseries_v1.json"
             ],
@@ -341,7 +302,7 @@
               "task_variant:series_a_gt_b_count": 5
             }
           },
-          "prompt": "Work from the multiseries chart shown in the image: a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Work category by category and count the labels where the requested series comparison is true. Determine the number of categories where Hedi is greater than Syd.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":3}"
+          "prompt": "You are given a multiseries chart: a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Use the chart to compare the queried pair of series across the category labels. Find how many category labels show Nary higher than Sam.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":3}"
         }
       },
       "task_variant": "series_a_gt_b_count",
@@ -349,29 +310,25 @@
     },
     "render_map": {
       "category_label_centers_px": {
-        "B": [
-          62.0,
-          326.333
-        ],
         "F": [
-          62.0,
-          487.667
+          777.8,
+          554.0
         ],
-        "L": [
-          62.0,
-          165.0
+        "G": [
+          625.4,
+          554.0
         ],
-        "U": [
-          62.0,
-          245.667
+        "M": [
+          473.0,
+          554.0
         ],
-        "V": [
-          62.0,
-          84.333
+        "P": [
+          320.6,
+          554.0
         ],
-        "Z": [
-          62.0,
-          407.0
+        "T": [
+          168.2,
+          554.0
         ]
       },
       "image_id": "img0",
@@ -412,26 +369,26 @@
         "sampling_policy": "random_rgb_palette",
         "series_fill_palette_rgb": [
           [
-            68,
-            51,
-            14
+            12,
+            145,
+            69
           ],
           [
-            107,
-            165,
-            38
+            84,
+            163,
+            198
           ]
         ],
         "series_outline_palette_rgb": [
           [
-            37,
-            28,
-            8
+            7,
+            80,
+            38
           ],
           [
-            59,
-            91,
-            21
+            46,
+            90,
+            109
           ]
         ]
       },
@@ -457,7 +414,7 @@
         "edits": [],
         "enabled": false
       },
-      "scene_variant": "grouped_horizontal_bar",
+      "scene_variant": "grouped_bar",
       "text_style": {
         "label_font_size_px": 22,
         "label_stroke_width_px": 2,
@@ -493,531 +450,443 @@
         {
           "attrs": {
             "category_group_bbox_px": [
-              53.5,
-              63.521,
-              549.2,
-              105.145
+              128.881,
+              140.8,
+              207.519,
+              562.0
             ],
-            "category_label": "V",
+            "category_label": "T",
             "category_label_center_px": [
-              62.0,
-              84.333
+              168.2,
+              554.0
             ],
             "category_rank": 0,
             "mark_bbox_px": [
-              92.0,
-              63.521,
-              549.2,
-              80.945
+              128.881,
+              286.0,
+              161.799,
+              528.0
             ],
             "mark_center_px": [
-              320.6,
-              72.233
+              145.34,
+              286.0
             ],
             "mark_fill_rgb": [
-              68,
-              51,
-              14
+              12,
+              145,
+              69
             ],
             "mark_outline_rgb": [
-              37,
-              28,
-              8
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Hedi",
-            "series_rank": 0,
-            "value": 12
-          },
-          "entity_id": "mark_V_Hedi",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              53.5,
-              63.521,
-              549.2,
-              105.145
-            ],
-            "category_label": "V",
-            "category_label_center_px": [
-              62.0,
-              84.333
-            ],
-            "category_rank": 0,
-            "mark_bbox_px": [
-              92.0,
-              87.721,
-              130.1,
-              105.145
-            ],
-            "mark_center_px": [
-              111.05,
-              96.433
-            ],
-            "mark_fill_rgb": [
-              107,
-              165,
+              7,
+              80,
               38
             ],
-            "mark_outline_rgb": [
-              59,
-              91,
-              21
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Syd",
-            "series_rank": 1,
-            "value": 1
-          },
-          "entity_id": "mark_V_Syd",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              55.0,
-              144.188,
-              701.6,
-              185.812
-            ],
-            "category_label": "L",
-            "category_label_center_px": [
-              62.0,
-              165.0
-            ],
-            "category_rank": 1,
-            "mark_bbox_px": [
-              92.0,
-              144.188,
-              701.6,
-              161.612
-            ],
-            "mark_center_px": [
-              396.8,
-              152.9
-            ],
-            "mark_fill_rgb": [
-              68,
-              51,
-              14
-            ],
-            "mark_outline_rgb": [
-              37,
-              28,
-              8
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Hedi",
-            "series_rank": 0,
-            "value": 16
-          },
-          "entity_id": "mark_L_Hedi",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              55.0,
-              144.188,
-              701.6,
-              185.812
-            ],
-            "category_label": "L",
-            "category_label_center_px": [
-              62.0,
-              165.0
-            ],
-            "category_rank": 1,
-            "mark_bbox_px": [
-              92.0,
-              168.388,
-              511.1,
-              185.812
-            ],
-            "mark_center_px": [
-              301.55,
-              177.1
-            ],
-            "mark_fill_rgb": [
-              107,
-              165,
-              38
-            ],
-            "mark_outline_rgb": [
-              59,
-              91,
-              21
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Syd",
-            "series_rank": 1,
-            "value": 11
-          },
-          "entity_id": "mark_L_Syd",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              53.0,
-              224.855,
-              473.0,
-              266.479
-            ],
-            "category_label": "U",
-            "category_label_center_px": [
-              62.0,
-              245.667
-            ],
-            "category_rank": 2,
-            "mark_bbox_px": [
-              92.0,
-              224.855,
-              473.0,
-              242.279
-            ],
-            "mark_center_px": [
-              282.5,
-              233.567
-            ],
-            "mark_fill_rgb": [
-              68,
-              51,
-              14
-            ],
-            "mark_outline_rgb": [
-              37,
-              28,
-              8
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Hedi",
+            "scene_variant": "grouped_bar",
+            "series_label": "Nary",
             "series_rank": 0,
             "value": 10
           },
-          "entity_id": "mark_U_Hedi",
+          "entity_id": "mark_T_Nary",
           "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              53.0,
-              224.855,
-              473.0,
-              266.479
+              128.881,
+              140.8,
+              207.519,
+              562.0
             ],
-            "category_label": "U",
+            "category_label": "T",
             "category_label_center_px": [
-              62.0,
-              245.667
+              168.2,
+              554.0
+            ],
+            "category_rank": 0,
+            "mark_bbox_px": [
+              174.601,
+              140.8,
+              207.519,
+              528.0
+            ],
+            "mark_center_px": [
+              191.06,
+              140.8
+            ],
+            "mark_fill_rgb": [
+              84,
+              163,
+              198
+            ],
+            "mark_outline_rgb": [
+              46,
+              90,
+              109
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Sam",
+            "series_rank": 1,
+            "value": 16
+          },
+          "entity_id": "mark_T_Sam",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              281.281,
+              213.4,
+              359.919,
+              562.0
+            ],
+            "category_label": "P",
+            "category_label_center_px": [
+              320.6,
+              554.0
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              281.281,
+              213.4,
+              314.199,
+              528.0
+            ],
+            "mark_center_px": [
+              297.74,
+              213.4
+            ],
+            "mark_fill_rgb": [
+              12,
+              145,
+              69
+            ],
+            "mark_outline_rgb": [
+              7,
+              80,
+              38
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Nary",
+            "series_rank": 0,
+            "value": 13
+          },
+          "entity_id": "mark_P_Nary",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              281.281,
+              213.4,
+              359.919,
+              562.0
+            ],
+            "category_label": "P",
+            "category_label_center_px": [
+              320.6,
+              554.0
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              327.001,
+              286.0,
+              359.919,
+              528.0
+            ],
+            "mark_center_px": [
+              343.46,
+              286.0
+            ],
+            "mark_fill_rgb": [
+              84,
+              163,
+              198
+            ],
+            "mark_outline_rgb": [
+              46,
+              90,
+              109
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Sam",
+            "series_rank": 1,
+            "value": 10
+          },
+          "entity_id": "mark_P_Sam",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              433.681,
+              68.2,
+              512.319,
+              562.0
+            ],
+            "category_label": "M",
+            "category_label_center_px": [
+              473.0,
+              554.0
             ],
             "category_rank": 2,
             "mark_bbox_px": [
-              92.0,
-              249.055,
-              396.8,
-              266.479
+              433.681,
+              407.0,
+              466.599,
+              528.0
             ],
             "mark_center_px": [
-              244.4,
-              257.767
-            ],
-            "mark_fill_rgb": [
-              107,
-              165,
-              38
-            ],
-            "mark_outline_rgb": [
-              59,
-              91,
-              21
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Syd",
-            "series_rank": 1,
-            "value": 8
-          },
-          "entity_id": "mark_U_Syd",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              53.5,
-              305.521,
-              777.8,
-              347.145
-            ],
-            "category_label": "B",
-            "category_label_center_px": [
-              62.0,
-              326.333
-            ],
-            "category_rank": 3,
-            "mark_bbox_px": [
-              92.0,
-              305.521,
-              777.8,
-              322.945
-            ],
-            "mark_center_px": [
-              434.9,
-              314.233
-            ],
-            "mark_fill_rgb": [
-              68,
-              51,
-              14
-            ],
-            "mark_outline_rgb": [
-              37,
-              28,
-              8
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Hedi",
-            "series_rank": 0,
-            "value": 18
-          },
-          "entity_id": "mark_B_Hedi",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              53.5,
-              305.521,
-              777.8,
-              347.145
-            ],
-            "category_label": "B",
-            "category_label_center_px": [
-              62.0,
-              326.333
-            ],
-            "category_rank": 3,
-            "mark_bbox_px": [
-              92.0,
-              329.721,
-              206.3,
-              347.145
-            ],
-            "mark_center_px": [
-              149.15,
-              338.433
-            ],
-            "mark_fill_rgb": [
-              107,
-              165,
-              38
-            ],
-            "mark_outline_rgb": [
-              59,
-              91,
-              21
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Syd",
-            "series_rank": 1,
-            "value": 3
-          },
-          "entity_id": "mark_B_Syd",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              54.0,
-              386.188,
-              815.9,
-              427.812
-            ],
-            "category_label": "Z",
-            "category_label_center_px": [
-              62.0,
+              450.14,
               407.0
             ],
-            "category_rank": 4,
-            "mark_bbox_px": [
-              92.0,
-              386.188,
-              244.4,
-              403.612
-            ],
-            "mark_center_px": [
-              168.2,
-              394.9
-            ],
             "mark_fill_rgb": [
-              68,
-              51,
-              14
+              12,
+              145,
+              69
             ],
             "mark_outline_rgb": [
-              37,
-              28,
-              8
+              7,
+              80,
+              38
             ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Hedi",
+            "scene_variant": "grouped_bar",
+            "series_label": "Nary",
             "series_rank": 0,
-            "value": 4
+            "value": 5
           },
-          "entity_id": "mark_Z_Hedi",
+          "entity_id": "mark_M_Nary",
           "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              54.0,
-              386.188,
-              815.9,
-              427.812
+              433.681,
+              68.2,
+              512.319,
+              562.0
             ],
-            "category_label": "Z",
+            "category_label": "M",
             "category_label_center_px": [
-              62.0,
-              407.0
+              473.0,
+              554.0
             ],
-            "category_rank": 4,
+            "category_rank": 2,
             "mark_bbox_px": [
-              92.0,
-              410.388,
-              815.9,
-              427.812
+              479.401,
+              68.2,
+              512.319,
+              528.0
             ],
             "mark_center_px": [
-              453.95,
-              419.1
+              495.86,
+              68.2
             ],
             "mark_fill_rgb": [
-              107,
-              165,
-              38
+              84,
+              163,
+              198
             ],
             "mark_outline_rgb": [
-              59,
-              91,
-              21
+              46,
+              90,
+              109
             ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Syd",
+            "scene_variant": "grouped_bar",
+            "series_label": "Sam",
             "series_rank": 1,
             "value": 19
           },
-          "entity_id": "mark_Z_Syd",
+          "entity_id": "mark_M_Sam",
           "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              54.5,
-              466.855,
-              549.2,
-              508.479
+              586.081,
+              237.6,
+              664.719,
+              562.0
             ],
-            "category_label": "F",
+            "category_label": "G",
             "category_label_center_px": [
-              62.0,
-              487.667
+              625.4,
+              554.0
             ],
-            "category_rank": 5,
+            "category_rank": 3,
             "mark_bbox_px": [
-              92.0,
-              466.855,
-              130.1,
-              484.279
+              586.081,
+              334.4,
+              618.999,
+              528.0
             ],
             "mark_center_px": [
-              111.05,
-              475.567
+              602.54,
+              334.4
             ],
             "mark_fill_rgb": [
-              68,
-              51,
-              14
+              12,
+              145,
+              69
             ],
             "mark_outline_rgb": [
-              37,
-              28,
-              8
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Hedi",
-            "series_rank": 0,
-            "value": 1
-          },
-          "entity_id": "mark_F_Hedi",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              54.5,
-              466.855,
-              549.2,
-              508.479
-            ],
-            "category_label": "F",
-            "category_label_center_px": [
-              62.0,
-              487.667
-            ],
-            "category_rank": 5,
-            "mark_bbox_px": [
-              92.0,
-              491.055,
-              549.2,
-              508.479
-            ],
-            "mark_center_px": [
-              320.6,
-              499.767
-            ],
-            "mark_fill_rgb": [
-              107,
-              165,
+              7,
+              80,
               38
             ],
-            "mark_outline_rgb": [
-              59,
-              91,
-              21
+            "scene_variant": "grouped_bar",
+            "series_label": "Nary",
+            "series_rank": 0,
+            "value": 8
+          },
+          "entity_id": "mark_G_Nary",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              586.081,
+              237.6,
+              664.719,
+              562.0
             ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Syd",
+            "category_label": "G",
+            "category_label_center_px": [
+              625.4,
+              554.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              631.801,
+              237.6,
+              664.719,
+              528.0
+            ],
+            "mark_center_px": [
+              648.26,
+              237.6
+            ],
+            "mark_fill_rgb": [
+              84,
+              163,
+              198
+            ],
+            "mark_outline_rgb": [
+              46,
+              90,
+              109
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Sam",
             "series_rank": 1,
             "value": 12
           },
-          "entity_id": "mark_F_Syd",
+          "entity_id": "mark_G_Sam",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              738.481,
+              189.2,
+              817.119,
+              562.0
+            ],
+            "category_label": "F",
+            "category_label_center_px": [
+              777.8,
+              554.0
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              738.481,
+              189.2,
+              771.399,
+              528.0
+            ],
+            "mark_center_px": [
+              754.94,
+              189.2
+            ],
+            "mark_fill_rgb": [
+              12,
+              145,
+              69
+            ],
+            "mark_outline_rgb": [
+              7,
+              80,
+              38
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Nary",
+            "series_rank": 0,
+            "value": 14
+          },
+          "entity_id": "mark_F_Nary",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              738.481,
+              189.2,
+              817.119,
+              562.0
+            ],
+            "category_label": "F",
+            "category_label_center_px": [
+              777.8,
+              554.0
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              784.201,
+              310.2,
+              817.119,
+              528.0
+            ],
+            "mark_center_px": [
+              800.66,
+              310.2
+            ],
+            "mark_fill_rgb": [
+              84,
+              163,
+              198
+            ],
+            "mark_outline_rgb": [
+              46,
+              90,
+              109
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Sam",
+            "series_rank": 1,
+            "value": 9
+          },
+          "entity_id": "mark_F_Sam",
           "entity_type": "bar"
         }
       ],
       "relations": {
         "comparison": "greater_than",
         "evidence_labels": [
-          "B",
-          "L",
-          "U",
-          "V"
+          "F",
+          "P"
         ],
         "queried_series_labels": [
-          "Hedi",
-          "Syd"
+          "Nary",
+          "Sam"
         ],
-        "scene_variant": "grouped_horizontal_bar",
+        "scene_variant": "grouped_bar",
         "task_variant": "series_a_gt_b_count"
       },
-      "scene_kind": "chart_grouped_horizontal_bar_multiseries"
+      "scene_kind": "chart_grouped_bar_multiseries"
     },
     "witness_symbolic": {
       "labels": [
-        "B",
-        "L",
-        "U",
-        "V"
+        "F",
+        "P"
       ],
       "type": "label_set"
     }

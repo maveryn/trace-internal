@@ -1,16 +1,16 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 5
+    "value": 6
   },
   "evidence_gt": {
     "type": "bbox_set",
     "value": [
       [
-        687.36,
-        442.909,
-        888.0,
-        491.273
+        286.08,
+        491.273,
+        486.72,
+        539.636
       ]
     ]
   },
@@ -18,21 +18,21 @@
     "format": "png",
     "path": "tables/task_tables_temporal_value/images/value_at_year/0024.png"
   },
-  "instance_seed": 2445012407993616,
-  "prompt": "The image shows a card-style table with one Name column, several year columns in chronological order, a rounded outer frame, and a shaded header row. Answer this question about one row across the year columns. Find the integer for Venn under the 2022 column.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the queried year cell.\nAnswer field: set \"answer\" to the exact integer temporal result.\nExample JSON:\n{\"evidence\":[[260,180,372,236]],\"answer\":17}",
+  "instance_seed": 4621827919637836,
+  "prompt": "Use the year-ordered table in the image. It shows a spreadsheet-style table with one Name column, several year columns in chronological order, full grid lines, and a shaded header row. Answer this question about one row across the year columns. Determine the value where row Edd intersects year 2021.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the queried year cell.\nAnswer: set \"answer\" to the exact integer temporal result.\nExample JSON:\n{\"evidence\":[[260,180,372,236]],\"answer\":17}",
   "prompt_variants": {
-    "answer_and_evidence": "The image shows a card-style table with one Name column, several year columns in chronological order, a rounded outer frame, and a shaded header row. Answer this question about one row across the year columns. Find the integer for Venn under the 2022 column.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the queried year cell.\nAnswer field: set \"answer\" to the exact integer temporal result.\nExample JSON:\n{\"evidence\":[[260,180,372,236]],\"answer\":17}",
-    "answer_only": "The image shows a card-style table with one Name column, several year columns in chronological order, a rounded outer frame, and a shaded header row. Answer this question about one row across the year columns. Find the integer for Venn under the 2022 column.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the exact integer temporal result.\nExample JSON:\n{\"answer\":17}"
+    "answer_and_evidence": "Use the year-ordered table in the image. It shows a spreadsheet-style table with one Name column, several year columns in chronological order, full grid lines, and a shaded header row. Answer this question about one row across the year columns. Determine the value where row Edd intersects year 2021.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the queried year cell.\nAnswer: set \"answer\" to the exact integer temporal result.\nExample JSON:\n{\"evidence\":[[260,180,372,236]],\"answer\":17}",
+    "answer_only": "Use the year-ordered table in the image. It shows a spreadsheet-style table with one Name column, several year columns in chronological order, full grid lines, and a shaded header row. Answer this question about one row across the year columns. Determine the value where row Edd intersects year 2021.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the exact integer temporal result.\nExample JSON:\n{\"answer\":17}"
   },
   "task": "task_tables_temporal_value",
   "task_variant": "value_at_year",
   "trace_payload": {
     "execution_trace": {
-      "answer_value": 5,
+      "answer_value": 6,
       "column_headers": [
-        "2020",
         "2021",
-        "2022"
+        "2022",
+        "2023"
       ],
       "numeric_column_count": 3,
       "numeric_column_count_range": [
@@ -41,20 +41,20 @@
       ],
       "query_cells": [
         {
-          "cell_id": "cell_r8_c3",
-          "column": "2022",
-          "column_index": 2,
-          "row_index": 7,
-          "row_label": "Venn",
-          "value": 5
+          "cell_id": "cell_r9_c1",
+          "column": "2021",
+          "column_index": 0,
+          "row_index": 8,
+          "row_label": "Edd",
+          "value": 6
         }
       ],
-      "query_row_index": 7,
-      "query_row_label": "Venn",
-      "query_year_end": "2022",
-      "query_year_start": "2022",
+      "query_row_index": 8,
+      "query_row_label": "Edd",
+      "query_year_end": "2021",
+      "query_year_start": "2021",
       "query_years": [
-        "2022"
+        "2021"
       ],
       "row_count": 10,
       "row_count_range": [
@@ -62,20 +62,20 @@
         10
       ],
       "row_labels": [
-        "Koss",
-        "Oran",
-        "Bo",
-        "Dore",
-        "Taro",
-        "Also",
-        "Eryn",
-        "Venn",
-        "Aret",
-        "Avie"
+        "Jojo",
+        "Witt",
+        "Doy",
+        "Cain",
+        "Radu",
+        "Lunt",
+        "Lira",
+        "Grim",
+        "Edd",
+        "Four"
       ],
-      "scene_variant": "card_table",
+      "scene_variant": "spreadsheet",
       "supporting_cell_ids": [
-        "cell_r8_c3"
+        "cell_r9_c1"
       ],
       "task_variant": "value_at_year",
       "value_range": [
@@ -83,77 +83,77 @@
         32
       ],
       "values_by_row": {
-        "Also": {
-          "2020": 11,
-          "2021": 31,
-          "2022": 24
-        },
-        "Aret": {
-          "2020": 23,
-          "2021": 7,
-          "2022": 8
-        },
-        "Avie": {
-          "2020": 6,
-          "2021": 17,
-          "2022": 22
-        },
-        "Bo": {
-          "2020": 5,
-          "2021": 8,
-          "2022": 27
-        },
-        "Dore": {
-          "2020": 4,
-          "2021": 18,
-          "2022": 32
-        },
-        "Eryn": {
-          "2020": 14,
-          "2021": 17,
-          "2022": 14
-        },
-        "Koss": {
-          "2020": 25,
-          "2021": 7,
-          "2022": 30
-        },
-        "Oran": {
-          "2020": 5,
-          "2021": 11,
-          "2022": 4
-        },
-        "Taro": {
-          "2020": 12,
+        "Cain": {
           "2021": 5,
-          "2022": 11
+          "2022": 6,
+          "2023": 7
         },
-        "Venn": {
-          "2020": 20,
-          "2021": 11,
-          "2022": 5
+        "Doy": {
+          "2021": 20,
+          "2022": 11,
+          "2023": 27
+        },
+        "Edd": {
+          "2021": 6,
+          "2022": 19,
+          "2023": 18
+        },
+        "Four": {
+          "2021": 14,
+          "2022": 24,
+          "2023": 20
+        },
+        "Grim": {
+          "2021": 20,
+          "2022": 26,
+          "2023": 28
+        },
+        "Jojo": {
+          "2021": 24,
+          "2022": 31,
+          "2023": 17
+        },
+        "Lira": {
+          "2021": 22,
+          "2022": 27,
+          "2023": 24
+        },
+        "Lunt": {
+          "2021": 12,
+          "2022": 20,
+          "2023": 27
+        },
+        "Radu": {
+          "2021": 32,
+          "2022": 11,
+          "2023": 19
+        },
+        "Witt": {
+          "2021": 29,
+          "2022": 19,
+          "2023": 19
         }
       }
     },
     "projected_evidence": {
       "bbox_set": [
         [
-          687.36,
-          442.909,
-          888.0,
-          491.273
+          286.08,
+          491.273,
+          486.72,
+          539.636
         ]
       ]
     },
     "query_spec": {
       "params": {
         "numeric_column_count": 3,
-        "query_row_label": "Venn",
+        "query_row_label": "Edd",
         "query_years": [
-          "2022"
+          "2021"
         ],
         "row_count": 10,
-        "scene_variant": "card_table",
+        "scene_variant": "spreadsheet",
         "scene_variant_probabilities": {
           "card_table": 0.25,
           "ledger": 0.25,
@@ -171,7 +171,7 @@
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 3,
+        "answer_or_evidence_variant_index": 0,
         "prompt_bundle_id": "tables_temporal_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -181,16 +181,16 @@
           "json_example_answer_only": "{\"answer\":17}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "object_description": "a card-style table with one Name column, several year columns in chronological order, a rounded outer frame, and a shaded header row",
-          "query_row_label": "Venn",
-          "query_year": "2022"
+          "object_description": "a spreadsheet-style table with one Name column, several year columns in chronological order, full grid lines, and a shaded header row",
+          "query_row_label": "Edd",
+          "query_year": "2021"
         },
         "task_family_key": "styled_table_temporal",
-        "task_family_variant_index": 0,
+        "task_family_variant_index": 1,
         "task_key": "temporal_value_query",
         "task_variant_index": 0,
         "task_variant_key": "value_at_year",
-        "task_variant_template_index": 1,
+        "task_variant_template_index": 4,
         "template_paths": [
           "tables/temporal/tables_temporal_v1.json"
         ],
@@ -206,41 +206,6 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 3,
-            "prompt_bundle_id": "tables_temporal_v1",
-            "schema_version": "v1",
-            "slot_values": {
-              "answer_hint": "set \"answer\" to the exact integer temporal result",
-              "evidence_hint": "set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the queried year cell",
-              "json_example": "{\"evidence\":[[260,180,372,236]],\"answer\":17}",
-              "json_example_answer_only": "{\"answer\":17}",
-              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
-              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a card-style table with one Name column, several year columns in chronological order, a rounded outer frame, and a shaded header row",
-              "query_row_label": "Venn",
-              "query_year": "2022"
-            },
-            "task_family_key": "styled_table_temporal",
-            "task_family_variant_index": 0,
-            "task_key": "temporal_value_query",
-            "task_variant_index": 0,
-            "task_variant_key": "value_at_year",
-            "task_variant_template_index": 1,
-            "template_paths": [
-              "tables/temporal/tables_temporal_v1.json"
-            ],
-            "variant_count_by_key": {
-              "answer_or_evidence:answer_and_evidence": 5,
-              "task:temporal_value_query": 5,
-              "task_family:styled_table_temporal": 5,
-              "task_variant:value_at_year": 5
-            }
-          },
-          "prompt": "The image shows a card-style table with one Name column, several year columns in chronological order, a rounded outer frame, and a shaded header row. Answer this question about one row across the year columns. Find the integer for Venn under the 2022 column.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the queried year cell.\nAnswer field: set \"answer\" to the exact integer temporal result.\nExample JSON:\n{\"evidence\":[[260,180,372,236]],\"answer\":17}"
-        },
-        "answer_only": {
-          "metadata": {
-            "answer_or_evidence_key": "answer_only",
             "answer_or_evidence_variant_index": 0,
             "prompt_bundle_id": "tables_temporal_v1",
             "schema_version": "v1",
@@ -251,16 +216,51 @@
               "json_example_answer_only": "{\"answer\":17}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a card-style table with one Name column, several year columns in chronological order, a rounded outer frame, and a shaded header row",
-              "query_row_label": "Venn",
-              "query_year": "2022"
+              "object_description": "a spreadsheet-style table with one Name column, several year columns in chronological order, full grid lines, and a shaded header row",
+              "query_row_label": "Edd",
+              "query_year": "2021"
             },
             "task_family_key": "styled_table_temporal",
-            "task_family_variant_index": 0,
+            "task_family_variant_index": 1,
             "task_key": "temporal_value_query",
             "task_variant_index": 0,
             "task_variant_key": "value_at_year",
-            "task_variant_template_index": 1,
+            "task_variant_template_index": 4,
+            "template_paths": [
+              "tables/temporal/tables_temporal_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:temporal_value_query": 5,
+              "task_family:styled_table_temporal": 5,
+              "task_variant:value_at_year": 5
+            }
+          },
+          "prompt": "Use the year-ordered table in the image. It shows a spreadsheet-style table with one Name column, several year columns in chronological order, full grid lines, and a shaded header row. Answer this question about one row across the year columns. Determine the value where row Edd intersects year 2021.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the queried year cell.\nAnswer: set \"answer\" to the exact integer temporal result.\nExample JSON:\n{\"evidence\":[[260,180,372,236]],\"answer\":17}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 2,
+            "prompt_bundle_id": "tables_temporal_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the exact integer temporal result",
+              "evidence_hint": "set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the queried year cell",
+              "json_example": "{\"evidence\":[[260,180,372,236]],\"answer\":17}",
+              "json_example_answer_only": "{\"answer\":17}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a spreadsheet-style table with one Name column, several year columns in chronological order, full grid lines, and a shaded header row",
+              "query_row_label": "Edd",
+              "query_year": "2021"
+            },
+            "task_family_key": "styled_table_temporal",
+            "task_family_variant_index": 1,
+            "task_key": "temporal_value_query",
+            "task_variant_index": 0,
+            "task_variant_key": "value_at_year",
+            "task_variant_template_index": 4,
             "template_paths": [
               "tables/temporal/tables_temporal_v1.json"
             ],
@@ -271,7 +271,7 @@
               "task_variant:value_at_year": 5
             }
           },
-          "prompt": "The image shows a card-style table with one Name column, several year columns in chronological order, a rounded outer frame, and a shaded header row. Answer this question about one row across the year columns. Find the integer for Venn under the 2022 column.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the exact integer temporal result.\nExample JSON:\n{\"answer\":17}"
+          "prompt": "Use the year-ordered table in the image. It shows a spreadsheet-style table with one Name column, several year columns in chronological order, full grid lines, and a shaded header row. Answer this question about one row across the year columns. Determine the value where row Edd intersects year 2021.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the exact integer temporal result.\nExample JSON:\n{\"answer\":17}"
         }
       },
       "task_variant": "value_at_year",
@@ -545,19 +545,19 @@
         ]
       },
       "column_region_bboxes_px": {
-        "2020": [
+        "2021": [
           286.08,
           104.364,
           486.72,
           588.0
         ],
-        "2021": [
+        "2022": [
           486.72,
           104.364,
           687.36,
           588.0
         ],
-        "2022": [
+        "2023": [
           687.36,
           104.364,
           888.0,
@@ -565,19 +565,19 @@
         ]
       },
       "header_bboxes_px": {
-        "2020": [
+        "2021": [
           286.08,
           56.0,
           486.72,
           104.364
         ],
-        "2021": [
+        "2022": [
           486.72,
           56.0,
           687.36,
           104.364
         ],
-        "2022": [
+        "2023": [
           687.36,
           56.0,
           888.0,
@@ -586,127 +586,127 @@
       },
       "image_id": "img0",
       "row_label_bboxes_px": {
-        "Also": [
-          52.0,
-          346.182,
-          286.08,
-          394.545
-        ],
-        "Aret": [
-          52.0,
-          491.273,
-          286.08,
-          539.636
-        ],
-        "Avie": [
-          52.0,
-          539.636,
-          286.08,
-          588.0
-        ],
-        "Bo": [
-          52.0,
-          201.091,
-          286.08,
-          249.455
-        ],
-        "Dore": [
+        "Cain": [
           52.0,
           249.455,
           286.08,
           297.818
         ],
-        "Eryn": [
+        "Doy": [
           52.0,
-          394.545,
+          201.091,
           286.08,
-          442.909
+          249.455
         ],
-        "Koss": [
+        "Edd": [
+          52.0,
+          491.273,
+          286.08,
+          539.636
+        ],
+        "Four": [
+          52.0,
+          539.636,
+          286.08,
+          588.0
+        ],
+        "Grim": [
+          52.0,
+          442.909,
+          286.08,
+          491.273
+        ],
+        "Jojo": [
           52.0,
           104.364,
           286.08,
           152.727
         ],
-        "Oran": [
+        "Lira": [
           52.0,
-          152.727,
+          394.545,
           286.08,
-          201.091
+          442.909
         ],
-        "Taro": [
+        "Lunt": [
+          52.0,
+          346.182,
+          286.08,
+          394.545
+        ],
+        "Radu": [
           52.0,
           297.818,
           286.08,
           346.182
         ],
-        "Venn": [
+        "Witt": [
           52.0,
-          442.909,
+          152.727,
           286.08,
-          491.273
+          201.091
         ]
       },
       "row_region_bboxes_px": {
-        "Also": [
-          286.08,
-          346.182,
-          888.0,
-          394.545
-        ],
-        "Aret": [
-          286.08,
-          491.273,
-          888.0,
-          539.636
-        ],
-        "Avie": [
-          286.08,
-          539.636,
-          888.0,
-          588.0
-        ],
-        "Bo": [
-          286.08,
-          201.091,
-          888.0,
-          249.455
-        ],
-        "Dore": [
+        "Cain": [
           286.08,
           249.455,
           888.0,
           297.818
         ],
-        "Eryn": [
+        "Doy": [
           286.08,
-          394.545,
+          201.091,
           888.0,
-          442.909
+          249.455
         ],
-        "Koss": [
+        "Edd": [
+          286.08,
+          491.273,
+          888.0,
+          539.636
+        ],
+        "Four": [
+          286.08,
+          539.636,
+          888.0,
+          588.0
+        ],
+        "Grim": [
+          286.08,
+          442.909,
+          888.0,
+          491.273
+        ],
+        "Jojo": [
           286.08,
           104.364,
           888.0,
           152.727
         ],
-        "Oran": [
+        "Lira": [
           286.08,
-          152.727,
+          394.545,
           888.0,
-          201.091
+          442.909
         ],
-        "Taro": [
+        "Lunt": [
+          286.08,
+          346.182,
+          888.0,
+          394.545
+        ],
+        "Radu": [
           286.08,
           297.818,
           888.0,
           346.182
         ],
-        "Venn": [
+        "Witt": [
           286.08,
-          442.909,
+          152.727,
           888.0,
-          491.273
+          201.091
         ]
       },
       "table_bbox_px": [
@@ -755,7 +755,7 @@
         "edits": [],
         "enabled": false
       },
-      "scene_variant": "card_table",
+      "scene_variant": "spreadsheet",
       "table_bbox_px": [
         52.0,
         56.0,
@@ -797,11 +797,11 @@
         {
           "attrs": {
             "cell_role": "header",
-            "column_header": "2020",
+            "column_header": "2021",
             "column_index": 1,
             "row_index": 0,
             "row_label": null,
-            "text": "2020",
+            "text": "2021",
             "text_bbox_px": [
               352.4,
               71.182,
@@ -822,11 +822,11 @@
         {
           "attrs": {
             "cell_role": "header",
-            "column_header": "2021",
+            "column_header": "2022",
             "column_index": 2,
             "row_index": 0,
             "row_label": null,
-            "text": "2021",
+            "text": "2022",
             "text_bbox_px": [
               553.04,
               71.182,
@@ -847,11 +847,11 @@
         {
           "attrs": {
             "cell_role": "header",
-            "column_header": "2022",
+            "column_header": "2023",
             "column_index": 3,
             "row_index": 0,
             "row_label": null,
-            "text": "2022",
+            "text": "2023",
             "text_bbox_px": [
               753.68,
               71.182,
@@ -875,13 +875,13 @@
             "column_header": "Name",
             "column_index": 0,
             "row_index": 1,
-            "row_label": "Koss",
-            "text": "Koss",
+            "row_label": "Jojo",
+            "text": "Jojo",
             "text_bbox_px": [
               66.0,
-              119.545,
-              129.0,
-              137.545
+              117.045,
+              117.0,
+              140.045
             ],
             "value": null
           },
@@ -897,18 +897,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "2020",
+            "column_header": "2021",
             "column_index": 1,
             "row_index": 1,
-            "row_label": "Koss",
-            "text": "25",
+            "row_label": "Jojo",
+            "text": "24",
             "text_bbox_px": [
               372.4,
               120.545,
               400.4,
               136.545
             ],
-            "value": 25
+            "value": 24
           },
           "bbox_px": [
             286.08,
@@ -922,18 +922,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "2021",
+            "column_header": "2022",
             "column_index": 2,
             "row_index": 1,
-            "row_label": "Koss",
-            "text": "7",
+            "row_label": "Jojo",
+            "text": "31",
             "text_bbox_px": [
-              580.04,
+              573.04,
               120.545,
-              594.04,
+              601.04,
               136.545
             ],
-            "value": 7
+            "value": 31
           },
           "bbox_px": [
             486.72,
@@ -947,18 +947,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "2022",
+            "column_header": "2023",
             "column_index": 3,
             "row_index": 1,
-            "row_label": "Koss",
-            "text": "30",
+            "row_label": "Jojo",
+            "text": "17",
             "text_bbox_px": [
               773.68,
               120.545,
               801.68,
               136.545
             ],
-            "value": 30
+            "value": 17
           },
           "bbox_px": [
             687.36,
@@ -975,12 +975,12 @@
             "column_header": "Name",
             "column_index": 0,
             "row_index": 2,
-            "row_label": "Oran",
-            "text": "Oran",
+            "row_label": "Witt",
+            "text": "Witt",
             "text_bbox_px": [
               66.0,
               167.909,
-              131.0,
+              122.0,
               185.909
             ],
             "value": null
@@ -997,18 +997,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "2020",
+            "column_header": "2021",
             "column_index": 1,
             "row_index": 2,
-            "row_label": "Oran",
-            "text": "5",
+            "row_label": "Witt",
+            "text": "29",
             "text_bbox_px": [
-              379.4,
+              372.4,
               168.909,
-              393.4,
+              400.4,
               184.909
             ],
-            "value": 5
+            "value": 29
           },
           "bbox_px": [
             286.08,
@@ -1022,18 +1022,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "2021",
+            "column_header": "2022",
             "column_index": 2,
             "row_index": 2,
-            "row_label": "Oran",
-            "text": "11",
+            "row_label": "Witt",
+            "text": "19",
             "text_bbox_px": [
               573.04,
               168.909,
               601.04,
               184.909
             ],
-            "value": 11
+            "value": 19
           },
           "bbox_px": [
             486.72,
@@ -1047,18 +1047,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "2022",
+            "column_header": "2023",
             "column_index": 3,
             "row_index": 2,
-            "row_label": "Oran",
-            "text": "4",
+            "row_label": "Witt",
+            "text": "19",
             "text_bbox_px": [
-              780.68,
+              773.68,
               168.909,
-              794.68,
+              801.68,
               184.909
             ],
-            "value": 4
+            "value": 19
           },
           "bbox_px": [
             687.36,
@@ -1075,13 +1075,13 @@
             "column_header": "Name",
             "column_index": 0,
             "row_index": 3,
-            "row_label": "Bo",
-            "text": "Bo",
+            "row_label": "Doy",
+            "text": "Doy",
             "text_bbox_px": [
               66.0,
-              216.273,
-              100.0,
-              234.273
+              213.773,
+              118.0,
+              236.773
             ],
             "value": null
           },
@@ -1097,18 +1097,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "2020",
+            "column_header": "2021",
             "column_index": 1,
             "row_index": 3,
-            "row_label": "Bo",
-            "text": "5",
+            "row_label": "Doy",
+            "text": "20",
             "text_bbox_px": [
-              379.4,
+              372.4,
               217.273,
-              393.4,
+              400.4,
               233.273
             ],
-            "value": 5
+            "value": 20
           },
           "bbox_px": [
             286.08,
@@ -1122,18 +1122,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "2021",
+            "column_header": "2022",
             "column_index": 2,
             "row_index": 3,
-            "row_label": "Bo",
-            "text": "8",
+            "row_label": "Doy",
+            "text": "11",
             "text_bbox_px": [
-              580.04,
+              573.04,
               217.273,
-              594.04,
+              601.04,
               233.273
             ],
-            "value": 8
+            "value": 11
           },
           "bbox_px": [
             486.72,
@@ -1147,10 +1147,10 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "2022",
+            "column_header": "2023",
             "column_index": 3,
             "row_index": 3,
-            "row_label": "Bo",
+            "row_label": "Doy",
             "text": "27",
             "text_bbox_px": [
               773.68,
@@ -1175,12 +1175,12 @@
             "column_header": "Name",
             "column_index": 0,
             "row_index": 4,
-            "row_label": "Dore",
-            "text": "Dore",
+            "row_label": "Cain",
+            "text": "Cain",
             "text_bbox_px": [
               66.0,
               264.636,
-              130.0,
+              125.0,
               282.636
             ],
             "value": null
@@ -1197,18 +1197,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "2020",
+            "column_header": "2021",
             "column_index": 1,
             "row_index": 4,
-            "row_label": "Dore",
-            "text": "4",
+            "row_label": "Cain",
+            "text": "5",
             "text_bbox_px": [
               379.4,
               265.636,
               393.4,
               281.636
             ],
-            "value": 4
+            "value": 5
           },
           "bbox_px": [
             286.08,
@@ -1222,18 +1222,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "2021",
+            "column_header": "2022",
             "column_index": 2,
             "row_index": 4,
-            "row_label": "Dore",
-            "text": "18",
+            "row_label": "Cain",
+            "text": "6",
             "text_bbox_px": [
-              573.04,
+              580.04,
               265.636,
-              601.04,
+              594.04,
               281.636
             ],
-            "value": 18
+            "value": 6
           },
           "bbox_px": [
             486.72,
@@ -1247,18 +1247,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "2022",
+            "column_header": "2023",
             "column_index": 3,
             "row_index": 4,
-            "row_label": "Dore",
-            "text": "32",
+            "row_label": "Cain",
+            "text": "7",
             "text_bbox_px": [
-              773.68,
+              780.68,
               265.636,
-              801.68,
+              794.68,
               281.636
             ],
-            "value": 32
+            "value": 7
           },
           "bbox_px": [
             687.36,
@@ -1275,12 +1275,12 @@
             "column_header": "Name",
             "column_index": 0,
             "row_index": 5,
-            "row_label": "Taro",
-            "text": "Taro",
+            "row_label": "Radu",
+            "text": "Radu",
             "text_bbox_px": [
               66.0,
               313.0,
-              126.0,
+              134.0,
               331.0
             ],
             "value": null
@@ -1297,18 +1297,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "2020",
+            "column_header": "2021",
             "column_index": 1,
             "row_index": 5,
-            "row_label": "Taro",
-            "text": "12",
+            "row_label": "Radu",
+            "text": "32",
             "text_bbox_px": [
               372.4,
               314.0,
               400.4,
               330.0
             ],
-            "value": 12
+            "value": 32
           },
           "bbox_px": [
             286.08,
@@ -1322,18 +1322,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "2021",
+            "column_header": "2022",
             "column_index": 2,
             "row_index": 5,
-            "row_label": "Taro",
-            "text": "5",
+            "row_label": "Radu",
+            "text": "11",
             "text_bbox_px": [
-              580.04,
+              573.04,
               314.0,
-              594.04,
+              601.04,
               330.0
             ],
-            "value": 5
+            "value": 11
           },
           "bbox_px": [
             486.72,
@@ -1347,18 +1347,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "2022",
+            "column_header": "2023",
             "column_index": 3,
             "row_index": 5,
-            "row_label": "Taro",
-            "text": "11",
+            "row_label": "Radu",
+            "text": "19",
             "text_bbox_px": [
               773.68,
               314.0,
               801.68,
               330.0
             ],
-            "value": 11
+            "value": 19
           },
           "bbox_px": [
             687.36,
@@ -1375,12 +1375,12 @@
             "column_header": "Name",
             "column_index": 0,
             "row_index": 6,
-            "row_label": "Also",
-            "text": "Also",
+            "row_label": "Lunt",
+            "text": "Lunt",
             "text_bbox_px": [
               66.0,
               361.364,
-              123.0,
+              126.0,
               379.364
             ],
             "value": null
@@ -1397,18 +1397,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "2020",
+            "column_header": "2021",
             "column_index": 1,
             "row_index": 6,
-            "row_label": "Also",
-            "text": "11",
+            "row_label": "Lunt",
+            "text": "12",
             "text_bbox_px": [
               372.4,
               362.364,
               400.4,
               378.364
             ],
-            "value": 11
+            "value": 12
           },
           "bbox_px": [
             286.08,
@@ -1422,18 +1422,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "2021",
+            "column_header": "2022",
             "column_index": 2,
             "row_index": 6,
-            "row_label": "Also",
-            "text": "31",
+            "row_label": "Lunt",
+            "text": "20",
             "text_bbox_px": [
               573.04,
               362.364,
               601.04,
               378.364
             ],
-            "value": 31
+            "value": 20
           },
           "bbox_px": [
             486.72,
@@ -1447,18 +1447,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "2022",
+            "column_header": "2023",
             "column_index": 3,
             "row_index": 6,
-            "row_label": "Also",
-            "text": "24",
+            "row_label": "Lunt",
+            "text": "27",
             "text_bbox_px": [
               773.68,
               362.364,
               801.68,
               378.364
             ],
-            "value": 24
+            "value": 27
           },
           "bbox_px": [
             687.36,
@@ -1475,13 +1475,13 @@
             "column_header": "Name",
             "column_index": 0,
             "row_index": 7,
-            "row_label": "Eryn",
-            "text": "Eryn",
+            "row_label": "Lira",
+            "text": "Lira",
             "text_bbox_px": [
               66.0,
-              407.227,
-              127.0,
-              430.227
+              409.727,
+              117.0,
+              427.727
             ],
             "value": null
           },
@@ -1497,18 +1497,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "2020",
+            "column_header": "2021",
             "column_index": 1,
             "row_index": 7,
-            "row_label": "Eryn",
-            "text": "14",
+            "row_label": "Lira",
+            "text": "22",
             "text_bbox_px": [
               372.4,
               410.727,
               400.4,
               426.727
             ],
-            "value": 14
+            "value": 22
           },
           "bbox_px": [
             286.08,
@@ -1522,18 +1522,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "2021",
+            "column_header": "2022",
             "column_index": 2,
             "row_index": 7,
-            "row_label": "Eryn",
-            "text": "17",
+            "row_label": "Lira",
+            "text": "27",
             "text_bbox_px": [
               573.04,
               410.727,
               601.04,
               426.727
             ],
-            "value": 17
+            "value": 27
           },
           "bbox_px": [
             486.72,
@@ -1547,18 +1547,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "2022",
+            "column_header": "2023",
             "column_index": 3,
             "row_index": 7,
-            "row_label": "Eryn",
-            "text": "14",
+            "row_label": "Lira",
+            "text": "24",
             "text_bbox_px": [
               773.68,
               410.727,
               801.68,
               426.727
             ],
-            "value": 14
+            "value": 24
           },
           "bbox_px": [
             687.36,
@@ -1575,12 +1575,12 @@
             "column_header": "Name",
             "column_index": 0,
             "row_index": 8,
-            "row_label": "Venn",
-            "text": "Venn",
+            "row_label": "Grim",
+            "text": "Grim",
             "text_bbox_px": [
               66.0,
               458.091,
-              135.0,
+              131.0,
               476.091
             ],
             "value": null
@@ -1597,10 +1597,10 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "2020",
+            "column_header": "2021",
             "column_index": 1,
             "row_index": 8,
-            "row_label": "Venn",
+            "row_label": "Grim",
             "text": "20",
             "text_bbox_px": [
               372.4,
@@ -1622,18 +1622,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "2021",
+            "column_header": "2022",
             "column_index": 2,
             "row_index": 8,
-            "row_label": "Venn",
-            "text": "11",
+            "row_label": "Grim",
+            "text": "26",
             "text_bbox_px": [
               573.04,
               459.091,
               601.04,
               475.091
             ],
-            "value": 11
+            "value": 26
           },
           "bbox_px": [
             486.72,
@@ -1647,18 +1647,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "2022",
+            "column_header": "2023",
             "column_index": 3,
             "row_index": 8,
-            "row_label": "Venn",
-            "text": "5",
+            "row_label": "Grim",
+            "text": "28",
             "text_bbox_px": [
-              780.68,
+              773.68,
               459.091,
-              794.68,
+              801.68,
               475.091
             ],
-            "value": 5
+            "value": 28
           },
           "bbox_px": [
             687.36,
@@ -1675,12 +1675,12 @@
             "column_header": "Name",
             "column_index": 0,
             "row_index": 9,
-            "row_label": "Aret",
-            "text": "Aret",
+            "row_label": "Edd",
+            "text": "Edd",
             "text_bbox_px": [
               66.0,
               506.455,
-              124.0,
+              116.0,
               524.455
             ],
             "value": null
@@ -1697,18 +1697,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "2020",
+            "column_header": "2021",
             "column_index": 1,
             "row_index": 9,
-            "row_label": "Aret",
-            "text": "23",
+            "row_label": "Edd",
+            "text": "6",
             "text_bbox_px": [
-              372.4,
+              379.4,
               507.455,
-              400.4,
+              393.4,
               523.455
             ],
-            "value": 23
+            "value": 6
           },
           "bbox_px": [
             286.08,
@@ -1722,18 +1722,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "2021",
+            "column_header": "2022",
             "column_index": 2,
             "row_index": 9,
-            "row_label": "Aret",
-            "text": "7",
+            "row_label": "Edd",
+            "text": "19",
             "text_bbox_px": [
-              580.04,
+              573.04,
               507.455,
-              594.04,
+              601.04,
               523.455
             ],
-            "value": 7
+            "value": 19
           },
           "bbox_px": [
             486.72,
@@ -1747,18 +1747,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "2022",
+            "column_header": "2023",
             "column_index": 3,
             "row_index": 9,
-            "row_label": "Aret",
-            "text": "8",
+            "row_label": "Edd",
+            "text": "18",
             "text_bbox_px": [
-              780.68,
+              773.68,
               507.455,
-              794.68,
+              801.68,
               523.455
             ],
-            "value": 8
+            "value": 18
           },
           "bbox_px": [
             687.36,
@@ -1775,12 +1775,12 @@
             "column_header": "Name",
             "column_index": 0,
             "row_index": 10,
-            "row_label": "Avie",
-            "text": "Avie",
+            "row_label": "Four",
+            "text": "Four",
             "text_bbox_px": [
               66.0,
               554.818,
-              125.0,
+              127.0,
               572.818
             ],
             "value": null
@@ -1797,18 +1797,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "2020",
+            "column_header": "2021",
             "column_index": 1,
             "row_index": 10,
-            "row_label": "Avie",
-            "text": "6",
+            "row_label": "Four",
+            "text": "14",
             "text_bbox_px": [
-              379.4,
+              372.4,
               555.818,
-              393.4,
+              400.4,
               571.818
             ],
-            "value": 6
+            "value": 14
           },
           "bbox_px": [
             286.08,
@@ -1822,18 +1822,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "2021",
+            "column_header": "2022",
             "column_index": 2,
             "row_index": 10,
-            "row_label": "Avie",
-            "text": "17",
+            "row_label": "Four",
+            "text": "24",
             "text_bbox_px": [
               573.04,
               555.818,
               601.04,
               571.818
             ],
-            "value": 17
+            "value": 24
           },
           "bbox_px": [
             486.72,
@@ -1847,18 +1847,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "2022",
+            "column_header": "2023",
             "column_index": 3,
             "row_index": 10,
-            "row_label": "Avie",
-            "text": "22",
+            "row_label": "Four",
+            "text": "20",
             "text_bbox_px": [
               773.68,
               555.818,
               801.68,
               571.818
             ],
-            "value": 22
+            "value": 20
           },
           "bbox_px": [
             687.36,
@@ -1871,18 +1871,18 @@
         }
       ],
       "relations": {
-        "answer_value": 5,
-        "query_row_label": "Venn",
+        "answer_value": 6,
+        "query_row_label": "Edd",
         "query_years": [
-          "2022"
+          "2021"
         ],
-        "scene_variant": "card_table",
+        "scene_variant": "spreadsheet",
         "supporting_cell_ids": [
-          "cell_r8_c3"
+          "cell_r9_c1"
         ],
         "task_variant": "value_at_year"
       },
-      "scene_kind": "table_card_table_temporal"
+      "scene_kind": "table_spreadsheet_temporal"
     },
     "verifier_spec": {
       "answer_type": "integer",

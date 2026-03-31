@@ -1,57 +1,73 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 1
+    "value": 7
   },
   "evidence_gt": {
     "type": "label_set",
     "value": [
-      "G"
+      "B",
+      "C",
+      "G",
+      "K",
+      "M",
+      "T",
+      "V"
     ]
   },
   "image": {
     "format": "png",
     "path": "charts/task_charts_multiseries_pairwise_comparison_count/images/series_a_gt_b_count/0010.png"
   },
-  "instance_seed": 4567934860884189,
-  "prompt": "Work from the multiseries chart shown in the image: a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Read the chart values and count the categories where the stated series relation holds. How many labeled categories have Papp above Uni?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer field: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
+  "instance_seed": 229071139420986,
+  "prompt": "Use the chart in the image. It shows a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Determine how many category labels satisfy the requested pairwise series comparison. Across the labeled categories, in how many categories is Ayo higher than Koa?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
   "prompt_variants": {
-    "answer_and_evidence": "Work from the multiseries chart shown in the image: a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Read the chart values and count the categories where the stated series relation holds. How many labeled categories have Papp above Uni?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer field: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
-    "answer_only": "Work from the multiseries chart shown in the image: a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Read the chart values and count the categories where the stated series relation holds. How many labeled categories have Papp above Uni?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":3}"
+    "answer_and_evidence": "Use the chart in the image. It shows a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Determine how many category labels satisfy the requested pairwise series comparison. Across the labeled categories, in how many categories is Ayo higher than Koa?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
+    "answer_only": "Use the chart in the image. It shows a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Determine how many category labels satisfy the requested pairwise series comparison. Across the labeled categories, in how many categories is Ayo higher than Koa?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":3}"
   },
   "task": "task_charts_multiseries_pairwise_comparison_count",
   "task_variant": "series_a_gt_b_count",
   "trace_payload": {
     "execution_trace": {
-      "answer_value": 1,
-      "category_count": 6,
+      "answer_value": 7,
+      "category_count": 10,
       "category_count_range": [
         5,
         10
       ],
       "category_labels": [
-        "C",
         "G",
-        "Q",
+        "P",
+        "M",
+        "C",
+        "X",
+        "V",
+        "K",
         "B",
-        "H",
-        "E"
+        "Y",
+        "T"
       ],
       "comparison": "greater_than",
       "evidence_labels": [
-        "G"
+        "B",
+        "C",
+        "G",
+        "K",
+        "M",
+        "T",
+        "V"
       ],
-      "left_series_label": "Papp",
+      "left_series_label": "Ayo",
       "mark_color_distance_space": "lab",
       "mark_color_min_distance": 40.0,
       "mark_color_sampling_policy": "random_rgb_palette",
       "queried_series_labels": [
-        "Papp",
-        "Uni"
+        "Ayo",
+        "Koa"
       ],
       "question_format": "numeric_open",
-      "right_series_label": "Uni",
-      "scene_variant": "multi_line",
+      "right_series_label": "Koa",
+      "scene_variant": "grouped_lollipop",
       "scene_variant_probabilities": {
         "grouped_bar": 0.25,
         "grouped_horizontal_bar": 0.25,
@@ -65,107 +81,213 @@
       ],
       "series_fill_palette_rgb": [
         [
-          31,
-          137,
-          144
+          104,
+          140,
+          11
         ],
         [
-          210,
-          147,
-          24
+          32,
+          127,
+          145
         ]
       ],
       "series_labels": [
-        "Papp",
-        "Uni"
+        "Ayo",
+        "Koa"
       ],
       "series_outline_palette_rgb": [
         [
-          17,
-          75,
-          79
+          57,
+          77,
+          6
         ],
         [
-          116,
-          81,
-          13
+          18,
+          70,
+          80
         ]
       ],
-      "target_answer": 1,
+      "target_answer": 7,
       "target_answer_range": [
         0,
         8
       ],
       "task_variant": "series_a_gt_b_count",
       "task_variant_probabilities": {
-        "series_a_gt_b_count": 0.5,
-        "series_a_lt_b_count": 0.5
+        "series_a_gt_b_count": 1.0,
+        "series_a_lt_b_count": 0.0
       },
       "values_by_category": {
         "B": {
-          "Papp": 10,
-          "Uni": 20
+          "Ayo": 20,
+          "Koa": 3
         },
         "C": {
-          "Papp": 1,
-          "Uni": 10
-        },
-        "E": {
-          "Papp": 17,
-          "Uni": 19
+          "Ayo": 17,
+          "Koa": 11
         },
         "G": {
-          "Papp": 7,
-          "Uni": 6
+          "Ayo": 15,
+          "Koa": 4
         },
-        "H": {
-          "Papp": 8,
-          "Uni": 16
+        "K": {
+          "Ayo": 13,
+          "Koa": 3
         },
-        "Q": {
-          "Papp": 9,
-          "Uni": 13
+        "M": {
+          "Ayo": 19,
+          "Koa": 18
+        },
+        "P": {
+          "Ayo": 3,
+          "Koa": 10
+        },
+        "T": {
+          "Ayo": 18,
+          "Koa": 1
+        },
+        "V": {
+          "Ayo": 16,
+          "Koa": 5
+        },
+        "X": {
+          "Ayo": 10,
+          "Koa": 13
+        },
+        "Y": {
+          "Ayo": 12,
+          "Koa": 17
         }
       }
     },
     "projected_evidence": {
       "bbox_set": [
         [
-          273.5,
-          358.667,
-          291.5,
+          644.07,
+          59.048,
+          682.93,
+          562.0
+        ],
+        [
+          339.27,
+          128.19,
+          378.13,
+          562.0
+        ],
+        [
+          110.67,
+          174.286,
+          149.53,
+          562.0
+        ],
+        [
+          567.87,
+          220.381,
+          606.73,
+          562.0
+        ],
+        [
+          263.07,
+          82.095,
+          301.93,
+          562.0
+        ],
+        [
+          796.47,
+          105.143,
+          835.33,
+          562.0
+        ],
+        [
+          491.67,
+          151.238,
+          530.53,
           562.0
         ]
       ],
       "label_set": [
-        "G"
+        "B",
+        "C",
+        "G",
+        "K",
+        "M",
+        "T",
+        "V"
       ],
       "pixel_point_map": {
+        "B": [
+          663.5,
+          554.0
+        ],
+        "C": [
+          358.7,
+          554.0
+        ],
         "G": [
+          130.1,
+          554.0
+        ],
+        "K": [
+          587.3,
+          554.0
+        ],
+        "M": [
           282.5,
+          554.0
+        ],
+        "T": [
+          815.9,
+          554.0
+        ],
+        "V": [
+          511.1,
           554.0
         ]
       },
       "pixel_point_set": [
         [
+          663.5,
+          554.0
+        ],
+        [
+          358.7,
+          554.0
+        ],
+        [
+          130.1,
+          554.0
+        ],
+        [
+          587.3,
+          554.0
+        ],
+        [
           282.5,
+          554.0
+        ],
+        [
+          815.9,
+          554.0
+        ],
+        [
+          511.1,
           554.0
         ]
       ]
     },
     "query_spec": {
       "params": {
-        "category_count": 6,
+        "category_count": 10,
         "category_count_range": [
           5,
           10
         ],
         "comparison": "greater_than",
         "queried_series_labels": [
-          "Papp",
-          "Uni"
+          "Ayo",
+          "Koa"
         ],
-        "scene_variant": "multi_line",
+        "scene_variant": "grouped_lollipop",
         "scene_variant_probabilities": {
           "grouped_bar": 0.25,
           "grouped_horizontal_bar": 0.25,
@@ -177,20 +299,20 @@
           2,
           3
         ],
-        "target_answer": 1,
+        "target_answer": 7,
         "target_answer_range": [
           0,
           8
         ],
         "task_variant": "series_a_gt_b_count",
         "task_variant_probabilities": {
-          "series_a_gt_b_count": 0.5,
-          "series_a_lt_b_count": 0.5
+          "series_a_gt_b_count": 1.0,
+          "series_a_lt_b_count": 0.0
         }
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 3,
+        "answer_or_evidence_variant_index": 4,
         "prompt_bundle_id": "charts_multiseries_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -200,16 +322,16 @@
           "json_example_answer_only": "{\"answer\":3}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "left_series": "Papp",
-          "object_description": "a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis",
-          "right_series": "Uni"
+          "left_series": "Ayo",
+          "object_description": "a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis",
+          "right_series": "Koa"
         },
         "task_family_key": "multiseries_chart_comparison",
-        "task_family_variant_index": 2,
+        "task_family_variant_index": 1,
         "task_key": "pairwise_comparison_count_query",
-        "task_variant_index": 3,
+        "task_variant_index": 2,
         "task_variant_key": "series_a_gt_b_count",
-        "task_variant_template_index": 2,
+        "task_variant_template_index": 0,
         "template_paths": [
           "charts/multiseries/charts_multiseries_v1.json"
         ],
@@ -225,7 +347,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 3,
+            "answer_or_evidence_variant_index": 4,
             "prompt_bundle_id": "charts_multiseries_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -235,16 +357,16 @@
               "json_example_answer_only": "{\"answer\":3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "left_series": "Papp",
-              "object_description": "a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis",
-              "right_series": "Uni"
+              "left_series": "Ayo",
+              "object_description": "a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis",
+              "right_series": "Koa"
             },
             "task_family_key": "multiseries_chart_comparison",
-            "task_family_variant_index": 2,
+            "task_family_variant_index": 1,
             "task_key": "pairwise_comparison_count_query",
-            "task_variant_index": 3,
+            "task_variant_index": 2,
             "task_variant_key": "series_a_gt_b_count",
-            "task_variant_template_index": 2,
+            "task_variant_template_index": 0,
             "template_paths": [
               "charts/multiseries/charts_multiseries_v1.json"
             ],
@@ -255,12 +377,12 @@
               "task_variant:series_a_gt_b_count": 5
             }
           },
-          "prompt": "Work from the multiseries chart shown in the image: a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Read the chart values and count the categories where the stated series relation holds. How many labeled categories have Papp above Uni?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer field: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}"
+          "prompt": "Use the chart in the image. It shows a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Determine how many category labels satisfy the requested pairwise series comparison. Across the labeled categories, in how many categories is Ayo higher than Koa?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 1,
+            "answer_or_evidence_variant_index": 4,
             "prompt_bundle_id": "charts_multiseries_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -270,16 +392,16 @@
               "json_example_answer_only": "{\"answer\":3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "left_series": "Papp",
-              "object_description": "a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis",
-              "right_series": "Uni"
+              "left_series": "Ayo",
+              "object_description": "a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis",
+              "right_series": "Koa"
             },
             "task_family_key": "multiseries_chart_comparison",
-            "task_family_variant_index": 2,
+            "task_family_variant_index": 1,
             "task_key": "pairwise_comparison_count_query",
-            "task_variant_index": 3,
+            "task_variant_index": 2,
             "task_variant_key": "series_a_gt_b_count",
-            "task_variant_template_index": 2,
+            "task_variant_template_index": 0,
             "template_paths": [
               "charts/multiseries/charts_multiseries_v1.json"
             ],
@@ -290,7 +412,7 @@
               "task_variant:series_a_gt_b_count": 5
             }
           },
-          "prompt": "Work from the multiseries chart shown in the image: a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Read the chart values and count the categories where the stated series relation holds. How many labeled categories have Papp above Uni?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":3}"
+          "prompt": "Use the chart in the image. It shows a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Determine how many category labels satisfy the requested pairwise series comparison. Across the labeled categories, in how many categories is Ayo higher than Koa?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":3}"
         }
       },
       "task_variant": "series_a_gt_b_count",
@@ -299,27 +421,43 @@
     "render_map": {
       "category_label_centers_px": {
         "B": [
-          536.5,
-          554.0
-        ],
-        "C": [
-          155.5,
-          554.0
-        ],
-        "E": [
-          790.5,
-          554.0
-        ],
-        "G": [
-          282.5,
-          554.0
-        ],
-        "H": [
           663.5,
           554.0
         ],
-        "Q": [
-          409.5,
+        "C": [
+          358.7,
+          554.0
+        ],
+        "G": [
+          130.1,
+          554.0
+        ],
+        "K": [
+          587.3,
+          554.0
+        ],
+        "M": [
+          282.5,
+          554.0
+        ],
+        "P": [
+          206.3,
+          554.0
+        ],
+        "T": [
+          815.9,
+          554.0
+        ],
+        "V": [
+          511.1,
+          554.0
+        ],
+        "X": [
+          434.9,
+          554.0
+        ],
+        "Y": [
+          739.7,
           554.0
         ]
       },
@@ -361,26 +499,26 @@
         "sampling_policy": "random_rgb_palette",
         "series_fill_palette_rgb": [
           [
-            31,
-            137,
-            144
+            104,
+            140,
+            11
           ],
           [
-            210,
-            147,
-            24
+            32,
+            127,
+            145
           ]
         ],
         "series_outline_palette_rgb": [
           [
-            17,
-            75,
-            79
+            57,
+            77,
+            6
           ],
           [
-            116,
-            81,
-            13
+            18,
+            70,
+            80
           ]
         ]
       },
@@ -406,7 +544,7 @@
         "edits": [],
         "enabled": false
       },
-      "scene_variant": "multi_line",
+      "scene_variant": "grouped_lollipop",
       "text_style": {
         "label_font_size_px": 22,
         "label_stroke_width_px": 2,
@@ -443,525 +581,873 @@
         {
           "attrs": {
             "category_group_bbox_px": [
-              147.5,
-              289.524,
-              163.5,
-              562.0
-            ],
-            "category_label": "C",
-            "category_label_center_px": [
-              155.5,
-              554.0
-            ],
-            "category_rank": 0,
-            "mark_bbox_px": [
-              147.5,
-              496.952,
-              163.5,
-              512.952
-            ],
-            "mark_center_px": [
-              155.5,
-              504.952
-            ],
-            "mark_fill_rgb": [
-              31,
-              137,
-              144
-            ],
-            "mark_outline_rgb": [
-              17,
-              75,
-              79
-            ],
-            "scene_variant": "multi_line",
-            "series_label": "Papp",
-            "series_rank": 0,
-            "value": 1
-          },
-          "entity_id": "mark_C_Papp",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              147.5,
-              289.524,
-              163.5,
-              562.0
-            ],
-            "category_label": "C",
-            "category_label_center_px": [
-              155.5,
-              554.0
-            ],
-            "category_rank": 0,
-            "mark_bbox_px": [
-              147.5,
-              289.524,
-              163.5,
-              305.524
-            ],
-            "mark_center_px": [
-              155.5,
-              297.524
-            ],
-            "mark_fill_rgb": [
-              210,
-              147,
-              24
-            ],
-            "mark_outline_rgb": [
-              116,
-              81,
-              13
-            ],
-            "scene_variant": "multi_line",
-            "series_label": "Uni",
-            "series_rank": 1,
-            "value": 10
-          },
-          "entity_id": "mark_C_Uni",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              273.5,
-              358.667,
-              291.5,
+              110.67,
+              174.286,
+              149.53,
               562.0
             ],
             "category_label": "G",
             "category_label_center_px": [
-              282.5,
+              130.1,
               554.0
             ],
-            "category_rank": 1,
+            "category_rank": 0,
             "mark_bbox_px": [
-              274.5,
-              358.667,
-              290.5,
-              374.667
+              110.67,
+              174.286,
+              126.67,
+              190.286
             ],
             "mark_center_px": [
-              282.5,
-              366.667
+              118.67,
+              182.286
             ],
             "mark_fill_rgb": [
-              31,
-              137,
-              144
+              104,
+              140,
+              11
             ],
             "mark_outline_rgb": [
-              17,
-              75,
-              79
+              57,
+              77,
+              6
             ],
-            "scene_variant": "multi_line",
-            "series_label": "Papp",
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Ayo",
             "series_rank": 0,
-            "value": 7
+            "value": 15
           },
-          "entity_id": "mark_G_Papp",
+          "entity_id": "mark_G_Ayo",
           "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              273.5,
-              358.667,
-              291.5,
+              110.67,
+              174.286,
+              149.53,
               562.0
             ],
             "category_label": "G",
             "category_label_center_px": [
-              282.5,
+              130.1,
+              554.0
+            ],
+            "category_rank": 0,
+            "mark_bbox_px": [
+              133.53,
+              427.81,
+              149.53,
+              443.81
+            ],
+            "mark_center_px": [
+              141.53,
+              435.81
+            ],
+            "mark_fill_rgb": [
+              32,
+              127,
+              145
+            ],
+            "mark_outline_rgb": [
+              18,
+              70,
+              80
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Koa",
+            "series_rank": 1,
+            "value": 4
+          },
+          "entity_id": "mark_G_Koa",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              186.87,
+              289.524,
+              225.73,
+              562.0
+            ],
+            "category_label": "P",
+            "category_label_center_px": [
+              206.3,
               554.0
             ],
             "category_rank": 1,
             "mark_bbox_px": [
-              274.5,
-              381.714,
-              290.5,
-              397.714
+              186.87,
+              450.857,
+              202.87,
+              466.857
             ],
             "mark_center_px": [
-              282.5,
-              389.714
+              194.87,
+              458.857
             ],
             "mark_fill_rgb": [
-              210,
-              147,
-              24
+              104,
+              140,
+              11
             ],
             "mark_outline_rgb": [
-              116,
-              81,
-              13
+              57,
+              77,
+              6
             ],
-            "scene_variant": "multi_line",
-            "series_label": "Uni",
-            "series_rank": 1,
-            "value": 6
-          },
-          "entity_id": "mark_G_Uni",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              400.0,
-              220.381,
-              419.0,
-              563.5
-            ],
-            "category_label": "Q",
-            "category_label_center_px": [
-              409.5,
-              554.0
-            ],
-            "category_rank": 2,
-            "mark_bbox_px": [
-              401.5,
-              312.571,
-              417.5,
-              328.571
-            ],
-            "mark_center_px": [
-              409.5,
-              320.571
-            ],
-            "mark_fill_rgb": [
-              31,
-              137,
-              144
-            ],
-            "mark_outline_rgb": [
-              17,
-              75,
-              79
-            ],
-            "scene_variant": "multi_line",
-            "series_label": "Papp",
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Ayo",
             "series_rank": 0,
-            "value": 9
+            "value": 3
           },
-          "entity_id": "mark_Q_Papp",
+          "entity_id": "mark_P_Ayo",
           "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              400.0,
-              220.381,
-              419.0,
-              563.5
-            ],
-            "category_label": "Q",
-            "category_label_center_px": [
-              409.5,
-              554.0
-            ],
-            "category_rank": 2,
-            "mark_bbox_px": [
-              401.5,
-              220.381,
-              417.5,
-              236.381
-            ],
-            "mark_center_px": [
-              409.5,
-              228.381
-            ],
-            "mark_fill_rgb": [
-              210,
-              147,
-              24
-            ],
-            "mark_outline_rgb": [
-              116,
-              81,
-              13
-            ],
-            "scene_variant": "multi_line",
-            "series_label": "Uni",
-            "series_rank": 1,
-            "value": 13
-          },
-          "entity_id": "mark_Q_Uni",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              528.0,
-              59.048,
-              545.0,
+              186.87,
+              289.524,
+              225.73,
               562.0
             ],
-            "category_label": "B",
+            "category_label": "P",
             "category_label_center_px": [
-              536.5,
+              206.3,
               554.0
             ],
-            "category_rank": 3,
+            "category_rank": 1,
             "mark_bbox_px": [
-              528.5,
+              209.73,
               289.524,
-              544.5,
+              225.73,
               305.524
             ],
             "mark_center_px": [
-              536.5,
+              217.73,
               297.524
             ],
             "mark_fill_rgb": [
-              31,
-              137,
-              144
+              32,
+              127,
+              145
             ],
             "mark_outline_rgb": [
-              17,
-              75,
-              79
+              18,
+              70,
+              80
             ],
-            "scene_variant": "multi_line",
-            "series_label": "Papp",
-            "series_rank": 0,
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Koa",
+            "series_rank": 1,
             "value": 10
           },
-          "entity_id": "mark_B_Papp",
+          "entity_id": "mark_P_Koa",
           "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              528.0,
-              59.048,
-              545.0,
-              562.0
-            ],
-            "category_label": "B",
-            "category_label_center_px": [
-              536.5,
-              554.0
-            ],
-            "category_rank": 3,
-            "mark_bbox_px": [
-              528.5,
-              59.048,
-              544.5,
-              75.048
-            ],
-            "mark_center_px": [
-              536.5,
-              67.048
-            ],
-            "mark_fill_rgb": [
-              210,
-              147,
-              24
-            ],
-            "mark_outline_rgb": [
-              116,
-              81,
-              13
-            ],
-            "scene_variant": "multi_line",
-            "series_label": "Uni",
-            "series_rank": 1,
-            "value": 20
-          },
-          "entity_id": "mark_B_Uni",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              654.5,
-              151.238,
-              672.5,
-              562.0
-            ],
-            "category_label": "H",
-            "category_label_center_px": [
-              663.5,
-              554.0
-            ],
-            "category_rank": 4,
-            "mark_bbox_px": [
-              655.5,
-              335.619,
-              671.5,
-              351.619
-            ],
-            "mark_center_px": [
-              663.5,
-              343.619
-            ],
-            "mark_fill_rgb": [
-              31,
-              137,
-              144
-            ],
-            "mark_outline_rgb": [
-              17,
-              75,
-              79
-            ],
-            "scene_variant": "multi_line",
-            "series_label": "Papp",
-            "series_rank": 0,
-            "value": 8
-          },
-          "entity_id": "mark_H_Papp",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              654.5,
-              151.238,
-              672.5,
-              562.0
-            ],
-            "category_label": "H",
-            "category_label_center_px": [
-              663.5,
-              554.0
-            ],
-            "category_rank": 4,
-            "mark_bbox_px": [
-              655.5,
-              151.238,
-              671.5,
-              167.238
-            ],
-            "mark_center_px": [
-              663.5,
-              159.238
-            ],
-            "mark_fill_rgb": [
-              210,
-              147,
-              24
-            ],
-            "mark_outline_rgb": [
-              116,
-              81,
-              13
-            ],
-            "scene_variant": "multi_line",
-            "series_label": "Uni",
-            "series_rank": 1,
-            "value": 16
-          },
-          "entity_id": "mark_H_Uni",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              782.5,
+              263.07,
               82.095,
-              798.5,
+              301.93,
               562.0
             ],
-            "category_label": "E",
+            "category_label": "M",
             "category_label_center_px": [
-              790.5,
+              282.5,
               554.0
             ],
-            "category_rank": 5,
+            "category_rank": 2,
             "mark_bbox_px": [
-              782.5,
-              128.19,
-              798.5,
-              144.19
-            ],
-            "mark_center_px": [
-              790.5,
-              136.19
-            ],
-            "mark_fill_rgb": [
-              31,
-              137,
-              144
-            ],
-            "mark_outline_rgb": [
-              17,
-              75,
-              79
-            ],
-            "scene_variant": "multi_line",
-            "series_label": "Papp",
-            "series_rank": 0,
-            "value": 17
-          },
-          "entity_id": "mark_E_Papp",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              782.5,
+              263.07,
               82.095,
-              798.5,
-              562.0
-            ],
-            "category_label": "E",
-            "category_label_center_px": [
-              790.5,
-              554.0
-            ],
-            "category_rank": 5,
-            "mark_bbox_px": [
-              782.5,
-              82.095,
-              798.5,
+              279.07,
               98.095
             ],
             "mark_center_px": [
-              790.5,
+              271.07,
               90.095
             ],
             "mark_fill_rgb": [
-              210,
-              147,
-              24
+              104,
+              140,
+              11
             ],
             "mark_outline_rgb": [
-              116,
-              81,
-              13
+              57,
+              77,
+              6
             ],
-            "scene_variant": "multi_line",
-            "series_label": "Uni",
-            "series_rank": 1,
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Ayo",
+            "series_rank": 0,
             "value": 19
           },
-          "entity_id": "mark_E_Uni",
+          "entity_id": "mark_M_Ayo",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              263.07,
+              82.095,
+              301.93,
+              562.0
+            ],
+            "category_label": "M",
+            "category_label_center_px": [
+              282.5,
+              554.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              285.93,
+              105.143,
+              301.93,
+              121.143
+            ],
+            "mark_center_px": [
+              293.93,
+              113.143
+            ],
+            "mark_fill_rgb": [
+              32,
+              127,
+              145
+            ],
+            "mark_outline_rgb": [
+              18,
+              70,
+              80
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Koa",
+            "series_rank": 1,
+            "value": 18
+          },
+          "entity_id": "mark_M_Koa",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              339.27,
+              128.19,
+              378.13,
+              562.0
+            ],
+            "category_label": "C",
+            "category_label_center_px": [
+              358.7,
+              554.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              339.27,
+              128.19,
+              355.27,
+              144.19
+            ],
+            "mark_center_px": [
+              347.27,
+              136.19
+            ],
+            "mark_fill_rgb": [
+              104,
+              140,
+              11
+            ],
+            "mark_outline_rgb": [
+              57,
+              77,
+              6
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Ayo",
+            "series_rank": 0,
+            "value": 17
+          },
+          "entity_id": "mark_C_Ayo",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              339.27,
+              128.19,
+              378.13,
+              562.0
+            ],
+            "category_label": "C",
+            "category_label_center_px": [
+              358.7,
+              554.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              362.13,
+              266.476,
+              378.13,
+              282.476
+            ],
+            "mark_center_px": [
+              370.13,
+              274.476
+            ],
+            "mark_fill_rgb": [
+              32,
+              127,
+              145
+            ],
+            "mark_outline_rgb": [
+              18,
+              70,
+              80
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Koa",
+            "series_rank": 1,
+            "value": 11
+          },
+          "entity_id": "mark_C_Koa",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              415.47,
+              220.381,
+              454.33,
+              562.0
+            ],
+            "category_label": "X",
+            "category_label_center_px": [
+              434.9,
+              554.0
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              415.47,
+              289.524,
+              431.47,
+              305.524
+            ],
+            "mark_center_px": [
+              423.47,
+              297.524
+            ],
+            "mark_fill_rgb": [
+              104,
+              140,
+              11
+            ],
+            "mark_outline_rgb": [
+              57,
+              77,
+              6
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Ayo",
+            "series_rank": 0,
+            "value": 10
+          },
+          "entity_id": "mark_X_Ayo",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              415.47,
+              220.381,
+              454.33,
+              562.0
+            ],
+            "category_label": "X",
+            "category_label_center_px": [
+              434.9,
+              554.0
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              438.33,
+              220.381,
+              454.33,
+              236.381
+            ],
+            "mark_center_px": [
+              446.33,
+              228.381
+            ],
+            "mark_fill_rgb": [
+              32,
+              127,
+              145
+            ],
+            "mark_outline_rgb": [
+              18,
+              70,
+              80
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Koa",
+            "series_rank": 1,
+            "value": 13
+          },
+          "entity_id": "mark_X_Koa",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              491.67,
+              151.238,
+              530.53,
+              562.0
+            ],
+            "category_label": "V",
+            "category_label_center_px": [
+              511.1,
+              554.0
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              491.67,
+              151.238,
+              507.67,
+              167.238
+            ],
+            "mark_center_px": [
+              499.67,
+              159.238
+            ],
+            "mark_fill_rgb": [
+              104,
+              140,
+              11
+            ],
+            "mark_outline_rgb": [
+              57,
+              77,
+              6
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Ayo",
+            "series_rank": 0,
+            "value": 16
+          },
+          "entity_id": "mark_V_Ayo",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              491.67,
+              151.238,
+              530.53,
+              562.0
+            ],
+            "category_label": "V",
+            "category_label_center_px": [
+              511.1,
+              554.0
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              514.53,
+              404.762,
+              530.53,
+              420.762
+            ],
+            "mark_center_px": [
+              522.53,
+              412.762
+            ],
+            "mark_fill_rgb": [
+              32,
+              127,
+              145
+            ],
+            "mark_outline_rgb": [
+              18,
+              70,
+              80
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Koa",
+            "series_rank": 1,
+            "value": 5
+          },
+          "entity_id": "mark_V_Koa",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              567.87,
+              220.381,
+              606.73,
+              562.0
+            ],
+            "category_label": "K",
+            "category_label_center_px": [
+              587.3,
+              554.0
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              567.87,
+              220.381,
+              583.87,
+              236.381
+            ],
+            "mark_center_px": [
+              575.87,
+              228.381
+            ],
+            "mark_fill_rgb": [
+              104,
+              140,
+              11
+            ],
+            "mark_outline_rgb": [
+              57,
+              77,
+              6
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Ayo",
+            "series_rank": 0,
+            "value": 13
+          },
+          "entity_id": "mark_K_Ayo",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              567.87,
+              220.381,
+              606.73,
+              562.0
+            ],
+            "category_label": "K",
+            "category_label_center_px": [
+              587.3,
+              554.0
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              590.73,
+              450.857,
+              606.73,
+              466.857
+            ],
+            "mark_center_px": [
+              598.73,
+              458.857
+            ],
+            "mark_fill_rgb": [
+              32,
+              127,
+              145
+            ],
+            "mark_outline_rgb": [
+              18,
+              70,
+              80
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Koa",
+            "series_rank": 1,
+            "value": 3
+          },
+          "entity_id": "mark_K_Koa",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              644.07,
+              59.048,
+              682.93,
+              562.0
+            ],
+            "category_label": "B",
+            "category_label_center_px": [
+              663.5,
+              554.0
+            ],
+            "category_rank": 7,
+            "mark_bbox_px": [
+              644.07,
+              59.048,
+              660.07,
+              75.048
+            ],
+            "mark_center_px": [
+              652.07,
+              67.048
+            ],
+            "mark_fill_rgb": [
+              104,
+              140,
+              11
+            ],
+            "mark_outline_rgb": [
+              57,
+              77,
+              6
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Ayo",
+            "series_rank": 0,
+            "value": 20
+          },
+          "entity_id": "mark_B_Ayo",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              644.07,
+              59.048,
+              682.93,
+              562.0
+            ],
+            "category_label": "B",
+            "category_label_center_px": [
+              663.5,
+              554.0
+            ],
+            "category_rank": 7,
+            "mark_bbox_px": [
+              666.93,
+              450.857,
+              682.93,
+              466.857
+            ],
+            "mark_center_px": [
+              674.93,
+              458.857
+            ],
+            "mark_fill_rgb": [
+              32,
+              127,
+              145
+            ],
+            "mark_outline_rgb": [
+              18,
+              70,
+              80
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Koa",
+            "series_rank": 1,
+            "value": 3
+          },
+          "entity_id": "mark_B_Koa",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              720.27,
+              128.19,
+              759.13,
+              562.0
+            ],
+            "category_label": "Y",
+            "category_label_center_px": [
+              739.7,
+              554.0
+            ],
+            "category_rank": 8,
+            "mark_bbox_px": [
+              720.27,
+              243.429,
+              736.27,
+              259.429
+            ],
+            "mark_center_px": [
+              728.27,
+              251.429
+            ],
+            "mark_fill_rgb": [
+              104,
+              140,
+              11
+            ],
+            "mark_outline_rgb": [
+              57,
+              77,
+              6
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Ayo",
+            "series_rank": 0,
+            "value": 12
+          },
+          "entity_id": "mark_Y_Ayo",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              720.27,
+              128.19,
+              759.13,
+              562.0
+            ],
+            "category_label": "Y",
+            "category_label_center_px": [
+              739.7,
+              554.0
+            ],
+            "category_rank": 8,
+            "mark_bbox_px": [
+              743.13,
+              128.19,
+              759.13,
+              144.19
+            ],
+            "mark_center_px": [
+              751.13,
+              136.19
+            ],
+            "mark_fill_rgb": [
+              32,
+              127,
+              145
+            ],
+            "mark_outline_rgb": [
+              18,
+              70,
+              80
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Koa",
+            "series_rank": 1,
+            "value": 17
+          },
+          "entity_id": "mark_Y_Koa",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              796.47,
+              105.143,
+              835.33,
+              562.0
+            ],
+            "category_label": "T",
+            "category_label_center_px": [
+              815.9,
+              554.0
+            ],
+            "category_rank": 9,
+            "mark_bbox_px": [
+              796.47,
+              105.143,
+              812.47,
+              121.143
+            ],
+            "mark_center_px": [
+              804.47,
+              113.143
+            ],
+            "mark_fill_rgb": [
+              104,
+              140,
+              11
+            ],
+            "mark_outline_rgb": [
+              57,
+              77,
+              6
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Ayo",
+            "series_rank": 0,
+            "value": 18
+          },
+          "entity_id": "mark_T_Ayo",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              796.47,
+              105.143,
+              835.33,
+              562.0
+            ],
+            "category_label": "T",
+            "category_label_center_px": [
+              815.9,
+              554.0
+            ],
+            "category_rank": 9,
+            "mark_bbox_px": [
+              819.33,
+              496.952,
+              835.33,
+              512.952
+            ],
+            "mark_center_px": [
+              827.33,
+              504.952
+            ],
+            "mark_fill_rgb": [
+              32,
+              127,
+              145
+            ],
+            "mark_outline_rgb": [
+              18,
+              70,
+              80
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Koa",
+            "series_rank": 1,
+            "value": 1
+          },
+          "entity_id": "mark_T_Koa",
           "entity_type": "point"
         }
       ],
       "relations": {
         "comparison": "greater_than",
         "evidence_labels": [
-          "G"
+          "B",
+          "C",
+          "G",
+          "K",
+          "M",
+          "T",
+          "V"
         ],
         "queried_series_labels": [
-          "Papp",
-          "Uni"
+          "Ayo",
+          "Koa"
         ],
-        "scene_variant": "multi_line",
+        "scene_variant": "grouped_lollipop",
         "task_variant": "series_a_gt_b_count"
       },
-      "scene_kind": "chart_multi_line_multiseries"
+      "scene_kind": "chart_grouped_lollipop_multiseries"
     },
     "witness_symbolic": {
       "labels": [
-        "G"
+        "B",
+        "C",
+        "G",
+        "K",
+        "M",
+        "T",
+        "V"
       ],
       "type": "label_set"
     }

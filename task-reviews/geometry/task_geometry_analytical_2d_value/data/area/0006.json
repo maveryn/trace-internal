@@ -1,24 +1,23 @@
 {
   "answer_gt": {
-    "type": "integer",
-    "value": 84
+    "type": "pi_expression",
+    "value": "225π"
   },
   "evidence_gt": {
     "type": "measurement_ref_map",
     "value": {
-      "OP": 7,
-      "PQ": 25
+      "OP": 15
     }
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_2d_value/images/area/0006.png"
   },
-  "instance_seed": 1143732810916701,
-  "prompt": "You are given an image showing a geometric shape with measurement annotations. Based on the shown values, answer this question: A leg length and the hypotenuse of the right triangle are annotated. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: OP, PQ.\nAnswer format: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"OP\":2,\"PQ\":3},\"answer\":8}",
+  "instance_seed": 414892702955052,
+  "prompt": "The image shows a geometric shape with measurement annotations. Based on the shown values, answer this question: The circle has an annotated radius. What is its area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: OP.\nAnswer: set \"answer\" to the area value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":{\"OP\":2},\"answer\":\"12π\"}",
   "prompt_variants": {
-    "answer_and_evidence": "You are given an image showing a geometric shape with measurement annotations. Based on the shown values, answer this question: A leg length and the hypotenuse of the right triangle are annotated. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: OP, PQ.\nAnswer format: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"OP\":2,\"PQ\":3},\"answer\":8}",
-    "answer_only": "You are given an image showing a geometric shape with measurement annotations. Based on the shown values, answer this question: A leg length and the hypotenuse of the right triangle are annotated. What is its area in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"answer\":8}"
+    "answer_and_evidence": "The image shows a geometric shape with measurement annotations. Based on the shown values, answer this question: The circle has an annotated radius. What is its area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: OP.\nAnswer: set \"answer\" to the area value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":{\"OP\":2},\"answer\":\"12π\"}",
+    "answer_only": "The image shows a geometric shape with measurement annotations. Based on the shown values, answer this question: The circle has an annotated radius. What is its area? Express the result in kπ form.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the area value in the form kπ (for example 12π).\nExample JSON:\n{\"answer\":\"12π\"}"
   },
   "task": "task_geometry_analytical_2d_value",
   "task_variant": "area",
@@ -26,33 +25,28 @@
     "execution_trace": {
       "answer_max": 2500,
       "answer_min": 8,
-      "answer_scalar": 84,
-      "answer_type": "integer",
-      "answer_value": 84,
-      "case_id": "triangle_derived",
+      "answer_scalar": 225,
+      "answer_type": "pi_expression",
+      "answer_value": "225π",
+      "case_id": "circle_explicit",
       "evidence_annotations": {
-        "hyp": "PQ",
-        "leg": "OP"
+        "r": "OP"
       },
       "evidence_ids": [
-        "OP",
-        "PQ"
+        "OP"
       ],
       "evidence_label_values": {
-        "hyp": 25,
-        "leg": 7
+        "r": 15
       },
       "evidence_map": {
-        "OP": 7,
-        "PQ": 25
+        "OP": 15
       },
       "evidence_roles": [
-        "leg",
-        "hyp"
+        "r"
       ],
-      "formula_expression": "A = (leg * sqrt(hyp^2 - leg^2)) / 2",
-      "legacy_query_variant": "triangle_derived",
-      "legacy_scene_variant": "triangle",
+      "formula_expression": "A = π * r^2",
+      "legacy_query_variant": "circle_explicit",
+      "legacy_scene_variant": "circle",
       "legacy_task_id": "task_geometry_analytical_2d_area",
       "mode_probabilities": {
         "derived": 0.5,
@@ -65,12 +59,11 @@
         "length": 0.0,
         "perimeter": 0.0
       },
-      "reasoning_mode": "derived",
+      "reasoning_mode": "explicit",
       "required_annotations": [
-        "OP",
-        "PQ"
+        "OP"
       ],
-      "scene_variant": "triangle",
+      "scene_variant": "circle",
       "scene_variant_probabilities": {
         "circle": 0.14285714285714285,
         "composite_region": 0.0,
@@ -82,15 +75,15 @@
         "triangle": 0.14285714285714285
       },
       "shape_probabilities": {
-        "circle": 0.0,
+        "circle": 1.0,
         "ellipse": 0.0,
         "parallelogram": 0.0,
         "rectangle": 0.0,
         "rhombus": 0.0,
         "trapezoid": 0.0,
-        "triangle": 1.0
+        "triangle": 0.0
       },
-      "shape_variant": "triangle",
+      "shape_variant": "circle",
       "task_variant": "area",
       "task_variant_probabilities": {
         "area": 1.0,
@@ -101,35 +94,24 @@
     },
     "projected_evidence": {
       "annotation_labels": {
-        "hyp": "PQ",
-        "leg": "OP"
+        "r": "OP"
       },
       "id_set": [
-        "OP",
-        "PQ"
+        "OP"
       ],
       "measurement_ref_map": {
-        "OP": 7,
-        "PQ": 25
+        "OP": 15
       },
       "pixel_annotation_centers": {
         "OP": [
-          302.0,
-          214.25
-        ],
-        "PQ": [
-          328.88,
-          364.84
+          300.0,
+          147.0
         ]
       },
       "pixel_point_set": [
         [
-          302.0,
-          214.25
-        ],
-        [
-          328.88,
-          364.84
+          300.0,
+          147.0
         ]
       ]
     },
@@ -137,8 +119,8 @@
       "params": {
         "answer_max": 2500,
         "answer_min": 8,
-        "legacy_query_variant": "triangle_derived",
-        "legacy_scene_variant": "triangle",
+        "legacy_query_variant": "circle_explicit",
+        "legacy_scene_variant": "circle",
         "legacy_task_id": "task_geometry_analytical_2d_area",
         "mode_probabilities": {
           "derived": 0.5,
@@ -151,8 +133,8 @@
           "length": 0.0,
           "perimeter": 0.0
         },
-        "reasoning_mode": "derived",
-        "scene_variant": "triangle",
+        "reasoning_mode": "explicit",
+        "scene_variant": "circle",
         "scene_variant_probabilities": {
           "circle": 0.14285714285714285,
           "composite_region": 0.0,
@@ -164,15 +146,15 @@
           "triangle": 0.14285714285714285
         },
         "shape_probabilities": {
-          "circle": 0.0,
+          "circle": 1.0,
           "ellipse": 0.0,
           "parallelogram": 0.0,
           "rectangle": 0.0,
           "rhombus": 0.0,
           "trapezoid": 0.0,
-          "triangle": 1.0
+          "triangle": 0.0
         },
-        "shape_variant": "triangle",
+        "shape_variant": "circle",
         "variant_probabilities": {
           "area": 1.0,
           "composite_area": 0.0,
@@ -182,21 +164,21 @@
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 1,
+        "answer_or_evidence_variant_index": 0,
         "prompt_bundle_id": "geometry_analytical_area_v1",
         "schema_version": "v1",
         "slot_values": {
-          "answer_hint": "set \"answer\" to the area value as an integer",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: OP, PQ",
-          "json_example": "{\"evidence\":{\"OP\":2,\"PQ\":3},\"answer\":8}",
-          "json_example_answer_only": "{\"answer\":8}",
+          "answer_hint": "set \"answer\" to the area value in the form kπ (for example 12π)",
+          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: OP",
+          "json_example": "{\"evidence\":{\"OP\":2},\"answer\":\"12π\"}",
+          "json_example_answer_only": "{\"answer\":\"12π\"}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
           "object_description": "a geometric shape with measurement annotations",
-          "question_text": "A leg length and the hypotenuse of the right triangle are annotated. What is its area in square units?"
+          "question_text": "The circle has an annotated radius. What is its area? Express the result in kπ form."
         },
         "task_family_key": "analytical_single_shape",
-        "task_family_variant_index": 0,
+        "task_family_variant_index": 1,
         "task_key": "analytical_area_query",
         "task_variant_index": 4,
         "task_variant_key": null,
@@ -215,21 +197,21 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 1,
+            "answer_or_evidence_variant_index": 0,
             "prompt_bundle_id": "geometry_analytical_area_v1",
             "schema_version": "v1",
             "slot_values": {
-              "answer_hint": "set \"answer\" to the area value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: OP, PQ",
-              "json_example": "{\"evidence\":{\"OP\":2,\"PQ\":3},\"answer\":8}",
-              "json_example_answer_only": "{\"answer\":8}",
+              "answer_hint": "set \"answer\" to the area value in the form kπ (for example 12π)",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: OP",
+              "json_example": "{\"evidence\":{\"OP\":2},\"answer\":\"12π\"}",
+              "json_example_answer_only": "{\"answer\":\"12π\"}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a geometric shape with measurement annotations",
-              "question_text": "A leg length and the hypotenuse of the right triangle are annotated. What is its area in square units?"
+              "question_text": "The circle has an annotated radius. What is its area? Express the result in kπ form."
             },
             "task_family_key": "analytical_single_shape",
-            "task_family_variant_index": 0,
+            "task_family_variant_index": 1,
             "task_key": "analytical_area_query",
             "task_variant_index": 4,
             "task_variant_key": null,
@@ -243,7 +225,7 @@
               "task_family:analytical_single_shape": 5
             }
           },
-          "prompt": "You are given an image showing a geometric shape with measurement annotations. Based on the shown values, answer this question: A leg length and the hypotenuse of the right triangle are annotated. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: OP, PQ.\nAnswer format: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"OP\":2,\"PQ\":3},\"answer\":8}"
+          "prompt": "The image shows a geometric shape with measurement annotations. Based on the shown values, answer this question: The circle has an annotated radius. What is its area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: OP.\nAnswer: set \"answer\" to the area value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":{\"OP\":2},\"answer\":\"12π\"}"
         },
         "answer_only": {
           "metadata": {
@@ -252,17 +234,17 @@
             "prompt_bundle_id": "geometry_analytical_area_v1",
             "schema_version": "v1",
             "slot_values": {
-              "answer_hint": "set \"answer\" to the area value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: OP, PQ",
-              "json_example": "{\"evidence\":{\"OP\":2,\"PQ\":3},\"answer\":8}",
-              "json_example_answer_only": "{\"answer\":8}",
+              "answer_hint": "set \"answer\" to the area value in the form kπ (for example 12π)",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: OP",
+              "json_example": "{\"evidence\":{\"OP\":2},\"answer\":\"12π\"}",
+              "json_example_answer_only": "{\"answer\":\"12π\"}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a geometric shape with measurement annotations",
-              "question_text": "A leg length and the hypotenuse of the right triangle are annotated. What is its area in square units?"
+              "question_text": "The circle has an annotated radius. What is its area? Express the result in kπ form."
             },
             "task_family_key": "analytical_single_shape",
-            "task_family_variant_index": 0,
+            "task_family_variant_index": 1,
             "task_key": "analytical_area_query",
             "task_variant_index": 4,
             "task_variant_key": null,
@@ -276,7 +258,7 @@
               "task_family:analytical_single_shape": 5
             }
           },
-          "prompt": "You are given an image showing a geometric shape with measurement annotations. Based on the shown values, answer this question: A leg length and the hypotenuse of the right triangle are annotated. What is its area in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"answer\":8}"
+          "prompt": "The image shows a geometric shape with measurement annotations. Based on the shown values, answer this question: The circle has an annotated radius. What is its area? Express the result in kπ form.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the area value in the form kπ (for example 12π).\nExample JSON:\n{\"answer\":\"12π\"}"
         }
       },
       "task_variant": "area",
@@ -285,43 +267,26 @@
     "render_map": {
       "annotation_centers": {
         "OP": [
-          302.0,
-          214.25
-        ],
-        "PQ": [
-          328.88,
-          364.84
+          300.0,
+          147.0
         ]
       },
       "annotation_labels": {
-        "hyp": "PQ",
-        "leg": "OP"
+        "r": "OP"
       },
       "coord_space": "pixel",
       "entity_id": "shape_1",
       "instance_anchor": {
+        "bbox": [
+          75.0,
+          25.0,
+          375.0,
+          325.0
+        ],
         "coord_space": "pixel",
         "point": [
-          267.0,
-          237.0
-        ],
-        "polyline": [
-          [
-            267.0,
-            237.0
-          ],
-          [
-            337.0,
-            237.0
-          ],
-          [
-            267.0,
-            477.0
-          ],
-          [
-            267.0,
-            237.0
-          ]
+          225.0,
+          175.0
         ]
       }
     },
@@ -335,29 +300,31 @@
         ],
         "enabled": true,
         "render_scale": 3,
-        "selected_style": "solid_warm",
+        "selected_style": "solid_offwhite",
         "style_spec": {
           "color": [
             252,
-            249,
-            245
+            252,
+            252
           ],
           "kind": "solid"
         }
       },
-      "canvas_size": 595,
+      "canvas_size": 591,
       "coord_space": "pixel",
       "graph_coordinate_frame": {
         "coord_space": "graph_unit",
         "full_cells_x": 8,
         "full_cells_y": 8,
+        "origin_fraction_x": 0.5,
+        "origin_fraction_y": 0.5,
         "origin_pixel": [
-          297,
-          297
+          295,
+          295
         ],
         "outer_margin_px": 16,
         "partial_edge_cells": true,
-        "spacing_px": 60,
+        "spacing_px": 59,
         "target_cells_x": 10,
         "target_cells_y": 10,
         "x_positive": "right",
@@ -367,13 +334,13 @@
         "full_cells_x": 8,
         "full_cells_y": 8,
         "partial_edge_cells": true,
-        "spacing_px": 60,
+        "spacing_px": 59,
         "target_cells_x": 10,
         "target_cells_y": 10
       },
-      "legacy_scene_variant": "triangle",
+      "legacy_scene_variant": "circle",
       "post_image_noise": {
-        "applied": false,
+        "applied": true,
         "apply_prob": 0.5,
         "edit_count_range": [
           1,
@@ -385,26 +352,33 @@
           "jpeg",
           "noise"
         ],
-        "edits": [],
+        "edits": [
+          {
+            "params": {
+              "radius": 0.280518
+            },
+            "type": "blur"
+          }
+        ],
         "enabled": true
       },
       "query_variant": "area",
-      "scene_variant": "triangle",
+      "scene_variant": "circle",
       "shape_style": {
         "label_color": [
-          45,
-          137,
-          55
+          38,
+          91,
+          65
         ],
         "label_stroke_color": [
-          253,
-          255,
-          250
+          251,
+          249,
+          248
         ],
         "line_color": [
-          45,
-          137,
-          55
+          38,
+          91,
+          65
         ]
       }
     },
@@ -412,38 +386,26 @@
       "entities": [
         {
           "attrs": {
-            "area_square_units": 84,
-            "hypotenuse_units": 25,
-            "inferred_leg_units": 24,
-            "known_leg_units": 7,
-            "reasoning_mode": "derived",
-            "shape_variant": "triangle",
-            "vertices": [
-              [
-                267.0,
-                237.0
-              ],
-              [
-                337.0,
-                237.0
-              ],
-              [
-                267.0,
-                477.0
-              ]
-            ]
+            "area_pi_coefficient": 225,
+            "center": [
+              225.0,
+              175.0
+            ],
+            "radius_units": 15,
+            "reasoning_mode": "explicit",
+            "shape_variant": "circle"
           },
           "entity_id": "shape_1",
-          "entity_type": "triangle"
+          "entity_type": "circle"
         }
       ],
       "frames": {
         "graph_unit": {
           "origin_pixel": [
-            297,
-            297
+            295,
+            295
           ],
-          "spacing_px": 60,
+          "spacing_px": 59,
           "x_positive": "right",
           "y_positive": "up"
         },
@@ -457,35 +419,31 @@
         }
       },
       "relations": {
-        "legacy_query_variant": "triangle_derived",
-        "legacy_scene_variant": "triangle",
+        "legacy_query_variant": "circle_explicit",
+        "legacy_scene_variant": "circle",
         "legacy_task_id": "task_geometry_analytical_2d_area",
         "query_variant": "area",
-        "scene_variant": "triangle"
+        "scene_variant": "circle"
       },
       "scene_kind": "geometry_2d_analytical_area"
     },
     "witness_symbolic": {
       "annotation_ids": [
-        "OP",
-        "PQ"
+        "OP"
       ],
       "annotation_labels": {
-        "hyp": "PQ",
-        "leg": "OP"
+        "r": "OP"
       },
       "annotation_values": {
-        "OP": 7,
-        "PQ": 25
+        "OP": 15
       },
-      "case_id": "triangle_derived",
-      "formula_expression": "A = (leg * sqrt(hyp^2 - leg^2)) / 2",
+      "case_id": "circle_explicit",
+      "formula_expression": "A = π * r^2",
       "measurement_ref_map": {
-        "OP": 7,
-        "PQ": 25
+        "OP": 15
       },
-      "reasoning_mode": "derived",
-      "shape_variant": "triangle",
+      "reasoning_mode": "explicit",
+      "shape_variant": "circle",
       "type": "annotation_measurement_map"
     }
   },

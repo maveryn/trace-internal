@@ -1,22 +1,16 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 2
+    "value": 1
   },
   "evidence_gt": {
     "type": "bbox_set",
     "value": [
       [
-        214.0,
-        325.0,
-        238.0,
-        349.0
-      ],
-      [
-        214.0,
-        437.0,
-        238.0,
-        461.0
+        420.0,
+        509.0,
+        442.0,
+        531.0
       ]
     ]
   },
@@ -24,18 +18,18 @@
     "format": "png",
     "path": "documents/task_documents_selection_checkbox_count/images/checked_box_count/0002.png"
   },
-  "instance_seed": 5258180328258392,
-  "prompt": "Use the structured document in the image: an invoice with visible named sections, header fields, and checkbox groups. Use the visible section headers and checkboxes to answer: In the Delivery Options section, how many checkboxes are checked? Respond with the integer count of checked boxes.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing one bounding box for each counted checkbox, in reading order.\nAnswer requirement: set \"answer\" to the number of counted checkboxes.\nExample JSON:\n{\"evidence\":[[154,252,178,276],[154,304,178,328]],\"answer\":2}",
+  "instance_seed": 5967880884571556,
+  "prompt": "Use the structured document in the image: a receipt-style document with visible section headers and checkbox groups. Find the named section and then answer: In the Service Options section, how many checkboxes are checked? Return only the number of checked boxes.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing one bounding box for each counted checkbox, in reading order.\nAnswer requirement: set \"answer\" to the number of counted checkboxes.\nExample JSON:\n{\"evidence\":[[154,252,178,276],[154,304,178,328]],\"answer\":2}",
   "prompt_variants": {
-    "answer_and_evidence": "Use the structured document in the image: an invoice with visible named sections, header fields, and checkbox groups. Use the visible section headers and checkboxes to answer: In the Delivery Options section, how many checkboxes are checked? Respond with the integer count of checked boxes.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing one bounding box for each counted checkbox, in reading order.\nAnswer requirement: set \"answer\" to the number of counted checkboxes.\nExample JSON:\n{\"evidence\":[[154,252,178,276],[154,304,178,328]],\"answer\":2}",
-    "answer_only": "Use the structured document in the image: an invoice with visible named sections, header fields, and checkbox groups. Use the visible section headers and checkboxes to answer: In the Delivery Options section, how many checkboxes are checked? Respond with the integer count of checked boxes.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the number of counted checkboxes.\nExample JSON:\n{\"answer\":2}"
+    "answer_and_evidence": "Use the structured document in the image: a receipt-style document with visible section headers and checkbox groups. Find the named section and then answer: In the Service Options section, how many checkboxes are checked? Return only the number of checked boxes.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing one bounding box for each counted checkbox, in reading order.\nAnswer requirement: set \"answer\" to the number of counted checkboxes.\nExample JSON:\n{\"evidence\":[[154,252,178,276],[154,304,178,328]],\"answer\":2}",
+    "answer_only": "Use the structured document in the image: a receipt-style document with visible section headers and checkbox groups. Find the named section and then answer: In the Service Options section, how many checkboxes are checked? Return only the number of checked boxes.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the number of counted checkboxes.\nExample JSON:\n{\"answer\":2}"
   },
   "task": "task_documents_selection_checkbox_count",
   "task_variant": "checked_box_count",
   "trace_payload": {
     "answer_gt": {
       "type": "integer",
-      "value": 2
+      "value": 1
     },
     "background": {
       "available_styles": [
@@ -56,138 +50,131 @@
       "type": "bbox_set",
       "value": [
         [
-          214.0,
-          325.0,
-          238.0,
-          349.0
-        ],
-        [
-          214.0,
-          437.0,
-          238.0,
-          461.0
+          420.0,
+          509.0,
+          442.0,
+          531.0
         ]
       ]
     },
     "execution_trace": {
-      "answer_count": 2,
+      "answer_count": 1,
       "checkbox_item_count": 4,
       "checkbox_section_specs": [
         {
           "items": [
             {
-              "checkbox_bbox_id": "delivery_options:0:checkbox",
-              "checked": true,
-              "item_id": "delivery_options:0",
-              "label": "Standard Delivery",
-              "label_bbox_id": "delivery_options:0:label"
-            },
-            {
-              "checkbox_bbox_id": "delivery_options:1:checkbox",
+              "checkbox_bbox_id": "service_options:0:checkbox",
               "checked": false,
-              "item_id": "delivery_options:1",
-              "label": "Priority Delivery",
-              "label_bbox_id": "delivery_options:1:label"
+              "item_id": "service_options:0",
+              "label": "Gift Receipt",
+              "label_bbox_id": "service_options:0:label"
             },
             {
-              "checkbox_bbox_id": "delivery_options:2:checkbox",
-              "checked": true,
-              "item_id": "delivery_options:2",
-              "label": "Signature Required",
-              "label_bbox_id": "delivery_options:2:label"
-            },
-            {
-              "checkbox_bbox_id": "delivery_options:3:checkbox",
+              "checkbox_bbox_id": "service_options:1:checkbox",
               "checked": false,
-              "item_id": "delivery_options:3",
-              "label": "Weekend Dropoff",
-              "label_bbox_id": "delivery_options:3:label"
+              "item_id": "service_options:1",
+              "label": "Email Copy",
+              "label_bbox_id": "service_options:1:label"
+            },
+            {
+              "checkbox_bbox_id": "service_options:2:checkbox",
+              "checked": true,
+              "item_id": "service_options:2",
+              "label": "Bag Requested",
+              "label_bbox_id": "service_options:2:label"
+            },
+            {
+              "checkbox_bbox_id": "service_options:3:checkbox",
+              "checked": false,
+              "item_id": "service_options:3",
+              "label": "Loyalty Applied",
+              "label_bbox_id": "service_options:3:label"
             }
           ],
-          "section_id": "delivery_options",
-          "section_label": "Delivery Options"
+          "section_id": "service_options",
+          "section_label": "Service Options"
         },
         {
           "items": [
             {
-              "checkbox_bbox_id": "billing_flags:0:checkbox",
-              "checked": true,
-              "item_id": "billing_flags:0",
-              "label": "Paid Deposit",
-              "label_bbox_id": "billing_flags:0:label"
-            },
-            {
-              "checkbox_bbox_id": "billing_flags:1:checkbox",
+              "checkbox_bbox_id": "follow_up:0:checkbox",
               "checked": false,
-              "item_id": "billing_flags:1",
-              "label": "Paper Invoice",
-              "label_bbox_id": "billing_flags:1:label"
+              "item_id": "follow_up:0",
+              "label": "Survey Invite",
+              "label_bbox_id": "follow_up:0:label"
             },
             {
-              "checkbox_bbox_id": "billing_flags:2:checkbox",
+              "checkbox_bbox_id": "follow_up:1:checkbox",
               "checked": true,
-              "item_id": "billing_flags:2",
-              "label": "Auto Renew",
-              "label_bbox_id": "billing_flags:2:label"
+              "item_id": "follow_up:1",
+              "label": "Return Reminder",
+              "label_bbox_id": "follow_up:1:label"
             },
             {
-              "checkbox_bbox_id": "billing_flags:3:checkbox",
+              "checkbox_bbox_id": "follow_up:2:checkbox",
               "checked": true,
-              "item_id": "billing_flags:3",
-              "label": "Tax Exempt",
-              "label_bbox_id": "billing_flags:3:label"
+              "item_id": "follow_up:2",
+              "label": "Warranty Note",
+              "label_bbox_id": "follow_up:2:label"
+            },
+            {
+              "checkbox_bbox_id": "follow_up:3:checkbox",
+              "checked": true,
+              "item_id": "follow_up:3",
+              "label": "Text Updates",
+              "label_bbox_id": "follow_up:3:label"
             }
           ],
-          "section_id": "billing_flags",
-          "section_label": "Billing Flags"
+          "section_id": "follow_up",
+          "section_label": "Follow-up"
         }
       ],
       "context_field_specs": [
         {
-          "field_id": "vendor_name",
-          "field_label": "Vendor",
-          "field_value": "Trailhead Co.",
-          "label_bbox_id": "vendor_name:label",
-          "value_bbox_id": "vendor_name:value"
+          "field_id": "store_name",
+          "field_label": "Store Name",
+          "field_value": "Copper Office",
+          "label_bbox_id": "store_name:label",
+          "value_bbox_id": "store_name:value"
         },
         {
-          "field_id": "invoice_number",
-          "field_label": "Invoice Number",
-          "field_value": "INV-22712",
-          "label_bbox_id": "invoice_number:label",
-          "value_bbox_id": "invoice_number:value"
+          "field_id": "receipt_number",
+          "field_label": "Receipt No.",
+          "field_value": "R-15358",
+          "label_bbox_id": "receipt_number:label",
+          "value_bbox_id": "receipt_number:value"
         },
         {
-          "field_id": "due_date",
-          "field_label": "Due Date",
-          "field_value": "2026-02-13",
-          "label_bbox_id": "due_date:label",
-          "value_bbox_id": "due_date:value"
+          "field_id": "purchase_date",
+          "field_label": "Purchase Date",
+          "field_value": "Feb 06, 2026",
+          "label_bbox_id": "purchase_date:label",
+          "value_bbox_id": "purchase_date:value"
         }
       ],
       "evidence_checkbox_bbox_ids": [
-        "delivery_options:0:checkbox",
-        "delivery_options:2:checkbox"
+        "service_options:2:checkbox"
       ],
       "field_count": 3,
-      "query_section_id": "delivery_options",
-      "query_section_label": "Delivery Options",
+      "query_section_id": "service_options",
+      "query_section_label": "Service Options",
       "query_selection_strategy": "combined_hash_mod_support",
       "question_format": "document_checkbox_count",
-      "question_text": "In the Delivery Options section, how many checkboxes are checked?",
-      "scene_title": "Invoice",
-      "scene_variant": "invoice_sheet",
+      "question_text": "In the Service Options section, how many checkboxes are checked?",
+      "scene_title": "Receipt",
+      "scene_variant": "receipt_sheet",
       "target_checkbox_ids": [
-        "delivery_options:0",
-        "delivery_options:1",
-        "delivery_options:2",
-        "delivery_options:3"
+        "service_options:0",
+        "service_options:1",
+        "service_options:2",
+        "service_options:3"
       ],
       "target_checkbox_states": {
-        "delivery_options:0": true,
-        "delivery_options:1": false,
-        "delivery_options:2": true,
-        "delivery_options:3": false
+        "service_options:0": false,
+        "service_options:1": false,
+        "service_options:2": true,
+        "service_options:3": false
       },
       "task_variant": "checked_box_count",
       "view_family": "structured_document"
@@ -211,16 +198,10 @@
     "projected_evidence": {
       "bbox_set": [
         [
-          214.0,
-          325.0,
-          238.0,
-          349.0
-        ],
-        [
-          214.0,
-          437.0,
-          238.0,
-          461.0
+          420.0,
+          509.0,
+          442.0,
+          531.0
         ]
       ]
     },
@@ -232,7 +213,7 @@
           3,
           4
         ],
-        "scene_variant": "invoice_sheet",
+        "scene_variant": "receipt_sheet",
         "scene_variant_probabilities": {
           "form_sheet": 0.3333333333333333,
           "invoice_sheet": 0.3333333333333333,
@@ -256,15 +237,15 @@
           "json_example_answer_only": "{\"answer\":2}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "object_description": "an invoice with visible named sections, header fields, and checkbox groups",
-          "question_text": "In the Delivery Options section, how many checkboxes are checked?"
+          "object_description": "a receipt-style document with visible section headers and checkbox groups",
+          "question_text": "In the Service Options section, how many checkboxes are checked?"
         },
         "task_family_key": "structured_document_sections",
         "task_family_variant_index": 3,
         "task_key": "checkbox_count_query",
-        "task_variant_index": 3,
+        "task_variant_index": 2,
         "task_variant_key": "checked_box_count",
-        "task_variant_template_index": 2,
+        "task_variant_template_index": 1,
         "template_paths": [
           "documents/selection/documents_selection_v1.json"
         ],
@@ -290,15 +271,15 @@
               "json_example_answer_only": "{\"answer\":2}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "an invoice with visible named sections, header fields, and checkbox groups",
-              "question_text": "In the Delivery Options section, how many checkboxes are checked?"
+              "object_description": "a receipt-style document with visible section headers and checkbox groups",
+              "question_text": "In the Service Options section, how many checkboxes are checked?"
             },
             "task_family_key": "structured_document_sections",
             "task_family_variant_index": 3,
             "task_key": "checkbox_count_query",
-            "task_variant_index": 3,
+            "task_variant_index": 2,
             "task_variant_key": "checked_box_count",
-            "task_variant_template_index": 2,
+            "task_variant_template_index": 1,
             "template_paths": [
               "documents/selection/documents_selection_v1.json"
             ],
@@ -309,12 +290,12 @@
               "task_variant:checked_box_count": 5
             }
           },
-          "prompt": "Use the structured document in the image: an invoice with visible named sections, header fields, and checkbox groups. Use the visible section headers and checkboxes to answer: In the Delivery Options section, how many checkboxes are checked? Respond with the integer count of checked boxes.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing one bounding box for each counted checkbox, in reading order.\nAnswer requirement: set \"answer\" to the number of counted checkboxes.\nExample JSON:\n{\"evidence\":[[154,252,178,276],[154,304,178,328]],\"answer\":2}"
+          "prompt": "Use the structured document in the image: a receipt-style document with visible section headers and checkbox groups. Find the named section and then answer: In the Service Options section, how many checkboxes are checked? Return only the number of checked boxes.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing one bounding box for each counted checkbox, in reading order.\nAnswer requirement: set \"answer\" to the number of counted checkboxes.\nExample JSON:\n{\"evidence\":[[154,252,178,276],[154,304,178,328]],\"answer\":2}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 1,
+            "answer_or_evidence_variant_index": 3,
             "prompt_bundle_id": "documents_selection_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -324,15 +305,15 @@
               "json_example_answer_only": "{\"answer\":2}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "an invoice with visible named sections, header fields, and checkbox groups",
-              "question_text": "In the Delivery Options section, how many checkboxes are checked?"
+              "object_description": "a receipt-style document with visible section headers and checkbox groups",
+              "question_text": "In the Service Options section, how many checkboxes are checked?"
             },
             "task_family_key": "structured_document_sections",
             "task_family_variant_index": 3,
             "task_key": "checkbox_count_query",
-            "task_variant_index": 3,
+            "task_variant_index": 2,
             "task_variant_key": "checked_box_count",
-            "task_variant_template_index": 2,
+            "task_variant_template_index": 1,
             "template_paths": [
               "documents/selection/documents_selection_v1.json"
             ],
@@ -343,7 +324,7 @@
               "task_variant:checked_box_count": 5
             }
           },
-          "prompt": "Use the structured document in the image: an invoice with visible named sections, header fields, and checkbox groups. Use the visible section headers and checkboxes to answer: In the Delivery Options section, how many checkboxes are checked? Respond with the integer count of checked boxes.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the number of counted checkboxes.\nExample JSON:\n{\"answer\":2}"
+          "prompt": "Use the structured document in the image: a receipt-style document with visible section headers and checkbox groups. Find the named section and then answer: In the Service Options section, how many checkboxes are checked? Return only the number of checked boxes.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the number of counted checkboxes.\nExample JSON:\n{\"answer\":2}"
         }
       },
       "task_variant": "checked_box_count",
@@ -351,214 +332,214 @@
     },
     "render_map": {
       "checkbox_bboxes_px": {
-        "billing_flags:0:checkbox": [
-          666.0,
-          325.0,
-          690.0,
-          349.0
+        "follow_up:0:checkbox": [
+          420.0,
+          645.0,
+          442.0,
+          667.0
         ],
-        "billing_flags:1:checkbox": [
-          666.0,
-          381.0,
-          690.0,
-          405.0
+        "follow_up:1:checkbox": [
+          420.0,
+          693.0,
+          442.0,
+          715.0
         ],
-        "billing_flags:2:checkbox": [
-          666.0,
-          437.0,
-          690.0,
-          461.0
+        "follow_up:2:checkbox": [
+          420.0,
+          741.0,
+          442.0,
+          763.0
         ],
-        "billing_flags:3:checkbox": [
-          666.0,
-          493.0,
-          690.0,
-          517.0
+        "follow_up:3:checkbox": [
+          420.0,
+          789.0,
+          442.0,
+          811.0
         ],
-        "delivery_options:0:checkbox": [
-          214.0,
-          325.0,
-          238.0,
-          349.0
+        "service_options:0:checkbox": [
+          420.0,
+          413.0,
+          442.0,
+          435.0
         ],
-        "delivery_options:1:checkbox": [
-          214.0,
-          381.0,
-          238.0,
-          405.0
+        "service_options:1:checkbox": [
+          420.0,
+          461.0,
+          442.0,
+          483.0
         ],
-        "delivery_options:2:checkbox": [
-          214.0,
-          437.0,
-          238.0,
-          461.0
+        "service_options:2:checkbox": [
+          420.0,
+          509.0,
+          442.0,
+          531.0
         ],
-        "delivery_options:3:checkbox": [
-          214.0,
-          493.0,
-          238.0,
-          517.0
+        "service_options:3:checkbox": [
+          420.0,
+          557.0,
+          442.0,
+          579.0
         ]
       },
       "checkbox_label_bboxes_px": {
-        "billing_flags:0:label": [
-          702.0,
-          326.0,
-          836.0,
-          348.0
+        "follow_up:0:label": [
+          454.0,
+          645.0,
+          593.0,
+          667.0
         ],
-        "billing_flags:1:label": [
-          702.0,
-          382.0,
-          847.0,
-          404.0
+        "follow_up:1:label": [
+          454.0,
+          695.0,
+          636.0,
+          713.0
         ],
-        "billing_flags:2:label": [
-          702.0,
-          440.5,
-          830.0,
-          457.5
+        "follow_up:2:label": [
+          454.0,
+          741.5,
+          611.0,
+          762.5
         ],
-        "billing_flags:3:label": [
-          702.0,
-          494.5,
-          829.0,
-          515.5
+        "follow_up:3:label": [
+          454.0,
+          789.0,
+          596.0,
+          811.0
         ],
-        "delivery_options:0:label": [
-          250.0,
-          326.0,
-          441.0,
-          348.0
+        "service_options:0:label": [
+          454.0,
+          413.0,
+          580.0,
+          435.0
         ],
-        "delivery_options:1:label": [
-          250.0,
-          382.0,
-          422.0,
-          404.0
+        "service_options:1:label": [
+          454.0,
+          461.0,
+          574.0,
+          483.0
         ],
-        "delivery_options:2:label": [
-          250.0,
-          438.0,
-          455.0,
-          460.0
+        "service_options:2:label": [
+          454.0,
+          509.0,
+          615.0,
+          531.0
         ],
-        "delivery_options:3:label": [
-          250.0,
-          494.0,
-          436.0,
-          516.0
+        "service_options:3:label": [
+          454.0,
+          557.0,
+          617.0,
+          579.0
         ]
       },
       "field_box_bboxes_px": {
-        "due_date": [
-          798.667,
-          204.0,
-          1080.0,
-          286.0
+        "purchase_date": [
+          406.0,
+          320.0,
+          874.0,
+          376.0
         ],
-        "invoice_number": [
-          499.333,
-          204.0,
-          780.667,
-          286.0
+        "receipt_number": [
+          406.0,
+          256.0,
+          874.0,
+          312.0
         ],
-        "vendor_name": [
-          200.0,
-          204.0,
-          481.333,
-          286.0
+        "store_name": [
+          406.0,
+          192.0,
+          874.0,
+          248.0
         ]
       },
       "field_label_bboxes_px": {
-        "due_date:label": [
-          812.667,
-          218.0,
-          930.667,
-          236.0
+        "purchase_date:label": [
+          416.0,
+          339.0,
+          588.0,
+          357.0
         ],
-        "invoice_number:label": [
-          513.333,
-          217.5,
-          711.333,
-          236.5
+        "receipt_number:label": [
+          416.0,
+          272.0,
+          562.0,
+          296.0
         ],
-        "vendor_name:label": [
-          214.0,
-          217.5,
-          306.0,
-          236.5
+        "store_name:label": [
+          416.0,
+          211.0,
+          565.0,
+          229.0
         ]
       },
       "field_value_bboxes_px": {
-        "due_date:value": [
-          812.667,
-          246.0,
-          978.667,
-          268.0
+        "purchase_date:value": [
+          676.0,
+          334.5,
+          864.0,
+          361.5
         ],
-        "invoice_number:value": [
-          513.333,
-          246.0,
-          663.333,
-          268.0
+        "receipt_number:value": [
+          743.0,
+          273.0,
+          864.0,
+          295.0
         ],
-        "vendor_name:value": [
-          214.0,
-          245.5,
-          404.0,
-          268.5
+        "store_name:value": [
+          669.0,
+          205.5,
+          864.0,
+          234.5
         ]
       },
       "page_bbox_px": [
-        160.0,
+        380.0,
         80.0,
-        1120.0,
+        900.0,
         840.0
       ],
       "section_box_bboxes_px": {
-        "billing_flags": [
-          640.0,
-          280.0,
-          1092.0,
-          540.0
+        "follow_up": [
+          394.0,
+          602.0,
+          886.0,
+          832.0
         ],
-        "delivery_options": [
-          188.0,
-          280.0,
-          640.0,
-          540.0
+        "service_options": [
+          394.0,
+          370.0,
+          886.0,
+          600.0
         ]
       },
       "section_label_bboxes_px": {
-        "billing_flags": [
-          702.0,
-          289.5,
-          792.0,
-          304.5
+        "follow_up": [
+          448.0,
+          611.5,
+          520.0,
+          626.5
         ],
-        "delivery_options": [
-          260.5,
-          289.5,
-          382.5,
-          304.5
+        "service_options": [
+          464.0,
+          379.5,
+          580.0,
+          394.5
         ]
       },
       "title_bbox_px": [
-        191.0,
-        105.0,
-        362.0,
-        139.0
+        411.0,
+        100.5,
+        590.0,
+        143.5
       ]
     },
     "render_spec": {
       "canvas_height": 920,
       "canvas_width": 1280,
-      "geometry_seed": 5258180328258392,
+      "geometry_seed": 5967880884571556,
       "page_shadow_offset_px": 14,
       "receipt_page_height_px": 760,
       "receipt_page_width_px": 520,
-      "scene_variant": "invoice_sheet",
+      "scene_variant": "receipt_sheet",
       "sheet_page_height_px": 760,
       "sheet_page_width_px": 960
     },
@@ -567,9 +548,9 @@
         {
           "bbox_id": "page",
           "bbox_px": [
-            160.0,
+            380.0,
             80.0,
-            1120.0,
+            900.0,
             840.0
           ],
           "entity_id": "page",
@@ -578,431 +559,430 @@
         {
           "bbox_id": "title",
           "bbox_px": [
-            191.0,
-            105.0,
-            362.0,
-            139.0
+            411.0,
+            100.5,
+            590.0,
+            143.5
           ],
           "entity_id": "title",
           "entity_type": "document_title",
-          "text": "Invoice"
+          "text": "Receipt"
         },
         {
-          "bbox_id": "vendor_name",
+          "bbox_id": "store_name",
           "bbox_px": [
-            200.0,
-            204.0,
-            481.333,
-            286.0
+            406.0,
+            192.0,
+            874.0,
+            248.0
           ],
-          "entity_id": "vendor_name:field",
+          "entity_id": "store_name:field",
           "entity_type": "document_field_box",
-          "field_id": "vendor_name"
+          "field_id": "store_name"
         },
         {
-          "bbox_id": "vendor_name:label",
+          "bbox_id": "store_name:label",
           "bbox_px": [
-            214.0,
-            217.5,
-            306.0,
-            236.5
+            416.0,
+            211.0,
+            565.0,
+            229.0
           ],
-          "entity_id": "vendor_name:label",
+          "entity_id": "store_name:label",
           "entity_type": "document_field_label",
-          "field_id": "vendor_name",
-          "text": "Vendor"
+          "field_id": "store_name",
+          "text": "Store Name"
         },
         {
-          "bbox_id": "vendor_name:value",
+          "bbox_id": "store_name:value",
           "bbox_px": [
-            214.0,
-            245.5,
-            404.0,
-            268.5
+            669.0,
+            205.5,
+            864.0,
+            234.5
           ],
-          "entity_id": "vendor_name:value",
+          "entity_id": "store_name:value",
           "entity_type": "document_field_value",
-          "field_id": "vendor_name",
-          "text": "Trailhead Co."
+          "field_id": "store_name",
+          "text": "Copper Office"
         },
         {
-          "bbox_id": "invoice_number",
+          "bbox_id": "receipt_number",
           "bbox_px": [
-            499.333,
-            204.0,
-            780.667,
-            286.0
+            406.0,
+            256.0,
+            874.0,
+            312.0
           ],
-          "entity_id": "invoice_number:field",
+          "entity_id": "receipt_number:field",
           "entity_type": "document_field_box",
-          "field_id": "invoice_number"
+          "field_id": "receipt_number"
         },
         {
-          "bbox_id": "invoice_number:label",
+          "bbox_id": "receipt_number:label",
           "bbox_px": [
-            513.333,
-            217.5,
-            711.333,
-            236.5
+            416.0,
+            272.0,
+            562.0,
+            296.0
           ],
-          "entity_id": "invoice_number:label",
+          "entity_id": "receipt_number:label",
           "entity_type": "document_field_label",
-          "field_id": "invoice_number",
-          "text": "Invoice Number"
+          "field_id": "receipt_number",
+          "text": "Receipt No."
         },
         {
-          "bbox_id": "invoice_number:value",
+          "bbox_id": "receipt_number:value",
           "bbox_px": [
-            513.333,
-            246.0,
-            663.333,
-            268.0
+            743.0,
+            273.0,
+            864.0,
+            295.0
           ],
-          "entity_id": "invoice_number:value",
+          "entity_id": "receipt_number:value",
           "entity_type": "document_field_value",
-          "field_id": "invoice_number",
-          "text": "INV-22712"
+          "field_id": "receipt_number",
+          "text": "R-15358"
         },
         {
-          "bbox_id": "due_date",
+          "bbox_id": "purchase_date",
           "bbox_px": [
-            798.667,
-            204.0,
-            1080.0,
-            286.0
+            406.0,
+            320.0,
+            874.0,
+            376.0
           ],
-          "entity_id": "due_date:field",
+          "entity_id": "purchase_date:field",
           "entity_type": "document_field_box",
-          "field_id": "due_date"
+          "field_id": "purchase_date"
         },
         {
-          "bbox_id": "due_date:label",
+          "bbox_id": "purchase_date:label",
           "bbox_px": [
-            812.667,
-            218.0,
-            930.667,
-            236.0
+            416.0,
+            339.0,
+            588.0,
+            357.0
           ],
-          "entity_id": "due_date:label",
+          "entity_id": "purchase_date:label",
           "entity_type": "document_field_label",
-          "field_id": "due_date",
-          "text": "Due Date"
+          "field_id": "purchase_date",
+          "text": "Purchase Date"
         },
         {
-          "bbox_id": "due_date:value",
+          "bbox_id": "purchase_date:value",
           "bbox_px": [
-            812.667,
-            246.0,
-            978.667,
-            268.0
+            676.0,
+            334.5,
+            864.0,
+            361.5
           ],
-          "entity_id": "due_date:value",
+          "entity_id": "purchase_date:value",
           "entity_type": "document_field_value",
-          "field_id": "due_date",
-          "text": "2026-02-13"
+          "field_id": "purchase_date",
+          "text": "Feb 06, 2026"
         },
         {
-          "bbox_id": "delivery_options",
+          "bbox_id": "service_options",
           "bbox_px": [
-            188.0,
-            280.0,
-            640.0,
-            540.0
+            394.0,
+            370.0,
+            886.0,
+            600.0
           ],
           "checkbox_ids": [
-            "delivery_options:0",
-            "delivery_options:1",
-            "delivery_options:2",
-            "delivery_options:3"
+            "service_options:0",
+            "service_options:1",
+            "service_options:2",
+            "service_options:3"
           ],
-          "entity_id": "delivery_options:section",
+          "entity_id": "service_options:section",
           "entity_type": "document_section",
-          "section_id": "delivery_options"
+          "section_id": "service_options"
         },
         {
-          "bbox_id": "delivery_options:label",
+          "bbox_id": "service_options:label",
           "bbox_px": [
-            260.5,
-            289.5,
-            382.5,
-            304.5
+            464.0,
+            379.5,
+            580.0,
+            394.5
           ],
-          "entity_id": "delivery_options:label",
+          "entity_id": "service_options:label",
           "entity_type": "document_section_label",
-          "section_id": "delivery_options",
-          "text": "Delivery Options"
+          "section_id": "service_options",
+          "text": "Service Options"
         },
         {
-          "bbox_id": "delivery_options:0:checkbox",
+          "bbox_id": "service_options:0:checkbox",
           "bbox_px": [
-            214.0,
-            325.0,
-            238.0,
-            349.0
-          ],
-          "checked": true,
-          "entity_id": "delivery_options:0:checkbox",
-          "entity_type": "document_checkbox",
-          "item_id": "delivery_options:0",
-          "section_id": "delivery_options"
-        },
-        {
-          "bbox_id": "delivery_options:0:label",
-          "bbox_px": [
-            250.0,
-            326.0,
-            441.0,
-            348.0
-          ],
-          "entity_id": "delivery_options:0:label",
-          "entity_type": "document_checkbox_label",
-          "item_id": "delivery_options:0",
-          "section_id": "delivery_options",
-          "text": "Standard Delivery"
-        },
-        {
-          "bbox_id": "delivery_options:1:checkbox",
-          "bbox_px": [
-            214.0,
-            381.0,
-            238.0,
-            405.0
+            420.0,
+            413.0,
+            442.0,
+            435.0
           ],
           "checked": false,
-          "entity_id": "delivery_options:1:checkbox",
+          "entity_id": "service_options:0:checkbox",
           "entity_type": "document_checkbox",
-          "item_id": "delivery_options:1",
-          "section_id": "delivery_options"
+          "item_id": "service_options:0",
+          "section_id": "service_options"
         },
         {
-          "bbox_id": "delivery_options:1:label",
+          "bbox_id": "service_options:0:label",
           "bbox_px": [
-            250.0,
-            382.0,
-            422.0,
-            404.0
+            454.0,
+            413.0,
+            580.0,
+            435.0
           ],
-          "entity_id": "delivery_options:1:label",
+          "entity_id": "service_options:0:label",
           "entity_type": "document_checkbox_label",
-          "item_id": "delivery_options:1",
-          "section_id": "delivery_options",
-          "text": "Priority Delivery"
+          "item_id": "service_options:0",
+          "section_id": "service_options",
+          "text": "Gift Receipt"
         },
         {
-          "bbox_id": "delivery_options:2:checkbox",
+          "bbox_id": "service_options:1:checkbox",
           "bbox_px": [
-            214.0,
-            437.0,
-            238.0,
-            461.0
-          ],
-          "checked": true,
-          "entity_id": "delivery_options:2:checkbox",
-          "entity_type": "document_checkbox",
-          "item_id": "delivery_options:2",
-          "section_id": "delivery_options"
-        },
-        {
-          "bbox_id": "delivery_options:2:label",
-          "bbox_px": [
-            250.0,
-            438.0,
-            455.0,
-            460.0
-          ],
-          "entity_id": "delivery_options:2:label",
-          "entity_type": "document_checkbox_label",
-          "item_id": "delivery_options:2",
-          "section_id": "delivery_options",
-          "text": "Signature Required"
-        },
-        {
-          "bbox_id": "delivery_options:3:checkbox",
-          "bbox_px": [
-            214.0,
-            493.0,
-            238.0,
-            517.0
+            420.0,
+            461.0,
+            442.0,
+            483.0
           ],
           "checked": false,
-          "entity_id": "delivery_options:3:checkbox",
+          "entity_id": "service_options:1:checkbox",
           "entity_type": "document_checkbox",
-          "item_id": "delivery_options:3",
-          "section_id": "delivery_options"
+          "item_id": "service_options:1",
+          "section_id": "service_options"
         },
         {
-          "bbox_id": "delivery_options:3:label",
+          "bbox_id": "service_options:1:label",
           "bbox_px": [
-            250.0,
-            494.0,
-            436.0,
-            516.0
+            454.0,
+            461.0,
+            574.0,
+            483.0
           ],
-          "entity_id": "delivery_options:3:label",
+          "entity_id": "service_options:1:label",
           "entity_type": "document_checkbox_label",
-          "item_id": "delivery_options:3",
-          "section_id": "delivery_options",
-          "text": "Weekend Dropoff"
+          "item_id": "service_options:1",
+          "section_id": "service_options",
+          "text": "Email Copy"
         },
         {
-          "bbox_id": "billing_flags",
+          "bbox_id": "service_options:2:checkbox",
           "bbox_px": [
-            640.0,
-            280.0,
-            1092.0,
-            540.0
+            420.0,
+            509.0,
+            442.0,
+            531.0
+          ],
+          "checked": true,
+          "entity_id": "service_options:2:checkbox",
+          "entity_type": "document_checkbox",
+          "item_id": "service_options:2",
+          "section_id": "service_options"
+        },
+        {
+          "bbox_id": "service_options:2:label",
+          "bbox_px": [
+            454.0,
+            509.0,
+            615.0,
+            531.0
+          ],
+          "entity_id": "service_options:2:label",
+          "entity_type": "document_checkbox_label",
+          "item_id": "service_options:2",
+          "section_id": "service_options",
+          "text": "Bag Requested"
+        },
+        {
+          "bbox_id": "service_options:3:checkbox",
+          "bbox_px": [
+            420.0,
+            557.0,
+            442.0,
+            579.0
+          ],
+          "checked": false,
+          "entity_id": "service_options:3:checkbox",
+          "entity_type": "document_checkbox",
+          "item_id": "service_options:3",
+          "section_id": "service_options"
+        },
+        {
+          "bbox_id": "service_options:3:label",
+          "bbox_px": [
+            454.0,
+            557.0,
+            617.0,
+            579.0
+          ],
+          "entity_id": "service_options:3:label",
+          "entity_type": "document_checkbox_label",
+          "item_id": "service_options:3",
+          "section_id": "service_options",
+          "text": "Loyalty Applied"
+        },
+        {
+          "bbox_id": "follow_up",
+          "bbox_px": [
+            394.0,
+            602.0,
+            886.0,
+            832.0
           ],
           "checkbox_ids": [
-            "billing_flags:0",
-            "billing_flags:1",
-            "billing_flags:2",
-            "billing_flags:3"
+            "follow_up:0",
+            "follow_up:1",
+            "follow_up:2",
+            "follow_up:3"
           ],
-          "entity_id": "billing_flags:section",
+          "entity_id": "follow_up:section",
           "entity_type": "document_section",
-          "section_id": "billing_flags"
+          "section_id": "follow_up"
         },
         {
-          "bbox_id": "billing_flags:label",
+          "bbox_id": "follow_up:label",
           "bbox_px": [
-            702.0,
-            289.5,
-            792.0,
-            304.5
+            448.0,
+            611.5,
+            520.0,
+            626.5
           ],
-          "entity_id": "billing_flags:label",
+          "entity_id": "follow_up:label",
           "entity_type": "document_section_label",
-          "section_id": "billing_flags",
-          "text": "Billing Flags"
+          "section_id": "follow_up",
+          "text": "Follow-up"
         },
         {
-          "bbox_id": "billing_flags:0:checkbox",
+          "bbox_id": "follow_up:0:checkbox",
           "bbox_px": [
-            666.0,
-            325.0,
-            690.0,
-            349.0
-          ],
-          "checked": true,
-          "entity_id": "billing_flags:0:checkbox",
-          "entity_type": "document_checkbox",
-          "item_id": "billing_flags:0",
-          "section_id": "billing_flags"
-        },
-        {
-          "bbox_id": "billing_flags:0:label",
-          "bbox_px": [
-            702.0,
-            326.0,
-            836.0,
-            348.0
-          ],
-          "entity_id": "billing_flags:0:label",
-          "entity_type": "document_checkbox_label",
-          "item_id": "billing_flags:0",
-          "section_id": "billing_flags",
-          "text": "Paid Deposit"
-        },
-        {
-          "bbox_id": "billing_flags:1:checkbox",
-          "bbox_px": [
-            666.0,
-            381.0,
-            690.0,
-            405.0
+            420.0,
+            645.0,
+            442.0,
+            667.0
           ],
           "checked": false,
-          "entity_id": "billing_flags:1:checkbox",
+          "entity_id": "follow_up:0:checkbox",
           "entity_type": "document_checkbox",
-          "item_id": "billing_flags:1",
-          "section_id": "billing_flags"
+          "item_id": "follow_up:0",
+          "section_id": "follow_up"
         },
         {
-          "bbox_id": "billing_flags:1:label",
+          "bbox_id": "follow_up:0:label",
           "bbox_px": [
-            702.0,
-            382.0,
-            847.0,
-            404.0
+            454.0,
+            645.0,
+            593.0,
+            667.0
           ],
-          "entity_id": "billing_flags:1:label",
+          "entity_id": "follow_up:0:label",
           "entity_type": "document_checkbox_label",
-          "item_id": "billing_flags:1",
-          "section_id": "billing_flags",
-          "text": "Paper Invoice"
+          "item_id": "follow_up:0",
+          "section_id": "follow_up",
+          "text": "Survey Invite"
         },
         {
-          "bbox_id": "billing_flags:2:checkbox",
+          "bbox_id": "follow_up:1:checkbox",
           "bbox_px": [
-            666.0,
-            437.0,
-            690.0,
-            461.0
+            420.0,
+            693.0,
+            442.0,
+            715.0
           ],
           "checked": true,
-          "entity_id": "billing_flags:2:checkbox",
+          "entity_id": "follow_up:1:checkbox",
           "entity_type": "document_checkbox",
-          "item_id": "billing_flags:2",
-          "section_id": "billing_flags"
+          "item_id": "follow_up:1",
+          "section_id": "follow_up"
         },
         {
-          "bbox_id": "billing_flags:2:label",
+          "bbox_id": "follow_up:1:label",
           "bbox_px": [
-            702.0,
-            440.5,
-            830.0,
-            457.5
+            454.0,
+            695.0,
+            636.0,
+            713.0
           ],
-          "entity_id": "billing_flags:2:label",
+          "entity_id": "follow_up:1:label",
           "entity_type": "document_checkbox_label",
-          "item_id": "billing_flags:2",
-          "section_id": "billing_flags",
-          "text": "Auto Renew"
+          "item_id": "follow_up:1",
+          "section_id": "follow_up",
+          "text": "Return Reminder"
         },
         {
-          "bbox_id": "billing_flags:3:checkbox",
+          "bbox_id": "follow_up:2:checkbox",
           "bbox_px": [
-            666.0,
-            493.0,
-            690.0,
-            517.0
+            420.0,
+            741.0,
+            442.0,
+            763.0
           ],
           "checked": true,
-          "entity_id": "billing_flags:3:checkbox",
+          "entity_id": "follow_up:2:checkbox",
           "entity_type": "document_checkbox",
-          "item_id": "billing_flags:3",
-          "section_id": "billing_flags"
+          "item_id": "follow_up:2",
+          "section_id": "follow_up"
         },
         {
-          "bbox_id": "billing_flags:3:label",
+          "bbox_id": "follow_up:2:label",
           "bbox_px": [
-            702.0,
-            494.5,
-            829.0,
-            515.5
+            454.0,
+            741.5,
+            611.0,
+            762.5
           ],
-          "entity_id": "billing_flags:3:label",
+          "entity_id": "follow_up:2:label",
           "entity_type": "document_checkbox_label",
-          "item_id": "billing_flags:3",
-          "section_id": "billing_flags",
-          "text": "Tax Exempt"
+          "item_id": "follow_up:2",
+          "section_id": "follow_up",
+          "text": "Warranty Note"
+        },
+        {
+          "bbox_id": "follow_up:3:checkbox",
+          "bbox_px": [
+            420.0,
+            789.0,
+            442.0,
+            811.0
+          ],
+          "checked": true,
+          "entity_id": "follow_up:3:checkbox",
+          "entity_type": "document_checkbox",
+          "item_id": "follow_up:3",
+          "section_id": "follow_up"
+        },
+        {
+          "bbox_id": "follow_up:3:label",
+          "bbox_px": [
+            454.0,
+            789.0,
+            596.0,
+            811.0
+          ],
+          "entity_id": "follow_up:3:label",
+          "entity_type": "document_checkbox_label",
+          "item_id": "follow_up:3",
+          "section_id": "follow_up",
+          "text": "Text Updates"
         }
       ],
       "relations": {
-        "query_section_id": "delivery_options",
-        "query_section_label": "Delivery Options",
-        "scene_variant": "invoice_sheet",
+        "query_section_id": "service_options",
+        "query_section_label": "Service Options",
+        "scene_variant": "receipt_sheet",
         "task_variant": "checked_box_count",
         "view_family": "structured_document"
       },
-      "scene_kind": "document_invoice_sheet"
+      "scene_kind": "document_receipt_sheet"
     },
     "witness_symbolic": {
       "bbox_id_sequence": [
-        "delivery_options:0:checkbox",
-        "delivery_options:2:checkbox"
+        "service_options:2:checkbox"
       ],
-      "section_id": "delivery_options"
+      "section_id": "service_options"
     }
   },
   "versions": {

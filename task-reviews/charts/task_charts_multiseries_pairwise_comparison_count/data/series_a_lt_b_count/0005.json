@@ -1,16 +1,17 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 7
+    "value": 8
   },
   "evidence_gt": {
     "type": "label_set",
     "value": [
+      "B",
+      "C",
       "G",
-      "H",
-      "L",
-      "M",
-      "R",
+      "K",
+      "P",
+      "T",
       "U",
       "X"
     ]
@@ -19,51 +20,53 @@
     "format": "png",
     "path": "charts/task_charts_multiseries_pairwise_comparison_count/images/series_a_lt_b_count/0005.png"
   },
-  "instance_seed": 2446599451507984,
-  "prompt": "Look at the multiseries chart in the image. It shows a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Work category by category and count the labels where the requested series comparison is true. How many labeled categories have Geof under Ali?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+  "instance_seed": 4585224272109324,
+  "prompt": "Work from the multiseries chart shown in the image: a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Read the chart values and count the categories where the stated series relation holds. Across the labeled categories, in how many categories is Onia lower than Erik?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer field: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
   "prompt_variants": {
-    "answer_and_evidence": "Look at the multiseries chart in the image. It shows a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Work category by category and count the labels where the requested series comparison is true. How many labeled categories have Geof under Ali?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
-    "answer_only": "Look at the multiseries chart in the image. It shows a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Work category by category and count the labels where the requested series comparison is true. How many labeled categories have Geof under Ali?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
+    "answer_and_evidence": "Work from the multiseries chart shown in the image: a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Read the chart values and count the categories where the stated series relation holds. Across the labeled categories, in how many categories is Onia lower than Erik?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer field: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+    "answer_only": "Work from the multiseries chart shown in the image: a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Read the chart values and count the categories where the stated series relation holds. Across the labeled categories, in how many categories is Onia lower than Erik?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
   },
   "task": "task_charts_multiseries_pairwise_comparison_count",
   "task_variant": "series_a_lt_b_count",
   "trace_payload": {
     "execution_trace": {
-      "answer_value": 7,
-      "category_count": 7,
+      "answer_value": 8,
+      "category_count": 8,
       "category_count_range": [
         5,
         10
       ],
       "category_labels": [
-        "X",
+        "C",
+        "B",
+        "T",
         "U",
-        "M",
-        "R",
-        "L",
-        "H",
-        "G"
+        "K",
+        "X",
+        "G",
+        "P"
       ],
       "comparison": "less_than",
       "evidence_labels": [
+        "B",
+        "C",
         "G",
-        "H",
-        "L",
-        "M",
-        "R",
+        "K",
+        "P",
+        "T",
         "U",
         "X"
       ],
-      "left_series_label": "Geof",
+      "left_series_label": "Onia",
       "mark_color_distance_space": "lab",
       "mark_color_min_distance": 40.0,
       "mark_color_sampling_policy": "random_rgb_palette",
       "queried_series_labels": [
-        "Geof",
-        "Ali"
+        "Onia",
+        "Erik"
       ],
       "question_format": "numeric_open",
-      "right_series_label": "Ali",
+      "right_series_label": "Erik",
       "scene_variant": "grouped_lollipop",
       "scene_variant_probabilities": {
         "grouped_bar": 0.25,
@@ -78,217 +81,237 @@
       ],
       "series_fill_palette_rgb": [
         [
-          37,
-          116,
-          163
+          155,
+          91,
+          151
         ],
         [
-          214,
-          75,
-          64
+          15,
+          117,
+          214
         ],
         [
-          36,
-          156,
-          140
+          8,
+          180,
+          150
         ]
       ],
       "series_labels": [
-        "Lowe",
-        "Geof",
-        "Ali"
+        "Onia",
+        "Roma",
+        "Erik"
       ],
       "series_outline_palette_rgb": [
         [
-          20,
+          85,
+          50,
+          83
+        ],
+        [
+          8,
           64,
-          90
+          118
         ],
         [
-          118,
-          41,
-          35
-        ],
-        [
-          20,
-          86,
-          77
+          4,
+          99,
+          82
         ]
       ],
-      "target_answer": 7,
+      "target_answer": 8,
       "target_answer_range": [
         0,
         8
       ],
       "task_variant": "series_a_lt_b_count",
       "task_variant_probabilities": {
-        "series_a_gt_b_count": 0.5,
-        "series_a_lt_b_count": 0.5
+        "series_a_gt_b_count": 0.0,
+        "series_a_lt_b_count": 1.0
       },
       "values_by_category": {
+        "B": {
+          "Erik": 18,
+          "Onia": 4,
+          "Roma": 13
+        },
+        "C": {
+          "Erik": 19,
+          "Onia": 6,
+          "Roma": 13
+        },
         "G": {
-          "Ali": 18,
-          "Geof": 2,
-          "Lowe": 5
+          "Erik": 13,
+          "Onia": 2,
+          "Roma": 3
         },
-        "H": {
-          "Ali": 8,
-          "Geof": 1,
-          "Lowe": 2
+        "K": {
+          "Erik": 20,
+          "Onia": 12,
+          "Roma": 13
         },
-        "L": {
-          "Ali": 18,
-          "Geof": 5,
-          "Lowe": 9
+        "P": {
+          "Erik": 20,
+          "Onia": 7,
+          "Roma": 8
         },
-        "M": {
-          "Ali": 16,
-          "Geof": 5,
-          "Lowe": 11
-        },
-        "R": {
-          "Ali": 19,
-          "Geof": 2,
-          "Lowe": 15
+        "T": {
+          "Erik": 9,
+          "Onia": 2,
+          "Roma": 7
         },
         "U": {
-          "Ali": 19,
-          "Geof": 4,
-          "Lowe": 9
+          "Erik": 16,
+          "Onia": 8,
+          "Roma": 13
         },
         "X": {
-          "Ali": 18,
-          "Geof": 3,
-          "Lowe": 12
+          "Erik": 8,
+          "Onia": 1,
+          "Roma": 5
         }
       }
     },
     "projected_evidence": {
       "bbox_set": [
         [
-          769.8,
-          84.4,
-          829.343,
+          207.825,
+          105.143,
+          261.925,
           562.0
         ],
         [
-          660.943,
-          326.4,
-          720.486,
+          112.575,
+          82.095,
+          166.675,
           562.0
         ],
         [
-          552.086,
-          84.4,
-          611.629,
+          684.075,
+          220.381,
+          738.175,
           562.0
         ],
         [
-          334.371,
-          132.8,
-          393.914,
+          493.575,
+          59.048,
+          547.675,
           562.0
         ],
         [
-          443.229,
-          60.2,
-          502.771,
+          779.325,
+          59.048,
+          833.425,
           562.0
         ],
         [
-          225.514,
-          60.2,
-          285.057,
+          303.075,
+          312.571,
+          357.175,
           562.0
         ],
         [
-          116.657,
-          84.4,
-          176.2,
+          398.325,
+          151.238,
+          452.425,
+          562.0
+        ],
+        [
+          588.825,
+          335.619,
+          642.925,
           562.0
         ]
       ],
       "label_set": [
+        "B",
+        "C",
         "G",
-        "H",
-        "L",
-        "M",
-        "R",
+        "K",
+        "P",
+        "T",
         "U",
         "X"
       ],
       "pixel_point_map": {
+        "B": [
+          234.875,
+          554.0
+        ],
+        "C": [
+          139.625,
+          554.0
+        ],
         "G": [
-          799.571,
+          711.125,
           554.0
         ],
-        "H": [
-          690.714,
+        "K": [
+          520.625,
           554.0
         ],
-        "L": [
-          581.857,
+        "P": [
+          806.375,
           554.0
         ],
-        "M": [
-          364.143,
-          554.0
-        ],
-        "R": [
-          473.0,
+        "T": [
+          330.125,
           554.0
         ],
         "U": [
-          255.286,
+          425.375,
           554.0
         ],
         "X": [
-          146.429,
+          615.875,
           554.0
         ]
       },
       "pixel_point_set": [
         [
-          799.571,
+          234.875,
           554.0
         ],
         [
-          690.714,
+          139.625,
           554.0
         ],
         [
-          581.857,
+          711.125,
           554.0
         ],
         [
-          364.143,
+          520.625,
           554.0
         ],
         [
-          473.0,
+          806.375,
           554.0
         ],
         [
-          255.286,
+          330.125,
           554.0
         ],
         [
-          146.429,
+          425.375,
+          554.0
+        ],
+        [
+          615.875,
           554.0
         ]
       ]
     },
     "query_spec": {
       "params": {
-        "category_count": 7,
+        "category_count": 8,
         "category_count_range": [
           5,
           10
         ],
         "comparison": "less_than",
         "queried_series_labels": [
-          "Geof",
-          "Ali"
+          "Onia",
+          "Erik"
         ],
         "scene_variant": "grouped_lollipop",
         "scene_variant_probabilities": {
@@ -302,20 +325,20 @@
           2,
           3
         ],
-        "target_answer": 7,
+        "target_answer": 8,
         "target_answer_range": [
           0,
           8
         ],
         "task_variant": "series_a_lt_b_count",
         "task_variant_probabilities": {
-          "series_a_gt_b_count": 0.5,
-          "series_a_lt_b_count": 0.5
+          "series_a_gt_b_count": 0.0,
+          "series_a_lt_b_count": 1.0
         }
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 0,
+        "answer_or_evidence_variant_index": 3,
         "prompt_bundle_id": "charts_multiseries_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -325,16 +348,16 @@
           "json_example_answer_only": "{\"answer\":2}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "left_series": "Geof",
+          "left_series": "Onia",
           "object_description": "a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis",
-          "right_series": "Ali"
+          "right_series": "Erik"
         },
         "task_family_key": "multiseries_chart_comparison",
-        "task_family_variant_index": 3,
+        "task_family_variant_index": 2,
         "task_key": "pairwise_comparison_count_query",
-        "task_variant_index": 4,
+        "task_variant_index": 3,
         "task_variant_key": "series_a_lt_b_count",
-        "task_variant_template_index": 2,
+        "task_variant_template_index": 0,
         "template_paths": [
           "charts/multiseries/charts_multiseries_v1.json"
         ],
@@ -350,7 +373,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 0,
+            "answer_or_evidence_variant_index": 3,
             "prompt_bundle_id": "charts_multiseries_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -360,16 +383,16 @@
               "json_example_answer_only": "{\"answer\":2}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "left_series": "Geof",
+              "left_series": "Onia",
               "object_description": "a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis",
-              "right_series": "Ali"
+              "right_series": "Erik"
             },
             "task_family_key": "multiseries_chart_comparison",
-            "task_family_variant_index": 3,
+            "task_family_variant_index": 2,
             "task_key": "pairwise_comparison_count_query",
-            "task_variant_index": 4,
+            "task_variant_index": 3,
             "task_variant_key": "series_a_lt_b_count",
-            "task_variant_template_index": 2,
+            "task_variant_template_index": 0,
             "template_paths": [
               "charts/multiseries/charts_multiseries_v1.json"
             ],
@@ -380,12 +403,12 @@
               "task_variant:series_a_lt_b_count": 5
             }
           },
-          "prompt": "Look at the multiseries chart in the image. It shows a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Work category by category and count the labels where the requested series comparison is true. How many labeled categories have Geof under Ali?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}"
+          "prompt": "Work from the multiseries chart shown in the image: a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Read the chart values and count the categories where the stated series relation holds. Across the labeled categories, in how many categories is Onia lower than Erik?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer field: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 2,
+            "answer_or_evidence_variant_index": 3,
             "prompt_bundle_id": "charts_multiseries_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -395,16 +418,16 @@
               "json_example_answer_only": "{\"answer\":2}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "left_series": "Geof",
+              "left_series": "Onia",
               "object_description": "a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis",
-              "right_series": "Ali"
+              "right_series": "Erik"
             },
             "task_family_key": "multiseries_chart_comparison",
-            "task_family_variant_index": 3,
+            "task_family_variant_index": 2,
             "task_key": "pairwise_comparison_count_query",
-            "task_variant_index": 4,
+            "task_variant_index": 3,
             "task_variant_key": "series_a_lt_b_count",
-            "task_variant_template_index": 2,
+            "task_variant_template_index": 0,
             "template_paths": [
               "charts/multiseries/charts_multiseries_v1.json"
             ],
@@ -415,7 +438,7 @@
               "task_variant:series_a_lt_b_count": 5
             }
           },
-          "prompt": "Look at the multiseries chart in the image. It shows a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Work category by category and count the labels where the requested series comparison is true. How many labeled categories have Geof under Ali?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
+          "prompt": "Work from the multiseries chart shown in the image: a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Read the chart values and count the categories where the stated series relation holds. Across the labeled categories, in how many categories is Onia lower than Erik?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
         }
       },
       "task_variant": "series_a_lt_b_count",
@@ -423,32 +446,36 @@
     },
     "render_map": {
       "category_label_centers_px": {
+        "B": [
+          234.875,
+          554.0
+        ],
+        "C": [
+          139.625,
+          554.0
+        ],
         "G": [
-          799.571,
+          711.125,
           554.0
         ],
-        "H": [
-          690.714,
+        "K": [
+          520.625,
           554.0
         ],
-        "L": [
-          581.857,
+        "P": [
+          806.375,
           554.0
         ],
-        "M": [
-          364.143,
-          554.0
-        ],
-        "R": [
-          473.0,
+        "T": [
+          330.125,
           554.0
         ],
         "U": [
-          255.286,
+          425.375,
           554.0
         ],
         "X": [
-          146.429,
+          615.875,
           554.0
         ]
       },
@@ -490,36 +517,36 @@
         "sampling_policy": "random_rgb_palette",
         "series_fill_palette_rgb": [
           [
-            37,
-            116,
-            163
+            155,
+            91,
+            151
           ],
           [
-            214,
-            75,
-            64
+            15,
+            117,
+            214
           ],
           [
-            36,
-            156,
-            140
+            8,
+            180,
+            150
           ]
         ],
         "series_outline_palette_rgb": [
           [
-            20,
+            85,
+            50,
+            83
+          ],
+          [
+            8,
             64,
-            90
+            118
           ],
           [
-            118,
-            41,
-            35
-          ],
-          [
-            20,
-            86,
-            77
+            4,
+            99,
+            82
           ]
         ]
       },
@@ -551,7 +578,7 @@
         "label_stroke_width_px": 2,
         "tick_font_size_px": 18
       },
-      "y_axis_max": 20,
+      "y_axis_max": 21,
       "y_ticks": [
         0,
         1,
@@ -573,7 +600,8 @@
         17,
         18,
         19,
-        20
+        20,
+        21
       ]
     },
     "scene_ir": {
@@ -581,900 +609,1027 @@
         {
           "attrs": {
             "category_group_bbox_px": [
-              116.657,
-              84.4,
-              176.2,
+              112.575,
+              82.095,
+              166.675,
               562.0
             ],
-            "category_label": "X",
+            "category_label": "C",
             "category_label_center_px": [
-              146.429,
+              139.625,
               554.0
             ],
             "category_rank": 0,
             "mark_bbox_px": [
-              116.657,
-              229.6,
-              132.657,
-              245.6
+              112.575,
+              381.714,
+              128.575,
+              397.714
             ],
             "mark_center_px": [
-              124.657,
-              237.6
+              120.575,
+              389.714
             ],
             "mark_fill_rgb": [
-              37,
-              116,
-              163
+              155,
+              91,
+              151
             ],
             "mark_outline_rgb": [
-              20,
-              64,
-              90
+              85,
+              50,
+              83
             ],
             "scene_variant": "grouped_lollipop",
-            "series_label": "Lowe",
+            "series_label": "Onia",
             "series_rank": 0,
-            "value": 12
+            "value": 6
           },
-          "entity_id": "mark_X_Lowe",
+          "entity_id": "mark_C_Onia",
           "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              116.657,
-              84.4,
-              176.2,
+              112.575,
+              82.095,
+              166.675,
               562.0
             ],
-            "category_label": "X",
+            "category_label": "C",
             "category_label_center_px": [
-              146.429,
+              139.625,
               554.0
             ],
             "category_rank": 0,
             "mark_bbox_px": [
-              138.429,
-              447.4,
-              154.429,
-              463.4
+              131.625,
+              220.381,
+              147.625,
+              236.381
             ],
             "mark_center_px": [
-              146.429,
-              455.4
+              139.625,
+              228.381
             ],
             "mark_fill_rgb": [
-              214,
-              75,
-              64
+              15,
+              117,
+              214
             ],
             "mark_outline_rgb": [
-              118,
-              41,
-              35
-            ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Geof",
-            "series_rank": 1,
-            "value": 3
-          },
-          "entity_id": "mark_X_Geof",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              116.657,
-              84.4,
-              176.2,
-              562.0
-            ],
-            "category_label": "X",
-            "category_label_center_px": [
-              146.429,
-              554.0
-            ],
-            "category_rank": 0,
-            "mark_bbox_px": [
-              160.2,
-              84.4,
-              176.2,
-              100.4
-            ],
-            "mark_center_px": [
-              168.2,
-              92.4
-            ],
-            "mark_fill_rgb": [
-              36,
-              156,
-              140
-            ],
-            "mark_outline_rgb": [
-              20,
-              86,
-              77
-            ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Ali",
-            "series_rank": 2,
-            "value": 18
-          },
-          "entity_id": "mark_X_Ali",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              225.514,
-              60.2,
-              285.057,
-              562.0
-            ],
-            "category_label": "U",
-            "category_label_center_px": [
-              255.286,
-              554.0
-            ],
-            "category_rank": 1,
-            "mark_bbox_px": [
-              225.514,
-              302.2,
-              241.514,
-              318.2
-            ],
-            "mark_center_px": [
-              233.514,
-              310.2
-            ],
-            "mark_fill_rgb": [
-              37,
-              116,
-              163
-            ],
-            "mark_outline_rgb": [
-              20,
+              8,
               64,
-              90
+              118
             ],
             "scene_variant": "grouped_lollipop",
-            "series_label": "Lowe",
-            "series_rank": 0,
-            "value": 9
-          },
-          "entity_id": "mark_U_Lowe",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              225.514,
-              60.2,
-              285.057,
-              562.0
-            ],
-            "category_label": "U",
-            "category_label_center_px": [
-              255.286,
-              554.0
-            ],
-            "category_rank": 1,
-            "mark_bbox_px": [
-              247.286,
-              423.2,
-              263.286,
-              439.2
-            ],
-            "mark_center_px": [
-              255.286,
-              431.2
-            ],
-            "mark_fill_rgb": [
-              214,
-              75,
-              64
-            ],
-            "mark_outline_rgb": [
-              118,
-              41,
-              35
-            ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Geof",
+            "series_label": "Roma",
             "series_rank": 1,
-            "value": 4
+            "value": 13
           },
-          "entity_id": "mark_U_Geof",
+          "entity_id": "mark_C_Roma",
           "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              225.514,
-              60.2,
-              285.057,
+              112.575,
+              82.095,
+              166.675,
               562.0
             ],
-            "category_label": "U",
+            "category_label": "C",
             "category_label_center_px": [
-              255.286,
+              139.625,
               554.0
             ],
-            "category_rank": 1,
+            "category_rank": 0,
             "mark_bbox_px": [
-              269.057,
-              60.2,
-              285.057,
-              76.2
+              150.675,
+              82.095,
+              166.675,
+              98.095
             ],
             "mark_center_px": [
-              277.057,
-              68.2
+              158.675,
+              90.095
             ],
             "mark_fill_rgb": [
-              36,
-              156,
-              140
+              8,
+              180,
+              150
             ],
             "mark_outline_rgb": [
-              20,
-              86,
-              77
+              4,
+              99,
+              82
             ],
             "scene_variant": "grouped_lollipop",
-            "series_label": "Ali",
+            "series_label": "Erik",
             "series_rank": 2,
             "value": 19
           },
-          "entity_id": "mark_U_Ali",
+          "entity_id": "mark_C_Erik",
           "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              334.371,
-              132.8,
-              393.914,
+              207.825,
+              105.143,
+              261.925,
               562.0
             ],
-            "category_label": "M",
+            "category_label": "B",
             "category_label_center_px": [
-              364.143,
+              234.875,
               554.0
             ],
-            "category_rank": 2,
+            "category_rank": 1,
             "mark_bbox_px": [
-              334.371,
-              253.8,
-              350.371,
-              269.8
+              207.825,
+              427.81,
+              223.825,
+              443.81
             ],
             "mark_center_px": [
-              342.371,
-              261.8
+              215.825,
+              435.81
             ],
             "mark_fill_rgb": [
-              37,
-              116,
-              163
+              155,
+              91,
+              151
             ],
             "mark_outline_rgb": [
-              20,
-              64,
-              90
+              85,
+              50,
+              83
             ],
             "scene_variant": "grouped_lollipop",
-            "series_label": "Lowe",
+            "series_label": "Onia",
             "series_rank": 0,
-            "value": 11
+            "value": 4
           },
-          "entity_id": "mark_M_Lowe",
+          "entity_id": "mark_B_Onia",
           "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              334.371,
-              132.8,
-              393.914,
+              207.825,
+              105.143,
+              261.925,
               562.0
             ],
-            "category_label": "M",
+            "category_label": "B",
             "category_label_center_px": [
-              364.143,
+              234.875,
               554.0
             ],
-            "category_rank": 2,
+            "category_rank": 1,
             "mark_bbox_px": [
-              356.143,
-              399.0,
-              372.143,
-              415.0
+              226.875,
+              220.381,
+              242.875,
+              236.381
             ],
             "mark_center_px": [
-              364.143,
-              407.0
+              234.875,
+              228.381
             ],
             "mark_fill_rgb": [
-              214,
-              75,
-              64
+              15,
+              117,
+              214
             ],
             "mark_outline_rgb": [
-              118,
-              41,
-              35
+              8,
+              64,
+              118
             ],
             "scene_variant": "grouped_lollipop",
-            "series_label": "Geof",
+            "series_label": "Roma",
             "series_rank": 1,
-            "value": 5
+            "value": 13
           },
-          "entity_id": "mark_M_Geof",
+          "entity_id": "mark_B_Roma",
           "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              334.371,
-              132.8,
-              393.914,
+              207.825,
+              105.143,
+              261.925,
               562.0
             ],
-            "category_label": "M",
+            "category_label": "B",
             "category_label_center_px": [
-              364.143,
+              234.875,
+              554.0
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              245.925,
+              105.143,
+              261.925,
+              121.143
+            ],
+            "mark_center_px": [
+              253.925,
+              113.143
+            ],
+            "mark_fill_rgb": [
+              8,
+              180,
+              150
+            ],
+            "mark_outline_rgb": [
+              4,
+              99,
+              82
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Erik",
+            "series_rank": 2,
+            "value": 18
+          },
+          "entity_id": "mark_B_Erik",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              303.075,
+              312.571,
+              357.175,
+              562.0
+            ],
+            "category_label": "T",
+            "category_label_center_px": [
+              330.125,
               554.0
             ],
             "category_rank": 2,
             "mark_bbox_px": [
-              377.914,
-              132.8,
-              393.914,
-              148.8
+              303.075,
+              473.905,
+              319.075,
+              489.905
             ],
             "mark_center_px": [
-              385.914,
-              140.8
+              311.075,
+              481.905
             ],
             "mark_fill_rgb": [
-              36,
-              156,
-              140
+              155,
+              91,
+              151
             ],
             "mark_outline_rgb": [
-              20,
-              86,
-              77
+              85,
+              50,
+              83
             ],
             "scene_variant": "grouped_lollipop",
-            "series_label": "Ali",
+            "series_label": "Onia",
+            "series_rank": 0,
+            "value": 2
+          },
+          "entity_id": "mark_T_Onia",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              303.075,
+              312.571,
+              357.175,
+              562.0
+            ],
+            "category_label": "T",
+            "category_label_center_px": [
+              330.125,
+              554.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              322.125,
+              358.667,
+              338.125,
+              374.667
+            ],
+            "mark_center_px": [
+              330.125,
+              366.667
+            ],
+            "mark_fill_rgb": [
+              15,
+              117,
+              214
+            ],
+            "mark_outline_rgb": [
+              8,
+              64,
+              118
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Roma",
+            "series_rank": 1,
+            "value": 7
+          },
+          "entity_id": "mark_T_Roma",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              303.075,
+              312.571,
+              357.175,
+              562.0
+            ],
+            "category_label": "T",
+            "category_label_center_px": [
+              330.125,
+              554.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              341.175,
+              312.571,
+              357.175,
+              328.571
+            ],
+            "mark_center_px": [
+              349.175,
+              320.571
+            ],
+            "mark_fill_rgb": [
+              8,
+              180,
+              150
+            ],
+            "mark_outline_rgb": [
+              4,
+              99,
+              82
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Erik",
+            "series_rank": 2,
+            "value": 9
+          },
+          "entity_id": "mark_T_Erik",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              398.325,
+              151.238,
+              452.425,
+              562.0
+            ],
+            "category_label": "U",
+            "category_label_center_px": [
+              425.375,
+              554.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              398.325,
+              335.619,
+              414.325,
+              351.619
+            ],
+            "mark_center_px": [
+              406.325,
+              343.619
+            ],
+            "mark_fill_rgb": [
+              155,
+              91,
+              151
+            ],
+            "mark_outline_rgb": [
+              85,
+              50,
+              83
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Onia",
+            "series_rank": 0,
+            "value": 8
+          },
+          "entity_id": "mark_U_Onia",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              398.325,
+              151.238,
+              452.425,
+              562.0
+            ],
+            "category_label": "U",
+            "category_label_center_px": [
+              425.375,
+              554.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              417.375,
+              220.381,
+              433.375,
+              236.381
+            ],
+            "mark_center_px": [
+              425.375,
+              228.381
+            ],
+            "mark_fill_rgb": [
+              15,
+              117,
+              214
+            ],
+            "mark_outline_rgb": [
+              8,
+              64,
+              118
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Roma",
+            "series_rank": 1,
+            "value": 13
+          },
+          "entity_id": "mark_U_Roma",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              398.325,
+              151.238,
+              452.425,
+              562.0
+            ],
+            "category_label": "U",
+            "category_label_center_px": [
+              425.375,
+              554.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              436.425,
+              151.238,
+              452.425,
+              167.238
+            ],
+            "mark_center_px": [
+              444.425,
+              159.238
+            ],
+            "mark_fill_rgb": [
+              8,
+              180,
+              150
+            ],
+            "mark_outline_rgb": [
+              4,
+              99,
+              82
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Erik",
             "series_rank": 2,
             "value": 16
           },
-          "entity_id": "mark_M_Ali",
+          "entity_id": "mark_U_Erik",
           "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              443.229,
-              60.2,
-              502.771,
+              493.575,
+              59.048,
+              547.675,
               562.0
             ],
-            "category_label": "R",
+            "category_label": "K",
             "category_label_center_px": [
-              473.0,
+              520.625,
               554.0
             ],
-            "category_rank": 3,
+            "category_rank": 4,
             "mark_bbox_px": [
-              443.229,
-              157.0,
-              459.229,
-              173.0
+              493.575,
+              243.429,
+              509.575,
+              259.429
             ],
             "mark_center_px": [
-              451.229,
-              165.0
+              501.575,
+              251.429
             ],
             "mark_fill_rgb": [
-              37,
-              116,
-              163
+              155,
+              91,
+              151
             ],
             "mark_outline_rgb": [
-              20,
-              64,
-              90
+              85,
+              50,
+              83
             ],
             "scene_variant": "grouped_lollipop",
-            "series_label": "Lowe",
+            "series_label": "Onia",
             "series_rank": 0,
-            "value": 15
+            "value": 12
           },
-          "entity_id": "mark_R_Lowe",
+          "entity_id": "mark_K_Onia",
           "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              443.229,
-              60.2,
-              502.771,
+              493.575,
+              59.048,
+              547.675,
               562.0
             ],
-            "category_label": "R",
+            "category_label": "K",
             "category_label_center_px": [
-              473.0,
+              520.625,
               554.0
             ],
-            "category_rank": 3,
+            "category_rank": 4,
             "mark_bbox_px": [
-              465.0,
-              471.6,
-              481.0,
-              487.6
+              512.625,
+              220.381,
+              528.625,
+              236.381
             ],
             "mark_center_px": [
-              473.0,
-              479.6
+              520.625,
+              228.381
             ],
             "mark_fill_rgb": [
-              214,
-              75,
-              64
+              15,
+              117,
+              214
             ],
             "mark_outline_rgb": [
-              118,
-              41,
-              35
+              8,
+              64,
+              118
             ],
             "scene_variant": "grouped_lollipop",
-            "series_label": "Geof",
+            "series_label": "Roma",
             "series_rank": 1,
-            "value": 2
+            "value": 13
           },
-          "entity_id": "mark_R_Geof",
+          "entity_id": "mark_K_Roma",
           "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              443.229,
-              60.2,
-              502.771,
+              493.575,
+              59.048,
+              547.675,
               562.0
             ],
-            "category_label": "R",
+            "category_label": "K",
             "category_label_center_px": [
-              473.0,
+              520.625,
               554.0
             ],
-            "category_rank": 3,
+            "category_rank": 4,
             "mark_bbox_px": [
-              486.771,
-              60.2,
-              502.771,
-              76.2
+              531.675,
+              59.048,
+              547.675,
+              75.048
             ],
             "mark_center_px": [
-              494.771,
-              68.2
+              539.675,
+              67.048
             ],
             "mark_fill_rgb": [
-              36,
-              156,
-              140
+              8,
+              180,
+              150
             ],
             "mark_outline_rgb": [
-              20,
-              86,
-              77
+              4,
+              99,
+              82
             ],
             "scene_variant": "grouped_lollipop",
-            "series_label": "Ali",
+            "series_label": "Erik",
             "series_rank": 2,
-            "value": 19
+            "value": 20
           },
-          "entity_id": "mark_R_Ali",
+          "entity_id": "mark_K_Erik",
           "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              552.086,
-              84.4,
-              611.629,
+              588.825,
+              335.619,
+              642.925,
               562.0
             ],
-            "category_label": "L",
+            "category_label": "X",
             "category_label_center_px": [
-              581.857,
+              615.875,
               554.0
             ],
-            "category_rank": 4,
+            "category_rank": 5,
             "mark_bbox_px": [
-              552.086,
-              302.2,
-              568.086,
-              318.2
+              588.825,
+              496.952,
+              604.825,
+              512.952
             ],
             "mark_center_px": [
-              560.086,
-              310.2
+              596.825,
+              504.952
             ],
             "mark_fill_rgb": [
-              37,
-              116,
-              163
+              155,
+              91,
+              151
             ],
             "mark_outline_rgb": [
-              20,
-              64,
-              90
+              85,
+              50,
+              83
             ],
             "scene_variant": "grouped_lollipop",
-            "series_label": "Lowe",
+            "series_label": "Onia",
             "series_rank": 0,
-            "value": 9
+            "value": 1
           },
-          "entity_id": "mark_L_Lowe",
+          "entity_id": "mark_X_Onia",
           "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              552.086,
-              84.4,
-              611.629,
+              588.825,
+              335.619,
+              642.925,
               562.0
             ],
-            "category_label": "L",
+            "category_label": "X",
             "category_label_center_px": [
-              581.857,
+              615.875,
               554.0
             ],
-            "category_rank": 4,
+            "category_rank": 5,
             "mark_bbox_px": [
-              573.857,
-              399.0,
-              589.857,
-              415.0
+              607.875,
+              404.762,
+              623.875,
+              420.762
             ],
             "mark_center_px": [
-              581.857,
-              407.0
+              615.875,
+              412.762
             ],
             "mark_fill_rgb": [
-              214,
-              75,
-              64
+              15,
+              117,
+              214
             ],
             "mark_outline_rgb": [
-              118,
-              41,
-              35
+              8,
+              64,
+              118
             ],
             "scene_variant": "grouped_lollipop",
-            "series_label": "Geof",
+            "series_label": "Roma",
             "series_rank": 1,
             "value": 5
           },
-          "entity_id": "mark_L_Geof",
+          "entity_id": "mark_X_Roma",
           "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              552.086,
-              84.4,
-              611.629,
+              588.825,
+              335.619,
+              642.925,
               562.0
             ],
-            "category_label": "L",
+            "category_label": "X",
             "category_label_center_px": [
-              581.857,
-              554.0
-            ],
-            "category_rank": 4,
-            "mark_bbox_px": [
-              595.629,
-              84.4,
-              611.629,
-              100.4
-            ],
-            "mark_center_px": [
-              603.629,
-              92.4
-            ],
-            "mark_fill_rgb": [
-              36,
-              156,
-              140
-            ],
-            "mark_outline_rgb": [
-              20,
-              86,
-              77
-            ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Ali",
-            "series_rank": 2,
-            "value": 18
-          },
-          "entity_id": "mark_L_Ali",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              660.943,
-              326.4,
-              720.486,
-              562.0
-            ],
-            "category_label": "H",
-            "category_label_center_px": [
-              690.714,
+              615.875,
               554.0
             ],
             "category_rank": 5,
             "mark_bbox_px": [
-              660.943,
-              471.6,
-              676.943,
-              487.6
+              626.925,
+              335.619,
+              642.925,
+              351.619
             ],
             "mark_center_px": [
-              668.943,
-              479.6
+              634.925,
+              343.619
             ],
             "mark_fill_rgb": [
-              37,
-              116,
-              163
+              8,
+              180,
+              150
             ],
             "mark_outline_rgb": [
-              20,
-              64,
-              90
+              4,
+              99,
+              82
             ],
             "scene_variant": "grouped_lollipop",
-            "series_label": "Lowe",
-            "series_rank": 0,
-            "value": 2
-          },
-          "entity_id": "mark_H_Lowe",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              660.943,
-              326.4,
-              720.486,
-              562.0
-            ],
-            "category_label": "H",
-            "category_label_center_px": [
-              690.714,
-              554.0
-            ],
-            "category_rank": 5,
-            "mark_bbox_px": [
-              682.714,
-              495.8,
-              698.714,
-              511.8
-            ],
-            "mark_center_px": [
-              690.714,
-              503.8
-            ],
-            "mark_fill_rgb": [
-              214,
-              75,
-              64
-            ],
-            "mark_outline_rgb": [
-              118,
-              41,
-              35
-            ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Geof",
-            "series_rank": 1,
-            "value": 1
-          },
-          "entity_id": "mark_H_Geof",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              660.943,
-              326.4,
-              720.486,
-              562.0
-            ],
-            "category_label": "H",
-            "category_label_center_px": [
-              690.714,
-              554.0
-            ],
-            "category_rank": 5,
-            "mark_bbox_px": [
-              704.486,
-              326.4,
-              720.486,
-              342.4
-            ],
-            "mark_center_px": [
-              712.486,
-              334.4
-            ],
-            "mark_fill_rgb": [
-              36,
-              156,
-              140
-            ],
-            "mark_outline_rgb": [
-              20,
-              86,
-              77
-            ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Ali",
+            "series_label": "Erik",
             "series_rank": 2,
             "value": 8
           },
-          "entity_id": "mark_H_Ali",
+          "entity_id": "mark_X_Erik",
           "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              769.8,
-              84.4,
-              829.343,
+              684.075,
+              220.381,
+              738.175,
               562.0
             ],
             "category_label": "G",
             "category_label_center_px": [
-              799.571,
+              711.125,
               554.0
             ],
             "category_rank": 6,
             "mark_bbox_px": [
-              769.8,
-              399.0,
-              785.8,
-              415.0
+              684.075,
+              473.905,
+              700.075,
+              489.905
             ],
             "mark_center_px": [
-              777.8,
-              407.0
+              692.075,
+              481.905
             ],
             "mark_fill_rgb": [
-              37,
-              116,
-              163
+              155,
+              91,
+              151
             ],
             "mark_outline_rgb": [
-              20,
-              64,
-              90
+              85,
+              50,
+              83
             ],
             "scene_variant": "grouped_lollipop",
-            "series_label": "Lowe",
+            "series_label": "Onia",
             "series_rank": 0,
-            "value": 5
-          },
-          "entity_id": "mark_G_Lowe",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              769.8,
-              84.4,
-              829.343,
-              562.0
-            ],
-            "category_label": "G",
-            "category_label_center_px": [
-              799.571,
-              554.0
-            ],
-            "category_rank": 6,
-            "mark_bbox_px": [
-              791.571,
-              471.6,
-              807.571,
-              487.6
-            ],
-            "mark_center_px": [
-              799.571,
-              479.6
-            ],
-            "mark_fill_rgb": [
-              214,
-              75,
-              64
-            ],
-            "mark_outline_rgb": [
-              118,
-              41,
-              35
-            ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Geof",
-            "series_rank": 1,
             "value": 2
           },
-          "entity_id": "mark_G_Geof",
+          "entity_id": "mark_G_Onia",
           "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              769.8,
-              84.4,
-              829.343,
+              684.075,
+              220.381,
+              738.175,
               562.0
             ],
             "category_label": "G",
             "category_label_center_px": [
-              799.571,
+              711.125,
               554.0
             ],
             "category_rank": 6,
             "mark_bbox_px": [
-              813.343,
-              84.4,
-              829.343,
-              100.4
+              703.125,
+              450.857,
+              719.125,
+              466.857
             ],
             "mark_center_px": [
-              821.343,
-              92.4
+              711.125,
+              458.857
             ],
             "mark_fill_rgb": [
-              36,
-              156,
-              140
+              15,
+              117,
+              214
             ],
             "mark_outline_rgb": [
-              20,
-              86,
-              77
+              8,
+              64,
+              118
             ],
             "scene_variant": "grouped_lollipop",
-            "series_label": "Ali",
-            "series_rank": 2,
-            "value": 18
+            "series_label": "Roma",
+            "series_rank": 1,
+            "value": 3
           },
-          "entity_id": "mark_G_Ali",
+          "entity_id": "mark_G_Roma",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              684.075,
+              220.381,
+              738.175,
+              562.0
+            ],
+            "category_label": "G",
+            "category_label_center_px": [
+              711.125,
+              554.0
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              722.175,
+              220.381,
+              738.175,
+              236.381
+            ],
+            "mark_center_px": [
+              730.175,
+              228.381
+            ],
+            "mark_fill_rgb": [
+              8,
+              180,
+              150
+            ],
+            "mark_outline_rgb": [
+              4,
+              99,
+              82
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Erik",
+            "series_rank": 2,
+            "value": 13
+          },
+          "entity_id": "mark_G_Erik",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              779.325,
+              59.048,
+              833.425,
+              562.0
+            ],
+            "category_label": "P",
+            "category_label_center_px": [
+              806.375,
+              554.0
+            ],
+            "category_rank": 7,
+            "mark_bbox_px": [
+              779.325,
+              358.667,
+              795.325,
+              374.667
+            ],
+            "mark_center_px": [
+              787.325,
+              366.667
+            ],
+            "mark_fill_rgb": [
+              155,
+              91,
+              151
+            ],
+            "mark_outline_rgb": [
+              85,
+              50,
+              83
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Onia",
+            "series_rank": 0,
+            "value": 7
+          },
+          "entity_id": "mark_P_Onia",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              779.325,
+              59.048,
+              833.425,
+              562.0
+            ],
+            "category_label": "P",
+            "category_label_center_px": [
+              806.375,
+              554.0
+            ],
+            "category_rank": 7,
+            "mark_bbox_px": [
+              798.375,
+              335.619,
+              814.375,
+              351.619
+            ],
+            "mark_center_px": [
+              806.375,
+              343.619
+            ],
+            "mark_fill_rgb": [
+              15,
+              117,
+              214
+            ],
+            "mark_outline_rgb": [
+              8,
+              64,
+              118
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Roma",
+            "series_rank": 1,
+            "value": 8
+          },
+          "entity_id": "mark_P_Roma",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              779.325,
+              59.048,
+              833.425,
+              562.0
+            ],
+            "category_label": "P",
+            "category_label_center_px": [
+              806.375,
+              554.0
+            ],
+            "category_rank": 7,
+            "mark_bbox_px": [
+              817.425,
+              59.048,
+              833.425,
+              75.048
+            ],
+            "mark_center_px": [
+              825.425,
+              67.048
+            ],
+            "mark_fill_rgb": [
+              8,
+              180,
+              150
+            ],
+            "mark_outline_rgb": [
+              4,
+              99,
+              82
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Erik",
+            "series_rank": 2,
+            "value": 20
+          },
+          "entity_id": "mark_P_Erik",
           "entity_type": "point"
         }
       ],
       "relations": {
         "comparison": "less_than",
         "evidence_labels": [
+          "B",
+          "C",
           "G",
-          "H",
-          "L",
-          "M",
-          "R",
+          "K",
+          "P",
+          "T",
           "U",
           "X"
         ],
         "queried_series_labels": [
-          "Geof",
-          "Ali"
+          "Onia",
+          "Erik"
         ],
         "scene_variant": "grouped_lollipop",
         "task_variant": "series_a_lt_b_count"
@@ -1483,11 +1638,12 @@
     },
     "witness_symbolic": {
       "labels": [
+        "B",
+        "C",
         "G",
-        "H",
-        "L",
-        "M",
-        "R",
+        "K",
+        "P",
+        "T",
         "U",
         "X"
       ],

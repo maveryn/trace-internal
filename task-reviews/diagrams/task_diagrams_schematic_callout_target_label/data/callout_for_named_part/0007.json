@@ -1,16 +1,16 @@
 {
   "answer_gt": {
     "type": "string",
-    "value": "F"
+    "value": "A"
   },
   "evidence_gt": {
     "type": "bbox_set",
     "value": [
       [
-        299.52,
-        291.459,
+        282.496,
+        417.504,
         469.76,
-        363.485
+        489.53
       ]
     ]
   },
@@ -18,11 +18,11 @@
     "format": "png",
     "path": "diagrams/task_diagrams_schematic_callout_target_label/images/callout_for_named_part/0007.png"
   },
-  "instance_seed": 3517296466100283,
-  "prompt": "The image shows an annotated schematic with labeled parts and external callout circles connected by leader lines. Determine the correct callout from the annotated schematic: Which labeled callout points to Valve? Answer with the exact callout label shown.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the named target part.\nAnswer format: set \"answer\" to the exact visible callout label.\nExample JSON:\n{\"evidence\":[[406,334,595,445]],\"answer\":\"B\"}",
+  "instance_seed": 8718769178479077,
+  "prompt": "Use the labeled schematic in the image: an annotated schematic with labeled parts and external callout circles connected by leader lines. Determine the correct callout from the annotated schematic: Which labeled callout points to Relay? Return the exact visible callout label.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the named target part.\nAnswer requirement: set \"answer\" to the exact visible callout label.\nExample JSON:\n{\"evidence\":[[406,334,595,445]],\"answer\":\"B\"}",
   "prompt_variants": {
-    "answer_and_evidence": "The image shows an annotated schematic with labeled parts and external callout circles connected by leader lines. Determine the correct callout from the annotated schematic: Which labeled callout points to Valve? Answer with the exact callout label shown.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the named target part.\nAnswer format: set \"answer\" to the exact visible callout label.\nExample JSON:\n{\"evidence\":[[406,334,595,445]],\"answer\":\"B\"}",
-    "answer_only": "The image shows an annotated schematic with labeled parts and external callout circles connected by leader lines. Determine the correct callout from the annotated schematic: Which labeled callout points to Valve? Answer with the exact callout label shown.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the exact visible callout label.\nExample JSON:\n{\"answer\":\"B\"}"
+    "answer_and_evidence": "Use the labeled schematic in the image: an annotated schematic with labeled parts and external callout circles connected by leader lines. Determine the correct callout from the annotated schematic: Which labeled callout points to Relay? Return the exact visible callout label.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the named target part.\nAnswer requirement: set \"answer\" to the exact visible callout label.\nExample JSON:\n{\"evidence\":[[406,334,595,445]],\"answer\":\"B\"}",
+    "answer_only": "Use the labeled schematic in the image: an annotated schematic with labeled parts and external callout circles connected by leader lines. Determine the correct callout from the annotated schematic: Which labeled callout points to Relay? Return the exact visible callout label.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the exact visible callout label.\nExample JSON:\n{\"answer\":\"B\"}"
   },
   "task": "task_diagrams_schematic_callout_target_label",
   "task_variant": "callout_for_named_part",
@@ -43,50 +43,50 @@
       }
     },
     "execution_trace": {
-      "answer_callout_bbox_id": "callout_bbox_0",
-      "answer_callout_label": "F",
-      "answer_part_bbox_id": "part_bbox_0",
-      "answer_part_id": "part_0",
-      "answer_part_label": "Valve",
+      "answer_callout_bbox_id": "callout_bbox_3",
+      "answer_callout_label": "A",
+      "answer_part_bbox_id": "part_bbox_3",
+      "answer_part_id": "part_3",
+      "answer_part_label": "Relay",
       "highlight_part_id": null,
       "part_count": 7,
       "part_specs": [
         {
           "callout_bbox_id": "callout_bbox_0",
           "callout_id": "callout_0",
-          "callout_label": "F",
+          "callout_label": "D",
           "callout_label_bbox_id": "callout_label_bbox_0",
-          "fill_rgb": [
-            244,
-            232,
-            203
-          ],
-          "highlighted": false,
-          "leader_bbox_id": "leader_bbox_0",
-          "part_bbox_id": "part_bbox_0",
-          "part_id": "part_0",
-          "part_label": "Valve",
-          "part_label_bbox_id": "part_label_bbox_0",
-          "shape_kind": "capsule",
-          "slot_id": "slot_0"
-        },
-        {
-          "callout_bbox_id": "callout_bbox_1",
-          "callout_id": "callout_1",
-          "callout_label": "A",
-          "callout_label_bbox_id": "callout_label_bbox_1",
           "fill_rgb": [
             238,
             216,
             244
           ],
           "highlighted": false,
+          "leader_bbox_id": "leader_bbox_0",
+          "part_bbox_id": "part_bbox_0",
+          "part_id": "part_0",
+          "part_label": "Mixer",
+          "part_label_bbox_id": "part_label_bbox_0",
+          "shape_kind": "hexagon",
+          "slot_id": "slot_0"
+        },
+        {
+          "callout_bbox_id": "callout_bbox_1",
+          "callout_id": "callout_1",
+          "callout_label": "F",
+          "callout_label_bbox_id": "callout_label_bbox_1",
+          "fill_rgb": [
+            247,
+            225,
+            208
+          ],
+          "highlighted": false,
           "leader_bbox_id": "leader_bbox_1",
           "part_bbox_id": "part_bbox_1",
           "part_id": "part_1",
-          "part_label": "Drum",
+          "part_label": "Gate",
           "part_label_bbox_id": "part_label_bbox_1",
-          "shape_kind": "hexagon",
+          "shape_kind": "capsule",
           "slot_id": "slot_1"
         },
         {
@@ -95,23 +95,23 @@
           "callout_label": "C",
           "callout_label_bbox_id": "callout_label_bbox_2",
           "fill_rgb": [
-            222,
-            238,
-            218
+            243,
+            218,
+            226
           ],
           "highlighted": false,
           "leader_bbox_id": "leader_bbox_2",
           "part_bbox_id": "part_bbox_2",
           "part_id": "part_2",
-          "part_label": "Buffer",
+          "part_label": "Switch",
           "part_label_bbox_id": "part_label_bbox_2",
-          "shape_kind": "capsule",
+          "shape_kind": "hexagon",
           "slot_id": "slot_2"
         },
         {
           "callout_bbox_id": "callout_bbox_3",
           "callout_id": "callout_3",
-          "callout_label": "E",
+          "callout_label": "A",
           "callout_label_bbox_id": "callout_label_bbox_3",
           "fill_rgb": [
             224,
@@ -122,15 +122,15 @@
           "leader_bbox_id": "leader_bbox_3",
           "part_bbox_id": "part_bbox_3",
           "part_id": "part_3",
-          "part_label": "Shield",
+          "part_label": "Relay",
           "part_label_bbox_id": "part_label_bbox_3",
-          "shape_kind": "capsule",
+          "shape_kind": "rounded_rect",
           "slot_id": "slot_3"
         },
         {
           "callout_bbox_id": "callout_bbox_4",
           "callout_id": "callout_4",
-          "callout_label": "G",
+          "callout_label": "E",
           "callout_label_bbox_id": "callout_label_bbox_4",
           "fill_rgb": [
             213,
@@ -141,58 +141,58 @@
           "leader_bbox_id": "leader_bbox_4",
           "part_bbox_id": "part_bbox_4",
           "part_id": "part_4",
-          "part_label": "Cell",
+          "part_label": "Coil",
           "part_label_bbox_id": "part_label_bbox_4",
-          "shape_kind": "ellipse",
+          "shape_kind": "rounded_rect",
           "slot_id": "slot_4"
         },
         {
           "callout_bbox_id": "callout_bbox_5",
           "callout_id": "callout_5",
-          "callout_label": "B",
+          "callout_label": "G",
           "callout_label_bbox_id": "callout_label_bbox_5",
+          "fill_rgb": [
+            222,
+            238,
+            218
+          ],
+          "highlighted": false,
+          "leader_bbox_id": "leader_bbox_5",
+          "part_bbox_id": "part_bbox_5",
+          "part_id": "part_5",
+          "part_label": "Gauge",
+          "part_label_bbox_id": "part_label_bbox_5",
+          "shape_kind": "hexagon",
+          "slot_id": "slot_5"
+        },
+        {
+          "callout_bbox_id": "callout_bbox_6",
+          "callout_id": "callout_6",
+          "callout_label": "B",
+          "callout_label_bbox_id": "callout_label_bbox_6",
           "fill_rgb": [
             232,
             223,
             246
           ],
           "highlighted": false,
-          "leader_bbox_id": "leader_bbox_5",
-          "part_bbox_id": "part_bbox_5",
-          "part_id": "part_5",
-          "part_label": "Switch",
-          "part_label_bbox_id": "part_label_bbox_5",
-          "shape_kind": "capsule",
-          "slot_id": "slot_5"
-        },
-        {
-          "callout_bbox_id": "callout_bbox_6",
-          "callout_id": "callout_6",
-          "callout_label": "D",
-          "callout_label_bbox_id": "callout_label_bbox_6",
-          "fill_rgb": [
-            247,
-            225,
-            208
-          ],
-          "highlighted": false,
           "leader_bbox_id": "leader_bbox_6",
           "part_bbox_id": "part_bbox_6",
           "part_id": "part_6",
-          "part_label": "Servo",
+          "part_label": "Vent",
           "part_label_bbox_id": "part_label_bbox_6",
-          "shape_kind": "capsule",
+          "shape_kind": "ellipse",
           "slot_id": "slot_6"
         }
       ],
       "query_focus": "named_part",
-      "query_part_label": "Valve",
+      "query_part_label": "Relay",
       "question_format": "schematic_callout_target_label",
-      "question_text": "Which labeled callout points to Valve?",
-      "scene_title": "System Schematic",
+      "question_text": "Which labeled callout points to Relay?",
+      "scene_title": "Component Diagram",
       "scene_variant": "annotated_schematic",
       "supporting_part_bbox_ids": [
-        "part_bbox_0"
+        "part_bbox_3"
       ],
       "task_variant": "callout_for_named_part",
       "view_family": "annotated_schematic_diagram"
@@ -216,10 +216,10 @@
     "projected_evidence": {
       "bbox_set": [
         [
-          299.52,
-          291.459,
+          282.496,
+          417.504,
           469.76,
-          363.485
+          489.53
         ]
       ]
     },
@@ -239,7 +239,7 @@
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 1,
+        "answer_or_evidence_variant_index": 2,
         "prompt_bundle_id": "diagrams_schematic_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -250,14 +250,14 @@
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
           "object_description": "an annotated schematic with labeled parts and external callout circles connected by leader lines",
-          "question_text": "Which labeled callout points to Valve?"
+          "question_text": "Which labeled callout points to Relay?"
         },
         "task_family_key": "annotated_schematic_diagram",
-        "task_family_variant_index": 0,
+        "task_family_variant_index": 3,
         "task_key": "callout_target_query",
         "task_variant_index": 4,
         "task_variant_key": "callout_for_named_part",
-        "task_variant_template_index": 0,
+        "task_variant_template_index": 1,
         "template_paths": [
           "diagrams/schematic/diagrams_schematic_v1.json"
         ],
@@ -273,7 +273,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 1,
+            "answer_or_evidence_variant_index": 2,
             "prompt_bundle_id": "diagrams_schematic_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -284,14 +284,14 @@
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "an annotated schematic with labeled parts and external callout circles connected by leader lines",
-              "question_text": "Which labeled callout points to Valve?"
+              "question_text": "Which labeled callout points to Relay?"
             },
             "task_family_key": "annotated_schematic_diagram",
-            "task_family_variant_index": 0,
+            "task_family_variant_index": 3,
             "task_key": "callout_target_query",
             "task_variant_index": 4,
             "task_variant_key": "callout_for_named_part",
-            "task_variant_template_index": 0,
+            "task_variant_template_index": 1,
             "template_paths": [
               "diagrams/schematic/diagrams_schematic_v1.json"
             ],
@@ -302,12 +302,12 @@
               "task_variant:callout_for_named_part": 5
             }
           },
-          "prompt": "The image shows an annotated schematic with labeled parts and external callout circles connected by leader lines. Determine the correct callout from the annotated schematic: Which labeled callout points to Valve? Answer with the exact callout label shown.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the named target part.\nAnswer format: set \"answer\" to the exact visible callout label.\nExample JSON:\n{\"evidence\":[[406,334,595,445]],\"answer\":\"B\"}"
+          "prompt": "Use the labeled schematic in the image: an annotated schematic with labeled parts and external callout circles connected by leader lines. Determine the correct callout from the annotated schematic: Which labeled callout points to Relay? Return the exact visible callout label.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the named target part.\nAnswer requirement: set \"answer\" to the exact visible callout label.\nExample JSON:\n{\"evidence\":[[406,334,595,445]],\"answer\":\"B\"}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 3,
+            "answer_or_evidence_variant_index": 0,
             "prompt_bundle_id": "diagrams_schematic_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -318,14 +318,14 @@
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "an annotated schematic with labeled parts and external callout circles connected by leader lines",
-              "question_text": "Which labeled callout points to Valve?"
+              "question_text": "Which labeled callout points to Relay?"
             },
             "task_family_key": "annotated_schematic_diagram",
-            "task_family_variant_index": 0,
+            "task_family_variant_index": 3,
             "task_key": "callout_target_query",
             "task_variant_index": 4,
             "task_variant_key": "callout_for_named_part",
-            "task_variant_template_index": 0,
+            "task_variant_template_index": 1,
             "template_paths": [
               "diagrams/schematic/diagrams_schematic_v1.json"
             ],
@@ -336,7 +336,7 @@
               "task_variant:callout_for_named_part": 5
             }
           },
-          "prompt": "The image shows an annotated schematic with labeled parts and external callout circles connected by leader lines. Determine the correct callout from the annotated schematic: Which labeled callout points to Valve? Answer with the exact callout label shown.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the exact visible callout label.\nExample JSON:\n{\"answer\":\"B\"}"
+          "prompt": "Use the labeled schematic in the image: an annotated schematic with labeled parts and external callout circles connected by leader lines. Determine the correct callout from the annotated schematic: Which labeled callout points to Relay? Return the exact visible callout label.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the exact visible callout label.\nExample JSON:\n{\"answer\":\"B\"}"
         }
       },
       "task_variant": "callout_for_named_part",
@@ -389,15 +389,15 @@
       },
       "callout_label_bboxes_px": {
         "callout_label_bbox_0": [
-          181.5,
+          179.5,
           252.92,
-          202.5,
+          204.5,
           274.92
         ],
         "callout_label_bbox_1": [
-          628.0,
+          629.5,
           193.34,
-          652.0,
+          650.5,
           215.34
         ],
         "callout_label_bbox_2": [
@@ -407,27 +407,27 @@
           274.92
         ],
         "callout_label_bbox_3": [
-          136.7,
+          135.2,
           478.0,
-          157.7,
+          159.2,
           500.0
         ],
         "callout_label_bbox_4": [
-          1120.3,
+          1122.3,
           478.0,
-          1145.3,
+          1143.3,
           500.0
         ],
         "callout_label_bbox_5": [
-          337.3,
+          336.3,
           762.66,
-          360.3,
+          361.3,
           784.66
         ],
         "callout_label_bbox_6": [
-          918.7,
+          919.7,
           762.66,
-          943.7,
+          942.7,
           784.66
         ]
       },
@@ -539,22 +539,22 @@
           337.472
         ],
         "part_label_bbox_1": [
-          602.0,
+          607.5,
           297.215,
-          678.0,
+          672.5,
           317.215
         ],
         "part_label_bbox_2": [
-          852.86,
+          849.86,
           317.472,
-          937.86,
+          940.86,
           337.472
         ],
         "part_label_bbox_3": [
-          333.628,
-          443.517,
-          418.628,
-          463.517
+          338.128,
+          441.017,
+          414.128,
+          466.017
         ],
         "part_label_bbox_4": [
           877.872,
@@ -563,22 +563,22 @@
           463.517
         ],
         "part_label_bbox_5": [
-          458.308,
-          574.063,
-          549.308,
-          594.063
+          459.808,
+          571.563,
+          547.808,
+          596.563
         ],
         "part_label_bbox_6": [
-          736.692,
+          743.692,
           574.063,
-          815.692,
+          808.692,
           594.063
         ]
       },
       "title_bbox_px": [
-        473.5,
+        453.5,
         74.5,
-        806.5,
+        826.5,
         107.5
       ]
     },
@@ -586,7 +586,7 @@
       "callout_diameter_px": 56,
       "canvas_height": 900,
       "canvas_width": 1280,
-      "geometry_seed": 3517296466100283,
+      "geometry_seed": 8718769178479077,
       "leader_width_px": 4,
       "part_label_font_size_px": 24,
       "scene_variant": "annotated_schematic"
@@ -605,14 +605,14 @@
         },
         {
           "bbox_xyxy": [
-            473.5,
+            453.5,
             74.5,
-            806.5,
+            826.5,
             107.5
           ],
           "entity_id": "diagram_title",
           "entity_type": "diagram_title",
-          "text": "System Schematic"
+          "text": "Component Diagram"
         },
         {
           "bbox_xyxy": [
@@ -735,12 +735,12 @@
             469.76,
             363.485
           ],
-          "callout_label": "F",
+          "callout_label": "D",
           "entity_id": "part_0",
           "entity_type": "diagram_schematic_part",
           "highlighted": false,
-          "shape_kind": "capsule",
-          "text": "Valve"
+          "shape_kind": "hexagon",
+          "text": "Mixer"
         },
         {
           "bbox_xyxy": [
@@ -752,7 +752,7 @@
           "entity_id": "part_label_bbox_0",
           "entity_type": "diagram_schematic_part_label",
           "part_id": "part_0",
-          "text": "Valve"
+          "text": "Mixer"
         },
         {
           "bbox_xyxy": [
@@ -761,24 +761,24 @@
             725.12,
             340.977
           ],
-          "callout_label": "A",
+          "callout_label": "F",
           "entity_id": "part_1",
           "entity_type": "diagram_schematic_part",
           "highlighted": false,
-          "shape_kind": "hexagon",
-          "text": "Drum"
+          "shape_kind": "capsule",
+          "text": "Gate"
         },
         {
           "bbox_xyxy": [
-            602.0,
+            607.5,
             297.215,
-            678.0,
+            672.5,
             317.215
           ],
           "entity_id": "part_label_bbox_1",
           "entity_type": "diagram_schematic_part_label",
           "part_id": "part_1",
-          "text": "Drum"
+          "text": "Gate"
         },
         {
           "bbox_xyxy": [
@@ -791,20 +791,20 @@
           "entity_id": "part_2",
           "entity_type": "diagram_schematic_part",
           "highlighted": false,
-          "shape_kind": "capsule",
-          "text": "Buffer"
+          "shape_kind": "hexagon",
+          "text": "Switch"
         },
         {
           "bbox_xyxy": [
-            852.86,
+            849.86,
             317.472,
-            937.86,
+            940.86,
             337.472
           ],
           "entity_id": "part_label_bbox_2",
           "entity_type": "diagram_schematic_part_label",
           "part_id": "part_2",
-          "text": "Buffer"
+          "text": "Switch"
         },
         {
           "bbox_xyxy": [
@@ -813,24 +813,24 @@
             469.76,
             489.53
           ],
-          "callout_label": "E",
+          "callout_label": "A",
           "entity_id": "part_3",
           "entity_type": "diagram_schematic_part",
           "highlighted": false,
-          "shape_kind": "capsule",
-          "text": "Shield"
+          "shape_kind": "rounded_rect",
+          "text": "Relay"
         },
         {
           "bbox_xyxy": [
-            333.628,
-            443.517,
-            418.628,
-            463.517
+            338.128,
+            441.017,
+            414.128,
+            466.017
           ],
           "entity_id": "part_label_bbox_3",
           "entity_type": "diagram_schematic_part_label",
           "part_id": "part_3",
-          "text": "Shield"
+          "text": "Relay"
         },
         {
           "bbox_xyxy": [
@@ -839,12 +839,12 @@
             997.504,
             489.53
           ],
-          "callout_label": "G",
+          "callout_label": "E",
           "entity_id": "part_4",
           "entity_type": "diagram_schematic_part",
           "highlighted": false,
-          "shape_kind": "ellipse",
-          "text": "Cell"
+          "shape_kind": "rounded_rect",
+          "text": "Coil"
         },
         {
           "bbox_xyxy": [
@@ -856,7 +856,7 @@
           "entity_id": "part_label_bbox_4",
           "entity_type": "diagram_schematic_part_label",
           "part_id": "part_4",
-          "text": "Cell"
+          "text": "Coil"
         },
         {
           "bbox_xyxy": [
@@ -865,24 +865,24 @@
             588.928,
             615.574
           ],
-          "callout_label": "B",
+          "callout_label": "G",
           "entity_id": "part_5",
           "entity_type": "diagram_schematic_part",
           "highlighted": false,
-          "shape_kind": "capsule",
-          "text": "Switch"
+          "shape_kind": "hexagon",
+          "text": "Gauge"
         },
         {
           "bbox_xyxy": [
-            458.308,
-            574.063,
-            549.308,
-            594.063
+            459.808,
+            571.563,
+            547.808,
+            596.563
           ],
           "entity_id": "part_label_bbox_5",
           "entity_type": "diagram_schematic_part_label",
           "part_id": "part_5",
-          "text": "Switch"
+          "text": "Gauge"
         },
         {
           "bbox_xyxy": [
@@ -891,24 +891,24 @@
             861.312,
             615.574
           ],
-          "callout_label": "D",
+          "callout_label": "B",
           "entity_id": "part_6",
           "entity_type": "diagram_schematic_part",
           "highlighted": false,
-          "shape_kind": "capsule",
-          "text": "Servo"
+          "shape_kind": "ellipse",
+          "text": "Vent"
         },
         {
           "bbox_xyxy": [
-            736.692,
+            743.692,
             574.063,
-            815.692,
+            808.692,
             594.063
           ],
           "entity_id": "part_label_bbox_6",
           "entity_type": "diagram_schematic_part_label",
           "part_id": "part_6",
-          "text": "Servo"
+          "text": "Vent"
         },
         {
           "bbox_xyxy": [
@@ -920,19 +920,19 @@
           "entity_id": "callout_0",
           "entity_type": "diagram_schematic_callout",
           "part_id": "part_0",
-          "text": "F"
+          "text": "D"
         },
         {
           "bbox_xyxy": [
-            181.5,
+            179.5,
             252.92,
-            202.5,
+            204.5,
             274.92
           ],
           "callout_id": "callout_0",
           "entity_id": "callout_label_bbox_0",
           "entity_type": "diagram_schematic_callout_label",
-          "text": "F"
+          "text": "D"
         },
         {
           "bbox_xyxy": [
@@ -944,19 +944,19 @@
           "entity_id": "callout_1",
           "entity_type": "diagram_schematic_callout",
           "part_id": "part_1",
-          "text": "A"
+          "text": "F"
         },
         {
           "bbox_xyxy": [
-            628.0,
+            629.5,
             193.34,
-            652.0,
+            650.5,
             215.34
           ],
           "callout_id": "callout_1",
           "entity_id": "callout_label_bbox_1",
           "entity_type": "diagram_schematic_callout_label",
-          "text": "A"
+          "text": "F"
         },
         {
           "bbox_xyxy": [
@@ -992,19 +992,19 @@
           "entity_id": "callout_3",
           "entity_type": "diagram_schematic_callout",
           "part_id": "part_3",
-          "text": "E"
+          "text": "A"
         },
         {
           "bbox_xyxy": [
-            136.7,
+            135.2,
             478.0,
-            157.7,
+            159.2,
             500.0
           ],
           "callout_id": "callout_3",
           "entity_id": "callout_label_bbox_3",
           "entity_type": "diagram_schematic_callout_label",
-          "text": "E"
+          "text": "A"
         },
         {
           "bbox_xyxy": [
@@ -1016,19 +1016,19 @@
           "entity_id": "callout_4",
           "entity_type": "diagram_schematic_callout",
           "part_id": "part_4",
-          "text": "G"
+          "text": "E"
         },
         {
           "bbox_xyxy": [
-            1120.3,
+            1122.3,
             478.0,
-            1145.3,
+            1143.3,
             500.0
           ],
           "callout_id": "callout_4",
           "entity_id": "callout_label_bbox_4",
           "entity_type": "diagram_schematic_callout_label",
-          "text": "G"
+          "text": "E"
         },
         {
           "bbox_xyxy": [
@@ -1040,19 +1040,19 @@
           "entity_id": "callout_5",
           "entity_type": "diagram_schematic_callout",
           "part_id": "part_5",
-          "text": "B"
+          "text": "G"
         },
         {
           "bbox_xyxy": [
-            337.3,
+            336.3,
             762.66,
-            360.3,
+            361.3,
             784.66
           ],
           "callout_id": "callout_5",
           "entity_id": "callout_label_bbox_5",
           "entity_type": "diagram_schematic_callout_label",
-          "text": "B"
+          "text": "G"
         },
         {
           "bbox_xyxy": [
@@ -1064,25 +1064,25 @@
           "entity_id": "callout_6",
           "entity_type": "diagram_schematic_callout",
           "part_id": "part_6",
-          "text": "D"
+          "text": "B"
         },
         {
           "bbox_xyxy": [
-            918.7,
+            919.7,
             762.66,
-            943.7,
+            942.7,
             784.66
           ],
           "callout_id": "callout_6",
           "entity_id": "callout_label_bbox_6",
           "entity_type": "diagram_schematic_callout_label",
-          "text": "D"
+          "text": "B"
         }
       ],
       "relations": {
-        "answer_callout_label": "F",
-        "answer_part_bbox_id": "part_bbox_0",
-        "answer_part_id": "part_0",
+        "answer_callout_label": "A",
+        "answer_part_bbox_id": "part_bbox_3",
+        "answer_part_id": "part_3",
         "scene_variant": "annotated_schematic",
         "task_variant": "callout_for_named_part",
         "view_family": "annotated_schematic_diagram"
@@ -1091,7 +1091,7 @@
     },
     "witness_symbolic": {
       "ids": [
-        "part_bbox_0"
+        "part_bbox_3"
       ],
       "type": "id_set"
     }

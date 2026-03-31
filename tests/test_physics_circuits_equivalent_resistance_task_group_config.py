@@ -38,6 +38,7 @@ def test_physics_circuits_equivalent_resistance_defaults_expose_scene_query_and_
         "maroon",
     }
     assert list(generation["parallel_target_answer_support"]) == [1, 2, 3, 4, 5, 6]
+    assert list(generation["total_resistance_target_answer_support"]) == list(range(1, 19))
     assert list(generation["simple_series_parallel_target_answer_support"]) == list(range(2, 19))
     assert list(generation["missing_resistor_value_support"]) == list(range(1, 13))
     assert int(rendering["resistor_box_width_px"]) > 0

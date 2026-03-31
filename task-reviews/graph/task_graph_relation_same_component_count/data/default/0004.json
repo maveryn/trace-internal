@@ -19,9 +19,9 @@
     "path": "graph/task_graph_relation_same_component_count/images/default/0004.png"
   },
   "instance_seed": 7090902427809275,
-  "prompt": "The image shows a labeled undirected graph. Task: How many nodes, including node J itself, are in the same connected component as J?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing the labels of all nodes in the connected component containing the asked node, including the asked node itself, sorted in ascending label order.\nAnswer format: set \"answer\" to the count of those nodes as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"F\",\"H\"],\"answer\":3}",
+  "prompt": "The image shows a labeled undirected graph. Task: How many nodes, including node J itself, are in the same connected component as J?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing the labels of all nodes in the connected component containing the asked node, including the asked node itself.\nAnswer format: set \"answer\" to the count of those nodes as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"F\",\"H\"],\"answer\":3}",
   "prompt_variants": {
-    "answer_and_evidence": "The image shows a labeled undirected graph. Task: How many nodes, including node J itself, are in the same connected component as J?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing the labels of all nodes in the connected component containing the asked node, including the asked node itself, sorted in ascending label order.\nAnswer format: set \"answer\" to the count of those nodes as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"F\",\"H\"],\"answer\":3}",
+    "answer_and_evidence": "The image shows a labeled undirected graph. Task: How many nodes, including node J itself, are in the same connected component as J?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing the labels of all nodes in the connected component containing the asked node, including the asked node itself.\nAnswer format: set \"answer\" to the count of those nodes as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"F\",\"H\"],\"answer\":3}",
     "answer_only": "The image shows a labeled undirected graph. Task: How many nodes, including node J itself, are in the same connected component as J?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the count of those nodes as an integer.\nExample JSON:\n{\"answer\":3}"
   },
   "task": "task_graph_relation_same_component_count",
@@ -290,7 +290,7 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the count of those nodes as an integer",
-          "evidence_hint": "set \"evidence\" to an array containing the labels of all nodes in the connected component containing the asked node, including the asked node itself, sorted in ascending label order",
+          "evidence_hint": "set \"evidence\" to an array containing the labels of all nodes in the connected component containing the asked node, including the asked node itself",
           "json_example": "{\"evidence\":[\"B\",\"F\",\"H\"],\"answer\":3}",
           "json_example_answer_only": "{\"answer\":3}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
@@ -323,7 +323,7 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the count of those nodes as an integer",
-              "evidence_hint": "set \"evidence\" to an array containing the labels of all nodes in the connected component containing the asked node, including the asked node itself, sorted in ascending label order",
+              "evidence_hint": "set \"evidence\" to an array containing the labels of all nodes in the connected component containing the asked node, including the asked node itself",
               "json_example": "{\"evidence\":[\"B\",\"F\",\"H\"],\"answer\":3}",
               "json_example_answer_only": "{\"answer\":3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
@@ -346,7 +346,7 @@
               "task_family:single_graph_relation": 5
             }
           },
-          "prompt": "The image shows a labeled undirected graph. Task: How many nodes, including node J itself, are in the same connected component as J?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing the labels of all nodes in the connected component containing the asked node, including the asked node itself, sorted in ascending label order.\nAnswer format: set \"answer\" to the count of those nodes as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"F\",\"H\"],\"answer\":3}"
+          "prompt": "The image shows a labeled undirected graph. Task: How many nodes, including node J itself, are in the same connected component as J?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing the labels of all nodes in the connected component containing the asked node, including the asked node itself.\nAnswer format: set \"answer\" to the count of those nodes as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"F\",\"H\"],\"answer\":3}"
         },
         "answer_only": {
           "metadata": {
@@ -356,7 +356,7 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the count of those nodes as an integer",
-              "evidence_hint": "set \"evidence\" to an array containing the labels of all nodes in the connected component containing the asked node, including the asked node itself, sorted in ascending label order",
+              "evidence_hint": "set \"evidence\" to an array containing the labels of all nodes in the connected component containing the asked node, including the asked node itself",
               "json_example": "{\"evidence\":[\"B\",\"F\",\"H\"],\"answer\":3}",
               "json_example_answer_only": "{\"answer\":3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",

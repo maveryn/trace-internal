@@ -1,52 +1,59 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 0
+    "value": 2
   },
   "evidence_gt": {
     "type": "label_set",
-    "value": []
+    "value": [
+      "C",
+      "R"
+    ]
   },
   "image": {
     "format": "png",
     "path": "charts/task_charts_multiseries_pairwise_comparison_count/images/series_a_lt_b_count/0002.png"
   },
-  "instance_seed": 8322902769629927,
-  "prompt": "Use the chart in the image. It shows a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Use the chart to compare the queried pair of series across the category labels. Across the labeled categories, in how many categories is Ario lower than Ause?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+  "instance_seed": 4179280533599923,
+  "prompt": "You are given a multiseries chart: a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Compare the two queried series category by category. Determine the number of categories where Goth is less than Ada.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer field: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
   "prompt_variants": {
-    "answer_and_evidence": "Use the chart in the image. It shows a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Use the chart to compare the queried pair of series across the category labels. Across the labeled categories, in how many categories is Ario lower than Ause?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
-    "answer_only": "Use the chart in the image. It shows a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Use the chart to compare the queried pair of series across the category labels. Across the labeled categories, in how many categories is Ario lower than Ause?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
+    "answer_and_evidence": "You are given a multiseries chart: a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Compare the two queried series category by category. Determine the number of categories where Goth is less than Ada.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer field: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+    "answer_only": "You are given a multiseries chart: a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Compare the two queried series category by category. Determine the number of categories where Goth is less than Ada.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
   },
   "task": "task_charts_multiseries_pairwise_comparison_count",
   "task_variant": "series_a_lt_b_count",
   "trace_payload": {
     "execution_trace": {
-      "answer_value": 0,
-      "category_count": 5,
+      "answer_value": 2,
+      "category_count": 6,
       "category_count_range": [
         5,
         10
       ],
       "category_labels": [
-        "B",
-        "U",
-        "K",
-        "G",
-        "M"
+        "Q",
+        "C",
+        "V",
+        "J",
+        "D",
+        "R"
       ],
       "comparison": "less_than",
-      "evidence_labels": [],
-      "left_series_label": "Ario",
+      "evidence_labels": [
+        "C",
+        "R"
+      ],
+      "left_series_label": "Goth",
       "mark_color_distance_space": "lab",
       "mark_color_min_distance": 40.0,
       "mark_color_sampling_policy": "random_rgb_palette",
       "queried_series_labels": [
-        "Ario",
-        "Ause"
+        "Goth",
+        "Ada"
       ],
       "question_format": "numeric_open",
-      "right_series_label": "Ause",
-      "scene_variant": "grouped_lollipop",
+      "right_series_label": "Ada",
+      "scene_variant": "grouped_bar",
       "scene_variant_probabilities": {
         "grouped_bar": 0.25,
         "grouped_horizontal_bar": 0.25,
@@ -60,100 +67,139 @@
       ],
       "series_fill_palette_rgb": [
         [
-          151,
-          199,
-          143
+          34,
+          181,
+          95
         ],
         [
-          14,
-          72,
-          113
+          118,
+          85,
+          139
         ],
         [
-          87,
-          192,
-          49
+          82,
+          104,
+          7
         ]
       ],
       "series_labels": [
-        "Ario",
-        "Ause",
-        "Hey"
+        "Goth",
+        "Ada",
+        "Cal"
       ],
       "series_outline_palette_rgb": [
         [
-          83,
-          109,
-          79
+          19,
+          100,
+          52
         ],
         [
-          8,
-          40,
-          62
+          65,
+          47,
+          76
         ],
         [
-          48,
-          106,
-          27
+          45,
+          57,
+          4
         ]
       ],
-      "target_answer": 0,
+      "target_answer": 2,
       "target_answer_range": [
         0,
         8
       ],
       "task_variant": "series_a_lt_b_count",
       "task_variant_probabilities": {
-        "series_a_gt_b_count": 0.5,
-        "series_a_lt_b_count": 0.5
+        "series_a_gt_b_count": 0.0,
+        "series_a_lt_b_count": 1.0
       },
       "values_by_category": {
-        "B": {
-          "Ario": 14,
-          "Ause": 1,
-          "Hey": 2
+        "C": {
+          "Ada": 16,
+          "Cal": 14,
+          "Goth": 1
         },
-        "G": {
-          "Ario": 16,
-          "Ause": 1,
-          "Hey": 14
+        "D": {
+          "Ada": 2,
+          "Cal": 4,
+          "Goth": 7
         },
-        "K": {
-          "Ario": 13,
-          "Ause": 3,
-          "Hey": 8
+        "J": {
+          "Ada": 5,
+          "Cal": 8,
+          "Goth": 15
         },
-        "M": {
-          "Ario": 18,
-          "Ause": 9,
-          "Hey": 10
+        "Q": {
+          "Ada": 2,
+          "Cal": 11,
+          "Goth": 17
         },
-        "U": {
-          "Ario": 19,
-          "Ause": 8,
-          "Hey": 16
+        "R": {
+          "Ada": 10,
+          "Cal": 9,
+          "Goth": 8
+        },
+        "V": {
+          "Ada": 8,
+          "Cal": 9,
+          "Goth": 10
         }
       }
     },
     "projected_evidence": {
-      "bbox_set": [],
-      "label_set": [],
-      "pixel_point_map": {},
-      "pixel_point_set": []
+      "bbox_set": [
+        [
+          247.956,
+          97.778,
+          317.044,
+          562.0
+        ],
+        [
+          755.956,
+          259.111,
+          825.044,
+          562.0
+        ]
+      ],
+      "label_set": [
+        "C",
+        "R"
+      ],
+      "pixel_point_map": {
+        "C": [
+          282.5,
+          554.0
+        ],
+        "R": [
+          790.5,
+          554.0
+        ]
+      },
+      "pixel_point_set": [
+        [
+          282.5,
+          554.0
+        ],
+        [
+          790.5,
+          554.0
+        ]
+      ]
     },
     "query_spec": {
       "params": {
-        "category_count": 5,
+        "category_count": 6,
         "category_count_range": [
           5,
           10
         ],
         "comparison": "less_than",
         "queried_series_labels": [
-          "Ario",
-          "Ause"
+          "Goth",
+          "Ada"
         ],
-        "scene_variant": "grouped_lollipop",
+        "scene_variant": "grouped_bar",
         "scene_variant_probabilities": {
           "grouped_bar": 0.25,
           "grouped_horizontal_bar": 0.25,
@@ -165,20 +211,20 @@
           2,
           3
         ],
-        "target_answer": 0,
+        "target_answer": 2,
         "target_answer_range": [
           0,
           8
         ],
         "task_variant": "series_a_lt_b_count",
         "task_variant_probabilities": {
-          "series_a_gt_b_count": 0.5,
-          "series_a_lt_b_count": 0.5
+          "series_a_gt_b_count": 0.0,
+          "series_a_lt_b_count": 1.0
         }
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 4,
+        "answer_or_evidence_variant_index": 3,
         "prompt_bundle_id": "charts_multiseries_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -188,16 +234,16 @@
           "json_example_answer_only": "{\"answer\":2}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "left_series": "Ario",
-          "object_description": "a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis",
-          "right_series": "Ause"
+          "left_series": "Goth",
+          "object_description": "a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category",
+          "right_series": "Ada"
         },
         "task_family_key": "multiseries_chart_comparison",
-        "task_family_variant_index": 1,
+        "task_family_variant_index": 4,
         "task_key": "pairwise_comparison_count_query",
-        "task_variant_index": 1,
+        "task_variant_index": 0,
         "task_variant_key": "series_a_lt_b_count",
-        "task_variant_template_index": 0,
+        "task_variant_template_index": 3,
         "template_paths": [
           "charts/multiseries/charts_multiseries_v1.json"
         ],
@@ -213,41 +259,6 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 4,
-            "prompt_bundle_id": "charts_multiseries_v1",
-            "schema_version": "v1",
-            "slot_values": {
-              "answer_hint": "set \"answer\" to the number of category labels satisfying the requested series comparison as an integer",
-              "evidence_hint": "set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series",
-              "json_example": "{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
-              "json_example_answer_only": "{\"answer\":2}",
-              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
-              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "left_series": "Ario",
-              "object_description": "a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis",
-              "right_series": "Ause"
-            },
-            "task_family_key": "multiseries_chart_comparison",
-            "task_family_variant_index": 1,
-            "task_key": "pairwise_comparison_count_query",
-            "task_variant_index": 1,
-            "task_variant_key": "series_a_lt_b_count",
-            "task_variant_template_index": 0,
-            "template_paths": [
-              "charts/multiseries/charts_multiseries_v1.json"
-            ],
-            "variant_count_by_key": {
-              "answer_or_evidence:answer_and_evidence": 5,
-              "task:pairwise_comparison_count_query": 5,
-              "task_family:multiseries_chart_comparison": 5,
-              "task_variant:series_a_lt_b_count": 5
-            }
-          },
-          "prompt": "Use the chart in the image. It shows a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Use the chart to compare the queried pair of series across the category labels. Across the labeled categories, in how many categories is Ario lower than Ause?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}"
-        },
-        "answer_only": {
-          "metadata": {
-            "answer_or_evidence_key": "answer_only",
             "answer_or_evidence_variant_index": 3,
             "prompt_bundle_id": "charts_multiseries_v1",
             "schema_version": "v1",
@@ -258,16 +269,51 @@
               "json_example_answer_only": "{\"answer\":2}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "left_series": "Ario",
-              "object_description": "a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis",
-              "right_series": "Ause"
+              "left_series": "Goth",
+              "object_description": "a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category",
+              "right_series": "Ada"
             },
             "task_family_key": "multiseries_chart_comparison",
-            "task_family_variant_index": 1,
+            "task_family_variant_index": 4,
             "task_key": "pairwise_comparison_count_query",
-            "task_variant_index": 1,
+            "task_variant_index": 0,
             "task_variant_key": "series_a_lt_b_count",
-            "task_variant_template_index": 0,
+            "task_variant_template_index": 3,
+            "template_paths": [
+              "charts/multiseries/charts_multiseries_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:pairwise_comparison_count_query": 5,
+              "task_family:multiseries_chart_comparison": 5,
+              "task_variant:series_a_lt_b_count": 5
+            }
+          },
+          "prompt": "You are given a multiseries chart: a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Compare the two queried series category by category. Determine the number of categories where Goth is less than Ada.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer field: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 2,
+            "prompt_bundle_id": "charts_multiseries_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the number of category labels satisfying the requested series comparison as an integer",
+              "evidence_hint": "set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series",
+              "json_example": "{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "left_series": "Goth",
+              "object_description": "a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category",
+              "right_series": "Ada"
+            },
+            "task_family_key": "multiseries_chart_comparison",
+            "task_family_variant_index": 4,
+            "task_key": "pairwise_comparison_count_query",
+            "task_variant_index": 0,
+            "task_variant_key": "series_a_lt_b_count",
+            "task_variant_template_index": 3,
             "template_paths": [
               "charts/multiseries/charts_multiseries_v1.json"
             ],
@@ -278,7 +324,7 @@
               "task_variant:series_a_lt_b_count": 5
             }
           },
-          "prompt": "Use the chart in the image. It shows a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Use the chart to compare the queried pair of series across the category labels. Across the labeled categories, in how many categories is Ario lower than Ause?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
+          "prompt": "You are given a multiseries chart: a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Compare the two queried series category by category. Determine the number of categories where Goth is less than Ada.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
         }
       },
       "task_variant": "series_a_lt_b_count",
@@ -286,24 +332,28 @@
     },
     "render_map": {
       "category_label_centers_px": {
-        "B": [
-          168.2,
+        "C": [
+          282.5,
           554.0
         ],
-        "G": [
-          625.4,
+        "D": [
+          663.5,
           554.0
         ],
-        "K": [
-          473.0,
+        "J": [
+          536.5,
           554.0
         ],
-        "M": [
-          777.8,
+        "Q": [
+          155.5,
           554.0
         ],
-        "U": [
-          320.6,
+        "R": [
+          790.5,
+          554.0
+        ],
+        "V": [
+          409.5,
           554.0
         ]
       },
@@ -345,36 +395,36 @@
         "sampling_policy": "random_rgb_palette",
         "series_fill_palette_rgb": [
           [
-            151,
-            199,
-            143
+            34,
+            181,
+            95
           ],
           [
-            14,
-            72,
-            113
+            118,
+            85,
+            139
           ],
           [
-            87,
-            192,
-            49
+            82,
+            104,
+            7
           ]
         ],
         "series_outline_palette_rgb": [
           [
-            83,
-            109,
-            79
+            19,
+            100,
+            52
           ],
           [
-            8,
-            40,
-            62
+            65,
+            47,
+            76
           ],
           [
-            48,
-            106,
-            27
+            45,
+            57,
+            4
           ]
         ]
       },
@@ -400,13 +450,13 @@
         "edits": [],
         "enabled": false
       },
-      "scene_variant": "grouped_lollipop",
+      "scene_variant": "grouped_bar",
       "text_style": {
         "label_font_size_px": 22,
         "label_stroke_width_px": 2,
         "tick_font_size_px": 18
       },
-      "y_axis_max": 20,
+      "y_axis_max": 18,
       "y_ticks": [
         0,
         1,
@@ -426,9 +476,7 @@
         15,
         16,
         17,
-        18,
-        19,
-        20
+        18
       ]
     },
     "scene_ir": {
@@ -436,648 +484,780 @@
         {
           "attrs": {
             "category_group_bbox_px": [
-              129.72,
-              181.2,
-              206.68,
-              562.0
+              120.956,
+              70.889,
+              190.044,
+              563.5
             ],
-            "category_label": "B",
+            "category_label": "Q",
             "category_label_center_px": [
-              168.2,
+              155.5,
               554.0
             ],
             "category_rank": 0,
             "mark_bbox_px": [
-              129.72,
-              181.2,
-              145.72,
-              197.2
+              120.956,
+              70.889,
+              139.244,
+              528.0
             ],
             "mark_center_px": [
-              137.72,
-              189.2
+              130.1,
+              70.889
             ],
             "mark_fill_rgb": [
-              151,
-              199,
-              143
+              34,
+              181,
+              95
             ],
             "mark_outline_rgb": [
-              83,
-              109,
-              79
+              19,
+              100,
+              52
             ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Ario",
+            "scene_variant": "grouped_bar",
+            "series_label": "Goth",
             "series_rank": 0,
-            "value": 14
+            "value": 17
           },
-          "entity_id": "mark_B_Ario",
-          "entity_type": "point"
+          "entity_id": "mark_Q_Goth",
+          "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              129.72,
-              181.2,
-              206.68,
-              562.0
+              120.956,
+              70.889,
+              190.044,
+              563.5
             ],
-            "category_label": "B",
+            "category_label": "Q",
             "category_label_center_px": [
-              168.2,
+              155.5,
               554.0
             ],
             "category_rank": 0,
             "mark_bbox_px": [
-              160.2,
-              495.8,
-              176.2,
-              511.8
+              146.356,
+              474.222,
+              164.644,
+              528.0
             ],
             "mark_center_px": [
-              168.2,
-              503.8
+              155.5,
+              474.222
             ],
             "mark_fill_rgb": [
-              14,
-              72,
-              113
+              118,
+              85,
+              139
             ],
             "mark_outline_rgb": [
-              8,
-              40,
-              62
+              65,
+              47,
+              76
             ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Ause",
+            "scene_variant": "grouped_bar",
+            "series_label": "Ada",
             "series_rank": 1,
-            "value": 1
-          },
-          "entity_id": "mark_B_Ause",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              129.72,
-              181.2,
-              206.68,
-              562.0
-            ],
-            "category_label": "B",
-            "category_label_center_px": [
-              168.2,
-              554.0
-            ],
-            "category_rank": 0,
-            "mark_bbox_px": [
-              190.68,
-              471.6,
-              206.68,
-              487.6
-            ],
-            "mark_center_px": [
-              198.68,
-              479.6
-            ],
-            "mark_fill_rgb": [
-              87,
-              192,
-              49
-            ],
-            "mark_outline_rgb": [
-              48,
-              106,
-              27
-            ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Hey",
-            "series_rank": 2,
             "value": 2
           },
-          "entity_id": "mark_B_Hey",
-          "entity_type": "point"
+          "entity_id": "mark_Q_Ada",
+          "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              282.12,
-              60.2,
-              359.08,
-              562.0
+              120.956,
+              70.889,
+              190.044,
+              563.5
             ],
-            "category_label": "U",
+            "category_label": "Q",
             "category_label_center_px": [
-              320.6,
+              155.5,
               554.0
             ],
-            "category_rank": 1,
+            "category_rank": 0,
             "mark_bbox_px": [
-              282.12,
-              60.2,
-              298.12,
-              76.2
+              171.756,
+              232.222,
+              190.044,
+              528.0
             ],
             "mark_center_px": [
-              290.12,
-              68.2
+              180.9,
+              232.222
             ],
             "mark_fill_rgb": [
-              151,
-              199,
-              143
+              82,
+              104,
+              7
             ],
             "mark_outline_rgb": [
-              83,
-              109,
-              79
+              45,
+              57,
+              4
             ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Ario",
-            "series_rank": 0,
-            "value": 19
-          },
-          "entity_id": "mark_U_Ario",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              282.12,
-              60.2,
-              359.08,
-              562.0
-            ],
-            "category_label": "U",
-            "category_label_center_px": [
-              320.6,
-              554.0
-            ],
-            "category_rank": 1,
-            "mark_bbox_px": [
-              312.6,
-              326.4,
-              328.6,
-              342.4
-            ],
-            "mark_center_px": [
-              320.6,
-              334.4
-            ],
-            "mark_fill_rgb": [
-              14,
-              72,
-              113
-            ],
-            "mark_outline_rgb": [
-              8,
-              40,
-              62
-            ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Ause",
-            "series_rank": 1,
-            "value": 8
-          },
-          "entity_id": "mark_U_Ause",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              282.12,
-              60.2,
-              359.08,
-              562.0
-            ],
-            "category_label": "U",
-            "category_label_center_px": [
-              320.6,
-              554.0
-            ],
-            "category_rank": 1,
-            "mark_bbox_px": [
-              343.08,
-              132.8,
-              359.08,
-              148.8
-            ],
-            "mark_center_px": [
-              351.08,
-              140.8
-            ],
-            "mark_fill_rgb": [
-              87,
-              192,
-              49
-            ],
-            "mark_outline_rgb": [
-              48,
-              106,
-              27
-            ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Hey",
+            "scene_variant": "grouped_bar",
+            "series_label": "Cal",
             "series_rank": 2,
-            "value": 16
+            "value": 11
           },
-          "entity_id": "mark_U_Hey",
-          "entity_type": "point"
+          "entity_id": "mark_Q_Cal",
+          "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              434.52,
-              205.4,
-              511.48,
+              247.956,
+              97.778,
+              317.044,
               562.0
             ],
-            "category_label": "K",
+            "category_label": "C",
             "category_label_center_px": [
-              473.0,
+              282.5,
               554.0
             ],
-            "category_rank": 2,
+            "category_rank": 1,
             "mark_bbox_px": [
-              434.52,
-              205.4,
-              450.52,
-              221.4
+              247.956,
+              501.111,
+              266.244,
+              528.0
             ],
             "mark_center_px": [
-              442.52,
-              213.4
+              257.1,
+              501.111
             ],
             "mark_fill_rgb": [
-              151,
-              199,
-              143
+              34,
+              181,
+              95
             ],
             "mark_outline_rgb": [
-              83,
-              109,
-              79
+              19,
+              100,
+              52
             ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Ario",
+            "scene_variant": "grouped_bar",
+            "series_label": "Goth",
             "series_rank": 0,
-            "value": 13
-          },
-          "entity_id": "mark_K_Ario",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              434.52,
-              205.4,
-              511.48,
-              562.0
-            ],
-            "category_label": "K",
-            "category_label_center_px": [
-              473.0,
-              554.0
-            ],
-            "category_rank": 2,
-            "mark_bbox_px": [
-              465.0,
-              447.4,
-              481.0,
-              463.4
-            ],
-            "mark_center_px": [
-              473.0,
-              455.4
-            ],
-            "mark_fill_rgb": [
-              14,
-              72,
-              113
-            ],
-            "mark_outline_rgb": [
-              8,
-              40,
-              62
-            ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Ause",
-            "series_rank": 1,
-            "value": 3
-          },
-          "entity_id": "mark_K_Ause",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              434.52,
-              205.4,
-              511.48,
-              562.0
-            ],
-            "category_label": "K",
-            "category_label_center_px": [
-              473.0,
-              554.0
-            ],
-            "category_rank": 2,
-            "mark_bbox_px": [
-              495.48,
-              326.4,
-              511.48,
-              342.4
-            ],
-            "mark_center_px": [
-              503.48,
-              334.4
-            ],
-            "mark_fill_rgb": [
-              87,
-              192,
-              49
-            ],
-            "mark_outline_rgb": [
-              48,
-              106,
-              27
-            ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Hey",
-            "series_rank": 2,
-            "value": 8
-          },
-          "entity_id": "mark_K_Hey",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              586.92,
-              132.8,
-              663.88,
-              562.0
-            ],
-            "category_label": "G",
-            "category_label_center_px": [
-              625.4,
-              554.0
-            ],
-            "category_rank": 3,
-            "mark_bbox_px": [
-              586.92,
-              132.8,
-              602.92,
-              148.8
-            ],
-            "mark_center_px": [
-              594.92,
-              140.8
-            ],
-            "mark_fill_rgb": [
-              151,
-              199,
-              143
-            ],
-            "mark_outline_rgb": [
-              83,
-              109,
-              79
-            ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Ario",
-            "series_rank": 0,
-            "value": 16
-          },
-          "entity_id": "mark_G_Ario",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              586.92,
-              132.8,
-              663.88,
-              562.0
-            ],
-            "category_label": "G",
-            "category_label_center_px": [
-              625.4,
-              554.0
-            ],
-            "category_rank": 3,
-            "mark_bbox_px": [
-              617.4,
-              495.8,
-              633.4,
-              511.8
-            ],
-            "mark_center_px": [
-              625.4,
-              503.8
-            ],
-            "mark_fill_rgb": [
-              14,
-              72,
-              113
-            ],
-            "mark_outline_rgb": [
-              8,
-              40,
-              62
-            ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Ause",
-            "series_rank": 1,
             "value": 1
           },
-          "entity_id": "mark_G_Ause",
-          "entity_type": "point"
+          "entity_id": "mark_C_Goth",
+          "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              586.92,
-              132.8,
-              663.88,
+              247.956,
+              97.778,
+              317.044,
               562.0
             ],
-            "category_label": "G",
+            "category_label": "C",
             "category_label_center_px": [
-              625.4,
+              282.5,
               554.0
             ],
-            "category_rank": 3,
+            "category_rank": 1,
             "mark_bbox_px": [
-              647.88,
-              181.2,
-              663.88,
-              197.2
+              273.356,
+              97.778,
+              291.644,
+              528.0
             ],
             "mark_center_px": [
-              655.88,
-              189.2
+              282.5,
+              97.778
             ],
             "mark_fill_rgb": [
-              87,
-              192,
-              49
+              118,
+              85,
+              139
             ],
             "mark_outline_rgb": [
-              48,
-              106,
-              27
+              65,
+              47,
+              76
             ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Hey",
+            "scene_variant": "grouped_bar",
+            "series_label": "Ada",
+            "series_rank": 1,
+            "value": 16
+          },
+          "entity_id": "mark_C_Ada",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              247.956,
+              97.778,
+              317.044,
+              562.0
+            ],
+            "category_label": "C",
+            "category_label_center_px": [
+              282.5,
+              554.0
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              298.756,
+              151.556,
+              317.044,
+              528.0
+            ],
+            "mark_center_px": [
+              307.9,
+              151.556
+            ],
+            "mark_fill_rgb": [
+              82,
+              104,
+              7
+            ],
+            "mark_outline_rgb": [
+              45,
+              57,
+              4
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Cal",
             "series_rank": 2,
             "value": 14
           },
-          "entity_id": "mark_G_Hey",
-          "entity_type": "point"
+          "entity_id": "mark_C_Cal",
+          "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              739.32,
-              84.4,
-              816.28,
+              374.956,
+              259.111,
+              444.044,
               562.0
             ],
-            "category_label": "M",
+            "category_label": "V",
             "category_label_center_px": [
-              777.8,
+              409.5,
               554.0
             ],
-            "category_rank": 4,
+            "category_rank": 2,
             "mark_bbox_px": [
-              739.32,
-              84.4,
-              755.32,
-              100.4
+              374.956,
+              259.111,
+              393.244,
+              528.0
             ],
             "mark_center_px": [
-              747.32,
-              92.4
+              384.1,
+              259.111
             ],
             "mark_fill_rgb": [
-              151,
-              199,
-              143
+              34,
+              181,
+              95
             ],
             "mark_outline_rgb": [
-              83,
-              109,
-              79
+              19,
+              100,
+              52
             ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Ario",
+            "scene_variant": "grouped_bar",
+            "series_label": "Goth",
             "series_rank": 0,
-            "value": 18
+            "value": 10
           },
-          "entity_id": "mark_M_Ario",
-          "entity_type": "point"
+          "entity_id": "mark_V_Goth",
+          "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              739.32,
-              84.4,
-              816.28,
+              374.956,
+              259.111,
+              444.044,
               562.0
             ],
-            "category_label": "M",
+            "category_label": "V",
             "category_label_center_px": [
-              777.8,
+              409.5,
               554.0
             ],
-            "category_rank": 4,
+            "category_rank": 2,
             "mark_bbox_px": [
-              769.8,
-              302.2,
-              785.8,
-              318.2
+              400.356,
+              312.889,
+              418.644,
+              528.0
             ],
             "mark_center_px": [
-              777.8,
-              310.2
+              409.5,
+              312.889
             ],
             "mark_fill_rgb": [
-              14,
-              72,
-              113
+              118,
+              85,
+              139
             ],
             "mark_outline_rgb": [
-              8,
-              40,
-              62
+              65,
+              47,
+              76
             ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Ause",
+            "scene_variant": "grouped_bar",
+            "series_label": "Ada",
             "series_rank": 1,
-            "value": 9
+            "value": 8
           },
-          "entity_id": "mark_M_Ause",
-          "entity_type": "point"
+          "entity_id": "mark_V_Ada",
+          "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              739.32,
-              84.4,
-              816.28,
+              374.956,
+              259.111,
+              444.044,
               562.0
             ],
-            "category_label": "M",
+            "category_label": "V",
             "category_label_center_px": [
-              777.8,
+              409.5,
               554.0
             ],
-            "category_rank": 4,
+            "category_rank": 2,
             "mark_bbox_px": [
-              800.28,
-              278.0,
-              816.28,
-              294.0
+              425.756,
+              286.0,
+              444.044,
+              528.0
             ],
             "mark_center_px": [
-              808.28,
+              434.9,
               286.0
             ],
             "mark_fill_rgb": [
-              87,
-              192,
-              49
+              82,
+              104,
+              7
             ],
             "mark_outline_rgb": [
-              48,
-              106,
-              27
+              45,
+              57,
+              4
             ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Hey",
+            "scene_variant": "grouped_bar",
+            "series_label": "Cal",
             "series_rank": 2,
+            "value": 9
+          },
+          "entity_id": "mark_V_Cal",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              501.956,
+              124.667,
+              571.044,
+              564.0
+            ],
+            "category_label": "J",
+            "category_label_center_px": [
+              536.5,
+              554.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              501.956,
+              124.667,
+              520.244,
+              528.0
+            ],
+            "mark_center_px": [
+              511.1,
+              124.667
+            ],
+            "mark_fill_rgb": [
+              34,
+              181,
+              95
+            ],
+            "mark_outline_rgb": [
+              19,
+              100,
+              52
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Goth",
+            "series_rank": 0,
+            "value": 15
+          },
+          "entity_id": "mark_J_Goth",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              501.956,
+              124.667,
+              571.044,
+              564.0
+            ],
+            "category_label": "J",
+            "category_label_center_px": [
+              536.5,
+              554.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              527.356,
+              393.556,
+              545.644,
+              528.0
+            ],
+            "mark_center_px": [
+              536.5,
+              393.556
+            ],
+            "mark_fill_rgb": [
+              118,
+              85,
+              139
+            ],
+            "mark_outline_rgb": [
+              65,
+              47,
+              76
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Ada",
+            "series_rank": 1,
+            "value": 5
+          },
+          "entity_id": "mark_J_Ada",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              501.956,
+              124.667,
+              571.044,
+              564.0
+            ],
+            "category_label": "J",
+            "category_label_center_px": [
+              536.5,
+              554.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              552.756,
+              312.889,
+              571.044,
+              528.0
+            ],
+            "mark_center_px": [
+              561.9,
+              312.889
+            ],
+            "mark_fill_rgb": [
+              82,
+              104,
+              7
+            ],
+            "mark_outline_rgb": [
+              45,
+              57,
+              4
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Cal",
+            "series_rank": 2,
+            "value": 8
+          },
+          "entity_id": "mark_J_Cal",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              628.956,
+              339.778,
+              698.044,
+              562.0
+            ],
+            "category_label": "D",
+            "category_label_center_px": [
+              663.5,
+              554.0
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              628.956,
+              339.778,
+              647.244,
+              528.0
+            ],
+            "mark_center_px": [
+              638.1,
+              339.778
+            ],
+            "mark_fill_rgb": [
+              34,
+              181,
+              95
+            ],
+            "mark_outline_rgb": [
+              19,
+              100,
+              52
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Goth",
+            "series_rank": 0,
+            "value": 7
+          },
+          "entity_id": "mark_D_Goth",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              628.956,
+              339.778,
+              698.044,
+              562.0
+            ],
+            "category_label": "D",
+            "category_label_center_px": [
+              663.5,
+              554.0
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              654.356,
+              474.222,
+              672.644,
+              528.0
+            ],
+            "mark_center_px": [
+              663.5,
+              474.222
+            ],
+            "mark_fill_rgb": [
+              118,
+              85,
+              139
+            ],
+            "mark_outline_rgb": [
+              65,
+              47,
+              76
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Ada",
+            "series_rank": 1,
+            "value": 2
+          },
+          "entity_id": "mark_D_Ada",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              628.956,
+              339.778,
+              698.044,
+              562.0
+            ],
+            "category_label": "D",
+            "category_label_center_px": [
+              663.5,
+              554.0
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              679.756,
+              420.444,
+              698.044,
+              528.0
+            ],
+            "mark_center_px": [
+              688.9,
+              420.444
+            ],
+            "mark_fill_rgb": [
+              82,
+              104,
+              7
+            ],
+            "mark_outline_rgb": [
+              45,
+              57,
+              4
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Cal",
+            "series_rank": 2,
+            "value": 4
+          },
+          "entity_id": "mark_D_Cal",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              755.956,
+              259.111,
+              825.044,
+              562.0
+            ],
+            "category_label": "R",
+            "category_label_center_px": [
+              790.5,
+              554.0
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              755.956,
+              312.889,
+              774.244,
+              528.0
+            ],
+            "mark_center_px": [
+              765.1,
+              312.889
+            ],
+            "mark_fill_rgb": [
+              34,
+              181,
+              95
+            ],
+            "mark_outline_rgb": [
+              19,
+              100,
+              52
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Goth",
+            "series_rank": 0,
+            "value": 8
+          },
+          "entity_id": "mark_R_Goth",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              755.956,
+              259.111,
+              825.044,
+              562.0
+            ],
+            "category_label": "R",
+            "category_label_center_px": [
+              790.5,
+              554.0
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              781.356,
+              259.111,
+              799.644,
+              528.0
+            ],
+            "mark_center_px": [
+              790.5,
+              259.111
+            ],
+            "mark_fill_rgb": [
+              118,
+              85,
+              139
+            ],
+            "mark_outline_rgb": [
+              65,
+              47,
+              76
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Ada",
+            "series_rank": 1,
             "value": 10
           },
-          "entity_id": "mark_M_Hey",
-          "entity_type": "point"
+          "entity_id": "mark_R_Ada",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              755.956,
+              259.111,
+              825.044,
+              562.0
+            ],
+            "category_label": "R",
+            "category_label_center_px": [
+              790.5,
+              554.0
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              806.756,
+              286.0,
+              825.044,
+              528.0
+            ],
+            "mark_center_px": [
+              815.9,
+              286.0
+            ],
+            "mark_fill_rgb": [
+              82,
+              104,
+              7
+            ],
+            "mark_outline_rgb": [
+              45,
+              57,
+              4
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Cal",
+            "series_rank": 2,
+            "value": 9
+          },
+          "entity_id": "mark_R_Cal",
+          "entity_type": "bar"
         }
       ],
       "relations": {
         "comparison": "less_than",
-        "evidence_labels": [],
-        "queried_series_labels": [
-          "Ario",
-          "Ause"
+        "evidence_labels": [
+          "C",
+          "R"
         ],
-        "scene_variant": "grouped_lollipop",
+        "queried_series_labels": [
+          "Goth",
+          "Ada"
+        ],
+        "scene_variant": "grouped_bar",
         "task_variant": "series_a_lt_b_count"
       },
-      "scene_kind": "chart_grouped_lollipop_multiseries"
+      "scene_kind": "chart_grouped_bar_multiseries"
     },
     "witness_symbolic": {
-      "labels": [],
+      "labels": [
+        "C",
+        "R"
+      ],
       "type": "label_set"
     }
   },

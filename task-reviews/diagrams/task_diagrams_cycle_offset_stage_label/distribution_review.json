@@ -9,12 +9,12 @@
       "before_k_steps"
     ],
     "generated_variant_counts": {
-      "after_k_steps": 142,
+      "after_k_steps": 101,
       "before_k_steps": 100
     },
     "generation_error_counts": {},
     "target_count_per_variant": 100,
-    "total_generated": 242
+    "total_generated": 201
   },
   "domain": "diagrams",
   "failed_variants": [],
@@ -38,7 +38,7 @@
         "status": "not_applicable_non_numeric_answers"
       },
       "min_unique_answers": {
-        "observed": 197,
+        "observed": 192,
         "pass": true,
         "threshold": 5
       }
@@ -50,23 +50,39 @@
     "sample_count": 200,
     "top_answers": [
       {
-        "answer_label": "Asta",
+        "answer_label": "Alf",
         "count": 2
       },
       {
-        "answer_label": "Dyun",
+        "answer_label": "Anet",
         "count": 2
       },
       {
-        "answer_label": "Hyo",
+        "answer_label": "Essy",
         "count": 2
       },
       {
-        "answer_label": "Abad",
-        "count": 1
+        "answer_label": "Gitt",
+        "count": 2
       },
       {
-        "answer_label": "Acus",
+        "answer_label": "Joli",
+        "count": 2
+      },
+      {
+        "answer_label": "Leo",
+        "count": 2
+      },
+      {
+        "answer_label": "Romo",
+        "count": 2
+      },
+      {
+        "answer_label": "Ward",
+        "count": 2
+      },
+      {
+        "answer_label": "Adam",
         "count": 1
       },
       {
@@ -74,79 +90,83 @@
         "count": 1
       },
       {
-        "answer_label": "Adey",
+        "answer_label": "Aime",
         "count": 1
       },
       {
-        "answer_label": "Aggi",
+        "answer_label": "Alda",
         "count": 1
       },
       {
-        "answer_label": "Ahl",
+        "answer_label": "Aldo",
         "count": 1
       },
       {
-        "answer_label": "Aker",
+        "answer_label": "Alli",
         "count": 1
       },
       {
-        "answer_label": "Alma",
+        "answer_label": "Ami",
         "count": 1
       },
       {
-        "answer_label": "Ames",
+        "answer_label": "Amie",
         "count": 1
       },
       {
-        "answer_label": "Aney",
+        "answer_label": "Amil",
         "count": 1
       },
       {
-        "answer_label": "Anny",
+        "answer_label": "Amin",
         "count": 1
       },
       {
-        "answer_label": "Apps",
+        "answer_label": "Amr",
         "count": 1
       },
       {
-        "answer_label": "Arad",
+        "answer_label": "Anni",
         "count": 1
       },
       {
-        "answer_label": "Arde",
+        "answer_label": "Arel",
         "count": 1
       },
       {
-        "answer_label": "Aria",
+        "answer_label": "Ark",
         "count": 1
       },
       {
-        "answer_label": "Arie",
+        "answer_label": "Arly",
         "count": 1
       },
       {
-        "answer_label": "Ario",
+        "answer_label": "Arty",
         "count": 1
       },
       {
-        "answer_label": "Arun",
+        "answer_label": "Ause",
         "count": 1
       },
       {
-        "answer_label": "Arv",
+        "answer_label": "Axe",
         "count": 1
       },
       {
-        "answer_label": "Arvy",
+        "answer_label": "Axel",
         "count": 1
       },
       {
-        "answer_label": "Aryn",
+        "answer_label": "Baal",
         "count": 1
       },
       {
-        "answer_label": "Ayn",
+        "answer_label": "Bael",
+        "count": 1
+      },
+      {
+        "answer_label": "Bala",
         "count": 1
       },
       {
@@ -154,11 +174,11 @@
         "count": 1
       },
       {
-        "answer_label": "Bea",
+        "answer_label": "Base",
         "count": 1
       },
       {
-        "answer_label": "Ber",
+        "answer_label": "Baum",
         "count": 1
       },
       {
@@ -166,27 +186,19 @@
         "count": 1
       },
       {
-        "answer_label": "Blim",
+        "answer_label": "Bor",
         "count": 1
       },
       {
-        "answer_label": "Box",
+        "answer_label": "Brad",
         "count": 1
       },
       {
-        "answer_label": "Brok",
+        "answer_label": "Case",
         "count": 1
       },
       {
-        "answer_label": "Bush",
-        "count": 1
-      },
-      {
-        "answer_label": "Cami",
-        "count": 1
-      },
-      {
-        "answer_label": "Ceil",
+        "answer_label": "Cha",
         "count": 1
       },
       {
@@ -194,111 +206,43 @@
         "count": 1
       },
       {
-        "answer_label": "Chet",
+        "answer_label": "Chem",
         "count": 1
       },
       {
-        "answer_label": "Chip",
+        "answer_label": "Cloe",
         "count": 1
       },
       {
-        "answer_label": "Cis",
+        "answer_label": "Col",
         "count": 1
       },
       {
-        "answer_label": "Clie",
+        "answer_label": "Cyn",
         "count": 1
       },
       {
-        "answer_label": "Cly",
+        "answer_label": "Dale",
         "count": 1
       },
       {
-        "answer_label": "Cooe",
+        "answer_label": "Dede",
         "count": 1
       },
       {
-        "answer_label": "Cori",
+        "answer_label": "Dell",
         "count": 1
       },
       {
-        "answer_label": "Cyd",
+        "answer_label": "Des",
         "count": 1
       },
       {
-        "answer_label": "Dalt",
+        "answer_label": "Duer",
         "count": 1
       },
       {
-        "answer_label": "Dan",
-        "count": 1
-      },
-      {
-        "answer_label": "Darb",
-        "count": 1
-      },
-      {
-        "answer_label": "De",
-        "count": 1
-      },
-      {
-        "answer_label": "Deth",
-        "count": 1
-      },
-      {
-        "answer_label": "Dett",
-        "count": 1
-      },
-      {
-        "answer_label": "Dine",
-        "count": 1
-      },
-      {
-        "answer_label": "Dita",
-        "count": 1
-      },
-      {
-        "answer_label": "Dom",
-        "count": 1
-      },
-      {
-        "answer_label": "Don",
-        "count": 1
-      },
-      {
-        "answer_label": "Dove",
-        "count": 1
-      },
-      {
-        "answer_label": "Dow",
-        "count": 1
-      },
-      {
-        "answer_label": "Duck",
-        "count": 1
-      },
-      {
-        "answer_label": "Dumm",
-        "count": 1
-      },
-      {
-        "answer_label": "Dwan",
-        "count": 1
-      },
-      {
-        "answer_label": "Eda",
-        "count": 1
-      },
-      {
-        "answer_label": "Edra",
-        "count": 1
-      },
-      {
-        "answer_label": "Elsy",
-        "count": 1
-      },
-      {
-        "answer_label": "Enos",
+        "answer_label": "Dyan",
         "count": 1
       },
       {
@@ -306,47 +250,47 @@
         "count": 1
       },
       {
-        "answer_label": "Erny",
+        "answer_label": "Etam",
         "count": 1
       },
       {
-        "answer_label": "Eryn",
+        "answer_label": "Fabe",
         "count": 1
       },
       {
-        "answer_label": "Etan",
+        "answer_label": "Fair",
         "count": 1
       },
       {
-        "answer_label": "Eula",
+        "answer_label": "Fara",
         "count": 1
       },
       {
-        "answer_label": "Eve",
+        "answer_label": "Farl",
         "count": 1
       },
       {
-        "answer_label": "Fem",
+        "answer_label": "Fia",
         "count": 1
       },
       {
-        "answer_label": "Funk",
+        "answer_label": "Fin",
         "count": 1
       },
       {
-        "answer_label": "Gabe",
+        "answer_label": "Flan",
         "count": 1
       },
       {
-        "answer_label": "Gant",
+        "answer_label": "Flor",
         "count": 1
       },
       {
-        "answer_label": "Gard",
+        "answer_label": "Fons",
         "count": 1
       },
       {
-        "answer_label": "Gaut",
+        "answer_label": "Gati",
         "count": 1
       },
       {
@@ -354,15 +298,7 @@
         "count": 1
       },
       {
-        "answer_label": "Gil",
-        "count": 1
-      },
-      {
-        "answer_label": "Glyn",
-        "count": 1
-      },
-      {
-        "answer_label": "Goth",
+        "answer_label": "Gore",
         "count": 1
       },
       {
@@ -370,35 +306,31 @@
         "count": 1
       },
       {
-        "answer_label": "Gui",
+        "answer_label": "Gun",
         "count": 1
       },
       {
-        "answer_label": "Haim",
+        "answer_label": "Gus",
         "count": 1
       },
       {
-        "answer_label": "Hali",
+        "answer_label": "Hawk",
         "count": 1
       },
       {
-        "answer_label": "Hart",
+        "answer_label": "Hedi",
         "count": 1
       },
       {
-        "answer_label": "Herv",
+        "answer_label": "Hiro",
         "count": 1
       },
       {
-        "answer_label": "Hime",
+        "answer_label": "Hoag",
         "count": 1
       },
       {
-        "answer_label": "Hong",
-        "count": 1
-      },
-      {
-        "answer_label": "Hoo",
+        "answer_label": "Hoes",
         "count": 1
       },
       {
@@ -406,55 +338,83 @@
         "count": 1
       },
       {
-        "answer_label": "Huei",
+        "answer_label": "Hort",
         "count": 1
       },
       {
-        "answer_label": "Hutt",
+        "answer_label": "Huan",
         "count": 1
       },
       {
-        "answer_label": "Im",
+        "answer_label": "Hull",
         "count": 1
       },
       {
-        "answer_label": "Ion",
+        "answer_label": "Hump",
         "count": 1
       },
       {
-        "answer_label": "Issi",
+        "answer_label": "Ibby",
         "count": 1
       },
       {
-        "answer_label": "Iyre",
+        "answer_label": "Ilka",
         "count": 1
       },
       {
-        "answer_label": "Jaal",
+        "answer_label": "Inga",
         "count": 1
       },
       {
-        "answer_label": "Jake",
+        "answer_label": "Irma",
         "count": 1
       },
       {
-        "answer_label": "Jann",
+        "answer_label": "Issy",
         "count": 1
       },
       {
-        "answer_label": "Jaye",
+        "answer_label": "Izy",
         "count": 1
       },
       {
-        "answer_label": "Joy",
+        "answer_label": "Izzy",
         "count": 1
       },
       {
-        "answer_label": "Juli",
+        "answer_label": "Jago",
         "count": 1
       },
       {
-        "answer_label": "Kado",
+        "answer_label": "Jara",
+        "count": 1
+      },
+      {
+        "answer_label": "Jeb",
+        "count": 1
+      },
+      {
+        "answer_label": "Jeth",
+        "count": 1
+      },
+      {
+        "answer_label": "Jock",
+        "count": 1
+      },
+      {
+        "answer_label": "Jone",
+        "count": 1
+      },
+      {
+        "answer_label": "Joon",
+        "count": 1
+      },
+      {
+        "answer_label": "Judd",
+        "count": 1
+      },
+      {
+        "answer_label": "Jude",
         "count": 1
       },
       {
@@ -462,43 +422,31 @@
         "count": 1
       },
       {
-        "answer_label": "Kala",
+        "answer_label": "Kall",
         "count": 1
       },
       {
-        "answer_label": "Kaye",
+        "answer_label": "Kemp",
         "count": 1
       },
       {
-        "answer_label": "Ker",
+        "answer_label": "Kiel",
         "count": 1
       },
       {
-        "answer_label": "Kile",
+        "answer_label": "Kim",
         "count": 1
       },
       {
-        "answer_label": "Kira",
+        "answer_label": "Knox",
         "count": 1
       },
       {
-        "answer_label": "Klos",
+        "answer_label": "Ko",
         "count": 1
       },
       {
-        "answer_label": "Kyl",
-        "count": 1
-      },
-      {
-        "answer_label": "Kyte",
-        "count": 1
-      },
-      {
-        "answer_label": "Lad",
-        "count": 1
-      },
-      {
-        "answer_label": "Ladd",
+        "answer_label": "Kurr",
         "count": 1
       },
       {
@@ -506,95 +454,99 @@
         "count": 1
       },
       {
+        "answer_label": "Lars",
+        "count": 1
+      },
+      {
+        "answer_label": "Lash",
+        "count": 1
+      },
+      {
+        "answer_label": "Lat",
+        "count": 1
+      },
+      {
+        "answer_label": "Leda",
+        "count": 1
+      },
+      {
+        "answer_label": "Lena",
+        "count": 1
+      },
+      {
         "answer_label": "Leor",
         "count": 1
       },
       {
-        "answer_label": "Loss",
+        "answer_label": "Lias",
         "count": 1
       },
       {
-        "answer_label": "Lou",
+        "answer_label": "Livi",
         "count": 1
       },
       {
-        "answer_label": "Luca",
+        "answer_label": "Loar",
         "count": 1
       },
       {
-        "answer_label": "Lusa",
+        "answer_label": "Lu",
         "count": 1
       },
       {
-        "answer_label": "Lux",
+        "answer_label": "Lyn",
         "count": 1
       },
       {
-        "answer_label": "Lynd",
+        "answer_label": "Mall",
         "count": 1
       },
       {
-        "answer_label": "Mady",
+        "answer_label": "Marx",
         "count": 1
       },
       {
-        "answer_label": "Mag",
+        "answer_label": "Mas",
         "count": 1
       },
       {
-        "answer_label": "Marj",
+        "answer_label": "Maye",
         "count": 1
       },
       {
-        "answer_label": "Max",
+        "answer_label": "Merc",
         "count": 1
       },
       {
-        "answer_label": "Maxi",
+        "answer_label": "Mir",
         "count": 1
       },
       {
-        "answer_label": "Min",
+        "answer_label": "Mohl",
         "count": 1
       },
       {
-        "answer_label": "Mini",
+        "answer_label": "Mona",
         "count": 1
       },
       {
-        "answer_label": "Mraz",
+        "answer_label": "Mufi",
         "count": 1
       },
       {
-        "answer_label": "Mroz",
+        "answer_label": "Nana",
         "count": 1
       },
       {
-        "answer_label": "My",
+        "answer_label": "Ned",
         "count": 1
       },
       {
-        "answer_label": "Naji",
+        "answer_label": "Nert",
         "count": 1
       },
       {
-        "answer_label": "Nam",
-        "count": 1
-      },
-      {
-        "answer_label": "Nath",
-        "count": 1
-      },
-      {
-        "answer_label": "Nela",
-        "count": 1
-      },
-      {
-        "answer_label": "Nick",
-        "count": 1
-      },
-      {
-        "answer_label": "Niko",
+        "answer_label": "Nev",
         "count": 1
       },
       {
@@ -602,103 +554,107 @@
         "count": 1
       },
       {
-        "answer_label": "Niu",
+        "answer_label": "Noel",
         "count": 1
       },
       {
-        "answer_label": "Noni",
+        "answer_label": "Oba",
         "count": 1
       },
       {
-        "answer_label": "Nord",
+        "answer_label": "Ody",
         "count": 1
       },
       {
-        "answer_label": "Obau",
+        "answer_label": "Ohl",
         "count": 1
       },
       {
-        "answer_label": "Oca",
+        "answer_label": "Olaf",
         "count": 1
       },
       {
-        "answer_label": "Ochs",
+        "answer_label": "Olin",
         "count": 1
       },
       {
-        "answer_label": "Odin",
+        "answer_label": "Olly",
         "count": 1
       },
       {
-        "answer_label": "Olen",
+        "answer_label": "Oni",
         "count": 1
       },
       {
-        "answer_label": "Omer",
+        "answer_label": "Oona",
         "count": 1
       },
       {
-        "answer_label": "Opal",
+        "answer_label": "Oran",
         "count": 1
       },
       {
-        "answer_label": "Ori",
+        "answer_label": "Pan",
         "count": 1
       },
       {
-        "answer_label": "Os",
+        "answer_label": "Peg",
         "count": 1
       },
       {
-        "answer_label": "Pack",
+        "answer_label": "Ping",
         "count": 1
       },
       {
-        "answer_label": "Park",
+        "answer_label": "Pip",
         "count": 1
       },
       {
-        "answer_label": "Per",
+        "answer_label": "Pren",
         "count": 1
       },
       {
-        "answer_label": "Pius",
+        "answer_label": "Puff",
         "count": 1
       },
       {
-        "answer_label": "Pump",
+        "answer_label": "Rab",
         "count": 1
       },
       {
-        "answer_label": "Pyne",
+        "answer_label": "Race",
         "count": 1
       },
       {
-        "answer_label": "Ralf",
+        "answer_label": "Ravi",
         "count": 1
       },
       {
-        "answer_label": "Riba",
+        "answer_label": "Rego",
         "count": 1
       },
       {
-        "answer_label": "Riti",
+        "answer_label": "Rici",
         "count": 1
       },
       {
-        "answer_label": "Roch",
+        "answer_label": "Riha",
         "count": 1
       },
       {
-        "answer_label": "Roz",
+        "answer_label": "Rik",
         "count": 1
       },
       {
-        "answer_label": "Rudy",
+        "answer_label": "Ring",
         "count": 1
       },
       {
-        "answer_label": "Rue",
+        "answer_label": "Risa",
+        "count": 1
+      },
+      {
+        "answer_label": "Roda",
         "count": 1
       },
       {
@@ -706,15 +662,11 @@
         "count": 1
       },
       {
-        "answer_label": "Rugg",
+        "answer_label": "Rush",
         "count": 1
       },
       {
-        "answer_label": "Ryle",
-        "count": 1
-      },
-      {
-        "answer_label": "Sad",
+        "answer_label": "Ryun",
         "count": 1
       },
       {
@@ -722,19 +674,15 @@
         "count": 1
       },
       {
+        "answer_label": "Sami",
+        "count": 1
+      },
+      {
         "answer_label": "Samp",
         "count": 1
       },
       {
-        "answer_label": "Sand",
-        "count": 1
-      },
-      {
-        "answer_label": "Sari",
-        "count": 1
-      },
-      {
-        "answer_label": "Sela",
+        "answer_label": "Seka",
         "count": 1
       },
       {
@@ -742,19 +690,35 @@
         "count": 1
       },
       {
-        "answer_label": "Seve",
+        "answer_label": "Shel",
         "count": 1
       },
       {
-        "answer_label": "Sher",
+        "answer_label": "Shig",
         "count": 1
       },
       {
-        "answer_label": "Sida",
+        "answer_label": "Sil",
         "count": 1
       },
       {
-        "answer_label": "Soni",
+        "answer_label": "Sima",
+        "count": 1
+      },
+      {
+        "answer_label": "Skip",
+        "count": 1
+      },
+      {
+        "answer_label": "Star",
+        "count": 1
+      },
+      {
+        "answer_label": "Stew",
+        "count": 1
+      },
+      {
+        "answer_label": "Su",
         "count": 1
       },
       {
@@ -762,31 +726,43 @@
         "count": 1
       },
       {
-        "answer_label": "Swen",
+        "answer_label": "Tai",
         "count": 1
       },
       {
-        "answer_label": "Tann",
+        "answer_label": "Taka",
         "count": 1
       },
       {
-        "answer_label": "Tedd",
+        "answer_label": "Tate",
         "count": 1
       },
       {
-        "answer_label": "Tini",
+        "answer_label": "Taub",
         "count": 1
       },
       {
-        "answer_label": "Tore",
+        "answer_label": "Tien",
         "count": 1
       },
       {
-        "answer_label": "Tsan",
+        "answer_label": "Tila",
         "count": 1
       },
       {
-        "answer_label": "Uel",
+        "answer_label": "Tobe",
+        "count": 1
+      },
+      {
+        "answer_label": "Tod",
+        "count": 1
+      },
+      {
+        "answer_label": "Tome",
+        "count": 1
+      },
+      {
+        "answer_label": "Ule",
         "count": 1
       },
       {
@@ -794,11 +770,7 @@
         "count": 1
       },
       {
-        "answer_label": "Ute",
-        "count": 1
-      },
-      {
-        "answer_label": "Venn",
+        "answer_label": "Vas",
         "count": 1
       },
       {
@@ -806,39 +778,47 @@
         "count": 1
       },
       {
-        "answer_label": "Vish",
+        "answer_label": "Vic",
         "count": 1
       },
       {
-        "answer_label": "Vita",
+        "answer_label": "Yam",
         "count": 1
       },
       {
-        "answer_label": "Voe",
+        "answer_label": "Yee",
         "count": 1
       },
       {
-        "answer_label": "Won",
+        "answer_label": "Yeo",
         "count": 1
       },
       {
-        "answer_label": "Worl",
+        "answer_label": "Yul",
         "count": 1
       },
       {
-        "answer_label": "Wyne",
+        "answer_label": "Yuma",
         "count": 1
       },
       {
-        "answer_label": "Xena",
+        "answer_label": "Zach",
         "count": 1
       },
       {
-        "answer_label": "Zel",
+        "answer_label": "Zane",
+        "count": 1
+      },
+      {
+        "answer_label": "Zeus",
+        "count": 1
+      },
+      {
+        "answer_label": "Zurn",
         "count": 1
       }
     ],
-    "unique_answers": 197
+    "unique_answers": 192
   },
   "pass": true,
   "per_task_variant": {
@@ -858,7 +838,7 @@
           "status": "not_applicable_non_numeric_answers"
         },
         "min_unique_answers": {
-          "observed": 97,
+          "observed": 98,
           "pass": true,
           "threshold": 5
         }
@@ -870,139 +850,91 @@
       "sample_count": 100,
       "top_answers": [
         {
-          "answer_label": "Asta",
+          "answer_label": "Anet",
           "count": 2
         },
         {
-          "answer_label": "Dyun",
+          "answer_label": "Gitt",
           "count": 2
         },
         {
-          "answer_label": "Hyo",
-          "count": 2
-        },
-        {
-          "answer_label": "Adey",
+          "answer_label": "Adam",
           "count": 1
         },
         {
-          "answer_label": "Aggi",
+          "answer_label": "Adda",
           "count": 1
         },
         {
-          "answer_label": "Ahl",
+          "answer_label": "Aime",
           "count": 1
         },
         {
-          "answer_label": "Ames",
+          "answer_label": "Aldo",
           "count": 1
         },
         {
-          "answer_label": "Anny",
+          "answer_label": "Alf",
           "count": 1
         },
         {
-          "answer_label": "Arie",
+          "answer_label": "Alli",
           "count": 1
         },
         {
-          "answer_label": "Arun",
+          "answer_label": "Amie",
           "count": 1
         },
         {
-          "answer_label": "Arv",
+          "answer_label": "Amr",
           "count": 1
         },
         {
-          "answer_label": "Arvy",
+          "answer_label": "Arel",
           "count": 1
         },
         {
-          "answer_label": "Aryn",
+          "answer_label": "Arly",
           "count": 1
         },
         {
-          "answer_label": "Bea",
+          "answer_label": "Axe",
           "count": 1
         },
         {
-          "answer_label": "Ber",
+          "answer_label": "Baal",
           "count": 1
         },
         {
-          "answer_label": "Bev",
+          "answer_label": "Bael",
           "count": 1
         },
         {
-          "answer_label": "Brok",
+          "answer_label": "Case",
           "count": 1
         },
         {
-          "answer_label": "Cami",
+          "answer_label": "Cha",
           "count": 1
         },
         {
-          "answer_label": "Chae",
+          "answer_label": "Chem",
           "count": 1
         },
         {
-          "answer_label": "Chet",
+          "answer_label": "Cloe",
           "count": 1
         },
         {
-          "answer_label": "Clie",
+          "answer_label": "Dede",
           "count": 1
         },
         {
-          "answer_label": "Cly",
+          "answer_label": "Dell",
           "count": 1
         },
         {
-          "answer_label": "Cori",
-          "count": 1
-        },
-        {
-          "answer_label": "Cyd",
-          "count": 1
-        },
-        {
-          "answer_label": "Dalt",
-          "count": 1
-        },
-        {
-          "answer_label": "Dan",
-          "count": 1
-        },
-        {
-          "answer_label": "Dine",
-          "count": 1
-        },
-        {
-          "answer_label": "Don",
-          "count": 1
-        },
-        {
-          "answer_label": "Dove",
-          "count": 1
-        },
-        {
-          "answer_label": "Dow",
-          "count": 1
-        },
-        {
-          "answer_label": "Duck",
-          "count": 1
-        },
-        {
-          "answer_label": "Edra",
-          "count": 1
-        },
-        {
-          "answer_label": "Elsy",
-          "count": 1
-        },
-        {
-          "answer_label": "Enos",
+          "answer_label": "Duer",
           "count": 1
         },
         {
@@ -1010,27 +942,23 @@
           "count": 1
         },
         {
-          "answer_label": "Erny",
+          "answer_label": "Fabe",
           "count": 1
         },
         {
-          "answer_label": "Eryn",
+          "answer_label": "Fia",
           "count": 1
         },
         {
-          "answer_label": "Eve",
+          "answer_label": "Fons",
           "count": 1
         },
         {
-          "answer_label": "Fem",
+          "answer_label": "Gert",
           "count": 1
         },
         {
-          "answer_label": "Gabe",
-          "count": 1
-        },
-        {
-          "answer_label": "Goth",
+          "answer_label": "Gore",
           "count": 1
         },
         {
@@ -1038,35 +966,63 @@
           "count": 1
         },
         {
-          "answer_label": "Herv",
+          "answer_label": "Gun",
           "count": 1
         },
         {
-          "answer_label": "Hong",
+          "answer_label": "Hedi",
           "count": 1
         },
         {
-          "answer_label": "Hoo",
+          "answer_label": "Hiro",
           "count": 1
         },
         {
-          "answer_label": "Hutt",
+          "answer_label": "Hoag",
           "count": 1
         },
         {
-          "answer_label": "Ion",
+          "answer_label": "Hoes",
           "count": 1
         },
         {
-          "answer_label": "Issi",
+          "answer_label": "Huan",
           "count": 1
         },
         {
-          "answer_label": "Iyre",
+          "answer_label": "Hump",
           "count": 1
         },
         {
-          "answer_label": "Jaal",
+          "answer_label": "Inga",
+          "count": 1
+        },
+        {
+          "answer_label": "Izy",
+          "count": 1
+        },
+        {
+          "answer_label": "Jara",
+          "count": 1
+        },
+        {
+          "answer_label": "Jeb",
+          "count": 1
+        },
+        {
+          "answer_label": "Joli",
+          "count": 1
+        },
+        {
+          "answer_label": "Jone",
+          "count": 1
+        },
+        {
+          "answer_label": "Judd",
+          "count": 1
+        },
+        {
+          "answer_label": "Jude",
           "count": 1
         },
         {
@@ -1074,111 +1030,139 @@
           "count": 1
         },
         {
-          "answer_label": "Kira",
+          "answer_label": "Kall",
           "count": 1
         },
         {
-          "answer_label": "Lady",
+          "answer_label": "Kemp",
           "count": 1
         },
         {
-          "answer_label": "Leor",
+          "answer_label": "Kim",
           "count": 1
         },
         {
-          "answer_label": "Luca",
+          "answer_label": "Knox",
           "count": 1
         },
         {
-          "answer_label": "Lusa",
+          "answer_label": "Lash",
           "count": 1
         },
         {
-          "answer_label": "Lynd",
+          "answer_label": "Loar",
           "count": 1
         },
         {
-          "answer_label": "Mady",
+          "answer_label": "Maye",
           "count": 1
         },
         {
-          "answer_label": "Mag",
+          "answer_label": "Merc",
           "count": 1
         },
         {
-          "answer_label": "Marj",
+          "answer_label": "Mir",
           "count": 1
         },
         {
-          "answer_label": "Maxi",
+          "answer_label": "Mohl",
           "count": 1
         },
         {
-          "answer_label": "Min",
+          "answer_label": "Mona",
           "count": 1
         },
         {
-          "answer_label": "Mroz",
+          "answer_label": "Mufi",
           "count": 1
         },
         {
-          "answer_label": "Naji",
+          "answer_label": "Nana",
           "count": 1
         },
         {
-          "answer_label": "Nam",
+          "answer_label": "Nert",
           "count": 1
         },
         {
-          "answer_label": "Nick",
+          "answer_label": "Nev",
           "count": 1
         },
         {
-          "answer_label": "Niko",
+          "answer_label": "Nita",
           "count": 1
         },
         {
-          "answer_label": "Obau",
+          "answer_label": "Oba",
           "count": 1
         },
         {
-          "answer_label": "Odin",
+          "answer_label": "Ohl",
           "count": 1
         },
         {
-          "answer_label": "Olen",
+          "answer_label": "Olaf",
           "count": 1
         },
         {
-          "answer_label": "Opal",
+          "answer_label": "Olly",
           "count": 1
         },
         {
-          "answer_label": "Os",
+          "answer_label": "Oni",
           "count": 1
         },
         {
-          "answer_label": "Per",
+          "answer_label": "Pan",
           "count": 1
         },
         {
-          "answer_label": "Pump",
+          "answer_label": "Ping",
           "count": 1
         },
         {
-          "answer_label": "Ralf",
+          "answer_label": "Pip",
           "count": 1
         },
         {
-          "answer_label": "Roch",
+          "answer_label": "Pren",
           "count": 1
         },
         {
-          "answer_label": "Rue",
+          "answer_label": "Rab",
           "count": 1
         },
         {
-          "answer_label": "Rugg",
+          "answer_label": "Rego",
+          "count": 1
+        },
+        {
+          "answer_label": "Rici",
+          "count": 1
+        },
+        {
+          "answer_label": "Risa",
+          "count": 1
+        },
+        {
+          "answer_label": "Roda",
+          "count": 1
+        },
+        {
+          "answer_label": "Ruel",
+          "count": 1
+        },
+        {
+          "answer_label": "Rush",
+          "count": 1
+        },
+        {
+          "answer_label": "Sam",
+          "count": 1
+        },
+        {
+          "answer_label": "Sami",
           "count": 1
         },
         {
@@ -1186,23 +1170,23 @@
           "count": 1
         },
         {
-          "answer_label": "Sand",
+          "answer_label": "Seka",
           "count": 1
         },
         {
-          "answer_label": "Sari",
+          "answer_label": "Shig",
           "count": 1
         },
         {
-          "answer_label": "Seve",
+          "answer_label": "Sil",
           "count": 1
         },
         {
-          "answer_label": "Sida",
+          "answer_label": "Skip",
           "count": 1
         },
         {
-          "answer_label": "Soni",
+          "answer_label": "Su",
           "count": 1
         },
         {
@@ -1210,19 +1194,15 @@
           "count": 1
         },
         {
-          "answer_label": "Tini",
+          "answer_label": "Tai",
           "count": 1
         },
         {
-          "answer_label": "Tore",
+          "answer_label": "Tod",
           "count": 1
         },
         {
-          "answer_label": "Tsan",
-          "count": 1
-        },
-        {
-          "answer_label": "Uel",
+          "answer_label": "Ule",
           "count": 1
         },
         {
@@ -1230,35 +1210,39 @@
           "count": 1
         },
         {
-          "answer_label": "Venn",
+          "answer_label": "Vic",
           "count": 1
         },
         {
-          "answer_label": "Vish",
+          "answer_label": "Yam",
           "count": 1
         },
         {
-          "answer_label": "Vita",
+          "answer_label": "Yee",
           "count": 1
         },
         {
-          "answer_label": "Voe",
+          "answer_label": "Yeo",
           "count": 1
         },
         {
-          "answer_label": "Won",
+          "answer_label": "Yul",
           "count": 1
         },
         {
-          "answer_label": "Worl",
+          "answer_label": "Zane",
           "count": 1
         },
         {
-          "answer_label": "Wyne",
+          "answer_label": "Zeus",
+          "count": 1
+        },
+        {
+          "answer_label": "Zurn",
           "count": 1
         }
       ],
-      "unique_answers": 97
+      "unique_answers": 98
     },
     "before_k_steps": {
       "answer_type_counts": {
@@ -1266,7 +1250,7 @@
       },
       "checks": {
         "max_answer_frequency": {
-          "observed": 0.01,
+          "observed": 0.02,
           "pass": true,
           "threshold": 0.25
         },
@@ -1276,63 +1260,75 @@
           "status": "not_applicable_non_numeric_answers"
         },
         "min_unique_answers": {
-          "observed": 100,
+          "observed": 96,
           "pass": true,
           "threshold": 5
         }
       },
       "five_bin_numeric": null,
-      "max_answer_count": 1,
-      "max_answer_frequency": 0.01,
+      "max_answer_count": 2,
+      "max_answer_frequency": 0.02,
       "pass": true,
       "sample_count": 100,
       "top_answers": [
         {
-          "answer_label": "Abad",
+          "answer_label": "Essy",
+          "count": 2
+        },
+        {
+          "answer_label": "Leo",
+          "count": 2
+        },
+        {
+          "answer_label": "Romo",
+          "count": 2
+        },
+        {
+          "answer_label": "Ward",
+          "count": 2
+        },
+        {
+          "answer_label": "Alda",
           "count": 1
         },
         {
-          "answer_label": "Acus",
+          "answer_label": "Alf",
           "count": 1
         },
         {
-          "answer_label": "Adda",
+          "answer_label": "Ami",
           "count": 1
         },
         {
-          "answer_label": "Aker",
+          "answer_label": "Amil",
           "count": 1
         },
         {
-          "answer_label": "Alma",
+          "answer_label": "Amin",
           "count": 1
         },
         {
-          "answer_label": "Aney",
+          "answer_label": "Anni",
           "count": 1
         },
         {
-          "answer_label": "Apps",
+          "answer_label": "Ark",
           "count": 1
         },
         {
-          "answer_label": "Arad",
+          "answer_label": "Arty",
           "count": 1
         },
         {
-          "answer_label": "Arde",
+          "answer_label": "Ause",
           "count": 1
         },
         {
-          "answer_label": "Aria",
+          "answer_label": "Axel",
           "count": 1
         },
         {
-          "answer_label": "Ario",
-          "count": 1
-        },
-        {
-          "answer_label": "Ayn",
+          "answer_label": "Bala",
           "count": 1
         },
         {
@@ -1340,123 +1336,87 @@
           "count": 1
         },
         {
-          "answer_label": "Blim",
+          "answer_label": "Base",
           "count": 1
         },
         {
-          "answer_label": "Box",
+          "answer_label": "Baum",
           "count": 1
         },
         {
-          "answer_label": "Bush",
+          "answer_label": "Bev",
           "count": 1
         },
         {
-          "answer_label": "Ceil",
+          "answer_label": "Bor",
           "count": 1
         },
         {
-          "answer_label": "Chip",
+          "answer_label": "Brad",
           "count": 1
         },
         {
-          "answer_label": "Cis",
+          "answer_label": "Chae",
           "count": 1
         },
         {
-          "answer_label": "Cooe",
+          "answer_label": "Col",
           "count": 1
         },
         {
-          "answer_label": "Darb",
+          "answer_label": "Cyn",
           "count": 1
         },
         {
-          "answer_label": "De",
+          "answer_label": "Dale",
           "count": 1
         },
         {
-          "answer_label": "Deth",
+          "answer_label": "Des",
           "count": 1
         },
         {
-          "answer_label": "Dett",
+          "answer_label": "Dyan",
           "count": 1
         },
         {
-          "answer_label": "Dita",
+          "answer_label": "Etam",
           "count": 1
         },
         {
-          "answer_label": "Dom",
+          "answer_label": "Fair",
           "count": 1
         },
         {
-          "answer_label": "Dumm",
+          "answer_label": "Fara",
           "count": 1
         },
         {
-          "answer_label": "Dwan",
+          "answer_label": "Farl",
           "count": 1
         },
         {
-          "answer_label": "Eda",
+          "answer_label": "Fin",
           "count": 1
         },
         {
-          "answer_label": "Etan",
+          "answer_label": "Flan",
           "count": 1
         },
         {
-          "answer_label": "Eula",
+          "answer_label": "Flor",
           "count": 1
         },
         {
-          "answer_label": "Funk",
+          "answer_label": "Gati",
           "count": 1
         },
         {
-          "answer_label": "Gant",
+          "answer_label": "Gus",
           "count": 1
         },
         {
-          "answer_label": "Gard",
-          "count": 1
-        },
-        {
-          "answer_label": "Gaut",
-          "count": 1
-        },
-        {
-          "answer_label": "Gert",
-          "count": 1
-        },
-        {
-          "answer_label": "Gil",
-          "count": 1
-        },
-        {
-          "answer_label": "Glyn",
-          "count": 1
-        },
-        {
-          "answer_label": "Gui",
-          "count": 1
-        },
-        {
-          "answer_label": "Haim",
-          "count": 1
-        },
-        {
-          "answer_label": "Hali",
-          "count": 1
-        },
-        {
-          "answer_label": "Hart",
-          "count": 1
-        },
-        {
-          "answer_label": "Hime",
+          "answer_label": "Hawk",
           "count": 1
         },
         {
@@ -1464,191 +1424,171 @@
           "count": 1
         },
         {
-          "answer_label": "Huei",
+          "answer_label": "Hort",
           "count": 1
         },
         {
-          "answer_label": "Im",
+          "answer_label": "Hull",
           "count": 1
         },
         {
-          "answer_label": "Jake",
+          "answer_label": "Ibby",
           "count": 1
         },
         {
-          "answer_label": "Jann",
+          "answer_label": "Ilka",
           "count": 1
         },
         {
-          "answer_label": "Jaye",
+          "answer_label": "Irma",
           "count": 1
         },
         {
-          "answer_label": "Joy",
+          "answer_label": "Issy",
           "count": 1
         },
         {
-          "answer_label": "Juli",
+          "answer_label": "Izzy",
           "count": 1
         },
         {
-          "answer_label": "Kado",
+          "answer_label": "Jago",
           "count": 1
         },
         {
-          "answer_label": "Kala",
+          "answer_label": "Jeth",
           "count": 1
         },
         {
-          "answer_label": "Kaye",
+          "answer_label": "Jock",
           "count": 1
         },
         {
-          "answer_label": "Ker",
+          "answer_label": "Joli",
           "count": 1
         },
         {
-          "answer_label": "Kile",
+          "answer_label": "Joon",
           "count": 1
         },
         {
-          "answer_label": "Klos",
+          "answer_label": "Kiel",
           "count": 1
         },
         {
-          "answer_label": "Kyl",
+          "answer_label": "Ko",
           "count": 1
         },
         {
-          "answer_label": "Kyte",
+          "answer_label": "Kurr",
           "count": 1
         },
         {
-          "answer_label": "Lad",
+          "answer_label": "Lady",
           "count": 1
         },
         {
-          "answer_label": "Ladd",
+          "answer_label": "Lars",
           "count": 1
         },
         {
-          "answer_label": "Loss",
+          "answer_label": "Lat",
           "count": 1
         },
         {
-          "answer_label": "Lou",
+          "answer_label": "Leda",
           "count": 1
         },
         {
-          "answer_label": "Lux",
+          "answer_label": "Lena",
           "count": 1
         },
         {
-          "answer_label": "Max",
+          "answer_label": "Leor",
           "count": 1
         },
         {
-          "answer_label": "Mini",
+          "answer_label": "Lias",
           "count": 1
         },
         {
-          "answer_label": "Mraz",
+          "answer_label": "Livi",
           "count": 1
         },
         {
-          "answer_label": "My",
+          "answer_label": "Lu",
           "count": 1
         },
         {
-          "answer_label": "Nath",
+          "answer_label": "Lyn",
           "count": 1
         },
         {
-          "answer_label": "Nela",
+          "answer_label": "Mall",
           "count": 1
         },
         {
-          "answer_label": "Nita",
+          "answer_label": "Marx",
           "count": 1
         },
         {
-          "answer_label": "Niu",
+          "answer_label": "Mas",
           "count": 1
         },
         {
-          "answer_label": "Noni",
+          "answer_label": "Ned",
           "count": 1
         },
         {
-          "answer_label": "Nord",
+          "answer_label": "Noel",
           "count": 1
         },
         {
-          "answer_label": "Oca",
+          "answer_label": "Ody",
           "count": 1
         },
         {
-          "answer_label": "Ochs",
+          "answer_label": "Olin",
           "count": 1
         },
         {
-          "answer_label": "Omer",
+          "answer_label": "Oona",
           "count": 1
         },
         {
-          "answer_label": "Ori",
+          "answer_label": "Oran",
           "count": 1
         },
         {
-          "answer_label": "Pack",
+          "answer_label": "Peg",
           "count": 1
         },
         {
-          "answer_label": "Park",
+          "answer_label": "Puff",
           "count": 1
         },
         {
-          "answer_label": "Pius",
+          "answer_label": "Race",
           "count": 1
         },
         {
-          "answer_label": "Pyne",
+          "answer_label": "Ravi",
           "count": 1
         },
         {
-          "answer_label": "Riba",
+          "answer_label": "Riha",
           "count": 1
         },
         {
-          "answer_label": "Riti",
+          "answer_label": "Rik",
           "count": 1
         },
         {
-          "answer_label": "Roz",
+          "answer_label": "Ring",
           "count": 1
         },
         {
-          "answer_label": "Rudy",
-          "count": 1
-        },
-        {
-          "answer_label": "Ruel",
-          "count": 1
-        },
-        {
-          "answer_label": "Ryle",
-          "count": 1
-        },
-        {
-          "answer_label": "Sad",
-          "count": 1
-        },
-        {
-          "answer_label": "Sam",
-          "count": 1
-        },
-        {
-          "answer_label": "Sela",
+          "answer_label": "Ryun",
           "count": 1
         },
         {
@@ -1656,23 +1596,51 @@
           "count": 1
         },
         {
-          "answer_label": "Sher",
+          "answer_label": "Shel",
           "count": 1
         },
         {
-          "answer_label": "Swen",
+          "answer_label": "Sima",
           "count": 1
         },
         {
-          "answer_label": "Tann",
+          "answer_label": "Star",
           "count": 1
         },
         {
-          "answer_label": "Tedd",
+          "answer_label": "Stew",
           "count": 1
         },
         {
-          "answer_label": "Ute",
+          "answer_label": "Taka",
+          "count": 1
+        },
+        {
+          "answer_label": "Tate",
+          "count": 1
+        },
+        {
+          "answer_label": "Taub",
+          "count": 1
+        },
+        {
+          "answer_label": "Tien",
+          "count": 1
+        },
+        {
+          "answer_label": "Tila",
+          "count": 1
+        },
+        {
+          "answer_label": "Tobe",
+          "count": 1
+        },
+        {
+          "answer_label": "Tome",
+          "count": 1
+        },
+        {
+          "answer_label": "Vas",
           "count": 1
         },
         {
@@ -1680,15 +1648,15 @@
           "count": 1
         },
         {
-          "answer_label": "Xena",
+          "answer_label": "Yuma",
           "count": 1
         },
         {
-          "answer_label": "Zel",
+          "answer_label": "Zach",
           "count": 1
         }
       ],
-      "unique_answers": 100
+      "unique_answers": 96
     }
   },
   "sampling_axes": {

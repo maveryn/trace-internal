@@ -1,339 +1,163 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 8
+    "value": 0
   },
   "evidence_gt": {
     "type": "label_set",
-    "value": [
-      "F",
-      "J",
-      "K",
-      "L",
-      "M",
-      "R",
-      "S",
-      "W"
-    ]
+    "value": []
   },
   "image": {
     "format": "png",
     "path": "charts/task_charts_multiseries_pairwise_comparison_count/images/series_a_gt_b_count/0024.png"
   },
-  "instance_seed": 4221639355519610,
-  "prompt": "Work from the multiseries chart shown in the image: a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Read the chart values and count the categories where the stated series relation holds. How many labeled categories have Whit above Gery?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer requirement: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
+  "instance_seed": 3761409530025279,
+  "prompt": "Use the chart in the image. It shows a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Determine how many category labels satisfy the requested pairwise series comparison. Determine the number of categories where Sima is greater than Snow.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer requirement: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
   "prompt_variants": {
-    "answer_and_evidence": "Work from the multiseries chart shown in the image: a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Read the chart values and count the categories where the stated series relation holds. How many labeled categories have Whit above Gery?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer requirement: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
-    "answer_only": "Work from the multiseries chart shown in the image: a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Read the chart values and count the categories where the stated series relation holds. How many labeled categories have Whit above Gery?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":3}"
+    "answer_and_evidence": "Use the chart in the image. It shows a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Determine how many category labels satisfy the requested pairwise series comparison. Determine the number of categories where Sima is greater than Snow.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer requirement: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
+    "answer_only": "Use the chart in the image. It shows a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Determine how many category labels satisfy the requested pairwise series comparison. Determine the number of categories where Sima is greater than Snow.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":3}"
   },
   "task": "task_charts_multiseries_pairwise_comparison_count",
   "task_variant": "series_a_gt_b_count",
   "trace_payload": {
     "execution_trace": {
-      "answer_value": 8,
-      "category_count": 8,
+      "answer_value": 0,
+      "category_count": 5,
       "category_count_range": [
         5,
         10
       ],
       "category_labels": [
-        "J",
-        "L",
         "W",
+        "G",
+        "C",
         "R",
-        "F",
-        "K",
-        "S",
-        "M"
+        "V"
       ],
       "comparison": "greater_than",
-      "evidence_labels": [
-        "F",
-        "J",
-        "K",
-        "L",
-        "M",
-        "R",
-        "S",
-        "W"
-      ],
-      "left_series_label": "Whit",
+      "evidence_labels": [],
+      "left_series_label": "Sima",
       "mark_color_distance_space": "lab",
       "mark_color_min_distance": 40.0,
       "mark_color_sampling_policy": "random_rgb_palette",
       "queried_series_labels": [
-        "Whit",
-        "Gery"
+        "Sima",
+        "Snow"
       ],
       "question_format": "numeric_open",
-      "right_series_label": "Gery",
-      "scene_variant": "multi_line",
+      "right_series_label": "Snow",
+      "scene_variant": "grouped_horizontal_bar",
       "scene_variant_probabilities": {
         "grouped_bar": 0.25,
         "grouped_horizontal_bar": 0.25,
         "grouped_lollipop": 0.25,
         "multi_line": 0.25
       },
-      "series_count": 3,
+      "series_count": 2,
       "series_count_range": [
         2,
         3
       ],
       "series_fill_palette_rgb": [
         [
-          175,
-          147,
-          10
+          186,
+          110,
+          77
         ],
         [
-          26,
-          120,
-          163
-        ],
-        [
-          203,
-          141,
-          163
+          148,
+          74,
+          182
         ]
       ],
       "series_labels": [
-        "Whit",
-        "Heda",
-        "Gery"
+        "Sima",
+        "Snow"
       ],
       "series_outline_palette_rgb": [
         [
-          96,
+          102,
+          61,
+          42
+        ],
+        [
           81,
-          6
-        ],
-        [
-          14,
-          66,
-          90
-        ],
-        [
-          112,
-          78,
-          90
+          41,
+          100
         ]
       ],
-      "target_answer": 8,
+      "target_answer": 0,
       "target_answer_range": [
         0,
         8
       ],
       "task_variant": "series_a_gt_b_count",
       "task_variant_probabilities": {
-        "series_a_gt_b_count": 0.5,
-        "series_a_lt_b_count": 0.5
+        "series_a_gt_b_count": 1.0,
+        "series_a_lt_b_count": 0.0
       },
       "values_by_category": {
-        "F": {
-          "Gery": 12,
-          "Heda": 13,
-          "Whit": 20
+        "C": {
+          "Sima": 5,
+          "Snow": 10
         },
-        "J": {
-          "Gery": 1,
-          "Heda": 5,
-          "Whit": 8
-        },
-        "K": {
-          "Gery": 9,
-          "Heda": 11,
-          "Whit": 12
-        },
-        "L": {
-          "Gery": 1,
-          "Heda": 17,
-          "Whit": 20
-        },
-        "M": {
-          "Gery": 4,
-          "Heda": 7,
-          "Whit": 12
+        "G": {
+          "Sima": 7,
+          "Snow": 17
         },
         "R": {
-          "Gery": 5,
-          "Heda": 8,
-          "Whit": 13
+          "Sima": 3,
+          "Snow": 17
         },
-        "S": {
-          "Gery": 3,
-          "Heda": 10,
-          "Whit": 15
+        "V": {
+          "Sima": 12,
+          "Snow": 17
         },
         "W": {
-          "Gery": 4,
-          "Heda": 12,
-          "Whit": 16
+          "Sima": 13,
+          "Snow": 20
         }
       }
     },
     "projected_evidence": {
-      "bbox_set": [
-        [
-          512.625,
-          59.048,
-          528.625,
-          562.0
-        ],
-        [
-          131.625,
-          335.619,
-          147.625,
-          564.0
-        ],
-        [
-          606.875,
-          243.429,
-          624.875,
-          562.0
-        ],
-        [
-          226.875,
-          59.048,
-          242.875,
-          562.0
-        ],
-        [
-          795.375,
-          243.429,
-          817.375,
-          562.0
-        ],
-        [
-          416.875,
-          220.381,
-          433.875,
-          562.0
-        ],
-        [
-          703.125,
-          174.286,
-          719.125,
-          562.0
-        ],
-        [
-          318.125,
-          151.238,
-          342.125,
-          562.0
-        ]
-      ],
-      "label_set": [
-        "F",
-        "J",
-        "K",
-        "L",
-        "M",
-        "R",
-        "S",
-        "W"
-      ],
-      "pixel_point_map": {
-        "F": [
-          520.625,
-          554.0
-        ],
-        "J": [
-          139.625,
-          554.0
-        ],
-        "K": [
-          615.875,
-          554.0
-        ],
-        "L": [
-          234.875,
-          554.0
-        ],
-        "M": [
-          806.375,
-          554.0
-        ],
-        "R": [
-          425.375,
-          554.0
-        ],
-        "S": [
-          711.125,
-          554.0
-        ],
-        "W": [
-          330.125,
-          554.0
-        ]
-      },
-      "pixel_point_set": [
-        [
-          520.625,
-          554.0
-        ],
-        [
-          139.625,
-          554.0
-        ],
-        [
-          615.875,
-          554.0
-        ],
-        [
-          234.875,
-          554.0
-        ],
-        [
-          806.375,
-          554.0
-        ],
-        [
-          425.375,
-          554.0
-        ],
-        [
-          711.125,
-          554.0
-        ],
-        [
-          330.125,
-          554.0
-        ]
-      ]
+      "bbox_set": [],
+      "label_set": [],
+      "pixel_point_map": {},
+      "pixel_point_set": []
     },
     "query_spec": {
       "params": {
-        "category_count": 8,
+        "category_count": 5,
         "category_count_range": [
           5,
           10
         ],
         "comparison": "greater_than",
         "queried_series_labels": [
-          "Whit",
-          "Gery"
+          "Sima",
+          "Snow"
         ],
-        "scene_variant": "multi_line",
+        "scene_variant": "grouped_horizontal_bar",
         "scene_variant_probabilities": {
           "grouped_bar": 0.25,
           "grouped_horizontal_bar": 0.25,
           "grouped_lollipop": 0.25,
           "multi_line": 0.25
         },
-        "series_count": 3,
+        "series_count": 2,
         "series_count_range": [
           2,
           3
         ],
-        "target_answer": 8,
+        "target_answer": 0,
         "target_answer_range": [
           0,
           8
         ],
         "task_variant": "series_a_gt_b_count",
         "task_variant_probabilities": {
-          "series_a_gt_b_count": 0.5,
-          "series_a_lt_b_count": 0.5
+          "series_a_gt_b_count": 1.0,
+          "series_a_lt_b_count": 0.0
         }
       },
       "prompt_variant": {
@@ -348,16 +172,16 @@
           "json_example_answer_only": "{\"answer\":3}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "left_series": "Whit",
-          "object_description": "a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis",
-          "right_series": "Gery"
+          "left_series": "Sima",
+          "object_description": "a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category",
+          "right_series": "Snow"
         },
         "task_family_key": "multiseries_chart_comparison",
-        "task_family_variant_index": 2,
+        "task_family_variant_index": 1,
         "task_key": "pairwise_comparison_count_query",
-        "task_variant_index": 3,
+        "task_variant_index": 2,
         "task_variant_key": "series_a_gt_b_count",
-        "task_variant_template_index": 2,
+        "task_variant_template_index": 3,
         "template_paths": [
           "charts/multiseries/charts_multiseries_v1.json"
         ],
@@ -383,16 +207,16 @@
               "json_example_answer_only": "{\"answer\":3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "left_series": "Whit",
-              "object_description": "a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis",
-              "right_series": "Gery"
+              "left_series": "Sima",
+              "object_description": "a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category",
+              "right_series": "Snow"
             },
             "task_family_key": "multiseries_chart_comparison",
-            "task_family_variant_index": 2,
+            "task_family_variant_index": 1,
             "task_key": "pairwise_comparison_count_query",
-            "task_variant_index": 3,
+            "task_variant_index": 2,
             "task_variant_key": "series_a_gt_b_count",
-            "task_variant_template_index": 2,
+            "task_variant_template_index": 3,
             "template_paths": [
               "charts/multiseries/charts_multiseries_v1.json"
             ],
@@ -403,7 +227,7 @@
               "task_variant:series_a_gt_b_count": 5
             }
           },
-          "prompt": "Work from the multiseries chart shown in the image: a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Read the chart values and count the categories where the stated series relation holds. How many labeled categories have Whit above Gery?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer requirement: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}"
+          "prompt": "Use the chart in the image. It shows a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Determine how many category labels satisfy the requested pairwise series comparison. Determine the number of categories where Sima is greater than Snow.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer requirement: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}"
         },
         "answer_only": {
           "metadata": {
@@ -418,16 +242,16 @@
               "json_example_answer_only": "{\"answer\":3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "left_series": "Whit",
-              "object_description": "a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis",
-              "right_series": "Gery"
+              "left_series": "Sima",
+              "object_description": "a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category",
+              "right_series": "Snow"
             },
             "task_family_key": "multiseries_chart_comparison",
-            "task_family_variant_index": 2,
+            "task_family_variant_index": 1,
             "task_key": "pairwise_comparison_count_query",
-            "task_variant_index": 3,
+            "task_variant_index": 2,
             "task_variant_key": "series_a_gt_b_count",
-            "task_variant_template_index": 2,
+            "task_variant_template_index": 3,
             "template_paths": [
               "charts/multiseries/charts_multiseries_v1.json"
             ],
@@ -438,7 +262,7 @@
               "task_variant:series_a_gt_b_count": 5
             }
           },
-          "prompt": "Work from the multiseries chart shown in the image: a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Read the chart values and count the categories where the stated series relation holds. How many labeled categories have Whit above Gery?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":3}"
+          "prompt": "Use the chart in the image. It shows a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Determine how many category labels satisfy the requested pairwise series comparison. Determine the number of categories where Sima is greater than Snow.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":3}"
         }
       },
       "task_variant": "series_a_gt_b_count",
@@ -446,37 +270,25 @@
     },
     "render_map": {
       "category_label_centers_px": {
-        "F": [
-          520.625,
-          554.0
+        "C": [
+          62.0,
+          286.0
         ],
-        "J": [
-          139.625,
-          554.0
-        ],
-        "K": [
-          615.875,
-          554.0
-        ],
-        "L": [
-          234.875,
-          554.0
-        ],
-        "M": [
-          806.375,
-          554.0
+        "G": [
+          62.0,
+          189.2
         ],
         "R": [
-          425.375,
-          554.0
+          62.0,
+          382.8
         ],
-        "S": [
-          711.125,
-          554.0
+        "V": [
+          62.0,
+          479.6
         ],
         "W": [
-          330.125,
-          554.0
+          62.0,
+          92.4
         ]
       },
       "image_id": "img0",
@@ -517,36 +329,26 @@
         "sampling_policy": "random_rgb_palette",
         "series_fill_palette_rgb": [
           [
-            175,
-            147,
-            10
+            186,
+            110,
+            77
           ],
           [
-            26,
-            120,
-            163
-          ],
-          [
-            203,
-            141,
-            163
+            148,
+            74,
+            182
           ]
         ],
         "series_outline_palette_rgb": [
           [
-            96,
+            102,
+            61,
+            42
+          ],
+          [
             81,
-            6
-          ],
-          [
-            14,
-            66,
-            90
-          ],
-          [
-            112,
-            78,
-            90
+            41,
+            100
           ]
         ]
       },
@@ -572,7 +374,7 @@
         "edits": [],
         "enabled": false
       },
-      "scene_variant": "multi_line",
+      "scene_variant": "grouped_horizontal_bar",
       "text_style": {
         "label_font_size_px": 22,
         "label_stroke_width_px": 2,
@@ -609,1044 +411,438 @@
         {
           "attrs": {
             "category_group_bbox_px": [
-              131.625,
-              335.619,
-              147.625,
-              564.0
+              50.0,
+              67.426,
+              817.714,
+              117.374
             ],
-            "category_label": "J",
+            "category_label": "W",
             "category_label_center_px": [
-              139.625,
-              554.0
+              62.0,
+              92.4
             ],
             "category_rank": 0,
             "mark_bbox_px": [
-              131.625,
-              335.619,
-              147.625,
-              351.619
+              92.0,
+              67.426,
+              563.714,
+              88.334
             ],
             "mark_center_px": [
-              139.625,
-              343.619
+              327.857,
+              77.88
             ],
             "mark_fill_rgb": [
-              175,
-              147,
-              10
+              186,
+              110,
+              77
             ],
             "mark_outline_rgb": [
-              96,
-              81,
-              6
+              102,
+              61,
+              42
             ],
-            "scene_variant": "multi_line",
-            "series_label": "Whit",
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Sima",
             "series_rank": 0,
-            "value": 8
+            "value": 13
           },
-          "entity_id": "mark_J_Whit",
-          "entity_type": "point"
+          "entity_id": "mark_W_Sima",
+          "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              131.625,
-              335.619,
-              147.625,
-              564.0
+              50.0,
+              67.426,
+              817.714,
+              117.374
             ],
-            "category_label": "J",
+            "category_label": "W",
             "category_label_center_px": [
-              139.625,
-              554.0
+              62.0,
+              92.4
             ],
             "category_rank": 0,
             "mark_bbox_px": [
-              131.625,
-              404.762,
-              147.625,
-              420.762
+              92.0,
+              96.466,
+              817.714,
+              117.374
             ],
             "mark_center_px": [
-              139.625,
-              412.762
+              454.857,
+              106.92
             ],
             "mark_fill_rgb": [
-              26,
-              120,
-              163
+              148,
+              74,
+              182
             ],
             "mark_outline_rgb": [
-              14,
-              66,
-              90
+              81,
+              41,
+              100
             ],
-            "scene_variant": "multi_line",
-            "series_label": "Heda",
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Snow",
             "series_rank": 1,
-            "value": 5
-          },
-          "entity_id": "mark_J_Heda",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              131.625,
-              335.619,
-              147.625,
-              564.0
-            ],
-            "category_label": "J",
-            "category_label_center_px": [
-              139.625,
-              554.0
-            ],
-            "category_rank": 0,
-            "mark_bbox_px": [
-              131.625,
-              496.952,
-              147.625,
-              512.952
-            ],
-            "mark_center_px": [
-              139.625,
-              504.952
-            ],
-            "mark_fill_rgb": [
-              203,
-              141,
-              163
-            ],
-            "mark_outline_rgb": [
-              112,
-              78,
-              90
-            ],
-            "scene_variant": "multi_line",
-            "series_label": "Gery",
-            "series_rank": 2,
-            "value": 1
-          },
-          "entity_id": "mark_J_Gery",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              226.875,
-              59.048,
-              242.875,
-              562.0
-            ],
-            "category_label": "L",
-            "category_label_center_px": [
-              234.875,
-              554.0
-            ],
-            "category_rank": 1,
-            "mark_bbox_px": [
-              226.875,
-              59.048,
-              242.875,
-              75.048
-            ],
-            "mark_center_px": [
-              234.875,
-              67.048
-            ],
-            "mark_fill_rgb": [
-              175,
-              147,
-              10
-            ],
-            "mark_outline_rgb": [
-              96,
-              81,
-              6
-            ],
-            "scene_variant": "multi_line",
-            "series_label": "Whit",
-            "series_rank": 0,
             "value": 20
           },
-          "entity_id": "mark_L_Whit",
-          "entity_type": "point"
+          "entity_id": "mark_W_Snow",
+          "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              226.875,
-              59.048,
-              242.875,
-              562.0
+              53.0,
+              164.226,
+              708.857,
+              214.174
             ],
-            "category_label": "L",
+            "category_label": "G",
             "category_label_center_px": [
-              234.875,
-              554.0
+              62.0,
+              189.2
             ],
             "category_rank": 1,
             "mark_bbox_px": [
-              226.875,
-              128.19,
-              242.875,
-              144.19
+              92.0,
+              164.226,
+              346.0,
+              185.134
             ],
             "mark_center_px": [
-              234.875,
-              136.19
+              219.0,
+              174.68
             ],
             "mark_fill_rgb": [
-              26,
-              120,
-              163
+              186,
+              110,
+              77
             ],
             "mark_outline_rgb": [
-              14,
-              66,
-              90
+              102,
+              61,
+              42
             ],
-            "scene_variant": "multi_line",
-            "series_label": "Heda",
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Sima",
+            "series_rank": 0,
+            "value": 7
+          },
+          "entity_id": "mark_G_Sima",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.0,
+              164.226,
+              708.857,
+              214.174
+            ],
+            "category_label": "G",
+            "category_label_center_px": [
+              62.0,
+              189.2
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              92.0,
+              193.266,
+              708.857,
+              214.174
+            ],
+            "mark_center_px": [
+              400.429,
+              203.72
+            ],
+            "mark_fill_rgb": [
+              148,
+              74,
+              182
+            ],
+            "mark_outline_rgb": [
+              81,
+              41,
+              100
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Snow",
             "series_rank": 1,
             "value": 17
           },
-          "entity_id": "mark_L_Heda",
-          "entity_type": "point"
+          "entity_id": "mark_G_Snow",
+          "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              226.875,
-              59.048,
-              242.875,
-              562.0
+              54.0,
+              261.026,
+              454.857,
+              310.974
             ],
-            "category_label": "L",
+            "category_label": "C",
             "category_label_center_px": [
-              234.875,
-              554.0
-            ],
-            "category_rank": 1,
-            "mark_bbox_px": [
-              226.875,
-              496.952,
-              242.875,
-              512.952
-            ],
-            "mark_center_px": [
-              234.875,
-              504.952
-            ],
-            "mark_fill_rgb": [
-              203,
-              141,
-              163
-            ],
-            "mark_outline_rgb": [
-              112,
-              78,
-              90
-            ],
-            "scene_variant": "multi_line",
-            "series_label": "Gery",
-            "series_rank": 2,
-            "value": 1
-          },
-          "entity_id": "mark_L_Gery",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              318.125,
-              151.238,
-              342.125,
-              562.0
-            ],
-            "category_label": "W",
-            "category_label_center_px": [
-              330.125,
-              554.0
+              62.0,
+              286.0
             ],
             "category_rank": 2,
             "mark_bbox_px": [
-              322.125,
-              151.238,
-              338.125,
-              167.238
+              92.0,
+              261.026,
+              273.429,
+              281.934
             ],
             "mark_center_px": [
-              330.125,
-              159.238
+              182.714,
+              271.48
             ],
             "mark_fill_rgb": [
-              175,
-              147,
-              10
+              186,
+              110,
+              77
             ],
             "mark_outline_rgb": [
-              96,
-              81,
-              6
+              102,
+              61,
+              42
             ],
-            "scene_variant": "multi_line",
-            "series_label": "Whit",
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Sima",
             "series_rank": 0,
-            "value": 16
-          },
-          "entity_id": "mark_W_Whit",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              318.125,
-              151.238,
-              342.125,
-              562.0
-            ],
-            "category_label": "W",
-            "category_label_center_px": [
-              330.125,
-              554.0
-            ],
-            "category_rank": 2,
-            "mark_bbox_px": [
-              322.125,
-              243.429,
-              338.125,
-              259.429
-            ],
-            "mark_center_px": [
-              330.125,
-              251.429
-            ],
-            "mark_fill_rgb": [
-              26,
-              120,
-              163
-            ],
-            "mark_outline_rgb": [
-              14,
-              66,
-              90
-            ],
-            "scene_variant": "multi_line",
-            "series_label": "Heda",
-            "series_rank": 1,
-            "value": 12
-          },
-          "entity_id": "mark_W_Heda",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              318.125,
-              151.238,
-              342.125,
-              562.0
-            ],
-            "category_label": "W",
-            "category_label_center_px": [
-              330.125,
-              554.0
-            ],
-            "category_rank": 2,
-            "mark_bbox_px": [
-              322.125,
-              427.81,
-              338.125,
-              443.81
-            ],
-            "mark_center_px": [
-              330.125,
-              435.81
-            ],
-            "mark_fill_rgb": [
-              203,
-              141,
-              163
-            ],
-            "mark_outline_rgb": [
-              112,
-              78,
-              90
-            ],
-            "scene_variant": "multi_line",
-            "series_label": "Gery",
-            "series_rank": 2,
-            "value": 4
-          },
-          "entity_id": "mark_W_Gery",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              416.875,
-              220.381,
-              433.875,
-              562.0
-            ],
-            "category_label": "R",
-            "category_label_center_px": [
-              425.375,
-              554.0
-            ],
-            "category_rank": 3,
-            "mark_bbox_px": [
-              417.375,
-              220.381,
-              433.375,
-              236.381
-            ],
-            "mark_center_px": [
-              425.375,
-              228.381
-            ],
-            "mark_fill_rgb": [
-              175,
-              147,
-              10
-            ],
-            "mark_outline_rgb": [
-              96,
-              81,
-              6
-            ],
-            "scene_variant": "multi_line",
-            "series_label": "Whit",
-            "series_rank": 0,
-            "value": 13
-          },
-          "entity_id": "mark_R_Whit",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              416.875,
-              220.381,
-              433.875,
-              562.0
-            ],
-            "category_label": "R",
-            "category_label_center_px": [
-              425.375,
-              554.0
-            ],
-            "category_rank": 3,
-            "mark_bbox_px": [
-              417.375,
-              335.619,
-              433.375,
-              351.619
-            ],
-            "mark_center_px": [
-              425.375,
-              343.619
-            ],
-            "mark_fill_rgb": [
-              26,
-              120,
-              163
-            ],
-            "mark_outline_rgb": [
-              14,
-              66,
-              90
-            ],
-            "scene_variant": "multi_line",
-            "series_label": "Heda",
-            "series_rank": 1,
-            "value": 8
-          },
-          "entity_id": "mark_R_Heda",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              416.875,
-              220.381,
-              433.875,
-              562.0
-            ],
-            "category_label": "R",
-            "category_label_center_px": [
-              425.375,
-              554.0
-            ],
-            "category_rank": 3,
-            "mark_bbox_px": [
-              417.375,
-              404.762,
-              433.375,
-              420.762
-            ],
-            "mark_center_px": [
-              425.375,
-              412.762
-            ],
-            "mark_fill_rgb": [
-              203,
-              141,
-              163
-            ],
-            "mark_outline_rgb": [
-              112,
-              78,
-              90
-            ],
-            "scene_variant": "multi_line",
-            "series_label": "Gery",
-            "series_rank": 2,
             "value": 5
           },
-          "entity_id": "mark_R_Gery",
-          "entity_type": "point"
+          "entity_id": "mark_C_Sima",
+          "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              512.625,
-              59.048,
-              528.625,
-              562.0
+              54.0,
+              261.026,
+              454.857,
+              310.974
             ],
-            "category_label": "F",
+            "category_label": "C",
             "category_label_center_px": [
-              520.625,
-              554.0
+              62.0,
+              286.0
             ],
-            "category_rank": 4,
+            "category_rank": 2,
             "mark_bbox_px": [
-              512.625,
-              59.048,
-              528.625,
-              75.048
+              92.0,
+              290.066,
+              454.857,
+              310.974
             ],
             "mark_center_px": [
-              520.625,
-              67.048
+              273.429,
+              300.52
             ],
             "mark_fill_rgb": [
-              175,
-              147,
-              10
+              148,
+              74,
+              182
             ],
             "mark_outline_rgb": [
-              96,
               81,
-              6
+              41,
+              100
             ],
-            "scene_variant": "multi_line",
-            "series_label": "Whit",
-            "series_rank": 0,
-            "value": 20
-          },
-          "entity_id": "mark_F_Whit",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              512.625,
-              59.048,
-              528.625,
-              562.0
-            ],
-            "category_label": "F",
-            "category_label_center_px": [
-              520.625,
-              554.0
-            ],
-            "category_rank": 4,
-            "mark_bbox_px": [
-              512.625,
-              220.381,
-              528.625,
-              236.381
-            ],
-            "mark_center_px": [
-              520.625,
-              228.381
-            ],
-            "mark_fill_rgb": [
-              26,
-              120,
-              163
-            ],
-            "mark_outline_rgb": [
-              14,
-              66,
-              90
-            ],
-            "scene_variant": "multi_line",
-            "series_label": "Heda",
-            "series_rank": 1,
-            "value": 13
-          },
-          "entity_id": "mark_F_Heda",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              512.625,
-              59.048,
-              528.625,
-              562.0
-            ],
-            "category_label": "F",
-            "category_label_center_px": [
-              520.625,
-              554.0
-            ],
-            "category_rank": 4,
-            "mark_bbox_px": [
-              512.625,
-              243.429,
-              528.625,
-              259.429
-            ],
-            "mark_center_px": [
-              520.625,
-              251.429
-            ],
-            "mark_fill_rgb": [
-              203,
-              141,
-              163
-            ],
-            "mark_outline_rgb": [
-              112,
-              78,
-              90
-            ],
-            "scene_variant": "multi_line",
-            "series_label": "Gery",
-            "series_rank": 2,
-            "value": 12
-          },
-          "entity_id": "mark_F_Gery",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              606.875,
-              243.429,
-              624.875,
-              562.0
-            ],
-            "category_label": "K",
-            "category_label_center_px": [
-              615.875,
-              554.0
-            ],
-            "category_rank": 5,
-            "mark_bbox_px": [
-              607.875,
-              243.429,
-              623.875,
-              259.429
-            ],
-            "mark_center_px": [
-              615.875,
-              251.429
-            ],
-            "mark_fill_rgb": [
-              175,
-              147,
-              10
-            ],
-            "mark_outline_rgb": [
-              96,
-              81,
-              6
-            ],
-            "scene_variant": "multi_line",
-            "series_label": "Whit",
-            "series_rank": 0,
-            "value": 12
-          },
-          "entity_id": "mark_K_Whit",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              606.875,
-              243.429,
-              624.875,
-              562.0
-            ],
-            "category_label": "K",
-            "category_label_center_px": [
-              615.875,
-              554.0
-            ],
-            "category_rank": 5,
-            "mark_bbox_px": [
-              607.875,
-              266.476,
-              623.875,
-              282.476
-            ],
-            "mark_center_px": [
-              615.875,
-              274.476
-            ],
-            "mark_fill_rgb": [
-              26,
-              120,
-              163
-            ],
-            "mark_outline_rgb": [
-              14,
-              66,
-              90
-            ],
-            "scene_variant": "multi_line",
-            "series_label": "Heda",
-            "series_rank": 1,
-            "value": 11
-          },
-          "entity_id": "mark_K_Heda",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              606.875,
-              243.429,
-              624.875,
-              562.0
-            ],
-            "category_label": "K",
-            "category_label_center_px": [
-              615.875,
-              554.0
-            ],
-            "category_rank": 5,
-            "mark_bbox_px": [
-              607.875,
-              312.571,
-              623.875,
-              328.571
-            ],
-            "mark_center_px": [
-              615.875,
-              320.571
-            ],
-            "mark_fill_rgb": [
-              203,
-              141,
-              163
-            ],
-            "mark_outline_rgb": [
-              112,
-              78,
-              90
-            ],
-            "scene_variant": "multi_line",
-            "series_label": "Gery",
-            "series_rank": 2,
-            "value": 9
-          },
-          "entity_id": "mark_K_Gery",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              703.125,
-              174.286,
-              719.125,
-              562.0
-            ],
-            "category_label": "S",
-            "category_label_center_px": [
-              711.125,
-              554.0
-            ],
-            "category_rank": 6,
-            "mark_bbox_px": [
-              703.125,
-              174.286,
-              719.125,
-              190.286
-            ],
-            "mark_center_px": [
-              711.125,
-              182.286
-            ],
-            "mark_fill_rgb": [
-              175,
-              147,
-              10
-            ],
-            "mark_outline_rgb": [
-              96,
-              81,
-              6
-            ],
-            "scene_variant": "multi_line",
-            "series_label": "Whit",
-            "series_rank": 0,
-            "value": 15
-          },
-          "entity_id": "mark_S_Whit",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              703.125,
-              174.286,
-              719.125,
-              562.0
-            ],
-            "category_label": "S",
-            "category_label_center_px": [
-              711.125,
-              554.0
-            ],
-            "category_rank": 6,
-            "mark_bbox_px": [
-              703.125,
-              289.524,
-              719.125,
-              305.524
-            ],
-            "mark_center_px": [
-              711.125,
-              297.524
-            ],
-            "mark_fill_rgb": [
-              26,
-              120,
-              163
-            ],
-            "mark_outline_rgb": [
-              14,
-              66,
-              90
-            ],
-            "scene_variant": "multi_line",
-            "series_label": "Heda",
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Snow",
             "series_rank": 1,
             "value": 10
           },
-          "entity_id": "mark_S_Heda",
-          "entity_type": "point"
+          "entity_id": "mark_C_Snow",
+          "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              703.125,
-              174.286,
-              719.125,
-              562.0
+              53.5,
+              357.826,
+              708.857,
+              407.774
             ],
-            "category_label": "S",
+            "category_label": "R",
             "category_label_center_px": [
-              711.125,
-              554.0
+              62.0,
+              382.8
             ],
-            "category_rank": 6,
+            "category_rank": 3,
             "mark_bbox_px": [
-              703.125,
-              450.857,
-              719.125,
-              466.857
+              92.0,
+              357.826,
+              200.857,
+              378.734
             ],
             "mark_center_px": [
-              711.125,
-              458.857
+              146.429,
+              368.28
             ],
             "mark_fill_rgb": [
-              203,
-              141,
-              163
+              186,
+              110,
+              77
             ],
             "mark_outline_rgb": [
-              112,
-              78,
-              90
+              102,
+              61,
+              42
             ],
-            "scene_variant": "multi_line",
-            "series_label": "Gery",
-            "series_rank": 2,
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Sima",
+            "series_rank": 0,
             "value": 3
           },
-          "entity_id": "mark_S_Gery",
-          "entity_type": "point"
+          "entity_id": "mark_R_Sima",
+          "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              795.375,
-              243.429,
-              817.375,
-              562.0
+              53.5,
+              357.826,
+              708.857,
+              407.774
             ],
-            "category_label": "M",
+            "category_label": "R",
             "category_label_center_px": [
-              806.375,
-              554.0
+              62.0,
+              382.8
             ],
-            "category_rank": 7,
+            "category_rank": 3,
             "mark_bbox_px": [
-              798.375,
-              243.429,
-              814.375,
-              259.429
+              92.0,
+              386.866,
+              708.857,
+              407.774
             ],
             "mark_center_px": [
-              806.375,
-              251.429
+              400.429,
+              397.32
             ],
             "mark_fill_rgb": [
-              175,
-              147,
-              10
+              148,
+              74,
+              182
             ],
             "mark_outline_rgb": [
-              96,
               81,
-              6
+              41,
+              100
             ],
-            "scene_variant": "multi_line",
-            "series_label": "Whit",
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Snow",
+            "series_rank": 1,
+            "value": 17
+          },
+          "entity_id": "mark_R_Snow",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.5,
+              454.626,
+              708.857,
+              504.574
+            ],
+            "category_label": "V",
+            "category_label_center_px": [
+              62.0,
+              479.6
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              92.0,
+              454.626,
+              527.429,
+              475.534
+            ],
+            "mark_center_px": [
+              309.714,
+              465.08
+            ],
+            "mark_fill_rgb": [
+              186,
+              110,
+              77
+            ],
+            "mark_outline_rgb": [
+              102,
+              61,
+              42
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Sima",
             "series_rank": 0,
             "value": 12
           },
-          "entity_id": "mark_M_Whit",
-          "entity_type": "point"
+          "entity_id": "mark_V_Sima",
+          "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              795.375,
-              243.429,
-              817.375,
-              562.0
+              53.5,
+              454.626,
+              708.857,
+              504.574
             ],
-            "category_label": "M",
+            "category_label": "V",
             "category_label_center_px": [
-              806.375,
-              554.0
+              62.0,
+              479.6
             ],
-            "category_rank": 7,
+            "category_rank": 4,
             "mark_bbox_px": [
-              798.375,
-              358.667,
-              814.375,
-              374.667
+              92.0,
+              483.666,
+              708.857,
+              504.574
             ],
             "mark_center_px": [
-              806.375,
-              366.667
+              400.429,
+              494.12
             ],
             "mark_fill_rgb": [
-              26,
-              120,
-              163
+              148,
+              74,
+              182
             ],
             "mark_outline_rgb": [
-              14,
-              66,
-              90
+              81,
+              41,
+              100
             ],
-            "scene_variant": "multi_line",
-            "series_label": "Heda",
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Snow",
             "series_rank": 1,
-            "value": 7
+            "value": 17
           },
-          "entity_id": "mark_M_Heda",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              795.375,
-              243.429,
-              817.375,
-              562.0
-            ],
-            "category_label": "M",
-            "category_label_center_px": [
-              806.375,
-              554.0
-            ],
-            "category_rank": 7,
-            "mark_bbox_px": [
-              798.375,
-              427.81,
-              814.375,
-              443.81
-            ],
-            "mark_center_px": [
-              806.375,
-              435.81
-            ],
-            "mark_fill_rgb": [
-              203,
-              141,
-              163
-            ],
-            "mark_outline_rgb": [
-              112,
-              78,
-              90
-            ],
-            "scene_variant": "multi_line",
-            "series_label": "Gery",
-            "series_rank": 2,
-            "value": 4
-          },
-          "entity_id": "mark_M_Gery",
-          "entity_type": "point"
+          "entity_id": "mark_V_Snow",
+          "entity_type": "bar"
         }
       ],
       "relations": {
         "comparison": "greater_than",
-        "evidence_labels": [
-          "F",
-          "J",
-          "K",
-          "L",
-          "M",
-          "R",
-          "S",
-          "W"
-        ],
+        "evidence_labels": [],
         "queried_series_labels": [
-          "Whit",
-          "Gery"
+          "Sima",
+          "Snow"
         ],
-        "scene_variant": "multi_line",
+        "scene_variant": "grouped_horizontal_bar",
         "task_variant": "series_a_gt_b_count"
       },
-      "scene_kind": "chart_multi_line_multiseries"
+      "scene_kind": "chart_grouped_horizontal_bar_multiseries"
     },
     "witness_symbolic": {
-      "labels": [
-        "F",
-        "J",
-        "K",
-        "L",
-        "M",
-        "R",
-        "S",
-        "W"
-      ],
+      "labels": [],
       "type": "label_set"
     }
   },

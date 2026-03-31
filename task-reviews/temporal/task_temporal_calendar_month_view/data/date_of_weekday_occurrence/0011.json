@@ -1,16 +1,16 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 5
+    "value": 4
   },
   "evidence_gt": {
     "type": "bbox_set",
     "value": [
       [
-        378.0,
-        251.0,
-        482.0,
-        338.0
+        490.0,
+        156.0,
+        594.0,
+        262.0
       ]
     ]
   },
@@ -18,17 +18,17 @@
     "format": "png",
     "path": "temporal/task_temporal_calendar_month_view/images/date_of_weekday_occurrence/0011.png"
   },
-  "instance_seed": 827871173329093,
-  "prompt": "Work from the month-view calendar shown in the image: one month-view calendar for June 2025 with weekday headers and date cells. Use the month-view calendar to answer the question. Find the 1st Thursday in this month. What date number is it?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the target date cell.\nAnswer field: set \"answer\" to the integer date number.\nExample JSON:\n{\"evidence\":[[354,256,456,352]],\"answer\":18}",
+  "instance_seed": 7455982473400807,
+  "prompt": "Work from the month-view calendar shown in the image: one month-view calendar for February 2022 with weekday headers and date cells. Answer the question using the calendar. Identify the date of the 1st Friday shown in this calendar month.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the target date cell.\nAnswer field: set \"answer\" to the integer date number.\nExample JSON:\n{\"evidence\":[[354,256,456,352]],\"answer\":18}",
   "prompt_variants": {
-    "answer_and_evidence": "Work from the month-view calendar shown in the image: one month-view calendar for June 2025 with weekday headers and date cells. Use the month-view calendar to answer the question. Find the 1st Thursday in this month. What date number is it?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the target date cell.\nAnswer field: set \"answer\" to the integer date number.\nExample JSON:\n{\"evidence\":[[354,256,456,352]],\"answer\":18}",
-    "answer_only": "Work from the month-view calendar shown in the image: one month-view calendar for June 2025 with weekday headers and date cells. Use the month-view calendar to answer the question. Find the 1st Thursday in this month. What date number is it?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the integer date number.\nExample JSON:\n{\"answer\":18}"
+    "answer_and_evidence": "Work from the month-view calendar shown in the image: one month-view calendar for February 2022 with weekday headers and date cells. Answer the question using the calendar. Identify the date of the 1st Friday shown in this calendar month.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the target date cell.\nAnswer field: set \"answer\" to the integer date number.\nExample JSON:\n{\"evidence\":[[354,256,456,352]],\"answer\":18}",
+    "answer_only": "Work from the month-view calendar shown in the image: one month-view calendar for February 2022 with weekday headers and date cells. Answer the question using the calendar. Identify the date of the 1st Friday shown in this calendar month.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the integer date number.\nExample JSON:\n{\"answer\":18}"
   },
   "task": "task_temporal_calendar_month_view",
   "task_variant": "date_of_weekday_occurrence",
   "trace_payload": {
     "execution_trace": {
-      "accent_color_name": "blue",
+      "accent_color_name": "yellow",
       "accent_color_name_probabilities": {
         "blue": 0.1,
         "brown": 0.1,
@@ -41,25 +41,25 @@
         "red": 0.1,
         "yellow": 0.1
       },
-      "answer_value": 5,
-      "days_in_month": 30,
+      "answer_value": 4,
+      "days_in_month": 28,
       "evidence_dates": [
-        5
+        4
       ],
       "marked_dates": [],
-      "month": 6,
-      "month_name": "June",
+      "month": 2,
+      "month_name": "February",
       "query_occurrence": 1,
-      "query_weekday_index": 3,
-      "row_count": 6,
-      "scene_variant": "minimal",
+      "query_weekday_index": 4,
+      "row_count": 5,
+      "scene_variant": "classic",
       "scene_variant_probabilities": {
         "classic": 0.3333333333333333,
         "minimal": 0.3333333333333333,
         "outline": 0.3333333333333333
       },
-      "start_weekday_index": 6,
-      "style_variant": "studio",
+      "start_weekday_index": 1,
+      "style_variant": "accented",
       "style_variant_probabilities": {
         "accented": 0.3333333333333333,
         "marker": 0.3333333333333333,
@@ -76,21 +76,21 @@
         5,
         6
       ],
-      "year": 2025
+      "year": 2022
     },
     "projected_evidence": {
       "bbox_set": [
         [
-          378.0,
-          251.0,
-          482.0,
-          338.0
+          490.0,
+          156.0,
+          594.0,
+          262.0
         ]
       ]
     },
     "query_spec": {
       "params": {
-        "accent_color_name": "blue",
+        "accent_color_name": "yellow",
         "accent_color_name_probabilities": {
           "blue": 0.1,
           "brown": 0.1,
@@ -132,7 +132,7 @@
           19,
           20
         ],
-        "days_in_month": 30,
+        "days_in_month": 28,
         "marked_weekday_distractor_support": [
           1,
           2,
@@ -146,21 +146,21 @@
           3,
           4
         ],
-        "month": 6,
-        "month_name": "June",
+        "month": 2,
+        "month_name": "February",
         "query_occurrence": 1,
         "query_occurrence_label": "1st",
-        "query_weekday_index": 3,
-        "query_weekday_name": "Thursday",
-        "row_count": 6,
-        "scene_variant": "minimal",
+        "query_weekday_index": 4,
+        "query_weekday_name": "Friday",
+        "row_count": 5,
+        "scene_variant": "classic",
         "scene_variant_probabilities": {
           "classic": 0.3333333333333333,
           "minimal": 0.3333333333333333,
           "outline": 0.3333333333333333
         },
-        "start_weekday_index": 6,
-        "style_variant": "studio",
+        "start_weekday_index": 1,
+        "style_variant": "accented",
         "style_variant_probabilities": {
           "accented": 0.3333333333333333,
           "marker": 0.3333333333333333,
@@ -176,7 +176,7 @@
           5,
           6
         ],
-        "year": 2025
+        "year": 2022
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
@@ -190,16 +190,16 @@
           "json_example_answer_only": "{\"answer\":18}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "object_description": "one month-view calendar for June 2025 with weekday headers and date cells",
+          "object_description": "one month-view calendar for February 2022 with weekday headers and date cells",
           "ordinal": "1st",
-          "weekday_name": "Thursday"
+          "weekday_name": "Friday"
         },
         "task_family_key": "month_calendar",
         "task_family_variant_index": 3,
         "task_key": "calendar_month_query",
-        "task_variant_index": 1,
+        "task_variant_index": 0,
         "task_variant_key": "date_of_weekday_occurrence",
-        "task_variant_template_index": 1,
+        "task_variant_template_index": 3,
         "template_paths": [
           "temporal/calendar/temporal_calendar_v1.json"
         ],
@@ -225,16 +225,16 @@
               "json_example_answer_only": "{\"answer\":18}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "one month-view calendar for June 2025 with weekday headers and date cells",
+              "object_description": "one month-view calendar for February 2022 with weekday headers and date cells",
               "ordinal": "1st",
-              "weekday_name": "Thursday"
+              "weekday_name": "Friday"
             },
             "task_family_key": "month_calendar",
             "task_family_variant_index": 3,
             "task_key": "calendar_month_query",
-            "task_variant_index": 1,
+            "task_variant_index": 0,
             "task_variant_key": "date_of_weekday_occurrence",
-            "task_variant_template_index": 1,
+            "task_variant_template_index": 3,
             "template_paths": [
               "temporal/calendar/temporal_calendar_v1.json"
             ],
@@ -245,12 +245,12 @@
               "task_variant:date_of_weekday_occurrence": 5
             }
           },
-          "prompt": "Work from the month-view calendar shown in the image: one month-view calendar for June 2025 with weekday headers and date cells. Use the month-view calendar to answer the question. Find the 1st Thursday in this month. What date number is it?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the target date cell.\nAnswer field: set \"answer\" to the integer date number.\nExample JSON:\n{\"evidence\":[[354,256,456,352]],\"answer\":18}"
+          "prompt": "Work from the month-view calendar shown in the image: one month-view calendar for February 2022 with weekday headers and date cells. Answer the question using the calendar. Identify the date of the 1st Friday shown in this calendar month.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the target date cell.\nAnswer field: set \"answer\" to the integer date number.\nExample JSON:\n{\"evidence\":[[354,256,456,352]],\"answer\":18}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 4,
+            "answer_or_evidence_variant_index": 1,
             "prompt_bundle_id": "temporal_calendar_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -260,16 +260,16 @@
               "json_example_answer_only": "{\"answer\":18}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "one month-view calendar for June 2025 with weekday headers and date cells",
+              "object_description": "one month-view calendar for February 2022 with weekday headers and date cells",
               "ordinal": "1st",
-              "weekday_name": "Thursday"
+              "weekday_name": "Friday"
             },
             "task_family_key": "month_calendar",
             "task_family_variant_index": 3,
             "task_key": "calendar_month_query",
-            "task_variant_index": 1,
+            "task_variant_index": 0,
             "task_variant_key": "date_of_weekday_occurrence",
-            "task_variant_template_index": 1,
+            "task_variant_template_index": 3,
             "template_paths": [
               "temporal/calendar/temporal_calendar_v1.json"
             ],
@@ -280,198 +280,186 @@
               "task_variant:date_of_weekday_occurrence": 5
             }
           },
-          "prompt": "Work from the month-view calendar shown in the image: one month-view calendar for June 2025 with weekday headers and date cells. Use the month-view calendar to answer the question. Find the 1st Thursday in this month. What date number is it?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the integer date number.\nExample JSON:\n{\"answer\":18}"
+          "prompt": "Work from the month-view calendar shown in the image: one month-view calendar for February 2022 with weekday headers and date cells. Answer the question using the calendar. Identify the date of the 1st Friday shown in this calendar month.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the integer date number.\nExample JSON:\n{\"answer\":18}"
         }
       },
       "task_variant": "date_of_weekday_occurrence",
       "template_id": "temporal_calendar_v1"
     },
     "render_map": {
-      "calendar_title_text": "June 2025",
+      "calendar_title_text": "February 2022",
       "date_cells_by_day": {
         "1": [
-          714.0,
+          154.0,
           156.0,
-          818.0,
-          243.0
+          258.0,
+          262.0
         ],
         "10": [
-          154.0,
-          346.0,
-          258.0,
-          433.0
+          378.0,
+          270.0,
+          482.0,
+          376.0
         ],
         "11": [
-          266.0,
-          346.0,
-          370.0,
-          433.0
+          490.0,
+          270.0,
+          594.0,
+          376.0
         ],
         "12": [
-          378.0,
-          346.0,
-          482.0,
-          433.0
+          602.0,
+          270.0,
+          706.0,
+          376.0
         ],
         "13": [
-          490.0,
-          346.0,
-          594.0,
-          433.0
+          714.0,
+          270.0,
+          818.0,
+          376.0
         ],
         "14": [
-          602.0,
-          346.0,
-          706.0,
-          433.0
+          42.0,
+          384.0,
+          146.0,
+          490.0
         ],
         "15": [
-          714.0,
-          346.0,
-          818.0,
-          433.0
+          154.0,
+          384.0,
+          258.0,
+          490.0
         ],
         "16": [
-          42.0,
-          441.0,
-          146.0,
-          528.0
+          266.0,
+          384.0,
+          370.0,
+          490.0
         ],
         "17": [
-          154.0,
-          441.0,
-          258.0,
-          528.0
+          378.0,
+          384.0,
+          482.0,
+          490.0
         ],
         "18": [
-          266.0,
-          441.0,
-          370.0,
-          528.0
+          490.0,
+          384.0,
+          594.0,
+          490.0
         ],
         "19": [
-          378.0,
-          441.0,
-          482.0,
-          528.0
+          602.0,
+          384.0,
+          706.0,
+          490.0
         ],
         "2": [
-          42.0,
-          251.0,
-          146.0,
-          338.0
+          266.0,
+          156.0,
+          370.0,
+          262.0
         ],
         "20": [
-          490.0,
-          441.0,
-          594.0,
-          528.0
+          714.0,
+          384.0,
+          818.0,
+          490.0
         ],
         "21": [
-          602.0,
-          441.0,
-          706.0,
-          528.0
+          42.0,
+          498.0,
+          146.0,
+          604.0
         ],
         "22": [
-          714.0,
-          441.0,
-          818.0,
-          528.0
+          154.0,
+          498.0,
+          258.0,
+          604.0
         ],
         "23": [
-          42.0,
-          536.0,
-          146.0,
-          623.0
+          266.0,
+          498.0,
+          370.0,
+          604.0
         ],
         "24": [
-          154.0,
-          536.0,
-          258.0,
-          623.0
+          378.0,
+          498.0,
+          482.0,
+          604.0
         ],
         "25": [
-          266.0,
-          536.0,
-          370.0,
-          623.0
+          490.0,
+          498.0,
+          594.0,
+          604.0
         ],
         "26": [
-          378.0,
-          536.0,
-          482.0,
-          623.0
+          602.0,
+          498.0,
+          706.0,
+          604.0
         ],
         "27": [
-          490.0,
-          536.0,
-          594.0,
-          623.0
+          714.0,
+          498.0,
+          818.0,
+          604.0
         ],
         "28": [
-          602.0,
-          536.0,
-          706.0,
-          623.0
-        ],
-        "29": [
-          714.0,
-          536.0,
-          818.0,
-          623.0
-        ],
-        "3": [
-          154.0,
-          251.0,
-          258.0,
-          338.0
-        ],
-        "30": [
           42.0,
-          631.0,
+          612.0,
           146.0,
           718.0
         ],
+        "3": [
+          378.0,
+          156.0,
+          482.0,
+          262.0
+        ],
         "4": [
-          266.0,
-          251.0,
-          370.0,
-          338.0
+          490.0,
+          156.0,
+          594.0,
+          262.0
         ],
         "5": [
-          378.0,
-          251.0,
-          482.0,
-          338.0
+          602.0,
+          156.0,
+          706.0,
+          262.0
         ],
         "6": [
-          490.0,
-          251.0,
-          594.0,
-          338.0
+          714.0,
+          156.0,
+          818.0,
+          262.0
         ],
         "7": [
-          602.0,
-          251.0,
-          706.0,
-          338.0
+          42.0,
+          270.0,
+          146.0,
+          376.0
         ],
         "8": [
-          714.0,
-          251.0,
-          818.0,
-          338.0
+          154.0,
+          270.0,
+          258.0,
+          376.0
         ],
         "9": [
-          42.0,
-          346.0,
-          146.0,
-          433.0
+          266.0,
+          270.0,
+          370.0,
+          376.0
         ]
       },
       "evidence_dates": [
-        5
+        4
       ],
       "image_id": "img0",
       "marked_dates": [],
@@ -499,7 +487,7 @@
         }
       },
       "calendar_style": {
-        "accent_color_name": "blue",
+        "accent_color_name": "yellow",
         "marker_kind": "fill",
         "resolved_colors_rgb": {
           "date_text": [
@@ -508,49 +496,49 @@
             62
           ],
           "grid_line": [
-            213,
-            218,
-            227
+            223,
+            221,
+            198
           ],
           "marker_fill": [
-            196,
-            216,
-            248
+            236,
+            228,
+            156
           ],
           "marker_outline": [
-            26,
-            68,
-            133
+            123,
+            113,
+            17
           ],
           "panel_fill": [
-            255,
-            255,
-            255
+            252,
+            251,
+            242
           ],
           "panel_outline": [
-            184,
-            193,
-            208
+            123,
+            113,
+            17
           ],
           "title_text": [
-            19,
-            49,
-            97
+            89,
+            81,
+            13
           ],
           "weekday_fill": [
-            226,
-            236,
-            252
+            246,
+            242,
+            206
           ],
           "weekday_text": [
-            19,
-            49,
-            97
+            89,
+            81,
+            13
           ]
         },
-        "row_count": 6,
-        "style_variant": "studio",
-        "title_text": "June 2025"
+        "row_count": 5,
+        "style_variant": "accented",
+        "title_text": "February 2022"
       },
       "canvas_height": 760,
       "canvas_width": 860,
@@ -577,7 +565,7 @@
         826.0,
         726.0
       ],
-      "scene_variant": "minimal"
+      "scene_variant": "classic"
     },
     "scene_ir": {
       "entities": [
@@ -585,17 +573,17 @@
           "attrs": {
             "date_number": 1,
             "is_marked": false,
-            "month": 6,
-            "month_name": "June",
+            "month": 2,
+            "month_name": "February",
             "week_row_index": 0,
-            "weekday_index": 6,
-            "year": 2025
+            "weekday_index": 1,
+            "year": 2022
           },
           "bbox_px": [
-            714.0,
+            154.0,
             156.0,
-            818.0,
-            243.0
+            258.0,
+            262.0
           ],
           "entity_id": "date_1",
           "entity_type": "calendar_date_cell"
@@ -604,17 +592,17 @@
           "attrs": {
             "date_number": 2,
             "is_marked": false,
-            "month": 6,
-            "month_name": "June",
-            "week_row_index": 1,
-            "weekday_index": 0,
-            "year": 2025
+            "month": 2,
+            "month_name": "February",
+            "week_row_index": 0,
+            "weekday_index": 2,
+            "year": 2022
           },
           "bbox_px": [
-            42.0,
-            251.0,
-            146.0,
-            338.0
+            266.0,
+            156.0,
+            370.0,
+            262.0
           ],
           "entity_id": "date_2",
           "entity_type": "calendar_date_cell"
@@ -623,17 +611,17 @@
           "attrs": {
             "date_number": 3,
             "is_marked": false,
-            "month": 6,
-            "month_name": "June",
-            "week_row_index": 1,
-            "weekday_index": 1,
-            "year": 2025
+            "month": 2,
+            "month_name": "February",
+            "week_row_index": 0,
+            "weekday_index": 3,
+            "year": 2022
           },
           "bbox_px": [
-            154.0,
-            251.0,
-            258.0,
-            338.0
+            378.0,
+            156.0,
+            482.0,
+            262.0
           ],
           "entity_id": "date_3",
           "entity_type": "calendar_date_cell"
@@ -642,17 +630,17 @@
           "attrs": {
             "date_number": 4,
             "is_marked": false,
-            "month": 6,
-            "month_name": "June",
-            "week_row_index": 1,
-            "weekday_index": 2,
-            "year": 2025
+            "month": 2,
+            "month_name": "February",
+            "week_row_index": 0,
+            "weekday_index": 4,
+            "year": 2022
           },
           "bbox_px": [
-            266.0,
-            251.0,
-            370.0,
-            338.0
+            490.0,
+            156.0,
+            594.0,
+            262.0
           ],
           "entity_id": "date_4",
           "entity_type": "calendar_date_cell"
@@ -661,17 +649,17 @@
           "attrs": {
             "date_number": 5,
             "is_marked": false,
-            "month": 6,
-            "month_name": "June",
-            "week_row_index": 1,
-            "weekday_index": 3,
-            "year": 2025
+            "month": 2,
+            "month_name": "February",
+            "week_row_index": 0,
+            "weekday_index": 5,
+            "year": 2022
           },
           "bbox_px": [
-            378.0,
-            251.0,
-            482.0,
-            338.0
+            602.0,
+            156.0,
+            706.0,
+            262.0
           ],
           "entity_id": "date_5",
           "entity_type": "calendar_date_cell"
@@ -680,17 +668,17 @@
           "attrs": {
             "date_number": 6,
             "is_marked": false,
-            "month": 6,
-            "month_name": "June",
-            "week_row_index": 1,
-            "weekday_index": 4,
-            "year": 2025
+            "month": 2,
+            "month_name": "February",
+            "week_row_index": 0,
+            "weekday_index": 6,
+            "year": 2022
           },
           "bbox_px": [
-            490.0,
-            251.0,
-            594.0,
-            338.0
+            714.0,
+            156.0,
+            818.0,
+            262.0
           ],
           "entity_id": "date_6",
           "entity_type": "calendar_date_cell"
@@ -699,17 +687,17 @@
           "attrs": {
             "date_number": 7,
             "is_marked": false,
-            "month": 6,
-            "month_name": "June",
+            "month": 2,
+            "month_name": "February",
             "week_row_index": 1,
-            "weekday_index": 5,
-            "year": 2025
+            "weekday_index": 0,
+            "year": 2022
           },
           "bbox_px": [
-            602.0,
-            251.0,
-            706.0,
-            338.0
+            42.0,
+            270.0,
+            146.0,
+            376.0
           ],
           "entity_id": "date_7",
           "entity_type": "calendar_date_cell"
@@ -718,17 +706,17 @@
           "attrs": {
             "date_number": 8,
             "is_marked": false,
-            "month": 6,
-            "month_name": "June",
+            "month": 2,
+            "month_name": "February",
             "week_row_index": 1,
-            "weekday_index": 6,
-            "year": 2025
+            "weekday_index": 1,
+            "year": 2022
           },
           "bbox_px": [
-            714.0,
-            251.0,
-            818.0,
-            338.0
+            154.0,
+            270.0,
+            258.0,
+            376.0
           ],
           "entity_id": "date_8",
           "entity_type": "calendar_date_cell"
@@ -737,17 +725,17 @@
           "attrs": {
             "date_number": 9,
             "is_marked": false,
-            "month": 6,
-            "month_name": "June",
-            "week_row_index": 2,
-            "weekday_index": 0,
-            "year": 2025
+            "month": 2,
+            "month_name": "February",
+            "week_row_index": 1,
+            "weekday_index": 2,
+            "year": 2022
           },
           "bbox_px": [
-            42.0,
-            346.0,
-            146.0,
-            433.0
+            266.0,
+            270.0,
+            370.0,
+            376.0
           ],
           "entity_id": "date_9",
           "entity_type": "calendar_date_cell"
@@ -756,17 +744,17 @@
           "attrs": {
             "date_number": 10,
             "is_marked": false,
-            "month": 6,
-            "month_name": "June",
-            "week_row_index": 2,
-            "weekday_index": 1,
-            "year": 2025
+            "month": 2,
+            "month_name": "February",
+            "week_row_index": 1,
+            "weekday_index": 3,
+            "year": 2022
           },
           "bbox_px": [
-            154.0,
-            346.0,
-            258.0,
-            433.0
+            378.0,
+            270.0,
+            482.0,
+            376.0
           ],
           "entity_id": "date_10",
           "entity_type": "calendar_date_cell"
@@ -775,17 +763,17 @@
           "attrs": {
             "date_number": 11,
             "is_marked": false,
-            "month": 6,
-            "month_name": "June",
-            "week_row_index": 2,
-            "weekday_index": 2,
-            "year": 2025
+            "month": 2,
+            "month_name": "February",
+            "week_row_index": 1,
+            "weekday_index": 4,
+            "year": 2022
           },
           "bbox_px": [
-            266.0,
-            346.0,
-            370.0,
-            433.0
+            490.0,
+            270.0,
+            594.0,
+            376.0
           ],
           "entity_id": "date_11",
           "entity_type": "calendar_date_cell"
@@ -794,17 +782,17 @@
           "attrs": {
             "date_number": 12,
             "is_marked": false,
-            "month": 6,
-            "month_name": "June",
-            "week_row_index": 2,
-            "weekday_index": 3,
-            "year": 2025
+            "month": 2,
+            "month_name": "February",
+            "week_row_index": 1,
+            "weekday_index": 5,
+            "year": 2022
           },
           "bbox_px": [
-            378.0,
-            346.0,
-            482.0,
-            433.0
+            602.0,
+            270.0,
+            706.0,
+            376.0
           ],
           "entity_id": "date_12",
           "entity_type": "calendar_date_cell"
@@ -813,17 +801,17 @@
           "attrs": {
             "date_number": 13,
             "is_marked": false,
-            "month": 6,
-            "month_name": "June",
-            "week_row_index": 2,
-            "weekday_index": 4,
-            "year": 2025
+            "month": 2,
+            "month_name": "February",
+            "week_row_index": 1,
+            "weekday_index": 6,
+            "year": 2022
           },
           "bbox_px": [
-            490.0,
-            346.0,
-            594.0,
-            433.0
+            714.0,
+            270.0,
+            818.0,
+            376.0
           ],
           "entity_id": "date_13",
           "entity_type": "calendar_date_cell"
@@ -832,17 +820,17 @@
           "attrs": {
             "date_number": 14,
             "is_marked": false,
-            "month": 6,
-            "month_name": "June",
+            "month": 2,
+            "month_name": "February",
             "week_row_index": 2,
-            "weekday_index": 5,
-            "year": 2025
+            "weekday_index": 0,
+            "year": 2022
           },
           "bbox_px": [
-            602.0,
-            346.0,
-            706.0,
-            433.0
+            42.0,
+            384.0,
+            146.0,
+            490.0
           ],
           "entity_id": "date_14",
           "entity_type": "calendar_date_cell"
@@ -851,17 +839,17 @@
           "attrs": {
             "date_number": 15,
             "is_marked": false,
-            "month": 6,
-            "month_name": "June",
+            "month": 2,
+            "month_name": "February",
             "week_row_index": 2,
-            "weekday_index": 6,
-            "year": 2025
+            "weekday_index": 1,
+            "year": 2022
           },
           "bbox_px": [
-            714.0,
-            346.0,
-            818.0,
-            433.0
+            154.0,
+            384.0,
+            258.0,
+            490.0
           ],
           "entity_id": "date_15",
           "entity_type": "calendar_date_cell"
@@ -870,17 +858,17 @@
           "attrs": {
             "date_number": 16,
             "is_marked": false,
-            "month": 6,
-            "month_name": "June",
-            "week_row_index": 3,
-            "weekday_index": 0,
-            "year": 2025
+            "month": 2,
+            "month_name": "February",
+            "week_row_index": 2,
+            "weekday_index": 2,
+            "year": 2022
           },
           "bbox_px": [
-            42.0,
-            441.0,
-            146.0,
-            528.0
+            266.0,
+            384.0,
+            370.0,
+            490.0
           ],
           "entity_id": "date_16",
           "entity_type": "calendar_date_cell"
@@ -889,17 +877,17 @@
           "attrs": {
             "date_number": 17,
             "is_marked": false,
-            "month": 6,
-            "month_name": "June",
-            "week_row_index": 3,
-            "weekday_index": 1,
-            "year": 2025
+            "month": 2,
+            "month_name": "February",
+            "week_row_index": 2,
+            "weekday_index": 3,
+            "year": 2022
           },
           "bbox_px": [
-            154.0,
-            441.0,
-            258.0,
-            528.0
+            378.0,
+            384.0,
+            482.0,
+            490.0
           ],
           "entity_id": "date_17",
           "entity_type": "calendar_date_cell"
@@ -908,17 +896,17 @@
           "attrs": {
             "date_number": 18,
             "is_marked": false,
-            "month": 6,
-            "month_name": "June",
-            "week_row_index": 3,
-            "weekday_index": 2,
-            "year": 2025
+            "month": 2,
+            "month_name": "February",
+            "week_row_index": 2,
+            "weekday_index": 4,
+            "year": 2022
           },
           "bbox_px": [
-            266.0,
-            441.0,
-            370.0,
-            528.0
+            490.0,
+            384.0,
+            594.0,
+            490.0
           ],
           "entity_id": "date_18",
           "entity_type": "calendar_date_cell"
@@ -927,17 +915,17 @@
           "attrs": {
             "date_number": 19,
             "is_marked": false,
-            "month": 6,
-            "month_name": "June",
-            "week_row_index": 3,
-            "weekday_index": 3,
-            "year": 2025
+            "month": 2,
+            "month_name": "February",
+            "week_row_index": 2,
+            "weekday_index": 5,
+            "year": 2022
           },
           "bbox_px": [
-            378.0,
-            441.0,
-            482.0,
-            528.0
+            602.0,
+            384.0,
+            706.0,
+            490.0
           ],
           "entity_id": "date_19",
           "entity_type": "calendar_date_cell"
@@ -946,17 +934,17 @@
           "attrs": {
             "date_number": 20,
             "is_marked": false,
-            "month": 6,
-            "month_name": "June",
-            "week_row_index": 3,
-            "weekday_index": 4,
-            "year": 2025
+            "month": 2,
+            "month_name": "February",
+            "week_row_index": 2,
+            "weekday_index": 6,
+            "year": 2022
           },
           "bbox_px": [
-            490.0,
-            441.0,
-            594.0,
-            528.0
+            714.0,
+            384.0,
+            818.0,
+            490.0
           ],
           "entity_id": "date_20",
           "entity_type": "calendar_date_cell"
@@ -965,17 +953,17 @@
           "attrs": {
             "date_number": 21,
             "is_marked": false,
-            "month": 6,
-            "month_name": "June",
+            "month": 2,
+            "month_name": "February",
             "week_row_index": 3,
-            "weekday_index": 5,
-            "year": 2025
+            "weekday_index": 0,
+            "year": 2022
           },
           "bbox_px": [
-            602.0,
-            441.0,
-            706.0,
-            528.0
+            42.0,
+            498.0,
+            146.0,
+            604.0
           ],
           "entity_id": "date_21",
           "entity_type": "calendar_date_cell"
@@ -984,17 +972,17 @@
           "attrs": {
             "date_number": 22,
             "is_marked": false,
-            "month": 6,
-            "month_name": "June",
+            "month": 2,
+            "month_name": "February",
             "week_row_index": 3,
-            "weekday_index": 6,
-            "year": 2025
+            "weekday_index": 1,
+            "year": 2022
           },
           "bbox_px": [
-            714.0,
-            441.0,
-            818.0,
-            528.0
+            154.0,
+            498.0,
+            258.0,
+            604.0
           ],
           "entity_id": "date_22",
           "entity_type": "calendar_date_cell"
@@ -1003,17 +991,17 @@
           "attrs": {
             "date_number": 23,
             "is_marked": false,
-            "month": 6,
-            "month_name": "June",
-            "week_row_index": 4,
-            "weekday_index": 0,
-            "year": 2025
+            "month": 2,
+            "month_name": "February",
+            "week_row_index": 3,
+            "weekday_index": 2,
+            "year": 2022
           },
           "bbox_px": [
-            42.0,
-            536.0,
-            146.0,
-            623.0
+            266.0,
+            498.0,
+            370.0,
+            604.0
           ],
           "entity_id": "date_23",
           "entity_type": "calendar_date_cell"
@@ -1022,17 +1010,17 @@
           "attrs": {
             "date_number": 24,
             "is_marked": false,
-            "month": 6,
-            "month_name": "June",
-            "week_row_index": 4,
-            "weekday_index": 1,
-            "year": 2025
+            "month": 2,
+            "month_name": "February",
+            "week_row_index": 3,
+            "weekday_index": 3,
+            "year": 2022
           },
           "bbox_px": [
-            154.0,
-            536.0,
-            258.0,
-            623.0
+            378.0,
+            498.0,
+            482.0,
+            604.0
           ],
           "entity_id": "date_24",
           "entity_type": "calendar_date_cell"
@@ -1041,17 +1029,17 @@
           "attrs": {
             "date_number": 25,
             "is_marked": false,
-            "month": 6,
-            "month_name": "June",
-            "week_row_index": 4,
-            "weekday_index": 2,
-            "year": 2025
+            "month": 2,
+            "month_name": "February",
+            "week_row_index": 3,
+            "weekday_index": 4,
+            "year": 2022
           },
           "bbox_px": [
-            266.0,
-            536.0,
-            370.0,
-            623.0
+            490.0,
+            498.0,
+            594.0,
+            604.0
           ],
           "entity_id": "date_25",
           "entity_type": "calendar_date_cell"
@@ -1060,17 +1048,17 @@
           "attrs": {
             "date_number": 26,
             "is_marked": false,
-            "month": 6,
-            "month_name": "June",
-            "week_row_index": 4,
-            "weekday_index": 3,
-            "year": 2025
+            "month": 2,
+            "month_name": "February",
+            "week_row_index": 3,
+            "weekday_index": 5,
+            "year": 2022
           },
           "bbox_px": [
-            378.0,
-            536.0,
-            482.0,
-            623.0
+            602.0,
+            498.0,
+            706.0,
+            604.0
           ],
           "entity_id": "date_26",
           "entity_type": "calendar_date_cell"
@@ -1079,17 +1067,17 @@
           "attrs": {
             "date_number": 27,
             "is_marked": false,
-            "month": 6,
-            "month_name": "June",
-            "week_row_index": 4,
-            "weekday_index": 4,
-            "year": 2025
+            "month": 2,
+            "month_name": "February",
+            "week_row_index": 3,
+            "weekday_index": 6,
+            "year": 2022
           },
           "bbox_px": [
-            490.0,
-            536.0,
-            594.0,
-            623.0
+            714.0,
+            498.0,
+            818.0,
+            604.0
           ],
           "entity_id": "date_27",
           "entity_type": "calendar_date_cell"
@@ -1098,69 +1086,31 @@
           "attrs": {
             "date_number": 28,
             "is_marked": false,
-            "month": 6,
-            "month_name": "June",
+            "month": 2,
+            "month_name": "February",
             "week_row_index": 4,
-            "weekday_index": 5,
-            "year": 2025
-          },
-          "bbox_px": [
-            602.0,
-            536.0,
-            706.0,
-            623.0
-          ],
-          "entity_id": "date_28",
-          "entity_type": "calendar_date_cell"
-        },
-        {
-          "attrs": {
-            "date_number": 29,
-            "is_marked": false,
-            "month": 6,
-            "month_name": "June",
-            "week_row_index": 4,
-            "weekday_index": 6,
-            "year": 2025
-          },
-          "bbox_px": [
-            714.0,
-            536.0,
-            818.0,
-            623.0
-          ],
-          "entity_id": "date_29",
-          "entity_type": "calendar_date_cell"
-        },
-        {
-          "attrs": {
-            "date_number": 30,
-            "is_marked": false,
-            "month": 6,
-            "month_name": "June",
-            "week_row_index": 5,
             "weekday_index": 0,
-            "year": 2025
+            "year": 2022
           },
           "bbox_px": [
             42.0,
-            631.0,
+            612.0,
             146.0,
             718.0
           ],
-          "entity_id": "date_30",
+          "entity_id": "date_28",
           "entity_type": "calendar_date_cell"
         }
       ],
       "relations": {
-        "accent_color_name": "blue",
+        "accent_color_name": "yellow",
         "marked_dates": [],
-        "month": 6,
-        "month_name": "June",
-        "scene_variant": "minimal",
-        "style_variant": "studio",
+        "month": 2,
+        "month_name": "February",
+        "scene_variant": "classic",
+        "style_variant": "accented",
         "task_variant": "date_of_weekday_occurrence",
-        "year": 2025
+        "year": 2022
       },
       "scene_kind": "temporal_month_calendar"
     },
@@ -1168,10 +1118,10 @@
       "type": "bbox_set",
       "value": [
         [
-          378.0,
-          251.0,
-          482.0,
-          338.0
+          490.0,
+          156.0,
+          594.0,
+          262.0
         ]
       ]
     }

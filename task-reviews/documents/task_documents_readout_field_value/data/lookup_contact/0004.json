@@ -1,22 +1,22 @@
 {
   "answer_gt": {
     "type": "string",
-    "value": "coppersupply@example.com"
+    "value": "amberworks@example.com"
   },
   "evidence_gt": {
     "type": "bbox_set",
     "value": [
       [
-        416.0,
-        632.5,
-        487.0,
-        651.5
+        665.0,
+        451.5,
+        841.0,
+        470.5
       ],
       [
-        602.0,
-        632.0,
-        864.0,
-        652.0
+        665.0,
+        484.5,
+        1058.0,
+        513.5
       ]
     ]
   },
@@ -24,18 +24,18 @@
     "format": "png",
     "path": "documents/task_documents_readout_field_value/images/lookup_contact/0004.png"
   },
-  "instance_seed": 7764506005225986,
-  "prompt": "Look at the document in the image: a receipt-style document with labeled rows and totals. Use the labeled fields to answer: What is the email address? Answer using the exact field value.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value.\nAnswer: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"ava.lee@example.com\"}",
+  "instance_seed": 6406533445335252,
+  "prompt": "Use the structured document in the image: an invoice-style document with labeled header blocks and summary fields. Use the labeled fields to answer: What is the contact email? Give the exact text shown in the requested field.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value.\nAnswer requirement: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"ava.lee@example.com\"}",
   "prompt_variants": {
-    "answer_and_evidence": "Look at the document in the image: a receipt-style document with labeled rows and totals. Use the labeled fields to answer: What is the email address? Answer using the exact field value.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value.\nAnswer: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"ava.lee@example.com\"}",
-    "answer_only": "Look at the document in the image: a receipt-style document with labeled rows and totals. Use the labeled fields to answer: What is the email address? Answer using the exact field value.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"answer\":\"ava.lee@example.com\"}"
+    "answer_and_evidence": "Use the structured document in the image: an invoice-style document with labeled header blocks and summary fields. Use the labeled fields to answer: What is the contact email? Give the exact text shown in the requested field.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value.\nAnswer requirement: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"ava.lee@example.com\"}",
+    "answer_only": "Use the structured document in the image: an invoice-style document with labeled header blocks and summary fields. Use the labeled fields to answer: What is the contact email? Give the exact text shown in the requested field.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"answer\":\"ava.lee@example.com\"}"
   },
   "task": "task_documents_readout_field_value",
   "task_variant": "lookup_contact",
   "trace_payload": {
     "answer_gt": {
       "type": "string",
-      "value": "coppersupply@example.com"
+      "value": "amberworks@example.com"
     },
     "background": {
       "available_styles": [
@@ -56,114 +56,132 @@
       "type": "bbox_set",
       "value": [
         [
-          416.0,
-          632.5,
-          487.0,
-          651.5
+          665.0,
+          451.5,
+          841.0,
+          470.5
         ],
         [
-          602.0,
-          632.0,
-          864.0,
-          652.0
+          665.0,
+          484.5,
+          1058.0,
+          513.5
         ]
       ]
     },
     "execution_trace": {
-      "field_count": 9,
+      "field_count": 11,
       "field_specs": [
         {
           "field_category": "lookup_name",
-          "field_id": "store_name",
-          "field_label": "Store Name",
-          "field_value": "Copper Supply",
-          "label_bbox_id": "store_name:label",
-          "question_name": "store name",
-          "value_bbox_id": "store_name:value"
-        },
-        {
-          "field_category": "lookup_identifier",
-          "field_id": "receipt_number",
-          "field_label": "Receipt No.",
-          "field_value": "R-54143",
-          "label_bbox_id": "receipt_number:label",
-          "question_name": "receipt number",
-          "value_bbox_id": "receipt_number:value"
-        },
-        {
-          "field_category": "lookup_date",
-          "field_id": "purchase_date",
-          "field_label": "Purchase Date",
-          "field_value": "May 14, 2026",
-          "label_bbox_id": "purchase_date:label",
-          "question_name": "purchase date",
-          "value_bbox_id": "purchase_date:value"
+          "field_id": "vendor_name",
+          "field_label": "Vendor",
+          "field_value": "Amber Works",
+          "label_bbox_id": "vendor_name:label",
+          "question_name": "vendor name",
+          "value_bbox_id": "vendor_name:value"
         },
         {
           "field_category": "lookup_name",
-          "field_id": "cashier_name",
-          "field_label": "Cashier",
-          "field_value": "Ada Young",
-          "label_bbox_id": "cashier_name:label",
-          "question_name": "cashier name",
-          "value_bbox_id": "cashier_name:value"
+          "field_id": "customer_name",
+          "field_label": "Customer",
+          "field_value": "Lila Howard",
+          "label_bbox_id": "customer_name:label",
+          "question_name": "customer name",
+          "value_bbox_id": "customer_name:value"
         },
         {
           "field_category": "lookup_identifier",
-          "field_id": "member_id",
-          "field_label": "Member ID",
-          "field_value": "M-6972",
-          "label_bbox_id": "member_id:label",
-          "question_name": "member ID",
-          "value_bbox_id": "member_id:value"
+          "field_id": "invoice_number",
+          "field_label": "Invoice Number",
+          "field_value": "INV-89339",
+          "label_bbox_id": "invoice_number:label",
+          "question_name": "invoice number",
+          "value_bbox_id": "invoice_number:value"
+        },
+        {
+          "field_category": "lookup_identifier",
+          "field_id": "account_id",
+          "field_label": "Account ID",
+          "field_value": "ACC-6033",
+          "label_bbox_id": "account_id:label",
+          "question_name": "account ID",
+          "value_bbox_id": "account_id:value"
+        },
+        {
+          "field_category": "lookup_date",
+          "field_id": "issue_date",
+          "field_label": "Issue Date",
+          "field_value": "2026-03-17",
+          "label_bbox_id": "issue_date:label",
+          "question_name": "issue date",
+          "value_bbox_id": "issue_date:value"
+        },
+        {
+          "field_category": "lookup_date",
+          "field_id": "due_date",
+          "field_label": "Due Date",
+          "field_value": "2026-03-25",
+          "label_bbox_id": "due_date:label",
+          "question_name": "due date",
+          "value_bbox_id": "due_date:value"
+        },
+        {
+          "field_category": "lookup_contact",
+          "field_id": "contact_email",
+          "field_label": "Contact Email",
+          "field_value": "amberworks@example.com",
+          "label_bbox_id": "contact_email:label",
+          "question_name": "contact email",
+          "value_bbox_id": "contact_email:value"
         },
         {
           "field_category": "lookup_contact",
           "field_id": "contact_phone",
           "field_label": "Phone",
-          "field_value": "(704) 802-5358",
+          "field_value": "(503) 482-9923",
           "label_bbox_id": "contact_phone:label",
           "question_name": "phone number",
           "value_bbox_id": "contact_phone:value"
         },
         {
-          "field_category": "lookup_contact",
-          "field_id": "contact_email",
-          "field_label": "Email",
-          "field_value": "coppersupply@example.com",
-          "label_bbox_id": "contact_email:label",
-          "question_name": "email address",
-          "value_bbox_id": "contact_email:value"
+          "field_category": "lookup_name",
+          "field_id": "city",
+          "field_label": "City",
+          "field_value": "Cedar Point",
+          "label_bbox_id": "city:label",
+          "question_name": "city",
+          "value_bbox_id": "city:value"
         },
         {
           "field_category": "lookup_amount",
           "field_id": "tax_amount",
           "field_label": "Tax",
-          "field_value": "$2.73",
+          "field_value": "$7.84",
           "label_bbox_id": "tax_amount:label",
           "question_name": "tax amount",
           "value_bbox_id": "tax_amount:value"
         },
         {
           "field_category": "lookup_amount",
-          "field_id": "total_paid",
-          "field_label": "Total Paid",
-          "field_value": "$62.41",
-          "label_bbox_id": "total_paid:label",
-          "question_name": "total paid",
-          "value_bbox_id": "total_paid:value"
+          "field_id": "total_due",
+          "field_label": "Total Due",
+          "field_value": "$314.47",
+          "label_bbox_id": "total_due:label",
+          "question_name": "total due",
+          "value_bbox_id": "total_due:value"
         }
       ],
       "query_field_category": "lookup_contact",
       "query_field_id": "contact_email",
-      "query_field_label": "Email",
-      "query_field_value": "coppersupply@example.com",
+      "query_field_label": "Contact Email",
+      "query_field_value": "amberworks@example.com",
       "query_label_bbox_id": "contact_email:label",
       "query_value_bbox_id": "contact_email:value",
       "question_format": "document_field_lookup",
-      "question_text": "What is the email address?",
-      "scene_title": "Receipt",
-      "scene_variant": "receipt_sheet",
+      "question_text": "What is the contact email?",
+      "scene_title": "Invoice",
+      "scene_variant": "invoice_sheet",
       "task_variant": "lookup_contact",
       "view_family": "structured_document"
     },
@@ -186,27 +204,27 @@
     "projected_evidence": {
       "bbox_set": [
         [
-          416.0,
-          632.5,
-          487.0,
-          651.5
+          665.0,
+          451.5,
+          841.0,
+          470.5
         ],
         [
-          602.0,
-          632.0,
-          864.0,
-          652.0
+          665.0,
+          484.5,
+          1058.0,
+          513.5
         ]
       ]
     },
     "query_spec": {
       "params": {
-        "field_count": 9,
+        "field_count": 11,
         "field_count_range": [
           8,
           11
         ],
-        "scene_variant": "receipt_sheet",
+        "scene_variant": "invoice_sheet",
         "scene_variant_probabilities": {
           "form_sheet": 0.3333333333333333,
           "invoice_sheet": 0.3333333333333333,
@@ -223,7 +241,7 @@
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 0,
+        "answer_or_evidence_variant_index": 2,
         "prompt_bundle_id": "documents_readout_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -233,15 +251,15 @@
           "json_example_answer_only": "{\"answer\":\"ava.lee@example.com\"}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "object_description": "a receipt-style document with labeled rows and totals",
-          "question_text": "What is the email address?"
+          "object_description": "an invoice-style document with labeled header blocks and summary fields",
+          "question_text": "What is the contact email?"
         },
         "task_family_key": "structured_document",
-        "task_family_variant_index": 1,
+        "task_family_variant_index": 3,
         "task_key": "field_lookup_query",
         "task_variant_index": 3,
         "task_variant_key": "lookup_contact",
-        "task_variant_template_index": 4,
+        "task_variant_template_index": 3,
         "template_paths": [
           "documents/readout/documents_readout_v1.json"
         ],
@@ -257,7 +275,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 0,
+            "answer_or_evidence_variant_index": 2,
             "prompt_bundle_id": "documents_readout_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -267,15 +285,15 @@
               "json_example_answer_only": "{\"answer\":\"ava.lee@example.com\"}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a receipt-style document with labeled rows and totals",
-              "question_text": "What is the email address?"
+              "object_description": "an invoice-style document with labeled header blocks and summary fields",
+              "question_text": "What is the contact email?"
             },
             "task_family_key": "structured_document",
-            "task_family_variant_index": 1,
+            "task_family_variant_index": 3,
             "task_key": "field_lookup_query",
             "task_variant_index": 3,
             "task_variant_key": "lookup_contact",
-            "task_variant_template_index": 4,
+            "task_variant_template_index": 3,
             "template_paths": [
               "documents/readout/documents_readout_v1.json"
             ],
@@ -286,12 +304,12 @@
               "task_variant:lookup_contact": 5
             }
           },
-          "prompt": "Look at the document in the image: a receipt-style document with labeled rows and totals. Use the labeled fields to answer: What is the email address? Answer using the exact field value.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value.\nAnswer: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"ava.lee@example.com\"}"
+          "prompt": "Use the structured document in the image: an invoice-style document with labeled header blocks and summary fields. Use the labeled fields to answer: What is the contact email? Give the exact text shown in the requested field.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value.\nAnswer requirement: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"ava.lee@example.com\"}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 3,
+            "answer_or_evidence_variant_index": 0,
             "prompt_bundle_id": "documents_readout_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -301,15 +319,15 @@
               "json_example_answer_only": "{\"answer\":\"ava.lee@example.com\"}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a receipt-style document with labeled rows and totals",
-              "question_text": "What is the email address?"
+              "object_description": "an invoice-style document with labeled header blocks and summary fields",
+              "question_text": "What is the contact email?"
             },
             "task_family_key": "structured_document",
-            "task_family_variant_index": 1,
+            "task_family_variant_index": 3,
             "task_key": "field_lookup_query",
             "task_variant_index": 3,
             "task_variant_key": "lookup_contact",
-            "task_variant_template_index": 4,
+            "task_variant_template_index": 3,
             "template_paths": [
               "documents/readout/documents_readout_v1.json"
             ],
@@ -320,7 +338,7 @@
               "task_variant:lookup_contact": 5
             }
           },
-          "prompt": "Look at the document in the image: a receipt-style document with labeled rows and totals. Use the labeled fields to answer: What is the email address? Answer using the exact field value.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"answer\":\"ava.lee@example.com\"}"
+          "prompt": "Use the structured document in the image: an invoice-style document with labeled header blocks and summary fields. Use the labeled fields to answer: What is the contact email? Give the exact text shown in the requested field.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"answer\":\"ava.lee@example.com\"}"
         }
       },
       "task_variant": "lookup_contact",
@@ -328,194 +346,230 @@
     },
     "render_map": {
       "field_box_bboxes_px": {
-        "cashier_name": [
-          406.0,
-          402.0,
-          874.0,
-          462.0
+        "account_id": [
+          498.667,
+          322.0,
+          781.333,
+          420.0
+        ],
+        "city": [
+          651.0,
+          554.0,
+          1080.0,
+          652.0
         ],
         "contact_email": [
-          406.0,
-          612.0,
-          874.0,
-          672.0
+          651.0,
+          438.0,
+          1080.0,
+          536.0
         ],
         "contact_phone": [
-          406.0,
-          542.0,
-          874.0,
-          602.0
+          200.0,
+          554.0,
+          629.0,
+          652.0
         ],
-        "member_id": [
-          406.0,
-          472.0,
-          874.0,
-          532.0
+        "customer_name": [
+          651.0,
+          206.0,
+          1080.0,
+          304.0
         ],
-        "purchase_date": [
-          406.0,
-          332.0,
-          874.0,
-          392.0
+        "due_date": [
+          200.0,
+          438.0,
+          629.0,
+          536.0
         ],
-        "receipt_number": [
-          406.0,
-          262.0,
-          874.0,
-          322.0
+        "invoice_number": [
+          200.0,
+          322.0,
+          482.667,
+          420.0
         ],
-        "store_name": [
-          406.0,
-          192.0,
-          874.0,
-          252.0
+        "issue_date": [
+          797.333,
+          322.0,
+          1080.0,
+          420.0
         ],
         "tax_amount": [
-          406.0,
-          682.0,
-          874.0,
-          742.0
+          200.0,
+          672.0,
+          629.0,
+          776.0
         ],
-        "total_paid": [
-          406.0,
-          752.0,
-          874.0,
-          812.0
+        "total_due": [
+          651.0,
+          672.0,
+          1080.0,
+          776.0
+        ],
+        "vendor_name": [
+          200.0,
+          206.0,
+          629.0,
+          304.0
         ]
       },
       "field_label_bboxes_px": {
-        "cashier_name:label": [
-          416.0,
-          422.5,
-          512.0,
-          441.5
+        "account_id:label": [
+          512.667,
+          336.0,
+          649.667,
+          354.0
+        ],
+        "city:label": [
+          665.0,
+          565.0,
+          716.0,
+          589.0
         ],
         "contact_email:label": [
-          416.0,
-          632.5,
-          487.0,
-          651.5
+          665.0,
+          451.5,
+          841.0,
+          470.5
         ],
         "contact_phone:label": [
-          416.0,
-          562.5,
-          496.0,
-          581.5
+          214.0,
+          567.5,
+          294.0,
+          586.5
         ],
-        "member_id:label": [
-          416.0,
-          492.5,
-          554.0,
-          511.5
+        "customer_name:label": [
+          665.0,
+          220.0,
+          787.0,
+          238.0
         ],
-        "purchase_date:label": [
-          416.0,
-          353.0,
-          588.0,
-          371.0
+        "due_date:label": [
+          214.0,
+          452.0,
+          332.0,
+          470.0
         ],
-        "receipt_number:label": [
-          416.0,
-          280.0,
-          562.0,
-          304.0
+        "invoice_number:label": [
+          214.0,
+          335.5,
+          412.0,
+          354.5
         ],
-        "store_name:label": [
-          416.0,
-          213.0,
-          565.0,
-          231.0
+        "issue_date:label": [
+          811.333,
+          336.0,
+          945.333,
+          354.0
         ],
         "tax_amount:label": [
-          416.0,
-          703.0,
-          462.0,
-          721.0
+          214.0,
+          686.0,
+          260.0,
+          704.0
         ],
-        "total_paid:label": [
-          416.0,
-          772.5,
-          545.0,
-          791.5
+        "total_due:label": [
+          665.0,
+          685.5,
+          788.0,
+          704.5
+        ],
+        "vendor_name:label": [
+          214.0,
+          219.5,
+          306.0,
+          238.5
         ]
       },
       "field_value_bboxes_px": {
-        "cashier_name:value": [
-          711.0,
-          417.5,
-          864.0,
-          446.5
+        "account_id:value": [
+          512.667,
+          372.0,
+          655.667,
+          394.0
+        ],
+        "city:value": [
+          665.0,
+          603.5,
+          831.0,
+          626.5
         ],
         "contact_email:value": [
-          602.0,
-          632.0,
-          864.0,
-          652.0
+          665.0,
+          484.5,
+          1058.0,
+          513.5
         ],
         "contact_phone:value": [
-          641.0,
-          558.5,
-          864.0,
-          585.5
+          214.0,
+          601.5,
+          437.0,
+          628.5
         ],
-        "member_id:value": [
-          756.0,
-          491.0,
-          864.0,
-          513.0
+        "customer_name:value": [
+          665.0,
+          255.5,
+          833.0,
+          278.5
         ],
-        "purchase_date:value": [
-          669.0,
-          348.0,
-          864.0,
-          376.0
+        "due_date:value": [
+          214.0,
+          488.0,
+          380.0,
+          510.0
         ],
-        "receipt_number:value": [
-          743.0,
-          281.0,
-          864.0,
-          303.0
+        "invoice_number:value": [
+          214.0,
+          372.0,
+          364.0,
+          394.0
         ],
-        "store_name:value": [
-          654.0,
-          207.5,
-          864.0,
-          236.5
+        "issue_date:value": [
+          811.333,
+          372.0,
+          977.333,
+          394.0
         ],
         "tax_amount:value": [
-          781.0,
-          698.5,
-          864.0,
-          725.5
+          214.0,
+          722.5,
+          297.0,
+          749.5
         ],
-        "total_paid:value": [
-          763.0,
-          768.5,
-          864.0,
-          795.5
+        "total_due:value": [
+          665.0,
+          722.5,
+          784.0,
+          749.5
+        ],
+        "vendor_name:value": [
+          214.0,
+          255.5,
+          406.0,
+          278.5
         ]
       },
       "page_bbox_px": [
-        380.0,
+        160.0,
         80.0,
-        900.0,
+        1120.0,
         840.0
       ],
       "title_bbox_px": [
-        411.0,
-        100.5,
-        590.0,
-        143.5
+        191.0,
+        105.0,
+        362.0,
+        139.0
       ]
     },
     "render_spec": {
       "canvas_height": 920,
       "canvas_width": 1280,
-      "geometry_seed": 7764506005225986,
+      "geometry_seed": 6406533445335252,
       "page_shadow_offset_px": 14,
       "receipt_page_height_px": 760,
       "receipt_page_width_px": 520,
-      "scene_variant": "receipt_sheet",
+      "scene_variant": "invoice_sheet",
       "sheet_page_height_px": 760,
       "sheet_page_width_px": 960
     },
@@ -524,9 +578,9 @@
         {
           "bbox_id": "page",
           "bbox_px": [
-            380.0,
+            160.0,
             80.0,
-            900.0,
+            1120.0,
             840.0
           ],
           "entity_id": "page",
@@ -535,212 +589,288 @@
         {
           "bbox_id": "title",
           "bbox_px": [
-            411.0,
-            100.5,
-            590.0,
-            143.5
+            191.0,
+            105.0,
+            362.0,
+            139.0
           ],
           "entity_id": "title",
           "entity_type": "document_title",
-          "text": "Receipt"
+          "text": "Invoice"
         },
         {
-          "bbox_id": "store_name",
+          "bbox_id": "vendor_name",
           "bbox_px": [
-            406.0,
-            192.0,
-            874.0,
-            252.0
-          ],
-          "entity_id": "store_name:field",
-          "entity_type": "document_field_box",
-          "field_id": "store_name"
-        },
-        {
-          "bbox_id": "store_name:label",
-          "bbox_px": [
-            416.0,
-            213.0,
-            565.0,
-            231.0
-          ],
-          "entity_id": "store_name:label",
-          "entity_type": "document_field_label",
-          "field_id": "store_name",
-          "text": "Store Name"
-        },
-        {
-          "bbox_id": "store_name:value",
-          "bbox_px": [
-            654.0,
-            207.5,
-            864.0,
-            236.5
-          ],
-          "entity_id": "store_name:value",
-          "entity_type": "document_field_value",
-          "field_id": "store_name",
-          "text": "Copper Supply"
-        },
-        {
-          "bbox_id": "receipt_number",
-          "bbox_px": [
-            406.0,
-            262.0,
-            874.0,
-            322.0
-          ],
-          "entity_id": "receipt_number:field",
-          "entity_type": "document_field_box",
-          "field_id": "receipt_number"
-        },
-        {
-          "bbox_id": "receipt_number:label",
-          "bbox_px": [
-            416.0,
-            280.0,
-            562.0,
+            200.0,
+            206.0,
+            629.0,
             304.0
           ],
-          "entity_id": "receipt_number:label",
-          "entity_type": "document_field_label",
-          "field_id": "receipt_number",
-          "text": "Receipt No."
+          "entity_id": "vendor_name:field",
+          "entity_type": "document_field_box",
+          "field_id": "vendor_name"
         },
         {
-          "bbox_id": "receipt_number:value",
+          "bbox_id": "vendor_name:label",
           "bbox_px": [
-            743.0,
-            281.0,
-            864.0,
-            303.0
+            214.0,
+            219.5,
+            306.0,
+            238.5
           ],
-          "entity_id": "receipt_number:value",
-          "entity_type": "document_field_value",
-          "field_id": "receipt_number",
-          "text": "R-54143"
+          "entity_id": "vendor_name:label",
+          "entity_type": "document_field_label",
+          "field_id": "vendor_name",
+          "text": "Vendor"
         },
         {
-          "bbox_id": "purchase_date",
+          "bbox_id": "vendor_name:value",
           "bbox_px": [
+            214.0,
+            255.5,
             406.0,
+            278.5
+          ],
+          "entity_id": "vendor_name:value",
+          "entity_type": "document_field_value",
+          "field_id": "vendor_name",
+          "text": "Amber Works"
+        },
+        {
+          "bbox_id": "customer_name",
+          "bbox_px": [
+            651.0,
+            206.0,
+            1080.0,
+            304.0
+          ],
+          "entity_id": "customer_name:field",
+          "entity_type": "document_field_box",
+          "field_id": "customer_name"
+        },
+        {
+          "bbox_id": "customer_name:label",
+          "bbox_px": [
+            665.0,
+            220.0,
+            787.0,
+            238.0
+          ],
+          "entity_id": "customer_name:label",
+          "entity_type": "document_field_label",
+          "field_id": "customer_name",
+          "text": "Customer"
+        },
+        {
+          "bbox_id": "customer_name:value",
+          "bbox_px": [
+            665.0,
+            255.5,
+            833.0,
+            278.5
+          ],
+          "entity_id": "customer_name:value",
+          "entity_type": "document_field_value",
+          "field_id": "customer_name",
+          "text": "Lila Howard"
+        },
+        {
+          "bbox_id": "invoice_number",
+          "bbox_px": [
+            200.0,
+            322.0,
+            482.667,
+            420.0
+          ],
+          "entity_id": "invoice_number:field",
+          "entity_type": "document_field_box",
+          "field_id": "invoice_number"
+        },
+        {
+          "bbox_id": "invoice_number:label",
+          "bbox_px": [
+            214.0,
+            335.5,
+            412.0,
+            354.5
+          ],
+          "entity_id": "invoice_number:label",
+          "entity_type": "document_field_label",
+          "field_id": "invoice_number",
+          "text": "Invoice Number"
+        },
+        {
+          "bbox_id": "invoice_number:value",
+          "bbox_px": [
+            214.0,
+            372.0,
+            364.0,
+            394.0
+          ],
+          "entity_id": "invoice_number:value",
+          "entity_type": "document_field_value",
+          "field_id": "invoice_number",
+          "text": "INV-89339"
+        },
+        {
+          "bbox_id": "account_id",
+          "bbox_px": [
+            498.667,
+            322.0,
+            781.333,
+            420.0
+          ],
+          "entity_id": "account_id:field",
+          "entity_type": "document_field_box",
+          "field_id": "account_id"
+        },
+        {
+          "bbox_id": "account_id:label",
+          "bbox_px": [
+            512.667,
+            336.0,
+            649.667,
+            354.0
+          ],
+          "entity_id": "account_id:label",
+          "entity_type": "document_field_label",
+          "field_id": "account_id",
+          "text": "Account ID"
+        },
+        {
+          "bbox_id": "account_id:value",
+          "bbox_px": [
+            512.667,
+            372.0,
+            655.667,
+            394.0
+          ],
+          "entity_id": "account_id:value",
+          "entity_type": "document_field_value",
+          "field_id": "account_id",
+          "text": "ACC-6033"
+        },
+        {
+          "bbox_id": "issue_date",
+          "bbox_px": [
+            797.333,
+            322.0,
+            1080.0,
+            420.0
+          ],
+          "entity_id": "issue_date:field",
+          "entity_type": "document_field_box",
+          "field_id": "issue_date"
+        },
+        {
+          "bbox_id": "issue_date:label",
+          "bbox_px": [
+            811.333,
+            336.0,
+            945.333,
+            354.0
+          ],
+          "entity_id": "issue_date:label",
+          "entity_type": "document_field_label",
+          "field_id": "issue_date",
+          "text": "Issue Date"
+        },
+        {
+          "bbox_id": "issue_date:value",
+          "bbox_px": [
+            811.333,
+            372.0,
+            977.333,
+            394.0
+          ],
+          "entity_id": "issue_date:value",
+          "entity_type": "document_field_value",
+          "field_id": "issue_date",
+          "text": "2026-03-17"
+        },
+        {
+          "bbox_id": "due_date",
+          "bbox_px": [
+            200.0,
+            438.0,
+            629.0,
+            536.0
+          ],
+          "entity_id": "due_date:field",
+          "entity_type": "document_field_box",
+          "field_id": "due_date"
+        },
+        {
+          "bbox_id": "due_date:label",
+          "bbox_px": [
+            214.0,
+            452.0,
             332.0,
-            874.0,
-            392.0
+            470.0
           ],
-          "entity_id": "purchase_date:field",
-          "entity_type": "document_field_box",
-          "field_id": "purchase_date"
-        },
-        {
-          "bbox_id": "purchase_date:label",
-          "bbox_px": [
-            416.0,
-            353.0,
-            588.0,
-            371.0
-          ],
-          "entity_id": "purchase_date:label",
+          "entity_id": "due_date:label",
           "entity_type": "document_field_label",
-          "field_id": "purchase_date",
-          "text": "Purchase Date"
+          "field_id": "due_date",
+          "text": "Due Date"
         },
         {
-          "bbox_id": "purchase_date:value",
+          "bbox_id": "due_date:value",
           "bbox_px": [
-            669.0,
-            348.0,
-            864.0,
-            376.0
+            214.0,
+            488.0,
+            380.0,
+            510.0
           ],
-          "entity_id": "purchase_date:value",
+          "entity_id": "due_date:value",
           "entity_type": "document_field_value",
-          "field_id": "purchase_date",
-          "text": "May 14, 2026"
+          "field_id": "due_date",
+          "text": "2026-03-25"
         },
         {
-          "bbox_id": "cashier_name",
+          "bbox_id": "contact_email",
           "bbox_px": [
-            406.0,
-            402.0,
-            874.0,
-            462.0
+            651.0,
+            438.0,
+            1080.0,
+            536.0
           ],
-          "entity_id": "cashier_name:field",
+          "entity_id": "contact_email:field",
           "entity_type": "document_field_box",
-          "field_id": "cashier_name"
+          "field_id": "contact_email"
         },
         {
-          "bbox_id": "cashier_name:label",
+          "bbox_id": "contact_email:label",
           "bbox_px": [
-            416.0,
-            422.5,
-            512.0,
-            441.5
+            665.0,
+            451.5,
+            841.0,
+            470.5
           ],
-          "entity_id": "cashier_name:label",
+          "entity_id": "contact_email:label",
           "entity_type": "document_field_label",
-          "field_id": "cashier_name",
-          "text": "Cashier"
+          "field_id": "contact_email",
+          "text": "Contact Email"
         },
         {
-          "bbox_id": "cashier_name:value",
+          "bbox_id": "contact_email:value",
           "bbox_px": [
-            711.0,
-            417.5,
-            864.0,
-            446.5
+            665.0,
+            484.5,
+            1058.0,
+            513.5
           ],
-          "entity_id": "cashier_name:value",
+          "entity_id": "contact_email:value",
           "entity_type": "document_field_value",
-          "field_id": "cashier_name",
-          "text": "Ada Young"
-        },
-        {
-          "bbox_id": "member_id",
-          "bbox_px": [
-            406.0,
-            472.0,
-            874.0,
-            532.0
-          ],
-          "entity_id": "member_id:field",
-          "entity_type": "document_field_box",
-          "field_id": "member_id"
-        },
-        {
-          "bbox_id": "member_id:label",
-          "bbox_px": [
-            416.0,
-            492.5,
-            554.0,
-            511.5
-          ],
-          "entity_id": "member_id:label",
-          "entity_type": "document_field_label",
-          "field_id": "member_id",
-          "text": "Member ID"
-        },
-        {
-          "bbox_id": "member_id:value",
-          "bbox_px": [
-            756.0,
-            491.0,
-            864.0,
-            513.0
-          ],
-          "entity_id": "member_id:value",
-          "entity_type": "document_field_value",
-          "field_id": "member_id",
-          "text": "M-6972"
+          "field_id": "contact_email",
+          "text": "amberworks@example.com"
         },
         {
           "bbox_id": "contact_phone",
           "bbox_px": [
-            406.0,
-            542.0,
-            874.0,
-            602.0
+            200.0,
+            554.0,
+            629.0,
+            652.0
           ],
           "entity_id": "contact_phone:field",
           "entity_type": "document_field_box",
@@ -749,10 +879,10 @@
         {
           "bbox_id": "contact_phone:label",
           "bbox_px": [
-            416.0,
-            562.5,
-            496.0,
-            581.5
+            214.0,
+            567.5,
+            294.0,
+            586.5
           ],
           "entity_id": "contact_phone:label",
           "entity_type": "document_field_label",
@@ -762,61 +892,61 @@
         {
           "bbox_id": "contact_phone:value",
           "bbox_px": [
-            641.0,
-            558.5,
-            864.0,
-            585.5
+            214.0,
+            601.5,
+            437.0,
+            628.5
           ],
           "entity_id": "contact_phone:value",
           "entity_type": "document_field_value",
           "field_id": "contact_phone",
-          "text": "(704) 802-5358"
+          "text": "(503) 482-9923"
         },
         {
-          "bbox_id": "contact_email",
+          "bbox_id": "city",
           "bbox_px": [
-            406.0,
-            612.0,
-            874.0,
-            672.0
-          ],
-          "entity_id": "contact_email:field",
-          "entity_type": "document_field_box",
-          "field_id": "contact_email"
-        },
-        {
-          "bbox_id": "contact_email:label",
-          "bbox_px": [
-            416.0,
-            632.5,
-            487.0,
-            651.5
-          ],
-          "entity_id": "contact_email:label",
-          "entity_type": "document_field_label",
-          "field_id": "contact_email",
-          "text": "Email"
-        },
-        {
-          "bbox_id": "contact_email:value",
-          "bbox_px": [
-            602.0,
-            632.0,
-            864.0,
+            651.0,
+            554.0,
+            1080.0,
             652.0
           ],
-          "entity_id": "contact_email:value",
+          "entity_id": "city:field",
+          "entity_type": "document_field_box",
+          "field_id": "city"
+        },
+        {
+          "bbox_id": "city:label",
+          "bbox_px": [
+            665.0,
+            565.0,
+            716.0,
+            589.0
+          ],
+          "entity_id": "city:label",
+          "entity_type": "document_field_label",
+          "field_id": "city",
+          "text": "City"
+        },
+        {
+          "bbox_id": "city:value",
+          "bbox_px": [
+            665.0,
+            603.5,
+            831.0,
+            626.5
+          ],
+          "entity_id": "city:value",
           "entity_type": "document_field_value",
-          "field_id": "contact_email",
-          "text": "coppersupply@example.com"
+          "field_id": "city",
+          "text": "Cedar Point"
         },
         {
           "bbox_id": "tax_amount",
           "bbox_px": [
-            406.0,
-            682.0,
-            874.0,
-            742.0
+            200.0,
+            672.0,
+            629.0,
+            776.0
           ],
           "entity_id": "tax_amount:field",
           "entity_type": "document_field_box",
@@ -825,10 +955,10 @@
         {
           "bbox_id": "tax_amount:label",
           "bbox_px": [
-            416.0,
-            703.0,
-            462.0,
-            721.0
+            214.0,
+            686.0,
+            260.0,
+            704.0
           ],
           "entity_id": "tax_amount:label",
           "entity_type": "document_field_label",
@@ -838,63 +968,63 @@
         {
           "bbox_id": "tax_amount:value",
           "bbox_px": [
-            781.0,
-            698.5,
-            864.0,
-            725.5
+            214.0,
+            722.5,
+            297.0,
+            749.5
           ],
           "entity_id": "tax_amount:value",
           "entity_type": "document_field_value",
           "field_id": "tax_amount",
-          "text": "$2.73"
+          "text": "$7.84"
         },
         {
-          "bbox_id": "total_paid",
+          "bbox_id": "total_due",
           "bbox_px": [
-            406.0,
-            752.0,
-            874.0,
-            812.0
+            651.0,
+            672.0,
+            1080.0,
+            776.0
           ],
-          "entity_id": "total_paid:field",
+          "entity_id": "total_due:field",
           "entity_type": "document_field_box",
-          "field_id": "total_paid"
+          "field_id": "total_due"
         },
         {
-          "bbox_id": "total_paid:label",
+          "bbox_id": "total_due:label",
           "bbox_px": [
-            416.0,
-            772.5,
-            545.0,
-            791.5
+            665.0,
+            685.5,
+            788.0,
+            704.5
           ],
-          "entity_id": "total_paid:label",
+          "entity_id": "total_due:label",
           "entity_type": "document_field_label",
-          "field_id": "total_paid",
-          "text": "Total Paid"
+          "field_id": "total_due",
+          "text": "Total Due"
         },
         {
-          "bbox_id": "total_paid:value",
+          "bbox_id": "total_due:value",
           "bbox_px": [
-            763.0,
-            768.5,
-            864.0,
-            795.5
+            665.0,
+            722.5,
+            784.0,
+            749.5
           ],
-          "entity_id": "total_paid:value",
+          "entity_id": "total_due:value",
           "entity_type": "document_field_value",
-          "field_id": "total_paid",
-          "text": "$62.41"
+          "field_id": "total_due",
+          "text": "$314.47"
         }
       ],
       "relations": {
         "query_field_id": "contact_email",
-        "query_field_label": "Email",
-        "scene_variant": "receipt_sheet",
+        "query_field_label": "Contact Email",
+        "scene_variant": "invoice_sheet",
         "task_variant": "lookup_contact",
         "view_family": "structured_document"
       },
-      "scene_kind": "document_receipt_sheet"
+      "scene_kind": "document_invoice_sheet"
     },
     "witness_symbolic": {
       "bbox_id_sequence": [

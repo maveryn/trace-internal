@@ -1,15 +1,15 @@
 {
   "answer_gt": {
     "type": "string",
-    "value": "Erny"
+    "value": "Katt"
   },
   "evidence_gt": {
     "type": "bbox_set",
     "value": [
       [
-        662.127,
+        415.873,
         723.923,
-        784.127,
+        537.873,
         781.923
       ]
     ]
@@ -18,11 +18,11 @@
     "format": "png",
     "path": "diagrams/task_diagrams_cycle_offset_stage_label/images/after_k_steps/0007.png"
   },
-  "instance_seed": 7463569968917872,
-  "prompt": "You are given a clockwise cycle diagram with labeled stages connected by arrows. Determine the requested stage from the cycle: Moving clockwise around the cycle, what stage is 1 step after Trin? Return the exact label shown. Return the exact visible label.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct stage box.\nAnswer: set \"answer\" to the exact visible stage label.\nExample JSON:\n{\"evidence\":[[747,242,869,300]],\"answer\":\"Mina\"}",
+  "instance_seed": 458542228865996,
+  "prompt": "Use the directed cycle diagram in the image: a clockwise cycle diagram with labeled stages connected by arrows. Use the cycle to answer: Moving clockwise around the cycle, what stage is 4 steps after Hoyt? Return the exact label shown. Answer using the exact visible label.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct stage box.\nAnswer: set \"answer\" to the exact visible stage label.\nExample JSON:\n{\"evidence\":[[747,242,869,300]],\"answer\":\"Mina\"}",
   "prompt_variants": {
-    "answer_and_evidence": "You are given a clockwise cycle diagram with labeled stages connected by arrows. Determine the requested stage from the cycle: Moving clockwise around the cycle, what stage is 1 step after Trin? Return the exact label shown. Return the exact visible label.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct stage box.\nAnswer: set \"answer\" to the exact visible stage label.\nExample JSON:\n{\"evidence\":[[747,242,869,300]],\"answer\":\"Mina\"}",
-    "answer_only": "You are given a clockwise cycle diagram with labeled stages connected by arrows. Determine the requested stage from the cycle: Moving clockwise around the cycle, what stage is 1 step after Trin? Return the exact label shown. Return the exact visible label.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the exact visible stage label.\nExample JSON:\n{\"answer\":\"Mina\"}"
+    "answer_and_evidence": "Use the directed cycle diagram in the image: a clockwise cycle diagram with labeled stages connected by arrows. Use the cycle to answer: Moving clockwise around the cycle, what stage is 4 steps after Hoyt? Return the exact label shown. Answer using the exact visible label.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct stage box.\nAnswer: set \"answer\" to the exact visible stage label.\nExample JSON:\n{\"evidence\":[[747,242,869,300]],\"answer\":\"Mina\"}",
+    "answer_only": "Use the directed cycle diagram in the image: a clockwise cycle diagram with labeled stages connected by arrows. Use the cycle to answer: Moving clockwise around the cycle, what stage is 4 steps after Hoyt? Return the exact label shown. Answer using the exact visible label.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the exact visible stage label.\nExample JSON:\n{\"answer\":\"Mina\"}"
   },
   "task": "task_diagrams_cycle_offset_stage_label",
   "task_variant": "after_k_steps",
@@ -43,10 +43,10 @@
       }
     },
     "execution_trace": {
-      "answer_stage_bbox_id": "stage_bbox_4",
-      "answer_stage_id": "stage_4",
-      "answer_stage_index": 4,
-      "answer_stage_label": "Erny",
+      "answer_stage_bbox_id": "stage_bbox_5",
+      "answer_stage_id": "stage_5",
+      "answer_stage_index": 5,
+      "answer_stage_label": "Katt",
       "direction": "clockwise",
       "edge_specs": [
         {
@@ -96,11 +96,11 @@
         }
       ],
       "query_relationship": "after",
-      "query_stage_id": "stage_3",
-      "query_stage_index": 3,
-      "query_stage_label": "Trin",
+      "query_stage_id": "stage_1",
+      "query_stage_index": 1,
+      "query_stage_label": "Hoyt",
       "question_format": "cycle_offset_stage_label",
-      "question_text": "Moving clockwise around the cycle, what stage is 1 step after Trin? Return the exact label shown.",
+      "question_text": "Moving clockwise around the cycle, what stage is 4 steps after Hoyt? Return the exact label shown.",
       "scene_title": "Loop Stages",
       "scene_variant": "cycle_ring",
       "stage_count": 9,
@@ -109,69 +109,69 @@
           "order_index": 0,
           "stage_bbox_id": "stage_bbox_0",
           "stage_id": "stage_0",
-          "stage_label": "Ping",
+          "stage_label": "Byrd",
           "stage_label_bbox_id": "stage_label_bbox_0"
         },
         {
           "order_index": 1,
           "stage_bbox_id": "stage_bbox_1",
           "stage_id": "stage_1",
-          "stage_label": "Cate",
+          "stage_label": "Hoyt",
           "stage_label_bbox_id": "stage_label_bbox_1"
         },
         {
           "order_index": 2,
           "stage_bbox_id": "stage_bbox_2",
           "stage_id": "stage_2",
-          "stage_label": "Frum",
+          "stage_label": "Otto",
           "stage_label_bbox_id": "stage_label_bbox_2"
         },
         {
           "order_index": 3,
           "stage_bbox_id": "stage_bbox_3",
           "stage_id": "stage_3",
-          "stage_label": "Trin",
+          "stage_label": "Sim",
           "stage_label_bbox_id": "stage_label_bbox_3"
         },
         {
           "order_index": 4,
           "stage_bbox_id": "stage_bbox_4",
           "stage_id": "stage_4",
-          "stage_label": "Erny",
+          "stage_label": "Nana",
           "stage_label_bbox_id": "stage_label_bbox_4"
         },
         {
           "order_index": 5,
           "stage_bbox_id": "stage_bbox_5",
           "stage_id": "stage_5",
-          "stage_label": "Timi",
+          "stage_label": "Katt",
           "stage_label_bbox_id": "stage_label_bbox_5"
         },
         {
           "order_index": 6,
           "stage_bbox_id": "stage_bbox_6",
           "stage_id": "stage_6",
-          "stage_label": "Loy",
+          "stage_label": "Aric",
           "stage_label_bbox_id": "stage_label_bbox_6"
         },
         {
           "order_index": 7,
           "stage_bbox_id": "stage_bbox_7",
           "stage_id": "stage_7",
-          "stage_label": "Ciri",
+          "stage_label": "Les",
           "stage_label_bbox_id": "stage_label_bbox_7"
         },
         {
           "order_index": 8,
           "stage_bbox_id": "stage_bbox_8",
           "stage_id": "stage_8",
-          "stage_label": "On",
+          "stage_label": "Gui",
           "stage_label_bbox_id": "stage_label_bbox_8"
         }
       ],
-      "step_count": 1,
+      "step_count": 4,
       "supporting_stage_bbox_ids": [
-        "stage_bbox_4"
+        "stage_bbox_5"
       ],
       "task_variant": "after_k_steps",
       "view_family": "cycle_diagram"
@@ -195,9 +195,9 @@
     "projected_evidence": {
       "bbox_set": [
         [
-          662.127,
+          415.873,
           723.923,
-          784.127,
+          537.873,
           781.923
         ]
       ]
@@ -210,7 +210,7 @@
           "cycle_ring": 1.0
         },
         "stage_count": 9,
-        "step_count": 1,
+        "step_count": 4,
         "task_variant": "after_k_steps",
         "task_variant_probabilities": {
           "after_k_steps": 1.0,
@@ -230,14 +230,14 @@
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
           "object_description": "a clockwise cycle diagram with labeled stages connected by arrows",
-          "question_text": "Moving clockwise around the cycle, what stage is 1 step after Trin? Return the exact label shown."
+          "question_text": "Moving clockwise around the cycle, what stage is 4 steps after Hoyt? Return the exact label shown."
         },
         "task_family_key": "cycle_diagram",
-        "task_family_variant_index": 2,
+        "task_family_variant_index": 3,
         "task_key": "offset_stage_query",
-        "task_variant_index": 4,
+        "task_variant_index": 1,
         "task_variant_key": "after_k_steps",
-        "task_variant_template_index": 1,
+        "task_variant_template_index": 4,
         "template_paths": [
           "diagrams/cycle/diagrams_cycle_v1.json"
         ],
@@ -264,14 +264,14 @@
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a clockwise cycle diagram with labeled stages connected by arrows",
-              "question_text": "Moving clockwise around the cycle, what stage is 1 step after Trin? Return the exact label shown."
+              "question_text": "Moving clockwise around the cycle, what stage is 4 steps after Hoyt? Return the exact label shown."
             },
             "task_family_key": "cycle_diagram",
-            "task_family_variant_index": 2,
+            "task_family_variant_index": 3,
             "task_key": "offset_stage_query",
-            "task_variant_index": 4,
+            "task_variant_index": 1,
             "task_variant_key": "after_k_steps",
-            "task_variant_template_index": 1,
+            "task_variant_template_index": 4,
             "template_paths": [
               "diagrams/cycle/diagrams_cycle_v1.json"
             ],
@@ -282,12 +282,12 @@
               "task_variant:after_k_steps": 5
             }
           },
-          "prompt": "You are given a clockwise cycle diagram with labeled stages connected by arrows. Determine the requested stage from the cycle: Moving clockwise around the cycle, what stage is 1 step after Trin? Return the exact label shown. Return the exact visible label.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct stage box.\nAnswer: set \"answer\" to the exact visible stage label.\nExample JSON:\n{\"evidence\":[[747,242,869,300]],\"answer\":\"Mina\"}"
+          "prompt": "Use the directed cycle diagram in the image: a clockwise cycle diagram with labeled stages connected by arrows. Use the cycle to answer: Moving clockwise around the cycle, what stage is 4 steps after Hoyt? Return the exact label shown. Answer using the exact visible label.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct stage box.\nAnswer: set \"answer\" to the exact visible stage label.\nExample JSON:\n{\"evidence\":[[747,242,869,300]],\"answer\":\"Mina\"}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 3,
+            "answer_or_evidence_variant_index": 2,
             "prompt_bundle_id": "diagrams_cycle_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -298,14 +298,14 @@
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a clockwise cycle diagram with labeled stages connected by arrows",
-              "question_text": "Moving clockwise around the cycle, what stage is 1 step after Trin? Return the exact label shown."
+              "question_text": "Moving clockwise around the cycle, what stage is 4 steps after Hoyt? Return the exact label shown."
             },
             "task_family_key": "cycle_diagram",
-            "task_family_variant_index": 2,
+            "task_family_variant_index": 3,
             "task_key": "offset_stage_query",
-            "task_variant_index": 4,
+            "task_variant_index": 1,
             "task_variant_key": "after_k_steps",
-            "task_variant_template_index": 1,
+            "task_variant_template_index": 4,
             "template_paths": [
               "diagrams/cycle/diagrams_cycle_v1.json"
             ],
@@ -316,7 +316,7 @@
               "task_variant:after_k_steps": 5
             }
           },
-          "prompt": "You are given a clockwise cycle diagram with labeled stages connected by arrows. Determine the requested stage from the cycle: Moving clockwise around the cycle, what stage is 1 step after Trin? Return the exact label shown. Return the exact visible label.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the exact visible stage label.\nExample JSON:\n{\"answer\":\"Mina\"}"
+          "prompt": "Use the directed cycle diagram in the image: a clockwise cycle diagram with labeled stages connected by arrows. Use the cycle to answer: Moving clockwise around the cycle, what stage is 4 steps after Hoyt? Return the exact label shown. Answer using the exact visible label.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the exact visible stage label.\nExample JSON:\n{\"answer\":\"Mina\"}"
         }
       },
       "task_variant": "after_k_steps",
@@ -449,58 +449,58 @@
       },
       "stage_label_bboxes_px": {
         "stage_label_bbox_0": [
-          571.0,
+          570.0,
           256.0,
-          629.0,
+          630.0,
           280.0
         ],
         "stage_label_bbox_1": [
-          801.904,
-          317.489,
-          860.904,
-          335.489
+          801.404,
+          314.989,
+          861.404,
+          337.989
         ],
         "stage_label_bbox_2": [
-          921.031,
+          925.531,
           465.588,
-          988.031,
+          983.531,
           483.588
         ],
         "stage_label_bbox_3": [
-          885.769,
+          887.269,
           633.5,
-          937.769,
+          936.269,
           652.5
         ],
         "stage_label_bbox_4": [
-          694.127,
-          741.423,
-          752.127,
-          764.423
+          690.127,
+          743.923,
+          756.127,
+          761.923
         ],
         "stage_label_bbox_5": [
           448.873,
-          743.423,
+          743.923,
           504.873,
-          762.423
+          761.923
         ],
         "stage_label_bbox_6": [
-          265.731,
-          631.5,
-          310.731,
-          654.5
+          262.731,
+          633.5,
+          313.731,
+          652.5
         ],
         "stage_label_bbox_7": [
-          222.969,
-          465.088,
-          267.969,
-          484.088
+          223.469,
+          465.588,
+          267.469,
+          483.588
         ],
         "stage_label_bbox_8": [
-          350.096,
-          317.489,
-          387.096,
-          335.489
+          346.596,
+          316.989,
+          390.596,
+          335.989
         ]
       },
       "title_bbox_px": [
@@ -514,7 +514,7 @@
       "canvas_height": 900,
       "canvas_width": 1200,
       "edge_width_px": 5,
-      "geometry_seed": 7463569968917872,
+      "geometry_seed": 458542228865996,
       "node_height_px": 58,
       "node_width_px": 122,
       "ring_radius_x_px": 360,
@@ -694,19 +694,19 @@
           "entity_type": "diagram_stage",
           "order_index": 0,
           "stage_id": "stage_0",
-          "text": "Ping"
+          "text": "Byrd"
         },
         {
           "bbox_xyxy": [
-            571.0,
+            570.0,
             256.0,
-            629.0,
+            630.0,
             280.0
           ],
           "entity_id": "stage_label_bbox_0",
           "entity_type": "diagram_stage_label",
           "stage_id": "stage_0",
-          "text": "Ping"
+          "text": "Byrd"
         },
         {
           "bbox_xyxy": [
@@ -719,19 +719,19 @@
           "entity_type": "diagram_stage",
           "order_index": 1,
           "stage_id": "stage_1",
-          "text": "Cate"
+          "text": "Hoyt"
         },
         {
           "bbox_xyxy": [
-            801.904,
-            317.489,
-            860.904,
-            335.489
+            801.404,
+            314.989,
+            861.404,
+            337.989
           ],
           "entity_id": "stage_label_bbox_1",
           "entity_type": "diagram_stage_label",
           "stage_id": "stage_1",
-          "text": "Cate"
+          "text": "Hoyt"
         },
         {
           "bbox_xyxy": [
@@ -744,19 +744,19 @@
           "entity_type": "diagram_stage",
           "order_index": 2,
           "stage_id": "stage_2",
-          "text": "Frum"
+          "text": "Otto"
         },
         {
           "bbox_xyxy": [
-            921.031,
+            925.531,
             465.588,
-            988.031,
+            983.531,
             483.588
           ],
           "entity_id": "stage_label_bbox_2",
           "entity_type": "diagram_stage_label",
           "stage_id": "stage_2",
-          "text": "Frum"
+          "text": "Otto"
         },
         {
           "bbox_xyxy": [
@@ -769,19 +769,19 @@
           "entity_type": "diagram_stage",
           "order_index": 3,
           "stage_id": "stage_3",
-          "text": "Trin"
+          "text": "Sim"
         },
         {
           "bbox_xyxy": [
-            885.769,
+            887.269,
             633.5,
-            937.769,
+            936.269,
             652.5
           ],
           "entity_id": "stage_label_bbox_3",
           "entity_type": "diagram_stage_label",
           "stage_id": "stage_3",
-          "text": "Trin"
+          "text": "Sim"
         },
         {
           "bbox_xyxy": [
@@ -794,19 +794,19 @@
           "entity_type": "diagram_stage",
           "order_index": 4,
           "stage_id": "stage_4",
-          "text": "Erny"
+          "text": "Nana"
         },
         {
           "bbox_xyxy": [
-            694.127,
-            741.423,
-            752.127,
-            764.423
+            690.127,
+            743.923,
+            756.127,
+            761.923
           ],
           "entity_id": "stage_label_bbox_4",
           "entity_type": "diagram_stage_label",
           "stage_id": "stage_4",
-          "text": "Erny"
+          "text": "Nana"
         },
         {
           "bbox_xyxy": [
@@ -819,19 +819,19 @@
           "entity_type": "diagram_stage",
           "order_index": 5,
           "stage_id": "stage_5",
-          "text": "Timi"
+          "text": "Katt"
         },
         {
           "bbox_xyxy": [
             448.873,
-            743.423,
+            743.923,
             504.873,
-            762.423
+            761.923
           ],
           "entity_id": "stage_label_bbox_5",
           "entity_type": "diagram_stage_label",
           "stage_id": "stage_5",
-          "text": "Timi"
+          "text": "Katt"
         },
         {
           "bbox_xyxy": [
@@ -844,19 +844,19 @@
           "entity_type": "diagram_stage",
           "order_index": 6,
           "stage_id": "stage_6",
-          "text": "Loy"
+          "text": "Aric"
         },
         {
           "bbox_xyxy": [
-            265.731,
-            631.5,
-            310.731,
-            654.5
+            262.731,
+            633.5,
+            313.731,
+            652.5
           ],
           "entity_id": "stage_label_bbox_6",
           "entity_type": "diagram_stage_label",
           "stage_id": "stage_6",
-          "text": "Loy"
+          "text": "Aric"
         },
         {
           "bbox_xyxy": [
@@ -869,19 +869,19 @@
           "entity_type": "diagram_stage",
           "order_index": 7,
           "stage_id": "stage_7",
-          "text": "Ciri"
+          "text": "Les"
         },
         {
           "bbox_xyxy": [
-            222.969,
-            465.088,
-            267.969,
-            484.088
+            223.469,
+            465.588,
+            267.469,
+            483.588
           ],
           "entity_id": "stage_label_bbox_7",
           "entity_type": "diagram_stage_label",
           "stage_id": "stage_7",
-          "text": "Ciri"
+          "text": "Les"
         },
         {
           "bbox_xyxy": [
@@ -894,24 +894,24 @@
           "entity_type": "diagram_stage",
           "order_index": 8,
           "stage_id": "stage_8",
-          "text": "On"
+          "text": "Gui"
         },
         {
           "bbox_xyxy": [
-            350.096,
-            317.489,
-            387.096,
-            335.489
+            346.596,
+            316.989,
+            390.596,
+            335.989
           ],
           "entity_id": "stage_label_bbox_8",
           "entity_type": "diagram_stage_label",
           "stage_id": "stage_8",
-          "text": "On"
+          "text": "Gui"
         }
       ],
       "relations": {
-        "answer_stage_bbox_id": "stage_bbox_4",
-        "answer_stage_id": "stage_4",
+        "answer_stage_bbox_id": "stage_bbox_5",
+        "answer_stage_id": "stage_5",
         "direction": "clockwise",
         "scene_variant": "cycle_ring",
         "task_variant": "after_k_steps",
@@ -921,7 +921,7 @@
     },
     "witness_symbolic": {
       "ids": [
-        "stage_4"
+        "stage_5"
       ],
       "type": "id_set"
     }

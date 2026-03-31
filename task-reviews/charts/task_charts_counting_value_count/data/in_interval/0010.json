@@ -1,67 +1,69 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 1
+    "value": 2
   },
   "evidence_gt": {
     "type": "label_set",
     "value": [
-      "Q"
+      "B",
+      "D"
     ]
   },
   "image": {
     "format": "png",
     "path": "charts/task_charts_counting_value_count/images/in_interval/0010.png"
   },
-  "instance_seed": 5711883126604448,
-  "prompt": "Use the chart in the image. It shows a labeled area chart with visible point markers. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Answer this question. How many labeled marks have value in the inclusive interval [1, 18]?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing the labels of all marks with values in the inclusive interval.\nAnswer rule: set \"answer\" to the number of matching marks as an integer.\nExample JSON:\n{\"evidence\":[\"C\",\"F\",\"Q\"],\"answer\":3}",
+  "instance_seed": 8055282463093259,
+  "prompt": "Use the chart in the image. It shows a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Read the chart values and count the matching marks. Determine how many marks have values between 31 and 68, inclusive.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the labels of all marks with values in the inclusive interval.\nAnswer requirement: set \"answer\" to the number of matching marks as an integer.\nExample JSON:\n{\"evidence\":[\"C\",\"F\",\"Q\"],\"answer\":3}",
   "prompt_variants": {
-    "answer_and_evidence": "Use the chart in the image. It shows a labeled area chart with visible point markers. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Answer this question. How many labeled marks have value in the inclusive interval [1, 18]?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing the labels of all marks with values in the inclusive interval.\nAnswer rule: set \"answer\" to the number of matching marks as an integer.\nExample JSON:\n{\"evidence\":[\"C\",\"F\",\"Q\"],\"answer\":3}",
-    "answer_only": "Use the chart in the image. It shows a labeled area chart with visible point markers. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Answer this question. How many labeled marks have value in the inclusive interval [1, 18]?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the number of matching marks as an integer.\nExample JSON:\n{\"answer\":3}"
+    "answer_and_evidence": "Use the chart in the image. It shows a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Read the chart values and count the matching marks. Determine how many marks have values between 31 and 68, inclusive.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the labels of all marks with values in the inclusive interval.\nAnswer requirement: set \"answer\" to the number of matching marks as an integer.\nExample JSON:\n{\"evidence\":[\"C\",\"F\",\"Q\"],\"answer\":3}",
+    "answer_only": "Use the chart in the image. It shows a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Read the chart values and count the matching marks. Determine how many marks have values between 31 and 68, inclusive.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the number of matching marks as an integer.\nExample JSON:\n{\"answer\":3}"
   },
   "task": "task_charts_counting_value_count",
   "task_variant": "in_interval",
   "trace_payload": {
     "execution_trace": {
-      "answer_value": 1,
+      "answer_value": 2,
+      "composition_total": 100,
       "evidence_labels": [
-        "Q"
+        "B",
+        "D"
       ],
       "interval_inclusive": true,
-      "interval_max": 18,
-      "interval_min": 1,
+      "interval_max": 68,
+      "interval_min": 31,
       "labels": [
-        "T",
+        "U",
+        "D",
+        "V",
+        "Z",
         "A",
-        "X",
-        "R",
-        "Q",
-        "M",
-        "L",
-        "K",
         "N",
-        "C"
+        "B",
+        "T"
       ],
       "mark_color_distance_space": "lab",
-      "mark_color_min_distance": 40.0,
-      "mark_color_sampling_policy": "random_rgb",
-      "mark_count": 10,
+      "mark_color_min_distance": 58.0,
+      "mark_color_sampling_policy": "random_rgb_palette",
+      "mark_count": 8,
       "mark_count_range": [
         5,
-        10
+        8
       ],
       "mark_fill_rgb": [
-        147,
-        91,
-        208
+        119,
+        3,
+        189
       ],
       "mark_outline_rgb": [
-        81,
-        50,
-        114
+        65,
+        2,
+        104
       ],
+      "pie_like_mark_color_channel_max": 200,
       "question_format": "numeric_open",
-      "scene_variant": "area",
+      "scene_variant": "pie",
       "scene_variant_probabilities": {
         "area": 0.1,
         "bar": 0.1,
@@ -74,76 +76,172 @@
         "radar": 0.1,
         "scatter": 0.1
       },
-      "target_answer": 1,
+      "slice_fill_palette_rgb": [
+        [
+          119,
+          3,
+          189
+        ],
+        [
+          85,
+          27,
+          40
+        ],
+        [
+          196,
+          34,
+          0
+        ],
+        [
+          83,
+          107,
+          190
+        ],
+        [
+          181,
+          160,
+          33
+        ],
+        [
+          10,
+          146,
+          85
+        ],
+        [
+          78,
+          197,
+          1
+        ],
+        [
+          37,
+          95,
+          103
+        ]
+      ],
+      "slice_outline_palette_rgb": [
+        [
+          65,
+          2,
+          104
+        ],
+        [
+          47,
+          15,
+          22
+        ],
+        [
+          108,
+          19,
+          0
+        ],
+        [
+          46,
+          59,
+          105
+        ],
+        [
+          100,
+          88,
+          18
+        ],
+        [
+          6,
+          80,
+          47
+        ],
+        [
+          43,
+          108,
+          1
+        ],
+        [
+          20,
+          52,
+          57
+        ]
+      ],
+      "target_answer": 2,
       "target_answer_range": [
         0,
         10
       ],
       "task_variant": "in_interval",
       "task_variant_probabilities": {
-        "above_threshold": 0.3333333333333333,
-        "below_threshold": 0.3333333333333333,
-        "in_interval": 0.3333333333333333
+        "above_threshold": 0.0,
+        "below_threshold": 0.0,
+        "in_interval": 1.0
       },
-      "value_max": 20,
+      "value_max": 99,
       "value_min": 1,
+      "value_semantics": "percentage",
       "values": [
-        20,
-        19,
-        20,
-        19,
-        8,
-        19,
-        19,
-        19,
-        20,
-        19
+        1,
+        43,
+        1,
+        1,
+        3,
+        1,
+        42,
+        8
       ],
       "values_by_label": {
-        "A": 19,
-        "C": 19,
-        "K": 19,
-        "L": 19,
-        "M": 19,
-        "N": 20,
-        "Q": 8,
-        "R": 19,
-        "T": 20,
-        "X": 20
+        "A": 3,
+        "B": 42,
+        "D": 43,
+        "N": 1,
+        "T": 8,
+        "U": 1,
+        "V": 1,
+        "Z": 1
       }
     },
     "projected_evidence": {
       "bbox_set": [
         [
-          381.9,
-          323.238,
-          397.9,
-          339.238
+          112.937,
+          94.149,
+          319.32,
+          483.52
+        ],
+        [
+          319.32,
+          68.889,
+          526.835,
+          468.947
         ]
       ],
       "label_set": [
-        "Q"
+        "B",
+        "D"
       ],
       "pixel_point_map": {
-        "Q": [
-          389.9,
-          331.238
+        "B": [
+          198.72,
+          306.965
+        ],
+        "D": [
+          442.299,
+          256.522
         ]
       },
       "pixel_point_set": [
         [
-          389.9,
-          331.238
+          198.72,
+          306.965
+        ],
+        [
+          442.299,
+          256.522
         ]
       ]
     },
     "query_spec": {
       "params": {
         "interval_inclusive": true,
-        "interval_max": 18,
-        "interval_min": 1,
-        "mark_count": 10,
-        "scene_variant": "area",
+        "interval_max": 68,
+        "interval_min": 31,
+        "mark_count": 8,
+        "scene_variant": "pie",
         "scene_variant_probabilities": {
           "area": 0.1,
           "bar": 0.1,
@@ -156,41 +254,41 @@
           "radar": 0.1,
           "scatter": 0.1
         },
-        "target_answer": 1,
+        "target_answer": 2,
         "target_answer_range": [
           0,
           10
         ],
         "task_variant": "in_interval",
         "task_variant_probabilities": {
-          "above_threshold": 0.3333333333333333,
-          "below_threshold": 0.3333333333333333,
-          "in_interval": 0.3333333333333333
+          "above_threshold": 0.0,
+          "below_threshold": 0.0,
+          "in_interval": 1.0
         }
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 4,
+        "answer_or_evidence_variant_index": 2,
         "prompt_bundle_id": "charts_counting_v1",
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the number of matching marks as an integer",
           "evidence_hint": "set \"evidence\" to an array containing the labels of all marks with values in the inclusive interval",
-          "interval_max": "18",
-          "interval_min": "1",
+          "interval_max": "68",
+          "interval_min": "31",
           "json_example": "{\"evidence\":[\"C\",\"F\",\"Q\"],\"answer\":3}",
           "json_example_answer_only": "{\"answer\":3}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "object_description": "a labeled area chart with visible point markers. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis",
+          "object_description": "a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices",
           "threshold": ""
         },
         "task_family_key": "labeled_chart_counting",
         "task_family_variant_index": 1,
         "task_key": "value_count_query",
-        "task_variant_index": 0,
+        "task_variant_index": 4,
         "task_variant_key": "in_interval",
-        "task_variant_template_index": 0,
+        "task_variant_template_index": 2,
         "template_paths": [
           "charts/counting/charts_counting_v1.json"
         ],
@@ -206,27 +304,27 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 4,
+            "answer_or_evidence_variant_index": 2,
             "prompt_bundle_id": "charts_counting_v1",
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the number of matching marks as an integer",
               "evidence_hint": "set \"evidence\" to an array containing the labels of all marks with values in the inclusive interval",
-              "interval_max": "18",
-              "interval_min": "1",
+              "interval_max": "68",
+              "interval_min": "31",
               "json_example": "{\"evidence\":[\"C\",\"F\",\"Q\"],\"answer\":3}",
               "json_example_answer_only": "{\"answer\":3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a labeled area chart with visible point markers. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis",
+              "object_description": "a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices",
               "threshold": ""
             },
             "task_family_key": "labeled_chart_counting",
             "task_family_variant_index": 1,
             "task_key": "value_count_query",
-            "task_variant_index": 0,
+            "task_variant_index": 4,
             "task_variant_key": "in_interval",
-            "task_variant_template_index": 0,
+            "task_variant_template_index": 2,
             "template_paths": [
               "charts/counting/charts_counting_v1.json"
             ],
@@ -237,32 +335,32 @@
               "task_variant:in_interval": 5
             }
           },
-          "prompt": "Use the chart in the image. It shows a labeled area chart with visible point markers. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Answer this question. How many labeled marks have value in the inclusive interval [1, 18]?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing the labels of all marks with values in the inclusive interval.\nAnswer rule: set \"answer\" to the number of matching marks as an integer.\nExample JSON:\n{\"evidence\":[\"C\",\"F\",\"Q\"],\"answer\":3}"
+          "prompt": "Use the chart in the image. It shows a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Read the chart values and count the matching marks. Determine how many marks have values between 31 and 68, inclusive.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the labels of all marks with values in the inclusive interval.\nAnswer requirement: set \"answer\" to the number of matching marks as an integer.\nExample JSON:\n{\"evidence\":[\"C\",\"F\",\"Q\"],\"answer\":3}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 1,
+            "answer_or_evidence_variant_index": 4,
             "prompt_bundle_id": "charts_counting_v1",
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the number of matching marks as an integer",
               "evidence_hint": "set \"evidence\" to an array containing the labels of all marks with values in the inclusive interval",
-              "interval_max": "18",
-              "interval_min": "1",
+              "interval_max": "68",
+              "interval_min": "31",
               "json_example": "{\"evidence\":[\"C\",\"F\",\"Q\"],\"answer\":3}",
               "json_example_answer_only": "{\"answer\":3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a labeled area chart with visible point markers. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis",
+              "object_description": "a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices",
               "threshold": ""
             },
             "task_family_key": "labeled_chart_counting",
             "task_family_variant_index": 1,
             "task_key": "value_count_query",
-            "task_variant_index": 0,
+            "task_variant_index": 4,
             "task_variant_key": "in_interval",
-            "task_variant_template_index": 0,
+            "task_variant_template_index": 2,
             "template_paths": [
               "charts/counting/charts_counting_v1.json"
             ],
@@ -273,7 +371,7 @@
               "task_variant:in_interval": 5
             }
           },
-          "prompt": "Use the chart in the image. It shows a labeled area chart with visible point markers. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Answer this question. How many labeled marks have value in the inclusive interval [1, 18]?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the number of matching marks as an integer.\nExample JSON:\n{\"answer\":3}"
+          "prompt": "Use the chart in the image. It shows a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Read the chart values and count the matching marks. Determine how many marks have values between 31 and 68, inclusive.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the number of matching marks as an integer.\nExample JSON:\n{\"answer\":3}"
         }
       },
       "task_variant": "in_interval",
@@ -283,44 +381,36 @@
       "image_id": "img0",
       "label_centers_px": {
         "A": [
-          191.3,
-          66.19
+          625.14,
+          290.0
         ],
-        "C": [
-          720.9,
-          66.19
+        "B": [
+          625.14,
+          374.0
         ],
-        "K": [
-          588.5,
-          66.19
-        ],
-        "L": [
-          522.3,
-          66.19
-        ],
-        "M": [
-          456.1,
-          66.19
+        "D": [
+          625.64,
+          164.0
         ],
         "N": [
-          654.7,
-          44.095
-        ],
-        "Q": [
-          389.9,
-          309.238
-        ],
-        "R": [
-          323.7,
-          66.19
+          625.64,
+          332.0
         ],
         "T": [
-          125.1,
-          44.095
+          624.14,
+          416.0
         ],
-        "X": [
-          257.5,
-          44.095
+        "U": [
+          625.64,
+          122.0
+        ],
+        "V": [
+          625.14,
+          206.0
+        ],
+        "Z": [
+          624.64,
+          248.0
         ]
       },
       "plot_bbox_px": [
@@ -356,18 +446,103 @@
       "coord_space": "pixel",
       "mark_style": {
         "mark_color_distance_space": "lab",
-        "mark_color_min_distance": 40.0,
+        "mark_color_min_distance": 58.0,
         "mark_fill_rgb": [
-          147,
-          91,
-          208
+          119,
+          3,
+          189
         ],
         "mark_outline_rgb": [
-          81,
-          50,
-          114
+          65,
+          2,
+          104
         ],
-        "sampling_policy": "random_rgb"
+        "pie_like_mark_color_channel_max": 200,
+        "sampling_policy": "random_rgb_palette",
+        "slice_fill_palette_rgb": [
+          [
+            119,
+            3,
+            189
+          ],
+          [
+            85,
+            27,
+            40
+          ],
+          [
+            196,
+            34,
+            0
+          ],
+          [
+            83,
+            107,
+            190
+          ],
+          [
+            181,
+            160,
+            33
+          ],
+          [
+            10,
+            146,
+            85
+          ],
+          [
+            78,
+            197,
+            1
+          ],
+          [
+            37,
+            95,
+            103
+          ]
+        ],
+        "slice_outline_palette_rgb": [
+          [
+            65,
+            2,
+            104
+          ],
+          [
+            47,
+            15,
+            22
+          ],
+          [
+            108,
+            19,
+            0
+          ],
+          [
+            46,
+            59,
+            105
+          ],
+          [
+            100,
+            88,
+            18
+          ],
+          [
+            6,
+            80,
+            47
+          ],
+          [
+            43,
+            108,
+            1
+          ],
+          [
+            20,
+            52,
+            57
+          ]
+        ]
       },
       "plot_bbox_px": [
         92,
@@ -391,13 +566,13 @@
         "edits": [],
         "enabled": false
       },
-      "scene_variant": "area",
+      "scene_variant": "pie",
       "text_style": {
         "label_font_size_px": 22,
         "label_stroke_width_px": 2,
         "tick_font_size_px": 18
       },
-      "y_axis_max": 21,
+      "y_axis_max": 44,
       "y_ticks": [
         0,
         1,
@@ -420,367 +595,516 @@
         18,
         19,
         20,
-        21
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44
       ]
     },
     "scene_ir": {
       "entities": [
         {
           "attrs": {
-            "label": "T",
+            "end_angle_deg": -86.4,
+            "label": "U",
+            "label_bbox_px": [
+              616.64,
+              114.0,
+              634.64,
+              130.0
+            ],
             "label_center_px": [
-              125.1,
-              44.095
+              625.64,
+              122.0
+            ],
+            "legend_swatch_bbox_px": [
+              568.64,
+              108.0,
+              596.64,
+              136.0
             ],
             "mark_bbox_px": [
-              117.1,
-              58.095,
-              133.1,
-              74.095
+              319.32,
+              68.48,
+              332.35,
+              276.0
             ],
             "mark_center_px": [
-              125.1,
-              66.095
+              323.231,
+              151.549
             ],
             "mark_fill_rgb": [
-              147,
-              91,
-              208
+              119,
+              3,
+              189
             ],
             "mark_outline_rgb": [
-              81,
-              50,
-              114
+              65,
+              2,
+              104
             ],
-            "scene_variant": "area",
-            "value": 20,
+            "percentage_bbox_px": [
+              307.841,
+              44.59,
+              344.841,
+              60.59
+            ],
+            "percentage_center_px": [
+              326.341,
+              52.59
+            ],
+            "scene_variant": "pie",
+            "start_angle_deg": -90.0,
+            "value": 1,
             "x_rank": 0
           },
-          "entity_id": "mark_T",
-          "entity_type": "point"
+          "entity_id": "mark_U",
+          "entity_type": "slice"
         },
         {
           "attrs": {
-            "label": "A",
+            "end_angle_deg": 68.4,
+            "label": "D",
+            "label_bbox_px": [
+              616.64,
+              156.0,
+              634.64,
+              172.0
+            ],
             "label_center_px": [
-              191.3,
-              66.19
+              625.64,
+              164.0
+            ],
+            "legend_swatch_bbox_px": [
+              568.64,
+              150.0,
+              596.64,
+              178.0
             ],
             "mark_bbox_px": [
-              183.3,
-              80.19,
-              199.3,
-              96.19
+              319.32,
+              68.889,
+              526.835,
+              468.947
             ],
             "mark_center_px": [
-              191.3,
-              88.19
+              442.299,
+              256.522
             ],
             "mark_fill_rgb": [
-              147,
-              91,
-              208
+              85,
+              27,
+              40
             ],
             "mark_outline_rgb": [
-              81,
-              50,
-              114
+              47,
+              15,
+              22
             ],
-            "scene_variant": "area",
-            "value": 19,
+            "percentage_bbox_px": [
+              416.299,
+              248.522,
+              468.299,
+              264.522
+            ],
+            "percentage_center_px": [
+              442.299,
+              256.522
+            ],
+            "scene_variant": "pie",
+            "start_angle_deg": -86.4,
+            "value": 43,
             "x_rank": 1
           },
-          "entity_id": "mark_A",
-          "entity_type": "point"
+          "entity_id": "mark_D",
+          "entity_type": "slice"
         },
         {
           "attrs": {
-            "label": "X",
+            "end_angle_deg": 72.0,
+            "label": "V",
+            "label_bbox_px": [
+              616.64,
+              198.0,
+              633.64,
+              214.0
+            ],
             "label_center_px": [
-              257.5,
-              44.095
+              625.14,
+              206.0
+            ],
+            "legend_swatch_bbox_px": [
+              568.64,
+              192.0,
+              596.64,
+              220.0
             ],
             "mark_bbox_px": [
-              249.5,
-              58.095,
-              265.5,
-              74.095
+              319.32,
+              276.0,
+              395.713,
+              473.363
             ],
             "mark_center_px": [
-              257.5,
-              66.095
+              361.497,
+              393.151
             ],
             "mark_fill_rgb": [
-              147,
-              91,
-              208
+              196,
+              34,
+              0
             ],
             "mark_outline_rgb": [
-              81,
-              50,
-              114
+              108,
+              19,
+              0
             ],
-            "scene_variant": "area",
-            "value": 20,
+            "percentage_bbox_px": [
+              376.535,
+              478.306,
+              413.535,
+              494.306
+            ],
+            "percentage_center_px": [
+              395.035,
+              486.306
+            ],
+            "scene_variant": "pie",
+            "start_angle_deg": 68.4,
+            "value": 1,
             "x_rank": 2
           },
-          "entity_id": "mark_X",
-          "entity_type": "point"
+          "entity_id": "mark_V",
+          "entity_type": "slice"
         },
         {
           "attrs": {
-            "label": "R",
+            "end_angle_deg": 75.6,
+            "label": "Z",
+            "label_bbox_px": [
+              616.64,
+              240.0,
+              632.64,
+              256.0
+            ],
             "label_center_px": [
-              323.7,
-              66.19
+              624.64,
+              248.0
+            ],
+            "legend_swatch_bbox_px": [
+              568.64,
+              234.0,
+              596.64,
+              262.0
             ],
             "mark_bbox_px": [
-              315.7,
-              80.19,
-              331.7,
-              96.19
+              319.32,
+              276.0,
+              383.447,
+              477.0
             ],
             "mark_center_px": [
-              323.7,
-              88.19
+              354.058,
+              395.568
             ],
             "mark_fill_rgb": [
-              147,
-              91,
-              208
+              83,
+              107,
+              190
             ],
             "mark_outline_rgb": [
-              81,
-              50,
-              114
+              46,
+              59,
+              105
             ],
-            "scene_variant": "area",
-            "value": 19,
+            "percentage_bbox_px": [
+              363.18,
+              482.645,
+              400.18,
+              498.645
+            ],
+            "percentage_center_px": [
+              381.68,
+              490.645
+            ],
+            "scene_variant": "pie",
+            "start_angle_deg": 72.0,
+            "value": 1,
             "x_rank": 3
           },
-          "entity_id": "mark_R",
-          "entity_type": "point"
+          "entity_id": "mark_Z",
+          "entity_type": "slice"
         },
         {
           "attrs": {
-            "label": "Q",
+            "end_angle_deg": 86.4,
+            "label": "A",
+            "label_bbox_px": [
+              616.64,
+              282.0,
+              633.64,
+              298.0
+            ],
             "label_center_px": [
-              389.9,
-              309.238
+              625.14,
+              290.0
+            ],
+            "legend_swatch_bbox_px": [
+              568.64,
+              276.0,
+              596.64,
+              304.0
             ],
             "mark_bbox_px": [
-              381.9,
-              323.238,
-              397.9,
-              339.238
+              319.32,
+              276.0,
+              370.928,
+              483.111
             ],
             "mark_center_px": [
-              389.9,
-              331.238
+              338.798,
+              398.979
             ],
             "mark_fill_rgb": [
-              147,
-              91,
-              208
+              181,
+              160,
+              33
             ],
             "mark_outline_rgb": [
-              81,
-              50,
-              114
+              100,
+              88,
+              18
             ],
-            "scene_variant": "area",
-            "value": 8,
+            "percentage_bbox_px": [
+              335.786,
+              488.768,
+              372.786,
+              504.768
+            ],
+            "percentage_center_px": [
+              354.286,
+              496.768
+            ],
+            "scene_variant": "pie",
+            "start_angle_deg": 75.6,
+            "value": 3,
             "x_rank": 4
           },
-          "entity_id": "mark_Q",
-          "entity_type": "point"
+          "entity_id": "mark_A",
+          "entity_type": "slice"
         },
         {
           "attrs": {
-            "label": "M",
+            "end_angle_deg": 90.0,
+            "label": "N",
+            "label_bbox_px": [
+              616.64,
+              324.0,
+              634.64,
+              340.0
+            ],
             "label_center_px": [
-              456.1,
-              66.19
+              625.64,
+              332.0
+            ],
+            "legend_swatch_bbox_px": [
+              568.64,
+              318.0,
+              596.64,
+              346.0
             ],
             "mark_bbox_px": [
-              448.1,
-              80.19,
-              464.1,
-              96.19
+              319.32,
+              276.0,
+              332.35,
+              483.52
             ],
             "mark_center_px": [
-              456.1,
-              88.19
+              323.231,
+              400.451
             ],
             "mark_fill_rgb": [
-              147,
-              91,
-              208
+              10,
+              146,
+              85
             ],
             "mark_outline_rgb": [
-              81,
-              50,
-              114
+              6,
+              80,
+              47
             ],
-            "scene_variant": "area",
-            "value": 19,
+            "percentage_bbox_px": [
+              307.841,
+              491.41,
+              344.841,
+              507.41
+            ],
+            "percentage_center_px": [
+              326.341,
+              499.41
+            ],
+            "scene_variant": "pie",
+            "start_angle_deg": 86.4,
+            "value": 1,
             "x_rank": 5
           },
-          "entity_id": "mark_M",
-          "entity_type": "point"
+          "entity_id": "mark_N",
+          "entity_type": "slice"
         },
         {
           "attrs": {
-            "label": "L",
+            "end_angle_deg": 241.2,
+            "label": "B",
+            "label_bbox_px": [
+              616.64,
+              366.0,
+              633.64,
+              382.0
+            ],
             "label_center_px": [
-              522.3,
-              66.19
+              625.14,
+              374.0
+            ],
+            "legend_swatch_bbox_px": [
+              568.64,
+              360.0,
+              596.64,
+              388.0
             ],
             "mark_bbox_px": [
-              514.3,
-              80.19,
-              530.3,
-              96.19
+              112.937,
+              94.149,
+              319.32,
+              483.52
             ],
             "mark_center_px": [
-              522.3,
-              88.19
+              198.72,
+              306.965
             ],
             "mark_fill_rgb": [
-              147,
-              91,
-              208
+              78,
+              197,
+              1
             ],
             "mark_outline_rgb": [
-              81,
-              50,
-              114
+              43,
+              108,
+              1
             ],
-            "scene_variant": "area",
-            "value": 19,
+            "percentage_bbox_px": [
+              172.72,
+              298.965,
+              224.72,
+              314.965
+            ],
+            "percentage_center_px": [
+              198.72,
+              306.965
+            ],
+            "scene_variant": "pie",
+            "start_angle_deg": 90.0,
+            "value": 42,
             "x_rank": 6
           },
-          "entity_id": "mark_L",
-          "entity_type": "point"
+          "entity_id": "mark_B",
+          "entity_type": "slice"
         },
         {
           "attrs": {
-            "label": "K",
+            "end_angle_deg": 270.0,
+            "label": "T",
+            "label_bbox_px": [
+              616.64,
+              408.0,
+              631.64,
+              424.0
+            ],
             "label_center_px": [
-              588.5,
-              66.19
+              624.14,
+              416.0
+            ],
+            "legend_swatch_bbox_px": [
+              568.64,
+              402.0,
+              596.64,
+              430.0
             ],
             "mark_bbox_px": [
-              580.5,
-              80.19,
-              596.5,
-              96.19
+              219.346,
+              68.48,
+              319.32,
+              276.0
             ],
             "mark_center_px": [
-              588.5,
-              88.19
+              288.355,
+              155.4
             ],
             "mark_fill_rgb": [
-              147,
-              91,
-              208
+              37,
+              95,
+              103
             ],
             "mark_outline_rgb": [
-              81,
-              50,
-              114
+              20,
+              52,
+              57
             ],
-            "scene_variant": "area",
-            "value": 19,
+            "percentage_bbox_px": [
+              269.855,
+              147.4,
+              306.855,
+              163.4
+            ],
+            "percentage_center_px": [
+              288.355,
+              155.4
+            ],
+            "scene_variant": "pie",
+            "start_angle_deg": 241.2,
+            "value": 8,
             "x_rank": 7
           },
-          "entity_id": "mark_K",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "label": "N",
-            "label_center_px": [
-              654.7,
-              44.095
-            ],
-            "mark_bbox_px": [
-              646.7,
-              58.095,
-              662.7,
-              74.095
-            ],
-            "mark_center_px": [
-              654.7,
-              66.095
-            ],
-            "mark_fill_rgb": [
-              147,
-              91,
-              208
-            ],
-            "mark_outline_rgb": [
-              81,
-              50,
-              114
-            ],
-            "scene_variant": "area",
-            "value": 20,
-            "x_rank": 8
-          },
-          "entity_id": "mark_N",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "label": "C",
-            "label_center_px": [
-              720.9,
-              66.19
-            ],
-            "mark_bbox_px": [
-              712.9,
-              80.19,
-              728.9,
-              96.19
-            ],
-            "mark_center_px": [
-              720.9,
-              88.19
-            ],
-            "mark_fill_rgb": [
-              147,
-              91,
-              208
-            ],
-            "mark_outline_rgb": [
-              81,
-              50,
-              114
-            ],
-            "scene_variant": "area",
-            "value": 19,
-            "x_rank": 9
-          },
-          "entity_id": "mark_C",
-          "entity_type": "point"
+          "entity_id": "mark_T",
+          "entity_type": "slice"
         }
       ],
       "relations": {
         "evidence_labels": [
-          "Q"
+          "B",
+          "D"
         ],
         "interval_inclusive": true,
-        "interval_max": 18,
-        "interval_min": 1,
-        "scene_variant": "area",
+        "interval_max": 68,
+        "interval_min": 31,
+        "scene_variant": "pie",
         "task_variant": "in_interval"
       },
-      "scene_kind": "chart_area_counting"
+      "scene_kind": "chart_pie_counting"
     },
     "witness_symbolic": {
       "labels": [
-        "Q"
+        "B",
+        "D"
       ],
       "type": "label_set"
     }

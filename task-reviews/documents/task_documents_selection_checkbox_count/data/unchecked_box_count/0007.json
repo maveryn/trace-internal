@@ -1,7 +1,7 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 3
+    "value": 1
   },
   "evidence_gt": {
     "type": "bbox_set",
@@ -11,18 +11,6 @@
         461.0,
         442.0,
         483.0
-      ],
-      [
-        420.0,
-        509.0,
-        442.0,
-        531.0
-      ],
-      [
-        420.0,
-        557.0,
-        442.0,
-        579.0
       ]
     ]
   },
@@ -30,18 +18,18 @@
     "format": "png",
     "path": "documents/task_documents_selection_checkbox_count/images/unchecked_box_count/0007.png"
   },
-  "instance_seed": 5574264675988439,
-  "prompt": "Use the structured document in the image: a receipt-style document with visible section headers and checkbox groups. Read the document and answer this question: In the Service Options section, how many checkboxes are not checked? Give the count of unchecked boxes as an integer.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing one bounding box for each counted checkbox, in reading order.\nAnswer: set \"answer\" to the number of counted checkboxes.\nExample JSON:\n{\"evidence\":[[154,356,178,380]],\"answer\":1}",
+  "instance_seed": 6507967012593003,
+  "prompt": "Use the structured document in the image: a receipt-style document with visible section headers and checkbox groups. Locate the relevant checkbox section before answering: In the Service Options section, how many checkboxes are not checked? Respond with the integer count of unchecked boxes.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing one bounding box for each counted checkbox, in reading order.\nAnswer field: set \"answer\" to the number of counted checkboxes.\nExample JSON:\n{\"evidence\":[[154,356,178,380]],\"answer\":1}",
   "prompt_variants": {
-    "answer_and_evidence": "Use the structured document in the image: a receipt-style document with visible section headers and checkbox groups. Read the document and answer this question: In the Service Options section, how many checkboxes are not checked? Give the count of unchecked boxes as an integer.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing one bounding box for each counted checkbox, in reading order.\nAnswer: set \"answer\" to the number of counted checkboxes.\nExample JSON:\n{\"evidence\":[[154,356,178,380]],\"answer\":1}",
-    "answer_only": "Use the structured document in the image: a receipt-style document with visible section headers and checkbox groups. Read the document and answer this question: In the Service Options section, how many checkboxes are not checked? Give the count of unchecked boxes as an integer.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the number of counted checkboxes.\nExample JSON:\n{\"answer\":1}"
+    "answer_and_evidence": "Use the structured document in the image: a receipt-style document with visible section headers and checkbox groups. Locate the relevant checkbox section before answering: In the Service Options section, how many checkboxes are not checked? Respond with the integer count of unchecked boxes.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing one bounding box for each counted checkbox, in reading order.\nAnswer field: set \"answer\" to the number of counted checkboxes.\nExample JSON:\n{\"evidence\":[[154,356,178,380]],\"answer\":1}",
+    "answer_only": "Use the structured document in the image: a receipt-style document with visible section headers and checkbox groups. Locate the relevant checkbox section before answering: In the Service Options section, how many checkboxes are not checked? Respond with the integer count of unchecked boxes.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the number of counted checkboxes.\nExample JSON:\n{\"answer\":1}"
   },
   "task": "task_documents_selection_checkbox_count",
   "task_variant": "unchecked_box_count",
   "trace_payload": {
     "answer_gt": {
       "type": "integer",
-      "value": 3
+      "value": 1
     },
     "background": {
       "available_styles": [
@@ -66,23 +54,11 @@
           461.0,
           442.0,
           483.0
-        ],
-        [
-          420.0,
-          509.0,
-          442.0,
-          531.0
-        ],
-        [
-          420.0,
-          557.0,
-          442.0,
-          579.0
         ]
       ]
     },
     "execution_trace": {
-      "answer_count": 3,
+      "answer_count": 1,
       "checkbox_item_count": 4,
       "checkbox_section_specs": [
         {
@@ -103,14 +79,14 @@
             },
             {
               "checkbox_bbox_id": "service_options:2:checkbox",
-              "checked": false,
+              "checked": true,
               "item_id": "service_options:2",
               "label": "Bag Requested",
               "label_bbox_id": "service_options:2:label"
             },
             {
               "checkbox_bbox_id": "service_options:3:checkbox",
-              "checked": false,
+              "checked": true,
               "item_id": "service_options:3",
               "label": "Loyalty Applied",
               "label_bbox_id": "service_options:3:label"
@@ -130,21 +106,21 @@
             },
             {
               "checkbox_bbox_id": "follow_up:1:checkbox",
-              "checked": false,
+              "checked": true,
               "item_id": "follow_up:1",
               "label": "Return Reminder",
               "label_bbox_id": "follow_up:1:label"
             },
             {
               "checkbox_bbox_id": "follow_up:2:checkbox",
-              "checked": false,
+              "checked": true,
               "item_id": "follow_up:2",
               "label": "Warranty Note",
               "label_bbox_id": "follow_up:2:label"
             },
             {
               "checkbox_bbox_id": "follow_up:3:checkbox",
-              "checked": false,
+              "checked": true,
               "item_id": "follow_up:3",
               "label": "Text Updates",
               "label_bbox_id": "follow_up:3:label"
@@ -158,29 +134,27 @@
         {
           "field_id": "store_name",
           "field_label": "Store Name",
-          "field_value": "Lakeview Partners",
+          "field_value": "Amber Studio",
           "label_bbox_id": "store_name:label",
           "value_bbox_id": "store_name:value"
         },
         {
           "field_id": "receipt_number",
           "field_label": "Receipt No.",
-          "field_value": "R-20954",
+          "field_value": "R-28523",
           "label_bbox_id": "receipt_number:label",
           "value_bbox_id": "receipt_number:value"
         },
         {
           "field_id": "purchase_date",
           "field_label": "Purchase Date",
-          "field_value": "Jan 31, 2026",
+          "field_value": "Jun 02, 2026",
           "label_bbox_id": "purchase_date:label",
           "value_bbox_id": "purchase_date:value"
         }
       ],
       "evidence_checkbox_bbox_ids": [
-        "service_options:1:checkbox",
-        "service_options:2:checkbox",
-        "service_options:3:checkbox"
+        "service_options:1:checkbox"
       ],
       "field_count": 3,
       "query_section_id": "service_options",
@@ -199,8 +173,8 @@
       "target_checkbox_states": {
         "service_options:0": true,
         "service_options:1": false,
-        "service_options:2": false,
-        "service_options:3": false
+        "service_options:2": true,
+        "service_options:3": true
       },
       "task_variant": "unchecked_box_count",
       "view_family": "structured_document"
@@ -228,18 +202,6 @@
           461.0,
           442.0,
           483.0
-        ],
-        [
-          420.0,
-          509.0,
-          442.0,
-          531.0
-        ],
-        [
-          420.0,
-          557.0,
-          442.0,
-          579.0
         ]
       ]
     },
@@ -265,7 +227,7 @@
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 0,
+        "answer_or_evidence_variant_index": 3,
         "prompt_bundle_id": "documents_selection_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -281,9 +243,9 @@
         "task_family_key": "structured_document_sections",
         "task_family_variant_index": 3,
         "task_key": "checkbox_count_query",
-        "task_variant_index": 1,
+        "task_variant_index": 4,
         "task_variant_key": "unchecked_box_count",
-        "task_variant_template_index": 3,
+        "task_variant_template_index": 2,
         "template_paths": [
           "documents/selection/documents_selection_v1.json"
         ],
@@ -299,40 +261,6 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 0,
-            "prompt_bundle_id": "documents_selection_v1",
-            "schema_version": "v1",
-            "slot_values": {
-              "answer_hint": "set \"answer\" to the number of counted checkboxes",
-              "evidence_hint": "set \"evidence\" to an array containing one bounding box for each counted checkbox, in reading order",
-              "json_example": "{\"evidence\":[[154,356,178,380]],\"answer\":1}",
-              "json_example_answer_only": "{\"answer\":1}",
-              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
-              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a receipt-style document with visible section headers and checkbox groups",
-              "question_text": "In the Service Options section, how many checkboxes are not checked?"
-            },
-            "task_family_key": "structured_document_sections",
-            "task_family_variant_index": 3,
-            "task_key": "checkbox_count_query",
-            "task_variant_index": 1,
-            "task_variant_key": "unchecked_box_count",
-            "task_variant_template_index": 3,
-            "template_paths": [
-              "documents/selection/documents_selection_v1.json"
-            ],
-            "variant_count_by_key": {
-              "answer_or_evidence:answer_and_evidence": 5,
-              "task:checkbox_count_query": 5,
-              "task_family:structured_document_sections": 5,
-              "task_variant:unchecked_box_count": 5
-            }
-          },
-          "prompt": "Use the structured document in the image: a receipt-style document with visible section headers and checkbox groups. Read the document and answer this question: In the Service Options section, how many checkboxes are not checked? Give the count of unchecked boxes as an integer.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing one bounding box for each counted checkbox, in reading order.\nAnswer: set \"answer\" to the number of counted checkboxes.\nExample JSON:\n{\"evidence\":[[154,356,178,380]],\"answer\":1}"
-        },
-        "answer_only": {
-          "metadata": {
-            "answer_or_evidence_key": "answer_only",
             "answer_or_evidence_variant_index": 3,
             "prompt_bundle_id": "documents_selection_v1",
             "schema_version": "v1",
@@ -349,9 +277,43 @@
             "task_family_key": "structured_document_sections",
             "task_family_variant_index": 3,
             "task_key": "checkbox_count_query",
-            "task_variant_index": 1,
+            "task_variant_index": 4,
             "task_variant_key": "unchecked_box_count",
-            "task_variant_template_index": 3,
+            "task_variant_template_index": 2,
+            "template_paths": [
+              "documents/selection/documents_selection_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:checkbox_count_query": 5,
+              "task_family:structured_document_sections": 5,
+              "task_variant:unchecked_box_count": 5
+            }
+          },
+          "prompt": "Use the structured document in the image: a receipt-style document with visible section headers and checkbox groups. Locate the relevant checkbox section before answering: In the Service Options section, how many checkboxes are not checked? Respond with the integer count of unchecked boxes.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing one bounding box for each counted checkbox, in reading order.\nAnswer field: set \"answer\" to the number of counted checkboxes.\nExample JSON:\n{\"evidence\":[[154,356,178,380]],\"answer\":1}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 2,
+            "prompt_bundle_id": "documents_selection_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the number of counted checkboxes",
+              "evidence_hint": "set \"evidence\" to an array containing one bounding box for each counted checkbox, in reading order",
+              "json_example": "{\"evidence\":[[154,356,178,380]],\"answer\":1}",
+              "json_example_answer_only": "{\"answer\":1}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a receipt-style document with visible section headers and checkbox groups",
+              "question_text": "In the Service Options section, how many checkboxes are not checked?"
+            },
+            "task_family_key": "structured_document_sections",
+            "task_family_variant_index": 3,
+            "task_key": "checkbox_count_query",
+            "task_variant_index": 4,
+            "task_variant_key": "unchecked_box_count",
+            "task_variant_template_index": 2,
             "template_paths": [
               "documents/selection/documents_selection_v1.json"
             ],
@@ -362,7 +324,7 @@
               "task_variant:unchecked_box_count": 5
             }
           },
-          "prompt": "Use the structured document in the image: a receipt-style document with visible section headers and checkbox groups. Read the document and answer this question: In the Service Options section, how many checkboxes are not checked? Give the count of unchecked boxes as an integer.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the number of counted checkboxes.\nExample JSON:\n{\"answer\":1}"
+          "prompt": "Use the structured document in the image: a receipt-style document with visible section headers and checkbox groups. Locate the relevant checkbox section before answering: In the Service Options section, how many checkboxes are not checked? Respond with the integer count of unchecked boxes.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the number of counted checkboxes.\nExample JSON:\n{\"answer\":1}"
         }
       },
       "task_variant": "unchecked_box_count",
@@ -372,27 +334,27 @@
       "checkbox_bboxes_px": {
         "follow_up:0:checkbox": [
           420.0,
-          621.0,
+          645.0,
           442.0,
-          643.0
+          667.0
         ],
         "follow_up:1:checkbox": [
           420.0,
-          669.0,
+          693.0,
           442.0,
-          691.0
+          715.0
         ],
         "follow_up:2:checkbox": [
           420.0,
-          717.0,
+          741.0,
           442.0,
-          739.0
+          763.0
         ],
         "follow_up:3:checkbox": [
           420.0,
-          765.0,
+          789.0,
           442.0,
-          787.0
+          811.0
         ],
         "service_options:0:checkbox": [
           420.0,
@@ -422,27 +384,27 @@
       "checkbox_label_bboxes_px": {
         "follow_up:0:label": [
           454.0,
-          621.0,
+          645.0,
           593.0,
-          643.0
+          667.0
         ],
         "follow_up:1:label": [
           454.0,
-          671.0,
+          695.0,
           636.0,
-          689.0
+          713.0
         ],
         "follow_up:2:label": [
           454.0,
-          717.5,
+          741.5,
           611.0,
-          738.5
+          762.5
         ],
         "follow_up:3:label": [
           454.0,
-          765.0,
+          789.0,
           596.0,
-          787.0
+          811.0
         ],
         "service_options:0:label": [
           454.0,
@@ -511,7 +473,7 @@
       },
       "field_value_bboxes_px": {
         "purchase_date:value": [
-          682.0,
+          681.0,
           334.0,
           864.0,
           362.0
@@ -523,10 +485,10 @@
           295.0
         ],
         "store_name:value": [
-          624.0,
-          209.0,
+          670.0,
+          208.5,
           864.0,
-          231.0
+          231.5
         ]
       },
       "page_bbox_px": [
@@ -538,9 +500,9 @@
       "section_box_bboxes_px": {
         "follow_up": [
           394.0,
-          578.0,
+          602.0,
           886.0,
-          808.0
+          832.0
         ],
         "service_options": [
           394.0,
@@ -552,9 +514,9 @@
       "section_label_bboxes_px": {
         "follow_up": [
           448.0,
-          587.5,
+          611.5,
           520.0,
-          602.5
+          626.5
         ],
         "service_options": [
           464.0,
@@ -573,7 +535,7 @@
     "render_spec": {
       "canvas_height": 920,
       "canvas_width": 1280,
-      "geometry_seed": 5574264675988439,
+      "geometry_seed": 6507967012593003,
       "page_shadow_offset_px": 14,
       "receipt_page_height_px": 760,
       "receipt_page_width_px": 520,
@@ -634,15 +596,15 @@
         {
           "bbox_id": "store_name:value",
           "bbox_px": [
-            624.0,
-            209.0,
+            670.0,
+            208.5,
             864.0,
-            231.0
+            231.5
           ],
           "entity_id": "store_name:value",
           "entity_type": "document_field_value",
           "field_id": "store_name",
-          "text": "Lakeview Partners"
+          "text": "Amber Studio"
         },
         {
           "bbox_id": "receipt_number",
@@ -680,7 +642,7 @@
           "entity_id": "receipt_number:value",
           "entity_type": "document_field_value",
           "field_id": "receipt_number",
-          "text": "R-20954"
+          "text": "R-28523"
         },
         {
           "bbox_id": "purchase_date",
@@ -710,7 +672,7 @@
         {
           "bbox_id": "purchase_date:value",
           "bbox_px": [
-            682.0,
+            681.0,
             334.0,
             864.0,
             362.0
@@ -718,7 +680,7 @@
           "entity_id": "purchase_date:value",
           "entity_type": "document_field_value",
           "field_id": "purchase_date",
-          "text": "Jan 31, 2026"
+          "text": "Jun 02, 2026"
         },
         {
           "bbox_id": "service_options",
@@ -815,7 +777,7 @@
             442.0,
             531.0
           ],
-          "checked": false,
+          "checked": true,
           "entity_id": "service_options:2:checkbox",
           "entity_type": "document_checkbox",
           "item_id": "service_options:2",
@@ -843,7 +805,7 @@
             442.0,
             579.0
           ],
-          "checked": false,
+          "checked": true,
           "entity_id": "service_options:3:checkbox",
           "entity_type": "document_checkbox",
           "item_id": "service_options:3",
@@ -867,9 +829,9 @@
           "bbox_id": "follow_up",
           "bbox_px": [
             394.0,
-            578.0,
+            602.0,
             886.0,
-            808.0
+            832.0
           ],
           "checkbox_ids": [
             "follow_up:0",
@@ -885,9 +847,9 @@
           "bbox_id": "follow_up:label",
           "bbox_px": [
             448.0,
-            587.5,
+            611.5,
             520.0,
-            602.5
+            626.5
           ],
           "entity_id": "follow_up:label",
           "entity_type": "document_section_label",
@@ -898,9 +860,9 @@
           "bbox_id": "follow_up:0:checkbox",
           "bbox_px": [
             420.0,
-            621.0,
+            645.0,
             442.0,
-            643.0
+            667.0
           ],
           "checked": false,
           "entity_id": "follow_up:0:checkbox",
@@ -912,9 +874,9 @@
           "bbox_id": "follow_up:0:label",
           "bbox_px": [
             454.0,
-            621.0,
+            645.0,
             593.0,
-            643.0
+            667.0
           ],
           "entity_id": "follow_up:0:label",
           "entity_type": "document_checkbox_label",
@@ -926,11 +888,11 @@
           "bbox_id": "follow_up:1:checkbox",
           "bbox_px": [
             420.0,
-            669.0,
+            693.0,
             442.0,
-            691.0
+            715.0
           ],
-          "checked": false,
+          "checked": true,
           "entity_id": "follow_up:1:checkbox",
           "entity_type": "document_checkbox",
           "item_id": "follow_up:1",
@@ -940,9 +902,9 @@
           "bbox_id": "follow_up:1:label",
           "bbox_px": [
             454.0,
-            671.0,
+            695.0,
             636.0,
-            689.0
+            713.0
           ],
           "entity_id": "follow_up:1:label",
           "entity_type": "document_checkbox_label",
@@ -954,11 +916,11 @@
           "bbox_id": "follow_up:2:checkbox",
           "bbox_px": [
             420.0,
-            717.0,
+            741.0,
             442.0,
-            739.0
+            763.0
           ],
-          "checked": false,
+          "checked": true,
           "entity_id": "follow_up:2:checkbox",
           "entity_type": "document_checkbox",
           "item_id": "follow_up:2",
@@ -968,9 +930,9 @@
           "bbox_id": "follow_up:2:label",
           "bbox_px": [
             454.0,
-            717.5,
+            741.5,
             611.0,
-            738.5
+            762.5
           ],
           "entity_id": "follow_up:2:label",
           "entity_type": "document_checkbox_label",
@@ -982,11 +944,11 @@
           "bbox_id": "follow_up:3:checkbox",
           "bbox_px": [
             420.0,
-            765.0,
+            789.0,
             442.0,
-            787.0
+            811.0
           ],
-          "checked": false,
+          "checked": true,
           "entity_id": "follow_up:3:checkbox",
           "entity_type": "document_checkbox",
           "item_id": "follow_up:3",
@@ -996,9 +958,9 @@
           "bbox_id": "follow_up:3:label",
           "bbox_px": [
             454.0,
-            765.0,
+            789.0,
             596.0,
-            787.0
+            811.0
           ],
           "entity_id": "follow_up:3:label",
           "entity_type": "document_checkbox_label",
@@ -1018,9 +980,7 @@
     },
     "witness_symbolic": {
       "bbox_id_sequence": [
-        "service_options:1:checkbox",
-        "service_options:2:checkbox",
-        "service_options:3:checkbox"
+        "service_options:1:checkbox"
       ],
       "section_id": "service_options"
     }

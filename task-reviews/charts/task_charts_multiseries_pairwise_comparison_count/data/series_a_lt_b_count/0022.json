@@ -1,62 +1,61 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 4
+    "value": 2
   },
   "evidence_gt": {
     "type": "label_set",
     "value": [
-      "D",
-      "R",
-      "V",
-      "X"
+      "H",
+      "J"
     ]
   },
   "image": {
     "format": "png",
     "path": "charts/task_charts_multiseries_pairwise_comparison_count/images/series_a_lt_b_count/0022.png"
   },
-  "instance_seed": 3769719566401525,
-  "prompt": "The image shows a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Compare the two queried series category by category. Find how many category labels show Pass lower than Dey.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer format: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+  "instance_seed": 1611081802865922,
+  "prompt": "You are given a multiseries chart: a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Work category by category and count the labels where the requested series comparison is true. Find how many category labels show Oaks lower than Le.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
   "prompt_variants": {
-    "answer_and_evidence": "The image shows a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Compare the two queried series category by category. Find how many category labels show Pass lower than Dey.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer format: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
-    "answer_only": "The image shows a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Compare the two queried series category by category. Find how many category labels show Pass lower than Dey.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
+    "answer_and_evidence": "You are given a multiseries chart: a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Work category by category and count the labels where the requested series comparison is true. Find how many category labels show Oaks lower than Le.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+    "answer_only": "You are given a multiseries chart: a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Work category by category and count the labels where the requested series comparison is true. Find how many category labels show Oaks lower than Le.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
   },
   "task": "task_charts_multiseries_pairwise_comparison_count",
   "task_variant": "series_a_lt_b_count",
   "trace_payload": {
     "execution_trace": {
-      "answer_value": 4,
-      "category_count": 5,
+      "answer_value": 2,
+      "category_count": 8,
       "category_count_range": [
         5,
         10
       ],
       "category_labels": [
-        "V",
-        "D",
-        "R",
+        "Z",
+        "Y",
+        "T",
+        "J",
+        "S",
+        "F",
         "X",
-        "F"
+        "H"
       ],
       "comparison": "less_than",
       "evidence_labels": [
-        "D",
-        "R",
-        "V",
-        "X"
+        "H",
+        "J"
       ],
-      "left_series_label": "Pass",
+      "left_series_label": "Oaks",
       "mark_color_distance_space": "lab",
       "mark_color_min_distance": 40.0,
       "mark_color_sampling_policy": "random_rgb_palette",
       "queried_series_labels": [
-        "Pass",
-        "Dey"
+        "Oaks",
+        "Le"
       ],
       "question_format": "numeric_open",
-      "right_series_label": "Dey",
-      "scene_variant": "grouped_lollipop",
+      "right_series_label": "Le",
+      "scene_variant": "multi_line",
       "scene_variant_probabilities": {
         "grouped_bar": 0.25,
         "grouped_horizontal_bar": 0.25,
@@ -70,148 +69,130 @@
       ],
       "series_fill_palette_rgb": [
         [
-          162,
-          108,
-          201
+          178,
+          171,
+          81
         ],
         [
-          158,
-          12,
-          96
+          10,
+          149,
+          31
         ]
       ],
       "series_labels": [
-        "Pass",
-        "Dey"
+        "Oaks",
+        "Le"
       ],
       "series_outline_palette_rgb": [
         [
-          89,
-          59,
-          111
+          98,
+          94,
+          45
         ],
         [
-          87,
-          7,
-          53
+          6,
+          82,
+          17
         ]
       ],
-      "target_answer": 4,
+      "target_answer": 2,
       "target_answer_range": [
         0,
         8
       ],
       "task_variant": "series_a_lt_b_count",
       "task_variant_probabilities": {
-        "series_a_gt_b_count": 0.5,
-        "series_a_lt_b_count": 0.5
+        "series_a_gt_b_count": 0.0,
+        "series_a_lt_b_count": 1.0
       },
       "values_by_category": {
-        "D": {
-          "Dey": 20,
-          "Pass": 11
-        },
         "F": {
-          "Dey": 9,
-          "Pass": 18
+          "Le": 2,
+          "Oaks": 10
         },
-        "R": {
-          "Dey": 20,
-          "Pass": 6
+        "H": {
+          "Le": 16,
+          "Oaks": 3
         },
-        "V": {
-          "Dey": 19,
-          "Pass": 4
+        "J": {
+          "Le": 14,
+          "Oaks": 13
+        },
+        "S": {
+          "Le": 8,
+          "Oaks": 11
+        },
+        "T": {
+          "Le": 6,
+          "Oaks": 12
         },
         "X": {
-          "Dey": 16,
-          "Pass": 12
+          "Le": 1,
+          "Oaks": 3
+        },
+        "Y": {
+          "Le": 6,
+          "Oaks": 17
+        },
+        "Z": {
+          "Le": 14,
+          "Oaks": 15
         }
       }
     },
     "projected_evidence": {
       "bbox_set": [
         [
-          289.74,
-          59.048,
-          351.46,
+          797.375,
+          89.778,
+          815.375,
           562.0
         ],
         [
-          442.14,
-          59.048,
-          503.86,
-          562.0
-        ],
-        [
-          137.34,
-          82.095,
-          199.06,
-          562.0
-        ],
-        [
-          594.54,
-          151.238,
-          656.26,
-          562.0
+          417.375,
+          143.556,
+          433.375,
+          564.0
         ]
       ],
       "label_set": [
-        "D",
-        "R",
-        "V",
-        "X"
+        "H",
+        "J"
       ],
       "pixel_point_map": {
-        "D": [
-          320.6,
+        "H": [
+          806.375,
           554.0
         ],
-        "R": [
-          473.0,
-          554.0
-        ],
-        "V": [
-          168.2,
-          554.0
-        ],
-        "X": [
-          625.4,
+        "J": [
+          425.375,
           554.0
         ]
       },
       "pixel_point_set": [
         [
-          320.6,
+          806.375,
           554.0
         ],
         [
-          473.0,
-          554.0
-        ],
-        [
-          168.2,
-          554.0
-        ],
-        [
-          625.4,
+          425.375,
           554.0
         ]
       ]
     },
     "query_spec": {
       "params": {
-        "category_count": 5,
+        "category_count": 8,
         "category_count_range": [
           5,
           10
         ],
         "comparison": "less_than",
         "queried_series_labels": [
-          "Pass",
-          "Dey"
+          "Oaks",
+          "Le"
         ],
-        "scene_variant": "grouped_lollipop",
+        "scene_variant": "multi_line",
         "scene_variant_probabilities": {
           "grouped_bar": 0.25,
           "grouped_horizontal_bar": 0.25,
@@ -223,20 +204,20 @@
           2,
           3
         ],
-        "target_answer": 4,
+        "target_answer": 2,
         "target_answer_range": [
           0,
           8
         ],
         "task_variant": "series_a_lt_b_count",
         "task_variant_probabilities": {
-          "series_a_gt_b_count": 0.5,
-          "series_a_lt_b_count": 0.5
+          "series_a_gt_b_count": 0.0,
+          "series_a_lt_b_count": 1.0
         }
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 1,
+        "answer_or_evidence_variant_index": 0,
         "prompt_bundle_id": "charts_multiseries_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -246,14 +227,14 @@
           "json_example_answer_only": "{\"answer\":2}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "left_series": "Pass",
-          "object_description": "a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis",
-          "right_series": "Dey"
+          "left_series": "Oaks",
+          "object_description": "a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis",
+          "right_series": "Le"
         },
         "task_family_key": "multiseries_chart_comparison",
-        "task_family_variant_index": 0,
+        "task_family_variant_index": 4,
         "task_key": "pairwise_comparison_count_query",
-        "task_variant_index": 0,
+        "task_variant_index": 4,
         "task_variant_key": "series_a_lt_b_count",
         "task_variant_template_index": 4,
         "template_paths": [
@@ -271,7 +252,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 1,
+            "answer_or_evidence_variant_index": 0,
             "prompt_bundle_id": "charts_multiseries_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -281,14 +262,14 @@
               "json_example_answer_only": "{\"answer\":2}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "left_series": "Pass",
-              "object_description": "a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis",
-              "right_series": "Dey"
+              "left_series": "Oaks",
+              "object_description": "a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis",
+              "right_series": "Le"
             },
             "task_family_key": "multiseries_chart_comparison",
-            "task_family_variant_index": 0,
+            "task_family_variant_index": 4,
             "task_key": "pairwise_comparison_count_query",
-            "task_variant_index": 0,
+            "task_variant_index": 4,
             "task_variant_key": "series_a_lt_b_count",
             "task_variant_template_index": 4,
             "template_paths": [
@@ -301,12 +282,12 @@
               "task_variant:series_a_lt_b_count": 5
             }
           },
-          "prompt": "The image shows a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Compare the two queried series category by category. Find how many category labels show Pass lower than Dey.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer format: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}"
+          "prompt": "You are given a multiseries chart: a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Work category by category and count the labels where the requested series comparison is true. Find how many category labels show Oaks lower than Le.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 0,
+            "answer_or_evidence_variant_index": 2,
             "prompt_bundle_id": "charts_multiseries_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -316,14 +297,14 @@
               "json_example_answer_only": "{\"answer\":2}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "left_series": "Pass",
-              "object_description": "a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis",
-              "right_series": "Dey"
+              "left_series": "Oaks",
+              "object_description": "a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis",
+              "right_series": "Le"
             },
             "task_family_key": "multiseries_chart_comparison",
-            "task_family_variant_index": 0,
+            "task_family_variant_index": 4,
             "task_key": "pairwise_comparison_count_query",
-            "task_variant_index": 0,
+            "task_variant_index": 4,
             "task_variant_key": "series_a_lt_b_count",
             "task_variant_template_index": 4,
             "template_paths": [
@@ -336,7 +317,7 @@
               "task_variant:series_a_lt_b_count": 5
             }
           },
-          "prompt": "The image shows a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Compare the two queried series category by category. Find how many category labels show Pass lower than Dey.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
+          "prompt": "You are given a multiseries chart: a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Work category by category and count the labels where the requested series comparison is true. Find how many category labels show Oaks lower than Le.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
         }
       },
       "task_variant": "series_a_lt_b_count",
@@ -344,24 +325,36 @@
     },
     "render_map": {
       "category_label_centers_px": {
-        "D": [
-          320.6,
-          554.0
-        ],
         "F": [
-          777.8,
+          615.875,
           554.0
         ],
-        "R": [
-          473.0,
+        "H": [
+          806.375,
           554.0
         ],
-        "V": [
-          168.2,
+        "J": [
+          425.375,
+          554.0
+        ],
+        "S": [
+          520.625,
+          554.0
+        ],
+        "T": [
+          330.125,
           554.0
         ],
         "X": [
-          625.4,
+          711.125,
+          554.0
+        ],
+        "Y": [
+          234.875,
+          554.0
+        ],
+        "Z": [
+          139.625,
           554.0
         ]
       },
@@ -403,26 +396,26 @@
         "sampling_policy": "random_rgb_palette",
         "series_fill_palette_rgb": [
           [
-            162,
-            108,
-            201
+            178,
+            171,
+            81
           ],
           [
-            158,
-            12,
-            96
+            10,
+            149,
+            31
           ]
         ],
         "series_outline_palette_rgb": [
           [
-            89,
-            59,
-            111
+            98,
+            94,
+            45
           ],
           [
-            87,
-            7,
-            53
+            6,
+            82,
+            17
           ]
         ]
       },
@@ -448,13 +441,13 @@
         "edits": [],
         "enabled": false
       },
-      "scene_variant": "grouped_lollipop",
+      "scene_variant": "multi_line",
       "text_style": {
         "label_font_size_px": 22,
         "label_stroke_width_px": 2,
         "tick_font_size_px": 18
       },
-      "y_axis_max": 21,
+      "y_axis_max": 18,
       "y_ticks": [
         0,
         1,
@@ -474,10 +467,7 @@
         15,
         16,
         17,
-        18,
-        19,
-        20,
-        21
+        18
       ]
     },
     "scene_ir": {
@@ -485,447 +475,695 @@
         {
           "attrs": {
             "category_group_bbox_px": [
-              137.34,
-              82.095,
-              199.06,
+              131.625,
+              116.667,
+              147.625,
               562.0
             ],
-            "category_label": "V",
+            "category_label": "Z",
             "category_label_center_px": [
-              168.2,
+              139.625,
               554.0
             ],
             "category_rank": 0,
             "mark_bbox_px": [
-              137.34,
-              427.81,
-              153.34,
-              443.81
+              131.625,
+              116.667,
+              147.625,
+              132.667
             ],
             "mark_center_px": [
-              145.34,
-              435.81
+              139.625,
+              124.667
             ],
             "mark_fill_rgb": [
-              162,
-              108,
-              201
+              178,
+              171,
+              81
             ],
             "mark_outline_rgb": [
-              89,
-              59,
-              111
+              98,
+              94,
+              45
             ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Pass",
+            "scene_variant": "multi_line",
+            "series_label": "Oaks",
             "series_rank": 0,
-            "value": 4
+            "value": 15
           },
-          "entity_id": "mark_V_Pass",
+          "entity_id": "mark_Z_Oaks",
           "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              137.34,
-              82.095,
-              199.06,
+              131.625,
+              116.667,
+              147.625,
               562.0
             ],
-            "category_label": "V",
+            "category_label": "Z",
             "category_label_center_px": [
-              168.2,
+              139.625,
               554.0
             ],
             "category_rank": 0,
             "mark_bbox_px": [
-              183.06,
-              82.095,
-              199.06,
-              98.095
+              131.625,
+              143.556,
+              147.625,
+              159.556
             ],
             "mark_center_px": [
-              191.06,
-              90.095
+              139.625,
+              151.556
             ],
             "mark_fill_rgb": [
-              158,
-              12,
-              96
+              10,
+              149,
+              31
             ],
             "mark_outline_rgb": [
-              87,
-              7,
-              53
+              6,
+              82,
+              17
             ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Dey",
+            "scene_variant": "multi_line",
+            "series_label": "Le",
             "series_rank": 1,
-            "value": 19
+            "value": 14
           },
-          "entity_id": "mark_V_Dey",
+          "entity_id": "mark_Z_Le",
           "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              289.74,
-              59.048,
-              351.46,
+              225.875,
+              62.889,
+              243.875,
               562.0
             ],
-            "category_label": "D",
+            "category_label": "Y",
             "category_label_center_px": [
-              320.6,
+              234.875,
               554.0
             ],
             "category_rank": 1,
             "mark_bbox_px": [
-              289.74,
-              266.476,
-              305.74,
-              282.476
+              226.875,
+              62.889,
+              242.875,
+              78.889
             ],
             "mark_center_px": [
-              297.74,
-              274.476
+              234.875,
+              70.889
             ],
             "mark_fill_rgb": [
-              162,
-              108,
-              201
+              178,
+              171,
+              81
             ],
             "mark_outline_rgb": [
-              89,
-              59,
-              111
+              98,
+              94,
+              45
             ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Pass",
+            "scene_variant": "multi_line",
+            "series_label": "Oaks",
             "series_rank": 0,
-            "value": 11
+            "value": 17
           },
-          "entity_id": "mark_D_Pass",
+          "entity_id": "mark_Y_Oaks",
           "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              289.74,
-              59.048,
-              351.46,
+              225.875,
+              62.889,
+              243.875,
               562.0
             ],
-            "category_label": "D",
+            "category_label": "Y",
             "category_label_center_px": [
-              320.6,
+              234.875,
               554.0
             ],
             "category_rank": 1,
             "mark_bbox_px": [
-              335.46,
-              59.048,
-              351.46,
-              75.048
+              226.875,
+              358.667,
+              242.875,
+              374.667
             ],
             "mark_center_px": [
-              343.46,
-              67.048
+              234.875,
+              366.667
             ],
             "mark_fill_rgb": [
-              158,
-              12,
-              96
+              10,
+              149,
+              31
             ],
             "mark_outline_rgb": [
-              87,
-              7,
-              53
+              6,
+              82,
+              17
             ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Dey",
+            "scene_variant": "multi_line",
+            "series_label": "Le",
             "series_rank": 1,
-            "value": 20
-          },
-          "entity_id": "mark_D_Dey",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              442.14,
-              59.048,
-              503.86,
-              562.0
-            ],
-            "category_label": "R",
-            "category_label_center_px": [
-              473.0,
-              554.0
-            ],
-            "category_rank": 2,
-            "mark_bbox_px": [
-              442.14,
-              381.714,
-              458.14,
-              397.714
-            ],
-            "mark_center_px": [
-              450.14,
-              389.714
-            ],
-            "mark_fill_rgb": [
-              162,
-              108,
-              201
-            ],
-            "mark_outline_rgb": [
-              89,
-              59,
-              111
-            ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Pass",
-            "series_rank": 0,
             "value": 6
           },
-          "entity_id": "mark_R_Pass",
+          "entity_id": "mark_Y_Le",
           "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              442.14,
-              59.048,
-              503.86,
+              322.125,
+              197.333,
+              338.125,
               562.0
             ],
-            "category_label": "R",
+            "category_label": "T",
             "category_label_center_px": [
-              473.0,
+              330.125,
               554.0
             ],
             "category_rank": 2,
             "mark_bbox_px": [
-              487.86,
-              59.048,
-              503.86,
-              75.048
+              322.125,
+              197.333,
+              338.125,
+              213.333
             ],
             "mark_center_px": [
-              495.86,
-              67.048
+              330.125,
+              205.333
             ],
             "mark_fill_rgb": [
-              158,
-              12,
-              96
+              178,
+              171,
+              81
             ],
             "mark_outline_rgb": [
-              87,
-              7,
-              53
+              98,
+              94,
+              45
             ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Dey",
-            "series_rank": 1,
-            "value": 20
-          },
-          "entity_id": "mark_R_Dey",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              594.54,
-              151.238,
-              656.26,
-              562.0
-            ],
-            "category_label": "X",
-            "category_label_center_px": [
-              625.4,
-              554.0
-            ],
-            "category_rank": 3,
-            "mark_bbox_px": [
-              594.54,
-              243.429,
-              610.54,
-              259.429
-            ],
-            "mark_center_px": [
-              602.54,
-              251.429
-            ],
-            "mark_fill_rgb": [
-              162,
-              108,
-              201
-            ],
-            "mark_outline_rgb": [
-              89,
-              59,
-              111
-            ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Pass",
+            "scene_variant": "multi_line",
+            "series_label": "Oaks",
             "series_rank": 0,
             "value": 12
           },
-          "entity_id": "mark_X_Pass",
+          "entity_id": "mark_T_Oaks",
           "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              594.54,
-              151.238,
-              656.26,
+              322.125,
+              197.333,
+              338.125,
               562.0
             ],
-            "category_label": "X",
+            "category_label": "T",
             "category_label_center_px": [
-              625.4,
+              330.125,
+              554.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              322.125,
+              358.667,
+              338.125,
+              374.667
+            ],
+            "mark_center_px": [
+              330.125,
+              366.667
+            ],
+            "mark_fill_rgb": [
+              10,
+              149,
+              31
+            ],
+            "mark_outline_rgb": [
+              6,
+              82,
+              17
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Le",
+            "series_rank": 1,
+            "value": 6
+          },
+          "entity_id": "mark_T_Le",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              417.375,
+              143.556,
+              433.375,
+              564.0
+            ],
+            "category_label": "J",
+            "category_label_center_px": [
+              425.375,
               554.0
             ],
             "category_rank": 3,
             "mark_bbox_px": [
-              640.26,
-              151.238,
-              656.26,
-              167.238
+              417.375,
+              170.444,
+              433.375,
+              186.444
             ],
             "mark_center_px": [
-              648.26,
-              159.238
+              425.375,
+              178.444
             ],
             "mark_fill_rgb": [
-              158,
-              12,
-              96
+              178,
+              171,
+              81
             ],
             "mark_outline_rgb": [
-              87,
-              7,
-              53
+              98,
+              94,
+              45
             ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Dey",
+            "scene_variant": "multi_line",
+            "series_label": "Oaks",
+            "series_rank": 0,
+            "value": 13
+          },
+          "entity_id": "mark_J_Oaks",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              417.375,
+              143.556,
+              433.375,
+              564.0
+            ],
+            "category_label": "J",
+            "category_label_center_px": [
+              425.375,
+              554.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              417.375,
+              143.556,
+              433.375,
+              159.556
+            ],
+            "mark_center_px": [
+              425.375,
+              151.556
+            ],
+            "mark_fill_rgb": [
+              10,
+              149,
+              31
+            ],
+            "mark_outline_rgb": [
+              6,
+              82,
+              17
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Le",
+            "series_rank": 1,
+            "value": 14
+          },
+          "entity_id": "mark_J_Le",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              512.625,
+              224.222,
+              528.625,
+              562.0
+            ],
+            "category_label": "S",
+            "category_label_center_px": [
+              520.625,
+              554.0
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              512.625,
+              224.222,
+              528.625,
+              240.222
+            ],
+            "mark_center_px": [
+              520.625,
+              232.222
+            ],
+            "mark_fill_rgb": [
+              178,
+              171,
+              81
+            ],
+            "mark_outline_rgb": [
+              98,
+              94,
+              45
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Oaks",
+            "series_rank": 0,
+            "value": 11
+          },
+          "entity_id": "mark_S_Oaks",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              512.625,
+              224.222,
+              528.625,
+              562.0
+            ],
+            "category_label": "S",
+            "category_label_center_px": [
+              520.625,
+              554.0
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              512.625,
+              304.889,
+              528.625,
+              320.889
+            ],
+            "mark_center_px": [
+              520.625,
+              312.889
+            ],
+            "mark_fill_rgb": [
+              10,
+              149,
+              31
+            ],
+            "mark_outline_rgb": [
+              6,
+              82,
+              17
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Le",
+            "series_rank": 1,
+            "value": 8
+          },
+          "entity_id": "mark_S_Le",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              607.875,
+              251.111,
+              623.875,
+              562.0
+            ],
+            "category_label": "F",
+            "category_label_center_px": [
+              615.875,
+              554.0
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              607.875,
+              251.111,
+              623.875,
+              267.111
+            ],
+            "mark_center_px": [
+              615.875,
+              259.111
+            ],
+            "mark_fill_rgb": [
+              178,
+              171,
+              81
+            ],
+            "mark_outline_rgb": [
+              98,
+              94,
+              45
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Oaks",
+            "series_rank": 0,
+            "value": 10
+          },
+          "entity_id": "mark_F_Oaks",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              607.875,
+              251.111,
+              623.875,
+              562.0
+            ],
+            "category_label": "F",
+            "category_label_center_px": [
+              615.875,
+              554.0
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              607.875,
+              466.222,
+              623.875,
+              482.222
+            ],
+            "mark_center_px": [
+              615.875,
+              474.222
+            ],
+            "mark_fill_rgb": [
+              10,
+              149,
+              31
+            ],
+            "mark_outline_rgb": [
+              6,
+              82,
+              17
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Le",
+            "series_rank": 1,
+            "value": 2
+          },
+          "entity_id": "mark_F_Le",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              702.625,
+              439.333,
+              719.625,
+              562.0
+            ],
+            "category_label": "X",
+            "category_label_center_px": [
+              711.125,
+              554.0
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              703.125,
+              439.333,
+              719.125,
+              455.333
+            ],
+            "mark_center_px": [
+              711.125,
+              447.333
+            ],
+            "mark_fill_rgb": [
+              178,
+              171,
+              81
+            ],
+            "mark_outline_rgb": [
+              98,
+              94,
+              45
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Oaks",
+            "series_rank": 0,
+            "value": 3
+          },
+          "entity_id": "mark_X_Oaks",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              702.625,
+              439.333,
+              719.625,
+              562.0
+            ],
+            "category_label": "X",
+            "category_label_center_px": [
+              711.125,
+              554.0
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              703.125,
+              493.111,
+              719.125,
+              509.111
+            ],
+            "mark_center_px": [
+              711.125,
+              501.111
+            ],
+            "mark_fill_rgb": [
+              10,
+              149,
+              31
+            ],
+            "mark_outline_rgb": [
+              6,
+              82,
+              17
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Le",
+            "series_rank": 1,
+            "value": 1
+          },
+          "entity_id": "mark_X_Le",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              797.375,
+              89.778,
+              815.375,
+              562.0
+            ],
+            "category_label": "H",
+            "category_label_center_px": [
+              806.375,
+              554.0
+            ],
+            "category_rank": 7,
+            "mark_bbox_px": [
+              798.375,
+              439.333,
+              814.375,
+              455.333
+            ],
+            "mark_center_px": [
+              806.375,
+              447.333
+            ],
+            "mark_fill_rgb": [
+              178,
+              171,
+              81
+            ],
+            "mark_outline_rgb": [
+              98,
+              94,
+              45
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Oaks",
+            "series_rank": 0,
+            "value": 3
+          },
+          "entity_id": "mark_H_Oaks",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              797.375,
+              89.778,
+              815.375,
+              562.0
+            ],
+            "category_label": "H",
+            "category_label_center_px": [
+              806.375,
+              554.0
+            ],
+            "category_rank": 7,
+            "mark_bbox_px": [
+              798.375,
+              89.778,
+              814.375,
+              105.778
+            ],
+            "mark_center_px": [
+              806.375,
+              97.778
+            ],
+            "mark_fill_rgb": [
+              10,
+              149,
+              31
+            ],
+            "mark_outline_rgb": [
+              6,
+              82,
+              17
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Le",
             "series_rank": 1,
             "value": 16
           },
-          "entity_id": "mark_X_Dey",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              746.94,
-              105.143,
-              808.66,
-              562.0
-            ],
-            "category_label": "F",
-            "category_label_center_px": [
-              777.8,
-              554.0
-            ],
-            "category_rank": 4,
-            "mark_bbox_px": [
-              746.94,
-              105.143,
-              762.94,
-              121.143
-            ],
-            "mark_center_px": [
-              754.94,
-              113.143
-            ],
-            "mark_fill_rgb": [
-              162,
-              108,
-              201
-            ],
-            "mark_outline_rgb": [
-              89,
-              59,
-              111
-            ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Pass",
-            "series_rank": 0,
-            "value": 18
-          },
-          "entity_id": "mark_F_Pass",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              746.94,
-              105.143,
-              808.66,
-              562.0
-            ],
-            "category_label": "F",
-            "category_label_center_px": [
-              777.8,
-              554.0
-            ],
-            "category_rank": 4,
-            "mark_bbox_px": [
-              792.66,
-              312.571,
-              808.66,
-              328.571
-            ],
-            "mark_center_px": [
-              800.66,
-              320.571
-            ],
-            "mark_fill_rgb": [
-              158,
-              12,
-              96
-            ],
-            "mark_outline_rgb": [
-              87,
-              7,
-              53
-            ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Dey",
-            "series_rank": 1,
-            "value": 9
-          },
-          "entity_id": "mark_F_Dey",
+          "entity_id": "mark_H_Le",
           "entity_type": "point"
         }
       ],
       "relations": {
         "comparison": "less_than",
         "evidence_labels": [
-          "D",
-          "R",
-          "V",
-          "X"
+          "H",
+          "J"
         ],
         "queried_series_labels": [
-          "Pass",
-          "Dey"
+          "Oaks",
+          "Le"
         ],
-        "scene_variant": "grouped_lollipop",
+        "scene_variant": "multi_line",
         "task_variant": "series_a_lt_b_count"
       },
-      "scene_kind": "chart_grouped_lollipop_multiseries"
+      "scene_kind": "chart_multi_line_multiseries"
     },
     "witness_symbolic": {
       "labels": [
-        "D",
-        "R",
-        "V",
-        "X"
+        "H",
+        "J"
       ],
       "type": "label_set"
     }

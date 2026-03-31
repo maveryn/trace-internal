@@ -1,22 +1,22 @@
 {
   "answer_gt": {
     "type": "string",
-    "value": "(617) 672-3968"
+    "value": "northwindstudi@example.com"
   },
   "evidence_gt": {
     "type": "bbox_set",
     "value": [
       [
-        666.0,
-        347.5,
-        746.0,
-        366.5
+        416.0,
+        632.5,
+        487.0,
+        651.5
       ],
       [
-        666.0,
-        386.5,
-        889.0,
-        413.5
+        589.0,
+        632.0,
+        864.0,
+        652.0
       ]
     ]
   },
@@ -24,18 +24,18 @@
     "format": "png",
     "path": "documents/task_documents_readout_field_value/images/lookup_contact/0015.png"
   },
-  "instance_seed": 5641210766672392,
-  "prompt": "You are given a structured application form with labeled fields and boxed sections. Find the requested field in the document: What is the phone number? Give the exact text shown in the requested field.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value.\nAnswer field: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"ava.lee@example.com\"}",
+  "instance_seed": 5842380913150534,
+  "prompt": "The image shows a receipt-style document with labeled rows and totals. Find the requested field in the document: What is the email address? Respond with the exact contact text from the document.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value.\nAnswer field: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"ava.lee@example.com\"}",
   "prompt_variants": {
-    "answer_and_evidence": "You are given a structured application form with labeled fields and boxed sections. Find the requested field in the document: What is the phone number? Give the exact text shown in the requested field.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value.\nAnswer field: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"ava.lee@example.com\"}",
-    "answer_only": "You are given a structured application form with labeled fields and boxed sections. Find the requested field in the document: What is the phone number? Give the exact text shown in the requested field.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"answer\":\"ava.lee@example.com\"}"
+    "answer_and_evidence": "The image shows a receipt-style document with labeled rows and totals. Find the requested field in the document: What is the email address? Respond with the exact contact text from the document.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value.\nAnswer field: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"ava.lee@example.com\"}",
+    "answer_only": "The image shows a receipt-style document with labeled rows and totals. Find the requested field in the document: What is the email address? Respond with the exact contact text from the document.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"answer\":\"ava.lee@example.com\"}"
   },
   "task": "task_documents_readout_field_value",
   "task_variant": "lookup_contact",
   "trace_payload": {
     "answer_gt": {
       "type": "string",
-      "value": "(617) 672-3968"
+      "value": "northwindstudi@example.com"
     },
     "background": {
       "available_styles": [
@@ -56,16 +56,16 @@
       "type": "bbox_set",
       "value": [
         [
-          666.0,
-          347.5,
-          746.0,
-          366.5
+          416.0,
+          632.5,
+          487.0,
+          651.5
         ],
         [
-          666.0,
-          386.5,
-          889.0,
-          413.5
+          589.0,
+          632.0,
+          864.0,
+          652.0
         ]
       ]
     },
@@ -74,36 +74,54 @@
       "field_specs": [
         {
           "field_category": "lookup_name",
-          "field_id": "applicant_name",
-          "field_label": "Applicant Name",
-          "field_value": "Nora Price",
-          "label_bbox_id": "applicant_name:label",
-          "question_name": "applicant name",
-          "value_bbox_id": "applicant_name:value"
+          "field_id": "store_name",
+          "field_label": "Store Name",
+          "field_value": "Northwind Studio",
+          "label_bbox_id": "store_name:label",
+          "question_name": "store name",
+          "value_bbox_id": "store_name:value"
         },
         {
           "field_category": "lookup_identifier",
-          "field_id": "reference_id",
-          "field_label": "Reference ID",
-          "field_value": "REF-57981",
-          "label_bbox_id": "reference_id:label",
-          "question_name": "reference ID",
-          "value_bbox_id": "reference_id:value"
+          "field_id": "receipt_number",
+          "field_label": "Receipt No.",
+          "field_value": "R-39310",
+          "label_bbox_id": "receipt_number:label",
+          "question_name": "receipt number",
+          "value_bbox_id": "receipt_number:value"
         },
         {
           "field_category": "lookup_date",
-          "field_id": "submission_date",
-          "field_label": "Submission Date",
-          "field_value": "04/29/2026",
-          "label_bbox_id": "submission_date:label",
-          "question_name": "submission date",
-          "value_bbox_id": "submission_date:value"
+          "field_id": "purchase_date",
+          "field_label": "Purchase Date",
+          "field_value": "Jun 04, 2026",
+          "label_bbox_id": "purchase_date:label",
+          "question_name": "purchase date",
+          "value_bbox_id": "purchase_date:value"
+        },
+        {
+          "field_category": "lookup_name",
+          "field_id": "cashier_name",
+          "field_label": "Cashier",
+          "field_value": "Zane Rivera",
+          "label_bbox_id": "cashier_name:label",
+          "question_name": "cashier name",
+          "value_bbox_id": "cashier_name:value"
+        },
+        {
+          "field_category": "lookup_identifier",
+          "field_id": "member_id",
+          "field_label": "Member ID",
+          "field_value": "M-3692",
+          "label_bbox_id": "member_id:label",
+          "question_name": "member ID",
+          "value_bbox_id": "member_id:value"
         },
         {
           "field_category": "lookup_contact",
           "field_id": "contact_phone",
           "field_label": "Phone",
-          "field_value": "(617) 672-3968",
+          "field_value": "(415) 344-8687",
           "label_bbox_id": "contact_phone:label",
           "question_name": "phone number",
           "value_bbox_id": "contact_phone:value"
@@ -112,58 +130,40 @@
           "field_category": "lookup_contact",
           "field_id": "contact_email",
           "field_label": "Email",
-          "field_value": "noraprice@northpost.co",
+          "field_value": "northwindstudi@example.com",
           "label_bbox_id": "contact_email:label",
           "question_name": "email address",
           "value_bbox_id": "contact_email:value"
         },
         {
-          "field_category": "lookup_name",
-          "field_id": "department",
-          "field_label": "Department",
-          "field_value": "Support",
-          "label_bbox_id": "department:label",
-          "question_name": "department",
-          "value_bbox_id": "department:value"
-        },
-        {
-          "field_category": "lookup_name",
-          "field_id": "city",
-          "field_label": "City",
-          "field_value": "Grand Lake",
-          "label_bbox_id": "city:label",
-          "question_name": "city",
-          "value_bbox_id": "city:value"
+          "field_category": "lookup_amount",
+          "field_id": "tax_amount",
+          "field_label": "Tax",
+          "field_value": "$7.58",
+          "label_bbox_id": "tax_amount:label",
+          "question_name": "tax amount",
+          "value_bbox_id": "tax_amount:value"
         },
         {
           "field_category": "lookup_amount",
-          "field_id": "fee_amount",
-          "field_label": "Fee Amount",
-          "field_value": "$54.43",
-          "label_bbox_id": "fee_amount:label",
-          "question_name": "fee amount",
-          "value_bbox_id": "fee_amount:value"
-        },
-        {
-          "field_category": "lookup_name",
-          "field_id": "reviewer_name",
-          "field_label": "Reviewer",
-          "field_value": "Cole Lee",
-          "label_bbox_id": "reviewer_name:label",
-          "question_name": "reviewer name",
-          "value_bbox_id": "reviewer_name:value"
+          "field_id": "total_paid",
+          "field_label": "Total Paid",
+          "field_value": "$50.07",
+          "label_bbox_id": "total_paid:label",
+          "question_name": "total paid",
+          "value_bbox_id": "total_paid:value"
         }
       ],
       "query_field_category": "lookup_contact",
-      "query_field_id": "contact_phone",
-      "query_field_label": "Phone",
-      "query_field_value": "(617) 672-3968",
-      "query_label_bbox_id": "contact_phone:label",
-      "query_value_bbox_id": "contact_phone:value",
+      "query_field_id": "contact_email",
+      "query_field_label": "Email",
+      "query_field_value": "northwindstudi@example.com",
+      "query_label_bbox_id": "contact_email:label",
+      "query_value_bbox_id": "contact_email:value",
       "question_format": "document_field_lookup",
-      "question_text": "What is the phone number?",
-      "scene_title": "Application Form",
-      "scene_variant": "form_sheet",
+      "question_text": "What is the email address?",
+      "scene_title": "Receipt",
+      "scene_variant": "receipt_sheet",
       "task_variant": "lookup_contact",
       "view_family": "structured_document"
     },
@@ -186,16 +186,16 @@
     "projected_evidence": {
       "bbox_set": [
         [
-          666.0,
-          347.5,
-          746.0,
-          366.5
+          416.0,
+          632.5,
+          487.0,
+          651.5
         ],
         [
-          666.0,
-          386.5,
-          889.0,
-          413.5
+          589.0,
+          632.0,
+          864.0,
+          652.0
         ]
       ]
     },
@@ -206,7 +206,7 @@
           8,
           11
         ],
-        "scene_variant": "form_sheet",
+        "scene_variant": "receipt_sheet",
         "scene_variant_probabilities": {
           "form_sheet": 0.3333333333333333,
           "invoice_sheet": 0.3333333333333333,
@@ -233,15 +233,15 @@
           "json_example_answer_only": "{\"answer\":\"ava.lee@example.com\"}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "object_description": "a structured application form with labeled fields and boxed sections",
-          "question_text": "What is the phone number?"
+          "object_description": "a receipt-style document with labeled rows and totals",
+          "question_text": "What is the email address?"
         },
         "task_family_key": "structured_document",
-        "task_family_variant_index": 2,
+        "task_family_variant_index": 0,
         "task_key": "field_lookup_query",
         "task_variant_index": 2,
         "task_variant_key": "lookup_contact",
-        "task_variant_template_index": 3,
+        "task_variant_template_index": 2,
         "template_paths": [
           "documents/readout/documents_readout_v1.json"
         ],
@@ -267,15 +267,15 @@
               "json_example_answer_only": "{\"answer\":\"ava.lee@example.com\"}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a structured application form with labeled fields and boxed sections",
-              "question_text": "What is the phone number?"
+              "object_description": "a receipt-style document with labeled rows and totals",
+              "question_text": "What is the email address?"
             },
             "task_family_key": "structured_document",
-            "task_family_variant_index": 2,
+            "task_family_variant_index": 0,
             "task_key": "field_lookup_query",
             "task_variant_index": 2,
             "task_variant_key": "lookup_contact",
-            "task_variant_template_index": 3,
+            "task_variant_template_index": 2,
             "template_paths": [
               "documents/readout/documents_readout_v1.json"
             ],
@@ -286,12 +286,12 @@
               "task_variant:lookup_contact": 5
             }
           },
-          "prompt": "You are given a structured application form with labeled fields and boxed sections. Find the requested field in the document: What is the phone number? Give the exact text shown in the requested field.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value.\nAnswer field: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"ava.lee@example.com\"}"
+          "prompt": "The image shows a receipt-style document with labeled rows and totals. Find the requested field in the document: What is the email address? Respond with the exact contact text from the document.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value.\nAnswer field: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"ava.lee@example.com\"}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 1,
+            "answer_or_evidence_variant_index": 4,
             "prompt_bundle_id": "documents_readout_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -301,15 +301,15 @@
               "json_example_answer_only": "{\"answer\":\"ava.lee@example.com\"}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a structured application form with labeled fields and boxed sections",
-              "question_text": "What is the phone number?"
+              "object_description": "a receipt-style document with labeled rows and totals",
+              "question_text": "What is the email address?"
             },
             "task_family_key": "structured_document",
-            "task_family_variant_index": 2,
+            "task_family_variant_index": 0,
             "task_key": "field_lookup_query",
             "task_variant_index": 2,
             "task_variant_key": "lookup_contact",
-            "task_variant_template_index": 3,
+            "task_variant_template_index": 2,
             "template_paths": [
               "documents/readout/documents_readout_v1.json"
             ],
@@ -320,7 +320,7 @@
               "task_variant:lookup_contact": 5
             }
           },
-          "prompt": "You are given a structured application form with labeled fields and boxed sections. Find the requested field in the document: What is the phone number? Give the exact text shown in the requested field.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"answer\":\"ava.lee@example.com\"}"
+          "prompt": "The image shows a receipt-style document with labeled rows and totals. Find the requested field in the document: What is the email address? Respond with the exact contact text from the document.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"answer\":\"ava.lee@example.com\"}"
         }
       },
       "task_variant": "lookup_contact",
@@ -328,194 +328,194 @@
     },
     "render_map": {
       "field_box_bboxes_px": {
-        "applicant_name": [
-          204.0,
-          208.0,
-          628.0,
-          316.0
-        ],
-        "city": [
-          204.0,
-          586.0,
-          628.0,
-          694.0
+        "cashier_name": [
+          406.0,
+          402.0,
+          874.0,
+          462.0
         ],
         "contact_email": [
-          204.0,
-          460.0,
-          628.0,
-          568.0
+          406.0,
+          612.0,
+          874.0,
+          672.0
         ],
         "contact_phone": [
-          652.0,
-          334.0,
-          1076.0,
-          442.0
+          406.0,
+          542.0,
+          874.0,
+          602.0
         ],
-        "department": [
-          652.0,
-          460.0,
-          1076.0,
-          568.0
+        "member_id": [
+          406.0,
+          472.0,
+          874.0,
+          532.0
         ],
-        "fee_amount": [
-          652.0,
-          586.0,
-          1076.0,
-          694.0
+        "purchase_date": [
+          406.0,
+          332.0,
+          874.0,
+          392.0
         ],
-        "reference_id": [
-          652.0,
-          208.0,
-          1076.0,
-          316.0
+        "receipt_number": [
+          406.0,
+          262.0,
+          874.0,
+          322.0
         ],
-        "reviewer_name": [
-          204.0,
-          712.0,
-          1076.0,
-          820.0
+        "store_name": [
+          406.0,
+          192.0,
+          874.0,
+          252.0
         ],
-        "submission_date": [
-          204.0,
-          334.0,
-          628.0,
-          442.0
+        "tax_amount": [
+          406.0,
+          682.0,
+          874.0,
+          742.0
+        ],
+        "total_paid": [
+          406.0,
+          752.0,
+          874.0,
+          812.0
         ]
       },
       "field_label_bboxes_px": {
-        "applicant_name:label": [
-          218.0,
-          219.0,
-          419.0,
-          243.0
-        ],
-        "city:label": [
-          218.0,
-          597.0,
-          269.0,
-          621.0
+        "cashier_name:label": [
+          416.0,
+          422.5,
+          512.0,
+          441.5
         ],
         "contact_email:label": [
-          218.0,
-          473.5,
-          289.0,
-          492.5
+          416.0,
+          632.5,
+          487.0,
+          651.5
         ],
         "contact_phone:label": [
-          666.0,
-          347.5,
-          746.0,
-          366.5
+          416.0,
+          562.5,
+          496.0,
+          581.5
         ],
-        "department:label": [
-          666.0,
-          471.5,
-          819.0,
-          494.5
+        "member_id:label": [
+          416.0,
+          492.5,
+          554.0,
+          511.5
         ],
-        "fee_amount:label": [
-          666.0,
-          600.0,
-          819.0,
-          618.0
+        "purchase_date:label": [
+          416.0,
+          353.0,
+          588.0,
+          371.0
         ],
-        "reference_id:label": [
-          666.0,
-          221.5,
-          829.0,
-          240.5
+        "receipt_number:label": [
+          416.0,
+          280.0,
+          562.0,
+          304.0
         ],
-        "reviewer_name:label": [
-          218.0,
-          725.5,
-          335.0,
-          744.5
+        "store_name:label": [
+          416.0,
+          213.0,
+          565.0,
+          231.0
         ],
-        "submission_date:label": [
-          218.0,
-          347.5,
-          431.0,
-          366.5
+        "tax_amount:label": [
+          416.0,
+          703.0,
+          462.0,
+          721.0
+        ],
+        "total_paid:label": [
+          416.0,
+          772.5,
+          545.0,
+          791.5
         ]
       },
       "field_value_bboxes_px": {
-        "applicant_name:value": [
-          218.0,
-          262.5,
-          365.0,
-          285.5
-        ],
-        "city:value": [
-          218.0,
-          640.5,
-          382.0,
-          663.5
+        "cashier_name:value": [
+          692.0,
+          420.5,
+          864.0,
+          443.5
         ],
         "contact_email:value": [
-          218.0,
-          511.5,
-          560.0,
-          540.5
+          589.0,
+          632.0,
+          864.0,
+          652.0
         ],
         "contact_phone:value": [
-          666.0,
-          386.5,
-          889.0,
-          413.5
+          641.0,
+          558.5,
+          864.0,
+          585.5
         ],
-        "department:value": [
-          666.0,
-          512.0,
-          780.0,
-          540.0
+        "member_id:value": [
+          756.0,
+          491.0,
+          864.0,
+          513.0
         ],
-        "fee_amount:value": [
-          666.0,
-          638.5,
-          767.0,
-          665.5
+        "purchase_date:value": [
+          681.0,
+          348.0,
+          864.0,
+          376.0
         ],
-        "reference_id:value": [
-          666.0,
-          263.0,
-          821.0,
-          285.0
+        "receipt_number:value": [
+          743.0,
+          281.0,
+          864.0,
+          303.0
         ],
-        "reviewer_name:value": [
-          218.0,
-          766.5,
-          341.0,
-          789.5
+        "store_name:value": [
+          617.0,
+          210.5,
+          864.0,
+          233.5
         ],
-        "submission_date:value": [
-          218.0,
-          387.5,
-          382.0,
-          412.5
+        "tax_amount:value": [
+          781.0,
+          698.5,
+          864.0,
+          725.5
+        ],
+        "total_paid:value": [
+          763.0,
+          768.5,
+          864.0,
+          795.5
         ]
       },
       "page_bbox_px": [
-        160.0,
+        380.0,
         80.0,
-        1120.0,
+        900.0,
         840.0
       ],
       "title_bbox_px": [
-        191.0,
+        411.0,
         100.5,
-        598.0,
+        590.0,
         143.5
       ]
     },
     "render_spec": {
       "canvas_height": 920,
       "canvas_width": 1280,
-      "geometry_seed": 5641210766672392,
+      "geometry_seed": 5842380913150534,
       "page_shadow_offset_px": 14,
       "receipt_page_height_px": 760,
       "receipt_page_width_px": 520,
-      "scene_variant": "form_sheet",
+      "scene_variant": "receipt_sheet",
       "sheet_page_height_px": 760,
       "sheet_page_width_px": 960
     },
@@ -524,9 +524,9 @@
         {
           "bbox_id": "page",
           "bbox_px": [
-            160.0,
+            380.0,
             80.0,
-            1120.0,
+            900.0,
             840.0
           ],
           "entity_id": "page",
@@ -535,136 +535,212 @@
         {
           "bbox_id": "title",
           "bbox_px": [
-            191.0,
+            411.0,
             100.5,
-            598.0,
+            590.0,
             143.5
           ],
           "entity_id": "title",
           "entity_type": "document_title",
-          "text": "Application Form"
+          "text": "Receipt"
         },
         {
-          "bbox_id": "applicant_name",
+          "bbox_id": "store_name",
           "bbox_px": [
-            204.0,
-            208.0,
-            628.0,
-            316.0
+            406.0,
+            192.0,
+            874.0,
+            252.0
           ],
-          "entity_id": "applicant_name:field",
+          "entity_id": "store_name:field",
           "entity_type": "document_field_box",
-          "field_id": "applicant_name"
+          "field_id": "store_name"
         },
         {
-          "bbox_id": "applicant_name:label",
+          "bbox_id": "store_name:label",
           "bbox_px": [
-            218.0,
-            219.0,
-            419.0,
-            243.0
+            416.0,
+            213.0,
+            565.0,
+            231.0
           ],
-          "entity_id": "applicant_name:label",
+          "entity_id": "store_name:label",
           "entity_type": "document_field_label",
-          "field_id": "applicant_name",
-          "text": "Applicant Name"
+          "field_id": "store_name",
+          "text": "Store Name"
         },
         {
-          "bbox_id": "applicant_name:value",
+          "bbox_id": "store_name:value",
           "bbox_px": [
-            218.0,
-            262.5,
-            365.0,
-            285.5
+            617.0,
+            210.5,
+            864.0,
+            233.5
           ],
-          "entity_id": "applicant_name:value",
+          "entity_id": "store_name:value",
           "entity_type": "document_field_value",
-          "field_id": "applicant_name",
-          "text": "Nora Price"
+          "field_id": "store_name",
+          "text": "Northwind Studio"
         },
         {
-          "bbox_id": "reference_id",
+          "bbox_id": "receipt_number",
           "bbox_px": [
-            652.0,
-            208.0,
-            1076.0,
-            316.0
+            406.0,
+            262.0,
+            874.0,
+            322.0
           ],
-          "entity_id": "reference_id:field",
+          "entity_id": "receipt_number:field",
           "entity_type": "document_field_box",
-          "field_id": "reference_id"
+          "field_id": "receipt_number"
         },
         {
-          "bbox_id": "reference_id:label",
+          "bbox_id": "receipt_number:label",
           "bbox_px": [
-            666.0,
-            221.5,
-            829.0,
-            240.5
+            416.0,
+            280.0,
+            562.0,
+            304.0
           ],
-          "entity_id": "reference_id:label",
+          "entity_id": "receipt_number:label",
           "entity_type": "document_field_label",
-          "field_id": "reference_id",
-          "text": "Reference ID"
+          "field_id": "receipt_number",
+          "text": "Receipt No."
         },
         {
-          "bbox_id": "reference_id:value",
+          "bbox_id": "receipt_number:value",
           "bbox_px": [
-            666.0,
-            263.0,
-            821.0,
-            285.0
+            743.0,
+            281.0,
+            864.0,
+            303.0
           ],
-          "entity_id": "reference_id:value",
+          "entity_id": "receipt_number:value",
           "entity_type": "document_field_value",
-          "field_id": "reference_id",
-          "text": "REF-57981"
+          "field_id": "receipt_number",
+          "text": "R-39310"
         },
         {
-          "bbox_id": "submission_date",
+          "bbox_id": "purchase_date",
           "bbox_px": [
-            204.0,
-            334.0,
-            628.0,
-            442.0
+            406.0,
+            332.0,
+            874.0,
+            392.0
           ],
-          "entity_id": "submission_date:field",
+          "entity_id": "purchase_date:field",
           "entity_type": "document_field_box",
-          "field_id": "submission_date"
+          "field_id": "purchase_date"
         },
         {
-          "bbox_id": "submission_date:label",
+          "bbox_id": "purchase_date:label",
           "bbox_px": [
-            218.0,
-            347.5,
-            431.0,
-            366.5
+            416.0,
+            353.0,
+            588.0,
+            371.0
           ],
-          "entity_id": "submission_date:label",
+          "entity_id": "purchase_date:label",
           "entity_type": "document_field_label",
-          "field_id": "submission_date",
-          "text": "Submission Date"
+          "field_id": "purchase_date",
+          "text": "Purchase Date"
         },
         {
-          "bbox_id": "submission_date:value",
+          "bbox_id": "purchase_date:value",
           "bbox_px": [
-            218.0,
-            387.5,
-            382.0,
-            412.5
+            681.0,
+            348.0,
+            864.0,
+            376.0
           ],
-          "entity_id": "submission_date:value",
+          "entity_id": "purchase_date:value",
           "entity_type": "document_field_value",
-          "field_id": "submission_date",
-          "text": "04/29/2026"
+          "field_id": "purchase_date",
+          "text": "Jun 04, 2026"
+        },
+        {
+          "bbox_id": "cashier_name",
+          "bbox_px": [
+            406.0,
+            402.0,
+            874.0,
+            462.0
+          ],
+          "entity_id": "cashier_name:field",
+          "entity_type": "document_field_box",
+          "field_id": "cashier_name"
+        },
+        {
+          "bbox_id": "cashier_name:label",
+          "bbox_px": [
+            416.0,
+            422.5,
+            512.0,
+            441.5
+          ],
+          "entity_id": "cashier_name:label",
+          "entity_type": "document_field_label",
+          "field_id": "cashier_name",
+          "text": "Cashier"
+        },
+        {
+          "bbox_id": "cashier_name:value",
+          "bbox_px": [
+            692.0,
+            420.5,
+            864.0,
+            443.5
+          ],
+          "entity_id": "cashier_name:value",
+          "entity_type": "document_field_value",
+          "field_id": "cashier_name",
+          "text": "Zane Rivera"
+        },
+        {
+          "bbox_id": "member_id",
+          "bbox_px": [
+            406.0,
+            472.0,
+            874.0,
+            532.0
+          ],
+          "entity_id": "member_id:field",
+          "entity_type": "document_field_box",
+          "field_id": "member_id"
+        },
+        {
+          "bbox_id": "member_id:label",
+          "bbox_px": [
+            416.0,
+            492.5,
+            554.0,
+            511.5
+          ],
+          "entity_id": "member_id:label",
+          "entity_type": "document_field_label",
+          "field_id": "member_id",
+          "text": "Member ID"
+        },
+        {
+          "bbox_id": "member_id:value",
+          "bbox_px": [
+            756.0,
+            491.0,
+            864.0,
+            513.0
+          ],
+          "entity_id": "member_id:value",
+          "entity_type": "document_field_value",
+          "field_id": "member_id",
+          "text": "M-3692"
         },
         {
           "bbox_id": "contact_phone",
           "bbox_px": [
-            652.0,
-            334.0,
-            1076.0,
-            442.0
+            406.0,
+            542.0,
+            874.0,
+            602.0
           ],
           "entity_id": "contact_phone:field",
           "entity_type": "document_field_box",
@@ -673,10 +749,10 @@
         {
           "bbox_id": "contact_phone:label",
           "bbox_px": [
-            666.0,
-            347.5,
-            746.0,
-            366.5
+            416.0,
+            562.5,
+            496.0,
+            581.5
           ],
           "entity_id": "contact_phone:label",
           "entity_type": "document_field_label",
@@ -686,23 +762,23 @@
         {
           "bbox_id": "contact_phone:value",
           "bbox_px": [
-            666.0,
-            386.5,
-            889.0,
-            413.5
+            641.0,
+            558.5,
+            864.0,
+            585.5
           ],
           "entity_id": "contact_phone:value",
           "entity_type": "document_field_value",
           "field_id": "contact_phone",
-          "text": "(617) 672-3968"
+          "text": "(415) 344-8687"
         },
         {
           "bbox_id": "contact_email",
           "bbox_px": [
-            204.0,
-            460.0,
-            628.0,
-            568.0
+            406.0,
+            612.0,
+            874.0,
+            672.0
           ],
           "entity_id": "contact_email:field",
           "entity_type": "document_field_box",
@@ -711,10 +787,10 @@
         {
           "bbox_id": "contact_email:label",
           "bbox_px": [
-            218.0,
-            473.5,
-            289.0,
-            492.5
+            416.0,
+            632.5,
+            487.0,
+            651.5
           ],
           "entity_id": "contact_email:label",
           "entity_type": "document_field_label",
@@ -724,184 +800,108 @@
         {
           "bbox_id": "contact_email:value",
           "bbox_px": [
-            218.0,
-            511.5,
-            560.0,
-            540.5
+            589.0,
+            632.0,
+            864.0,
+            652.0
           ],
           "entity_id": "contact_email:value",
           "entity_type": "document_field_value",
           "field_id": "contact_email",
-          "text": "noraprice@northpost.co"
+          "text": "northwindstudi@example.com"
         },
         {
-          "bbox_id": "department",
+          "bbox_id": "tax_amount",
           "bbox_px": [
-            652.0,
-            460.0,
-            1076.0,
-            568.0
+            406.0,
+            682.0,
+            874.0,
+            742.0
           ],
-          "entity_id": "department:field",
+          "entity_id": "tax_amount:field",
           "entity_type": "document_field_box",
-          "field_id": "department"
+          "field_id": "tax_amount"
         },
         {
-          "bbox_id": "department:label",
+          "bbox_id": "tax_amount:label",
           "bbox_px": [
-            666.0,
-            471.5,
-            819.0,
-            494.5
+            416.0,
+            703.0,
+            462.0,
+            721.0
           ],
-          "entity_id": "department:label",
+          "entity_id": "tax_amount:label",
           "entity_type": "document_field_label",
-          "field_id": "department",
-          "text": "Department"
+          "field_id": "tax_amount",
+          "text": "Tax"
         },
         {
-          "bbox_id": "department:value",
+          "bbox_id": "tax_amount:value",
           "bbox_px": [
-            666.0,
-            512.0,
-            780.0,
-            540.0
+            781.0,
+            698.5,
+            864.0,
+            725.5
           ],
-          "entity_id": "department:value",
+          "entity_id": "tax_amount:value",
           "entity_type": "document_field_value",
-          "field_id": "department",
-          "text": "Support"
+          "field_id": "tax_amount",
+          "text": "$7.58"
         },
         {
-          "bbox_id": "city",
+          "bbox_id": "total_paid",
           "bbox_px": [
-            204.0,
-            586.0,
-            628.0,
-            694.0
+            406.0,
+            752.0,
+            874.0,
+            812.0
           ],
-          "entity_id": "city:field",
+          "entity_id": "total_paid:field",
           "entity_type": "document_field_box",
-          "field_id": "city"
+          "field_id": "total_paid"
         },
         {
-          "bbox_id": "city:label",
+          "bbox_id": "total_paid:label",
           "bbox_px": [
-            218.0,
-            597.0,
-            269.0,
-            621.0
+            416.0,
+            772.5,
+            545.0,
+            791.5
           ],
-          "entity_id": "city:label",
+          "entity_id": "total_paid:label",
           "entity_type": "document_field_label",
-          "field_id": "city",
-          "text": "City"
+          "field_id": "total_paid",
+          "text": "Total Paid"
         },
         {
-          "bbox_id": "city:value",
+          "bbox_id": "total_paid:value",
           "bbox_px": [
-            218.0,
-            640.5,
-            382.0,
-            663.5
+            763.0,
+            768.5,
+            864.0,
+            795.5
           ],
-          "entity_id": "city:value",
+          "entity_id": "total_paid:value",
           "entity_type": "document_field_value",
-          "field_id": "city",
-          "text": "Grand Lake"
-        },
-        {
-          "bbox_id": "fee_amount",
-          "bbox_px": [
-            652.0,
-            586.0,
-            1076.0,
-            694.0
-          ],
-          "entity_id": "fee_amount:field",
-          "entity_type": "document_field_box",
-          "field_id": "fee_amount"
-        },
-        {
-          "bbox_id": "fee_amount:label",
-          "bbox_px": [
-            666.0,
-            600.0,
-            819.0,
-            618.0
-          ],
-          "entity_id": "fee_amount:label",
-          "entity_type": "document_field_label",
-          "field_id": "fee_amount",
-          "text": "Fee Amount"
-        },
-        {
-          "bbox_id": "fee_amount:value",
-          "bbox_px": [
-            666.0,
-            638.5,
-            767.0,
-            665.5
-          ],
-          "entity_id": "fee_amount:value",
-          "entity_type": "document_field_value",
-          "field_id": "fee_amount",
-          "text": "$54.43"
-        },
-        {
-          "bbox_id": "reviewer_name",
-          "bbox_px": [
-            204.0,
-            712.0,
-            1076.0,
-            820.0
-          ],
-          "entity_id": "reviewer_name:field",
-          "entity_type": "document_field_box",
-          "field_id": "reviewer_name"
-        },
-        {
-          "bbox_id": "reviewer_name:label",
-          "bbox_px": [
-            218.0,
-            725.5,
-            335.0,
-            744.5
-          ],
-          "entity_id": "reviewer_name:label",
-          "entity_type": "document_field_label",
-          "field_id": "reviewer_name",
-          "text": "Reviewer"
-        },
-        {
-          "bbox_id": "reviewer_name:value",
-          "bbox_px": [
-            218.0,
-            766.5,
-            341.0,
-            789.5
-          ],
-          "entity_id": "reviewer_name:value",
-          "entity_type": "document_field_value",
-          "field_id": "reviewer_name",
-          "text": "Cole Lee"
+          "field_id": "total_paid",
+          "text": "$50.07"
         }
       ],
       "relations": {
-        "query_field_id": "contact_phone",
-        "query_field_label": "Phone",
-        "scene_variant": "form_sheet",
+        "query_field_id": "contact_email",
+        "query_field_label": "Email",
+        "scene_variant": "receipt_sheet",
         "task_variant": "lookup_contact",
         "view_family": "structured_document"
       },
-      "scene_kind": "document_form_sheet"
+      "scene_kind": "document_receipt_sheet"
     },
     "witness_symbolic": {
       "bbox_id_sequence": [
-        "contact_phone:label",
-        "contact_phone:value"
+        "contact_email:label",
+        "contact_email:value"
       ],
-      "field_id": "contact_phone"
+      "field_id": "contact_email"
     }
   },
   "versions": {

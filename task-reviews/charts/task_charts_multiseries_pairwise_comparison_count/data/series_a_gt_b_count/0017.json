@@ -1,66 +1,59 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 5
+    "value": 2
   },
   "evidence_gt": {
     "type": "label_set",
     "value": [
-      "B",
-      "G",
-      "L",
-      "M",
-      "U"
+      "T",
+      "X"
     ]
   },
   "image": {
     "format": "png",
     "path": "charts/task_charts_multiseries_pairwise_comparison_count/images/series_a_gt_b_count/0017.png"
   },
-  "instance_seed": 2393817145317553,
-  "prompt": "Work from the multiseries chart shown in the image: a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Compare the two queried series category by category. Find how many category labels show Min higher than Sall.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
+  "instance_seed": 7151049022490207,
+  "prompt": "The image shows a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Read the chart values and count the categories where the stated series relation holds. Count the category labels where Stav exceeds Alli.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
   "prompt_variants": {
-    "answer_and_evidence": "Work from the multiseries chart shown in the image: a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Compare the two queried series category by category. Find how many category labels show Min higher than Sall.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
-    "answer_only": "Work from the multiseries chart shown in the image: a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Compare the two queried series category by category. Find how many category labels show Min higher than Sall.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":3}"
+    "answer_and_evidence": "The image shows a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Read the chart values and count the categories where the stated series relation holds. Count the category labels where Stav exceeds Alli.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
+    "answer_only": "The image shows a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Read the chart values and count the categories where the stated series relation holds. Count the category labels where Stav exceeds Alli.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":3}"
   },
   "task": "task_charts_multiseries_pairwise_comparison_count",
   "task_variant": "series_a_gt_b_count",
   "trace_payload": {
     "execution_trace": {
-      "answer_value": 5,
-      "category_count": 8,
+      "answer_value": 2,
+      "category_count": 7,
       "category_count_range": [
         5,
         10
       ],
       "category_labels": [
+        "V",
+        "T",
+        "E",
+        "H",
+        "C",
         "X",
-        "J",
-        "M",
-        "B",
-        "G",
-        "L",
-        "U",
-        "D"
+        "W"
       ],
       "comparison": "greater_than",
       "evidence_labels": [
-        "B",
-        "G",
-        "L",
-        "M",
-        "U"
+        "T",
+        "X"
       ],
-      "left_series_label": "Min",
+      "left_series_label": "Stav",
       "mark_color_distance_space": "lab",
       "mark_color_min_distance": 40.0,
       "mark_color_sampling_policy": "random_rgb_palette",
       "queried_series_labels": [
-        "Min",
-        "Sall"
+        "Stav",
+        "Alli"
       ],
       "question_format": "numeric_open",
-      "right_series_label": "Sall",
+      "right_series_label": "Alli",
       "scene_variant": "grouped_horizontal_bar",
       "scene_variant_probabilities": {
         "grouped_bar": 0.25,
@@ -68,180 +61,149 @@
         "grouped_lollipop": 0.25,
         "multi_line": 0.25
       },
-      "series_count": 2,
+      "series_count": 3,
       "series_count_range": [
         2,
         3
       ],
       "series_fill_palette_rgb": [
         [
-          80,
-          18,
-          55
+          161,
+          100,
+          88
         ],
         [
-          93,
-          201,
-          171
+          160,
+          5,
+          133
+        ],
+        [
+          153,
+          4,
+          213
         ]
       ],
       "series_labels": [
-        "Min",
-        "Sall"
+        "Izzy",
+        "Stav",
+        "Alli"
       ],
       "series_outline_palette_rgb": [
         [
-          44,
-          10,
-          30
+          89,
+          55,
+          48
         ],
         [
-          51,
-          111,
-          94
+          88,
+          3,
+          73
+        ],
+        [
+          84,
+          2,
+          117
         ]
       ],
-      "target_answer": 5,
+      "target_answer": 2,
       "target_answer_range": [
         0,
         8
       ],
       "task_variant": "series_a_gt_b_count",
       "task_variant_probabilities": {
-        "series_a_gt_b_count": 0.5,
-        "series_a_lt_b_count": 0.5
+        "series_a_gt_b_count": 1.0,
+        "series_a_lt_b_count": 0.0
       },
       "values_by_category": {
-        "B": {
-          "Min": 20,
-          "Sall": 2
+        "C": {
+          "Alli": 20,
+          "Izzy": 16,
+          "Stav": 12
         },
-        "D": {
-          "Min": 8,
-          "Sall": 15
+        "E": {
+          "Alli": 14,
+          "Izzy": 13,
+          "Stav": 2
         },
-        "G": {
-          "Min": 8,
-          "Sall": 5
+        "H": {
+          "Alli": 18,
+          "Izzy": 14,
+          "Stav": 4
         },
-        "J": {
-          "Min": 7,
-          "Sall": 20
+        "T": {
+          "Alli": 5,
+          "Izzy": 10,
+          "Stav": 15
         },
-        "L": {
-          "Min": 13,
-          "Sall": 11
+        "V": {
+          "Alli": 17,
+          "Izzy": 14,
+          "Stav": 11
         },
-        "M": {
-          "Min": 12,
-          "Sall": 1
-        },
-        "U": {
-          "Min": 20,
-          "Sall": 1
+        "W": {
+          "Alli": 17,
+          "Izzy": 4,
+          "Stav": 3
         },
         "X": {
-          "Min": 1,
-          "Sall": 17
+          "Alli": 1,
+          "Izzy": 2,
+          "Stav": 3
         }
       }
     },
     "projected_evidence": {
       "bbox_set": [
         [
+          54.5,
+          128.907,
+          636.286,
+          166.521
+        ],
+        [
           53.5,
-          240.141,
-          817.714,
-          271.359
-        ],
-        [
-          53.0,
-          300.641,
-          382.286,
-          331.859
-        ],
-        [
-          55.0,
-          361.141,
-          563.714,
-          392.359
-        ],
-        [
-          51.0,
-          179.641,
-          527.429,
-          210.859
-        ],
-        [
-          53.0,
-          421.641,
-          817.714,
-          452.859
+          405.479,
+          200.857,
+          443.093
         ]
       ],
       "label_set": [
-        "B",
-        "G",
-        "L",
-        "M",
-        "U"
+        "T",
+        "X"
       ],
       "pixel_point_map": {
-        "B": [
+        "T": [
           62.0,
-          255.75
+          147.714
         ],
-        "G": [
+        "X": [
           62.0,
-          316.25
-        ],
-        "L": [
-          62.0,
-          376.75
-        ],
-        "M": [
-          62.0,
-          195.25
-        ],
-        "U": [
-          62.0,
-          437.25
+          424.286
         ]
       },
       "pixel_point_set": [
         [
           62.0,
-          255.75
+          147.714
         ],
         [
           62.0,
-          316.25
-        ],
-        [
-          62.0,
-          376.75
-        ],
-        [
-          62.0,
-          195.25
-        ],
-        [
-          62.0,
-          437.25
+          424.286
         ]
       ]
     },
     "query_spec": {
       "params": {
-        "category_count": 8,
+        "category_count": 7,
         "category_count_range": [
           5,
           10
         ],
         "comparison": "greater_than",
         "queried_series_labels": [
-          "Min",
-          "Sall"
+          "Stav",
+          "Alli"
         ],
         "scene_variant": "grouped_horizontal_bar",
         "scene_variant_probabilities": {
@@ -250,25 +212,25 @@
           "grouped_lollipop": 0.25,
           "multi_line": 0.25
         },
-        "series_count": 2,
+        "series_count": 3,
         "series_count_range": [
           2,
           3
         ],
-        "target_answer": 5,
+        "target_answer": 2,
         "target_answer_range": [
           0,
           8
         ],
         "task_variant": "series_a_gt_b_count",
         "task_variant_probabilities": {
-          "series_a_gt_b_count": 0.5,
-          "series_a_lt_b_count": 0.5
+          "series_a_gt_b_count": 1.0,
+          "series_a_lt_b_count": 0.0
         }
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 0,
+        "answer_or_evidence_variant_index": 4,
         "prompt_bundle_id": "charts_multiseries_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -278,16 +240,16 @@
           "json_example_answer_only": "{\"answer\":3}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "left_series": "Min",
+          "left_series": "Stav",
           "object_description": "a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category",
-          "right_series": "Sall"
+          "right_series": "Alli"
         },
         "task_family_key": "multiseries_chart_comparison",
-        "task_family_variant_index": 2,
+        "task_family_variant_index": 0,
         "task_key": "pairwise_comparison_count_query",
-        "task_variant_index": 0,
+        "task_variant_index": 3,
         "task_variant_key": "series_a_gt_b_count",
-        "task_variant_template_index": 4,
+        "task_variant_template_index": 1,
         "template_paths": [
           "charts/multiseries/charts_multiseries_v1.json"
         ],
@@ -303,7 +265,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 0,
+            "answer_or_evidence_variant_index": 4,
             "prompt_bundle_id": "charts_multiseries_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -313,16 +275,16 @@
               "json_example_answer_only": "{\"answer\":3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "left_series": "Min",
+              "left_series": "Stav",
               "object_description": "a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category",
-              "right_series": "Sall"
+              "right_series": "Alli"
             },
             "task_family_key": "multiseries_chart_comparison",
-            "task_family_variant_index": 2,
+            "task_family_variant_index": 0,
             "task_key": "pairwise_comparison_count_query",
-            "task_variant_index": 0,
+            "task_variant_index": 3,
             "task_variant_key": "series_a_gt_b_count",
-            "task_variant_template_index": 4,
+            "task_variant_template_index": 1,
             "template_paths": [
               "charts/multiseries/charts_multiseries_v1.json"
             ],
@@ -333,12 +295,12 @@
               "task_variant:series_a_gt_b_count": 5
             }
           },
-          "prompt": "Work from the multiseries chart shown in the image: a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Compare the two queried series category by category. Find how many category labels show Min higher than Sall.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}"
+          "prompt": "The image shows a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Read the chart values and count the categories where the stated series relation holds. Count the category labels where Stav exceeds Alli.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 3,
+            "answer_or_evidence_variant_index": 4,
             "prompt_bundle_id": "charts_multiseries_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -348,16 +310,16 @@
               "json_example_answer_only": "{\"answer\":3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "left_series": "Min",
+              "left_series": "Stav",
               "object_description": "a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category",
-              "right_series": "Sall"
+              "right_series": "Alli"
             },
             "task_family_key": "multiseries_chart_comparison",
-            "task_family_variant_index": 2,
+            "task_family_variant_index": 0,
             "task_key": "pairwise_comparison_count_query",
-            "task_variant_index": 0,
+            "task_variant_index": 3,
             "task_variant_key": "series_a_gt_b_count",
-            "task_variant_template_index": 4,
+            "task_variant_template_index": 1,
             "template_paths": [
               "charts/multiseries/charts_multiseries_v1.json"
             ],
@@ -368,7 +330,7 @@
               "task_variant:series_a_gt_b_count": 5
             }
           },
-          "prompt": "Work from the multiseries chart shown in the image: a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Compare the two queried series category by category. Find how many category labels show Min higher than Sall.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":3}"
+          "prompt": "The image shows a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Read the chart values and count the categories where the stated series relation holds. Count the category labels where Stav exceeds Alli.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":3}"
         }
       },
       "task_variant": "series_a_gt_b_count",
@@ -376,37 +338,33 @@
     },
     "render_map": {
       "category_label_centers_px": {
-        "B": [
+        "C": [
           62.0,
-          255.75
+          355.143
         ],
-        "D": [
+        "E": [
           62.0,
-          497.75
+          216.857
         ],
-        "G": [
+        "H": [
           62.0,
-          316.25
+          286.0
         ],
-        "J": [
+        "T": [
           62.0,
-          134.75
+          147.714
         ],
-        "L": [
+        "V": [
           62.0,
-          376.75
+          78.571
         ],
-        "M": [
+        "W": [
           62.0,
-          195.25
-        ],
-        "U": [
-          62.0,
-          437.25
+          493.429
         ],
         "X": [
           62.0,
-          74.25
+          424.286
         ]
       },
       "image_id": "img0",
@@ -447,26 +405,36 @@
         "sampling_policy": "random_rgb_palette",
         "series_fill_palette_rgb": [
           [
-            80,
-            18,
-            55
+            161,
+            100,
+            88
           ],
           [
-            93,
-            201,
-            171
+            160,
+            5,
+            133
+          ],
+          [
+            153,
+            4,
+            213
           ]
         ],
         "series_outline_palette_rgb": [
           [
-            44,
-            10,
-            30
+            89,
+            55,
+            48
           ],
           [
-            51,
-            111,
-            94
+            88,
+            3,
+            73
+          ],
+          [
+            84,
+            2,
+            117
           ]
         ]
       },
@@ -530,687 +498,894 @@
           "attrs": {
             "category_group_bbox_px": [
               53.5,
-              58.641,
+              59.765,
               708.857,
-              89.859
+              97.378
             ],
-            "category_label": "X",
+            "category_label": "V",
             "category_label_center_px": [
               62.0,
-              74.25
+              78.571
             ],
             "category_rank": 0,
             "mark_bbox_px": [
               92.0,
-              58.641,
-              128.286,
-              71.709
+              59.765,
+              600.0,
+              69.721
             ],
             "mark_center_px": [
-              110.143,
-              65.175
-            ],
-            "mark_fill_rgb": [
-              80,
-              18,
-              55
-            ],
-            "mark_outline_rgb": [
-              44,
-              10,
-              30
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Min",
-            "series_rank": 0,
-            "value": 1
-          },
-          "entity_id": "mark_X_Min",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              53.5,
-              58.641,
-              708.857,
-              89.859
-            ],
-            "category_label": "X",
-            "category_label_center_px": [
-              62.0,
-              74.25
-            ],
-            "category_rank": 0,
-            "mark_bbox_px": [
-              92.0,
-              76.791,
-              708.857,
-              89.859
-            ],
-            "mark_center_px": [
-              400.429,
-              83.325
-            ],
-            "mark_fill_rgb": [
-              93,
-              201,
-              171
-            ],
-            "mark_outline_rgb": [
-              51,
-              111,
-              94
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Sall",
-            "series_rank": 1,
-            "value": 17
-          },
-          "entity_id": "mark_X_Sall",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              57.0,
-              119.141,
-              817.714,
-              150.359
-            ],
-            "category_label": "J",
-            "category_label_center_px": [
-              62.0,
-              134.75
-            ],
-            "category_rank": 1,
-            "mark_bbox_px": [
-              92.0,
-              119.141,
               346.0,
-              132.209
-            ],
-            "mark_center_px": [
-              219.0,
-              125.675
+              64.743
             ],
             "mark_fill_rgb": [
-              80,
-              18,
-              55
+              161,
+              100,
+              88
             ],
             "mark_outline_rgb": [
-              44,
-              10,
-              30
+              89,
+              55,
+              48
             ],
             "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Min",
+            "series_label": "Izzy",
             "series_rank": 0,
-            "value": 7
+            "value": 14
           },
-          "entity_id": "mark_J_Min",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              57.0,
-              119.141,
-              817.714,
-              150.359
-            ],
-            "category_label": "J",
-            "category_label_center_px": [
-              62.0,
-              134.75
-            ],
-            "category_rank": 1,
-            "mark_bbox_px": [
-              92.0,
-              137.291,
-              817.714,
-              150.359
-            ],
-            "mark_center_px": [
-              454.857,
-              143.825
-            ],
-            "mark_fill_rgb": [
-              93,
-              201,
-              171
-            ],
-            "mark_outline_rgb": [
-              51,
-              111,
-              94
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Sall",
-            "series_rank": 1,
-            "value": 20
-          },
-          "entity_id": "mark_J_Sall",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              51.0,
-              179.641,
-              527.429,
-              210.859
-            ],
-            "category_label": "M",
-            "category_label_center_px": [
-              62.0,
-              195.25
-            ],
-            "category_rank": 2,
-            "mark_bbox_px": [
-              92.0,
-              179.641,
-              527.429,
-              192.709
-            ],
-            "mark_center_px": [
-              309.714,
-              186.175
-            ],
-            "mark_fill_rgb": [
-              80,
-              18,
-              55
-            ],
-            "mark_outline_rgb": [
-              44,
-              10,
-              30
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Min",
-            "series_rank": 0,
-            "value": 12
-          },
-          "entity_id": "mark_M_Min",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              51.0,
-              179.641,
-              527.429,
-              210.859
-            ],
-            "category_label": "M",
-            "category_label_center_px": [
-              62.0,
-              195.25
-            ],
-            "category_rank": 2,
-            "mark_bbox_px": [
-              92.0,
-              197.791,
-              128.286,
-              210.859
-            ],
-            "mark_center_px": [
-              110.143,
-              204.325
-            ],
-            "mark_fill_rgb": [
-              93,
-              201,
-              171
-            ],
-            "mark_outline_rgb": [
-              51,
-              111,
-              94
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Sall",
-            "series_rank": 1,
-            "value": 1
-          },
-          "entity_id": "mark_M_Sall",
+          "entity_id": "mark_V_Izzy",
           "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
               53.5,
-              240.141,
-              817.714,
-              271.359
+              59.765,
+              708.857,
+              97.378
             ],
-            "category_label": "B",
+            "category_label": "V",
             "category_label_center_px": [
               62.0,
-              255.75
+              78.571
             ],
-            "category_rank": 3,
+            "category_rank": 0,
             "mark_bbox_px": [
               92.0,
-              240.141,
-              817.714,
-              253.209
-            ],
-            "mark_center_px": [
-              454.857,
-              246.675
-            ],
-            "mark_fill_rgb": [
-              80,
-              18,
-              55
-            ],
-            "mark_outline_rgb": [
-              44,
-              10,
-              30
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Min",
-            "series_rank": 0,
-            "value": 20
-          },
-          "entity_id": "mark_B_Min",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              53.5,
-              240.141,
-              817.714,
-              271.359
-            ],
-            "category_label": "B",
-            "category_label_center_px": [
-              62.0,
-              255.75
-            ],
-            "category_rank": 3,
-            "mark_bbox_px": [
-              92.0,
-              258.291,
-              164.571,
-              271.359
-            ],
-            "mark_center_px": [
-              128.286,
-              264.825
-            ],
-            "mark_fill_rgb": [
-              93,
-              201,
-              171
-            ],
-            "mark_outline_rgb": [
-              51,
-              111,
-              94
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Sall",
-            "series_rank": 1,
-            "value": 2
-          },
-          "entity_id": "mark_B_Sall",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              53.0,
-              300.641,
-              382.286,
-              331.859
-            ],
-            "category_label": "G",
-            "category_label_center_px": [
-              62.0,
-              316.25
-            ],
-            "category_rank": 4,
-            "mark_bbox_px": [
-              92.0,
-              300.641,
-              382.286,
-              313.709
-            ],
-            "mark_center_px": [
-              237.143,
-              307.175
-            ],
-            "mark_fill_rgb": [
-              80,
-              18,
-              55
-            ],
-            "mark_outline_rgb": [
-              44,
-              10,
-              30
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Min",
-            "series_rank": 0,
-            "value": 8
-          },
-          "entity_id": "mark_G_Min",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              53.0,
-              300.641,
-              382.286,
-              331.859
-            ],
-            "category_label": "G",
-            "category_label_center_px": [
-              62.0,
-              316.25
-            ],
-            "category_rank": 4,
-            "mark_bbox_px": [
-              92.0,
-              318.791,
-              273.429,
-              331.859
-            ],
-            "mark_center_px": [
-              182.714,
-              325.325
-            ],
-            "mark_fill_rgb": [
-              93,
-              201,
-              171
-            ],
-            "mark_outline_rgb": [
-              51,
-              111,
-              94
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Sall",
-            "series_rank": 1,
-            "value": 5
-          },
-          "entity_id": "mark_G_Sall",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              55.0,
-              361.141,
-              563.714,
-              392.359
-            ],
-            "category_label": "L",
-            "category_label_center_px": [
-              62.0,
-              376.75
-            ],
-            "category_rank": 5,
-            "mark_bbox_px": [
-              92.0,
-              361.141,
-              563.714,
-              374.209
-            ],
-            "mark_center_px": [
-              327.857,
-              367.675
-            ],
-            "mark_fill_rgb": [
-              80,
-              18,
-              55
-            ],
-            "mark_outline_rgb": [
-              44,
-              10,
-              30
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Min",
-            "series_rank": 0,
-            "value": 13
-          },
-          "entity_id": "mark_L_Min",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              55.0,
-              361.141,
-              563.714,
-              392.359
-            ],
-            "category_label": "L",
-            "category_label_center_px": [
-              62.0,
-              376.75
-            ],
-            "category_rank": 5,
-            "mark_bbox_px": [
-              92.0,
-              379.291,
+              73.593,
               491.143,
-              392.359
+              83.55
             ],
             "mark_center_px": [
               291.571,
-              385.825
+              78.571
             ],
             "mark_fill_rgb": [
-              93,
-              201,
-              171
+              160,
+              5,
+              133
             ],
             "mark_outline_rgb": [
-              51,
-              111,
-              94
+              88,
+              3,
+              73
             ],
             "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Sall",
+            "series_label": "Stav",
             "series_rank": 1,
             "value": 11
           },
-          "entity_id": "mark_L_Sall",
+          "entity_id": "mark_V_Stav",
           "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              53.0,
-              421.641,
-              817.714,
-              452.859
+              53.5,
+              59.765,
+              708.857,
+              97.378
             ],
-            "category_label": "U",
+            "category_label": "V",
             "category_label_center_px": [
               62.0,
-              437.25
+              78.571
             ],
-            "category_rank": 6,
+            "category_rank": 0,
             "mark_bbox_px": [
               92.0,
-              421.641,
-              817.714,
-              434.709
+              87.422,
+              708.857,
+              97.378
             ],
             "mark_center_px": [
+              400.429,
+              92.4
+            ],
+            "mark_fill_rgb": [
+              153,
+              4,
+              213
+            ],
+            "mark_outline_rgb": [
+              84,
+              2,
+              117
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Alli",
+            "series_rank": 2,
+            "value": 17
+          },
+          "entity_id": "mark_V_Alli",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              54.5,
+              128.907,
+              636.286,
+              166.521
+            ],
+            "category_label": "T",
+            "category_label_center_px": [
+              62.0,
+              147.714
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              92.0,
+              128.907,
               454.857,
-              428.175
-            ],
-            "mark_fill_rgb": [
-              80,
-              18,
-              55
-            ],
-            "mark_outline_rgb": [
-              44,
-              10,
-              30
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Min",
-            "series_rank": 0,
-            "value": 20
-          },
-          "entity_id": "mark_U_Min",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              53.0,
-              421.641,
-              817.714,
-              452.859
-            ],
-            "category_label": "U",
-            "category_label_center_px": [
-              62.0,
-              437.25
-            ],
-            "category_rank": 6,
-            "mark_bbox_px": [
-              92.0,
-              439.791,
-              128.286,
-              452.859
+              138.864
             ],
             "mark_center_px": [
-              110.143,
-              446.325
+              273.429,
+              133.886
             ],
             "mark_fill_rgb": [
-              93,
-              201,
-              171
+              161,
+              100,
+              88
             ],
             "mark_outline_rgb": [
-              51,
-              111,
-              94
+              89,
+              55,
+              48
             ],
             "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Sall",
-            "series_rank": 1,
-            "value": 1
-          },
-          "entity_id": "mark_U_Sall",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              53.0,
-              482.141,
-              636.286,
-              513.359
-            ],
-            "category_label": "D",
-            "category_label_center_px": [
-              62.0,
-              497.75
-            ],
-            "category_rank": 7,
-            "mark_bbox_px": [
-              92.0,
-              482.141,
-              382.286,
-              495.209
-            ],
-            "mark_center_px": [
-              237.143,
-              488.675
-            ],
-            "mark_fill_rgb": [
-              80,
-              18,
-              55
-            ],
-            "mark_outline_rgb": [
-              44,
-              10,
-              30
-            ],
-            "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Min",
+            "series_label": "Izzy",
             "series_rank": 0,
-            "value": 8
+            "value": 10
           },
-          "entity_id": "mark_D_Min",
+          "entity_id": "mark_T_Izzy",
           "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              53.0,
-              482.141,
+              54.5,
+              128.907,
               636.286,
-              513.359
+              166.521
             ],
-            "category_label": "D",
+            "category_label": "T",
             "category_label_center_px": [
               62.0,
-              497.75
+              147.714
             ],
-            "category_rank": 7,
+            "category_rank": 1,
             "mark_bbox_px": [
               92.0,
-              500.291,
+              142.736,
               636.286,
-              513.359
+              152.693
             ],
             "mark_center_px": [
               364.143,
-              506.825
+              147.714
             ],
             "mark_fill_rgb": [
-              93,
-              201,
-              171
+              160,
+              5,
+              133
             ],
             "mark_outline_rgb": [
-              51,
-              111,
-              94
+              88,
+              3,
+              73
             ],
             "scene_variant": "grouped_horizontal_bar",
-            "series_label": "Sall",
+            "series_label": "Stav",
             "series_rank": 1,
             "value": 15
           },
-          "entity_id": "mark_D_Sall",
+          "entity_id": "mark_T_Stav",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              54.5,
+              128.907,
+              636.286,
+              166.521
+            ],
+            "category_label": "T",
+            "category_label_center_px": [
+              62.0,
+              147.714
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              92.0,
+              156.565,
+              273.429,
+              166.521
+            ],
+            "mark_center_px": [
+              182.714,
+              161.543
+            ],
+            "mark_fill_rgb": [
+              153,
+              4,
+              213
+            ],
+            "mark_outline_rgb": [
+              84,
+              2,
+              117
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Alli",
+            "series_rank": 2,
+            "value": 5
+          },
+          "entity_id": "mark_T_Alli",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              54.5,
+              198.05,
+              600.0,
+              235.664
+            ],
+            "category_label": "E",
+            "category_label_center_px": [
+              62.0,
+              216.857
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              92.0,
+              198.05,
+              563.714,
+              208.007
+            ],
+            "mark_center_px": [
+              327.857,
+              203.029
+            ],
+            "mark_fill_rgb": [
+              161,
+              100,
+              88
+            ],
+            "mark_outline_rgb": [
+              89,
+              55,
+              48
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Izzy",
+            "series_rank": 0,
+            "value": 13
+          },
+          "entity_id": "mark_E_Izzy",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              54.5,
+              198.05,
+              600.0,
+              235.664
+            ],
+            "category_label": "E",
+            "category_label_center_px": [
+              62.0,
+              216.857
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              92.0,
+              211.879,
+              164.571,
+              221.835
+            ],
+            "mark_center_px": [
+              128.286,
+              216.857
+            ],
+            "mark_fill_rgb": [
+              160,
+              5,
+              133
+            ],
+            "mark_outline_rgb": [
+              88,
+              3,
+              73
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Stav",
+            "series_rank": 1,
+            "value": 2
+          },
+          "entity_id": "mark_E_Stav",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              54.5,
+              198.05,
+              600.0,
+              235.664
+            ],
+            "category_label": "E",
+            "category_label_center_px": [
+              62.0,
+              216.857
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              92.0,
+              225.707,
+              600.0,
+              235.664
+            ],
+            "mark_center_px": [
+              346.0,
+              230.686
+            ],
+            "mark_fill_rgb": [
+              153,
+              4,
+              213
+            ],
+            "mark_outline_rgb": [
+              84,
+              2,
+              117
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Alli",
+            "series_rank": 2,
+            "value": 14
+          },
+          "entity_id": "mark_E_Alli",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.0,
+              267.193,
+              745.143,
+              304.807
+            ],
+            "category_label": "H",
+            "category_label_center_px": [
+              62.0,
+              286.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              92.0,
+              267.193,
+              600.0,
+              277.15
+            ],
+            "mark_center_px": [
+              346.0,
+              272.171
+            ],
+            "mark_fill_rgb": [
+              161,
+              100,
+              88
+            ],
+            "mark_outline_rgb": [
+              89,
+              55,
+              48
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Izzy",
+            "series_rank": 0,
+            "value": 14
+          },
+          "entity_id": "mark_H_Izzy",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.0,
+              267.193,
+              745.143,
+              304.807
+            ],
+            "category_label": "H",
+            "category_label_center_px": [
+              62.0,
+              286.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              92.0,
+              281.022,
+              237.143,
+              290.978
+            ],
+            "mark_center_px": [
+              164.571,
+              286.0
+            ],
+            "mark_fill_rgb": [
+              160,
+              5,
+              133
+            ],
+            "mark_outline_rgb": [
+              88,
+              3,
+              73
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Stav",
+            "series_rank": 1,
+            "value": 4
+          },
+          "entity_id": "mark_H_Stav",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.0,
+              267.193,
+              745.143,
+              304.807
+            ],
+            "category_label": "H",
+            "category_label_center_px": [
+              62.0,
+              286.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              92.0,
+              294.85,
+              745.143,
+              304.807
+            ],
+            "mark_center_px": [
+              418.571,
+              299.829
+            ],
+            "mark_fill_rgb": [
+              153,
+              4,
+              213
+            ],
+            "mark_outline_rgb": [
+              84,
+              2,
+              117
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Alli",
+            "series_rank": 2,
+            "value": 18
+          },
+          "entity_id": "mark_H_Alli",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              54.0,
+              336.336,
+              817.714,
+              373.95
+            ],
+            "category_label": "C",
+            "category_label_center_px": [
+              62.0,
+              355.143
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              92.0,
+              336.336,
+              672.571,
+              346.293
+            ],
+            "mark_center_px": [
+              382.286,
+              341.314
+            ],
+            "mark_fill_rgb": [
+              161,
+              100,
+              88
+            ],
+            "mark_outline_rgb": [
+              89,
+              55,
+              48
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Izzy",
+            "series_rank": 0,
+            "value": 16
+          },
+          "entity_id": "mark_C_Izzy",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              54.0,
+              336.336,
+              817.714,
+              373.95
+            ],
+            "category_label": "C",
+            "category_label_center_px": [
+              62.0,
+              355.143
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              92.0,
+              350.165,
+              527.429,
+              360.121
+            ],
+            "mark_center_px": [
+              309.714,
+              355.143
+            ],
+            "mark_fill_rgb": [
+              160,
+              5,
+              133
+            ],
+            "mark_outline_rgb": [
+              88,
+              3,
+              73
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Stav",
+            "series_rank": 1,
+            "value": 12
+          },
+          "entity_id": "mark_C_Stav",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              54.0,
+              336.336,
+              817.714,
+              373.95
+            ],
+            "category_label": "C",
+            "category_label_center_px": [
+              62.0,
+              355.143
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              92.0,
+              363.993,
+              817.714,
+              373.95
+            ],
+            "mark_center_px": [
+              454.857,
+              368.971
+            ],
+            "mark_fill_rgb": [
+              153,
+              4,
+              213
+            ],
+            "mark_outline_rgb": [
+              84,
+              2,
+              117
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Alli",
+            "series_rank": 2,
+            "value": 20
+          },
+          "entity_id": "mark_C_Alli",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.5,
+              405.479,
+              200.857,
+              443.093
+            ],
+            "category_label": "X",
+            "category_label_center_px": [
+              62.0,
+              424.286
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              92.0,
+              405.479,
+              164.571,
+              415.435
+            ],
+            "mark_center_px": [
+              128.286,
+              410.457
+            ],
+            "mark_fill_rgb": [
+              161,
+              100,
+              88
+            ],
+            "mark_outline_rgb": [
+              89,
+              55,
+              48
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Izzy",
+            "series_rank": 0,
+            "value": 2
+          },
+          "entity_id": "mark_X_Izzy",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.5,
+              405.479,
+              200.857,
+              443.093
+            ],
+            "category_label": "X",
+            "category_label_center_px": [
+              62.0,
+              424.286
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              92.0,
+              419.307,
+              200.857,
+              429.264
+            ],
+            "mark_center_px": [
+              146.429,
+              424.286
+            ],
+            "mark_fill_rgb": [
+              160,
+              5,
+              133
+            ],
+            "mark_outline_rgb": [
+              88,
+              3,
+              73
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Stav",
+            "series_rank": 1,
+            "value": 3
+          },
+          "entity_id": "mark_X_Stav",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.5,
+              405.479,
+              200.857,
+              443.093
+            ],
+            "category_label": "X",
+            "category_label_center_px": [
+              62.0,
+              424.286
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              92.0,
+              433.136,
+              128.286,
+              443.093
+            ],
+            "mark_center_px": [
+              110.143,
+              438.114
+            ],
+            "mark_fill_rgb": [
+              153,
+              4,
+              213
+            ],
+            "mark_outline_rgb": [
+              84,
+              2,
+              117
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Alli",
+            "series_rank": 2,
+            "value": 1
+          },
+          "entity_id": "mark_X_Alli",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              50.0,
+              474.622,
+              708.857,
+              512.235
+            ],
+            "category_label": "W",
+            "category_label_center_px": [
+              62.0,
+              493.429
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              92.0,
+              474.622,
+              237.143,
+              484.578
+            ],
+            "mark_center_px": [
+              164.571,
+              479.6
+            ],
+            "mark_fill_rgb": [
+              161,
+              100,
+              88
+            ],
+            "mark_outline_rgb": [
+              89,
+              55,
+              48
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Izzy",
+            "series_rank": 0,
+            "value": 4
+          },
+          "entity_id": "mark_W_Izzy",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              50.0,
+              474.622,
+              708.857,
+              512.235
+            ],
+            "category_label": "W",
+            "category_label_center_px": [
+              62.0,
+              493.429
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              92.0,
+              488.45,
+              200.857,
+              498.407
+            ],
+            "mark_center_px": [
+              146.429,
+              493.429
+            ],
+            "mark_fill_rgb": [
+              160,
+              5,
+              133
+            ],
+            "mark_outline_rgb": [
+              88,
+              3,
+              73
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Stav",
+            "series_rank": 1,
+            "value": 3
+          },
+          "entity_id": "mark_W_Stav",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              50.0,
+              474.622,
+              708.857,
+              512.235
+            ],
+            "category_label": "W",
+            "category_label_center_px": [
+              62.0,
+              493.429
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              92.0,
+              502.279,
+              708.857,
+              512.235
+            ],
+            "mark_center_px": [
+              400.429,
+              507.257
+            ],
+            "mark_fill_rgb": [
+              153,
+              4,
+              213
+            ],
+            "mark_outline_rgb": [
+              84,
+              2,
+              117
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Alli",
+            "series_rank": 2,
+            "value": 17
+          },
+          "entity_id": "mark_W_Alli",
           "entity_type": "bar"
         }
       ],
       "relations": {
         "comparison": "greater_than",
         "evidence_labels": [
-          "B",
-          "G",
-          "L",
-          "M",
-          "U"
+          "T",
+          "X"
         ],
         "queried_series_labels": [
-          "Min",
-          "Sall"
+          "Stav",
+          "Alli"
         ],
         "scene_variant": "grouped_horizontal_bar",
         "task_variant": "series_a_gt_b_count"
@@ -1219,11 +1394,8 @@
     },
     "witness_symbolic": {
       "labels": [
-        "B",
-        "G",
-        "L",
-        "M",
-        "U"
+        "T",
+        "X"
       ],
       "type": "label_set"
     }

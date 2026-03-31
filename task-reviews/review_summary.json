@@ -8,159 +8,208 @@
     "random_count": 100,
     "seed": 0,
     "tasks": [
-      "task_games_dots_and_boxes_capture_count",
-      "task_games_bingo_completed_line_count",
-      "task_games_cards_hand_count",
-      "task_games_dominoes_chain_count",
-      "task_games_reversi_move_count",
-      "task_games_connect_four_move_count",
-      "task_games_checkers_move_count",
-      "task_games_mancala_move_count",
-      "task_games_nine_mens_morris_pieces_in_mill_count"
+      "task_tables_counting_value_count",
+      "task_tables_ranking_label",
+      "task_tables_readout_subset_value",
+      "task_tables_relation_extremum_transfer_value",
+      "task_tables_relation_row_compare_label",
+      "task_tables_statistics_filtered_subset_label",
+      "task_tables_statistics_filtered_subset_value",
+      "task_tables_statistics_summary_label",
+      "task_tables_statistics_summary_value",
+      "task_tables_temporal_value"
     ],
     "workers": 16
   },
   "summary": {
-    "distribution_tasks_failed": 9,
-    "failed_distribution_task_ids": [
-      "task_games_dots_and_boxes_capture_count",
-      "task_games_bingo_completed_line_count",
-      "task_games_cards_hand_count",
-      "task_games_dominoes_chain_count",
-      "task_games_reversi_move_count",
-      "task_games_connect_four_move_count",
-      "task_games_checkers_move_count",
-      "task_games_mancala_move_count",
-      "task_games_nine_mens_morris_pieces_in_mill_count"
-    ],
-    "total_tasks": 9
+    "distribution_tasks_failed": 0,
+    "failed_distribution_task_ids": [],
+    "total_tasks": 10
   },
   "tasks": [
     {
-      "distribution_pass": false,
-      "domain": "games",
-      "inspection_count": 25,
-      "inspection_workbook": "games/task_games_dots_and_boxes_capture_count/task_games_dots_and_boxes_capture_count.xlsx",
-      "inspection_workbook_sheets": {},
-      "reports": {
-        "distribution_review": "games/task_games_dots_and_boxes_capture_count/distribution_review.json",
-        "inspection_manifest": "games/task_games_dots_and_boxes_capture_count/manifest.json",
-        "random_review": "games/task_games_dots_and_boxes_capture_count/random_review_100.json"
+      "distribution_pass": true,
+      "domain": "tables",
+      "inspection_count": 125,
+      "inspection_workbook": "tables/task_tables_counting_value_count/task_tables_counting_value_count.xlsx",
+      "inspection_workbook_sheets": {
+        "above_threshold": "above_threshold",
+        "below_threshold": "below_threshold",
+        "col_a_gt_col_b": "col_a_gt_col_b",
+        "col_a_lt_col_b": "col_a_lt_col_b",
+        "in_interval": "in_interval"
       },
-      "task_group": "dots_and_boxes_capture",
-      "task_id": "task_games_dots_and_boxes_capture_count"
+      "reports": {
+        "distribution_review": "tables/task_tables_counting_value_count/distribution_review.json",
+        "inspection_manifest": "tables/task_tables_counting_value_count/manifest.json",
+        "random_review": "tables/task_tables_counting_value_count/random_review_100.json"
+      },
+      "task_group": "counting",
+      "task_id": "task_tables_counting_value_count"
     },
     {
-      "distribution_pass": false,
-      "domain": "games",
-      "inspection_count": 25,
-      "inspection_workbook": "games/task_games_bingo_completed_line_count/task_games_bingo_completed_line_count.xlsx",
-      "inspection_workbook_sheets": {},
-      "reports": {
-        "distribution_review": "games/task_games_bingo_completed_line_count/distribution_review.json",
-        "inspection_manifest": "games/task_games_bingo_completed_line_count/manifest.json",
-        "random_review": "games/task_games_bingo_completed_line_count/random_review_100.json"
+      "distribution_pass": true,
+      "domain": "tables",
+      "inspection_count": 50,
+      "inspection_workbook": "tables/task_tables_ranking_label/task_tables_ranking_label.xlsx",
+      "inspection_workbook_sheets": {
+        "kth_highest_in_column": "kth_highest_in_column",
+        "kth_lowest_in_column": "kth_lowest_in_column"
       },
-      "task_group": "bingo_completed_line",
-      "task_id": "task_games_bingo_completed_line_count"
+      "reports": {
+        "distribution_review": "tables/task_tables_ranking_label/distribution_review.json",
+        "inspection_manifest": "tables/task_tables_ranking_label/manifest.json",
+        "random_review": "tables/task_tables_ranking_label/random_review_100.json"
+      },
+      "task_group": "ranking",
+      "task_id": "task_tables_ranking_label"
     },
     {
-      "distribution_pass": false,
-      "domain": "games",
-      "inspection_count": 25,
-      "inspection_workbook": "games/task_games_cards_hand_count/task_games_cards_hand_count.xlsx",
-      "inspection_workbook_sheets": {},
-      "reports": {
-        "distribution_review": "games/task_games_cards_hand_count/distribution_review.json",
-        "inspection_manifest": "games/task_games_cards_hand_count/manifest.json",
-        "random_review": "games/task_games_cards_hand_count/random_review_100.json"
+      "distribution_pass": true,
+      "domain": "tables",
+      "inspection_count": 75,
+      "inspection_workbook": "tables/task_tables_readout_subset_value/task_tables_readout_subset_value.xlsx",
+      "inspection_workbook_sheets": {
+        "cell_difference_two_abs": "cell_difference_two_abs",
+        "cell_lookup": "cell_lookup",
+        "cell_sum_two": "cell_sum_two"
       },
-      "task_group": "cards_hand",
-      "task_id": "task_games_cards_hand_count"
+      "reports": {
+        "distribution_review": "tables/task_tables_readout_subset_value/distribution_review.json",
+        "inspection_manifest": "tables/task_tables_readout_subset_value/manifest.json",
+        "random_review": "tables/task_tables_readout_subset_value/random_review_100.json"
+      },
+      "task_group": "readout",
+      "task_id": "task_tables_readout_subset_value"
     },
     {
-      "distribution_pass": false,
-      "domain": "games",
-      "inspection_count": 25,
-      "inspection_workbook": "games/task_games_dominoes_chain_count/task_games_dominoes_chain_count.xlsx",
-      "inspection_workbook_sheets": {},
-      "reports": {
-        "distribution_review": "games/task_games_dominoes_chain_count/distribution_review.json",
-        "inspection_manifest": "games/task_games_dominoes_chain_count/manifest.json",
-        "random_review": "games/task_games_dominoes_chain_count/random_review_100.json"
+      "distribution_pass": true,
+      "domain": "tables",
+      "inspection_count": 50,
+      "inspection_workbook": "tables/task_tables_relation_extremum_transfer_value/task_tables_relation_extremum_transfer_value.xlsx",
+      "inspection_workbook_sheets": {
+        "argmax_transfer": "argmax_transfer",
+        "argmin_transfer": "argmin_transfer"
       },
-      "task_group": "dominoes_chain",
-      "task_id": "task_games_dominoes_chain_count"
+      "reports": {
+        "distribution_review": "tables/task_tables_relation_extremum_transfer_value/distribution_review.json",
+        "inspection_manifest": "tables/task_tables_relation_extremum_transfer_value/manifest.json",
+        "random_review": "tables/task_tables_relation_extremum_transfer_value/random_review_100.json"
+      },
+      "task_group": "relation",
+      "task_id": "task_tables_relation_extremum_transfer_value"
     },
     {
-      "distribution_pass": false,
-      "domain": "games",
-      "inspection_count": 25,
-      "inspection_workbook": "games/task_games_reversi_move_count/task_games_reversi_move_count.xlsx",
-      "inspection_workbook_sheets": {},
-      "reports": {
-        "distribution_review": "games/task_games_reversi_move_count/distribution_review.json",
-        "inspection_manifest": "games/task_games_reversi_move_count/manifest.json",
-        "random_review": "games/task_games_reversi_move_count/random_review_100.json"
+      "distribution_pass": true,
+      "domain": "tables",
+      "inspection_count": 50,
+      "inspection_workbook": "tables/task_tables_relation_row_compare_label/task_tables_relation_row_compare_label.xlsx",
+      "inspection_workbook_sheets": {
+        "higher_of_two_rows": "higher_of_two_rows",
+        "lower_of_two_rows": "lower_of_two_rows"
       },
-      "task_group": "reversi_move",
-      "task_id": "task_games_reversi_move_count"
+      "reports": {
+        "distribution_review": "tables/task_tables_relation_row_compare_label/distribution_review.json",
+        "inspection_manifest": "tables/task_tables_relation_row_compare_label/manifest.json",
+        "random_review": "tables/task_tables_relation_row_compare_label/random_review_100.json"
+      },
+      "task_group": "relation",
+      "task_id": "task_tables_relation_row_compare_label"
     },
     {
-      "distribution_pass": false,
-      "domain": "games",
-      "inspection_count": 25,
-      "inspection_workbook": "games/task_games_connect_four_move_count/task_games_connect_four_move_count.xlsx",
-      "inspection_workbook_sheets": {},
-      "reports": {
-        "distribution_review": "games/task_games_connect_four_move_count/distribution_review.json",
-        "inspection_manifest": "games/task_games_connect_four_move_count/manifest.json",
-        "random_review": "games/task_games_connect_four_move_count/random_review_100.json"
+      "distribution_pass": true,
+      "domain": "tables",
+      "inspection_count": 50,
+      "inspection_workbook": "tables/task_tables_statistics_filtered_subset_label/task_tables_statistics_filtered_subset_label.xlsx",
+      "inspection_workbook_sheets": {
+        "filtered_argmax": "filtered_argmax",
+        "filtered_argmin": "filtered_argmin"
       },
-      "task_group": "connect_four_move",
-      "task_id": "task_games_connect_four_move_count"
+      "reports": {
+        "distribution_review": "tables/task_tables_statistics_filtered_subset_label/distribution_review.json",
+        "inspection_manifest": "tables/task_tables_statistics_filtered_subset_label/manifest.json",
+        "random_review": "tables/task_tables_statistics_filtered_subset_label/random_review_100.json"
+      },
+      "task_group": "statistics",
+      "task_id": "task_tables_statistics_filtered_subset_label"
     },
     {
-      "distribution_pass": false,
-      "domain": "games",
-      "inspection_count": 25,
-      "inspection_workbook": "games/task_games_checkers_move_count/task_games_checkers_move_count.xlsx",
-      "inspection_workbook_sheets": {},
-      "reports": {
-        "distribution_review": "games/task_games_checkers_move_count/distribution_review.json",
-        "inspection_manifest": "games/task_games_checkers_move_count/manifest.json",
-        "random_review": "games/task_games_checkers_move_count/random_review_100.json"
+      "distribution_pass": true,
+      "domain": "tables",
+      "inspection_count": 50,
+      "inspection_workbook": "tables/task_tables_statistics_filtered_subset_value/task_tables_statistics_filtered_subset_value.xlsx",
+      "inspection_workbook_sheets": {
+        "filtered_column_mean": "filtered_column_mean",
+        "filtered_column_sum": "filtered_column_sum"
       },
-      "task_group": "checkers_move",
-      "task_id": "task_games_checkers_move_count"
+      "reports": {
+        "distribution_review": "tables/task_tables_statistics_filtered_subset_value/distribution_review.json",
+        "inspection_manifest": "tables/task_tables_statistics_filtered_subset_value/manifest.json",
+        "random_review": "tables/task_tables_statistics_filtered_subset_value/random_review_100.json"
+      },
+      "task_group": "statistics",
+      "task_id": "task_tables_statistics_filtered_subset_value"
     },
     {
-      "distribution_pass": false,
-      "domain": "games",
-      "inspection_count": 25,
-      "inspection_workbook": "games/task_games_mancala_move_count/task_games_mancala_move_count.xlsx",
-      "inspection_workbook_sheets": {},
-      "reports": {
-        "distribution_review": "games/task_games_mancala_move_count/distribution_review.json",
-        "inspection_manifest": "games/task_games_mancala_move_count/manifest.json",
-        "random_review": "games/task_games_mancala_move_count/random_review_100.json"
+      "distribution_pass": true,
+      "domain": "tables",
+      "inspection_count": 100,
+      "inspection_workbook": "tables/task_tables_statistics_summary_label/task_tables_statistics_summary_label.xlsx",
+      "inspection_workbook_sheets": {
+        "argmax": "argmax",
+        "argmin": "argmin",
+        "row_sum_argmax": "row_sum_argmax",
+        "row_sum_argmin": "row_sum_argmin"
       },
-      "task_group": "mancala_move",
-      "task_id": "task_games_mancala_move_count"
+      "reports": {
+        "distribution_review": "tables/task_tables_statistics_summary_label/distribution_review.json",
+        "inspection_manifest": "tables/task_tables_statistics_summary_label/manifest.json",
+        "random_review": "tables/task_tables_statistics_summary_label/random_review_100.json"
+      },
+      "task_group": "statistics",
+      "task_id": "task_tables_statistics_summary_label"
     },
     {
-      "distribution_pass": false,
-      "domain": "games",
-      "inspection_count": 25,
-      "inspection_workbook": "games/task_games_nine_mens_morris_pieces_in_mill_count/task_games_nine_mens_morris_pieces_in_mill_count.xlsx",
-      "inspection_workbook_sheets": {},
-      "reports": {
-        "distribution_review": "games/task_games_nine_mens_morris_pieces_in_mill_count/distribution_review.json",
-        "inspection_manifest": "games/task_games_nine_mens_morris_pieces_in_mill_count/manifest.json",
-        "random_review": "games/task_games_nine_mens_morris_pieces_in_mill_count/random_review_100.json"
+      "distribution_pass": true,
+      "domain": "tables",
+      "inspection_count": 175,
+      "inspection_workbook": "tables/task_tables_statistics_summary_value/task_tables_statistics_summary_value.xlsx",
+      "inspection_workbook_sheets": {
+        "column_mean": "column_mean",
+        "column_median": "column_median",
+        "column_sum": "column_sum",
+        "row_mean": "row_mean",
+        "row_sum": "row_sum",
+        "table_mean": "table_mean",
+        "table_sum": "table_sum"
       },
-      "task_group": "nine_mens_morris_pieces_in_mill",
-      "task_id": "task_games_nine_mens_morris_pieces_in_mill_count"
+      "reports": {
+        "distribution_review": "tables/task_tables_statistics_summary_value/distribution_review.json",
+        "inspection_manifest": "tables/task_tables_statistics_summary_value/manifest.json",
+        "random_review": "tables/task_tables_statistics_summary_value/random_review_100.json"
+      },
+      "task_group": "statistics",
+      "task_id": "task_tables_statistics_summary_value"
+    },
+    {
+      "distribution_pass": true,
+      "domain": "tables",
+      "inspection_count": 125,
+      "inspection_workbook": "tables/task_tables_temporal_value/task_tables_temporal_value.xlsx",
+      "inspection_workbook_sheets": {
+        "absolute_difference_between_years": "absolute_difference_between_yea",
+        "delta_between_years": "delta_between_years",
+        "mean_over_year_interval": "mean_over_year_interval",
+        "sum_over_year_interval": "sum_over_year_interval",
+        "value_at_year": "value_at_year"
+      },
+      "reports": {
+        "distribution_review": "tables/task_tables_temporal_value/distribution_review.json",
+        "inspection_manifest": "tables/task_tables_temporal_value/manifest.json",
+        "random_review": "tables/task_tables_temporal_value/random_review_100.json"
+      },
+      "task_group": "temporal",
+      "task_id": "task_tables_temporal_value"
     }
   ]
 }

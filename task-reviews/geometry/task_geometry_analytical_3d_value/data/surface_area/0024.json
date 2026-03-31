@@ -1,23 +1,23 @@
 {
   "answer_gt": {
     "type": "pi_expression",
-    "value": "196π"
+    "value": "484π"
   },
   "evidence_gt": {
     "type": "measurement_ref_map",
     "value": {
-      "IJ": 7
+      "YZ": 11
     }
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_3d_value/images/surface_area/0024.png"
   },
-  "instance_seed": 979734125544075,
-  "prompt": "Work from the annotated figure showing an annotated 3D solid. The sphere has an annotated radius. What is its total surface area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: IJ.\nAnswer rule: set \"answer\" to the value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":{\"IJ\":2},\"answer\":\"12π\"}",
+  "instance_seed": 6154022488823990,
+  "prompt": "Look at the annotated image showing an annotated 3D solid. Read the marked measurements and answer: The sphere has an annotated radius. What is its total surface area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: YZ.\nAnswer format: set \"answer\" to the value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":{\"YZ\":2},\"answer\":\"12π\"}",
   "prompt_variants": {
-    "answer_and_evidence": "Work from the annotated figure showing an annotated 3D solid. The sphere has an annotated radius. What is its total surface area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: IJ.\nAnswer rule: set \"answer\" to the value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":{\"IJ\":2},\"answer\":\"12π\"}",
-    "answer_only": "Work from the annotated figure showing an annotated 3D solid. The sphere has an annotated radius. What is its total surface area? Express the result in kπ form.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the value in the form kπ (for example 12π).\nExample JSON:\n{\"answer\":\"12π\"}"
+    "answer_and_evidence": "Look at the annotated image showing an annotated 3D solid. Read the marked measurements and answer: The sphere has an annotated radius. What is its total surface area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: YZ.\nAnswer format: set \"answer\" to the value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":{\"YZ\":2},\"answer\":\"12π\"}",
+    "answer_only": "Look at the annotated image showing an annotated 3D solid. Read the marked measurements and answer: The sphere has an annotated radius. What is its total surface area? Express the result in kπ form.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the value in the form kπ (for example 12π).\nExample JSON:\n{\"answer\":\"12π\"}"
   },
   "task": "task_geometry_analytical_3d_value",
   "task_variant": "surface_area",
@@ -25,17 +25,17 @@
     "execution_trace": {
       "answer_max": 200000,
       "answer_min": 8,
-      "answer_scalar": 196,
+      "answer_scalar": 484,
       "answer_type": "pi_expression",
-      "answer_value": "196π",
+      "answer_value": "484π",
       "evidence_map": {
-        "IJ": 7
+        "YZ": 11
       },
       "evidence_role_tokens": {
-        "r": "IJ"
+        "r": "YZ"
       },
       "evidence_role_values": {
-        "r": 7
+        "r": 11
       },
       "evidence_roles": [
         "r"
@@ -50,7 +50,7 @@
         "volume": 0.0
       },
       "required_annotations": [
-        "IJ"
+        "YZ"
       ],
       "scene_variant": "sphere",
       "scene_variant_probabilities": {
@@ -77,24 +77,24 @@
     },
     "projected_evidence": {
       "annotation_labels": {
-        "r": "IJ"
+        "r": "YZ"
       },
       "id_set": [
-        "IJ"
+        "YZ"
       ],
       "measurement_ref_map": {
-        "IJ": 7
+        "YZ": 11
       },
       "pixel_annotation_centers": {
-        "IJ": [
-          421.5,
-          288.6
+        "YZ": [
+          553.5,
+          370.32
         ]
       },
       "pixel_point_set": [
         [
-          421.5,
-          288.6
+          553.5,
+          370.32
         ]
       ]
     },
@@ -127,13 +127,13 @@
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 4,
+        "answer_or_evidence_variant_index": 1,
         "prompt_bundle_id": "geometry_analytical_surface_area_v1",
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the value in the form kπ (for example 12π)",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: IJ",
-          "json_example": "{\"evidence\":{\"IJ\":2},\"answer\":\"12π\"}",
+          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: YZ",
+          "json_example": "{\"evidence\":{\"YZ\":2},\"answer\":\"12π\"}",
           "json_example_answer_only": "{\"answer\":\"12π\"}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -141,9 +141,9 @@
           "question_text": "The sphere has an annotated radius. What is its total surface area? Express the result in kπ form."
         },
         "task_family_key": "analytical_single_solid",
-        "task_family_variant_index": 4,
+        "task_family_variant_index": 2,
         "task_key": "analytical_surface_area_query",
-        "task_variant_index": 0,
+        "task_variant_index": 3,
         "task_variant_key": null,
         "task_variant_template_index": null,
         "template_paths": [
@@ -160,13 +160,13 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 4,
+            "answer_or_evidence_variant_index": 1,
             "prompt_bundle_id": "geometry_analytical_surface_area_v1",
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the value in the form kπ (for example 12π)",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: IJ",
-              "json_example": "{\"evidence\":{\"IJ\":2},\"answer\":\"12π\"}",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: YZ",
+              "json_example": "{\"evidence\":{\"YZ\":2},\"answer\":\"12π\"}",
               "json_example_answer_only": "{\"answer\":\"12π\"}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -174,9 +174,9 @@
               "question_text": "The sphere has an annotated radius. What is its total surface area? Express the result in kπ form."
             },
             "task_family_key": "analytical_single_solid",
-            "task_family_variant_index": 4,
+            "task_family_variant_index": 2,
             "task_key": "analytical_surface_area_query",
-            "task_variant_index": 0,
+            "task_variant_index": 3,
             "task_variant_key": null,
             "task_variant_template_index": null,
             "template_paths": [
@@ -188,18 +188,18 @@
               "task_family:analytical_single_solid": 5
             }
           },
-          "prompt": "Work from the annotated figure showing an annotated 3D solid. The sphere has an annotated radius. What is its total surface area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: IJ.\nAnswer rule: set \"answer\" to the value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":{\"IJ\":2},\"answer\":\"12π\"}"
+          "prompt": "Look at the annotated image showing an annotated 3D solid. Read the marked measurements and answer: The sphere has an annotated radius. What is its total surface area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: YZ.\nAnswer format: set \"answer\" to the value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":{\"YZ\":2},\"answer\":\"12π\"}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 0,
+            "answer_or_evidence_variant_index": 4,
             "prompt_bundle_id": "geometry_analytical_surface_area_v1",
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the value in the form kπ (for example 12π)",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: IJ",
-              "json_example": "{\"evidence\":{\"IJ\":2},\"answer\":\"12π\"}",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: YZ",
+              "json_example": "{\"evidence\":{\"YZ\":2},\"answer\":\"12π\"}",
               "json_example_answer_only": "{\"answer\":\"12π\"}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -207,9 +207,9 @@
               "question_text": "The sphere has an annotated radius. What is its total surface area? Express the result in kπ form."
             },
             "task_family_key": "analytical_single_solid",
-            "task_family_variant_index": 4,
+            "task_family_variant_index": 2,
             "task_key": "analytical_surface_area_query",
-            "task_variant_index": 0,
+            "task_variant_index": 3,
             "task_variant_key": null,
             "task_variant_template_index": null,
             "template_paths": [
@@ -221,7 +221,7 @@
               "task_family:analytical_single_solid": 5
             }
           },
-          "prompt": "Work from the annotated figure showing an annotated 3D solid. The sphere has an annotated radius. What is its total surface area? Express the result in kπ form.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the value in the form kπ (for example 12π).\nExample JSON:\n{\"answer\":\"12π\"}"
+          "prompt": "Look at the annotated image showing an annotated 3D solid. Read the marked measurements and answer: The sphere has an annotated radius. What is its total surface area? Express the result in kπ form.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the value in the form kπ (for example 12π).\nExample JSON:\n{\"answer\":\"12π\"}"
         }
       },
       "task_variant": "surface_area",
@@ -229,30 +229,30 @@
     },
     "render_map": {
       "annotation_centers": {
-        "IJ": [
-          421.5,
-          288.6
+        "YZ": [
+          553.5,
+          370.32
         ]
       },
       "annotation_labels": {
-        "r": "IJ"
+        "r": "YZ"
       },
       "coord_space": "pixel",
       "entity_id": "solid_1",
       "instance_anchor": {
         "coord_space": "pixel",
         "point": [
-          421.5,
-          306.8
+          553.5,
+          398.32
         ],
         "polyline": [
           [
-            295.0,
-            306.8
+            383.0,
+            398.32
           ],
           [
-            548.0,
-            306.8
+            724.0,
+            398.32
           ]
         ]
       }
@@ -267,45 +267,47 @@
         ],
         "enabled": true,
         "render_scale": 3,
-        "selected_style": "solid_warm",
+        "selected_style": "solid_offwhite",
         "style_spec": {
           "color": [
             252,
-            249,
-            245
+            252,
+            252
           ],
           "kind": "solid"
         }
       },
-      "canvas_size": 590,
+      "canvas_size": 766,
       "coord_space": "pixel",
       "graph_coordinate_frame": {
         "coord_space": "graph_unit",
-        "full_cells_x": 6,
-        "full_cells_y": 6,
+        "full_cells_x": 10,
+        "full_cells_y": 10,
+        "origin_fraction_x": 0.5,
+        "origin_fraction_y": 0.5,
         "origin_pixel": [
-          294,
-          294
+          382,
+          382
         ],
         "outer_margin_px": 16,
         "partial_edge_cells": true,
-        "spacing_px": 84,
-        "target_cells_x": 7,
-        "target_cells_y": 7,
+        "spacing_px": 64,
+        "target_cells_x": 12,
+        "target_cells_y": 12,
         "x_positive": "right",
         "y_positive": "up"
       },
       "graph_paper_grid": {
-        "full_cells_x": 6,
-        "full_cells_y": 6,
+        "full_cells_x": 10,
+        "full_cells_y": 10,
         "partial_edge_cells": true,
-        "spacing_px": 84,
-        "target_cells_x": 7,
-        "target_cells_y": 7
+        "spacing_px": 64,
+        "target_cells_x": 12,
+        "target_cells_y": 12
       },
       "legacy_scene_variant": "sphere_given_r",
       "post_image_noise": {
-        "applied": false,
+        "applied": true,
         "apply_prob": 0.5,
         "edit_count_range": [
           1,
@@ -317,26 +319,33 @@
           "jpeg",
           "noise"
         ],
-        "edits": [],
+        "edits": [
+          {
+            "params": {
+              "radius": 0.31515
+            },
+            "type": "blur"
+          }
+        ],
         "enabled": true
       },
       "query_variant": "surface_area",
       "scene_variant": "sphere",
       "shape_style": {
         "label_color": [
-          160,
-          35,
-          27
+          51,
+          76,
+          54
         ],
         "label_stroke_color": [
-          250,
-          251,
-          253
+          252,
+          248,
+          248
         ],
         "line_color": [
-          160,
-          35,
-          27
+          51,
+          76,
+          54
         ]
       }
     },
@@ -346,16 +355,16 @@
           "attrs": {
             "points": {
               "center": [
-                295.0,
-                306.8
+                383.0,
+                398.32
               ],
               "right_point": [
-                548.0,
-                306.8
+                724.0,
+                398.32
               ]
             },
-            "radius_units": 7,
-            "surface_area_pi_coefficient": 196,
+            "radius_units": 11,
+            "surface_area_pi_coefficient": 484,
             "task_variant": "sphere_given_r"
           },
           "entity_id": "solid_1",
@@ -365,10 +374,10 @@
       "frames": {
         "graph_unit": {
           "origin_pixel": [
-            294,
-            294
+            382,
+            382
           ],
-          "spacing_px": 84,
+          "spacing_px": 64,
           "x_positive": "right",
           "y_positive": "up"
         },
@@ -392,17 +401,17 @@
     },
     "witness_symbolic": {
       "annotation_ids": [
-        "IJ"
+        "YZ"
       ],
       "annotation_labels": {
-        "r": "IJ"
+        "r": "YZ"
       },
       "annotation_values": {
-        "IJ": 7
+        "YZ": 11
       },
       "formula_expression": "SA = 4 * π * r^2",
       "measurement_ref_map": {
-        "IJ": 7
+        "YZ": 11
       },
       "task_variant": "sphere_given_r",
       "type": "annotation_measurement_map"

@@ -15,9 +15,9 @@
     "path": "graph/task_graph_comparison_largest_component_size/images/default/0000.png"
   },
   "instance_seed": 5598223784113668,
-  "prompt": "Use the image containing a labeled undirected graph. Question: How many nodes are in the largest connected component?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the labels of all nodes in the unique largest connected component, sorted in ascending label order.\nAnswer requirement: set \"answer\" to the size of that connected component as an integer.\nExample JSON:\n{\"evidence\":[\"2\",\"5\",\"7\",\"9\"],\"answer\":4}",
+  "prompt": "Use the image containing a labeled undirected graph. Question: How many nodes are in the largest connected component?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the labels of all nodes in the unique largest connected component.\nAnswer requirement: set \"answer\" to the size of that connected component as an integer.\nExample JSON:\n{\"evidence\":[\"2\",\"5\",\"7\",\"9\"],\"answer\":4}",
   "prompt_variants": {
-    "answer_and_evidence": "Use the image containing a labeled undirected graph. Question: How many nodes are in the largest connected component?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the labels of all nodes in the unique largest connected component, sorted in ascending label order.\nAnswer requirement: set \"answer\" to the size of that connected component as an integer.\nExample JSON:\n{\"evidence\":[\"2\",\"5\",\"7\",\"9\"],\"answer\":4}",
+    "answer_and_evidence": "Use the image containing a labeled undirected graph. Question: How many nodes are in the largest connected component?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the labels of all nodes in the unique largest connected component.\nAnswer requirement: set \"answer\" to the size of that connected component as an integer.\nExample JSON:\n{\"evidence\":[\"2\",\"5\",\"7\",\"9\"],\"answer\":4}",
     "answer_only": "Use the image containing a labeled undirected graph. Question: How many nodes are in the largest connected component?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the size of that connected component as an integer.\nExample JSON:\n{\"answer\":4}"
   },
   "task": "task_graph_comparison_largest_component_size",
@@ -194,7 +194,7 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the size of that connected component as an integer",
-          "evidence_hint": "set \"evidence\" to an array containing the labels of all nodes in the unique largest connected component, sorted in ascending label order",
+          "evidence_hint": "set \"evidence\" to an array containing the labels of all nodes in the unique largest connected component",
           "json_example": "{\"evidence\":[\"2\",\"5\",\"7\",\"9\"],\"answer\":4}",
           "json_example_answer_only": "{\"answer\":4}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
@@ -227,7 +227,7 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the size of that connected component as an integer",
-              "evidence_hint": "set \"evidence\" to an array containing the labels of all nodes in the unique largest connected component, sorted in ascending label order",
+              "evidence_hint": "set \"evidence\" to an array containing the labels of all nodes in the unique largest connected component",
               "json_example": "{\"evidence\":[\"2\",\"5\",\"7\",\"9\"],\"answer\":4}",
               "json_example_answer_only": "{\"answer\":4}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
@@ -250,7 +250,7 @@
               "task_family:single_graph_comparison": 5
             }
           },
-          "prompt": "Use the image containing a labeled undirected graph. Question: How many nodes are in the largest connected component?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the labels of all nodes in the unique largest connected component, sorted in ascending label order.\nAnswer requirement: set \"answer\" to the size of that connected component as an integer.\nExample JSON:\n{\"evidence\":[\"2\",\"5\",\"7\",\"9\"],\"answer\":4}"
+          "prompt": "Use the image containing a labeled undirected graph. Question: How many nodes are in the largest connected component?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the labels of all nodes in the unique largest connected component.\nAnswer requirement: set \"answer\" to the size of that connected component as an integer.\nExample JSON:\n{\"evidence\":[\"2\",\"5\",\"7\",\"9\"],\"answer\":4}"
         },
         "answer_only": {
           "metadata": {
@@ -260,7 +260,7 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the size of that connected component as an integer",
-              "evidence_hint": "set \"evidence\" to an array containing the labels of all nodes in the unique largest connected component, sorted in ascending label order",
+              "evidence_hint": "set \"evidence\" to an array containing the labels of all nodes in the unique largest connected component",
               "json_example": "{\"evidence\":[\"2\",\"5\",\"7\",\"9\"],\"answer\":4}",
               "json_example_answer_only": "{\"answer\":4}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",

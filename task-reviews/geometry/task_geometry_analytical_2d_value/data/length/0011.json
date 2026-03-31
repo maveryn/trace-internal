@@ -1,24 +1,24 @@
 {
   "answer_gt": {
     "type": "number",
-    "value": 21.5
+    "value": 35.8
   },
   "evidence_gt": {
     "type": "measurement_ref_map",
     "value": {
-      "VW": 30,
-      "VX": 28
+      "FH": 42,
+      "GH": 22
     }
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_2d_value/images/length/0011.png"
   },
-  "instance_seed": 2224881386977742,
-  "prompt": "You are given an image showing a geometric scene with measurement annotations. Question: The circle shows a chord and the perpendicular distance from the center to that chord. What is the length of segment YZ?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: VW, VX.\nAnswer field: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"VW\":2,\"VX\":3},\"answer\":42.3}",
+  "instance_seed": 1131549478239065,
+  "prompt": "The image shows a geometric scene with measurement annotations. Question: The rectangle shows one side and its diagonal. What is the length of segment FG?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: GH, FH.\nAnswer: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"GH\":2,\"FH\":3},\"answer\":42.3}",
   "prompt_variants": {
-    "answer_and_evidence": "You are given an image showing a geometric scene with measurement annotations. Question: The circle shows a chord and the perpendicular distance from the center to that chord. What is the length of segment YZ?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: VW, VX.\nAnswer field: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"VW\":2,\"VX\":3},\"answer\":42.3}",
-    "answer_only": "You are given an image showing a geometric scene with measurement annotations. Question: The circle shows a chord and the perpendicular distance from the center to that chord. What is the length of segment YZ?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"answer\":42.3}"
+    "answer_and_evidence": "The image shows a geometric scene with measurement annotations. Question: The rectangle shows one side and its diagonal. What is the length of segment FG?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: GH, FH.\nAnswer: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"GH\":2,\"FH\":3},\"answer\":42.3}",
+    "answer_only": "The image shows a geometric scene with measurement annotations. Question: The rectangle shows one side and its diagonal. What is the length of segment FG?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"answer\":42.3}"
   },
   "task": "task_geometry_analytical_2d_value",
   "task_variant": "length",
@@ -26,28 +26,28 @@
     "execution_trace": {
       "answer_max": 100,
       "answer_min": 3,
-      "answer_scalar": 215,
+      "answer_scalar": 358,
       "answer_type": "number",
-      "answer_value": 21.5,
+      "answer_value": 35.8,
       "evidence_map": {
-        "VW": 30,
-        "VX": 28
+        "FH": 42,
+        "GH": 22
       },
       "evidence_role_tokens": {
-        "offset": "VX",
-        "radius": "VW"
+        "diagonal": "FH",
+        "known_side": "GH"
       },
       "evidence_role_values": {
-        "offset": 28,
-        "radius": 30
+        "diagonal": 42,
+        "known_side": 22
       },
       "evidence_roles": [
-        "radius",
-        "offset"
+        "known_side",
+        "diagonal"
       ],
-      "formula_expression": "2 * sqrt(radius^2 - offset^2)",
-      "legacy_query_variant": "circle_chord_length",
-      "legacy_scene_variant": "circle",
+      "formula_expression": "sqrt(diagonal^2 - known_side^2)",
+      "legacy_query_variant": "rectangle_diagonal_side",
+      "legacy_scene_variant": "rectangle",
       "legacy_task_id": "task_geometry_analytical_2d_length",
       "query_variant": "length",
       "query_variant_probabilities": {
@@ -56,12 +56,12 @@
         "length": 1.0,
         "perimeter": 0.0
       },
-      "raw_answer_value": 21.540659228538015,
+      "raw_answer_value": 35.77708763999664,
       "required_annotations": [
-        "VW",
-        "VX"
+        "GH",
+        "FH"
       ],
-      "scene_variant": "circle",
+      "scene_variant": "rectangle",
       "scene_variant_probabilities": {
         "circle": 0.2,
         "composite_region": 0.0,
@@ -72,7 +72,7 @@
         "trapezoid": 0.2,
         "triangle": 0.2
       },
-      "target_annotation": "YZ",
+      "target_annotation": "FG",
       "task_variant": "length",
       "task_variant_probabilities": {
         "area": 0.0,
@@ -81,45 +81,45 @@
         "perimeter": 0.0
       },
       "variant_probabilities": {
-        "circle_chord_length": 1.0,
+        "circle_chord_length": 0.0,
         "inscribed_square_side": 0.0,
         "isosceles_trapezoid_leg": 0.0,
-        "rectangle_diagonal_side": 0.0,
+        "rectangle_diagonal_side": 1.0,
         "rhombus_diagonal_side": 0.0,
         "triangle_altitude_side": 0.0
       }
     },
     "projected_evidence": {
       "annotation_labels": {
-        "offset": "VX",
-        "radius": "VW"
+        "diagonal": "FH",
+        "known_side": "GH"
       },
       "id_set": [
-        "VW",
-        "VX"
+        "GH",
+        "FH"
       ],
       "measurement_ref_map": {
-        "VW": 30,
-        "VX": 28
+        "FH": 42,
+        "GH": 22
       },
       "pixel_annotation_centers": {
-        "VW": [
-          420.752,
-          303.76666666666665
+        "FH": [
+          344.6206349206349,
+          306.59415917477395
         ],
-        "VX": [
-          254.5666666666667,
-          183.71519999999998
+        "GH": [
+          586.4633333333333,
+          282.0045100507763
         ]
       },
       "pixel_point_set": [
         [
-          420.752,
-          303.76666666666665
+          586.4633333333333,
+          282.0045100507763
         ],
         [
-          254.5666666666667,
-          183.71519999999998
+          344.6206349206349,
+          306.59415917477395
         ]
       ]
     },
@@ -127,8 +127,8 @@
       "params": {
         "answer_max": 100,
         "answer_min": 3,
-        "legacy_query_variant": "circle_chord_length",
-        "legacy_scene_variant": "circle",
+        "legacy_query_variant": "rectangle_diagonal_side",
+        "legacy_scene_variant": "rectangle",
         "legacy_task_id": "task_geometry_analytical_2d_length",
         "query_variant": "length",
         "query_variant_probabilities": {
@@ -137,7 +137,7 @@
           "length": 1.0,
           "perimeter": 0.0
         },
-        "scene_variant": "circle",
+        "scene_variant": "rectangle",
         "scene_variant_probabilities": {
           "circle": 0.2,
           "composite_region": 0.0,
@@ -148,7 +148,7 @@
           "trapezoid": 0.2,
           "triangle": 0.2
         },
-        "task_variant": "circle_chord_length",
+        "task_variant": "rectangle_diagonal_side",
         "variant_probabilities": {
           "area": 0.0,
           "composite_area": 0.0,
@@ -158,21 +158,21 @@
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 3,
+        "answer_or_evidence_variant_index": 0,
         "prompt_bundle_id": "geometry_analytical_length_v1",
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the length value rounded to one decimal place",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: VW, VX",
-          "json_example": "{\"evidence\":{\"VW\":2,\"VX\":3},\"answer\":42.3}",
+          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: GH, FH",
+          "json_example": "{\"evidence\":{\"GH\":2,\"FH\":3},\"answer\":42.3}",
           "json_example_answer_only": "{\"answer\":42.3}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
           "object_description": "a geometric scene with measurement annotations",
-          "question_text": "The circle shows a chord and the perpendicular distance from the center to that chord. What is the length of segment YZ?"
+          "question_text": "The rectangle shows one side and its diagonal. What is the length of segment FG?"
         },
         "task_family_key": "analytical_length_scene",
-        "task_family_variant_index": 0,
+        "task_family_variant_index": 1,
         "task_key": "analytical_length_query",
         "task_variant_index": 1,
         "task_variant_key": null,
@@ -191,21 +191,21 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 3,
+            "answer_or_evidence_variant_index": 0,
             "prompt_bundle_id": "geometry_analytical_length_v1",
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the length value rounded to one decimal place",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: VW, VX",
-              "json_example": "{\"evidence\":{\"VW\":2,\"VX\":3},\"answer\":42.3}",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: GH, FH",
+              "json_example": "{\"evidence\":{\"GH\":2,\"FH\":3},\"answer\":42.3}",
               "json_example_answer_only": "{\"answer\":42.3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a geometric scene with measurement annotations",
-              "question_text": "The circle shows a chord and the perpendicular distance from the center to that chord. What is the length of segment YZ?"
+              "question_text": "The rectangle shows one side and its diagonal. What is the length of segment FG?"
             },
             "task_family_key": "analytical_length_scene",
-            "task_family_variant_index": 0,
+            "task_family_variant_index": 1,
             "task_key": "analytical_length_query",
             "task_variant_index": 1,
             "task_variant_key": null,
@@ -219,26 +219,26 @@
               "task_family:analytical_length_scene": 5
             }
           },
-          "prompt": "You are given an image showing a geometric scene with measurement annotations. Question: The circle shows a chord and the perpendicular distance from the center to that chord. What is the length of segment YZ?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: VW, VX.\nAnswer field: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"VW\":2,\"VX\":3},\"answer\":42.3}"
+          "prompt": "The image shows a geometric scene with measurement annotations. Question: The rectangle shows one side and its diagonal. What is the length of segment FG?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: GH, FH.\nAnswer: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"GH\":2,\"FH\":3},\"answer\":42.3}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 0,
+            "answer_or_evidence_variant_index": 2,
             "prompt_bundle_id": "geometry_analytical_length_v1",
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the length value rounded to one decimal place",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: VW, VX",
-              "json_example": "{\"evidence\":{\"VW\":2,\"VX\":3},\"answer\":42.3}",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: GH, FH",
+              "json_example": "{\"evidence\":{\"GH\":2,\"FH\":3},\"answer\":42.3}",
               "json_example_answer_only": "{\"answer\":42.3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a geometric scene with measurement annotations",
-              "question_text": "The circle shows a chord and the perpendicular distance from the center to that chord. What is the length of segment YZ?"
+              "question_text": "The rectangle shows one side and its diagonal. What is the length of segment FG?"
             },
             "task_family_key": "analytical_length_scene",
-            "task_family_variant_index": 0,
+            "task_family_variant_index": 1,
             "task_key": "analytical_length_query",
             "task_variant_index": 1,
             "task_variant_key": null,
@@ -252,7 +252,7 @@
               "task_family:analytical_length_scene": 5
             }
           },
-          "prompt": "You are given an image showing a geometric scene with measurement annotations. Question: The circle shows a chord and the perpendicular distance from the center to that chord. What is the length of segment YZ?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"answer\":42.3}"
+          "prompt": "The image shows a geometric scene with measurement annotations. Question: The rectangle shows one side and its diagonal. What is the length of segment FG?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"answer\":42.3}"
         }
       },
       "task_variant": "length",
@@ -260,26 +260,26 @@
     },
     "render_map": {
       "annotation_centers": {
-        "VW": [
-          420.752,
-          303.76666666666665
+        "FH": [
+          344.6206349206349,
+          306.59415917477395
         ],
-        "VX": [
-          254.5666666666667,
-          183.71519999999998
+        "GH": [
+          586.4633333333333,
+          282.0045100507763
         ]
       },
       "annotation_labels": {
-        "offset": "VX",
-        "radius": "VW"
+        "diagonal": "FH",
+        "known_side": "GH"
       },
       "coord_space": "pixel",
       "instance_anchor": {
         "bbox": [
-          213.86361355188023,
-          101.66400000000002,
-          479.36,
-          284.0
+          100.47,
+          141.16968160691266,
+          558.53,
+          422.8393384946399
         ],
         "coord_space": "pixel"
       }
@@ -304,21 +304,23 @@
           "kind": "solid"
         }
       },
-      "canvas_size": 568,
+      "canvas_size": 659,
       "coord_space": "pixel",
       "graph_coordinate_frame": {
         "coord_space": "graph_unit",
         "full_cells_x": 6,
         "full_cells_y": 6,
+        "origin_fraction_x": 0.5,
+        "origin_fraction_y": 0.5,
         "origin_pixel": [
-          284,
-          284
+          329,
+          329
         ],
         "outer_margin_px": 16,
         "partial_edge_cells": true,
-        "spacing_px": 81,
-        "target_cells_x": 7,
-        "target_cells_y": 7,
+        "spacing_px": 82,
+        "target_cells_x": 8,
+        "target_cells_y": 8,
         "x_positive": "right",
         "y_positive": "up"
       },
@@ -326,13 +328,13 @@
         "full_cells_x": 6,
         "full_cells_y": 6,
         "partial_edge_cells": true,
-        "spacing_px": 81,
-        "target_cells_x": 7,
-        "target_cells_y": 7
+        "spacing_px": 82,
+        "target_cells_x": 8,
+        "target_cells_y": 8
       },
-      "legacy_scene_variant": "circle",
+      "legacy_scene_variant": "rectangle",
       "post_image_noise": {
-        "applied": true,
+        "applied": false,
         "apply_prob": 0.5,
         "edit_count_range": [
           1,
@@ -344,33 +346,26 @@
           "jpeg",
           "noise"
         ],
-        "edits": [
-          {
-            "params": {
-              "quality": 92.0
-            },
-            "type": "jpeg"
-          }
-        ],
+        "edits": [],
         "enabled": true
       },
       "query_variant": "length",
-      "scene_variant": "circle",
+      "scene_variant": "rectangle",
       "shape_style": {
         "label_color": [
-          82,
-          162,
-          98
+          20,
+          102,
+          90
         ],
         "label_stroke_color": [
-          253,
-          252,
-          252
+          248,
+          254,
+          253
         ],
         "line_color": [
-          82,
-          162,
-          98
+          20,
+          102,
+          90
         ]
       }
     },
@@ -378,68 +373,51 @@
       "entities": [
         {
           "attrs": {
-            "center": [
-              284.0,
-              284.0
-            ],
-            "radius_px": 195
+            "vertices": [
+              [
+                100.47,
+                422.8393384946399
+              ],
+              [
+                558.53,
+                422.8393384946399
+              ],
+              [
+                558.53,
+                141.16968160691266
+              ],
+              [
+                100.47,
+                141.16968160691266
+              ]
+            ]
           },
-          "entity_id": "circle_1",
-          "entity_type": "circle"
+          "entity_id": "rectangle_1",
+          "entity_type": "rectangle"
         },
         {
           "attrs": {
             "helper": true,
             "point_a": [
-              284.0,
-              284.0
+              100.47,
+              422.8393384946399
             ],
             "point_b": [
-              479.36,
-              284.0
+              558.53,
+              141.16968160691266
             ]
           },
-          "entity_id": "radius_1",
-          "entity_type": "radius"
-        },
-        {
-          "attrs": {
-            "helper": true,
-            "point_a": [
-              284.0,
-              284.0
-            ],
-            "point_b": [
-              284.0,
-              101.66400000000002
-            ]
-          },
-          "entity_id": "distance_1",
-          "entity_type": "distance_to_chord"
-        },
-        {
-          "attrs": {
-            "helper": false,
-            "point_a": [
-              213.86361355188023,
-              101.66400000000002
-            ],
-            "point_b": [
-              354.13638644811977,
-              101.66400000000002
-            ]
-          },
-          "entity_id": "chord_1",
-          "entity_type": "chord"
+          "entity_id": "diagonal_1",
+          "entity_type": "diagonal"
         }
       ],
       "frames": {
         "graph_unit": {
           "origin_pixel": [
-            284,
-            284
+            329,
+            329
           ],
-          "spacing_px": 81,
+          "spacing_px": 82,
           "x_positive": "right",
           "y_positive": "up"
         },
@@ -453,33 +431,33 @@
         }
       },
       "relations": {
-        "legacy_query_variant": "circle_chord_length",
-        "legacy_scene_variant": "circle",
+        "legacy_query_variant": "rectangle_diagonal_side",
+        "legacy_scene_variant": "rectangle",
         "legacy_task_id": "task_geometry_analytical_2d_length",
         "query_variant": "length",
-        "scene_variant": "circle"
+        "scene_variant": "rectangle"
       },
       "scene_kind": "geometry_2d_analytical_length"
     },
     "witness_symbolic": {
       "annotation_ids": [
-        "VW",
-        "VX"
+        "GH",
+        "FH"
       ],
       "annotation_labels": {
-        "offset": "VX",
-        "radius": "VW"
+        "diagonal": "FH",
+        "known_side": "GH"
       },
       "annotation_values": {
-        "VW": 30,
-        "VX": 28
+        "FH": 42,
+        "GH": 22
       },
-      "formula_expression": "2 * sqrt(radius^2 - offset^2)",
+      "formula_expression": "sqrt(diagonal^2 - known_side^2)",
       "measurement_ref_map": {
-        "VW": 30,
-        "VX": 28
+        "FH": 42,
+        "GH": 22
       },
-      "task_variant": "circle_chord_length",
+      "task_variant": "rectangle_diagonal_side",
       "type": "annotation_measurement_map"
     }
   },

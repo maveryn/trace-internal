@@ -1,16 +1,16 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 27
+    "value": 33
   },
   "evidence_gt": {
     "type": "bbox_set",
     "value": [
       [
         579.25,
-        332.99,
+        333.49,
         620.75,
-        377.49
+        376.99
       ],
       [
         811.65,
@@ -26,21 +26,21 @@
       ],
       [
         579.25,
-        460.11,
+        459.61,
         620.75,
-        503.61
-      ],
-      [
-        471.25,
-        523.11,
-        512.75,
-        568.61
+        504.11
       ],
       [
         687.25,
         523.11,
         728.75,
         568.61
+      ],
+      [
+        471.25,
+        523.61,
+        512.75,
+        568.11
       ]
     ]
   },
@@ -48,11 +48,11 @@
     "format": "png",
     "path": "diagrams/task_diagrams_set_diagram_region_sum_value/images/sum_in_named_union/0005.png"
   },
-  "instance_seed": 4596673722419724,
-  "prompt": "Look at the set diagram in the image: a 3-set overlap diagram with one single-digit number placed in each visible region. What is the sum of the numbers in Set A or Set B, including overlap regions? Return the integer sum. Respond with the integer sum only.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every digit used in the sum, ordered from top to bottom and then left to right.\nAnswer field: set \"answer\" to the integer sum of the contributing digits.\nExample JSON:\n{\"evidence\":[[300,326,329,367],[818,326,847,367],[559,267,589,309],[451,506,481,548],[667,506,697,548],[559,420,589,462]],\"answer\":31}",
+  "instance_seed": 961891378769643,
+  "prompt": "You are given a 3-set overlap diagram with one single-digit number placed in each visible region. Read the overlap regions and answer: What is the sum of the numbers in Set A or Set B, including overlap regions? Return the integer sum. Answer using the integer sum.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every digit used in the sum, ordered from top to bottom and then left to right.\nAnswer rule: set \"answer\" to the integer sum of the contributing digits.\nExample JSON:\n{\"evidence\":[[300,326,329,367],[818,326,847,367],[559,267,589,309],[451,506,481,548],[667,506,697,548],[559,420,589,462]],\"answer\":31}",
   "prompt_variants": {
-    "answer_and_evidence": "Look at the set diagram in the image: a 3-set overlap diagram with one single-digit number placed in each visible region. What is the sum of the numbers in Set A or Set B, including overlap regions? Return the integer sum. Respond with the integer sum only.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every digit used in the sum, ordered from top to bottom and then left to right.\nAnswer field: set \"answer\" to the integer sum of the contributing digits.\nExample JSON:\n{\"evidence\":[[300,326,329,367],[818,326,847,367],[559,267,589,309],[451,506,481,548],[667,506,697,548],[559,420,589,462]],\"answer\":31}",
-    "answer_only": "Look at the set diagram in the image: a 3-set overlap diagram with one single-digit number placed in each visible region. What is the sum of the numbers in Set A or Set B, including overlap regions? Return the integer sum. Respond with the integer sum only.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the integer sum of the contributing digits.\nExample JSON:\n{\"answer\":31}"
+    "answer_and_evidence": "You are given a 3-set overlap diagram with one single-digit number placed in each visible region. Read the overlap regions and answer: What is the sum of the numbers in Set A or Set B, including overlap regions? Return the integer sum. Answer using the integer sum.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every digit used in the sum, ordered from top to bottom and then left to right.\nAnswer rule: set \"answer\" to the integer sum of the contributing digits.\nExample JSON:\n{\"evidence\":[[300,326,329,367],[818,326,847,367],[559,267,589,309],[451,506,481,548],[667,506,697,548],[559,420,589,462]],\"answer\":31}",
+    "answer_only": "You are given a 3-set overlap diagram with one single-digit number placed in each visible region. Read the overlap regions and answer: What is the sum of the numbers in Set A or Set B, including overlap regions? Return the integer sum. Answer using the integer sum.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the integer sum of the contributing digits.\nExample JSON:\n{\"answer\":31}"
   },
   "task": "task_diagrams_set_diagram_region_sum_value",
   "task_variant": "sum_in_named_union",
@@ -73,7 +73,7 @@
       }
     },
     "execution_trace": {
-      "answer_value": 27,
+      "answer_value": 33,
       "color_distance_space": "lab",
       "contributing_region_ids": [
         "A_only",
@@ -89,7 +89,7 @@
         {
           "number_bbox_id": "number_bbox_0",
           "number_id": "number_0",
-          "number_value": 7,
+          "number_value": 4,
           "region_id": "A_only",
           "set_memberships": [
             "A"
@@ -107,7 +107,7 @@
         {
           "number_bbox_id": "number_bbox_2",
           "number_id": "number_2",
-          "number_value": 9,
+          "number_value": 3,
           "region_id": "C_only",
           "set_memberships": [
             "C"
@@ -116,7 +116,7 @@
         {
           "number_bbox_id": "number_bbox_3",
           "number_id": "number_3",
-          "number_value": 2,
+          "number_value": 7,
           "region_id": "AB_only",
           "set_memberships": [
             "A",
@@ -126,7 +126,7 @@
         {
           "number_bbox_id": "number_bbox_4",
           "number_id": "number_4",
-          "number_value": 3,
+          "number_value": 2,
           "region_id": "AC_only",
           "set_memberships": [
             "A",
@@ -136,7 +136,7 @@
         {
           "number_bbox_id": "number_bbox_5",
           "number_id": "number_5",
-          "number_value": 8,
+          "number_value": 9,
           "region_id": "BC_only",
           "set_memberships": [
             "B",
@@ -146,7 +146,7 @@
         {
           "number_bbox_id": "number_bbox_6",
           "number_id": "number_6",
-          "number_value": 1,
+          "number_value": 5,
           "region_id": "ABC",
           "set_memberships": [
             "A",
@@ -168,32 +168,32 @@
         "ABC"
       ],
       "region_number_map": {
-        "ABC": 1,
-        "AB_only": 2,
-        "AC_only": 3,
-        "A_only": 7,
-        "BC_only": 8,
+        "ABC": 5,
+        "AB_only": 7,
+        "AC_only": 2,
+        "A_only": 4,
+        "BC_only": 9,
         "B_only": 6,
-        "C_only": 9
+        "C_only": 3
       },
-      "scene_title": "Set Diagram",
+      "scene_title": "Set Number Sums",
       "scene_variant": "set_diagram",
       "set_count": 3,
       "set_fill_rgb_map": {
         "A": [
-          115,
-          222,
-          75
+          101,
+          122,
+          208
         ],
         "B": [
-          93,
-          146,
-          101
+          90,
+          201,
+          83
         ],
         "C": [
-          213,
-          110,
-          212
+          223,
+          80,
+          113
         ]
       },
       "set_ids": [
@@ -206,8 +206,8 @@
         "number_bbox_1",
         "number_bbox_0",
         "number_bbox_6",
-        "number_bbox_4",
-        "number_bbox_5"
+        "number_bbox_5",
+        "number_bbox_4"
       ],
       "target_sets": [
         "A",
@@ -236,9 +236,9 @@
       "bbox_set": [
         [
           579.25,
-          332.99,
+          333.49,
           620.75,
-          377.49
+          376.99
         ],
         [
           811.65,
@@ -254,21 +254,21 @@
         ],
         [
           579.25,
-          460.11,
+          459.61,
           620.75,
-          503.61
-        ],
-        [
-          471.25,
-          523.11,
-          512.75,
-          568.61
+          504.11
         ],
         [
           687.25,
           523.11,
           728.75,
           568.61
+        ],
+        [
+          471.25,
+          523.61,
+          512.75,
+          568.11
         ]
       ]
     },
@@ -293,7 +293,7 @@
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 3,
+        "answer_or_evidence_variant_index": 4,
         "prompt_bundle_id": "diagrams_set_diagram_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -307,11 +307,11 @@
           "question_text": "What is the sum of the numbers in Set A or Set B, including overlap regions? Return the integer sum."
         },
         "task_family_key": "numeric_set_overlap_diagram",
-        "task_family_variant_index": 1,
+        "task_family_variant_index": 2,
         "task_key": "region_sum_query",
-        "task_variant_index": 0,
+        "task_variant_index": 2,
         "task_variant_key": "sum_in_named_union",
-        "task_variant_template_index": 2,
+        "task_variant_template_index": 4,
         "template_paths": [
           "diagrams/set_diagram/diagrams_set_diagram_v1.json"
         ],
@@ -327,6 +327,40 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 4,
+            "prompt_bundle_id": "diagrams_set_diagram_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the integer sum of the contributing digits",
+              "evidence_hint": "set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every digit used in the sum, ordered from top to bottom and then left to right",
+              "json_example": "{\"evidence\":[[300,326,329,367],[818,326,847,367],[559,267,589,309],[451,506,481,548],[667,506,697,548],[559,420,589,462]],\"answer\":31}",
+              "json_example_answer_only": "{\"answer\":31}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a 3-set overlap diagram with one single-digit number placed in each visible region",
+              "question_text": "What is the sum of the numbers in Set A or Set B, including overlap regions? Return the integer sum."
+            },
+            "task_family_key": "numeric_set_overlap_diagram",
+            "task_family_variant_index": 2,
+            "task_key": "region_sum_query",
+            "task_variant_index": 2,
+            "task_variant_key": "sum_in_named_union",
+            "task_variant_template_index": 4,
+            "template_paths": [
+              "diagrams/set_diagram/diagrams_set_diagram_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:region_sum_query": 5,
+              "task_family:numeric_set_overlap_diagram": 5,
+              "task_variant:sum_in_named_union": 5
+            }
+          },
+          "prompt": "You are given a 3-set overlap diagram with one single-digit number placed in each visible region. Read the overlap regions and answer: What is the sum of the numbers in Set A or Set B, including overlap regions? Return the integer sum. Answer using the integer sum.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every digit used in the sum, ordered from top to bottom and then left to right.\nAnswer rule: set \"answer\" to the integer sum of the contributing digits.\nExample JSON:\n{\"evidence\":[[300,326,329,367],[818,326,847,367],[559,267,589,309],[451,506,481,548],[667,506,697,548],[559,420,589,462]],\"answer\":31}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
             "answer_or_evidence_variant_index": 3,
             "prompt_bundle_id": "diagrams_set_diagram_v1",
             "schema_version": "v1",
@@ -341,45 +375,11 @@
               "question_text": "What is the sum of the numbers in Set A or Set B, including overlap regions? Return the integer sum."
             },
             "task_family_key": "numeric_set_overlap_diagram",
-            "task_family_variant_index": 1,
+            "task_family_variant_index": 2,
             "task_key": "region_sum_query",
-            "task_variant_index": 0,
+            "task_variant_index": 2,
             "task_variant_key": "sum_in_named_union",
-            "task_variant_template_index": 2,
-            "template_paths": [
-              "diagrams/set_diagram/diagrams_set_diagram_v1.json"
-            ],
-            "variant_count_by_key": {
-              "answer_or_evidence:answer_and_evidence": 5,
-              "task:region_sum_query": 5,
-              "task_family:numeric_set_overlap_diagram": 5,
-              "task_variant:sum_in_named_union": 5
-            }
-          },
-          "prompt": "Look at the set diagram in the image: a 3-set overlap diagram with one single-digit number placed in each visible region. What is the sum of the numbers in Set A or Set B, including overlap regions? Return the integer sum. Respond with the integer sum only.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every digit used in the sum, ordered from top to bottom and then left to right.\nAnswer field: set \"answer\" to the integer sum of the contributing digits.\nExample JSON:\n{\"evidence\":[[300,326,329,367],[818,326,847,367],[559,267,589,309],[451,506,481,548],[667,506,697,548],[559,420,589,462]],\"answer\":31}"
-        },
-        "answer_only": {
-          "metadata": {
-            "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 1,
-            "prompt_bundle_id": "diagrams_set_diagram_v1",
-            "schema_version": "v1",
-            "slot_values": {
-              "answer_hint": "set \"answer\" to the integer sum of the contributing digits",
-              "evidence_hint": "set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every digit used in the sum, ordered from top to bottom and then left to right",
-              "json_example": "{\"evidence\":[[300,326,329,367],[818,326,847,367],[559,267,589,309],[451,506,481,548],[667,506,697,548],[559,420,589,462]],\"answer\":31}",
-              "json_example_answer_only": "{\"answer\":31}",
-              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
-              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a 3-set overlap diagram with one single-digit number placed in each visible region",
-              "question_text": "What is the sum of the numbers in Set A or Set B, including overlap regions? Return the integer sum."
-            },
-            "task_family_key": "numeric_set_overlap_diagram",
-            "task_family_variant_index": 1,
-            "task_key": "region_sum_query",
-            "task_variant_index": 0,
-            "task_variant_key": "sum_in_named_union",
-            "task_variant_template_index": 2,
+            "task_variant_template_index": 4,
             "template_paths": [
               "diagrams/set_diagram/diagrams_set_diagram_v1.json"
             ],
@@ -390,7 +390,7 @@
               "task_variant:sum_in_named_union": 5
             }
           },
-          "prompt": "Look at the set diagram in the image: a 3-set overlap diagram with one single-digit number placed in each visible region. What is the sum of the numbers in Set A or Set B, including overlap regions? Return the integer sum. Respond with the integer sum only.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the integer sum of the contributing digits.\nExample JSON:\n{\"answer\":31}"
+          "prompt": "You are given a 3-set overlap diagram with one single-digit number placed in each visible region. Read the overlap regions and answer: What is the sum of the numbers in Set A or Set B, including overlap regions? Return the integer sum. Answer using the integer sum.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the integer sum of the contributing digits.\nExample JSON:\n{\"answer\":31}"
         }
       },
       "task_variant": "sum_in_named_union",
@@ -418,15 +418,15 @@
         ],
         "number_bbox_3": [
           579.25,
-          332.99,
+          333.49,
           620.75,
-          377.49
+          376.99
         ],
         "number_bbox_4": [
           471.25,
-          523.11,
+          523.61,
           512.75,
-          568.61
+          568.11
         ],
         "number_bbox_5": [
           687.25,
@@ -436,9 +436,9 @@
         ],
         "number_bbox_6": [
           579.25,
-          460.11,
+          459.61,
           620.75,
-          503.61
+          504.11
         ]
       },
       "number_slot_bboxes_px": {
@@ -532,17 +532,17 @@
         ]
       },
       "title_bbox_px": [
-        487.5,
-        74.75,
-        712.5,
-        107.25
+        437.25,
+        78.0,
+        762.75,
+        104.0
       ]
     },
     "render_spec": {
       "canvas_height": 860,
       "canvas_width": 1200,
       "color_distance_space": "lab",
-      "geometry_seed": 4596673722419724,
+      "geometry_seed": 961891378769643,
       "min_set_color_distance": 50.0,
       "number_slot_height_px": 76,
       "number_slot_width_px": 76,
@@ -551,19 +551,19 @@
       "set_fill_alpha": 96,
       "set_fill_rgb_map": {
         "A": [
-          115,
-          222,
-          75
+          101,
+          122,
+          208
         ],
         "B": [
-          93,
-          146,
-          101
+          90,
+          201,
+          83
         ],
         "C": [
-          213,
-          110,
-          212
+          223,
+          80,
+          113
         ]
       }
     },
@@ -581,14 +581,14 @@
         },
         {
           "bbox_xyxy": [
-            487.5,
-            74.75,
-            712.5,
-            107.25
+            437.25,
+            78.0,
+            762.75,
+            104.0
           ],
           "entity_id": "diagram_title",
           "entity_type": "diagram_title",
-          "text": "Set Diagram"
+          "text": "Set Number Sums"
         },
         {
           "bbox_xyxy": [
@@ -667,7 +667,7 @@
           "entity_type": "diagram_set_number",
           "number_id": "number_0",
           "region_id": "A_only",
-          "text": "7"
+          "text": "4"
         },
         {
           "bbox_xyxy": [
@@ -693,33 +693,33 @@
           "entity_type": "diagram_set_number",
           "number_id": "number_2",
           "region_id": "C_only",
-          "text": "9"
+          "text": "3"
         },
         {
           "bbox_xyxy": [
             579.25,
-            332.99,
+            333.49,
             620.75,
-            377.49
+            376.99
           ],
           "entity_id": "number_bbox_3",
           "entity_type": "diagram_set_number",
           "number_id": "number_3",
           "region_id": "AB_only",
-          "text": "2"
+          "text": "7"
         },
         {
           "bbox_xyxy": [
             471.25,
-            523.11,
+            523.61,
             512.75,
-            568.61
+            568.11
           ],
           "entity_id": "number_bbox_4",
           "entity_type": "diagram_set_number",
           "number_id": "number_4",
           "region_id": "AC_only",
-          "text": "3"
+          "text": "2"
         },
         {
           "bbox_xyxy": [
@@ -732,20 +732,20 @@
           "entity_type": "diagram_set_number",
           "number_id": "number_5",
           "region_id": "BC_only",
-          "text": "8"
+          "text": "9"
         },
         {
           "bbox_xyxy": [
             579.25,
-            460.11,
+            459.61,
             620.75,
-            503.61
+            504.11
           ],
           "entity_id": "number_bbox_6",
           "entity_type": "diagram_set_number",
           "number_id": "number_6",
           "region_id": "ABC",
-          "text": "1"
+          "text": "5"
         }
       ],
       "relations": {
@@ -763,8 +763,8 @@
           "number_bbox_1",
           "number_bbox_0",
           "number_bbox_6",
-          "number_bbox_4",
-          "number_bbox_5"
+          "number_bbox_5",
+          "number_bbox_4"
         ],
         "task_variant": "sum_in_named_union",
         "view_family": "set_diagram_numeric"
@@ -777,8 +777,8 @@
         "number_bbox_1",
         "number_bbox_0",
         "number_bbox_6",
-        "number_bbox_4",
-        "number_bbox_5"
+        "number_bbox_5",
+        "number_bbox_4"
       ],
       "type": "id_set"
     }

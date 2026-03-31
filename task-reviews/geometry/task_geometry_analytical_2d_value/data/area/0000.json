@@ -1,23 +1,23 @@
 {
   "answer_gt": {
     "type": "pi_expression",
-    "value": "361π"
+    "value": "441π"
   },
   "evidence_gt": {
     "type": "measurement_ref_map",
     "value": {
-      "LM": 19
+      "YZ": 21
     }
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_2d_value/images/area/0000.png"
   },
-  "instance_seed": 3689988016931450,
-  "prompt": "The image shows a geometric shape with measurement annotations. Question: The circle has an annotated radius. What is its area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: LM.\nAnswer field: set \"answer\" to the area value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":{\"LM\":2},\"answer\":\"12π\"}",
+  "instance_seed": 8266537778845738,
+  "prompt": "You are given an image showing a geometric shape with measurement annotations. The circle has an annotated radius. What is its area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: YZ.\nAnswer requirement: set \"answer\" to the area value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":{\"YZ\":2},\"answer\":\"12π\"}",
   "prompt_variants": {
-    "answer_and_evidence": "The image shows a geometric shape with measurement annotations. Question: The circle has an annotated radius. What is its area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: LM.\nAnswer field: set \"answer\" to the area value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":{\"LM\":2},\"answer\":\"12π\"}",
-    "answer_only": "The image shows a geometric shape with measurement annotations. Question: The circle has an annotated radius. What is its area? Express the result in kπ form.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the area value in the form kπ (for example 12π).\nExample JSON:\n{\"answer\":\"12π\"}"
+    "answer_and_evidence": "You are given an image showing a geometric shape with measurement annotations. The circle has an annotated radius. What is its area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: YZ.\nAnswer requirement: set \"answer\" to the area value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":{\"YZ\":2},\"answer\":\"12π\"}",
+    "answer_only": "You are given an image showing a geometric shape with measurement annotations. The circle has an annotated radius. What is its area? Express the result in kπ form.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the area value in the form kπ (for example 12π).\nExample JSON:\n{\"answer\":\"12π\"}"
   },
   "task": "task_geometry_analytical_2d_value",
   "task_variant": "area",
@@ -25,21 +25,21 @@
     "execution_trace": {
       "answer_max": 2500,
       "answer_min": 8,
-      "answer_scalar": 361,
+      "answer_scalar": 441,
       "answer_type": "pi_expression",
-      "answer_value": "361π",
+      "answer_value": "441π",
       "case_id": "circle_explicit",
       "evidence_annotations": {
-        "r": "LM"
+        "r": "YZ"
       },
       "evidence_ids": [
-        "LM"
+        "YZ"
       ],
       "evidence_label_values": {
-        "r": 19
+        "r": 21
       },
       "evidence_map": {
-        "LM": 19
+        "YZ": 21
       },
       "evidence_roles": [
         "r"
@@ -61,7 +61,7 @@
       },
       "reasoning_mode": "explicit",
       "required_annotations": [
-        "LM"
+        "YZ"
       ],
       "scene_variant": "circle",
       "scene_variant_probabilities": {
@@ -94,24 +94,24 @@
     },
     "projected_evidence": {
       "annotation_labels": {
-        "r": "LM"
+        "r": "YZ"
       },
       "id_set": [
-        "LM"
+        "YZ"
       ],
       "measurement_ref_map": {
-        "LM": 19
+        "YZ": 21
       },
       "pixel_annotation_centers": {
-        "LM": [
-          425.0,
-          202.0
+        "YZ": [
+          382.0,
+          459.0
         ]
       },
       "pixel_point_set": [
         [
-          425.0,
-          202.0
+          382.0,
+          459.0
         ]
       ]
     },
@@ -164,13 +164,13 @@
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 3,
+        "answer_or_evidence_variant_index": 2,
         "prompt_bundle_id": "geometry_analytical_area_v1",
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the area value in the form kπ (for example 12π)",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: LM",
-          "json_example": "{\"evidence\":{\"LM\":2},\"answer\":\"12π\"}",
+          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: YZ",
+          "json_example": "{\"evidence\":{\"YZ\":2},\"answer\":\"12π\"}",
           "json_example_answer_only": "{\"answer\":\"12π\"}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -178,9 +178,9 @@
           "question_text": "The circle has an annotated radius. What is its area? Express the result in kπ form."
         },
         "task_family_key": "analytical_single_shape",
-        "task_family_variant_index": 1,
+        "task_family_variant_index": 0,
         "task_key": "analytical_area_query",
-        "task_variant_index": 1,
+        "task_variant_index": 0,
         "task_variant_key": null,
         "task_variant_template_index": null,
         "template_paths": [
@@ -197,13 +197,13 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 3,
+            "answer_or_evidence_variant_index": 2,
             "prompt_bundle_id": "geometry_analytical_area_v1",
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the area value in the form kπ (for example 12π)",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: LM",
-              "json_example": "{\"evidence\":{\"LM\":2},\"answer\":\"12π\"}",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: YZ",
+              "json_example": "{\"evidence\":{\"YZ\":2},\"answer\":\"12π\"}",
               "json_example_answer_only": "{\"answer\":\"12π\"}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -211,9 +211,9 @@
               "question_text": "The circle has an annotated radius. What is its area? Express the result in kπ form."
             },
             "task_family_key": "analytical_single_shape",
-            "task_family_variant_index": 1,
+            "task_family_variant_index": 0,
             "task_key": "analytical_area_query",
-            "task_variant_index": 1,
+            "task_variant_index": 0,
             "task_variant_key": null,
             "task_variant_template_index": null,
             "template_paths": [
@@ -225,7 +225,7 @@
               "task_family:analytical_single_shape": 5
             }
           },
-          "prompt": "The image shows a geometric shape with measurement annotations. Question: The circle has an annotated radius. What is its area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: LM.\nAnswer field: set \"answer\" to the area value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":{\"LM\":2},\"answer\":\"12π\"}"
+          "prompt": "You are given an image showing a geometric shape with measurement annotations. The circle has an annotated radius. What is its area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: YZ.\nAnswer requirement: set \"answer\" to the area value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":{\"YZ\":2},\"answer\":\"12π\"}"
         },
         "answer_only": {
           "metadata": {
@@ -235,8 +235,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the area value in the form kπ (for example 12π)",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: LM",
-              "json_example": "{\"evidence\":{\"LM\":2},\"answer\":\"12π\"}",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: YZ",
+              "json_example": "{\"evidence\":{\"YZ\":2},\"answer\":\"12π\"}",
               "json_example_answer_only": "{\"answer\":\"12π\"}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -244,9 +244,9 @@
               "question_text": "The circle has an annotated radius. What is its area? Express the result in kπ form."
             },
             "task_family_key": "analytical_single_shape",
-            "task_family_variant_index": 1,
+            "task_family_variant_index": 0,
             "task_key": "analytical_area_query",
-            "task_variant_index": 1,
+            "task_variant_index": 0,
             "task_variant_key": null,
             "task_variant_template_index": null,
             "template_paths": [
@@ -258,7 +258,7 @@
               "task_family:analytical_single_shape": 5
             }
           },
-          "prompt": "The image shows a geometric shape with measurement annotations. Question: The circle has an annotated radius. What is its area? Express the result in kπ form.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the area value in the form kπ (for example 12π).\nExample JSON:\n{\"answer\":\"12π\"}"
+          "prompt": "You are given an image showing a geometric shape with measurement annotations. The circle has an annotated radius. What is its area? Express the result in kπ form.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the area value in the form kπ (for example 12π).\nExample JSON:\n{\"answer\":\"12π\"}"
         }
       },
       "task_variant": "area",
@@ -266,27 +266,27 @@
     },
     "render_map": {
       "annotation_centers": {
-        "LM": [
-          425.0,
-          202.0
+        "YZ": [
+          382.0,
+          459.0
         ]
       },
       "annotation_labels": {
-        "r": "LM"
+        "r": "YZ"
       },
       "coord_space": "pixel",
       "entity_id": "shape_1",
       "instance_anchor": {
         "bbox": [
-          140.0,
-          40.0,
-          520.0,
-          420.0
+          67.0,
+          277.0,
+          487.0,
+          697.0
         ],
         "coord_space": "pixel",
         "point": [
-          330.0,
-          230.0
+          277.0,
+          487.0
         ]
       }
     },
@@ -300,41 +300,43 @@
         ],
         "enabled": true,
         "render_scale": 3,
-        "selected_style": "solid_cool",
+        "selected_style": "solid_warm",
         "style_spec": {
           "color": [
-            246,
-            248,
-            252
+            252,
+            249,
+            245
           ],
           "kind": "solid"
         }
       },
-      "canvas_size": 540,
+      "canvas_size": 715,
       "coord_space": "pixel",
       "graph_coordinate_frame": {
         "coord_space": "graph_unit",
-        "full_cells_x": 6,
-        "full_cells_y": 6,
+        "full_cells_x": 8,
+        "full_cells_y": 8,
+        "origin_fraction_x": 0.5,
+        "origin_fraction_y": 0.5,
         "origin_pixel": [
-          270,
-          270
+          357,
+          357
         ],
         "outer_margin_px": 16,
         "partial_edge_cells": true,
-        "spacing_px": 68,
-        "target_cells_x": 8,
-        "target_cells_y": 8,
+        "spacing_px": 79,
+        "target_cells_x": 9,
+        "target_cells_y": 9,
         "x_positive": "right",
         "y_positive": "up"
       },
       "graph_paper_grid": {
-        "full_cells_x": 6,
-        "full_cells_y": 6,
+        "full_cells_x": 8,
+        "full_cells_y": 8,
         "partial_edge_cells": true,
-        "spacing_px": 68,
-        "target_cells_x": 8,
-        "target_cells_y": 8
+        "spacing_px": 79,
+        "target_cells_x": 9,
+        "target_cells_y": 9
       },
       "legacy_scene_variant": "circle",
       "post_image_noise": {
@@ -357,19 +359,19 @@
       "scene_variant": "circle",
       "shape_style": {
         "label_color": [
-          151,
-          83,
-          36
+          155,
+          71,
+          21
         ],
         "label_stroke_color": [
-          253,
-          248,
-          249
+          254,
+          255,
+          250
         ],
         "line_color": [
-          151,
-          83,
-          36
+          155,
+          71,
+          21
         ]
       }
     },
@@ -377,12 +379,12 @@
       "entities": [
         {
           "attrs": {
-            "area_pi_coefficient": 361,
+            "area_pi_coefficient": 441,
             "center": [
-              330.0,
-              230.0
+              277.0,
+              487.0
             ],
-            "radius_units": 19,
+            "radius_units": 21,
             "reasoning_mode": "explicit",
             "shape_variant": "circle"
           },
@@ -393,10 +395,10 @@
       "frames": {
         "graph_unit": {
           "origin_pixel": [
-            270,
-            270
+            357,
+            357
           ],
-          "spacing_px": 68,
+          "spacing_px": 79,
           "x_positive": "right",
           "y_positive": "up"
         },
@@ -420,18 +422,18 @@
     },
     "witness_symbolic": {
       "annotation_ids": [
-        "LM"
+        "YZ"
       ],
       "annotation_labels": {
-        "r": "LM"
+        "r": "YZ"
       },
       "annotation_values": {
-        "LM": 19
+        "YZ": 21
       },
       "case_id": "circle_explicit",
       "formula_expression": "A = π * r^2",
       "measurement_ref_map": {
-        "LM": 19
+        "YZ": 21
       },
       "reasoning_mode": "explicit",
       "shape_variant": "circle",

@@ -1,25 +1,25 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 1539
+    "value": 450
   },
   "evidence_gt": {
     "type": "measurement_ref_map",
     "value": {
-      "CB": 11,
-      "XY": 38,
-      "YZ": 35
+      "AB": 20,
+      "BC": 13,
+      "FE": 19
     }
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_2d_value/images/composite_area/0001.png"
   },
-  "instance_seed": 439123843778287,
-  "prompt": "You are given an image showing a shaded composite geometric region with measurement annotations. The shaded figure is a rectangle with a triangular roof attached. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: XY, YZ, CB.\nAnswer: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"XY\":2,\"YZ\":3,\"CB\":4},\"answer\":8}",
+  "instance_seed": 383171081143572,
+  "prompt": "Look at the annotated image showing a shaded composite geometric region with measurement annotations. Based on the shown values, answer this question: The shaded figure is a rectangle with a triangular roof attached. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: AB, BC, FE.\nAnswer requirement: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"AB\":2,\"BC\":3,\"FE\":4},\"answer\":8}",
   "prompt_variants": {
-    "answer_and_evidence": "You are given an image showing a shaded composite geometric region with measurement annotations. The shaded figure is a rectangle with a triangular roof attached. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: XY, YZ, CB.\nAnswer: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"XY\":2,\"YZ\":3,\"CB\":4},\"answer\":8}",
-    "answer_only": "You are given an image showing a shaded composite geometric region with measurement annotations. The shaded figure is a rectangle with a triangular roof attached. What is the area of the shaded region in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"answer\":8}"
+    "answer_and_evidence": "Look at the annotated image showing a shaded composite geometric region with measurement annotations. Based on the shown values, answer this question: The shaded figure is a rectangle with a triangular roof attached. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: AB, BC, FE.\nAnswer requirement: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"AB\":2,\"BC\":3,\"FE\":4},\"answer\":8}",
+    "answer_only": "Look at the annotated image showing a shaded composite geometric region with measurement annotations. Based on the shown values, answer this question: The shaded figure is a rectangle with a triangular roof attached. What is the area of the shaded region in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"answer\":8}"
   },
   "task": "task_geometry_analytical_2d_value",
   "task_variant": "composite_area",
@@ -27,23 +27,23 @@
     "execution_trace": {
       "answer_max": 2500,
       "answer_min": 20,
-      "answer_scalar": 1539,
+      "answer_scalar": 450,
       "answer_type": "integer",
-      "answer_value": 1539,
+      "answer_value": 450,
       "evidence_map": {
-        "CB": 11,
-        "XY": 38,
-        "YZ": 35
+        "AB": 20,
+        "BC": 13,
+        "FE": 19
       },
       "evidence_role_tokens": {
-        "rect_height": "YZ",
-        "roof_height": "CB",
-        "width": "XY"
+        "rect_height": "BC",
+        "roof_height": "FE",
+        "width": "AB"
       },
       "evidence_role_values": {
-        "rect_height": 35,
-        "roof_height": 11,
-        "width": 38
+        "rect_height": 13,
+        "roof_height": 19,
+        "width": 20
       },
       "evidence_roles": [
         "width",
@@ -61,11 +61,11 @@
         "length": 0.0,
         "perimeter": 0.0
       },
-      "raw_answer_value": 1539,
+      "raw_answer_value": 450,
       "required_annotations": [
-        "XY",
-        "YZ",
-        "CB"
+        "AB",
+        "BC",
+        "FE"
       ],
       "scene_kind": "composite_region",
       "scene_variant": "composite_region",
@@ -97,46 +97,46 @@
     },
     "projected_evidence": {
       "annotation_labels": {
-        "rect_height": "YZ",
-        "roof_height": "CB",
-        "width": "XY"
+        "rect_height": "BC",
+        "roof_height": "FE",
+        "width": "AB"
       },
       "id_set": [
-        "XY",
-        "YZ",
-        "CB"
+        "AB",
+        "BC",
+        "FE"
       ],
       "measurement_ref_map": {
-        "CB": 11,
-        "XY": 38,
-        "YZ": 35
+        "AB": 20,
+        "BC": 13,
+        "FE": 19
       },
       "pixel_annotation_centers": {
-        "CB": [
-          330.23282347558376,
-          159.23260869565217
+        "AB": [
+          296.24759792107074,
+          536.62
         ],
-        "XY": [
-          301.1328234755838,
-          523.18
+        "BC": [
+          450.4267645877374,
+          436.211875
         ],
-        "YZ": [
-          491.36122927268525,
-          355.4126086956522
+        "FE": [
+          325.3475979210707,
+          234.591875
         ]
       },
       "pixel_point_set": [
         [
-          301.1328234755838,
-          523.18
+          296.24759792107074,
+          536.62
         ],
         [
-          491.36122927268525,
-          355.4126086956522
+          450.4267645877374,
+          436.211875
         ],
         [
-          330.23282347558376,
-          159.23260869565217
+          325.3475979210707,
+          234.591875
         ]
       ]
     },
@@ -175,13 +175,13 @@
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 0,
+        "answer_or_evidence_variant_index": 2,
         "prompt_bundle_id": "geometry_analytical_composite_area_v1",
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the area value as an integer",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: XY, YZ, CB",
-          "json_example": "{\"evidence\":{\"XY\":2,\"YZ\":3,\"CB\":4},\"answer\":8}",
+          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: AB, BC, FE",
+          "json_example": "{\"evidence\":{\"AB\":2,\"BC\":3,\"FE\":4},\"answer\":8}",
           "json_example_answer_only": "{\"answer\":8}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -189,9 +189,9 @@
           "question_text": "The shaded figure is a rectangle with a triangular roof attached. What is the area of the shaded region in square units?"
         },
         "task_family_key": "analytical_composite_area_scene",
-        "task_family_variant_index": 0,
+        "task_family_variant_index": 2,
         "task_key": "analytical_composite_area_query",
-        "task_variant_index": 0,
+        "task_variant_index": 4,
         "task_variant_key": null,
         "task_variant_template_index": null,
         "template_paths": [
@@ -208,13 +208,13 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 0,
+            "answer_or_evidence_variant_index": 2,
             "prompt_bundle_id": "geometry_analytical_composite_area_v1",
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the area value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: XY, YZ, CB",
-              "json_example": "{\"evidence\":{\"XY\":2,\"YZ\":3,\"CB\":4},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: AB, BC, FE",
+              "json_example": "{\"evidence\":{\"AB\":2,\"BC\":3,\"FE\":4},\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -222,9 +222,9 @@
               "question_text": "The shaded figure is a rectangle with a triangular roof attached. What is the area of the shaded region in square units?"
             },
             "task_family_key": "analytical_composite_area_scene",
-            "task_family_variant_index": 0,
+            "task_family_variant_index": 2,
             "task_key": "analytical_composite_area_query",
-            "task_variant_index": 0,
+            "task_variant_index": 4,
             "task_variant_key": null,
             "task_variant_template_index": null,
             "template_paths": [
@@ -236,18 +236,18 @@
               "task_family:analytical_composite_area_scene": 5
             }
           },
-          "prompt": "You are given an image showing a shaded composite geometric region with measurement annotations. The shaded figure is a rectangle with a triangular roof attached. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: XY, YZ, CB.\nAnswer: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"XY\":2,\"YZ\":3,\"CB\":4},\"answer\":8}"
+          "prompt": "Look at the annotated image showing a shaded composite geometric region with measurement annotations. Based on the shown values, answer this question: The shaded figure is a rectangle with a triangular roof attached. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: AB, BC, FE.\nAnswer requirement: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"AB\":2,\"BC\":3,\"FE\":4},\"answer\":8}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 2,
+            "answer_or_evidence_variant_index": 4,
             "prompt_bundle_id": "geometry_analytical_composite_area_v1",
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the area value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: XY, YZ, CB",
-              "json_example": "{\"evidence\":{\"XY\":2,\"YZ\":3,\"CB\":4},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: AB, BC, FE",
+              "json_example": "{\"evidence\":{\"AB\":2,\"BC\":3,\"FE\":4},\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -255,9 +255,9 @@
               "question_text": "The shaded figure is a rectangle with a triangular roof attached. What is the area of the shaded region in square units?"
             },
             "task_family_key": "analytical_composite_area_scene",
-            "task_family_variant_index": 0,
+            "task_family_variant_index": 2,
             "task_key": "analytical_composite_area_query",
-            "task_variant_index": 0,
+            "task_variant_index": 4,
             "task_variant_key": null,
             "task_variant_template_index": null,
             "template_paths": [
@@ -269,7 +269,7 @@
               "task_family:analytical_composite_area_scene": 5
             }
           },
-          "prompt": "You are given an image showing a shaded composite geometric region with measurement annotations. The shaded figure is a rectangle with a triangular roof attached. What is the area of the shaded region in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"answer\":8}"
+          "prompt": "Look at the annotated image showing a shaded composite geometric region with measurement annotations. Based on the shown values, answer this question: The shaded figure is a rectangle with a triangular roof attached. What is the area of the shaded region in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"answer\":8}"
         }
       },
       "task_variant": "composite_area",
@@ -277,31 +277,31 @@
     },
     "render_map": {
       "annotation_centers": {
-        "CB": [
-          330.23282347558376,
-          159.23260869565217
+        "AB": [
+          296.24759792107074,
+          536.62
         ],
-        "XY": [
-          301.1328234755838,
-          523.18
+        "BC": [
+          450.4267645877374,
+          436.211875
         ],
-        "YZ": [
-          491.36122927268525,
-          355.4126086956522
+        "FE": [
+          325.3475979210707,
+          234.591875
         ]
       },
       "annotation_labels": {
-        "rect_height": "YZ",
-        "roof_height": "CB",
-        "width": "XY"
+        "rect_height": "BC",
+        "roof_height": "FE",
+        "width": "AB"
       },
       "coord_space": "pixel",
       "instance_anchor": {
         "bbox": [
-          139.07108434514896,
-          112.32,
-          463.19456260601856,
-          504.68
+          170.23509792107072,
+          114.88,
+          422.2600979210707,
+          518.12
         ],
         "coord_space": "pixel"
       }
@@ -326,35 +326,37 @@
           "kind": "solid"
         }
       },
-      "canvas_size": 617,
+      "canvas_size": 633,
       "coord_space": "pixel",
       "graph_coordinate_frame": {
         "coord_space": "graph_unit",
-        "full_cells_x": 4,
-        "full_cells_y": 4,
+        "full_cells_x": 8,
+        "full_cells_y": 8,
+        "origin_fraction_x": 0.5,
+        "origin_fraction_y": 0.5,
         "origin_pixel": [
-          308,
-          308
+          316,
+          316
         ],
         "outer_margin_px": 16,
         "partial_edge_cells": true,
-        "spacing_px": 103,
-        "target_cells_x": 6,
-        "target_cells_y": 6,
+        "spacing_px": 70,
+        "target_cells_x": 9,
+        "target_cells_y": 9,
         "x_positive": "right",
         "y_positive": "up"
       },
       "graph_paper_grid": {
-        "full_cells_x": 4,
-        "full_cells_y": 4,
+        "full_cells_x": 8,
+        "full_cells_y": 8,
         "partial_edge_cells": true,
-        "spacing_px": 103,
-        "target_cells_x": 6,
-        "target_cells_y": 6
+        "spacing_px": 70,
+        "target_cells_x": 9,
+        "target_cells_y": 9
       },
       "legacy_scene_variant": "composite_region",
       "post_image_noise": {
-        "applied": true,
+        "applied": false,
         "apply_prob": 0.5,
         "edit_count_range": [
           1,
@@ -366,33 +368,26 @@
           "jpeg",
           "noise"
         ],
-        "edits": [
-          {
-            "params": {
-              "quality": 84.0
-            },
-            "type": "jpeg"
-          }
-        ],
+        "edits": [],
         "enabled": true
       },
       "query_variant": "composite_area",
       "scene_variant": "composite_region",
       "shape_style": {
         "label_color": [
-          63,
-          115,
-          85
+          51,
+          89,
+          69
         ],
         "label_stroke_color": [
-          251,
-          254,
-          251
+          249,
+          249,
+          252
         ],
         "line_color": [
-          63,
-          115,
-          85
+          51,
+          89,
+          69
         ]
       }
     },
@@ -403,20 +398,20 @@
             "fill_kind": "shaded",
             "vertices": [
               [
-                139.07108434514896,
-                504.68
+                170.23509792107072,
+                518.12
               ],
               [
-                463.19456260601856,
-                504.68
+                422.2600979210707,
+                518.12
               ],
               [
-                463.19456260601856,
-                206.14521739130436
+                422.2600979210707,
+                354.30375000000004
               ],
               [
-                139.07108434514896,
-                206.14521739130436
+                170.23509792107072,
+                354.30375000000004
               ]
             ]
           },
@@ -428,16 +423,16 @@
             "fill_kind": "shaded",
             "vertices": [
               [
-                139.07108434514896,
-                206.14521739130436
+                170.23509792107072,
+                354.30375000000004
               ],
               [
-                463.19456260601856,
-                206.14521739130436
+                422.2600979210707,
+                354.30375000000004
               ],
               [
-                301.1328234755838,
-                112.32
+                296.24759792107074,
+                114.88
               ]
             ]
           },
@@ -448,12 +443,12 @@
           "attrs": {
             "helper": true,
             "point_a": [
-              301.1328234755838,
-              206.14521739130436
+              296.24759792107074,
+              354.30375000000004
             ],
             "point_b": [
-              301.1328234755838,
-              112.32
+              296.24759792107074,
+              114.88
             ]
           },
           "entity_id": "roof_height",
@@ -463,10 +458,10 @@
       "frames": {
         "graph_unit": {
           "origin_pixel": [
-            308,
-            308
+            316,
+            316
           ],
-          "spacing_px": 103,
+          "spacing_px": 70,
           "x_positive": "right",
           "y_positive": "up"
         },
@@ -490,25 +485,25 @@
     },
     "witness_symbolic": {
       "annotation_ids": [
-        "XY",
-        "YZ",
-        "CB"
+        "AB",
+        "BC",
+        "FE"
       ],
       "annotation_labels": {
-        "rect_height": "YZ",
-        "roof_height": "CB",
-        "width": "XY"
+        "rect_height": "BC",
+        "roof_height": "FE",
+        "width": "AB"
       },
       "annotation_values": {
-        "CB": 11,
-        "XY": 38,
-        "YZ": 35
+        "AB": 20,
+        "BC": 13,
+        "FE": 19
       },
       "formula_expression": "width * rect_height + (width * roof_height) / 2",
       "measurement_ref_map": {
-        "CB": 11,
-        "XY": 38,
-        "YZ": 35
+        "AB": 20,
+        "BC": 13,
+        "FE": 19
       },
       "task_variant": "rectangle_triangle_union",
       "type": "annotation_measurement_map"

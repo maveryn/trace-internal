@@ -95,6 +95,7 @@ For current domain balance and next priorities, use:
 - `docs/project/TODO.md`
 
 ## Pair with
+- `skills/domain-audit/SKILL.md`
 - `skills/task-design/SKILL.md`
 - `skills/task-complexity/SKILL.md`
 - `skills/task-implementation/SKILL.md`

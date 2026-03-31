@@ -1,24 +1,24 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 525
+    "value": 1656
   },
   "evidence_gt": {
     "type": "measurement_ref_map",
     "value": {
-      "DE": 50,
-      "DF": 21
+      "WX": 36,
+      "XY": 46
     }
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_2d_value/images/area/0010.png"
   },
-  "instance_seed": 3542690385859038,
-  "prompt": "Use the image showing a geometric shape with measurement annotations. Task: The right triangle has an annotated base and height. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: DE, DF.\nAnswer rule: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"DE\":2,\"DF\":3},\"answer\":8}",
+  "instance_seed": 5170134756746148,
+  "prompt": "Use the image showing a geometric shape with measurement annotations. Read the marked measurements and answer: The rectangle has two annotated side lengths. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: WX, XY.\nAnswer rule: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"WX\":2,\"XY\":3},\"answer\":8}",
   "prompt_variants": {
-    "answer_and_evidence": "Use the image showing a geometric shape with measurement annotations. Task: The right triangle has an annotated base and height. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: DE, DF.\nAnswer rule: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"DE\":2,\"DF\":3},\"answer\":8}",
-    "answer_only": "Use the image showing a geometric shape with measurement annotations. Task: The right triangle has an annotated base and height. What is its area in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"answer\":8}"
+    "answer_and_evidence": "Use the image showing a geometric shape with measurement annotations. Read the marked measurements and answer: The rectangle has two annotated side lengths. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: WX, XY.\nAnswer rule: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"WX\":2,\"XY\":3},\"answer\":8}",
+    "answer_only": "Use the image showing a geometric shape with measurement annotations. Read the marked measurements and answer: The rectangle has two annotated side lengths. What is its area in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"answer\":8}"
   },
   "task": "task_geometry_analytical_2d_value",
   "task_variant": "area",
@@ -26,33 +26,33 @@
     "execution_trace": {
       "answer_max": 2500,
       "answer_min": 8,
-      "answer_scalar": 525,
+      "answer_scalar": 1656,
       "answer_type": "integer",
-      "answer_value": 525,
-      "case_id": "triangle_explicit",
+      "answer_value": 1656,
+      "case_id": "rectangle_explicit",
       "evidence_annotations": {
-        "b": "DE",
-        "h": "DF"
+        "h": "XY",
+        "w": "WX"
       },
       "evidence_ids": [
-        "DE",
-        "DF"
+        "WX",
+        "XY"
       ],
       "evidence_label_values": {
-        "b": 50,
-        "h": 21
+        "h": 46,
+        "w": 36
       },
       "evidence_map": {
-        "DE": 50,
-        "DF": 21
+        "WX": 36,
+        "XY": 46
       },
       "evidence_roles": [
-        "b",
+        "w",
         "h"
       ],
-      "formula_expression": "A = (b * h) / 2",
-      "legacy_query_variant": "triangle_explicit",
-      "legacy_scene_variant": "triangle",
+      "formula_expression": "A = w * h",
+      "legacy_query_variant": "rectangle_explicit",
+      "legacy_scene_variant": "rectangle",
       "legacy_task_id": "task_geometry_analytical_2d_area",
       "mode_probabilities": {
         "derived": 0.5,
@@ -67,10 +67,10 @@
       },
       "reasoning_mode": "explicit",
       "required_annotations": [
-        "DE",
-        "DF"
+        "WX",
+        "XY"
       ],
-      "scene_variant": "triangle",
+      "scene_variant": "rectangle",
       "scene_variant_probabilities": {
         "circle": 0.14285714285714285,
         "composite_region": 0.0,
@@ -85,12 +85,12 @@
         "circle": 0.0,
         "ellipse": 0.0,
         "parallelogram": 0.0,
-        "rectangle": 0.0,
+        "rectangle": 1.0,
         "rhombus": 0.0,
         "trapezoid": 0.0,
-        "triangle": 1.0
+        "triangle": 0.0
       },
-      "shape_variant": "triangle",
+      "shape_variant": "rectangle",
       "task_variant": "area",
       "task_variant_probabilities": {
         "area": 1.0,
@@ -101,35 +101,35 @@
     },
     "projected_evidence": {
       "annotation_labels": {
-        "b": "DE",
-        "h": "DF"
+        "h": "XY",
+        "w": "WX"
       },
       "id_set": [
-        "DE",
-        "DF"
+        "WX",
+        "XY"
       ],
       "measurement_ref_map": {
-        "DE": 50,
-        "DF": 21
+        "WX": 36,
+        "XY": 46
       },
       "pixel_annotation_centers": {
-        "DE": [
-          350.0,
-          132.0
+        "WX": [
+          352.0,
+          44.0
         ],
-        "DF": [
-          72.0,
-          265.0
+        "XY": [
+          560.0,
+          302.0
         ]
       },
       "pixel_point_set": [
         [
-          350.0,
-          132.0
+          352.0,
+          44.0
         ],
         [
-          72.0,
-          265.0
+          560.0,
+          302.0
         ]
       ]
     },
@@ -137,8 +137,8 @@
       "params": {
         "answer_max": 2500,
         "answer_min": 8,
-        "legacy_query_variant": "triangle_explicit",
-        "legacy_scene_variant": "triangle",
+        "legacy_query_variant": "rectangle_explicit",
+        "legacy_scene_variant": "rectangle",
         "legacy_task_id": "task_geometry_analytical_2d_area",
         "mode_probabilities": {
           "derived": 0.5,
@@ -152,7 +152,7 @@
           "perimeter": 0.0
         },
         "reasoning_mode": "explicit",
-        "scene_variant": "triangle",
+        "scene_variant": "rectangle",
         "scene_variant_probabilities": {
           "circle": 0.14285714285714285,
           "composite_region": 0.0,
@@ -167,12 +167,12 @@
           "circle": 0.0,
           "ellipse": 0.0,
           "parallelogram": 0.0,
-          "rectangle": 0.0,
+          "rectangle": 1.0,
           "rhombus": 0.0,
           "trapezoid": 0.0,
-          "triangle": 1.0
+          "triangle": 0.0
         },
-        "shape_variant": "triangle",
+        "shape_variant": "rectangle",
         "variant_probabilities": {
           "area": 1.0,
           "composite_area": 0.0,
@@ -187,18 +187,18 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the area value as an integer",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: DE, DF",
-          "json_example": "{\"evidence\":{\"DE\":2,\"DF\":3},\"answer\":8}",
+          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: WX, XY",
+          "json_example": "{\"evidence\":{\"WX\":2,\"XY\":3},\"answer\":8}",
           "json_example_answer_only": "{\"answer\":8}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
           "object_description": "a geometric shape with measurement annotations",
-          "question_text": "The right triangle has an annotated base and height. What is its area in square units?"
+          "question_text": "The rectangle has two annotated side lengths. What is its area in square units?"
         },
         "task_family_key": "analytical_single_shape",
         "task_family_variant_index": 3,
         "task_key": "analytical_area_query",
-        "task_variant_index": 2,
+        "task_variant_index": 3,
         "task_variant_key": null,
         "task_variant_template_index": null,
         "template_paths": [
@@ -220,18 +220,18 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the area value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: DE, DF",
-              "json_example": "{\"evidence\":{\"DE\":2,\"DF\":3},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: WX, XY",
+              "json_example": "{\"evidence\":{\"WX\":2,\"XY\":3},\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a geometric shape with measurement annotations",
-              "question_text": "The right triangle has an annotated base and height. What is its area in square units?"
+              "question_text": "The rectangle has two annotated side lengths. What is its area in square units?"
             },
             "task_family_key": "analytical_single_shape",
             "task_family_variant_index": 3,
             "task_key": "analytical_area_query",
-            "task_variant_index": 2,
+            "task_variant_index": 3,
             "task_variant_key": null,
             "task_variant_template_index": null,
             "template_paths": [
@@ -243,28 +243,28 @@
               "task_family:analytical_single_shape": 5
             }
           },
-          "prompt": "Use the image showing a geometric shape with measurement annotations. Task: The right triangle has an annotated base and height. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: DE, DF.\nAnswer rule: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"DE\":2,\"DF\":3},\"answer\":8}"
+          "prompt": "Use the image showing a geometric shape with measurement annotations. Read the marked measurements and answer: The rectangle has two annotated side lengths. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: WX, XY.\nAnswer rule: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"WX\":2,\"XY\":3},\"answer\":8}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 4,
+            "answer_or_evidence_variant_index": 2,
             "prompt_bundle_id": "geometry_analytical_area_v1",
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the area value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: DE, DF",
-              "json_example": "{\"evidence\":{\"DE\":2,\"DF\":3},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: WX, XY",
+              "json_example": "{\"evidence\":{\"WX\":2,\"XY\":3},\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a geometric shape with measurement annotations",
-              "question_text": "The right triangle has an annotated base and height. What is its area in square units?"
+              "question_text": "The rectangle has two annotated side lengths. What is its area in square units?"
             },
             "task_family_key": "analytical_single_shape",
             "task_family_variant_index": 3,
             "task_key": "analytical_area_query",
-            "task_variant_index": 2,
+            "task_variant_index": 3,
             "task_variant_key": null,
             "task_variant_template_index": null,
             "template_paths": [
@@ -276,7 +276,7 @@
               "task_family:analytical_single_shape": 5
             }
           },
-          "prompt": "Use the image showing a geometric shape with measurement annotations. Task: The right triangle has an annotated base and height. What is its area in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"answer\":8}"
+          "prompt": "Use the image showing a geometric shape with measurement annotations. Read the marked measurements and answer: The rectangle has two annotated side lengths. What is its area in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"answer\":8}"
         }
       },
       "task_variant": "area",
@@ -284,43 +284,47 @@
     },
     "render_map": {
       "annotation_centers": {
-        "DE": [
-          350.0,
-          132.0
+        "WX": [
+          352.0,
+          44.0
         ],
-        "DF": [
-          72.0,
-          265.0
+        "XY": [
+          560.0,
+          302.0
         ]
       },
       "annotation_labels": {
-        "b": "DE",
-        "h": "DF"
+        "h": "XY",
+        "w": "WX"
       },
       "coord_space": "pixel",
       "entity_id": "shape_1",
       "instance_anchor": {
         "coord_space": "pixel",
         "point": [
-          100.0,
-          160.0
+          172.0,
+          72.0
         ],
         "polyline": [
           [
-            100.0,
-            160.0
+            172.0,
+            72.0
           ],
           [
-            600.0,
-            160.0
+            532.0,
+            72.0
           ],
           [
-            100.0,
-            370.0
+            532.0,
+            532.0
           ],
           [
-            100.0,
-            160.0
+            172.0,
+            532.0
+          ],
+          [
+            172.0,
+            72.0
           ]
         ]
       }
@@ -345,21 +349,23 @@
           "kind": "solid"
         }
       },
-      "canvas_size": 680,
+      "canvas_size": 586,
       "coord_space": "pixel",
       "graph_coordinate_frame": {
         "coord_space": "graph_unit",
         "full_cells_x": 6,
         "full_cells_y": 6,
+        "origin_fraction_x": 0.5,
+        "origin_fraction_y": 0.5,
         "origin_pixel": [
-          340,
-          340
+          292,
+          292
         ],
         "outer_margin_px": 16,
         "partial_edge_cells": true,
-        "spacing_px": 97,
-        "target_cells_x": 7,
-        "target_cells_y": 7,
+        "spacing_px": 73,
+        "target_cells_x": 8,
+        "target_cells_y": 8,
         "x_positive": "right",
         "y_positive": "up"
       },
@@ -367,13 +373,13 @@
         "full_cells_x": 6,
         "full_cells_y": 6,
         "partial_edge_cells": true,
-        "spacing_px": 97,
-        "target_cells_x": 7,
-        "target_cells_y": 7
+        "spacing_px": 73,
+        "target_cells_x": 8,
+        "target_cells_y": 8
       },
-      "legacy_scene_variant": "triangle",
+      "legacy_scene_variant": "rectangle",
       "post_image_noise": {
-        "applied": true,
+        "applied": false,
         "apply_prob": 0.5,
         "edit_count_range": [
           1,
@@ -385,33 +391,26 @@
           "jpeg",
           "noise"
         ],
-        "edits": [
-          {
-            "params": {
-              "alpha": 0.01488
-            },
-            "type": "noise"
-          }
-        ],
+        "edits": [],
         "enabled": true
       },
       "query_variant": "area",
-      "scene_variant": "triangle",
+      "scene_variant": "rectangle",
       "shape_style": {
         "label_color": [
-          67,
-          102,
-          71
+          149,
+          89,
+          163
         ],
         "label_stroke_color": [
-          253,
-          249,
+          255,
+          255,
           248
         ],
         "line_color": [
-          67,
-          102,
-          71
+          149,
+          89,
+          163
         ]
       }
     },
@@ -419,37 +418,41 @@
       "entities": [
         {
           "attrs": {
-            "area_square_units": 525,
-            "base_units": 50,
-            "height_units": 21,
+            "area_square_units": 1656,
+            "height_units": 46,
             "reasoning_mode": "explicit",
-            "shape_variant": "triangle",
+            "shape_variant": "rectangle",
             "vertices": [
               [
-                100.0,
-                160.0
+                172.0,
+                72.0
               ],
               [
-                600.0,
-                160.0
+                532.0,
+                72.0
               ],
               [
-                100.0,
-                370.0
+                532.0,
+                532.0
+              ],
+              [
+                172.0,
+                532.0
               ]
-            ]
+            ],
+            "width_units": 36
           },
           "entity_id": "shape_1",
-          "entity_type": "triangle"
+          "entity_type": "rectangle"
         }
       ],
       "frames": {
         "graph_unit": {
           "origin_pixel": [
-            340,
-            340
+            292,
+            292
           ],
-          "spacing_px": 97,
+          "spacing_px": 73,
           "x_positive": "right",
           "y_positive": "up"
         },
@@ -463,35 +466,35 @@
         }
       },
       "relations": {
-        "legacy_query_variant": "triangle_explicit",
-        "legacy_scene_variant": "triangle",
+        "legacy_query_variant": "rectangle_explicit",
+        "legacy_scene_variant": "rectangle",
         "legacy_task_id": "task_geometry_analytical_2d_area",
         "query_variant": "area",
-        "scene_variant": "triangle"
+        "scene_variant": "rectangle"
       },
       "scene_kind": "geometry_2d_analytical_area"
     },
     "witness_symbolic": {
       "annotation_ids": [
-        "DE",
-        "DF"
+        "WX",
+        "XY"
       ],
       "annotation_labels": {
-        "b": "DE",
-        "h": "DF"
+        "h": "XY",
+        "w": "WX"
       },
       "annotation_values": {
-        "DE": 50,
-        "DF": 21
+        "WX": 36,
+        "XY": 46
       },
-      "case_id": "triangle_explicit",
-      "formula_expression": "A = (b * h) / 2",
+      "case_id": "rectangle_explicit",
+      "formula_expression": "A = w * h",
       "measurement_ref_map": {
-        "DE": 50,
-        "DF": 21
+        "WX": 36,
+        "XY": 46
       },
       "reasoning_mode": "explicit",
-      "shape_variant": "triangle",
+      "shape_variant": "rectangle",
       "type": "annotation_measurement_map"
     }
   },

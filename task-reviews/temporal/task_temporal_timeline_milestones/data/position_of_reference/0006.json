@@ -60,11 +60,11 @@
     "format": "png",
     "path": "temporal/task_temporal_timeline_milestones/images/position_of_reference/0006.png"
   },
-  "instance_seed": 6163487355569597,
-  "prompt": "The image shows one labeled milestone timeline for June 2030 with dated event cards and one highlighted reference event. Read the timeline carefully and answer the question. If the events are ordered from earliest to latest, what number is the highlighted reference event? Use 1 for the earliest event.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every event card from the earliest event through the highlighted reference event, including the reference event itself.\nAnswer rule: set \"answer\" to the 1-based integer position of the highlighted reference event.\nExample JSON:\n{\"evidence\":[[160,158,264,228],[286,158,390,228],[412,410,516,480]],\"answer\":3}",
+  "instance_seed": 943495464917050,
+  "prompt": "You are given an image with one labeled milestone timeline for November 2029 with dated event cards and one highlighted reference event. Determine the answer from the shown timeline. What is the position of the highlighted reference event from earliest to latest? Use 1 for the earliest event.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every event card from the earliest event through the highlighted reference event, including the reference event itself.\nAnswer field: set \"answer\" to the 1-based integer position of the highlighted reference event.\nExample JSON:\n{\"evidence\":[[160,158,264,228],[286,158,390,228],[412,410,516,480]],\"answer\":3}",
   "prompt_variants": {
-    "answer_and_evidence": "The image shows one labeled milestone timeline for June 2030 with dated event cards and one highlighted reference event. Read the timeline carefully and answer the question. If the events are ordered from earliest to latest, what number is the highlighted reference event? Use 1 for the earliest event.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every event card from the earliest event through the highlighted reference event, including the reference event itself.\nAnswer rule: set \"answer\" to the 1-based integer position of the highlighted reference event.\nExample JSON:\n{\"evidence\":[[160,158,264,228],[286,158,390,228],[412,410,516,480]],\"answer\":3}",
-    "answer_only": "The image shows one labeled milestone timeline for June 2030 with dated event cards and one highlighted reference event. Read the timeline carefully and answer the question. If the events are ordered from earliest to latest, what number is the highlighted reference event? Use 1 for the earliest event.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the 1-based integer position of the highlighted reference event.\nExample JSON:\n{\"answer\":3}"
+    "answer_and_evidence": "You are given an image with one labeled milestone timeline for November 2029 with dated event cards and one highlighted reference event. Determine the answer from the shown timeline. What is the position of the highlighted reference event from earliest to latest? Use 1 for the earliest event.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every event card from the earliest event through the highlighted reference event, including the reference event itself.\nAnswer field: set \"answer\" to the 1-based integer position of the highlighted reference event.\nExample JSON:\n{\"evidence\":[[160,158,264,228],[286,158,390,228],[412,410,516,480]],\"answer\":3}",
+    "answer_only": "You are given an image with one labeled milestone timeline for November 2029 with dated event cards and one highlighted reference event. Determine the answer from the shown timeline. What is the position of the highlighted reference event from earliest to latest? Use 1 for the earliest event.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the 1-based integer position of the highlighted reference event.\nExample JSON:\n{\"answer\":3}"
   },
   "task": "task_temporal_timeline_milestones",
   "task_variant": "position_of_reference",
@@ -98,8 +98,8 @@
       "events": [
         {
           "card_side": "above",
-          "date_text": "Jun 01",
-          "day_of_month": 1,
+          "date_text": "Nov 02",
+          "day_of_month": 2,
           "event_id": "event_a",
           "label": "A",
           "order_index": 0,
@@ -107,7 +107,7 @@
         },
         {
           "card_side": "below",
-          "date_text": "Jun 03",
+          "date_text": "Nov 03",
           "day_of_month": 3,
           "event_id": "event_b",
           "label": "B",
@@ -116,7 +116,7 @@
         },
         {
           "card_side": "above",
-          "date_text": "Jun 04",
+          "date_text": "Nov 04",
           "day_of_month": 4,
           "event_id": "event_c",
           "label": "C",
@@ -125,8 +125,8 @@
         },
         {
           "card_side": "above",
-          "date_text": "Jun 07",
-          "day_of_month": 7,
+          "date_text": "Nov 05",
+          "day_of_month": 5,
           "event_id": "event_d",
           "label": "D",
           "order_index": 3,
@@ -134,8 +134,8 @@
         },
         {
           "card_side": "below",
-          "date_text": "Jun 10",
-          "day_of_month": 10,
+          "date_text": "Nov 08",
+          "day_of_month": 8,
           "event_id": "event_e",
           "label": "E",
           "order_index": 4,
@@ -143,8 +143,8 @@
         },
         {
           "card_side": "above",
-          "date_text": "Jun 14",
-          "day_of_month": 14,
+          "date_text": "Nov 22",
+          "day_of_month": 22,
           "event_id": "event_f",
           "label": "F",
           "order_index": 5,
@@ -152,8 +152,8 @@
         },
         {
           "card_side": "above",
-          "date_text": "Jun 18",
-          "day_of_month": 18,
+          "date_text": "Nov 28",
+          "day_of_month": 28,
           "event_id": "event_g",
           "label": "G",
           "order_index": 6,
@@ -161,16 +161,16 @@
         },
         {
           "card_side": "below",
-          "date_text": "Jun 23",
-          "day_of_month": 23,
+          "date_text": "Nov 29",
+          "day_of_month": 29,
           "event_id": "event_h",
           "label": "H",
           "order_index": 7,
           "reference_kind": "primary"
         }
       ],
-      "month": 6,
-      "month_name": "June",
+      "month": 11,
+      "month_name": "November",
       "reference_event_ids": [
         "event_h"
       ],
@@ -192,7 +192,7 @@
         "between_reference_events_count": 0.0,
         "position_of_reference": 1.0
       },
-      "year": 2030
+      "year": 2029
     },
     "projected_evidence": {
       "bbox_set": [
@@ -285,8 +285,8 @@
           8,
           9
         ],
-        "month": 6,
-        "month_name": "June",
+        "month": 11,
+        "month_name": "November",
         "position_support": [
           1,
           2,
@@ -315,11 +315,11 @@
           "between_reference_events_count": 0.0,
           "position_of_reference": 1.0
         },
-        "year": 2030
+        "year": 2029
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 4,
+        "answer_or_evidence_variant_index": 3,
         "prompt_bundle_id": "temporal_timeline_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -329,14 +329,14 @@
           "json_example_answer_only": "{\"answer\":3}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "object_description": "one labeled milestone timeline for June 2030 with dated event cards and one highlighted reference event"
+          "object_description": "one labeled milestone timeline for November 2029 with dated event cards and one highlighted reference event"
         },
         "task_family_key": "milestone_timeline",
-        "task_family_variant_index": 0,
+        "task_family_variant_index": 2,
         "task_key": "timeline_milestone_query",
-        "task_variant_index": 2,
+        "task_variant_index": 4,
         "task_variant_key": "position_of_reference",
-        "task_variant_template_index": 2,
+        "task_variant_template_index": 0,
         "template_paths": [
           "temporal/timeline/temporal_timeline_v1.json"
         ],
@@ -352,7 +352,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 4,
+            "answer_or_evidence_variant_index": 3,
             "prompt_bundle_id": "temporal_timeline_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -362,14 +362,14 @@
               "json_example_answer_only": "{\"answer\":3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "one labeled milestone timeline for June 2030 with dated event cards and one highlighted reference event"
+              "object_description": "one labeled milestone timeline for November 2029 with dated event cards and one highlighted reference event"
             },
             "task_family_key": "milestone_timeline",
-            "task_family_variant_index": 0,
+            "task_family_variant_index": 2,
             "task_key": "timeline_milestone_query",
-            "task_variant_index": 2,
+            "task_variant_index": 4,
             "task_variant_key": "position_of_reference",
-            "task_variant_template_index": 2,
+            "task_variant_template_index": 0,
             "template_paths": [
               "temporal/timeline/temporal_timeline_v1.json"
             ],
@@ -380,12 +380,12 @@
               "task_variant:position_of_reference": 5
             }
           },
-          "prompt": "The image shows one labeled milestone timeline for June 2030 with dated event cards and one highlighted reference event. Read the timeline carefully and answer the question. If the events are ordered from earliest to latest, what number is the highlighted reference event? Use 1 for the earliest event.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every event card from the earliest event through the highlighted reference event, including the reference event itself.\nAnswer rule: set \"answer\" to the 1-based integer position of the highlighted reference event.\nExample JSON:\n{\"evidence\":[[160,158,264,228],[286,158,390,228],[412,410,516,480]],\"answer\":3}"
+          "prompt": "You are given an image with one labeled milestone timeline for November 2029 with dated event cards and one highlighted reference event. Determine the answer from the shown timeline. What is the position of the highlighted reference event from earliest to latest? Use 1 for the earliest event.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every event card from the earliest event through the highlighted reference event, including the reference event itself.\nAnswer field: set \"answer\" to the 1-based integer position of the highlighted reference event.\nExample JSON:\n{\"evidence\":[[160,158,264,228],[286,158,390,228],[412,410,516,480]],\"answer\":3}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 0,
+            "answer_or_evidence_variant_index": 2,
             "prompt_bundle_id": "temporal_timeline_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -395,14 +395,14 @@
               "json_example_answer_only": "{\"answer\":3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "one labeled milestone timeline for June 2030 with dated event cards and one highlighted reference event"
+              "object_description": "one labeled milestone timeline for November 2029 with dated event cards and one highlighted reference event"
             },
             "task_family_key": "milestone_timeline",
-            "task_family_variant_index": 0,
+            "task_family_variant_index": 2,
             "task_key": "timeline_milestone_query",
-            "task_variant_index": 2,
+            "task_variant_index": 4,
             "task_variant_key": "position_of_reference",
-            "task_variant_template_index": 2,
+            "task_variant_template_index": 0,
             "template_paths": [
               "temporal/timeline/temporal_timeline_v1.json"
             ],
@@ -413,7 +413,7 @@
               "task_variant:position_of_reference": 5
             }
           },
-          "prompt": "The image shows one labeled milestone timeline for June 2030 with dated event cards and one highlighted reference event. Read the timeline carefully and answer the question. If the events are ordered from earliest to latest, what number is the highlighted reference event? Use 1 for the earliest event.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the 1-based integer position of the highlighted reference event.\nExample JSON:\n{\"answer\":3}"
+          "prompt": "You are given an image with one labeled milestone timeline for November 2029 with dated event cards and one highlighted reference event. Determine the answer from the shown timeline. What is the position of the highlighted reference event from earliest to latest? Use 1 for the earliest event.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the 1-based integer position of the highlighted reference event.\nExample JSON:\n{\"answer\":3}"
         }
       },
       "task_variant": "position_of_reference",
@@ -502,7 +502,7 @@
         1086.0,
         666.0
       ],
-      "subtitle_text": "June 2030",
+      "subtitle_text": "November 2029",
       "title_text": "Milestone timeline"
     },
     "render_spec": {
@@ -587,7 +587,7 @@
           ]
         },
         "style_variant": "studio",
-        "subtitle_text": "June 2030",
+        "subtitle_text": "November 2029",
         "title_text": "Milestone timeline"
       }
     },
@@ -601,7 +601,7 @@
             374.16
           ],
           "card_side": "above",
-          "date_text": "Jun 01",
+          "date_text": "Nov 02",
           "event_id": "event_a",
           "label": "A",
           "marker_center_px": [
@@ -620,7 +620,7 @@
             564.16
           ],
           "card_side": "below",
-          "date_text": "Jun 03",
+          "date_text": "Nov 03",
           "event_id": "event_b",
           "label": "B",
           "marker_center_px": [
@@ -639,7 +639,7 @@
             374.16
           ],
           "card_side": "above",
-          "date_text": "Jun 04",
+          "date_text": "Nov 04",
           "event_id": "event_c",
           "label": "C",
           "marker_center_px": [
@@ -658,7 +658,7 @@
             374.16
           ],
           "card_side": "above",
-          "date_text": "Jun 07",
+          "date_text": "Nov 05",
           "event_id": "event_d",
           "label": "D",
           "marker_center_px": [
@@ -677,7 +677,7 @@
             564.16
           ],
           "card_side": "below",
-          "date_text": "Jun 10",
+          "date_text": "Nov 08",
           "event_id": "event_e",
           "label": "E",
           "marker_center_px": [
@@ -696,7 +696,7 @@
             374.16
           ],
           "card_side": "above",
-          "date_text": "Jun 14",
+          "date_text": "Nov 22",
           "event_id": "event_f",
           "label": "F",
           "marker_center_px": [
@@ -715,7 +715,7 @@
             374.16
           ],
           "card_side": "above",
-          "date_text": "Jun 18",
+          "date_text": "Nov 28",
           "event_id": "event_g",
           "label": "G",
           "marker_center_px": [
@@ -734,7 +734,7 @@
             564.16
           ],
           "card_side": "below",
-          "date_text": "Jun 23",
+          "date_text": "Nov 29",
           "event_id": "event_h",
           "label": "H",
           "marker_center_px": [
@@ -748,15 +748,15 @@
       ],
       "relations": {
         "accent_color_name": "brown",
-        "month": 6,
-        "month_name": "June",
+        "month": 11,
+        "month_name": "November",
         "reference_event_ids": [
           "event_h"
         ],
         "scene_variant": "roadmap",
         "style_variant": "studio",
         "task_variant": "position_of_reference",
-        "year": 2030
+        "year": 2029
       },
       "scene_kind": "temporal_milestone_timeline"
     },

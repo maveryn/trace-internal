@@ -67,6 +67,7 @@ Use this whenever the task lives under `domain=games`.
 - `trace/tasks/games/shared/complexity.py`
 
 ## Pair with
+- `skills/domain-audit/SKILL.md`
 - `skills/task-design/SKILL.md`
 - `skills/task-complexity/SKILL.md`
 - `skills/task-implementation/SKILL.md`

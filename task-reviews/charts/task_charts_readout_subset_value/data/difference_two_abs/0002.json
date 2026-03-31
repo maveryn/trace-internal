@@ -1,69 +1,70 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 4
+    "value": 7
   },
   "evidence_gt": {
     "type": "integer_list",
     "value": [
-      5,
-      9
+      14,
+      7
     ]
   },
   "image": {
     "format": "png",
     "path": "charts/task_charts_readout_subset_value/images/difference_two_abs/0002.png"
   },
-  "instance_seed": 5370788521647468,
-  "prompt": "The image shows a labeled scatter plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Determine the requested value from the two specified chart labels. Using labels U and T, what is the absolute difference of their chart values?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question.\nAnswer rule: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[14,9],\"answer\":5}",
+  "instance_seed": 4791637857564389,
+  "prompt": "You are given a labeled chart: a labeled dot plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Determine the requested value from the two specified chart labels. For labels S and X, what is the absolute difference between their values?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question.\nAnswer format: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[14,9],\"answer\":5}",
   "prompt_variants": {
-    "answer_and_evidence": "The image shows a labeled scatter plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Determine the requested value from the two specified chart labels. Using labels U and T, what is the absolute difference of their chart values?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question.\nAnswer rule: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[14,9],\"answer\":5}",
-    "answer_only": "The image shows a labeled scatter plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Determine the requested value from the two specified chart labels. Using labels U and T, what is the absolute difference of their chart values?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":5}"
+    "answer_and_evidence": "You are given a labeled chart: a labeled dot plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Determine the requested value from the two specified chart labels. For labels S and X, what is the absolute difference between their values?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question.\nAnswer format: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[14,9],\"answer\":5}",
+    "answer_only": "You are given a labeled chart: a labeled dot plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Determine the requested value from the two specified chart labels. For labels S and X, what is the absolute difference between their values?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":5}"
   },
   "task": "task_charts_readout_subset_value",
   "task_variant": "difference_two_abs",
   "trace_payload": {
     "execution_trace": {
-      "answer_value": 4,
+      "answer_value": 7,
       "labels": [
-        "T",
-        "R",
-        "U",
-        "P",
-        "W",
-        "F",
+        "Z",
+        "Q",
+        "D",
+        "S",
+        "A",
         "M",
-        "H",
-        "V"
+        "K",
+        "B",
+        "C",
+        "X"
       ],
       "mark_color_distance_space": "lab",
       "mark_color_min_distance": 40.0,
       "mark_color_sampling_policy": "random_rgb",
-      "mark_count": 9,
+      "mark_count": 10,
       "mark_count_range": [
         5,
         10
       ],
       "mark_fill_rgb": [
         197,
-        137,
-        8
+        183,
+        79
       ],
       "mark_outline_rgb": [
         108,
-        75,
-        4
+        101,
+        43
       ],
       "query_labels": [
-        "U",
-        "T"
+        "S",
+        "X"
       ],
       "query_values": [
-        5,
-        9
+        14,
+        7
       ],
       "question_format": "numeric_open",
-      "scene_variant": "scatter",
+      "scene_variant": "dot_plot",
       "scene_variant_probabilities": {
         "area": 0.1,
         "bar": 0.1,
@@ -76,92 +77,94 @@
         "radar": 0.1,
         "scatter": 0.1
       },
-      "target_answer": 4,
+      "target_answer": 7,
       "target_answer_range": [
         0,
         19
       ],
       "task_variant": "difference_two_abs",
       "task_variant_probabilities": {
-        "difference_two_abs": 0.2,
-        "max_two": 0.2,
-        "mean_two": 0.2,
-        "min_two": 0.2,
-        "sum_two": 0.2
+        "difference_two_abs": 1.0,
+        "max_two": 0.0,
+        "mean_two": 0.0,
+        "min_two": 0.0,
+        "sum_two": 0.0
       },
       "value_max": 20,
       "value_min": 1,
       "values": [
-        9,
         14,
-        5,
-        1,
-        13,
-        10,
+        6,
+        7,
+        14,
+        3,
+        9,
+        3,
         8,
-        10,
+        14,
         7
       ],
       "values_by_label": {
-        "F": 10,
-        "H": 10,
-        "M": 8,
-        "P": 1,
-        "R": 14,
-        "T": 9,
-        "U": 5,
-        "V": 7,
-        "W": 13
+        "A": 3,
+        "B": 8,
+        "C": 14,
+        "D": 7,
+        "K": 3,
+        "M": 9,
+        "Q": 6,
+        "S": 14,
+        "X": 7,
+        "Z": 14
       }
     },
     "projected_evidence": {
       "bbox_set": [
         [
-          259.715,
-          345.333,
-          275.715,
-          361.333
+          315.7,
+          66.933,
+          331.7,
+          82.933
         ],
         [
-          128.325,
-          221.6,
-          144.325,
-          237.6
+          712.9,
+          283.467,
+          728.9,
+          299.467
         ]
       ],
       "integer_list": [
-        5,
-        9
+        14,
+        7
       ],
       "pixel_point_map": {
-        "T": [
-          136.325,
-          229.6
+        "S": [
+          323.7,
+          74.933
         ],
-        "U": [
-          267.715,
-          353.333
+        "X": [
+          720.9,
+          291.467
         ]
       },
       "pixel_point_set": [
         [
-          267.715,
-          353.333
+          323.7,
+          74.933
         ],
         [
-          136.325,
-          229.6
+          720.9,
+          291.467
         ]
       ]
     },
     "query_spec": {
       "params": {
-        "mark_count": 9,
+        "mark_count": 10,
         "query_labels": [
-          "U",
-          "T"
+          "S",
+          "X"
         ],
-        "scene_variant": "scatter",
+        "scene_variant": "dot_plot",
         "scene_variant_probabilities": {
           "area": 0.1,
           "bar": 0.1,
@@ -174,23 +177,23 @@
           "radar": 0.1,
           "scatter": 0.1
         },
-        "target_answer": 4,
+        "target_answer": 7,
         "target_answer_range": [
           0,
           19
         ],
         "task_variant": "difference_two_abs",
         "task_variant_probabilities": {
-          "difference_two_abs": 0.2,
-          "max_two": 0.2,
-          "mean_two": 0.2,
-          "min_two": 0.2,
-          "sum_two": 0.2
+          "difference_two_abs": 1.0,
+          "max_two": 0.0,
+          "mean_two": 0.0,
+          "min_two": 0.0,
+          "sum_two": 0.0
         }
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 4,
+        "answer_or_evidence_variant_index": 1,
         "prompt_bundle_id": "charts_readout_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -200,16 +203,16 @@
           "json_example_answer_only": "{\"answer\":5}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "object_description": "a labeled scatter plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis",
-          "query_label_a": "U",
-          "query_label_b": "T"
+          "object_description": "a labeled dot plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis",
+          "query_label_a": "S",
+          "query_label_b": "X"
         },
         "task_family_key": "labeled_chart_readout",
-        "task_family_variant_index": 0,
+        "task_family_variant_index": 4,
         "task_key": "subset_value_query",
         "task_variant_index": 4,
         "task_variant_key": "difference_two_abs",
-        "task_variant_template_index": 3,
+        "task_variant_template_index": 0,
         "template_paths": [
           "charts/readout/charts_readout_v1.json"
         ],
@@ -225,7 +228,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 4,
+            "answer_or_evidence_variant_index": 1,
             "prompt_bundle_id": "charts_readout_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -235,16 +238,16 @@
               "json_example_answer_only": "{\"answer\":5}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a labeled scatter plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis",
-              "query_label_a": "U",
-              "query_label_b": "T"
+              "object_description": "a labeled dot plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis",
+              "query_label_a": "S",
+              "query_label_b": "X"
             },
             "task_family_key": "labeled_chart_readout",
-            "task_family_variant_index": 0,
+            "task_family_variant_index": 4,
             "task_key": "subset_value_query",
             "task_variant_index": 4,
             "task_variant_key": "difference_two_abs",
-            "task_variant_template_index": 3,
+            "task_variant_template_index": 0,
             "template_paths": [
               "charts/readout/charts_readout_v1.json"
             ],
@@ -255,12 +258,12 @@
               "task_variant:difference_two_abs": 5
             }
           },
-          "prompt": "The image shows a labeled scatter plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Determine the requested value from the two specified chart labels. Using labels U and T, what is the absolute difference of their chart values?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question.\nAnswer rule: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[14,9],\"answer\":5}"
+          "prompt": "You are given a labeled chart: a labeled dot plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Determine the requested value from the two specified chart labels. For labels S and X, what is the absolute difference between their values?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question.\nAnswer format: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[14,9],\"answer\":5}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 3,
+            "answer_or_evidence_variant_index": 4,
             "prompt_bundle_id": "charts_readout_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -270,16 +273,16 @@
               "json_example_answer_only": "{\"answer\":5}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a labeled scatter plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis",
-              "query_label_a": "U",
-              "query_label_b": "T"
+              "object_description": "a labeled dot plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis",
+              "query_label_a": "S",
+              "query_label_b": "X"
             },
             "task_family_key": "labeled_chart_readout",
-            "task_family_variant_index": 0,
+            "task_family_variant_index": 4,
             "task_key": "subset_value_query",
             "task_variant_index": 4,
             "task_variant_key": "difference_two_abs",
-            "task_variant_template_index": 3,
+            "task_variant_template_index": 0,
             "template_paths": [
               "charts/readout/charts_readout_v1.json"
             ],
@@ -290,7 +293,7 @@
               "task_variant:difference_two_abs": 5
             }
           },
-          "prompt": "The image shows a labeled scatter plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Determine the requested value from the two specified chart labels. Using labels U and T, what is the absolute difference of their chart values?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":5}"
+          "prompt": "You are given a labeled chart: a labeled dot plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Determine the requested value from the two specified chart labels. For labels S and X, what is the absolute difference between their values?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":5}"
         }
       },
       "task_variant": "difference_two_abs",
@@ -299,41 +302,45 @@
     "render_map": {
       "image_id": "img0",
       "label_centers_px": {
-        "F": [
-          506.212,
-          176.667
+        "A": [
+          389.9,
+          393.2
         ],
-        "H": [
-          644.876,
-          176.667
-        ],
-        "M": [
-          581.314,
+        "B": [
+          588.5,
           238.533
         ],
-        "P": [
-          350.25,
-          455.067
-        ],
-        "R": [
-          207.608,
+        "C": [
+          654.7,
           52.933
         ],
-        "T": [
-          136.325,
-          207.6
-        ],
-        "U": [
-          267.715,
-          331.333
-        ],
-        "V": [
-          705.737,
+        "D": [
+          257.5,
           269.467
         ],
-        "W": [
-          431.832,
-          83.867
+        "K": [
+          522.3,
+          393.2
+        ],
+        "M": [
+          456.1,
+          207.6
+        ],
+        "Q": [
+          191.3,
+          300.4
+        ],
+        "S": [
+          323.7,
+          52.933
+        ],
+        "X": [
+          720.9,
+          269.467
+        ],
+        "Z": [
+          125.1,
+          52.933
         ]
       },
       "plot_bbox_px": [
@@ -372,13 +379,13 @@
         "mark_color_min_distance": 40.0,
         "mark_fill_rgb": [
           197,
-          137,
-          8
+          183,
+          79
         ],
         "mark_outline_rgb": [
           108,
-          75,
-          4
+          101,
+          43
         ],
         "sampling_policy": "random_rgb"
       },
@@ -404,7 +411,7 @@
         "edits": [],
         "enabled": false
       },
-      "scene_variant": "scatter",
+      "scene_variant": "dot_plot",
       "text_style": {
         "label_font_size_px": 22,
         "label_stroke_width_px": 2,
@@ -434,335 +441,369 @@
       "entities": [
         {
           "attrs": {
-            "label": "T",
+            "label": "Z",
             "label_center_px": [
-              136.325,
-              207.6
-            ],
-            "mark_bbox_px": [
-              128.325,
-              221.6,
-              144.325,
-              237.6
-            ],
-            "mark_center_px": [
-              136.325,
-              229.6
-            ],
-            "mark_fill_rgb": [
-              197,
-              137,
-              8
-            ],
-            "mark_outline_rgb": [
-              108,
-              75,
-              4
-            ],
-            "scene_variant": "scatter",
-            "value": 9,
-            "x_rank": 0
-          },
-          "entity_id": "mark_T",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "label": "R",
-            "label_center_px": [
-              207.608,
+              125.1,
               52.933
             ],
             "mark_bbox_px": [
-              199.608,
+              117.1,
               66.933,
-              215.608,
+              133.1,
               82.933
             ],
             "mark_center_px": [
-              207.608,
+              125.1,
               74.933
             ],
             "mark_fill_rgb": [
               197,
-              137,
-              8
+              183,
+              79
             ],
             "mark_outline_rgb": [
               108,
-              75,
-              4
+              101,
+              43
             ],
-            "scene_variant": "scatter",
+            "scene_variant": "dot_plot",
             "value": 14,
+            "x_rank": 0
+          },
+          "entity_id": "mark_Z",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "Q",
+            "label_center_px": [
+              191.3,
+              300.4
+            ],
+            "mark_bbox_px": [
+              183.3,
+              314.4,
+              199.3,
+              330.4
+            ],
+            "mark_center_px": [
+              191.3,
+              322.4
+            ],
+            "mark_fill_rgb": [
+              197,
+              183,
+              79
+            ],
+            "mark_outline_rgb": [
+              108,
+              101,
+              43
+            ],
+            "scene_variant": "dot_plot",
+            "value": 6,
             "x_rank": 1
           },
-          "entity_id": "mark_R",
+          "entity_id": "mark_Q",
           "entity_type": "point"
         },
         {
           "attrs": {
-            "label": "U",
+            "label": "D",
             "label_center_px": [
-              267.715,
-              331.333
+              257.5,
+              269.467
             ],
             "mark_bbox_px": [
-              259.715,
-              345.333,
-              275.715,
-              361.333
+              249.5,
+              283.467,
+              265.5,
+              299.467
             ],
             "mark_center_px": [
-              267.715,
-              353.333
+              257.5,
+              291.467
             ],
             "mark_fill_rgb": [
               197,
-              137,
-              8
+              183,
+              79
             ],
             "mark_outline_rgb": [
               108,
-              75,
-              4
+              101,
+              43
             ],
-            "scene_variant": "scatter",
-            "value": 5,
+            "scene_variant": "dot_plot",
+            "value": 7,
             "x_rank": 2
           },
-          "entity_id": "mark_U",
+          "entity_id": "mark_D",
           "entity_type": "point"
         },
         {
           "attrs": {
-            "label": "P",
+            "label": "S",
             "label_center_px": [
-              350.25,
-              455.067
+              323.7,
+              52.933
             ],
             "mark_bbox_px": [
-              342.25,
-              469.067,
-              358.25,
-              485.067
+              315.7,
+              66.933,
+              331.7,
+              82.933
             ],
             "mark_center_px": [
-              350.25,
-              477.067
+              323.7,
+              74.933
             ],
             "mark_fill_rgb": [
               197,
-              137,
-              8
+              183,
+              79
             ],
             "mark_outline_rgb": [
               108,
-              75,
-              4
+              101,
+              43
             ],
-            "scene_variant": "scatter",
-            "value": 1,
+            "scene_variant": "dot_plot",
+            "value": 14,
             "x_rank": 3
           },
-          "entity_id": "mark_P",
+          "entity_id": "mark_S",
           "entity_type": "point"
         },
         {
           "attrs": {
-            "label": "W",
+            "label": "A",
             "label_center_px": [
-              431.832,
-              83.867
+              389.9,
+              393.2
             ],
             "mark_bbox_px": [
-              423.832,
-              97.867,
-              439.832,
-              113.867
+              381.9,
+              407.2,
+              397.9,
+              423.2
             ],
             "mark_center_px": [
-              431.832,
-              105.867
+              389.9,
+              415.2
             ],
             "mark_fill_rgb": [
               197,
-              137,
-              8
+              183,
+              79
             ],
             "mark_outline_rgb": [
               108,
-              75,
-              4
+              101,
+              43
             ],
-            "scene_variant": "scatter",
-            "value": 13,
+            "scene_variant": "dot_plot",
+            "value": 3,
             "x_rank": 4
           },
-          "entity_id": "mark_W",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "label": "F",
-            "label_center_px": [
-              506.212,
-              176.667
-            ],
-            "mark_bbox_px": [
-              498.212,
-              190.667,
-              514.212,
-              206.667
-            ],
-            "mark_center_px": [
-              506.212,
-              198.667
-            ],
-            "mark_fill_rgb": [
-              197,
-              137,
-              8
-            ],
-            "mark_outline_rgb": [
-              108,
-              75,
-              4
-            ],
-            "scene_variant": "scatter",
-            "value": 10,
-            "x_rank": 5
-          },
-          "entity_id": "mark_F",
+          "entity_id": "mark_A",
           "entity_type": "point"
         },
         {
           "attrs": {
             "label": "M",
             "label_center_px": [
-              581.314,
-              238.533
+              456.1,
+              207.6
             ],
             "mark_bbox_px": [
-              573.314,
-              252.533,
-              589.314,
-              268.533
+              448.1,
+              221.6,
+              464.1,
+              237.6
             ],
             "mark_center_px": [
-              581.314,
-              260.533
+              456.1,
+              229.6
             ],
             "mark_fill_rgb": [
               197,
-              137,
-              8
+              183,
+              79
             ],
             "mark_outline_rgb": [
               108,
-              75,
-              4
+              101,
+              43
             ],
-            "scene_variant": "scatter",
-            "value": 8,
-            "x_rank": 6
+            "scene_variant": "dot_plot",
+            "value": 9,
+            "x_rank": 5
           },
           "entity_id": "mark_M",
           "entity_type": "point"
         },
         {
           "attrs": {
-            "label": "H",
+            "label": "K",
             "label_center_px": [
-              644.876,
-              176.667
+              522.3,
+              393.2
             ],
             "mark_bbox_px": [
-              636.876,
-              190.667,
-              652.876,
-              206.667
+              514.3,
+              407.2,
+              530.3,
+              423.2
             ],
             "mark_center_px": [
-              644.876,
-              198.667
+              522.3,
+              415.2
             ],
             "mark_fill_rgb": [
               197,
-              137,
-              8
+              183,
+              79
             ],
             "mark_outline_rgb": [
               108,
-              75,
-              4
+              101,
+              43
             ],
-            "scene_variant": "scatter",
-            "value": 10,
-            "x_rank": 7
+            "scene_variant": "dot_plot",
+            "value": 3,
+            "x_rank": 6
           },
-          "entity_id": "mark_H",
+          "entity_id": "mark_K",
           "entity_type": "point"
         },
         {
           "attrs": {
-            "label": "V",
+            "label": "B",
             "label_center_px": [
-              705.737,
+              588.5,
+              238.533
+            ],
+            "mark_bbox_px": [
+              580.5,
+              252.533,
+              596.5,
+              268.533
+            ],
+            "mark_center_px": [
+              588.5,
+              260.533
+            ],
+            "mark_fill_rgb": [
+              197,
+              183,
+              79
+            ],
+            "mark_outline_rgb": [
+              108,
+              101,
+              43
+            ],
+            "scene_variant": "dot_plot",
+            "value": 8,
+            "x_rank": 7
+          },
+          "entity_id": "mark_B",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "C",
+            "label_center_px": [
+              654.7,
+              52.933
+            ],
+            "mark_bbox_px": [
+              646.7,
+              66.933,
+              662.7,
+              82.933
+            ],
+            "mark_center_px": [
+              654.7,
+              74.933
+            ],
+            "mark_fill_rgb": [
+              197,
+              183,
+              79
+            ],
+            "mark_outline_rgb": [
+              108,
+              101,
+              43
+            ],
+            "scene_variant": "dot_plot",
+            "value": 14,
+            "x_rank": 8
+          },
+          "entity_id": "mark_C",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "X",
+            "label_center_px": [
+              720.9,
               269.467
             ],
             "mark_bbox_px": [
-              697.737,
+              712.9,
               283.467,
-              713.737,
+              728.9,
               299.467
             ],
             "mark_center_px": [
-              705.737,
+              720.9,
               291.467
             ],
             "mark_fill_rgb": [
               197,
-              137,
-              8
+              183,
+              79
             ],
             "mark_outline_rgb": [
               108,
-              75,
-              4
+              101,
+              43
             ],
-            "scene_variant": "scatter",
+            "scene_variant": "dot_plot",
             "value": 7,
-            "x_rank": 8
+            "x_rank": 9
           },
-          "entity_id": "mark_V",
+          "entity_id": "mark_X",
           "entity_type": "point"
         }
       ],
       "relations": {
-        "answer_value": 4,
+        "answer_value": 7,
         "query_labels": [
-          "U",
-          "T"
+          "S",
+          "X"
         ],
         "query_values": [
-          5,
-          9
+          14,
+          7
         ],
-        "scene_variant": "scatter",
+        "scene_variant": "dot_plot",
         "task_variant": "difference_two_abs"
       },
-      "scene_kind": "chart_scatter_readout"
+      "scene_kind": "chart_dot_plot_readout"
     },
     "witness_symbolic": {
       "query_labels": [
-        "U",
-        "T"
+        "S",
+        "X"
       ],
       "type": "integer_list",
       "values": [
-        5,
-        9
+        14,
+        7
       ]
     }
   },

@@ -1,15 +1,15 @@
 {
   "answer_gt": {
     "type": "option_letter",
-    "value": "A"
+    "value": "C"
   },
   "evidence_gt": {
     "type": "bbox_set",
     "value": [
       [
-        118.0,
+        446.0,
         564.0,
-        262.0,
+        590.0,
         736.0
       ]
     ]
@@ -18,18 +18,18 @@
     "format": "png",
     "path": "puzzles/task_puzzles_logic_grid_completion_label/images/row_and_column_uniqueness/0017.png"
   },
-  "instance_seed": 3567896612619711,
-  "prompt": "Use the puzzle grid and labeled image options in the image: a shape-logic puzzle grid with one question-mark cell and six labeled image options underneath. Work from the puzzle grid and choose the correct option. Every row and column should use each symbol once. Which option belongs in the missing cell? Answer with the option letter.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct option panel.\nAnswer field: set \"answer\" to the exact option letter of the correct image option.\nExample JSON:\n{\"evidence\":[[504,650,648,822]],\"answer\":\"B\"}",
+  "instance_seed": 7203298039799330,
+  "prompt": "You are given a shape-logic puzzle grid with one question-mark cell and six labeled image options underneath. Determine which labeled option belongs in the question-mark cell. Which option correctly fills the question-mark cell if both the rows and columns must contain one of each symbol? Answer with the option letter.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct option panel.\nAnswer format: set \"answer\" to the exact option letter of the correct image option.\nExample JSON:\n{\"evidence\":[[504,650,648,822]],\"answer\":\"B\"}",
   "prompt_variants": {
-    "answer_and_evidence": "Use the puzzle grid and labeled image options in the image: a shape-logic puzzle grid with one question-mark cell and six labeled image options underneath. Work from the puzzle grid and choose the correct option. Every row and column should use each symbol once. Which option belongs in the missing cell? Answer with the option letter.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct option panel.\nAnswer field: set \"answer\" to the exact option letter of the correct image option.\nExample JSON:\n{\"evidence\":[[504,650,648,822]],\"answer\":\"B\"}",
-    "answer_only": "Use the puzzle grid and labeled image options in the image: a shape-logic puzzle grid with one question-mark cell and six labeled image options underneath. Work from the puzzle grid and choose the correct option. Every row and column should use each symbol once. Which option belongs in the missing cell? Answer with the option letter.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the exact option letter of the correct image option.\nExample JSON:\n{\"answer\":\"B\"}"
+    "answer_and_evidence": "You are given a shape-logic puzzle grid with one question-mark cell and six labeled image options underneath. Determine which labeled option belongs in the question-mark cell. Which option correctly fills the question-mark cell if both the rows and columns must contain one of each symbol? Answer with the option letter.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct option panel.\nAnswer format: set \"answer\" to the exact option letter of the correct image option.\nExample JSON:\n{\"evidence\":[[504,650,648,822]],\"answer\":\"B\"}",
+    "answer_only": "You are given a shape-logic puzzle grid with one question-mark cell and six labeled image options underneath. Determine which labeled option belongs in the question-mark cell. Which option correctly fills the question-mark cell if both the rows and columns must contain one of each symbol? Answer with the option letter.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the exact option letter of the correct image option.\nExample JSON:\n{\"answer\":\"B\"}"
   },
   "task": "task_puzzles_logic_grid_completion_label",
   "task_variant": "row_and_column_uniqueness",
   "trace_payload": {
     "execution_trace": {
-      "answer_object_type": "star",
-      "answer_option_label": "A",
+      "answer_object_type": "circle",
+      "answer_option_label": "C",
       "board_size": 3,
       "board_size_range": [
         3,
@@ -37,19 +37,19 @@
       ],
       "board_values": [
         [
+          "circle",
           "diamond",
-          "triangle",
           "star"
         ],
         [
           "star",
-          "diamond",
-          "triangle"
+          "circle",
+          "diamond"
         ],
         [
-          "triangle",
+          "diamond",
           "star",
-          "diamond"
+          "circle"
         ]
       ],
       "cell_count": 9,
@@ -57,22 +57,22 @@
         9,
         25
       ],
-      "correct_option_index": 0,
-      "correct_option_panel_id": "option_A",
+      "correct_option_index": 2,
+      "correct_option_panel_id": "option_C",
       "grid_rows": [
         [
           {
             "cell_id": "cell_0_0",
             "col_index": 0,
             "is_unknown": false,
-            "object_type": "diamond",
+            "object_type": "circle",
             "row_index": 0
           },
           {
             "cell_id": "cell_0_1",
             "col_index": 1,
             "is_unknown": false,
-            "object_type": "triangle",
+            "object_type": "diamond",
             "row_index": 0
           },
           {
@@ -95,14 +95,14 @@
             "cell_id": "cell_1_1",
             "col_index": 1,
             "is_unknown": false,
-            "object_type": "diamond",
+            "object_type": "circle",
             "row_index": 1
           },
           {
             "cell_id": "cell_1_2",
             "col_index": 2,
             "is_unknown": false,
-            "object_type": "triangle",
+            "object_type": "diamond",
             "row_index": 1
           }
         ],
@@ -111,21 +111,21 @@
             "cell_id": "cell_2_0",
             "col_index": 0,
             "is_unknown": false,
-            "object_type": "triangle",
+            "object_type": "diamond",
             "row_index": 2
           },
           {
             "cell_id": "cell_2_1",
             "col_index": 1,
-            "is_unknown": true,
-            "object_type": null,
+            "is_unknown": false,
+            "object_type": "star",
             "row_index": 2
           },
           {
             "cell_id": "cell_2_2",
             "col_index": 2,
-            "is_unknown": false,
-            "object_type": "diamond",
+            "is_unknown": true,
+            "object_type": null,
             "row_index": 2
           }
         ]
@@ -133,7 +133,7 @@
       "option_count": 6,
       "option_specs": [
         {
-          "is_correct": true,
+          "is_correct": false,
           "object_type": "star",
           "option_index": 0,
           "option_label": "A",
@@ -141,42 +141,42 @@
         },
         {
           "is_correct": false,
-          "object_type": "triangle",
+          "object_type": "diamond",
           "option_index": 1,
           "option_label": "B",
           "option_panel_id": "option_B"
         },
         {
-          "is_correct": false,
-          "object_type": "hexagon",
+          "is_correct": true,
+          "object_type": "circle",
           "option_index": 2,
           "option_label": "C",
           "option_panel_id": "option_C"
         },
         {
           "is_correct": false,
-          "object_type": "square",
+          "object_type": "hexagon",
           "option_index": 3,
           "option_label": "D",
           "option_panel_id": "option_D"
         },
         {
           "is_correct": false,
-          "object_type": "circle",
+          "object_type": "triangle",
           "option_index": 4,
           "option_label": "E",
           "option_panel_id": "option_E"
         },
         {
           "is_correct": false,
-          "object_type": "diamond",
+          "object_type": "square",
           "option_index": 5,
           "option_label": "F",
           "option_panel_id": "option_F"
         }
       ],
-      "query_cell_id": "cell_2_1",
-      "query_col_index": 1,
+      "query_cell_id": "cell_2_2",
+      "query_col_index": 2,
       "query_row_index": 2,
       "question_format": "logic_grid_mcq",
       "scene_variant": "logic_strip",
@@ -186,32 +186,32 @@
         "logic_strip": 0.3333333333333333
       },
       "solver_trace": {
-        "column_missing_symbol": "star",
-        "correct_option_index": 0,
-        "correct_option_label": "A",
+        "column_missing_symbol": "circle",
+        "correct_option_index": 2,
+        "correct_option_label": "C",
         "option_object_types": [
           "star",
-          "triangle",
-          "hexagon",
-          "square",
+          "diamond",
           "circle",
-          "diamond"
+          "hexagon",
+          "triangle",
+          "square"
         ],
-        "row_missing_symbol": "star",
+        "row_missing_symbol": "circle",
         "rule_type": "row_and_column_uniqueness",
         "symbol_pool": [
-          "triangle",
-          "star",
-          "diamond"
+          "diamond",
+          "circle",
+          "star"
         ]
       },
       "supporting_option_panel_ids": [
-        "option_A"
+        "option_C"
       ],
       "symbol_pool": [
-        "triangle",
-        "star",
-        "diamond"
+        "diamond",
+        "circle",
+        "star"
       ],
       "task_variant": "row_and_column_uniqueness",
       "task_variant_probabilities": {
@@ -223,9 +223,9 @@
     "projected_evidence": {
       "bbox_set": [
         [
-          118.0,
+          446.0,
           564.0,
-          262.0,
+          590.0,
           736.0
         ]
       ]
@@ -258,7 +258,7 @@
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 3,
+        "answer_or_evidence_variant_index": 1,
         "prompt_bundle_id": "puzzles_logic_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -271,11 +271,11 @@
           "object_description": "a shape-logic puzzle grid with one question-mark cell and six labeled image options underneath"
         },
         "task_family_key": "logic_option_completion_puzzle",
-        "task_family_variant_index": 4,
+        "task_family_variant_index": 2,
         "task_key": "grid_completion_query",
-        "task_variant_index": 4,
+        "task_variant_index": 1,
         "task_variant_key": "row_and_column_uniqueness",
-        "task_variant_template_index": 2,
+        "task_variant_template_index": 4,
         "template_paths": [
           "puzzles/logic/puzzles_logic_v1.json"
         ],
@@ -291,7 +291,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 3,
+            "answer_or_evidence_variant_index": 1,
             "prompt_bundle_id": "puzzles_logic_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -304,11 +304,11 @@
               "object_description": "a shape-logic puzzle grid with one question-mark cell and six labeled image options underneath"
             },
             "task_family_key": "logic_option_completion_puzzle",
-            "task_family_variant_index": 4,
+            "task_family_variant_index": 2,
             "task_key": "grid_completion_query",
-            "task_variant_index": 4,
+            "task_variant_index": 1,
             "task_variant_key": "row_and_column_uniqueness",
-            "task_variant_template_index": 2,
+            "task_variant_template_index": 4,
             "template_paths": [
               "puzzles/logic/puzzles_logic_v1.json"
             ],
@@ -319,12 +319,12 @@
               "task_variant:row_and_column_uniqueness": 5
             }
           },
-          "prompt": "Use the puzzle grid and labeled image options in the image: a shape-logic puzzle grid with one question-mark cell and six labeled image options underneath. Work from the puzzle grid and choose the correct option. Every row and column should use each symbol once. Which option belongs in the missing cell? Answer with the option letter.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct option panel.\nAnswer field: set \"answer\" to the exact option letter of the correct image option.\nExample JSON:\n{\"evidence\":[[504,650,648,822]],\"answer\":\"B\"}"
+          "prompt": "You are given a shape-logic puzzle grid with one question-mark cell and six labeled image options underneath. Determine which labeled option belongs in the question-mark cell. Which option correctly fills the question-mark cell if both the rows and columns must contain one of each symbol? Answer with the option letter.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct option panel.\nAnswer format: set \"answer\" to the exact option letter of the correct image option.\nExample JSON:\n{\"evidence\":[[504,650,648,822]],\"answer\":\"B\"}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 4,
+            "answer_or_evidence_variant_index": 0,
             "prompt_bundle_id": "puzzles_logic_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -337,11 +337,11 @@
               "object_description": "a shape-logic puzzle grid with one question-mark cell and six labeled image options underneath"
             },
             "task_family_key": "logic_option_completion_puzzle",
-            "task_family_variant_index": 4,
+            "task_family_variant_index": 2,
             "task_key": "grid_completion_query",
-            "task_variant_index": 4,
+            "task_variant_index": 1,
             "task_variant_key": "row_and_column_uniqueness",
-            "task_variant_template_index": 2,
+            "task_variant_template_index": 4,
             "template_paths": [
               "puzzles/logic/puzzles_logic_v1.json"
             ],
@@ -352,7 +352,7 @@
               "task_variant:row_and_column_uniqueness": 5
             }
           },
-          "prompt": "Use the puzzle grid and labeled image options in the image: a shape-logic puzzle grid with one question-mark cell and six labeled image options underneath. Work from the puzzle grid and choose the correct option. Every row and column should use each symbol once. Which option belongs in the missing cell? Answer with the option letter.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the exact option letter of the correct image option.\nExample JSON:\n{\"answer\":\"B\"}"
+          "prompt": "You are given a shape-logic puzzle grid with one question-mark cell and six labeled image options underneath. Determine which labeled option belongs in the question-mark cell. Which option correctly fills the question-mark cell if both the rows and columns must contain one of each symbol? Answer with the option letter.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the exact option letter of the correct image option.\nExample JSON:\n{\"answer\":\"B\"}"
         }
       },
       "task_variant": "row_and_column_uniqueness",
@@ -514,7 +514,7 @@
           "attrs": {
             "col_index": 0,
             "is_unknown": false,
-            "object_type": "diamond",
+            "object_type": "circle",
             "row_index": 0
           },
           "bbox_px": [
@@ -530,7 +530,7 @@
           "attrs": {
             "col_index": 1,
             "is_unknown": false,
-            "object_type": "triangle",
+            "object_type": "diamond",
             "row_index": 0
           },
           "bbox_px": [
@@ -578,7 +578,7 @@
           "attrs": {
             "col_index": 1,
             "is_unknown": false,
-            "object_type": "diamond",
+            "object_type": "circle",
             "row_index": 1
           },
           "bbox_px": [
@@ -594,7 +594,7 @@
           "attrs": {
             "col_index": 2,
             "is_unknown": false,
-            "object_type": "triangle",
+            "object_type": "diamond",
             "row_index": 1
           },
           "bbox_px": [
@@ -610,7 +610,7 @@
           "attrs": {
             "col_index": 0,
             "is_unknown": false,
-            "object_type": "triangle",
+            "object_type": "diamond",
             "row_index": 2
           },
           "bbox_px": [
@@ -625,8 +625,8 @@
         {
           "attrs": {
             "col_index": 1,
-            "is_unknown": true,
-            "object_type": null,
+            "is_unknown": false,
+            "object_type": "star",
             "row_index": 2
           },
           "bbox_px": [
@@ -641,8 +641,8 @@
         {
           "attrs": {
             "col_index": 2,
-            "is_unknown": false,
-            "object_type": "diamond",
+            "is_unknown": true,
+            "object_type": null,
             "row_index": 2
           },
           "bbox_px": [
@@ -656,7 +656,7 @@
         },
         {
           "attrs": {
-            "is_correct": true,
+            "is_correct": false,
             "object_type": "star",
             "option_index": 0,
             "option_label": "A"
@@ -702,7 +702,7 @@
         {
           "attrs": {
             "is_correct": false,
-            "object_type": "triangle",
+            "object_type": "diamond",
             "option_index": 1,
             "option_label": "B"
           },
@@ -731,7 +731,7 @@
         },
         {
           "attrs": {
-            "object_type": "triangle",
+            "object_type": "diamond",
             "option_index": 1,
             "option_label": "B"
           },
@@ -746,8 +746,8 @@
         },
         {
           "attrs": {
-            "is_correct": false,
-            "object_type": "hexagon",
+            "is_correct": true,
+            "object_type": "circle",
             "option_index": 2,
             "option_label": "C"
           },
@@ -776,7 +776,7 @@
         },
         {
           "attrs": {
-            "object_type": "hexagon",
+            "object_type": "circle",
             "option_index": 2,
             "option_label": "C"
           },
@@ -792,7 +792,7 @@
         {
           "attrs": {
             "is_correct": false,
-            "object_type": "square",
+            "object_type": "hexagon",
             "option_index": 3,
             "option_label": "D"
           },
@@ -821,7 +821,7 @@
         },
         {
           "attrs": {
-            "object_type": "square",
+            "object_type": "hexagon",
             "option_index": 3,
             "option_label": "D"
           },
@@ -837,7 +837,7 @@
         {
           "attrs": {
             "is_correct": false,
-            "object_type": "circle",
+            "object_type": "triangle",
             "option_index": 4,
             "option_label": "E"
           },
@@ -866,7 +866,7 @@
         },
         {
           "attrs": {
-            "object_type": "circle",
+            "object_type": "triangle",
             "option_index": 4,
             "option_label": "E"
           },
@@ -882,7 +882,7 @@
         {
           "attrs": {
             "is_correct": false,
-            "object_type": "diamond",
+            "object_type": "square",
             "option_index": 5,
             "option_label": "F"
           },
@@ -911,7 +911,7 @@
         },
         {
           "attrs": {
-            "object_type": "diamond",
+            "object_type": "square",
             "option_index": 5,
             "option_label": "F"
           },
@@ -926,9 +926,9 @@
         }
       ],
       "relations": {
-        "answer_option_label": "A",
-        "correct_option_panel_id": "option_A",
-        "query_cell_id": "cell_2_1",
+        "answer_option_label": "C",
+        "correct_option_panel_id": "option_C",
+        "query_cell_id": "cell_2_2",
         "scene_variant": "logic_strip",
         "task_variant": "row_and_column_uniqueness"
       },
@@ -938,9 +938,9 @@
       "type": "bbox_set",
       "value": [
         [
-          118.0,
+          446.0,
           564.0,
-          262.0,
+          590.0,
           736.0
         ]
       ]

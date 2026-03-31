@@ -1,15 +1,15 @@
 {
   "answer_gt": {
     "type": "option_letter",
-    "value": "E"
+    "value": "C"
   },
   "evidence_gt": {
     "type": "bbox_set",
     "value": [
       [
-        741.92,
+        474.08,
         388.0,
-        859.84,
+        592.0,
         612.96
       ]
     ]
@@ -18,95 +18,86 @@
     "format": "png",
     "path": "puzzles/task_puzzles_spatial_fold_result_label/images/vertical_fold_result/0021.png"
   },
-  "instance_seed": 1310297216179282,
-  "prompt": "Look at the paper-fold puzzle in the image: a paper-fold puzzle with one marked sheet above six labeled folded-result options. Fold the paper along the dashed line in the direction of the outside arrows, then choose the correct option. Which option gives the correct folded-paper result? Answer with the option letter.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct folded-result option image.\nAnswer: set \"answer\" to the exact option letter of the correct image option.\nExample JSON:\n{\"evidence\":[[206,388,324,613]],\"answer\":\"A\"}",
+  "instance_seed": 2337332488484034,
+  "prompt": "Look at the paper-fold puzzle in the image: a card-style paper-fold puzzle with one marked sheet above six labeled folded-result options. Use the fold line and outside arrows to determine which labeled option shows the folded result. Which option gives the correct folded-paper result? Answer with the option letter.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct folded-result option image.\nAnswer: set \"answer\" to the exact option letter of the correct image option.\nExample JSON:\n{\"evidence\":[[206,388,324,613]],\"answer\":\"A\"}",
   "prompt_variants": {
-    "answer_and_evidence": "Look at the paper-fold puzzle in the image: a paper-fold puzzle with one marked sheet above six labeled folded-result options. Fold the paper along the dashed line in the direction of the outside arrows, then choose the correct option. Which option gives the correct folded-paper result? Answer with the option letter.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct folded-result option image.\nAnswer: set \"answer\" to the exact option letter of the correct image option.\nExample JSON:\n{\"evidence\":[[206,388,324,613]],\"answer\":\"A\"}",
-    "answer_only": "Look at the paper-fold puzzle in the image: a paper-fold puzzle with one marked sheet above six labeled folded-result options. Fold the paper along the dashed line in the direction of the outside arrows, then choose the correct option. Which option gives the correct folded-paper result? Answer with the option letter.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the exact option letter of the correct image option.\nExample JSON:\n{\"answer\":\"A\"}"
+    "answer_and_evidence": "Look at the paper-fold puzzle in the image: a card-style paper-fold puzzle with one marked sheet above six labeled folded-result options. Use the fold line and outside arrows to determine which labeled option shows the folded result. Which option gives the correct folded-paper result? Answer with the option letter.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct folded-result option image.\nAnswer: set \"answer\" to the exact option letter of the correct image option.\nExample JSON:\n{\"evidence\":[[206,388,324,613]],\"answer\":\"A\"}",
+    "answer_only": "Look at the paper-fold puzzle in the image: a card-style paper-fold puzzle with one marked sheet above six labeled folded-result options. Use the fold line and outside arrows to determine which labeled option shows the folded result. Which option gives the correct folded-paper result? Answer with the option letter.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the exact option letter of the correct image option.\nExample JSON:\n{\"answer\":\"A\"}"
   },
   "task": "task_puzzles_spatial_fold_result_label",
   "task_variant": "vertical_fold_result",
   "trace_payload": {
     "answer_gt": {
       "type": "option_letter",
-      "value": "E"
+      "value": "C"
     },
     "complexity": {
       "complexity_components": {
-        "reasoning_load": 0.43333333333333335,
-        "scene_variant_load": 0.14,
-        "visual_scan": 1.0
+        "reasoning_load": 0.5066666666666666,
+        "scene_variant_load": 0.2,
+        "visual_scan": 0.5
       },
-      "complexity_score": 0.5866666666666667
+      "complexity_score": 0.4273333333333333
     },
     "evidence_gt": {
       "type": "bbox_set",
       "value": [
         [
-          741.92,
+          474.08,
           388.0,
-          859.84,
+          592.0,
           612.96
         ]
       ]
     },
     "execution_trace": {
-      "answer_option_label": "E",
-      "correct_option_choice_id": "option_choice_E",
-      "correct_option_index": 4,
+      "answer_option_label": "C",
+      "correct_option_choice_id": "option_choice_C",
+      "correct_option_index": 2,
       "fold_axis": "vertical",
-      "fold_direction": "left_to_right",
-      "folded_mark_count": 2,
+      "fold_direction": "right_to_left",
+      "folded_mark_count": 3,
       "folded_result_mark_specs": [
         {
           "cell": [
-            2,
+            1,
             0
           ],
-          "mark_id": "mark_5",
-          "object_type": "star",
+          "mark_id": "mark_1",
+          "object_type": "square",
           "source_side": "kept"
         },
         {
           "cell": [
-            2,
-            2
+            1,
+            1
           ],
-          "mark_id": "mark_3",
+          "mark_id": "mark_4",
+          "object_type": "star",
+          "source_side": "folded"
+        },
+        {
+          "cell": [
+            2,
+            1
+          ],
+          "mark_id": "mark_2",
           "object_type": "hexagon",
           "source_side": "folded"
         },
         {
           "cell": [
-            2,
+            0,
             3
           ],
-          "mark_id": "mark_1",
-          "object_type": "diamond",
-          "source_side": "kept"
-        },
-        {
-          "cell": [
-            2,
-            4
-          ],
-          "mark_id": "mark_2",
+          "mark_id": "mark_3",
           "object_type": "circle",
           "source_side": "folded"
-        },
-        {
-          "cell": [
-            1,
-            5
-          ],
-          "mark_id": "mark_4",
-          "object_type": "square",
-          "source_side": "kept"
         }
       ],
       "grid_size": 6,
-      "kept_mark_count": 3,
-      "mark_count": 5,
+      "kept_mark_count": 1,
+      "mark_count": 4,
       "mark_count_range": [
         3,
         5
@@ -118,43 +109,35 @@
           "mark_specs": [
             {
               "cell": [
-                0,
+                1,
                 0
               ],
               "mark_id": "option_choice_A_mark_1",
-              "object_type": "star"
+              "object_type": "square"
             },
             {
               "cell": [
                 0,
-                2
+                1
               ],
               "mark_id": "option_choice_A_mark_2",
               "object_type": "hexagon"
             },
             {
               "cell": [
-                0,
-                3
+                1,
+                1
               ],
               "mark_id": "option_choice_A_mark_3",
-              "object_type": "diamond"
+              "object_type": "star"
             },
             {
               "cell": [
-                0,
-                4
+                2,
+                3
               ],
               "mark_id": "option_choice_A_mark_4",
               "object_type": "circle"
-            },
-            {
-              "cell": [
-                1,
-                5
-              ],
-              "mark_id": "option_choice_A_mark_5",
-              "object_type": "square"
             }
           ],
           "option_choice_id": "option_choice_A",
@@ -165,90 +148,74 @@
           "mark_specs": [
             {
               "cell": [
-                1,
+                2,
                 0
               ],
               "mark_id": "option_choice_B_mark_1",
+              "object_type": "square"
+            },
+            {
+              "cell": [
+                1,
+                1
+              ],
+              "mark_id": "option_choice_B_mark_2",
               "object_type": "star"
             },
             {
               "cell": [
                 2,
-                2
+                1
               ],
-              "mark_id": "option_choice_B_mark_2",
+              "mark_id": "option_choice_B_mark_3",
               "object_type": "hexagon"
             },
             {
               "cell": [
-                2,
+                0,
                 3
-              ],
-              "mark_id": "option_choice_B_mark_3",
-              "object_type": "diamond"
-            },
-            {
-              "cell": [
-                2,
-                4
               ],
               "mark_id": "option_choice_B_mark_4",
               "object_type": "circle"
-            },
-            {
-              "cell": [
-                1,
-                5
-              ],
-              "mark_id": "option_choice_B_mark_5",
-              "object_type": "square"
             }
           ],
           "option_choice_id": "option_choice_B",
           "option_label": "B"
         },
         {
-          "is_correct": false,
+          "is_correct": true,
           "mark_specs": [
             {
               "cell": [
-                2,
-                1
+                1,
+                0
               ],
               "mark_id": "option_choice_C_mark_1",
+              "object_type": "square"
+            },
+            {
+              "cell": [
+                1,
+                1
+              ],
+              "mark_id": "option_choice_C_mark_2",
               "object_type": "star"
             },
             {
               "cell": [
                 2,
-                2
+                1
               ],
-              "mark_id": "option_choice_C_mark_2",
+              "mark_id": "option_choice_C_mark_3",
               "object_type": "hexagon"
             },
             {
               "cell": [
-                2,
+                0,
                 3
-              ],
-              "mark_id": "option_choice_C_mark_3",
-              "object_type": "diamond"
-            },
-            {
-              "cell": [
-                2,
-                4
               ],
               "mark_id": "option_choice_C_mark_4",
               "object_type": "circle"
-            },
-            {
-              "cell": [
-                1,
-                5
-              ],
-              "mark_id": "option_choice_C_mark_5",
-              "object_type": "square"
             }
           ],
           "option_choice_id": "option_choice_C",
@@ -259,90 +226,74 @@
           "mark_specs": [
             {
               "cell": [
-                2,
+                0,
                 0
               ],
               "mark_id": "option_choice_D_mark_1",
+              "object_type": "square"
+            },
+            {
+              "cell": [
+                1,
+                1
+              ],
+              "mark_id": "option_choice_D_mark_2",
               "object_type": "star"
             },
             {
               "cell": [
-                1,
-                2
+                2,
+                1
               ],
-              "mark_id": "option_choice_D_mark_2",
+              "mark_id": "option_choice_D_mark_3",
               "object_type": "hexagon"
             },
             {
               "cell": [
-                2,
+                0,
                 3
-              ],
-              "mark_id": "option_choice_D_mark_3",
-              "object_type": "diamond"
-            },
-            {
-              "cell": [
-                2,
-                4
               ],
               "mark_id": "option_choice_D_mark_4",
               "object_type": "circle"
-            },
-            {
-              "cell": [
-                1,
-                5
-              ],
-              "mark_id": "option_choice_D_mark_5",
-              "object_type": "square"
             }
           ],
           "option_choice_id": "option_choice_D",
           "option_label": "D"
         },
         {
-          "is_correct": true,
+          "is_correct": false,
           "mark_specs": [
             {
               "cell": [
-                2,
+                1,
                 0
               ],
               "mark_id": "option_choice_E_mark_1",
+              "object_type": "square"
+            },
+            {
+              "cell": [
+                0,
+                1
+              ],
+              "mark_id": "option_choice_E_mark_2",
               "object_type": "star"
             },
             {
               "cell": [
                 2,
-                2
+                1
               ],
-              "mark_id": "option_choice_E_mark_2",
+              "mark_id": "option_choice_E_mark_3",
               "object_type": "hexagon"
             },
             {
               "cell": [
-                2,
+                0,
                 3
-              ],
-              "mark_id": "option_choice_E_mark_3",
-              "object_type": "diamond"
-            },
-            {
-              "cell": [
-                2,
-                4
               ],
               "mark_id": "option_choice_E_mark_4",
               "object_type": "circle"
-            },
-            {
-              "cell": [
-                1,
-                5
-              ],
-              "mark_id": "option_choice_E_mark_5",
-              "object_type": "square"
             }
           ],
           "option_choice_id": "option_choice_E",
@@ -353,11 +304,11 @@
           "mark_specs": [
             {
               "cell": [
-                2,
+                1,
                 0
               ],
               "mark_id": "option_choice_F_mark_1",
-              "object_type": "star"
+              "object_type": "square"
             },
             {
               "cell": [
@@ -369,27 +320,19 @@
             },
             {
               "cell": [
-                2,
-                3
+                1,
+                2
               ],
               "mark_id": "option_choice_F_mark_3",
-              "object_type": "diamond"
+              "object_type": "star"
             },
             {
               "cell": [
-                2,
-                4
+                0,
+                3
               ],
               "mark_id": "option_choice_F_mark_4",
               "object_type": "circle"
-            },
-            {
-              "cell": [
-                1,
-                5
-              ],
-              "mark_id": "option_choice_F_mark_5",
-              "object_type": "square"
             }
           ],
           "option_choice_id": "option_choice_F",
@@ -399,20 +342,29 @@
       "original_mark_specs": [
         {
           "cell": [
-            5,
+            1,
             0
           ],
-          "mark_id": "mark_5",
-          "object_type": "star",
+          "mark_id": "mark_1",
+          "object_type": "square",
           "source_side": "kept"
         },
         {
           "cell": [
-            0,
-            2
+            3,
+            1
           ],
-          "mark_id": "mark_3",
+          "mark_id": "mark_2",
           "object_type": "hexagon",
+          "source_side": "folded"
+        },
+        {
+          "cell": [
+            4,
+            1
+          ],
+          "mark_id": "mark_4",
+          "object_type": "star",
           "source_side": "folded"
         },
         {
@@ -420,86 +372,59 @@
             5,
             3
           ],
-          "mark_id": "mark_1",
-          "object_type": "diamond",
-          "source_side": "kept"
-        },
-        {
-          "cell": [
-            0,
-            4
-          ],
-          "mark_id": "mark_2",
+          "mark_id": "mark_3",
           "object_type": "circle",
           "source_side": "folded"
-        },
-        {
-          "cell": [
-            4,
-            5
-          ],
-          "mark_id": "mark_4",
-          "object_type": "square",
-          "source_side": "kept"
         }
       ],
       "question_format": "fold_result_mcq",
       "result_grid_cols": 3,
       "result_grid_rows": 6,
-      "scene_variant": "fold_strip",
+      "scene_variant": "fold_card",
       "solver_trace": {
-        "correct_option_index": 4,
-        "correct_option_label": "E",
+        "correct_option_index": 2,
+        "correct_option_label": "C",
         "folded_result_mark_specs": [
           {
             "cell": [
-              2,
+              1,
               0
             ],
-            "mark_id": "mark_5",
-            "object_type": "star",
+            "mark_id": "mark_1",
+            "object_type": "square",
             "source_side": "kept"
           },
           {
             "cell": [
-              2,
-              2
+              1,
+              1
             ],
-            "mark_id": "mark_3",
+            "mark_id": "mark_4",
+            "object_type": "star",
+            "source_side": "folded"
+          },
+          {
+            "cell": [
+              2,
+              1
+            ],
+            "mark_id": "mark_2",
             "object_type": "hexagon",
             "source_side": "folded"
           },
           {
             "cell": [
-              2,
+              0,
               3
             ],
-            "mark_id": "mark_1",
-            "object_type": "diamond",
-            "source_side": "kept"
-          },
-          {
-            "cell": [
-              2,
-              4
-            ],
-            "mark_id": "mark_2",
+            "mark_id": "mark_3",
             "object_type": "circle",
             "source_side": "folded"
-          },
-          {
-            "cell": [
-              1,
-              5
-            ],
-            "mark_id": "mark_4",
-            "object_type": "square",
-            "source_side": "kept"
           }
         ]
       },
       "supporting_option_choice_ids": [
-        "option_choice_E"
+        "option_choice_C"
       ],
       "task_variant": "vertical_fold_result",
       "view_family": "paper_fold_result_mcq"
@@ -507,9 +432,9 @@
     "projected_evidence": {
       "bbox_set": [
         [
-          741.92,
+          474.08,
           388.0,
-          859.84,
+          592.0,
           612.96
         ]
       ]
@@ -517,11 +442,11 @@
     "query_spec": {
       "params": {
         "fold_axis": "vertical",
-        "fold_direction": "left_to_right",
+        "fold_direction": "right_to_left",
         "grid_size": 6,
-        "mark_count": 5,
+        "mark_count": 4,
         "option_count": 6,
-        "scene_variant": "fold_strip",
+        "scene_variant": "fold_card",
         "scene_variant_probabilities": {
           "fold_card": 0.3333333333333333,
           "fold_outline": 0.3333333333333333,
@@ -545,12 +470,12 @@
           "json_example_answer_only": "{\"answer\":\"A\"}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "object_description": "a paper-fold puzzle with one marked sheet above six labeled folded-result options"
+          "object_description": "a card-style paper-fold puzzle with one marked sheet above six labeled folded-result options"
         },
         "task_family_key": "spatial_fold_result_puzzle",
         "task_family_variant_index": 1,
         "task_key": "fold_result_query",
-        "task_variant_index": 0,
+        "task_variant_index": 1,
         "task_variant_key": "vertical_fold_result",
         "task_variant_template_index": 4,
         "template_paths": [
@@ -578,12 +503,12 @@
               "json_example_answer_only": "{\"answer\":\"A\"}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a paper-fold puzzle with one marked sheet above six labeled folded-result options"
+              "object_description": "a card-style paper-fold puzzle with one marked sheet above six labeled folded-result options"
             },
             "task_family_key": "spatial_fold_result_puzzle",
             "task_family_variant_index": 1,
             "task_key": "fold_result_query",
-            "task_variant_index": 0,
+            "task_variant_index": 1,
             "task_variant_key": "vertical_fold_result",
             "task_variant_template_index": 4,
             "template_paths": [
@@ -596,12 +521,12 @@
               "task_variant:vertical_fold_result": 5
             }
           },
-          "prompt": "Look at the paper-fold puzzle in the image: a paper-fold puzzle with one marked sheet above six labeled folded-result options. Fold the paper along the dashed line in the direction of the outside arrows, then choose the correct option. Which option gives the correct folded-paper result? Answer with the option letter.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct folded-result option image.\nAnswer: set \"answer\" to the exact option letter of the correct image option.\nExample JSON:\n{\"evidence\":[[206,388,324,613]],\"answer\":\"A\"}"
+          "prompt": "Look at the paper-fold puzzle in the image: a card-style paper-fold puzzle with one marked sheet above six labeled folded-result options. Use the fold line and outside arrows to determine which labeled option shows the folded result. Which option gives the correct folded-paper result? Answer with the option letter.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct folded-result option image.\nAnswer: set \"answer\" to the exact option letter of the correct image option.\nExample JSON:\n{\"evidence\":[[206,388,324,613]],\"answer\":\"A\"}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 4,
+            "answer_or_evidence_variant_index": 2,
             "prompt_bundle_id": "puzzles_spatial_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -611,12 +536,12 @@
               "json_example_answer_only": "{\"answer\":\"A\"}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a paper-fold puzzle with one marked sheet above six labeled folded-result options"
+              "object_description": "a card-style paper-fold puzzle with one marked sheet above six labeled folded-result options"
             },
             "task_family_key": "spatial_fold_result_puzzle",
             "task_family_variant_index": 1,
             "task_key": "fold_result_query",
-            "task_variant_index": 0,
+            "task_variant_index": 1,
             "task_variant_key": "vertical_fold_result",
             "task_variant_template_index": 4,
             "template_paths": [
@@ -629,7 +554,7 @@
               "task_variant:vertical_fold_result": 5
             }
           },
-          "prompt": "Look at the paper-fold puzzle in the image: a paper-fold puzzle with one marked sheet above six labeled folded-result options. Fold the paper along the dashed line in the direction of the outside arrows, then choose the correct option. Which option gives the correct folded-paper result? Answer with the option letter.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the exact option letter of the correct image option.\nExample JSON:\n{\"answer\":\"A\"}"
+          "prompt": "Look at the paper-fold puzzle in the image: a card-style paper-fold puzzle with one marked sheet above six labeled folded-result options. Use the fold line and outside arrows to determine which labeled option shows the folded result. Which option gives the correct folded-paper result? Answer with the option letter.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the exact option letter of the correct image option.\nExample JSON:\n{\"answer\":\"A\"}"
         }
       },
       "task_variant": "vertical_fold_result",
@@ -736,7 +661,7 @@
         1136.0,
         644.46
       ],
-      "scene_variant": "fold_strip",
+      "scene_variant": "fold_card",
       "text_style": {
         "option_label_font_size_px": 28
       }
@@ -745,7 +670,7 @@
       "entities": [
         {
           "attrs": {
-            "scene_variant": "fold_strip"
+            "scene_variant": "fold_card"
           },
           "bbox_px": [
             64.0,
@@ -759,7 +684,7 @@
         {
           "attrs": {
             "fold_axis": "vertical",
-            "fold_direction": "left_to_right",
+            "fold_direction": "right_to_left",
             "grid_size": 6
           },
           "bbox_px": [
@@ -774,53 +699,17 @@
         {
           "attrs": {
             "cell": [
-              5,
+              1,
               0
             ],
-            "object_type": "star",
+            "object_type": "square",
             "source_side": "kept"
           },
           "bbox_px": [
-            671.947,
-            105.52,
-            707.92,
-            139.68
-          ],
-          "entity_id": "reference_mark_mark_5",
-          "entity_type": "puzzle_fold_mark"
-        },
-        {
-          "attrs": {
-            "cell": [
-              0,
-              2
-            ],
-            "object_type": "hexagon",
-            "source_side": "folded"
-          },
-          "bbox_px": [
-            492.08,
-            173.84,
             528.053,
-            208.0
-          ],
-          "entity_id": "reference_mark_mark_3",
-          "entity_type": "puzzle_fold_mark"
-        },
-        {
-          "attrs": {
-            "cell": [
-              5,
-              3
-            ],
-            "object_type": "diamond",
-            "source_side": "kept"
-          },
-          "bbox_px": [
-            671.947,
-            208.0,
-            707.92,
-            242.16
+            105.52,
+            564.027,
+            139.68
           ],
           "entity_id": "reference_mark_mark_1",
           "entity_type": "puzzle_fold_mark"
@@ -828,17 +717,17 @@
         {
           "attrs": {
             "cell": [
-              0,
-              4
+              3,
+              1
             ],
-            "object_type": "circle",
+            "object_type": "hexagon",
             "source_side": "folded"
           },
           "bbox_px": [
-            492.08,
-            242.16,
-            528.053,
-            276.32
+            600.0,
+            139.68,
+            635.973,
+            173.84
           ],
           "entity_id": "reference_mark_mark_2",
           "entity_type": "puzzle_fold_mark"
@@ -847,24 +736,42 @@
           "attrs": {
             "cell": [
               4,
-              5
+              1
             ],
-            "object_type": "square",
-            "source_side": "kept"
+            "object_type": "star",
+            "source_side": "folded"
           },
           "bbox_px": [
             635.973,
-            276.32,
+            139.68,
             671.947,
-            310.48
+            173.84
           ],
           "entity_id": "reference_mark_mark_4",
           "entity_type": "puzzle_fold_mark"
         },
         {
           "attrs": {
+            "cell": [
+              5,
+              3
+            ],
+            "object_type": "circle",
+            "source_side": "folded"
+          },
+          "bbox_px": [
+            671.947,
+            208.0,
+            707.92,
+            242.16
+          ],
+          "entity_id": "reference_mark_mark_3",
+          "entity_type": "puzzle_fold_mark"
+        },
+        {
+          "attrs": {
             "fold_axis": "vertical",
-            "fold_direction": "left_to_right"
+            "fold_direction": "right_to_left"
           },
           "bbox_px": [
             598.0,
@@ -879,7 +786,7 @@
           "attrs": {
             "arrow_index": 1,
             "fold_axis": "vertical",
-            "fold_direction": "left_to_right"
+            "fold_direction": "right_to_left"
           },
           "bbox_px": [
             546.0,
@@ -894,7 +801,7 @@
           "attrs": {
             "arrow_index": 2,
             "fold_axis": "vertical",
-            "fold_direction": "left_to_right"
+            "fold_direction": "right_to_left"
           },
           "bbox_px": [
             546.0,
@@ -952,15 +859,15 @@
         {
           "attrs": {
             "cell": [
-              0,
+              1,
               0
             ],
-            "object_type": "star"
+            "object_type": "square"
           },
           "bbox_px": [
-            216.24,
-            398.0,
             248.88,
+            398.0,
+            281.52,
             432.16
           ],
           "entity_id": "option_choice_A_mark_option_choice_A_mark_1",
@@ -970,15 +877,15 @@
           "attrs": {
             "cell": [
               0,
-              2
+              1
             ],
             "object_type": "hexagon"
           },
           "bbox_px": [
             216.24,
-            466.32,
+            432.16,
             248.88,
-            500.48
+            466.32
           ],
           "entity_id": "option_choice_A_mark_option_choice_A_mark_2",
           "entity_type": "puzzle_fold_mark"
@@ -986,16 +893,16 @@
         {
           "attrs": {
             "cell": [
-              0,
-              3
+              1,
+              1
             ],
-            "object_type": "diamond"
+            "object_type": "star"
           },
           "bbox_px": [
-            216.24,
-            500.48,
             248.88,
-            534.64
+            432.16,
+            281.52,
+            466.32
           ],
           "entity_id": "option_choice_A_mark_option_choice_A_mark_3",
           "entity_type": "puzzle_fold_mark"
@@ -1003,35 +910,18 @@
         {
           "attrs": {
             "cell": [
-              0,
-              4
+              2,
+              3
             ],
             "object_type": "circle"
           },
           "bbox_px": [
-            216.24,
-            534.64,
-            248.88,
-            568.8
+            281.52,
+            500.48,
+            314.16,
+            534.64
           ],
           "entity_id": "option_choice_A_mark_option_choice_A_mark_4",
-          "entity_type": "puzzle_fold_mark"
-        },
-        {
-          "attrs": {
-            "cell": [
-              1,
-              5
-            ],
-            "object_type": "square"
-          },
-          "bbox_px": [
-            248.88,
-            568.8,
-            281.52,
-            602.96
-          ],
-          "entity_id": "option_choice_A_mark_option_choice_A_mark_5",
           "entity_type": "puzzle_fold_mark"
         },
         {
@@ -1081,15 +971,15 @@
         {
           "attrs": {
             "cell": [
-              1,
+              2,
               0
             ],
-            "object_type": "star"
+            "object_type": "square"
           },
           "bbox_px": [
-            382.8,
-            398.0,
             415.44,
+            398.0,
+            448.08,
             432.16
           ],
           "entity_id": "option_choice_B_mark_option_choice_B_mark_1",
@@ -1098,16 +988,16 @@
         {
           "attrs": {
             "cell": [
-              2,
-              2
+              1,
+              1
             ],
-            "object_type": "hexagon"
+            "object_type": "star"
           },
           "bbox_px": [
+            382.8,
+            432.16,
             415.44,
-            466.32,
-            448.08,
-            500.48
+            466.32
           ],
           "entity_id": "option_choice_B_mark_option_choice_B_mark_2",
           "entity_type": "puzzle_fold_mark"
@@ -1116,15 +1006,15 @@
           "attrs": {
             "cell": [
               2,
-              3
+              1
             ],
-            "object_type": "diamond"
+            "object_type": "hexagon"
           },
           "bbox_px": [
             415.44,
-            500.48,
+            432.16,
             448.08,
-            534.64
+            466.32
           ],
           "entity_id": "option_choice_B_mark_option_choice_B_mark_3",
           "entity_type": "puzzle_fold_mark"
@@ -1132,40 +1022,23 @@
         {
           "attrs": {
             "cell": [
-              2,
-              4
+              0,
+              3
             ],
             "object_type": "circle"
           },
           "bbox_px": [
-            415.44,
-            534.64,
-            448.08,
-            568.8
+            350.16,
+            500.48,
+            382.8,
+            534.64
           ],
           "entity_id": "option_choice_B_mark_option_choice_B_mark_4",
           "entity_type": "puzzle_fold_mark"
         },
         {
           "attrs": {
-            "cell": [
-              1,
-              5
-            ],
-            "object_type": "square"
-          },
-          "bbox_px": [
-            382.8,
-            568.8,
-            415.44,
-            602.96
-          ],
-          "entity_id": "option_choice_B_mark_option_choice_B_mark_5",
-          "entity_type": "puzzle_fold_mark"
-        },
-        {
-          "attrs": {
-            "is_correct": false,
+            "is_correct": true,
             "option_label": "C"
           },
           "bbox_px": [
@@ -1179,7 +1052,7 @@
         },
         {
           "attrs": {
-            "is_correct_option": false,
+            "is_correct_option": true,
             "option_label": "C"
           },
           "bbox_px": [
@@ -1195,7 +1068,7 @@
           "attrs": {
             "grid_cols": 3,
             "grid_rows": 6,
-            "is_correct_option": false,
+            "is_correct_option": true,
             "option_label": "C"
           },
           "bbox_px": [
@@ -1210,16 +1083,16 @@
         {
           "attrs": {
             "cell": [
-              2,
-              1
+              1,
+              0
             ],
-            "object_type": "star"
+            "object_type": "square"
           },
           "bbox_px": [
+            516.72,
+            398.0,
             549.36,
-            432.16,
-            582.0,
-            466.32
+            432.16
           ],
           "entity_id": "option_choice_C_mark_option_choice_C_mark_1",
           "entity_type": "puzzle_fold_mark"
@@ -1227,16 +1100,16 @@
         {
           "attrs": {
             "cell": [
-              2,
-              2
+              1,
+              1
             ],
-            "object_type": "hexagon"
+            "object_type": "star"
           },
           "bbox_px": [
+            516.72,
+            432.16,
             549.36,
-            466.32,
-            582.0,
-            500.48
+            466.32
           ],
           "entity_id": "option_choice_C_mark_option_choice_C_mark_2",
           "entity_type": "puzzle_fold_mark"
@@ -1245,15 +1118,15 @@
           "attrs": {
             "cell": [
               2,
-              3
+              1
             ],
-            "object_type": "diamond"
+            "object_type": "hexagon"
           },
           "bbox_px": [
             549.36,
-            500.48,
+            432.16,
             582.0,
-            534.64
+            466.32
           ],
           "entity_id": "option_choice_C_mark_option_choice_C_mark_3",
           "entity_type": "puzzle_fold_mark"
@@ -1261,35 +1134,18 @@
         {
           "attrs": {
             "cell": [
-              2,
-              4
+              0,
+              3
             ],
             "object_type": "circle"
           },
           "bbox_px": [
-            549.36,
-            534.64,
-            582.0,
-            568.8
+            484.08,
+            500.48,
+            516.72,
+            534.64
           ],
           "entity_id": "option_choice_C_mark_option_choice_C_mark_4",
-          "entity_type": "puzzle_fold_mark"
-        },
-        {
-          "attrs": {
-            "cell": [
-              1,
-              5
-            ],
-            "object_type": "square"
-          },
-          "bbox_px": [
-            516.72,
-            568.8,
-            549.36,
-            602.96
-          ],
-          "entity_id": "option_choice_C_mark_option_choice_C_mark_5",
           "entity_type": "puzzle_fold_mark"
         },
         {
@@ -1339,15 +1195,15 @@
         {
           "attrs": {
             "cell": [
-              2,
+              0,
               0
             ],
-            "object_type": "star"
+            "object_type": "square"
           },
           "bbox_px": [
-            683.28,
+            618.0,
             398.0,
-            715.92,
+            650.64,
             432.16
           ],
           "entity_id": "option_choice_D_mark_option_choice_D_mark_1",
@@ -1357,15 +1213,15 @@
           "attrs": {
             "cell": [
               1,
-              2
+              1
             ],
-            "object_type": "hexagon"
+            "object_type": "star"
           },
           "bbox_px": [
             650.64,
-            466.32,
+            432.16,
             683.28,
-            500.48
+            466.32
           ],
           "entity_id": "option_choice_D_mark_option_choice_D_mark_2",
           "entity_type": "puzzle_fold_mark"
@@ -1374,15 +1230,15 @@
           "attrs": {
             "cell": [
               2,
-              3
+              1
             ],
-            "object_type": "diamond"
+            "object_type": "hexagon"
           },
           "bbox_px": [
             683.28,
-            500.48,
+            432.16,
             715.92,
-            534.64
+            466.32
           ],
           "entity_id": "option_choice_D_mark_option_choice_D_mark_3",
           "entity_type": "puzzle_fold_mark"
@@ -1390,40 +1246,23 @@
         {
           "attrs": {
             "cell": [
-              2,
-              4
+              0,
+              3
             ],
             "object_type": "circle"
           },
           "bbox_px": [
-            683.28,
-            534.64,
-            715.92,
-            568.8
+            618.0,
+            500.48,
+            650.64,
+            534.64
           ],
           "entity_id": "option_choice_D_mark_option_choice_D_mark_4",
           "entity_type": "puzzle_fold_mark"
         },
         {
           "attrs": {
-            "cell": [
-              1,
-              5
-            ],
-            "object_type": "square"
-          },
-          "bbox_px": [
-            650.64,
-            568.8,
-            683.28,
-            602.96
-          ],
-          "entity_id": "option_choice_D_mark_option_choice_D_mark_5",
-          "entity_type": "puzzle_fold_mark"
-        },
-        {
-          "attrs": {
-            "is_correct": true,
+            "is_correct": false,
             "option_label": "E"
           },
           "bbox_px": [
@@ -1437,7 +1276,7 @@
         },
         {
           "attrs": {
-            "is_correct_option": true,
+            "is_correct_option": false,
             "option_label": "E"
           },
           "bbox_px": [
@@ -1453,7 +1292,7 @@
           "attrs": {
             "grid_cols": 3,
             "grid_rows": 6,
-            "is_correct_option": true,
+            "is_correct_option": false,
             "option_label": "E"
           },
           "bbox_px": [
@@ -1468,15 +1307,15 @@
         {
           "attrs": {
             "cell": [
-              2,
+              1,
               0
             ],
-            "object_type": "star"
+            "object_type": "square"
           },
           "bbox_px": [
-            817.2,
+            784.56,
             398.0,
-            849.84,
+            817.2,
             432.16
           ],
           "entity_id": "option_choice_E_mark_option_choice_E_mark_1",
@@ -1485,16 +1324,16 @@
         {
           "attrs": {
             "cell": [
-              2,
-              2
+              0,
+              1
             ],
-            "object_type": "hexagon"
+            "object_type": "star"
           },
           "bbox_px": [
-            817.2,
-            466.32,
-            849.84,
-            500.48
+            751.92,
+            432.16,
+            784.56,
+            466.32
           ],
           "entity_id": "option_choice_E_mark_option_choice_E_mark_2",
           "entity_type": "puzzle_fold_mark"
@@ -1503,15 +1342,15 @@
           "attrs": {
             "cell": [
               2,
-              3
+              1
             ],
-            "object_type": "diamond"
+            "object_type": "hexagon"
           },
           "bbox_px": [
             817.2,
-            500.48,
+            432.16,
             849.84,
-            534.64
+            466.32
           ],
           "entity_id": "option_choice_E_mark_option_choice_E_mark_3",
           "entity_type": "puzzle_fold_mark"
@@ -1519,35 +1358,18 @@
         {
           "attrs": {
             "cell": [
-              2,
-              4
+              0,
+              3
             ],
             "object_type": "circle"
           },
           "bbox_px": [
-            817.2,
-            534.64,
-            849.84,
-            568.8
+            751.92,
+            500.48,
+            784.56,
+            534.64
           ],
           "entity_id": "option_choice_E_mark_option_choice_E_mark_4",
-          "entity_type": "puzzle_fold_mark"
-        },
-        {
-          "attrs": {
-            "cell": [
-              1,
-              5
-            ],
-            "object_type": "square"
-          },
-          "bbox_px": [
-            784.56,
-            568.8,
-            817.2,
-            602.96
-          ],
-          "entity_id": "option_choice_E_mark_option_choice_E_mark_5",
           "entity_type": "puzzle_fold_mark"
         },
         {
@@ -1597,15 +1419,15 @@
         {
           "attrs": {
             "cell": [
-              2,
+              1,
               0
             ],
-            "object_type": "star"
+            "object_type": "square"
           },
           "bbox_px": [
-            951.12,
+            918.48,
             398.0,
-            983.76,
+            951.12,
             432.16
           ],
           "entity_id": "option_choice_F_mark_option_choice_F_mark_1",
@@ -1631,16 +1453,16 @@
         {
           "attrs": {
             "cell": [
-              2,
-              3
+              1,
+              2
             ],
-            "object_type": "diamond"
+            "object_type": "star"
           },
           "bbox_px": [
+            918.48,
+            466.32,
             951.12,
-            500.48,
-            983.76,
-            534.64
+            500.48
           ],
           "entity_id": "option_choice_F_mark_option_choice_F_mark_3",
           "entity_type": "puzzle_fold_mark"
@@ -1648,46 +1470,29 @@
         {
           "attrs": {
             "cell": [
-              2,
-              4
+              0,
+              3
             ],
             "object_type": "circle"
           },
           "bbox_px": [
-            951.12,
-            534.64,
-            983.76,
-            568.8
+            885.84,
+            500.48,
+            918.48,
+            534.64
           ],
           "entity_id": "option_choice_F_mark_option_choice_F_mark_4",
-          "entity_type": "puzzle_fold_mark"
-        },
-        {
-          "attrs": {
-            "cell": [
-              1,
-              5
-            ],
-            "object_type": "square"
-          },
-          "bbox_px": [
-            918.48,
-            568.8,
-            951.12,
-            602.96
-          ],
-          "entity_id": "option_choice_F_mark_option_choice_F_mark_5",
           "entity_type": "puzzle_fold_mark"
         }
       ],
       "relations": {
-        "answer_option_label": "E",
-        "correct_option_choice_id": "option_choice_E",
-        "scene_variant": "fold_strip",
+        "answer_option_label": "C",
+        "correct_option_choice_id": "option_choice_C",
+        "scene_variant": "fold_card",
         "task_variant": "vertical_fold_result",
         "view_family": "paper_fold_result_mcq"
       },
-      "scene_kind": "puzzle_spatial_fold_strip"
+      "scene_kind": "puzzle_spatial_fold_card"
     }
   },
   "versions": {

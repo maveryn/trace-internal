@@ -1,74 +1,75 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 6
+    "value": 9
   },
   "evidence_gt": {
     "type": "integer_list",
     "value": [
-      6,
-      10,
-      18,
-      7
+      13,
+      11,
+      14,
+      5,
+      9
     ]
   },
   "image": {
     "format": "png",
     "path": "charts/task_charts_composition_subset_value/images/stack_segment_value/0018.png"
   },
-  "instance_seed": 1717298015461966,
-  "prompt": "The image shows a stacked bar chart. Each category has one bar divided into differently colored segments, a legend on the right maps segment colors to segment labels, and the integer segment values are printed inside the segments. Use the chart's printed segment or slice values to compute the answer. Within the stack at category V, what is the value of segment Emie?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array [v1, v2, ...] listing the segment values in legend order for the queried stack.\nAnswer requirement: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[6,9,5],\"answer\":9}",
+  "instance_seed": 8532754162740823,
+  "prompt": "Work from the chart shown in the image: a stacked bar chart. Each category has one bar divided into differently colored segments, a legend on the right maps segment colors to segment labels, and the integer segment values are printed inside the segments. Answer the question using the printed values shown in the composition chart. For category M, what value is shown for the Nye segment?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array [v1, v2, ...] listing the segment values in legend order for the queried stack.\nAnswer requirement: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[6,9,5],\"answer\":9}",
   "prompt_variants": {
-    "answer_and_evidence": "The image shows a stacked bar chart. Each category has one bar divided into differently colored segments, a legend on the right maps segment colors to segment labels, and the integer segment values are printed inside the segments. Use the chart's printed segment or slice values to compute the answer. Within the stack at category V, what is the value of segment Emie?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array [v1, v2, ...] listing the segment values in legend order for the queried stack.\nAnswer requirement: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[6,9,5],\"answer\":9}",
-    "answer_only": "The image shows a stacked bar chart. Each category has one bar divided into differently colored segments, a legend on the right maps segment colors to segment labels, and the integer segment values are printed inside the segments. Use the chart's printed segment or slice values to compute the answer. Within the stack at category V, what is the value of segment Emie?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":9}"
+    "answer_and_evidence": "Work from the chart shown in the image: a stacked bar chart. Each category has one bar divided into differently colored segments, a legend on the right maps segment colors to segment labels, and the integer segment values are printed inside the segments. Answer the question using the printed values shown in the composition chart. For category M, what value is shown for the Nye segment?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array [v1, v2, ...] listing the segment values in legend order for the queried stack.\nAnswer requirement: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[6,9,5],\"answer\":9}",
+    "answer_only": "Work from the chart shown in the image: a stacked bar chart. Each category has one bar divided into differently colored segments, a legend on the right maps segment colors to segment labels, and the integer segment values are printed inside the segments. Answer the question using the printed values shown in the composition chart. For category M, what value is shown for the Nye segment?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":9}"
   },
   "task": "task_charts_composition_subset_value",
   "task_variant": "stack_segment_value",
   "trace_payload": {
     "execution_trace": {
-      "answer_value": 6,
-      "category_count": 7,
+      "answer_value": 9,
+      "category_count": 5,
       "category_count_range": [
         4,
         7
       ],
       "category_labels": [
-        "R",
+        "J",
+        "N",
+        "B",
         "S",
-        "K",
-        "U",
-        "V",
-        "T",
-        "B"
+        "M"
       ],
       "composition_scope": "stack",
       "evidence_labels": [
-        "Emie",
-        "Thor",
-        "Meda",
-        "Erme"
+        "Hall",
+        "Rois",
+        "Sal",
+        "Viva",
+        "Nye"
       ],
       "evidence_values": [
-        6,
-        10,
-        18,
-        7
+        13,
+        11,
+        14,
+        5,
+        9
       ],
       "mark_color_distance_space": "lab",
       "mark_color_min_distance": 40.0,
       "mark_color_sampling_policy": "random_rgb_palette",
       "mark_fill_rgb": [
-        207,
-        95,
-        199
+        161,
+        157,
+        32
       ],
       "mark_outline_rgb": [
-        114,
-        52,
-        109
+        89,
+        86,
+        18
       ],
-      "query_category_label": "V",
-      "query_series_label": "Emie",
+      "query_category_label": "M",
+      "query_series_label": "Nye",
       "query_subset_labels": [],
       "question_format": "numeric_open",
       "scene_mode": "stacked",
@@ -77,224 +78,244 @@
         "stacked_bar": 0.5,
         "stacked_horizontal_bar": 0.5
       },
-      "series_count": 4,
+      "series_count": 5,
       "series_count_range": [
         3,
         5
       ],
       "series_fill_palette_rgb": [
         [
-          207,
-          95,
-          199
-        ],
-        [
-          206,
-          111,
-          28
-        ],
-        [
-          28,
-          168,
-          58
-        ],
-        [
-          51,
+          161,
           157,
-          169
-        ]
-      ],
-      "series_labels": [
-        "Emie",
-        "Thor",
-        "Meda",
-        "Erme"
-      ],
-      "series_outline_palette_rgb": [
-        [
-          114,
-          52,
-          109
-        ],
-        [
-          113,
-          61,
-          15
-        ],
-        [
-          15,
-          92,
           32
         ],
         [
-          28,
-          86,
-          93
+          107,
+          100,
+          126
+        ],
+        [
+          98,
+          10,
+          170
+        ],
+        [
+          157,
+          124,
+          218
+        ],
+        [
+          8,
+          109,
+          1
         ]
       ],
-      "target_answer": 6,
+      "series_labels": [
+        "Hall",
+        "Rois",
+        "Sal",
+        "Viva",
+        "Nye"
+      ],
+      "series_outline_palette_rgb": [
+        [
+          89,
+          86,
+          18
+        ],
+        [
+          59,
+          55,
+          69
+        ],
+        [
+          54,
+          6,
+          94
+        ],
+        [
+          86,
+          68,
+          120
+        ],
+        [
+          4,
+          60,
+          1
+        ]
+      ],
+      "target_answer": 9,
       "target_answer_range": [
         4,
         18
       ],
       "task_variant": "stack_segment_value",
       "task_variant_probabilities": {
-        "combined_share_subset": 0.3333333333333333,
-        "stack_segment_value": 0.3333333333333333,
-        "stack_total_at_label": 0.3333333333333333
+        "combined_share_subset": 0.0,
+        "stack_segment_value": 1.0,
+        "stack_total_at_label": 0.0
       },
       "value_semantics": "integer",
       "values_by_category": {
         "B": {
-          "Emie": 8,
-          "Erme": 18,
-          "Meda": 15,
-          "Thor": 9
+          "Hall": 9,
+          "Nye": 16,
+          "Rois": 4,
+          "Sal": 15,
+          "Viva": 14
         },
-        "K": {
-          "Emie": 16,
-          "Erme": 18,
-          "Meda": 12,
-          "Thor": 12
+        "J": {
+          "Hall": 4,
+          "Nye": 9,
+          "Rois": 8,
+          "Sal": 7,
+          "Viva": 7
         },
-        "R": {
-          "Emie": 8,
-          "Erme": 5,
-          "Meda": 13,
-          "Thor": 8
+        "M": {
+          "Hall": 13,
+          "Nye": 9,
+          "Rois": 11,
+          "Sal": 14,
+          "Viva": 5
+        },
+        "N": {
+          "Hall": 15,
+          "Nye": 10,
+          "Rois": 4,
+          "Sal": 11,
+          "Viva": 15
         },
         "S": {
-          "Emie": 11,
-          "Erme": 14,
-          "Meda": 18,
-          "Thor": 12
-        },
-        "T": {
-          "Emie": 16,
-          "Erme": 14,
-          "Meda": 15,
-          "Thor": 4
-        },
-        "U": {
-          "Emie": 7,
-          "Erme": 13,
-          "Meda": 6,
-          "Thor": 17
-        },
-        "V": {
-          "Emie": 6,
-          "Erme": 7,
-          "Meda": 18,
-          "Thor": 10
+          "Hall": 9,
+          "Nye": 5,
+          "Rois": 5,
+          "Sal": 17,
+          "Viva": 10
         }
       },
       "values_by_label": {
-        "Emie": 6,
-        "Erme": 7,
-        "Meda": 18,
-        "Thor": 10
+        "Hall": 13,
+        "Nye": 9,
+        "Rois": 11,
+        "Sal": 14,
+        "Viva": 5
       }
     },
     "projected_evidence": {
       "bbox_set": [
         [
-          561.147,
-          550.644,
-          626.424,
+          737.606,
+          483.729,
+          828.994,
           608.0
         ],
         [
-          561.147,
-          455.051,
-          626.424,
-          550.644
+          737.606,
+          378.576,
+          828.994,
+          483.729
         ],
         [
-          561.147,
-          282.983,
-          626.424,
-          455.051
+          737.606,
+          244.746,
+          828.994,
+          378.576
         ],
         [
-          561.147,
-          216.068,
-          626.424,
-          282.983
+          737.606,
+          196.949,
+          828.994,
+          244.746
+        ],
+        [
+          737.606,
+          110.915,
+          828.994,
+          196.949
         ]
       ],
       "integer_list": [
-        6,
-        10,
-        18,
-        7
+        13,
+        11,
+        14,
+        5,
+        9
       ],
       "pixel_point_map": {
-        "Emie": [
-          593.786,
-          579.322
+        "Hall": [
+          783.3,
+          545.864
         ],
-        "Erme": [
-          593.786,
-          249.525
+        "Nye": [
+          783.3,
+          153.932
         ],
-        "Meda": [
-          593.786,
-          369.017
+        "Rois": [
+          783.3,
+          431.153
         ],
-        "Thor": [
-          593.786,
-          502.847
+        "Sal": [
+          783.3,
+          311.661
+        ],
+        "Viva": [
+          783.3,
+          220.847
         ]
       },
       "pixel_point_set": [
         [
-          593.786,
-          579.322
+          783.3,
+          545.864
         ],
         [
-          593.786,
-          502.847
+          783.3,
+          431.153
         ],
         [
-          593.786,
-          369.017
+          783.3,
+          311.661
         ],
         [
-          593.786,
-          249.525
+          783.3,
+          220.847
+        ],
+        [
+          783.3,
+          153.932
         ]
       ]
     },
     "query_spec": {
       "params": {
-        "category_count": 7,
+        "category_count": 5,
         "category_count_range": [
           4,
           7
         ],
-        "query_category_label": "V",
-        "query_series_label": "Emie",
+        "query_category_label": "M",
+        "query_series_label": "Nye",
         "query_subset_labels": [],
         "scene_variant": "stacked_bar",
         "scene_variant_probabilities": {
           "stacked_bar": 0.5,
           "stacked_horizontal_bar": 0.5
         },
-        "series_count": 4,
+        "series_count": 5,
         "series_count_range": [
           3,
           5
         ],
-        "target_answer": 6,
+        "target_answer": 9,
         "target_answer_range": [
           4,
           18
         ],
         "task_variant": "stack_segment_value",
         "task_variant_probabilities": {
-          "combined_share_subset": 0.3333333333333333,
-          "stack_segment_value": 0.3333333333333333,
-          "stack_total_at_label": 0.3333333333333333
+          "combined_share_subset": 0.0,
+          "stack_segment_value": 1.0,
+          "stack_total_at_label": 0.0
         }
       },
       "prompt_variant": {
@@ -310,17 +331,17 @@
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
           "object_description": "a stacked bar chart. Each category has one bar divided into differently colored segments, a legend on the right maps segment colors to segment labels, and the integer segment values are printed inside the segments",
-          "query_category_label": "V",
+          "query_category_label": "M",
           "query_label_a": "",
           "query_label_b": "",
-          "query_series_label": "Emie"
+          "query_series_label": "Nye"
         },
         "task_family_key": "composition_chart_value",
-        "task_family_variant_index": 0,
+        "task_family_variant_index": 2,
         "task_key": "subset_value_query",
-        "task_variant_index": 2,
+        "task_variant_index": 4,
         "task_variant_key": "stack_segment_value",
-        "task_variant_template_index": 3,
+        "task_variant_template_index": 1,
         "template_paths": [
           "charts/composition/charts_composition_v1.json"
         ],
@@ -347,17 +368,17 @@
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a stacked bar chart. Each category has one bar divided into differently colored segments, a legend on the right maps segment colors to segment labels, and the integer segment values are printed inside the segments",
-              "query_category_label": "V",
+              "query_category_label": "M",
               "query_label_a": "",
               "query_label_b": "",
-              "query_series_label": "Emie"
+              "query_series_label": "Nye"
             },
             "task_family_key": "composition_chart_value",
-            "task_family_variant_index": 0,
+            "task_family_variant_index": 2,
             "task_key": "subset_value_query",
-            "task_variant_index": 2,
+            "task_variant_index": 4,
             "task_variant_key": "stack_segment_value",
-            "task_variant_template_index": 3,
+            "task_variant_template_index": 1,
             "template_paths": [
               "charts/composition/charts_composition_v1.json"
             ],
@@ -368,12 +389,12 @@
               "task_variant:stack_segment_value": 5
             }
           },
-          "prompt": "The image shows a stacked bar chart. Each category has one bar divided into differently colored segments, a legend on the right maps segment colors to segment labels, and the integer segment values are printed inside the segments. Use the chart's printed segment or slice values to compute the answer. Within the stack at category V, what is the value of segment Emie?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array [v1, v2, ...] listing the segment values in legend order for the queried stack.\nAnswer requirement: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[6,9,5],\"answer\":9}"
+          "prompt": "Work from the chart shown in the image: a stacked bar chart. Each category has one bar divided into differently colored segments, a legend on the right maps segment colors to segment labels, and the integer segment values are printed inside the segments. Answer the question using the printed values shown in the composition chart. For category M, what value is shown for the Nye segment?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array [v1, v2, ...] listing the segment values in legend order for the queried stack.\nAnswer requirement: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[6,9,5],\"answer\":9}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 4,
+            "answer_or_evidence_variant_index": 2,
             "prompt_bundle_id": "charts_composition_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -384,17 +405,17 @@
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a stacked bar chart. Each category has one bar divided into differently colored segments, a legend on the right maps segment colors to segment labels, and the integer segment values are printed inside the segments",
-              "query_category_label": "V",
+              "query_category_label": "M",
               "query_label_a": "",
               "query_label_b": "",
-              "query_series_label": "Emie"
+              "query_series_label": "Nye"
             },
             "task_family_key": "composition_chart_value",
-            "task_family_variant_index": 0,
+            "task_family_variant_index": 2,
             "task_key": "subset_value_query",
-            "task_variant_index": 2,
+            "task_variant_index": 4,
             "task_variant_key": "stack_segment_value",
-            "task_variant_template_index": 3,
+            "task_variant_template_index": 1,
             "template_paths": [
               "charts/composition/charts_composition_v1.json"
             ],
@@ -405,7 +426,7 @@
               "task_variant:stack_segment_value": 5
             }
           },
-          "prompt": "The image shows a stacked bar chart. Each category has one bar divided into differently colored segments, a legend on the right maps segment colors to segment labels, and the integer segment values are printed inside the segments. Use the chart's printed segment or slice values to compute the answer. Within the stack at category V, what is the value of segment Emie?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":9}"
+          "prompt": "Work from the chart shown in the image: a stacked bar chart. Each category has one bar divided into differently colored segments, a legend on the right maps segment colors to segment labels, and the integer segment values are printed inside the segments. Answer the question using the printed values shown in the composition chart. For category M, what value is shown for the Nye segment?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":9}"
         }
       },
       "task_variant": "stack_segment_value",
@@ -415,31 +436,23 @@
       "image_id": "img0",
       "label_centers_px": {
         "B": [
-          804.357,
-          634.0
-        ],
-        "K": [
-          383.214,
-          634.0
-        ],
-        "R": [
-          172.643,
-          634.0
-        ],
-        "S": [
-          277.929,
-          634.0
-        ],
-        "T": [
-          699.071,
-          634.0
-        ],
-        "U": [
           488.5,
           634.0
         ],
-        "V": [
-          593.786,
+        "J": [
+          193.7,
+          634.0
+        ],
+        "M": [
+          783.3,
+          634.0
+        ],
+        "N": [
+          341.1,
+          634.0
+        ],
+        "S": [
+          635.9,
           634.0
         ]
       },
@@ -478,58 +491,68 @@
         "mark_color_distance_space": "lab",
         "mark_color_min_distance": 40.0,
         "mark_fill_rgb": [
-          207,
-          95,
-          199
+          161,
+          157,
+          32
         ],
         "mark_outline_rgb": [
-          114,
-          52,
-          109
+          89,
+          86,
+          18
         ],
         "sampling_policy": "random_rgb_palette",
         "series_fill_palette_rgb": [
           [
-            207,
-            95,
-            199
-          ],
-          [
-            206,
-            111,
-            28
-          ],
-          [
-            28,
-            168,
-            58
-          ],
-          [
-            51,
+            161,
             157,
-            169
+            32
+          ],
+          [
+            107,
+            100,
+            126
+          ],
+          [
+            98,
+            10,
+            170
+          ],
+          [
+            157,
+            124,
+            218
+          ],
+          [
+            8,
+            109,
+            1
           ]
         ],
         "series_outline_palette_rgb": [
           [
-            114,
-            52,
-            109
-          ],
-          [
-            113,
-            61,
-            15
-          ],
-          [
-            15,
-            92,
-            32
-          ],
-          [
-            28,
+            89,
             86,
-            93
+            18
+          ],
+          [
+            59,
+            55,
+            69
+          ],
+          [
+            54,
+            6,
+            94
+          ],
+          [
+            86,
+            68,
+            120
+          ],
+          [
+            4,
+            60,
+            1
           ]
         ]
       },
@@ -630,17 +653,17 @@
         {
           "attrs": {
             "category_group_bbox_px": [
-              140.004,
-              282.983,
-              205.281,
-              643.0
+              148.006,
+              273.424,
+              239.394,
+              645.5
             ],
-            "category_label": "R",
+            "category_label": "J",
             "category_rank": 0,
             "legend_label_bbox_px": [
               931.0,
               65.0,
-              996.0,
+              983.0,
               83.0
             ],
             "legend_swatch_bbox_px": [
@@ -650,807 +673,159 @@
               88.0
             ],
             "mark_bbox_px": [
-              140.004,
-              531.525,
-              205.281,
+              148.006,
+              569.763,
+              239.394,
               608.0
             ],
             "mark_center_px": [
-              172.643,
+              193.7,
+              588.881
+            ],
+            "mark_fill_rgb": [
+              161,
+              157,
+              32
+            ],
+            "mark_outline_rgb": [
+              89,
+              86,
+              18
+            ],
+            "scene_variant": "stacked_bar",
+            "series_label": "Hall",
+            "series_rank": 0,
+            "value": 4,
+            "value_center_px": [
+              193.7,
+              588.881
+            ]
+          },
+          "entity_id": "segment_J_Hall",
+          "entity_type": "segment"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              148.006,
+              273.424,
+              239.394,
+              645.5
+            ],
+            "category_label": "J",
+            "category_rank": 0,
+            "legend_label_bbox_px": [
+              931.0,
+              107.0,
+              987.0,
+              125.0
+            ],
+            "legend_swatch_bbox_px": [
+              881.0,
+              102.0,
+              909.0,
+              130.0
+            ],
+            "mark_bbox_px": [
+              148.006,
+              493.288,
+              239.394,
               569.763
             ],
-            "mark_fill_rgb": [
-              207,
-              95,
-              199
-            ],
-            "mark_outline_rgb": [
-              114,
-              52,
-              109
-            ],
-            "scene_variant": "stacked_bar",
-            "series_label": "Emie",
-            "series_rank": 0,
-            "value": 8,
-            "value_center_px": [
-              172.643,
-              569.763
-            ]
-          },
-          "entity_id": "segment_R_Emie",
-          "entity_type": "segment"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              140.004,
-              282.983,
-              205.281,
-              643.0
-            ],
-            "category_label": "R",
-            "category_rank": 0,
-            "legend_label_bbox_px": [
-              931.0,
-              107.0,
-              992.0,
-              125.0
-            ],
-            "legend_swatch_bbox_px": [
-              881.0,
-              102.0,
-              909.0,
-              130.0
-            ],
-            "mark_bbox_px": [
-              140.004,
-              455.051,
-              205.281,
+            "mark_center_px": [
+              193.7,
               531.525
             ],
-            "mark_center_px": [
-              172.643,
-              493.288
-            ],
             "mark_fill_rgb": [
-              206,
-              111,
-              28
+              107,
+              100,
+              126
             ],
             "mark_outline_rgb": [
-              113,
-              61,
-              15
+              59,
+              55,
+              69
             ],
             "scene_variant": "stacked_bar",
-            "series_label": "Thor",
+            "series_label": "Rois",
             "series_rank": 1,
             "value": 8,
             "value_center_px": [
-              172.643,
+              193.7,
+              531.525
+            ]
+          },
+          "entity_id": "segment_J_Rois",
+          "entity_type": "segment"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              148.006,
+              273.424,
+              239.394,
+              645.5
+            ],
+            "category_label": "J",
+            "category_rank": 0,
+            "legend_label_bbox_px": [
+              931.0,
+              149.0,
+              972.0,
+              167.0
+            ],
+            "legend_swatch_bbox_px": [
+              881.0,
+              144.0,
+              909.0,
+              172.0
+            ],
+            "mark_bbox_px": [
+              148.006,
+              426.373,
+              239.394,
               493.288
-            ]
-          },
-          "entity_id": "segment_R_Thor",
-          "entity_type": "segment"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              140.004,
-              282.983,
-              205.281,
-              643.0
-            ],
-            "category_label": "R",
-            "category_rank": 0,
-            "legend_label_bbox_px": [
-              931.0,
-              149.0,
-              1004.0,
-              167.0
-            ],
-            "legend_swatch_bbox_px": [
-              881.0,
-              144.0,
-              909.0,
-              172.0
-            ],
-            "mark_bbox_px": [
-              140.004,
-              330.78,
-              205.281,
-              455.051
             ],
             "mark_center_px": [
-              172.643,
-              392.915
-            ],
-            "mark_fill_rgb": [
-              28,
-              168,
-              58
-            ],
-            "mark_outline_rgb": [
-              15,
-              92,
-              32
-            ],
-            "scene_variant": "stacked_bar",
-            "series_label": "Meda",
-            "series_rank": 2,
-            "value": 13,
-            "value_center_px": [
-              172.643,
-              392.915
-            ]
-          },
-          "entity_id": "segment_R_Meda",
-          "entity_type": "segment"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              140.004,
-              282.983,
-              205.281,
-              643.0
-            ],
-            "category_label": "R",
-            "category_rank": 0,
-            "legend_label_bbox_px": [
-              931.0,
-              191.0,
-              1000.0,
-              209.0
-            ],
-            "legend_swatch_bbox_px": [
-              881.0,
-              186.0,
-              909.0,
-              214.0
-            ],
-            "mark_bbox_px": [
-              140.004,
-              282.983,
-              205.281,
-              330.78
-            ],
-            "mark_center_px": [
-              172.643,
-              306.881
-            ],
-            "mark_fill_rgb": [
-              51,
-              157,
-              169
-            ],
-            "mark_outline_rgb": [
-              28,
-              86,
-              93
-            ],
-            "scene_variant": "stacked_bar",
-            "series_label": "Erme",
-            "series_rank": 3,
-            "value": 5,
-            "value_center_px": [
-              172.643,
-              306.881
-            ]
-          },
-          "entity_id": "segment_R_Erme",
-          "entity_type": "segment"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              245.29,
-              82.237,
-              310.567,
-              643.0
-            ],
-            "category_label": "S",
-            "category_rank": 1,
-            "legend_label_bbox_px": [
-              931.0,
-              65.0,
-              996.0,
-              83.0
-            ],
-            "legend_swatch_bbox_px": [
-              881.0,
-              60.0,
-              909.0,
-              88.0
-            ],
-            "mark_bbox_px": [
-              245.29,
-              502.847,
-              310.567,
-              608.0
-            ],
-            "mark_center_px": [
-              277.929,
-              555.424
-            ],
-            "mark_fill_rgb": [
-              207,
-              95,
-              199
-            ],
-            "mark_outline_rgb": [
-              114,
-              52,
-              109
-            ],
-            "scene_variant": "stacked_bar",
-            "series_label": "Emie",
-            "series_rank": 0,
-            "value": 11,
-            "value_center_px": [
-              277.929,
-              555.424
-            ]
-          },
-          "entity_id": "segment_S_Emie",
-          "entity_type": "segment"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              245.29,
-              82.237,
-              310.567,
-              643.0
-            ],
-            "category_label": "S",
-            "category_rank": 1,
-            "legend_label_bbox_px": [
-              931.0,
-              107.0,
-              992.0,
-              125.0
-            ],
-            "legend_swatch_bbox_px": [
-              881.0,
-              102.0,
-              909.0,
-              130.0
-            ],
-            "mark_bbox_px": [
-              245.29,
-              388.136,
-              310.567,
-              502.847
-            ],
-            "mark_center_px": [
-              277.929,
-              445.492
-            ],
-            "mark_fill_rgb": [
-              206,
-              111,
-              28
-            ],
-            "mark_outline_rgb": [
-              113,
-              61,
-              15
-            ],
-            "scene_variant": "stacked_bar",
-            "series_label": "Thor",
-            "series_rank": 1,
-            "value": 12,
-            "value_center_px": [
-              277.929,
-              445.492
-            ]
-          },
-          "entity_id": "segment_S_Thor",
-          "entity_type": "segment"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              245.29,
-              82.237,
-              310.567,
-              643.0
-            ],
-            "category_label": "S",
-            "category_rank": 1,
-            "legend_label_bbox_px": [
-              931.0,
-              149.0,
-              1004.0,
-              167.0
-            ],
-            "legend_swatch_bbox_px": [
-              881.0,
-              144.0,
-              909.0,
-              172.0
-            ],
-            "mark_bbox_px": [
-              245.29,
-              216.068,
-              310.567,
-              388.136
-            ],
-            "mark_center_px": [
-              277.929,
-              302.102
-            ],
-            "mark_fill_rgb": [
-              28,
-              168,
-              58
-            ],
-            "mark_outline_rgb": [
-              15,
-              92,
-              32
-            ],
-            "scene_variant": "stacked_bar",
-            "series_label": "Meda",
-            "series_rank": 2,
-            "value": 18,
-            "value_center_px": [
-              277.929,
-              302.102
-            ]
-          },
-          "entity_id": "segment_S_Meda",
-          "entity_type": "segment"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              245.29,
-              82.237,
-              310.567,
-              643.0
-            ],
-            "category_label": "S",
-            "category_rank": 1,
-            "legend_label_bbox_px": [
-              931.0,
-              191.0,
-              1000.0,
-              209.0
-            ],
-            "legend_swatch_bbox_px": [
-              881.0,
-              186.0,
-              909.0,
-              214.0
-            ],
-            "mark_bbox_px": [
-              245.29,
-              82.237,
-              310.567,
-              216.068
-            ],
-            "mark_center_px": [
-              277.929,
-              149.153
-            ],
-            "mark_fill_rgb": [
-              51,
-              157,
-              169
-            ],
-            "mark_outline_rgb": [
-              28,
-              86,
-              93
-            ],
-            "scene_variant": "stacked_bar",
-            "series_label": "Erme",
-            "series_rank": 3,
-            "value": 14,
-            "value_center_px": [
-              277.929,
-              149.153
-            ]
-          },
-          "entity_id": "segment_S_Erme",
-          "entity_type": "segment"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              350.576,
-              53.559,
-              415.853,
-              643.0
-            ],
-            "category_label": "K",
-            "category_rank": 2,
-            "legend_label_bbox_px": [
-              931.0,
-              65.0,
-              996.0,
-              83.0
-            ],
-            "legend_swatch_bbox_px": [
-              881.0,
-              60.0,
-              909.0,
-              88.0
-            ],
-            "mark_bbox_px": [
-              350.576,
-              455.051,
-              415.853,
-              608.0
-            ],
-            "mark_center_px": [
-              383.214,
-              531.525
-            ],
-            "mark_fill_rgb": [
-              207,
-              95,
-              199
-            ],
-            "mark_outline_rgb": [
-              114,
-              52,
-              109
-            ],
-            "scene_variant": "stacked_bar",
-            "series_label": "Emie",
-            "series_rank": 0,
-            "value": 16,
-            "value_center_px": [
-              383.214,
-              531.525
-            ]
-          },
-          "entity_id": "segment_K_Emie",
-          "entity_type": "segment"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              350.576,
-              53.559,
-              415.853,
-              643.0
-            ],
-            "category_label": "K",
-            "category_rank": 2,
-            "legend_label_bbox_px": [
-              931.0,
-              107.0,
-              992.0,
-              125.0
-            ],
-            "legend_swatch_bbox_px": [
-              881.0,
-              102.0,
-              909.0,
-              130.0
-            ],
-            "mark_bbox_px": [
-              350.576,
-              340.339,
-              415.853,
-              455.051
-            ],
-            "mark_center_px": [
-              383.214,
-              397.695
-            ],
-            "mark_fill_rgb": [
-              206,
-              111,
-              28
-            ],
-            "mark_outline_rgb": [
-              113,
-              61,
-              15
-            ],
-            "scene_variant": "stacked_bar",
-            "series_label": "Thor",
-            "series_rank": 1,
-            "value": 12,
-            "value_center_px": [
-              383.214,
-              397.695
-            ]
-          },
-          "entity_id": "segment_K_Thor",
-          "entity_type": "segment"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              350.576,
-              53.559,
-              415.853,
-              643.0
-            ],
-            "category_label": "K",
-            "category_rank": 2,
-            "legend_label_bbox_px": [
-              931.0,
-              149.0,
-              1004.0,
-              167.0
-            ],
-            "legend_swatch_bbox_px": [
-              881.0,
-              144.0,
-              909.0,
-              172.0
-            ],
-            "mark_bbox_px": [
-              350.576,
-              225.627,
-              415.853,
-              340.339
-            ],
-            "mark_center_px": [
-              383.214,
-              282.983
-            ],
-            "mark_fill_rgb": [
-              28,
-              168,
-              58
-            ],
-            "mark_outline_rgb": [
-              15,
-              92,
-              32
-            ],
-            "scene_variant": "stacked_bar",
-            "series_label": "Meda",
-            "series_rank": 2,
-            "value": 12,
-            "value_center_px": [
-              383.214,
-              282.983
-            ]
-          },
-          "entity_id": "segment_K_Meda",
-          "entity_type": "segment"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              350.576,
-              53.559,
-              415.853,
-              643.0
-            ],
-            "category_label": "K",
-            "category_rank": 2,
-            "legend_label_bbox_px": [
-              931.0,
-              191.0,
-              1000.0,
-              209.0
-            ],
-            "legend_swatch_bbox_px": [
-              881.0,
-              186.0,
-              909.0,
-              214.0
-            ],
-            "mark_bbox_px": [
-              350.576,
-              53.559,
-              415.853,
-              225.627
-            ],
-            "mark_center_px": [
-              383.214,
-              139.593
-            ],
-            "mark_fill_rgb": [
-              51,
-              157,
-              169
-            ],
-            "mark_outline_rgb": [
-              28,
-              86,
-              93
-            ],
-            "scene_variant": "stacked_bar",
-            "series_label": "Erme",
-            "series_rank": 3,
-            "value": 18,
-            "value_center_px": [
-              383.214,
-              139.593
-            ]
-          },
-          "entity_id": "segment_K_Erme",
-          "entity_type": "segment"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              455.861,
-              196.949,
-              521.139,
-              643.0
-            ],
-            "category_label": "U",
-            "category_rank": 3,
-            "legend_label_bbox_px": [
-              931.0,
-              65.0,
-              996.0,
-              83.0
-            ],
-            "legend_swatch_bbox_px": [
-              881.0,
-              60.0,
-              909.0,
-              88.0
-            ],
-            "mark_bbox_px": [
-              455.861,
-              541.085,
-              521.139,
-              608.0
-            ],
-            "mark_center_px": [
-              488.5,
-              574.542
-            ],
-            "mark_fill_rgb": [
-              207,
-              95,
-              199
-            ],
-            "mark_outline_rgb": [
-              114,
-              52,
-              109
-            ],
-            "scene_variant": "stacked_bar",
-            "series_label": "Emie",
-            "series_rank": 0,
-            "value": 7,
-            "value_center_px": [
-              488.5,
-              574.542
-            ]
-          },
-          "entity_id": "segment_U_Emie",
-          "entity_type": "segment"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              455.861,
-              196.949,
-              521.139,
-              643.0
-            ],
-            "category_label": "U",
-            "category_rank": 3,
-            "legend_label_bbox_px": [
-              931.0,
-              107.0,
-              992.0,
-              125.0
-            ],
-            "legend_swatch_bbox_px": [
-              881.0,
-              102.0,
-              909.0,
-              130.0
-            ],
-            "mark_bbox_px": [
-              455.861,
-              378.576,
-              521.139,
-              541.085
-            ],
-            "mark_center_px": [
-              488.5,
+              193.7,
               459.831
             ],
             "mark_fill_rgb": [
-              206,
-              111,
-              28
+              98,
+              10,
+              170
             ],
             "mark_outline_rgb": [
-              113,
-              61,
-              15
+              54,
+              6,
+              94
             ],
             "scene_variant": "stacked_bar",
-            "series_label": "Thor",
-            "series_rank": 1,
-            "value": 17,
+            "series_label": "Sal",
+            "series_rank": 2,
+            "value": 7,
             "value_center_px": [
-              488.5,
+              193.7,
               459.831
             ]
           },
-          "entity_id": "segment_U_Thor",
+          "entity_id": "segment_J_Sal",
           "entity_type": "segment"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              455.861,
-              196.949,
-              521.139,
-              643.0
+              148.006,
+              273.424,
+              239.394,
+              645.5
             ],
-            "category_label": "U",
-            "category_rank": 3,
-            "legend_label_bbox_px": [
-              931.0,
-              149.0,
-              1004.0,
-              167.0
-            ],
-            "legend_swatch_bbox_px": [
-              881.0,
-              144.0,
-              909.0,
-              172.0
-            ],
-            "mark_bbox_px": [
-              455.861,
-              321.22,
-              521.139,
-              378.576
-            ],
-            "mark_center_px": [
-              488.5,
-              349.898
-            ],
-            "mark_fill_rgb": [
-              28,
-              168,
-              58
-            ],
-            "mark_outline_rgb": [
-              15,
-              92,
-              32
-            ],
-            "scene_variant": "stacked_bar",
-            "series_label": "Meda",
-            "series_rank": 2,
-            "value": 6,
-            "value_center_px": [
-              488.5,
-              349.898
-            ]
-          },
-          "entity_id": "segment_U_Meda",
-          "entity_type": "segment"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              455.861,
-              196.949,
-              521.139,
-              643.0
-            ],
-            "category_label": "U",
-            "category_rank": 3,
+            "category_label": "J",
+            "category_rank": 0,
             "legend_label_bbox_px": [
               931.0,
               191.0,
-              1000.0,
+              990.0,
               209.0
             ],
             "legend_swatch_bbox_px": [
@@ -1460,267 +835,105 @@
               214.0
             ],
             "mark_bbox_px": [
-              455.861,
-              196.949,
-              521.139,
-              321.22
+              148.006,
+              359.458,
+              239.394,
+              426.373
             ],
             "mark_center_px": [
-              488.5,
-              259.085
+              193.7,
+              392.915
             ],
             "mark_fill_rgb": [
-              51,
               157,
-              169
+              124,
+              218
             ],
             "mark_outline_rgb": [
-              28,
               86,
-              93
+              68,
+              120
             ],
             "scene_variant": "stacked_bar",
-            "series_label": "Erme",
-            "series_rank": 3,
-            "value": 13,
-            "value_center_px": [
-              488.5,
-              259.085
-            ]
-          },
-          "entity_id": "segment_U_Erme",
-          "entity_type": "segment"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              561.147,
-              216.068,
-              626.424,
-              643.0
-            ],
-            "category_label": "V",
-            "category_rank": 4,
-            "legend_label_bbox_px": [
-              931.0,
-              65.0,
-              996.0,
-              83.0
-            ],
-            "legend_swatch_bbox_px": [
-              881.0,
-              60.0,
-              909.0,
-              88.0
-            ],
-            "mark_bbox_px": [
-              561.147,
-              550.644,
-              626.424,
-              608.0
-            ],
-            "mark_center_px": [
-              593.786,
-              579.322
-            ],
-            "mark_fill_rgb": [
-              207,
-              95,
-              199
-            ],
-            "mark_outline_rgb": [
-              114,
-              52,
-              109
-            ],
-            "scene_variant": "stacked_bar",
-            "series_label": "Emie",
-            "series_rank": 0,
-            "value": 6,
-            "value_center_px": [
-              593.786,
-              579.322
-            ]
-          },
-          "entity_id": "segment_V_Emie",
-          "entity_type": "segment"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              561.147,
-              216.068,
-              626.424,
-              643.0
-            ],
-            "category_label": "V",
-            "category_rank": 4,
-            "legend_label_bbox_px": [
-              931.0,
-              107.0,
-              992.0,
-              125.0
-            ],
-            "legend_swatch_bbox_px": [
-              881.0,
-              102.0,
-              909.0,
-              130.0
-            ],
-            "mark_bbox_px": [
-              561.147,
-              455.051,
-              626.424,
-              550.644
-            ],
-            "mark_center_px": [
-              593.786,
-              502.847
-            ],
-            "mark_fill_rgb": [
-              206,
-              111,
-              28
-            ],
-            "mark_outline_rgb": [
-              113,
-              61,
-              15
-            ],
-            "scene_variant": "stacked_bar",
-            "series_label": "Thor",
-            "series_rank": 1,
-            "value": 10,
-            "value_center_px": [
-              593.786,
-              502.847
-            ]
-          },
-          "entity_id": "segment_V_Thor",
-          "entity_type": "segment"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              561.147,
-              216.068,
-              626.424,
-              643.0
-            ],
-            "category_label": "V",
-            "category_rank": 4,
-            "legend_label_bbox_px": [
-              931.0,
-              149.0,
-              1004.0,
-              167.0
-            ],
-            "legend_swatch_bbox_px": [
-              881.0,
-              144.0,
-              909.0,
-              172.0
-            ],
-            "mark_bbox_px": [
-              561.147,
-              282.983,
-              626.424,
-              455.051
-            ],
-            "mark_center_px": [
-              593.786,
-              369.017
-            ],
-            "mark_fill_rgb": [
-              28,
-              168,
-              58
-            ],
-            "mark_outline_rgb": [
-              15,
-              92,
-              32
-            ],
-            "scene_variant": "stacked_bar",
-            "series_label": "Meda",
-            "series_rank": 2,
-            "value": 18,
-            "value_center_px": [
-              593.786,
-              369.017
-            ]
-          },
-          "entity_id": "segment_V_Meda",
-          "entity_type": "segment"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              561.147,
-              216.068,
-              626.424,
-              643.0
-            ],
-            "category_label": "V",
-            "category_rank": 4,
-            "legend_label_bbox_px": [
-              931.0,
-              191.0,
-              1000.0,
-              209.0
-            ],
-            "legend_swatch_bbox_px": [
-              881.0,
-              186.0,
-              909.0,
-              214.0
-            ],
-            "mark_bbox_px": [
-              561.147,
-              216.068,
-              626.424,
-              282.983
-            ],
-            "mark_center_px": [
-              593.786,
-              249.525
-            ],
-            "mark_fill_rgb": [
-              51,
-              157,
-              169
-            ],
-            "mark_outline_rgb": [
-              28,
-              86,
-              93
-            ],
-            "scene_variant": "stacked_bar",
-            "series_label": "Erme",
+            "series_label": "Viva",
             "series_rank": 3,
             "value": 7,
             "value_center_px": [
-              593.786,
-              249.525
+              193.7,
+              392.915
             ]
           },
-          "entity_id": "segment_V_Erme",
+          "entity_id": "segment_J_Viva",
           "entity_type": "segment"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              666.433,
-              139.593,
-              731.71,
+              148.006,
+              273.424,
+              239.394,
+              645.5
+            ],
+            "category_label": "J",
+            "category_rank": 0,
+            "legend_label_bbox_px": [
+              931.0,
+              230.5,
+              983.0,
+              253.5
+            ],
+            "legend_swatch_bbox_px": [
+              881.0,
+              228.0,
+              909.0,
+              256.0
+            ],
+            "mark_bbox_px": [
+              148.006,
+              273.424,
+              239.394,
+              359.458
+            ],
+            "mark_center_px": [
+              193.7,
+              316.441
+            ],
+            "mark_fill_rgb": [
+              8,
+              109,
+              1
+            ],
+            "mark_outline_rgb": [
+              4,
+              60,
+              1
+            ],
+            "scene_variant": "stacked_bar",
+            "series_label": "Nye",
+            "series_rank": 4,
+            "value": 9,
+            "value_center_px": [
+              193.7,
+              316.441
+            ]
+          },
+          "entity_id": "segment_J_Nye",
+          "entity_type": "segment"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              295.406,
+              82.237,
+              386.794,
               643.0
             ],
-            "category_label": "T",
-            "category_rank": 5,
+            "category_label": "N",
+            "category_rank": 1,
             "legend_label_bbox_px": [
               931.0,
               65.0,
-              996.0,
+              983.0,
               83.0
             ],
             "legend_swatch_bbox_px": [
@@ -1730,51 +943,51 @@
               88.0
             ],
             "mark_bbox_px": [
-              666.433,
-              455.051,
-              731.71,
+              295.406,
+              464.61,
+              386.794,
               608.0
             ],
             "mark_center_px": [
-              699.071,
-              531.525
+              341.1,
+              536.305
             ],
             "mark_fill_rgb": [
-              207,
-              95,
-              199
+              161,
+              157,
+              32
             ],
             "mark_outline_rgb": [
-              114,
-              52,
-              109
+              89,
+              86,
+              18
             ],
             "scene_variant": "stacked_bar",
-            "series_label": "Emie",
+            "series_label": "Hall",
             "series_rank": 0,
-            "value": 16,
+            "value": 15,
             "value_center_px": [
-              699.071,
-              531.525
+              341.1,
+              536.305
             ]
           },
-          "entity_id": "segment_T_Emie",
+          "entity_id": "segment_N_Hall",
           "entity_type": "segment"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              666.433,
-              139.593,
-              731.71,
+              295.406,
+              82.237,
+              386.794,
               643.0
             ],
-            "category_label": "T",
-            "category_rank": 5,
+            "category_label": "N",
+            "category_rank": 1,
             "legend_label_bbox_px": [
               931.0,
               107.0,
-              992.0,
+              987.0,
               125.0
             ],
             "legend_swatch_bbox_px": [
@@ -1784,51 +997,51 @@
               130.0
             ],
             "mark_bbox_px": [
-              666.433,
-              416.814,
-              731.71,
-              455.051
+              295.406,
+              426.373,
+              386.794,
+              464.61
             ],
             "mark_center_px": [
-              699.071,
-              435.932
+              341.1,
+              445.492
             ],
             "mark_fill_rgb": [
-              206,
-              111,
-              28
+              107,
+              100,
+              126
             ],
             "mark_outline_rgb": [
-              113,
-              61,
-              15
+              59,
+              55,
+              69
             ],
             "scene_variant": "stacked_bar",
-            "series_label": "Thor",
+            "series_label": "Rois",
             "series_rank": 1,
             "value": 4,
             "value_center_px": [
-              699.071,
-              435.932
+              341.1,
+              445.492
             ]
           },
-          "entity_id": "segment_T_Thor",
+          "entity_id": "segment_N_Rois",
           "entity_type": "segment"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              666.433,
-              139.593,
-              731.71,
+              295.406,
+              82.237,
+              386.794,
               643.0
             ],
-            "category_label": "T",
-            "category_rank": 5,
+            "category_label": "N",
+            "category_rank": 1,
             "legend_label_bbox_px": [
               931.0,
               149.0,
-              1004.0,
+              972.0,
               167.0
             ],
             "legend_swatch_bbox_px": [
@@ -1838,51 +1051,51 @@
               172.0
             ],
             "mark_bbox_px": [
-              666.433,
-              273.424,
-              731.71,
-              416.814
+              295.406,
+              321.22,
+              386.794,
+              426.373
             ],
             "mark_center_px": [
-              699.071,
-              345.119
+              341.1,
+              373.797
             ],
             "mark_fill_rgb": [
-              28,
-              168,
-              58
+              98,
+              10,
+              170
             ],
             "mark_outline_rgb": [
-              15,
-              92,
-              32
+              54,
+              6,
+              94
             ],
             "scene_variant": "stacked_bar",
-            "series_label": "Meda",
+            "series_label": "Sal",
             "series_rank": 2,
-            "value": 15,
+            "value": 11,
             "value_center_px": [
-              699.071,
-              345.119
+              341.1,
+              373.797
             ]
           },
-          "entity_id": "segment_T_Meda",
+          "entity_id": "segment_N_Sal",
           "entity_type": "segment"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              666.433,
-              139.593,
-              731.71,
+              295.406,
+              82.237,
+              386.794,
               643.0
             ],
-            "category_label": "T",
-            "category_rank": 5,
+            "category_label": "N",
+            "category_rank": 1,
             "legend_label_bbox_px": [
               931.0,
               191.0,
-              1000.0,
+              990.0,
               209.0
             ],
             "legend_swatch_bbox_px": [
@@ -1892,51 +1105,105 @@
               214.0
             ],
             "mark_bbox_px": [
-              666.433,
-              139.593,
-              731.71,
-              273.424
+              295.406,
+              177.831,
+              386.794,
+              321.22
             ],
             "mark_center_px": [
-              699.071,
-              206.508
+              341.1,
+              249.525
             ],
             "mark_fill_rgb": [
-              51,
               157,
-              169
+              124,
+              218
             ],
             "mark_outline_rgb": [
-              28,
               86,
-              93
+              68,
+              120
             ],
             "scene_variant": "stacked_bar",
-            "series_label": "Erme",
+            "series_label": "Viva",
             "series_rank": 3,
-            "value": 14,
+            "value": 15,
             "value_center_px": [
-              699.071,
-              206.508
+              341.1,
+              249.525
             ]
           },
-          "entity_id": "segment_T_Erme",
+          "entity_id": "segment_N_Viva",
           "entity_type": "segment"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              771.719,
-              130.034,
-              836.996,
+              295.406,
+              82.237,
+              386.794,
+              643.0
+            ],
+            "category_label": "N",
+            "category_rank": 1,
+            "legend_label_bbox_px": [
+              931.0,
+              230.5,
+              983.0,
+              253.5
+            ],
+            "legend_swatch_bbox_px": [
+              881.0,
+              228.0,
+              909.0,
+              256.0
+            ],
+            "mark_bbox_px": [
+              295.406,
+              82.237,
+              386.794,
+              177.831
+            ],
+            "mark_center_px": [
+              341.1,
+              130.034
+            ],
+            "mark_fill_rgb": [
+              8,
+              109,
+              1
+            ],
+            "mark_outline_rgb": [
+              4,
+              60,
+              1
+            ],
+            "scene_variant": "stacked_bar",
+            "series_label": "Nye",
+            "series_rank": 4,
+            "value": 10,
+            "value_center_px": [
+              341.1,
+              130.034
+            ]
+          },
+          "entity_id": "segment_N_Nye",
+          "entity_type": "segment"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              442.806,
+              53.559,
+              534.194,
               643.0
             ],
             "category_label": "B",
-            "category_rank": 6,
+            "category_rank": 2,
             "legend_label_bbox_px": [
               931.0,
               65.0,
-              996.0,
+              983.0,
               83.0
             ],
             "legend_swatch_bbox_px": [
@@ -1946,51 +1213,51 @@
               88.0
             ],
             "mark_bbox_px": [
-              771.719,
-              531.525,
-              836.996,
+              442.806,
+              521.966,
+              534.194,
               608.0
             ],
             "mark_center_px": [
-              804.357,
-              569.763
+              488.5,
+              564.983
             ],
             "mark_fill_rgb": [
-              207,
-              95,
-              199
+              161,
+              157,
+              32
             ],
             "mark_outline_rgb": [
-              114,
-              52,
-              109
+              89,
+              86,
+              18
             ],
             "scene_variant": "stacked_bar",
-            "series_label": "Emie",
+            "series_label": "Hall",
             "series_rank": 0,
-            "value": 8,
+            "value": 9,
             "value_center_px": [
-              804.357,
-              569.763
+              488.5,
+              564.983
             ]
           },
-          "entity_id": "segment_B_Emie",
+          "entity_id": "segment_B_Hall",
           "entity_type": "segment"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              771.719,
-              130.034,
-              836.996,
+              442.806,
+              53.559,
+              534.194,
               643.0
             ],
             "category_label": "B",
-            "category_rank": 6,
+            "category_rank": 2,
             "legend_label_bbox_px": [
               931.0,
               107.0,
-              992.0,
+              987.0,
               125.0
             ],
             "legend_swatch_bbox_px": [
@@ -2000,51 +1267,51 @@
               130.0
             ],
             "mark_bbox_px": [
-              771.719,
-              445.492,
-              836.996,
-              531.525
+              442.806,
+              483.729,
+              534.194,
+              521.966
             ],
             "mark_center_px": [
-              804.357,
-              488.508
+              488.5,
+              502.847
             ],
             "mark_fill_rgb": [
-              206,
-              111,
-              28
+              107,
+              100,
+              126
             ],
             "mark_outline_rgb": [
-              113,
-              61,
-              15
+              59,
+              55,
+              69
             ],
             "scene_variant": "stacked_bar",
-            "series_label": "Thor",
+            "series_label": "Rois",
             "series_rank": 1,
-            "value": 9,
+            "value": 4,
             "value_center_px": [
-              804.357,
-              488.508
+              488.5,
+              502.847
             ]
           },
-          "entity_id": "segment_B_Thor",
+          "entity_id": "segment_B_Rois",
           "entity_type": "segment"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              771.719,
-              130.034,
-              836.996,
+              442.806,
+              53.559,
+              534.194,
               643.0
             ],
             "category_label": "B",
-            "category_rank": 6,
+            "category_rank": 2,
             "legend_label_bbox_px": [
               931.0,
               149.0,
-              1004.0,
+              972.0,
               167.0
             ],
             "legend_swatch_bbox_px": [
@@ -2054,51 +1321,51 @@
               172.0
             ],
             "mark_bbox_px": [
-              771.719,
-              302.102,
-              836.996,
-              445.492
+              442.806,
+              340.339,
+              534.194,
+              483.729
             ],
             "mark_center_px": [
-              804.357,
-              373.797
+              488.5,
+              412.034
             ],
             "mark_fill_rgb": [
-              28,
-              168,
-              58
+              98,
+              10,
+              170
             ],
             "mark_outline_rgb": [
-              15,
-              92,
-              32
+              54,
+              6,
+              94
             ],
             "scene_variant": "stacked_bar",
-            "series_label": "Meda",
+            "series_label": "Sal",
             "series_rank": 2,
             "value": 15,
             "value_center_px": [
-              804.357,
-              373.797
+              488.5,
+              412.034
             ]
           },
-          "entity_id": "segment_B_Meda",
+          "entity_id": "segment_B_Sal",
           "entity_type": "segment"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              771.719,
-              130.034,
-              836.996,
+              442.806,
+              53.559,
+              534.194,
               643.0
             ],
             "category_label": "B",
-            "category_rank": 6,
+            "category_rank": 2,
             "legend_label_bbox_px": [
               931.0,
               191.0,
-              1000.0,
+              990.0,
               209.0
             ],
             "legend_swatch_bbox_px": [
@@ -2108,48 +1375,643 @@
               214.0
             ],
             "mark_bbox_px": [
-              771.719,
-              130.034,
-              836.996,
-              302.102
+              442.806,
+              206.508,
+              534.194,
+              340.339
             ],
             "mark_center_px": [
-              804.357,
-              216.068
+              488.5,
+              273.424
             ],
             "mark_fill_rgb": [
-              51,
               157,
-              169
+              124,
+              218
             ],
             "mark_outline_rgb": [
-              28,
               86,
-              93
+              68,
+              120
             ],
             "scene_variant": "stacked_bar",
-            "series_label": "Erme",
+            "series_label": "Viva",
             "series_rank": 3,
-            "value": 18,
+            "value": 14,
             "value_center_px": [
-              804.357,
-              216.068
+              488.5,
+              273.424
             ]
           },
-          "entity_id": "segment_B_Erme",
+          "entity_id": "segment_B_Viva",
+          "entity_type": "segment"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              442.806,
+              53.559,
+              534.194,
+              643.0
+            ],
+            "category_label": "B",
+            "category_rank": 2,
+            "legend_label_bbox_px": [
+              931.0,
+              230.5,
+              983.0,
+              253.5
+            ],
+            "legend_swatch_bbox_px": [
+              881.0,
+              228.0,
+              909.0,
+              256.0
+            ],
+            "mark_bbox_px": [
+              442.806,
+              53.559,
+              534.194,
+              206.508
+            ],
+            "mark_center_px": [
+              488.5,
+              130.034
+            ],
+            "mark_fill_rgb": [
+              8,
+              109,
+              1
+            ],
+            "mark_outline_rgb": [
+              4,
+              60,
+              1
+            ],
+            "scene_variant": "stacked_bar",
+            "series_label": "Nye",
+            "series_rank": 4,
+            "value": 16,
+            "value_center_px": [
+              488.5,
+              130.034
+            ]
+          },
+          "entity_id": "segment_B_Nye",
+          "entity_type": "segment"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              590.206,
+              168.271,
+              681.594,
+              643.0
+            ],
+            "category_label": "S",
+            "category_rank": 3,
+            "legend_label_bbox_px": [
+              931.0,
+              65.0,
+              983.0,
+              83.0
+            ],
+            "legend_swatch_bbox_px": [
+              881.0,
+              60.0,
+              909.0,
+              88.0
+            ],
+            "mark_bbox_px": [
+              590.206,
+              521.966,
+              681.594,
+              608.0
+            ],
+            "mark_center_px": [
+              635.9,
+              564.983
+            ],
+            "mark_fill_rgb": [
+              161,
+              157,
+              32
+            ],
+            "mark_outline_rgb": [
+              89,
+              86,
+              18
+            ],
+            "scene_variant": "stacked_bar",
+            "series_label": "Hall",
+            "series_rank": 0,
+            "value": 9,
+            "value_center_px": [
+              635.9,
+              564.983
+            ]
+          },
+          "entity_id": "segment_S_Hall",
+          "entity_type": "segment"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              590.206,
+              168.271,
+              681.594,
+              643.0
+            ],
+            "category_label": "S",
+            "category_rank": 3,
+            "legend_label_bbox_px": [
+              931.0,
+              107.0,
+              987.0,
+              125.0
+            ],
+            "legend_swatch_bbox_px": [
+              881.0,
+              102.0,
+              909.0,
+              130.0
+            ],
+            "mark_bbox_px": [
+              590.206,
+              474.169,
+              681.594,
+              521.966
+            ],
+            "mark_center_px": [
+              635.9,
+              498.068
+            ],
+            "mark_fill_rgb": [
+              107,
+              100,
+              126
+            ],
+            "mark_outline_rgb": [
+              59,
+              55,
+              69
+            ],
+            "scene_variant": "stacked_bar",
+            "series_label": "Rois",
+            "series_rank": 1,
+            "value": 5,
+            "value_center_px": [
+              635.9,
+              498.068
+            ]
+          },
+          "entity_id": "segment_S_Rois",
+          "entity_type": "segment"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              590.206,
+              168.271,
+              681.594,
+              643.0
+            ],
+            "category_label": "S",
+            "category_rank": 3,
+            "legend_label_bbox_px": [
+              931.0,
+              149.0,
+              972.0,
+              167.0
+            ],
+            "legend_swatch_bbox_px": [
+              881.0,
+              144.0,
+              909.0,
+              172.0
+            ],
+            "mark_bbox_px": [
+              590.206,
+              311.661,
+              681.594,
+              474.169
+            ],
+            "mark_center_px": [
+              635.9,
+              392.915
+            ],
+            "mark_fill_rgb": [
+              98,
+              10,
+              170
+            ],
+            "mark_outline_rgb": [
+              54,
+              6,
+              94
+            ],
+            "scene_variant": "stacked_bar",
+            "series_label": "Sal",
+            "series_rank": 2,
+            "value": 17,
+            "value_center_px": [
+              635.9,
+              392.915
+            ]
+          },
+          "entity_id": "segment_S_Sal",
+          "entity_type": "segment"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              590.206,
+              168.271,
+              681.594,
+              643.0
+            ],
+            "category_label": "S",
+            "category_rank": 3,
+            "legend_label_bbox_px": [
+              931.0,
+              191.0,
+              990.0,
+              209.0
+            ],
+            "legend_swatch_bbox_px": [
+              881.0,
+              186.0,
+              909.0,
+              214.0
+            ],
+            "mark_bbox_px": [
+              590.206,
+              216.068,
+              681.594,
+              311.661
+            ],
+            "mark_center_px": [
+              635.9,
+              263.864
+            ],
+            "mark_fill_rgb": [
+              157,
+              124,
+              218
+            ],
+            "mark_outline_rgb": [
+              86,
+              68,
+              120
+            ],
+            "scene_variant": "stacked_bar",
+            "series_label": "Viva",
+            "series_rank": 3,
+            "value": 10,
+            "value_center_px": [
+              635.9,
+              263.864
+            ]
+          },
+          "entity_id": "segment_S_Viva",
+          "entity_type": "segment"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              590.206,
+              168.271,
+              681.594,
+              643.0
+            ],
+            "category_label": "S",
+            "category_rank": 3,
+            "legend_label_bbox_px": [
+              931.0,
+              230.5,
+              983.0,
+              253.5
+            ],
+            "legend_swatch_bbox_px": [
+              881.0,
+              228.0,
+              909.0,
+              256.0
+            ],
+            "mark_bbox_px": [
+              590.206,
+              168.271,
+              681.594,
+              216.068
+            ],
+            "mark_center_px": [
+              635.9,
+              192.169
+            ],
+            "mark_fill_rgb": [
+              8,
+              109,
+              1
+            ],
+            "mark_outline_rgb": [
+              4,
+              60,
+              1
+            ],
+            "scene_variant": "stacked_bar",
+            "series_label": "Nye",
+            "series_rank": 4,
+            "value": 5,
+            "value_center_px": [
+              635.9,
+              192.169
+            ]
+          },
+          "entity_id": "segment_S_Nye",
+          "entity_type": "segment"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              737.606,
+              110.915,
+              828.994,
+              643.0
+            ],
+            "category_label": "M",
+            "category_rank": 4,
+            "legend_label_bbox_px": [
+              931.0,
+              65.0,
+              983.0,
+              83.0
+            ],
+            "legend_swatch_bbox_px": [
+              881.0,
+              60.0,
+              909.0,
+              88.0
+            ],
+            "mark_bbox_px": [
+              737.606,
+              483.729,
+              828.994,
+              608.0
+            ],
+            "mark_center_px": [
+              783.3,
+              545.864
+            ],
+            "mark_fill_rgb": [
+              161,
+              157,
+              32
+            ],
+            "mark_outline_rgb": [
+              89,
+              86,
+              18
+            ],
+            "scene_variant": "stacked_bar",
+            "series_label": "Hall",
+            "series_rank": 0,
+            "value": 13,
+            "value_center_px": [
+              783.3,
+              545.864
+            ]
+          },
+          "entity_id": "segment_M_Hall",
+          "entity_type": "segment"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              737.606,
+              110.915,
+              828.994,
+              643.0
+            ],
+            "category_label": "M",
+            "category_rank": 4,
+            "legend_label_bbox_px": [
+              931.0,
+              107.0,
+              987.0,
+              125.0
+            ],
+            "legend_swatch_bbox_px": [
+              881.0,
+              102.0,
+              909.0,
+              130.0
+            ],
+            "mark_bbox_px": [
+              737.606,
+              378.576,
+              828.994,
+              483.729
+            ],
+            "mark_center_px": [
+              783.3,
+              431.153
+            ],
+            "mark_fill_rgb": [
+              107,
+              100,
+              126
+            ],
+            "mark_outline_rgb": [
+              59,
+              55,
+              69
+            ],
+            "scene_variant": "stacked_bar",
+            "series_label": "Rois",
+            "series_rank": 1,
+            "value": 11,
+            "value_center_px": [
+              783.3,
+              431.153
+            ]
+          },
+          "entity_id": "segment_M_Rois",
+          "entity_type": "segment"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              737.606,
+              110.915,
+              828.994,
+              643.0
+            ],
+            "category_label": "M",
+            "category_rank": 4,
+            "legend_label_bbox_px": [
+              931.0,
+              149.0,
+              972.0,
+              167.0
+            ],
+            "legend_swatch_bbox_px": [
+              881.0,
+              144.0,
+              909.0,
+              172.0
+            ],
+            "mark_bbox_px": [
+              737.606,
+              244.746,
+              828.994,
+              378.576
+            ],
+            "mark_center_px": [
+              783.3,
+              311.661
+            ],
+            "mark_fill_rgb": [
+              98,
+              10,
+              170
+            ],
+            "mark_outline_rgb": [
+              54,
+              6,
+              94
+            ],
+            "scene_variant": "stacked_bar",
+            "series_label": "Sal",
+            "series_rank": 2,
+            "value": 14,
+            "value_center_px": [
+              783.3,
+              311.661
+            ]
+          },
+          "entity_id": "segment_M_Sal",
+          "entity_type": "segment"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              737.606,
+              110.915,
+              828.994,
+              643.0
+            ],
+            "category_label": "M",
+            "category_rank": 4,
+            "legend_label_bbox_px": [
+              931.0,
+              191.0,
+              990.0,
+              209.0
+            ],
+            "legend_swatch_bbox_px": [
+              881.0,
+              186.0,
+              909.0,
+              214.0
+            ],
+            "mark_bbox_px": [
+              737.606,
+              196.949,
+              828.994,
+              244.746
+            ],
+            "mark_center_px": [
+              783.3,
+              220.847
+            ],
+            "mark_fill_rgb": [
+              157,
+              124,
+              218
+            ],
+            "mark_outline_rgb": [
+              86,
+              68,
+              120
+            ],
+            "scene_variant": "stacked_bar",
+            "series_label": "Viva",
+            "series_rank": 3,
+            "value": 5,
+            "value_center_px": [
+              783.3,
+              220.847
+            ]
+          },
+          "entity_id": "segment_M_Viva",
+          "entity_type": "segment"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              737.606,
+              110.915,
+              828.994,
+              643.0
+            ],
+            "category_label": "M",
+            "category_rank": 4,
+            "legend_label_bbox_px": [
+              931.0,
+              230.5,
+              983.0,
+              253.5
+            ],
+            "legend_swatch_bbox_px": [
+              881.0,
+              228.0,
+              909.0,
+              256.0
+            ],
+            "mark_bbox_px": [
+              737.606,
+              110.915,
+              828.994,
+              196.949
+            ],
+            "mark_center_px": [
+              783.3,
+              153.932
+            ],
+            "mark_fill_rgb": [
+              8,
+              109,
+              1
+            ],
+            "mark_outline_rgb": [
+              4,
+              60,
+              1
+            ],
+            "scene_variant": "stacked_bar",
+            "series_label": "Nye",
+            "series_rank": 4,
+            "value": 9,
+            "value_center_px": [
+              783.3,
+              153.932
+            ]
+          },
+          "entity_id": "segment_M_Nye",
           "entity_type": "segment"
         }
       ],
       "relations": {
-        "answer_value": 6,
+        "answer_value": 9,
         "evidence_labels": [
-          "Emie",
-          "Thor",
-          "Meda",
-          "Erme"
+          "Hall",
+          "Rois",
+          "Sal",
+          "Viva",
+          "Nye"
         ],
-        "query_category_label": "V",
-        "query_series_label": "Emie",
+        "query_category_label": "M",
+        "query_series_label": "Nye",
         "query_subset_labels": [],
         "scene_variant": "stacked_bar",
         "task_variant": "stack_segment_value"
@@ -2158,17 +2020,19 @@
     },
     "witness_symbolic": {
       "labels": [
-        "Emie",
-        "Thor",
-        "Meda",
-        "Erme"
+        "Hall",
+        "Rois",
+        "Sal",
+        "Viva",
+        "Nye"
       ],
       "type": "integer_list",
       "values": [
-        6,
-        10,
-        18,
-        7
+        13,
+        11,
+        14,
+        5,
+        9
       ]
     }
   },

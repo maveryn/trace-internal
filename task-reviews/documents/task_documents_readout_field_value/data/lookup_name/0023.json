@@ -1,22 +1,22 @@
 {
   "answer_gt": {
     "type": "string",
-    "value": "Redwood"
+    "value": "Blue Oak Market"
   },
   "evidence_gt": {
     "type": "bbox_set",
     "value": [
       [
-        665.0,
-        565.0,
-        716.0,
-        589.0
+        214.0,
+        219.5,
+        306.0,
+        238.5
       ],
       [
-        665.0,
-        603.5,
-        796.0,
-        626.5
+        214.0,
+        255.5,
+        448.0,
+        278.5
       ]
     ]
   },
@@ -24,18 +24,18 @@
     "format": "png",
     "path": "documents/task_documents_readout_field_value/images/lookup_name/0023.png"
   },
-  "instance_seed": 8496954406168641,
-  "prompt": "You are given an invoice-style document with labeled header blocks and summary fields. Find the requested field in the document: What is the city? Respond with the exact name text from the document.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value.\nAnswer rule: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"Ava Lee\"}",
+  "instance_seed": 6488122855643851,
+  "prompt": "You are given an invoice-style document with labeled header blocks and summary fields. Find the requested field in the document: What is the vendor name? Answer using the exact field value.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value.\nAnswer field: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"Ava Lee\"}",
   "prompt_variants": {
-    "answer_and_evidence": "You are given an invoice-style document with labeled header blocks and summary fields. Find the requested field in the document: What is the city? Respond with the exact name text from the document.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value.\nAnswer rule: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"Ava Lee\"}",
-    "answer_only": "You are given an invoice-style document with labeled header blocks and summary fields. Find the requested field in the document: What is the city? Respond with the exact name text from the document.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"answer\":\"Ava Lee\"}"
+    "answer_and_evidence": "You are given an invoice-style document with labeled header blocks and summary fields. Find the requested field in the document: What is the vendor name? Answer using the exact field value.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value.\nAnswer field: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"Ava Lee\"}",
+    "answer_only": "You are given an invoice-style document with labeled header blocks and summary fields. Find the requested field in the document: What is the vendor name? Answer using the exact field value.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"answer\":\"Ava Lee\"}"
   },
   "task": "task_documents_readout_field_value",
   "task_variant": "lookup_name",
   "trace_payload": {
     "answer_gt": {
       "type": "string",
-      "value": "Redwood"
+      "value": "Blue Oak Market"
     },
     "background": {
       "available_styles": [
@@ -56,16 +56,16 @@
       "type": "bbox_set",
       "value": [
         [
-          665.0,
-          565.0,
-          716.0,
-          589.0
+          214.0,
+          219.5,
+          306.0,
+          238.5
         ],
         [
-          665.0,
-          603.5,
-          796.0,
-          626.5
+          214.0,
+          255.5,
+          448.0,
+          278.5
         ]
       ]
     },
@@ -76,7 +76,7 @@
           "field_category": "lookup_name",
           "field_id": "vendor_name",
           "field_label": "Vendor",
-          "field_value": "Northwind Partners",
+          "field_value": "Blue Oak Market",
           "label_bbox_id": "vendor_name:label",
           "question_name": "vendor name",
           "value_bbox_id": "vendor_name:value"
@@ -85,7 +85,7 @@
           "field_category": "lookup_name",
           "field_id": "customer_name",
           "field_label": "Customer",
-          "field_value": "Ada Turner",
+          "field_value": "Ava Martin",
           "label_bbox_id": "customer_name:label",
           "question_name": "customer name",
           "value_bbox_id": "customer_name:value"
@@ -94,7 +94,7 @@
           "field_category": "lookup_identifier",
           "field_id": "invoice_number",
           "field_label": "Invoice Number",
-          "field_value": "INV-91365",
+          "field_value": "INV-83184",
           "label_bbox_id": "invoice_number:label",
           "question_name": "invoice number",
           "value_bbox_id": "invoice_number:value"
@@ -103,7 +103,7 @@
           "field_category": "lookup_identifier",
           "field_id": "account_id",
           "field_label": "Account ID",
-          "field_value": "ACC-7000",
+          "field_value": "ACC-4168",
           "label_bbox_id": "account_id:label",
           "question_name": "account ID",
           "value_bbox_id": "account_id:value"
@@ -112,7 +112,7 @@
           "field_category": "lookup_date",
           "field_id": "issue_date",
           "field_label": "Issue Date",
-          "field_value": "2026-02-27",
+          "field_value": "2026-02-21",
           "label_bbox_id": "issue_date:label",
           "question_name": "issue date",
           "value_bbox_id": "issue_date:value"
@@ -121,7 +121,7 @@
           "field_category": "lookup_date",
           "field_id": "due_date",
           "field_label": "Due Date",
-          "field_value": "2026-03-21",
+          "field_value": "2026-03-15",
           "label_bbox_id": "due_date:label",
           "question_name": "due date",
           "value_bbox_id": "due_date:value"
@@ -130,7 +130,7 @@
           "field_category": "lookup_contact",
           "field_id": "contact_email",
           "field_label": "Contact Email",
-          "field_value": "northwindpartn@northpost.co",
+          "field_value": "blueoakmarket@brightdesk.io",
           "label_bbox_id": "contact_email:label",
           "question_name": "contact email",
           "value_bbox_id": "contact_email:value"
@@ -139,7 +139,7 @@
           "field_category": "lookup_contact",
           "field_id": "contact_phone",
           "field_label": "Phone",
-          "field_value": "(704) 738-4209",
+          "field_value": "(818) 151-7618",
           "label_bbox_id": "contact_phone:label",
           "question_name": "phone number",
           "value_bbox_id": "contact_phone:value"
@@ -148,7 +148,7 @@
           "field_category": "lookup_name",
           "field_id": "city",
           "field_label": "City",
-          "field_value": "Redwood",
+          "field_value": "Clearview",
           "label_bbox_id": "city:label",
           "question_name": "city",
           "value_bbox_id": "city:value"
@@ -157,7 +157,7 @@
           "field_category": "lookup_amount",
           "field_id": "tax_amount",
           "field_label": "Tax",
-          "field_value": "$18.16",
+          "field_value": "$22.40",
           "label_bbox_id": "tax_amount:label",
           "question_name": "tax amount",
           "value_bbox_id": "tax_amount:value"
@@ -166,20 +166,20 @@
           "field_category": "lookup_amount",
           "field_id": "total_due",
           "field_label": "Total Due",
-          "field_value": "$297.56",
+          "field_value": "$229.84",
           "label_bbox_id": "total_due:label",
           "question_name": "total due",
           "value_bbox_id": "total_due:value"
         }
       ],
       "query_field_category": "lookup_name",
-      "query_field_id": "city",
-      "query_field_label": "City",
-      "query_field_value": "Redwood",
-      "query_label_bbox_id": "city:label",
-      "query_value_bbox_id": "city:value",
+      "query_field_id": "vendor_name",
+      "query_field_label": "Vendor",
+      "query_field_value": "Blue Oak Market",
+      "query_label_bbox_id": "vendor_name:label",
+      "query_value_bbox_id": "vendor_name:value",
       "question_format": "document_field_lookup",
-      "question_text": "What is the city?",
+      "question_text": "What is the vendor name?",
       "scene_title": "Invoice",
       "scene_variant": "invoice_sheet",
       "task_variant": "lookup_name",
@@ -204,16 +204,16 @@
     "projected_evidence": {
       "bbox_set": [
         [
-          665.0,
-          565.0,
-          716.0,
-          589.0
+          214.0,
+          219.5,
+          306.0,
+          238.5
         ],
         [
-          665.0,
-          603.5,
-          796.0,
-          626.5
+          214.0,
+          255.5,
+          448.0,
+          278.5
         ]
       ]
     },
@@ -241,7 +241,7 @@
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 4,
+        "answer_or_evidence_variant_index": 3,
         "prompt_bundle_id": "documents_readout_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -252,14 +252,14 @@
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
           "object_description": "an invoice-style document with labeled header blocks and summary fields",
-          "question_text": "What is the city?"
+          "question_text": "What is the vendor name?"
         },
         "task_family_key": "structured_document",
         "task_family_variant_index": 2,
         "task_key": "field_lookup_query",
         "task_variant_index": 2,
         "task_variant_key": "lookup_name",
-        "task_variant_template_index": 2,
+        "task_variant_template_index": 4,
         "template_paths": [
           "documents/readout/documents_readout_v1.json"
         ],
@@ -275,7 +275,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 4,
+            "answer_or_evidence_variant_index": 3,
             "prompt_bundle_id": "documents_readout_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -286,14 +286,14 @@
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "an invoice-style document with labeled header blocks and summary fields",
-              "question_text": "What is the city?"
+              "question_text": "What is the vendor name?"
             },
             "task_family_key": "structured_document",
             "task_family_variant_index": 2,
             "task_key": "field_lookup_query",
             "task_variant_index": 2,
             "task_variant_key": "lookup_name",
-            "task_variant_template_index": 2,
+            "task_variant_template_index": 4,
             "template_paths": [
               "documents/readout/documents_readout_v1.json"
             ],
@@ -304,12 +304,12 @@
               "task_variant:lookup_name": 5
             }
           },
-          "prompt": "You are given an invoice-style document with labeled header blocks and summary fields. Find the requested field in the document: What is the city? Respond with the exact name text from the document.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value.\nAnswer rule: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"Ava Lee\"}"
+          "prompt": "You are given an invoice-style document with labeled header blocks and summary fields. Find the requested field in the document: What is the vendor name? Answer using the exact field value.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value.\nAnswer field: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"Ava Lee\"}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 2,
+            "answer_or_evidence_variant_index": 1,
             "prompt_bundle_id": "documents_readout_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -320,14 +320,14 @@
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "an invoice-style document with labeled header blocks and summary fields",
-              "question_text": "What is the city?"
+              "question_text": "What is the vendor name?"
             },
             "task_family_key": "structured_document",
             "task_family_variant_index": 2,
             "task_key": "field_lookup_query",
             "task_variant_index": 2,
             "task_variant_key": "lookup_name",
-            "task_variant_template_index": 2,
+            "task_variant_template_index": 4,
             "template_paths": [
               "documents/readout/documents_readout_v1.json"
             ],
@@ -338,7 +338,7 @@
               "task_variant:lookup_name": 5
             }
           },
-          "prompt": "You are given an invoice-style document with labeled header blocks and summary fields. Find the requested field in the document: What is the city? Respond with the exact name text from the document.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"answer\":\"Ava Lee\"}"
+          "prompt": "You are given an invoice-style document with labeled header blocks and summary fields. Find the requested field in the document: What is the vendor name? Answer using the exact field value.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"answer\":\"Ava Lee\"}"
         }
       },
       "task_variant": "lookup_name",
@@ -491,14 +491,14 @@
         "city:value": [
           665.0,
           603.5,
-          796.0,
+          806.0,
           626.5
         ],
         "contact_email:value": [
           665.0,
-          485.5,
-          1057.0,
-          512.5
+          486.0,
+          1041.0,
+          512.0
         ],
         "contact_phone:value": [
           214.0,
@@ -509,7 +509,7 @@
         "customer_name:value": [
           665.0,
           255.5,
-          824.0,
+          819.0,
           278.5
         ],
         "due_date:value": [
@@ -545,7 +545,7 @@
         "vendor_name:value": [
           214.0,
           255.5,
-          490.0,
+          448.0,
           278.5
         ]
       },
@@ -565,7 +565,7 @@
     "render_spec": {
       "canvas_height": 920,
       "canvas_width": 1280,
-      "geometry_seed": 8496954406168641,
+      "geometry_seed": 6488122855643851,
       "page_shadow_offset_px": 14,
       "receipt_page_height_px": 760,
       "receipt_page_width_px": 520,
@@ -628,13 +628,13 @@
           "bbox_px": [
             214.0,
             255.5,
-            490.0,
+            448.0,
             278.5
           ],
           "entity_id": "vendor_name:value",
           "entity_type": "document_field_value",
           "field_id": "vendor_name",
-          "text": "Northwind Partners"
+          "text": "Blue Oak Market"
         },
         {
           "bbox_id": "customer_name",
@@ -666,13 +666,13 @@
           "bbox_px": [
             665.0,
             255.5,
-            824.0,
+            819.0,
             278.5
           ],
           "entity_id": "customer_name:value",
           "entity_type": "document_field_value",
           "field_id": "customer_name",
-          "text": "Ada Turner"
+          "text": "Ava Martin"
         },
         {
           "bbox_id": "invoice_number",
@@ -710,7 +710,7 @@
           "entity_id": "invoice_number:value",
           "entity_type": "document_field_value",
           "field_id": "invoice_number",
-          "text": "INV-91365"
+          "text": "INV-83184"
         },
         {
           "bbox_id": "account_id",
@@ -748,7 +748,7 @@
           "entity_id": "account_id:value",
           "entity_type": "document_field_value",
           "field_id": "account_id",
-          "text": "ACC-7000"
+          "text": "ACC-4168"
         },
         {
           "bbox_id": "issue_date",
@@ -786,7 +786,7 @@
           "entity_id": "issue_date:value",
           "entity_type": "document_field_value",
           "field_id": "issue_date",
-          "text": "2026-02-27"
+          "text": "2026-02-21"
         },
         {
           "bbox_id": "due_date",
@@ -824,7 +824,7 @@
           "entity_id": "due_date:value",
           "entity_type": "document_field_value",
           "field_id": "due_date",
-          "text": "2026-03-21"
+          "text": "2026-03-15"
         },
         {
           "bbox_id": "contact_email",
@@ -855,14 +855,14 @@
           "bbox_id": "contact_email:value",
           "bbox_px": [
             665.0,
-            485.5,
-            1057.0,
-            512.5
+            486.0,
+            1041.0,
+            512.0
           ],
           "entity_id": "contact_email:value",
           "entity_type": "document_field_value",
           "field_id": "contact_email",
-          "text": "northwindpartn@northpost.co"
+          "text": "blueoakmarket@brightdesk.io"
         },
         {
           "bbox_id": "contact_phone",
@@ -900,7 +900,7 @@
           "entity_id": "contact_phone:value",
           "entity_type": "document_field_value",
           "field_id": "contact_phone",
-          "text": "(704) 738-4209"
+          "text": "(818) 151-7618"
         },
         {
           "bbox_id": "city",
@@ -932,13 +932,13 @@
           "bbox_px": [
             665.0,
             603.5,
-            796.0,
+            806.0,
             626.5
           ],
           "entity_id": "city:value",
           "entity_type": "document_field_value",
           "field_id": "city",
-          "text": "Redwood"
+          "text": "Clearview"
         },
         {
           "bbox_id": "tax_amount",
@@ -976,7 +976,7 @@
           "entity_id": "tax_amount:value",
           "entity_type": "document_field_value",
           "field_id": "tax_amount",
-          "text": "$18.16"
+          "text": "$22.40"
         },
         {
           "bbox_id": "total_due",
@@ -1014,12 +1014,12 @@
           "entity_id": "total_due:value",
           "entity_type": "document_field_value",
           "field_id": "total_due",
-          "text": "$297.56"
+          "text": "$229.84"
         }
       ],
       "relations": {
-        "query_field_id": "city",
-        "query_field_label": "City",
+        "query_field_id": "vendor_name",
+        "query_field_label": "Vendor",
         "scene_variant": "invoice_sheet",
         "task_variant": "lookup_name",
         "view_family": "structured_document"
@@ -1028,10 +1028,10 @@
     },
     "witness_symbolic": {
       "bbox_id_sequence": [
-        "city:label",
-        "city:value"
+        "vendor_name:label",
+        "vendor_name:value"
       ],
-      "field_id": "city"
+      "field_id": "vendor_name"
     }
   },
   "versions": {

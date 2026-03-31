@@ -1,7 +1,7 @@
 {
   "answer_gt": {
     "type": "string",
-    "value": "Package Draft"
+    "value": "Check File"
   },
   "evidence_gt": {
     "type": "bbox_set",
@@ -18,11 +18,11 @@
     "format": "png",
     "path": "diagrams/task_diagrams_flow_next_step_label/images/branch_next_step/0009.png"
   },
-  "instance_seed": 3908031406084896,
-  "prompt": "You are given a flowchart with labeled process boxes and arrows. Read the labeled process steps and then answer: Following the Yes branch from Ready to Ship?, what is the next step? Return the exact step label shown. Respond with the exact step label from the diagram.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct next-step box.\nAnswer rule: set \"answer\" to the exact visible next-step label.\nExample JSON:\n{\"evidence\":[[624,228,838,312]],\"answer\":\"Fix Record\"}",
+  "instance_seed": 6944449875078049,
+  "prompt": "Look at the process diagram in the image: a flowchart with labeled process boxes and arrows. Use the diagram structure to answer: Following the Yes branch from Policy Match?, what is the next step? Return the exact step label shown. Return the exact visible next-step label.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct next-step box.\nAnswer rule: set \"answer\" to the exact visible next-step label.\nExample JSON:\n{\"evidence\":[[624,228,838,312]],\"answer\":\"Fix Record\"}",
   "prompt_variants": {
-    "answer_and_evidence": "You are given a flowchart with labeled process boxes and arrows. Read the labeled process steps and then answer: Following the Yes branch from Ready to Ship?, what is the next step? Return the exact step label shown. Respond with the exact step label from the diagram.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct next-step box.\nAnswer rule: set \"answer\" to the exact visible next-step label.\nExample JSON:\n{\"evidence\":[[624,228,838,312]],\"answer\":\"Fix Record\"}",
-    "answer_only": "You are given a flowchart with labeled process boxes and arrows. Read the labeled process steps and then answer: Following the Yes branch from Ready to Ship?, what is the next step? Return the exact step label shown. Respond with the exact step label from the diagram.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the exact visible next-step label.\nExample JSON:\n{\"answer\":\"Fix Record\"}"
+    "answer_and_evidence": "Look at the process diagram in the image: a flowchart with labeled process boxes and arrows. Use the diagram structure to answer: Following the Yes branch from Policy Match?, what is the next step? Return the exact step label shown. Return the exact visible next-step label.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct next-step box.\nAnswer rule: set \"answer\" to the exact visible next-step label.\nExample JSON:\n{\"evidence\":[[624,228,838,312]],\"answer\":\"Fix Record\"}",
+    "answer_only": "Look at the process diagram in the image: a flowchart with labeled process boxes and arrows. Use the diagram structure to answer: Following the Yes branch from Policy Match?, what is the next step? Return the exact step label shown. Return the exact visible next-step label.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the exact visible next-step label.\nExample JSON:\n{\"answer\":\"Fix Record\"}"
   },
   "task": "task_diagrams_flow_next_step_label",
   "task_variant": "branch_next_step",
@@ -45,7 +45,7 @@
     "execution_trace": {
       "answer_node_bbox_id": "node_bbox_3",
       "answer_node_id": "node_3",
-      "answer_node_label": "Package Draft",
+      "answer_node_label": "Check File",
       "edge_specs": [
         {
           "edge_id": "edge_0",
@@ -113,7 +113,7 @@
           "node_bbox_id": "node_bbox_0",
           "node_id": "node_0",
           "node_kind": "process",
-          "node_label": "Route Payment",
+          "node_label": "Issue Form",
           "node_label_bbox_id": "node_label_bbox_0"
         },
         {
@@ -125,7 +125,7 @@
           "node_bbox_id": "node_bbox_1",
           "node_id": "node_1",
           "node_kind": "process",
-          "node_label": "Release Booking",
+          "node_label": "Submit Return",
           "node_label_bbox_id": "node_label_bbox_1"
         },
         {
@@ -137,7 +137,7 @@
           "node_bbox_id": "node_bbox_2",
           "node_id": "node_2",
           "node_kind": "decision",
-          "node_label": "Ready to Ship?",
+          "node_label": "Policy Match?",
           "node_label_bbox_id": "node_label_bbox_2"
         },
         {
@@ -149,7 +149,7 @@
           "node_bbox_id": "node_bbox_3",
           "node_id": "node_3",
           "node_kind": "process",
-          "node_label": "Package Draft",
+          "node_label": "Check File",
           "node_label_bbox_id": "node_label_bbox_3"
         },
         {
@@ -161,7 +161,7 @@
           "node_bbox_id": "node_bbox_4",
           "node_id": "node_4",
           "node_kind": "process",
-          "node_label": "Update Booking",
+          "node_label": "Inspect Notice",
           "node_label_bbox_id": "node_label_bbox_4"
         },
         {
@@ -173,16 +173,16 @@
           "node_bbox_id": "node_bbox_5",
           "node_id": "node_5",
           "node_kind": "process",
-          "node_label": "Schedule Plan",
+          "node_label": "Create Plan",
           "node_label_bbox_id": "node_label_bbox_5"
         }
       ],
       "query_branch_label": "Yes",
       "query_node_id": "node_2",
-      "query_node_label": "Ready to Ship?",
+      "query_node_label": "Policy Match?",
       "question_format": "flow_next_step_label",
-      "question_text": "Following the Yes branch from Ready to Ship?, what is the next step? Return the exact step label shown.",
-      "scene_title": "Process Flow",
+      "question_text": "Following the Yes branch from Policy Match?, what is the next step? Return the exact step label shown.",
+      "scene_title": "Approval Flow",
       "scene_variant": "flowchart",
       "supporting_node_bbox_ids": [
         "node_bbox_3"
@@ -246,14 +246,14 @@
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
           "object_description": "a flowchart with labeled process boxes and arrows",
-          "question_text": "Following the Yes branch from Ready to Ship?, what is the next step? Return the exact step label shown."
+          "question_text": "Following the Yes branch from Policy Match?, what is the next step? Return the exact step label shown."
         },
         "task_family_key": "process_flow_diagram",
-        "task_family_variant_index": 2,
+        "task_family_variant_index": 1,
         "task_key": "next_step_query",
-        "task_variant_index": 4,
+        "task_variant_index": 2,
         "task_variant_key": "branch_next_step",
-        "task_variant_template_index": 2,
+        "task_variant_template_index": 1,
         "template_paths": [
           "diagrams/flow/diagrams_flow_v1.json"
         ],
@@ -280,14 +280,14 @@
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a flowchart with labeled process boxes and arrows",
-              "question_text": "Following the Yes branch from Ready to Ship?, what is the next step? Return the exact step label shown."
+              "question_text": "Following the Yes branch from Policy Match?, what is the next step? Return the exact step label shown."
             },
             "task_family_key": "process_flow_diagram",
-            "task_family_variant_index": 2,
+            "task_family_variant_index": 1,
             "task_key": "next_step_query",
-            "task_variant_index": 4,
+            "task_variant_index": 2,
             "task_variant_key": "branch_next_step",
-            "task_variant_template_index": 2,
+            "task_variant_template_index": 1,
             "template_paths": [
               "diagrams/flow/diagrams_flow_v1.json"
             ],
@@ -298,7 +298,7 @@
               "task_variant:branch_next_step": 5
             }
           },
-          "prompt": "You are given a flowchart with labeled process boxes and arrows. Read the labeled process steps and then answer: Following the Yes branch from Ready to Ship?, what is the next step? Return the exact step label shown. Respond with the exact step label from the diagram.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct next-step box.\nAnswer rule: set \"answer\" to the exact visible next-step label.\nExample JSON:\n{\"evidence\":[[624,228,838,312]],\"answer\":\"Fix Record\"}"
+          "prompt": "Look at the process diagram in the image: a flowchart with labeled process boxes and arrows. Use the diagram structure to answer: Following the Yes branch from Policy Match?, what is the next step? Return the exact step label shown. Return the exact visible next-step label.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct next-step box.\nAnswer rule: set \"answer\" to the exact visible next-step label.\nExample JSON:\n{\"evidence\":[[624,228,838,312]],\"answer\":\"Fix Record\"}"
         },
         "answer_only": {
           "metadata": {
@@ -314,14 +314,14 @@
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a flowchart with labeled process boxes and arrows",
-              "question_text": "Following the Yes branch from Ready to Ship?, what is the next step? Return the exact step label shown."
+              "question_text": "Following the Yes branch from Policy Match?, what is the next step? Return the exact step label shown."
             },
             "task_family_key": "process_flow_diagram",
-            "task_family_variant_index": 2,
+            "task_family_variant_index": 1,
             "task_key": "next_step_query",
-            "task_variant_index": 4,
+            "task_variant_index": 2,
             "task_variant_key": "branch_next_step",
-            "task_variant_template_index": 2,
+            "task_variant_template_index": 1,
             "template_paths": [
               "diagrams/flow/diagrams_flow_v1.json"
             ],
@@ -332,7 +332,7 @@
               "task_variant:branch_next_step": 5
             }
           },
-          "prompt": "You are given a flowchart with labeled process boxes and arrows. Read the labeled process steps and then answer: Following the Yes branch from Ready to Ship?, what is the next step? Return the exact step label shown. Respond with the exact step label from the diagram.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the exact visible next-step label.\nExample JSON:\n{\"answer\":\"Fix Record\"}"
+          "prompt": "Look at the process diagram in the image: a flowchart with labeled process boxes and arrows. Use the diagram structure to answer: Following the Yes branch from Policy Match?, what is the next step? Return the exact step label shown. Return the exact visible next-step label.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the exact visible next-step label.\nExample JSON:\n{\"answer\":\"Fix Record\"}"
         }
       },
       "task_variant": "branch_next_step",
@@ -395,40 +395,40 @@
       },
       "node_label_bboxes_px": {
         "node_label_bbox_0": [
-          93.0,
-          304.02,
-          275.0,
-          325.02
+          96.0,
+          303.52,
+          272.0,
+          325.52
         ],
         "node_label_bbox_1": [
           380.2,
-          304.02,
+          305.02,
           570.2,
-          325.02
+          324.02
         ],
         "node_label_bbox_2": [
-          656.8,
+          662.8,
           306.02,
-          792.8,
+          786.8,
           323.02
         ],
         "node_label_bbox_3": [
-          524.8,
-          506.7,
-          716.8,
-          531.7
+          537.8,
+          507.7,
+          703.8,
+          530.7
         ],
         "node_label_bbox_4": [
-          921.5,
-          303.52,
-          1110.5,
-          325.52
+          921.0,
+          302.52,
+          1111.0,
+          326.52
         ],
         "node_label_bbox_5": [
-          920.5,
-          509.2,
-          1111.5,
-          529.2
+          922.5,
+          507.7,
+          1109.5,
+          530.7
         ]
       },
       "panel_bbox_px": [
@@ -438,10 +438,10 @@
         788.0
       ],
       "title_bbox_px": [
-        481.0,
-        78.0,
-        719.0,
-        104.0
+        469.5,
+        74.5,
+        730.5,
+        107.5
       ]
     },
     "render_spec": {
@@ -449,7 +449,7 @@
       "canvas_width": 1200,
       "decision_diameter_px": 132,
       "edge_width_px": 5,
-      "geometry_seed": 3908031406084896,
+      "geometry_seed": 6944449875078049,
       "lane_gutter_width_px": 160,
       "node_height_px": 84,
       "node_width_px": 214,
@@ -469,14 +469,14 @@
         },
         {
           "bbox_xyxy": [
-            481.0,
-            78.0,
-            719.0,
-            104.0
+            469.5,
+            74.5,
+            730.5,
+            107.5
           ],
           "entity_id": "diagram_title",
           "entity_type": "diagram_title",
-          "text": "Process Flow"
+          "text": "Approval Flow"
         },
         {
           "edge_label": null,
@@ -566,19 +566,19 @@
           "lane_id": null,
           "node_id": "node_0",
           "node_kind": "process",
-          "text": "Route Payment"
+          "text": "Issue Form"
         },
         {
           "bbox_xyxy": [
-            93.0,
-            304.02,
-            275.0,
-            325.02
+            96.0,
+            303.52,
+            272.0,
+            325.52
           ],
           "entity_id": "node_label_bbox_0",
           "entity_type": "diagram_node_label",
           "node_id": "node_0",
-          "text": "Route Payment"
+          "text": "Issue Form"
         },
         {
           "bbox_xyxy": [
@@ -592,19 +592,19 @@
           "lane_id": null,
           "node_id": "node_1",
           "node_kind": "process",
-          "text": "Release Booking"
+          "text": "Submit Return"
         },
         {
           "bbox_xyxy": [
             380.2,
-            304.02,
+            305.02,
             570.2,
-            325.02
+            324.02
           ],
           "entity_id": "node_label_bbox_1",
           "entity_type": "diagram_node_label",
           "node_id": "node_1",
-          "text": "Release Booking"
+          "text": "Submit Return"
         },
         {
           "bbox_xyxy": [
@@ -618,19 +618,19 @@
           "lane_id": null,
           "node_id": "node_2",
           "node_kind": "decision",
-          "text": "Ready to Ship?"
+          "text": "Policy Match?"
         },
         {
           "bbox_xyxy": [
-            656.8,
+            662.8,
             306.02,
-            792.8,
+            786.8,
             323.02
           ],
           "entity_id": "node_label_bbox_2",
           "entity_type": "diagram_node_label",
           "node_id": "node_2",
-          "text": "Ready to Ship?"
+          "text": "Policy Match?"
         },
         {
           "bbox_xyxy": [
@@ -644,19 +644,19 @@
           "lane_id": null,
           "node_id": "node_3",
           "node_kind": "process",
-          "text": "Package Draft"
+          "text": "Check File"
         },
         {
           "bbox_xyxy": [
-            524.8,
-            506.7,
-            716.8,
-            531.7
+            537.8,
+            507.7,
+            703.8,
+            530.7
           ],
           "entity_id": "node_label_bbox_3",
           "entity_type": "diagram_node_label",
           "node_id": "node_3",
-          "text": "Package Draft"
+          "text": "Check File"
         },
         {
           "bbox_xyxy": [
@@ -670,19 +670,19 @@
           "lane_id": null,
           "node_id": "node_4",
           "node_kind": "process",
-          "text": "Update Booking"
+          "text": "Inspect Notice"
         },
         {
           "bbox_xyxy": [
-            921.5,
-            303.52,
-            1110.5,
-            325.52
+            921.0,
+            302.52,
+            1111.0,
+            326.52
           ],
           "entity_id": "node_label_bbox_4",
           "entity_type": "diagram_node_label",
           "node_id": "node_4",
-          "text": "Update Booking"
+          "text": "Inspect Notice"
         },
         {
           "bbox_xyxy": [
@@ -696,19 +696,19 @@
           "lane_id": null,
           "node_id": "node_5",
           "node_kind": "process",
-          "text": "Schedule Plan"
+          "text": "Create Plan"
         },
         {
           "bbox_xyxy": [
-            920.5,
-            509.2,
-            1111.5,
-            529.2
+            922.5,
+            507.7,
+            1109.5,
+            530.7
           ],
           "entity_id": "node_label_bbox_5",
           "entity_type": "diagram_node_label",
           "node_id": "node_5",
-          "text": "Schedule Plan"
+          "text": "Create Plan"
         }
       ],
       "relations": {

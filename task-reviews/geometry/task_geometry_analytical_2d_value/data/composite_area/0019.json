@@ -1,26 +1,26 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 245
+    "value": 1360
   },
   "evidence_gt": {
     "type": "measurement_ref_map",
     "value": {
-      "CD": 11,
-      "FE": 8,
-      "FG": 12,
-      "HC": 31
+      "AZ": 16,
+      "CB": 40,
+      "CX": 28,
+      "YZ": 15
     }
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_2d_value/images/composite_area/0019.png"
   },
-  "instance_seed": 4621931637671973,
-  "prompt": "The image shows a shaded composite geometric region with measurement annotations. Question: The shaded figure is an L-shaped region formed from a rectangle with one corner removed. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: CD, HC, FE, FG.\nAnswer field: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"CD\":2,\"HC\":3,\"FE\":4,\"FG\":5},\"answer\":8}",
+  "instance_seed": 3714930835679559,
+  "prompt": "Use the image showing a shaded composite geometric region with measurement annotations. Task: The shaded figure is a step-shaped union of two rectangles. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: CB, CX, AZ, YZ.\nAnswer rule: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"CB\":2,\"CX\":3,\"AZ\":4,\"YZ\":5},\"answer\":8}",
   "prompt_variants": {
-    "answer_and_evidence": "The image shows a shaded composite geometric region with measurement annotations. Question: The shaded figure is an L-shaped region formed from a rectangle with one corner removed. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: CD, HC, FE, FG.\nAnswer field: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"CD\":2,\"HC\":3,\"FE\":4,\"FG\":5},\"answer\":8}",
-    "answer_only": "The image shows a shaded composite geometric region with measurement annotations. Question: The shaded figure is an L-shaped region formed from a rectangle with one corner removed. What is the area of the shaded region in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"answer\":8}"
+    "answer_and_evidence": "Use the image showing a shaded composite geometric region with measurement annotations. Task: The shaded figure is a step-shaped union of two rectangles. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: CB, CX, AZ, YZ.\nAnswer rule: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"CB\":2,\"CX\":3,\"AZ\":4,\"YZ\":5},\"answer\":8}",
+    "answer_only": "Use the image showing a shaded composite geometric region with measurement annotations. Task: The shaded figure is a step-shaped union of two rectangles. What is the area of the shaded region in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"answer\":8}"
   },
   "task": "task_geometry_analytical_2d_value",
   "task_variant": "composite_area",
@@ -28,35 +28,35 @@
     "execution_trace": {
       "answer_max": 2500,
       "answer_min": 20,
-      "answer_scalar": 245,
+      "answer_scalar": 1360,
       "answer_type": "integer",
-      "answer_value": 245,
+      "answer_value": 1360,
       "evidence_map": {
-        "CD": 11,
-        "FE": 8,
-        "FG": 12,
-        "HC": 31
+        "AZ": 16,
+        "CB": 40,
+        "CX": 28,
+        "YZ": 15
       },
       "evidence_role_tokens": {
-        "cut_height": "FG",
-        "cut_width": "FE",
-        "outer_height": "HC",
-        "outer_width": "CD"
+        "left_height": "CX",
+        "left_width": "CB",
+        "right_height": "YZ",
+        "right_width": "AZ"
       },
       "evidence_role_values": {
-        "cut_height": 12,
-        "cut_width": 8,
-        "outer_height": 31,
-        "outer_width": 11
+        "left_height": 28,
+        "left_width": 40,
+        "right_height": 15,
+        "right_width": 16
       },
       "evidence_roles": [
-        "outer_width",
-        "outer_height",
-        "cut_width",
-        "cut_height"
+        "left_width",
+        "left_height",
+        "right_width",
+        "right_height"
       ],
-      "formula_expression": "outer_width * outer_height - cut_width * cut_height",
-      "legacy_query_variant": "l_shape_cutout",
+      "formula_expression": "left_width * left_height + right_width * right_height",
+      "legacy_query_variant": "step_rectangles_union",
       "legacy_scene_variant": "composite_region",
       "legacy_task_id": "task_geometry_analytical_2d_composite_area",
       "query_variant": "composite_area",
@@ -66,12 +66,12 @@
         "length": 0.0,
         "perimeter": 0.0
       },
-      "raw_answer_value": 245,
+      "raw_answer_value": 1360,
       "required_annotations": [
-        "CD",
-        "HC",
-        "FE",
-        "FG"
+        "CB",
+        "CX",
+        "AZ",
+        "YZ"
       ],
       "scene_kind": "composite_region",
       "scene_variant": "composite_region",
@@ -103,57 +103,57 @@
     },
     "projected_evidence": {
       "annotation_labels": {
-        "cut_height": "FG",
-        "cut_width": "FE",
-        "outer_height": "HC",
-        "outer_width": "CD"
+        "left_height": "CX",
+        "left_width": "CB",
+        "right_height": "YZ",
+        "right_width": "AZ"
       },
       "id_set": [
-        "CD",
-        "HC",
-        "FE",
-        "FG"
+        "CB",
+        "CX",
+        "AZ",
+        "YZ"
       ],
       "measurement_ref_map": {
-        "CD": 11,
-        "FE": 8,
-        "FG": 12,
-        "HC": 31
+        "AZ": 16,
+        "CB": 40,
+        "CX": 28,
+        "YZ": 15
       },
       "pixel_annotation_centers": {
-        "CD": [
-          296.4644979984706,
-          571.9
+        "AZ": [
+          451.6000000000001,
+          314.5838684850162
         ],
-        "FE": [
-          317.3580463855674,
-          269.6817204301074
+        "CB": [
+          254.06000000000003,
+          223.10220181834947
         ],
-        "FG": [
-          290.3752506866427,
-          205.17419354838705
+        "CX": [
+          84.79333333333331,
+          302.9055351516828
         ],
-        "HC": [
-          191.35482057911577,
-          337.5
+        "YZ": [
+          536.44,
+          348.7630351516829
         ]
       },
       "pixel_point_set": [
         [
-          296.4644979984706,
-          571.9
+          254.06000000000003,
+          223.10220181834947
         ],
         [
-          191.35482057911577,
-          337.5
+          84.79333333333331,
+          302.9055351516828
         ],
         [
-          317.3580463855674,
-          269.6817204301074
+          451.6000000000001,
+          314.5838684850162
         ],
         [
-          290.3752506866427,
-          205.17419354838705
+          536.44,
+          348.7630351516829
         ]
       ]
     },
@@ -161,7 +161,7 @@
       "params": {
         "answer_max": 2500,
         "answer_min": 20,
-        "legacy_query_variant": "l_shape_cutout",
+        "legacy_query_variant": "step_rectangles_union",
         "legacy_scene_variant": "composite_region",
         "legacy_task_id": "task_geometry_analytical_2d_composite_area",
         "query_variant": "composite_area",
@@ -182,7 +182,7 @@
           "trapezoid": 0.0,
           "triangle": 0.0
         },
-        "task_variant": "l_shape_cutout",
+        "task_variant": "step_rectangles_union",
         "variant_probabilities": {
           "area": 0.0,
           "composite_area": 1.0,
@@ -192,23 +192,23 @@
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 3,
+        "answer_or_evidence_variant_index": 4,
         "prompt_bundle_id": "geometry_analytical_composite_area_v1",
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the area value as an integer",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: CD, HC, FE, FG",
-          "json_example": "{\"evidence\":{\"CD\":2,\"HC\":3,\"FE\":4,\"FG\":5},\"answer\":8}",
+          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: CB, CX, AZ, YZ",
+          "json_example": "{\"evidence\":{\"CB\":2,\"CX\":3,\"AZ\":4,\"YZ\":5},\"answer\":8}",
           "json_example_answer_only": "{\"answer\":8}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
           "object_description": "a shaded composite geometric region with measurement annotations",
-          "question_text": "The shaded figure is an L-shaped region formed from a rectangle with one corner removed. What is the area of the shaded region in square units?"
+          "question_text": "The shaded figure is a step-shaped union of two rectangles. What is the area of the shaded region in square units?"
         },
         "task_family_key": "analytical_composite_area_scene",
-        "task_family_variant_index": 1,
+        "task_family_variant_index": 3,
         "task_key": "analytical_composite_area_query",
-        "task_variant_index": 1,
+        "task_variant_index": 2,
         "task_variant_key": null,
         "task_variant_template_index": null,
         "template_paths": [
@@ -225,23 +225,23 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 3,
+            "answer_or_evidence_variant_index": 4,
             "prompt_bundle_id": "geometry_analytical_composite_area_v1",
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the area value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: CD, HC, FE, FG",
-              "json_example": "{\"evidence\":{\"CD\":2,\"HC\":3,\"FE\":4,\"FG\":5},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: CB, CX, AZ, YZ",
+              "json_example": "{\"evidence\":{\"CB\":2,\"CX\":3,\"AZ\":4,\"YZ\":5},\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a shaded composite geometric region with measurement annotations",
-              "question_text": "The shaded figure is an L-shaped region formed from a rectangle with one corner removed. What is the area of the shaded region in square units?"
+              "question_text": "The shaded figure is a step-shaped union of two rectangles. What is the area of the shaded region in square units?"
             },
             "task_family_key": "analytical_composite_area_scene",
-            "task_family_variant_index": 1,
+            "task_family_variant_index": 3,
             "task_key": "analytical_composite_area_query",
-            "task_variant_index": 1,
+            "task_variant_index": 2,
             "task_variant_key": null,
             "task_variant_template_index": null,
             "template_paths": [
@@ -253,7 +253,7 @@
               "task_family:analytical_composite_area_scene": 5
             }
           },
-          "prompt": "The image shows a shaded composite geometric region with measurement annotations. Question: The shaded figure is an L-shaped region formed from a rectangle with one corner removed. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: CD, HC, FE, FG.\nAnswer field: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"CD\":2,\"HC\":3,\"FE\":4,\"FG\":5},\"answer\":8}"
+          "prompt": "Use the image showing a shaded composite geometric region with measurement annotations. Task: The shaded figure is a step-shaped union of two rectangles. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: CB, CX, AZ, YZ.\nAnswer rule: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"CB\":2,\"CX\":3,\"AZ\":4,\"YZ\":5},\"answer\":8}"
         },
         "answer_only": {
           "metadata": {
@@ -263,18 +263,18 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the area value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: CD, HC, FE, FG",
-              "json_example": "{\"evidence\":{\"CD\":2,\"HC\":3,\"FE\":4,\"FG\":5},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: CB, CX, AZ, YZ",
+              "json_example": "{\"evidence\":{\"CB\":2,\"CX\":3,\"AZ\":4,\"YZ\":5},\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a shaded composite geometric region with measurement annotations",
-              "question_text": "The shaded figure is an L-shaped region formed from a rectangle with one corner removed. What is the area of the shaded region in square units?"
+              "question_text": "The shaded figure is a step-shaped union of two rectangles. What is the area of the shaded region in square units?"
             },
             "task_family_key": "analytical_composite_area_scene",
-            "task_family_variant_index": 1,
+            "task_family_variant_index": 3,
             "task_key": "analytical_composite_area_query",
-            "task_variant_index": 1,
+            "task_variant_index": 2,
             "task_variant_key": null,
             "task_variant_template_index": null,
             "template_paths": [
@@ -286,7 +286,7 @@
               "task_family:analytical_composite_area_scene": 5
             }
           },
-          "prompt": "The image shows a shaded composite geometric region with measurement annotations. Question: The shaded figure is an L-shaped region formed from a rectangle with one corner removed. What is the area of the shaded region in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"answer\":8}"
+          "prompt": "Use the image showing a shaded composite geometric region with measurement annotations. Task: The shaded figure is a step-shaped union of two rectangles. What is the area of the shaded region in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"answer\":8}"
         }
       },
       "task_variant": "composite_area",
@@ -294,36 +294,36 @@
     },
     "render_map": {
       "annotation_centers": {
-        "CD": [
-          296.4644979984706,
-          571.9
+        "AZ": [
+          451.6000000000001,
+          314.5838684850162
         ],
-        "FE": [
-          317.3580463855674,
-          269.6817204301074
+        "CB": [
+          254.06000000000003,
+          223.10220181834947
         ],
-        "FG": [
-          290.3752506866427,
-          205.17419354838705
+        "CX": [
+          84.79333333333331,
+          302.9055351516828
         ],
-        "HC": [
-          191.35482057911577,
-          337.5
+        "YZ": [
+          536.44,
+          348.7630351516829
         ]
       },
       "annotation_labels": {
-        "cut_height": "FG",
-        "cut_width": "FE",
-        "outer_height": "HC",
-        "outer_width": "CD"
+        "left_height": "CX",
+        "left_width": "CB",
+        "right_height": "YZ",
+        "right_width": "AZ"
       },
       "coord_space": "pixel",
       "instance_anchor": {
         "bbox": [
-          219.85482057911577,
-          121.59999999999997,
-          373.0741754178255,
-          553.4
+          112.95999999999998,
+          204.1355351516828,
+          508.04,
+          401.6755351516828
         ],
         "coord_space": "pixel"
       }
@@ -338,41 +338,43 @@
         ],
         "enabled": true,
         "render_scale": 3,
-        "selected_style": "solid_warm",
+        "selected_style": "solid_offwhite",
         "style_spec": {
           "color": [
             252,
-            249,
-            245
+            252,
+            252
           ],
           "kind": "solid"
         }
       },
-      "canvas_size": 675,
+      "canvas_size": 621,
       "coord_space": "pixel",
       "graph_coordinate_frame": {
         "coord_space": "graph_unit",
-        "full_cells_x": 8,
-        "full_cells_y": 8,
+        "full_cells_x": 10,
+        "full_cells_y": 10,
+        "origin_fraction_x": 0.5,
+        "origin_fraction_y": 0.5,
         "origin_pixel": [
-          337,
-          337
+          310,
+          310
         ],
         "outer_margin_px": 16,
         "partial_edge_cells": true,
-        "spacing_px": 75,
-        "target_cells_x": 9,
-        "target_cells_y": 9,
+        "spacing_px": 52,
+        "target_cells_x": 12,
+        "target_cells_y": 12,
         "x_positive": "right",
         "y_positive": "up"
       },
       "graph_paper_grid": {
-        "full_cells_x": 8,
-        "full_cells_y": 8,
+        "full_cells_x": 10,
+        "full_cells_y": 10,
         "partial_edge_cells": true,
-        "spacing_px": 75,
-        "target_cells_x": 9,
-        "target_cells_y": 9
+        "spacing_px": 52,
+        "target_cells_x": 12,
+        "target_cells_y": 12
       },
       "legacy_scene_variant": "composite_region",
       "post_image_noise": {
@@ -395,19 +397,19 @@
       "scene_variant": "composite_region",
       "shape_style": {
         "label_color": [
-          115,
-          67,
-          162
+          157,
+          160,
+          22
         ],
         "label_stroke_color": [
-          248,
-          255,
-          253
+          252,
+          252,
+          254
         ],
         "line_color": [
-          115,
-          67,
-          162
+          157,
+          160,
+          22
         ]
       }
     },
@@ -418,42 +420,42 @@
             "fill_kind": "shaded",
             "vertices": [
               [
-                219.85482057911577,
-                553.4
+                112.95999999999998,
+                401.6755351516828
               ],
               [
-                373.0741754178255,
-                553.4
+                508.04,
+                401.6755351516828
               ],
               [
-                373.0741754178255,
-                288.74838709677414
+                508.04,
+                295.85053515168283
               ],
               [
-                261.64191735330934,
-                288.74838709677414
+                395.16,
+                295.85053515168283
               ],
               [
-                261.64191735330934,
-                121.59999999999997
+                395.16,
+                204.1355351516828
               ],
               [
-                219.85482057911577,
-                121.59999999999997
+                112.95999999999998,
+                204.1355351516828
               ]
             ]
           },
-          "entity_id": "l_shape",
-          "entity_type": "l_shape"
+          "entity_id": "step_union",
+          "entity_type": "step_shape"
         }
       ],
       "frames": {
         "graph_unit": {
           "origin_pixel": [
-            337,
-            337
+            310,
+            310
           ],
-          "spacing_px": 75,
+          "spacing_px": 52,
           "x_positive": "right",
           "y_positive": "up"
         },
@@ -467,7 +469,7 @@
         }
       },
       "relations": {
-        "legacy_query_variant": "l_shape_cutout",
+        "legacy_query_variant": "step_rectangles_union",
         "legacy_scene_variant": "composite_region",
         "legacy_task_id": "task_geometry_analytical_2d_composite_area",
         "query_variant": "composite_area",
@@ -477,31 +479,31 @@
     },
     "witness_symbolic": {
       "annotation_ids": [
-        "CD",
-        "HC",
-        "FE",
-        "FG"
+        "CB",
+        "CX",
+        "AZ",
+        "YZ"
       ],
       "annotation_labels": {
-        "cut_height": "FG",
-        "cut_width": "FE",
-        "outer_height": "HC",
-        "outer_width": "CD"
+        "left_height": "CX",
+        "left_width": "CB",
+        "right_height": "YZ",
+        "right_width": "AZ"
       },
       "annotation_values": {
-        "CD": 11,
-        "FE": 8,
-        "FG": 12,
-        "HC": 31
+        "AZ": 16,
+        "CB": 40,
+        "CX": 28,
+        "YZ": 15
       },
-      "formula_expression": "outer_width * outer_height - cut_width * cut_height",
+      "formula_expression": "left_width * left_height + right_width * right_height",
       "measurement_ref_map": {
-        "CD": 11,
-        "FE": 8,
-        "FG": 12,
-        "HC": 31
+        "AZ": 16,
+        "CB": 40,
+        "CX": 28,
+        "YZ": 15
       },
-      "task_variant": "l_shape_cutout",
+      "task_variant": "step_rectangles_union",
       "type": "annotation_measurement_map"
     }
   },

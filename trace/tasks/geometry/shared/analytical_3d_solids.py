@@ -8,7 +8,7 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from PIL import ImageDraw
 
-from ...shared.isometric_projection import iso_project_point_3d
+from ...shared.isometric_projection import iso_project_point_3d as shared_iso_project_point_3d
 from ...shared.config_defaults import group_default
 from ...shared.text_rendering import (
     draw_text_centered,
@@ -106,7 +106,7 @@ def _pi_expression(value: int) -> str:
 
 def iso_project_point_3d(point_3d: Point3) -> Point:
     """Project one 3D point to an isometric 2D plane."""
-    return tuple(float(value) for value in iso_project_point_3d(point_3d))
+    return tuple(float(value) for value in shared_iso_project_point_3d(point_3d))
 
 
 def _iso_project(point_3d: Point3) -> Point:

@@ -60,3 +60,10 @@ Use this whenever the task lives under `domain=documents`.
 - Typed field generators make later document tasks much easier to verify than raw free-form text.
 - Section-aware document chrome is worth centralizing early because later checkbox, key-value, and line-item tasks will need the same block structure.
 - When two or more document families reuse the same grouped page grammar, promote the shared section templates and typed scene-value builders into a neutral shared helper instead of leaving them in one task-group-specific module.
+
+## Pair with
+- `skills/domain-audit/SKILL.md`
+- `skills/task-design/SKILL.md`
+- `skills/task-complexity/SKILL.md`
+- `skills/task-implementation/SKILL.md`
+- `skills/verification-review/SKILL.md`

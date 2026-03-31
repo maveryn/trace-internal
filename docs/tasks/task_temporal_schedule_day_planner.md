@@ -28,8 +28,8 @@
    - a highlighted reference event appears only for the reference-based variants,
    - prompt-facing evidence always stays on event blocks rather than widening to headers, time labels, or empty background.
 7. Query contract:
-   - `overlap_count` asks how many scheduled events overlap the highlighted reference event,
-   - `longer_than_reference_count` asks how many scheduled events are longer than the highlighted reference event,
+   - `overlap_count` asks how many other scheduled events overlap the highlighted reference event,
+   - `longer_than_reference_count` asks how many other scheduled events are longer than the highlighted reference event,
    - `maximum_non_overlapping_count` asks for the size of the unique maximum-cardinality non-overlapping event subset.
 
 ## 3) Prompt contract

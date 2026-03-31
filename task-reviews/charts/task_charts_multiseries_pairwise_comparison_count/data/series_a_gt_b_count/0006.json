@@ -1,57 +1,64 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 2
+    "value": 5
   },
   "evidence_gt": {
     "type": "label_set",
     "value": [
-      "F",
-      "Y"
+      "A",
+      "D",
+      "Q",
+      "X",
+      "Z"
     ]
   },
   "image": {
     "format": "png",
     "path": "charts/task_charts_multiseries_pairwise_comparison_count/images/series_a_gt_b_count/0006.png"
   },
-  "instance_seed": 2397460227684832,
-  "prompt": "You are given a multiseries chart: a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Compare the two queried series category by category. How many labeled categories have Lara above Maia?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer requirement: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
+  "instance_seed": 2213341424076992,
+  "prompt": "Use the chart in the image. It shows a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Work category by category and count the labels where the requested series comparison is true. Find how many category labels show Mok higher than Agle.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer requirement: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
   "prompt_variants": {
-    "answer_and_evidence": "You are given a multiseries chart: a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Compare the two queried series category by category. How many labeled categories have Lara above Maia?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer requirement: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
-    "answer_only": "You are given a multiseries chart: a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Compare the two queried series category by category. How many labeled categories have Lara above Maia?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":3}"
+    "answer_and_evidence": "Use the chart in the image. It shows a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Work category by category and count the labels where the requested series comparison is true. Find how many category labels show Mok higher than Agle.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer requirement: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
+    "answer_only": "Use the chart in the image. It shows a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Work category by category and count the labels where the requested series comparison is true. Find how many category labels show Mok higher than Agle.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":3}"
   },
   "task": "task_charts_multiseries_pairwise_comparison_count",
   "task_variant": "series_a_gt_b_count",
   "trace_payload": {
     "execution_trace": {
-      "answer_value": 2,
-      "category_count": 5,
+      "answer_value": 5,
+      "category_count": 6,
       "category_count_range": [
         5,
         10
       ],
       "category_labels": [
-        "F",
-        "V",
-        "M",
-        "K",
-        "Y"
+        "P",
+        "D",
+        "Z",
+        "A",
+        "X",
+        "Q"
       ],
       "comparison": "greater_than",
       "evidence_labels": [
-        "F",
-        "Y"
+        "A",
+        "D",
+        "Q",
+        "X",
+        "Z"
       ],
-      "left_series_label": "Lara",
+      "left_series_label": "Mok",
       "mark_color_distance_space": "lab",
       "mark_color_min_distance": 40.0,
       "mark_color_sampling_policy": "random_rgb_palette",
       "queried_series_labels": [
-        "Lara",
-        "Maia"
+        "Mok",
+        "Agle"
       ],
       "question_format": "numeric_open",
-      "right_series_label": "Maia",
+      "right_series_label": "Agle",
       "scene_variant": "multi_line",
       "scene_variant_probabilities": {
         "grouped_bar": 0.25,
@@ -66,132 +73,182 @@
       ],
       "series_fill_palette_rgb": [
         [
-          67,
-          211,
-          210
+          80,
+          13,
+          163
         ],
         [
-          2,
-          211,
-          98
+          201,
+          62,
+          136
         ],
         [
-          21,
-          45,
-          101
+          80,
+          141,
+          86
         ]
       ],
       "series_labels": [
-        "Lara",
-        "Maia",
-        "Lotz"
+        "Axe",
+        "Mok",
+        "Agle"
       ],
       "series_outline_palette_rgb": [
         [
-          37,
-          116,
-          116
+          44,
+          7,
+          90
         ],
         [
-          1,
-          116,
-          54
+          111,
+          34,
+          75
         ],
         [
-          12,
-          25,
-          56
+          44,
+          78,
+          47
         ]
       ],
-      "target_answer": 2,
+      "target_answer": 5,
       "target_answer_range": [
         0,
         8
       ],
       "task_variant": "series_a_gt_b_count",
       "task_variant_probabilities": {
-        "series_a_gt_b_count": 0.5,
-        "series_a_lt_b_count": 0.5
+        "series_a_gt_b_count": 1.0,
+        "series_a_lt_b_count": 0.0
       },
       "values_by_category": {
-        "F": {
-          "Lara": 19,
-          "Lotz": 14,
-          "Maia": 11
+        "A": {
+          "Agle": 3,
+          "Axe": 9,
+          "Mok": 20
         },
-        "K": {
-          "Lara": 7,
-          "Lotz": 14,
-          "Maia": 18
+        "D": {
+          "Agle": 3,
+          "Axe": 6,
+          "Mok": 9
         },
-        "M": {
-          "Lara": 7,
-          "Lotz": 12,
-          "Maia": 19
+        "P": {
+          "Agle": 18,
+          "Axe": 13,
+          "Mok": 4
         },
-        "V": {
-          "Lara": 2,
-          "Lotz": 15,
-          "Maia": 20
+        "Q": {
+          "Agle": 2,
+          "Axe": 14,
+          "Mok": 20
         },
-        "Y": {
-          "Lara": 14,
-          "Lotz": 10,
-          "Maia": 4
+        "X": {
+          "Agle": 2,
+          "Axe": 11,
+          "Mok": 17
+        },
+        "Z": {
+          "Agle": 4,
+          "Axe": 9,
+          "Mok": 13
         }
       }
     },
     "projected_evidence": {
       "bbox_set": [
         [
-          160.2,
-          82.095,
-          176.2,
+          528.0,
+          59.048,
+          545.0,
           562.0
         ],
         [
-          768.8,
-          197.333,
-          786.8,
+          273.5,
+          312.571,
+          291.5,
+          562.0
+        ],
+        [
+          781.0,
+          59.048,
+          800.0,
+          563.5
+        ],
+        [
+          655.0,
+          128.19,
+          672.0,
+          562.0
+        ],
+        [
+          401.5,
+          220.381,
+          417.5,
           562.0
         ]
       ],
       "label_set": [
-        "F",
-        "Y"
+        "A",
+        "D",
+        "Q",
+        "X",
+        "Z"
       ],
       "pixel_point_map": {
-        "F": [
-          168.2,
+        "A": [
+          536.5,
           554.0
         ],
-        "Y": [
-          777.8,
+        "D": [
+          282.5,
+          554.0
+        ],
+        "Q": [
+          790.5,
+          554.0
+        ],
+        "X": [
+          663.5,
+          554.0
+        ],
+        "Z": [
+          409.5,
           554.0
         ]
       },
       "pixel_point_set": [
         [
-          168.2,
+          536.5,
           554.0
         ],
         [
-          777.8,
+          282.5,
+          554.0
+        ],
+        [
+          790.5,
+          554.0
+        ],
+        [
+          663.5,
+          554.0
+        ],
+        [
+          409.5,
           554.0
         ]
       ]
     },
     "query_spec": {
       "params": {
-        "category_count": 5,
+        "category_count": 6,
         "category_count_range": [
           5,
           10
         ],
         "comparison": "greater_than",
         "queried_series_labels": [
-          "Lara",
-          "Maia"
+          "Mok",
+          "Agle"
         ],
         "scene_variant": "multi_line",
         "scene_variant_probabilities": {
@@ -205,15 +262,15 @@
           2,
           3
         ],
-        "target_answer": 2,
+        "target_answer": 5,
         "target_answer_range": [
           0,
           8
         ],
         "task_variant": "series_a_gt_b_count",
         "task_variant_probabilities": {
-          "series_a_gt_b_count": 0.5,
-          "series_a_lt_b_count": 0.5
+          "series_a_gt_b_count": 1.0,
+          "series_a_lt_b_count": 0.0
         }
       },
       "prompt_variant": {
@@ -228,16 +285,16 @@
           "json_example_answer_only": "{\"answer\":3}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "left_series": "Lara",
+          "left_series": "Mok",
           "object_description": "a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis",
-          "right_series": "Maia"
+          "right_series": "Agle"
         },
         "task_family_key": "multiseries_chart_comparison",
-        "task_family_variant_index": 4,
+        "task_family_variant_index": 1,
         "task_key": "pairwise_comparison_count_query",
-        "task_variant_index": 0,
+        "task_variant_index": 4,
         "task_variant_key": "series_a_gt_b_count",
-        "task_variant_template_index": 2,
+        "task_variant_template_index": 4,
         "template_paths": [
           "charts/multiseries/charts_multiseries_v1.json"
         ],
@@ -263,16 +320,16 @@
               "json_example_answer_only": "{\"answer\":3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "left_series": "Lara",
+              "left_series": "Mok",
               "object_description": "a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis",
-              "right_series": "Maia"
+              "right_series": "Agle"
             },
             "task_family_key": "multiseries_chart_comparison",
-            "task_family_variant_index": 4,
+            "task_family_variant_index": 1,
             "task_key": "pairwise_comparison_count_query",
-            "task_variant_index": 0,
+            "task_variant_index": 4,
             "task_variant_key": "series_a_gt_b_count",
-            "task_variant_template_index": 2,
+            "task_variant_template_index": 4,
             "template_paths": [
               "charts/multiseries/charts_multiseries_v1.json"
             ],
@@ -283,7 +340,7 @@
               "task_variant:series_a_gt_b_count": 5
             }
           },
-          "prompt": "You are given a multiseries chart: a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Compare the two queried series category by category. How many labeled categories have Lara above Maia?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer requirement: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}"
+          "prompt": "Use the chart in the image. It shows a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Work category by category and count the labels where the requested series comparison is true. Find how many category labels show Mok higher than Agle.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer requirement: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}"
         },
         "answer_only": {
           "metadata": {
@@ -298,16 +355,16 @@
               "json_example_answer_only": "{\"answer\":3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "left_series": "Lara",
+              "left_series": "Mok",
               "object_description": "a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis",
-              "right_series": "Maia"
+              "right_series": "Agle"
             },
             "task_family_key": "multiseries_chart_comparison",
-            "task_family_variant_index": 4,
+            "task_family_variant_index": 1,
             "task_key": "pairwise_comparison_count_query",
-            "task_variant_index": 0,
+            "task_variant_index": 4,
             "task_variant_key": "series_a_gt_b_count",
-            "task_variant_template_index": 2,
+            "task_variant_template_index": 4,
             "template_paths": [
               "charts/multiseries/charts_multiseries_v1.json"
             ],
@@ -318,7 +375,7 @@
               "task_variant:series_a_gt_b_count": 5
             }
           },
-          "prompt": "You are given a multiseries chart: a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Compare the two queried series category by category. How many labeled categories have Lara above Maia?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":3}"
+          "prompt": "Use the chart in the image. It shows a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Work category by category and count the labels where the requested series comparison is true. Find how many category labels show Mok higher than Agle.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":3}"
         }
       },
       "task_variant": "series_a_gt_b_count",
@@ -326,24 +383,28 @@
     },
     "render_map": {
       "category_label_centers_px": {
-        "F": [
-          168.2,
+        "A": [
+          536.5,
           554.0
         ],
-        "K": [
-          625.4,
+        "D": [
+          282.5,
           554.0
         ],
-        "M": [
-          473.0,
+        "P": [
+          155.5,
           554.0
         ],
-        "V": [
-          320.6,
+        "Q": [
+          790.5,
           554.0
         ],
-        "Y": [
-          777.8,
+        "X": [
+          663.5,
+          554.0
+        ],
+        "Z": [
+          409.5,
           554.0
         ]
       },
@@ -385,36 +446,36 @@
         "sampling_policy": "random_rgb_palette",
         "series_fill_palette_rgb": [
           [
-            67,
-            211,
-            210
+            80,
+            13,
+            163
           ],
           [
-            2,
-            211,
-            98
+            201,
+            62,
+            136
           ],
           [
-            21,
-            45,
-            101
+            80,
+            141,
+            86
           ]
         ],
         "series_outline_palette_rgb": [
           [
-            37,
-            116,
-            116
+            44,
+            7,
+            90
           ],
           [
-            1,
-            116,
-            54
+            111,
+            34,
+            75
           ],
           [
-            12,
-            25,
-            56
+            44,
+            78,
+            47
           ]
         ]
       },
@@ -477,643 +538,772 @@
         {
           "attrs": {
             "category_group_bbox_px": [
-              160.2,
-              82.095,
-              176.2,
+              147.5,
+              105.143,
+              163.5,
               562.0
             ],
-            "category_label": "F",
+            "category_label": "P",
             "category_label_center_px": [
-              168.2,
+              155.5,
               554.0
             ],
             "category_rank": 0,
             "mark_bbox_px": [
-              160.2,
-              82.095,
-              176.2,
-              98.095
+              147.5,
+              220.381,
+              163.5,
+              236.381
             ],
             "mark_center_px": [
-              168.2,
-              90.095
+              155.5,
+              228.381
             ],
             "mark_fill_rgb": [
-              67,
-              211,
-              210
+              80,
+              13,
+              163
             ],
             "mark_outline_rgb": [
-              37,
-              116,
-              116
+              44,
+              7,
+              90
             ],
             "scene_variant": "multi_line",
-            "series_label": "Lara",
+            "series_label": "Axe",
             "series_rank": 0,
-            "value": 19
+            "value": 13
           },
-          "entity_id": "mark_F_Lara",
+          "entity_id": "mark_P_Axe",
           "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              160.2,
-              82.095,
-              176.2,
+              147.5,
+              105.143,
+              163.5,
               562.0
             ],
-            "category_label": "F",
+            "category_label": "P",
             "category_label_center_px": [
-              168.2,
+              155.5,
               554.0
             ],
             "category_rank": 0,
             "mark_bbox_px": [
-              160.2,
-              266.476,
-              176.2,
-              282.476
-            ],
-            "mark_center_px": [
-              168.2,
-              274.476
-            ],
-            "mark_fill_rgb": [
-              2,
-              211,
-              98
-            ],
-            "mark_outline_rgb": [
-              1,
-              116,
-              54
-            ],
-            "scene_variant": "multi_line",
-            "series_label": "Maia",
-            "series_rank": 1,
-            "value": 11
-          },
-          "entity_id": "mark_F_Maia",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              160.2,
-              82.095,
-              176.2,
-              562.0
-            ],
-            "category_label": "F",
-            "category_label_center_px": [
-              168.2,
-              554.0
-            ],
-            "category_rank": 0,
-            "mark_bbox_px": [
-              160.2,
-              197.333,
-              176.2,
-              213.333
-            ],
-            "mark_center_px": [
-              168.2,
-              205.333
-            ],
-            "mark_fill_rgb": [
-              21,
-              45,
-              101
-            ],
-            "mark_outline_rgb": [
-              12,
-              25,
-              56
-            ],
-            "scene_variant": "multi_line",
-            "series_label": "Lotz",
-            "series_rank": 2,
-            "value": 14
-          },
-          "entity_id": "mark_F_Lotz",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              312.1,
-              59.048,
-              329.1,
-              562.0
-            ],
-            "category_label": "V",
-            "category_label_center_px": [
-              320.6,
-              554.0
-            ],
-            "category_rank": 1,
-            "mark_bbox_px": [
-              312.6,
-              473.905,
-              328.6,
-              489.905
-            ],
-            "mark_center_px": [
-              320.6,
-              481.905
-            ],
-            "mark_fill_rgb": [
-              67,
-              211,
-              210
-            ],
-            "mark_outline_rgb": [
-              37,
-              116,
-              116
-            ],
-            "scene_variant": "multi_line",
-            "series_label": "Lara",
-            "series_rank": 0,
-            "value": 2
-          },
-          "entity_id": "mark_V_Lara",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              312.1,
-              59.048,
-              329.1,
-              562.0
-            ],
-            "category_label": "V",
-            "category_label_center_px": [
-              320.6,
-              554.0
-            ],
-            "category_rank": 1,
-            "mark_bbox_px": [
-              312.6,
-              59.048,
-              328.6,
-              75.048
-            ],
-            "mark_center_px": [
-              320.6,
-              67.048
-            ],
-            "mark_fill_rgb": [
-              2,
-              211,
-              98
-            ],
-            "mark_outline_rgb": [
-              1,
-              116,
-              54
-            ],
-            "scene_variant": "multi_line",
-            "series_label": "Maia",
-            "series_rank": 1,
-            "value": 20
-          },
-          "entity_id": "mark_V_Maia",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              312.1,
-              59.048,
-              329.1,
-              562.0
-            ],
-            "category_label": "V",
-            "category_label_center_px": [
-              320.6,
-              554.0
-            ],
-            "category_rank": 1,
-            "mark_bbox_px": [
-              312.6,
-              174.286,
-              328.6,
-              190.286
-            ],
-            "mark_center_px": [
-              320.6,
-              182.286
-            ],
-            "mark_fill_rgb": [
-              21,
-              45,
-              101
-            ],
-            "mark_outline_rgb": [
-              12,
-              25,
-              56
-            ],
-            "scene_variant": "multi_line",
-            "series_label": "Lotz",
-            "series_rank": 2,
-            "value": 15
-          },
-          "entity_id": "mark_V_Lotz",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              462.0,
-              82.095,
-              484.0,
-              562.0
-            ],
-            "category_label": "M",
-            "category_label_center_px": [
-              473.0,
-              554.0
-            ],
-            "category_rank": 2,
-            "mark_bbox_px": [
-              465.0,
-              358.667,
-              481.0,
-              374.667
-            ],
-            "mark_center_px": [
-              473.0,
-              366.667
-            ],
-            "mark_fill_rgb": [
-              67,
-              211,
-              210
-            ],
-            "mark_outline_rgb": [
-              37,
-              116,
-              116
-            ],
-            "scene_variant": "multi_line",
-            "series_label": "Lara",
-            "series_rank": 0,
-            "value": 7
-          },
-          "entity_id": "mark_M_Lara",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              462.0,
-              82.095,
-              484.0,
-              562.0
-            ],
-            "category_label": "M",
-            "category_label_center_px": [
-              473.0,
-              554.0
-            ],
-            "category_rank": 2,
-            "mark_bbox_px": [
-              465.0,
-              82.095,
-              481.0,
-              98.095
-            ],
-            "mark_center_px": [
-              473.0,
-              90.095
-            ],
-            "mark_fill_rgb": [
-              2,
-              211,
-              98
-            ],
-            "mark_outline_rgb": [
-              1,
-              116,
-              54
-            ],
-            "scene_variant": "multi_line",
-            "series_label": "Maia",
-            "series_rank": 1,
-            "value": 19
-          },
-          "entity_id": "mark_M_Maia",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              462.0,
-              82.095,
-              484.0,
-              562.0
-            ],
-            "category_label": "M",
-            "category_label_center_px": [
-              473.0,
-              554.0
-            ],
-            "category_rank": 2,
-            "mark_bbox_px": [
-              465.0,
-              243.429,
-              481.0,
-              259.429
-            ],
-            "mark_center_px": [
-              473.0,
-              251.429
-            ],
-            "mark_fill_rgb": [
-              21,
-              45,
-              101
-            ],
-            "mark_outline_rgb": [
-              12,
-              25,
-              56
-            ],
-            "scene_variant": "multi_line",
-            "series_label": "Lotz",
-            "series_rank": 2,
-            "value": 12
-          },
-          "entity_id": "mark_M_Lotz",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              616.4,
-              105.143,
-              634.4,
-              562.0
-            ],
-            "category_label": "K",
-            "category_label_center_px": [
-              625.4,
-              554.0
-            ],
-            "category_rank": 3,
-            "mark_bbox_px": [
-              617.4,
-              358.667,
-              633.4,
-              374.667
-            ],
-            "mark_center_px": [
-              625.4,
-              366.667
-            ],
-            "mark_fill_rgb": [
-              67,
-              211,
-              210
-            ],
-            "mark_outline_rgb": [
-              37,
-              116,
-              116
-            ],
-            "scene_variant": "multi_line",
-            "series_label": "Lara",
-            "series_rank": 0,
-            "value": 7
-          },
-          "entity_id": "mark_K_Lara",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              616.4,
-              105.143,
-              634.4,
-              562.0
-            ],
-            "category_label": "K",
-            "category_label_center_px": [
-              625.4,
-              554.0
-            ],
-            "category_rank": 3,
-            "mark_bbox_px": [
-              617.4,
-              105.143,
-              633.4,
-              121.143
-            ],
-            "mark_center_px": [
-              625.4,
-              113.143
-            ],
-            "mark_fill_rgb": [
-              2,
-              211,
-              98
-            ],
-            "mark_outline_rgb": [
-              1,
-              116,
-              54
-            ],
-            "scene_variant": "multi_line",
-            "series_label": "Maia",
-            "series_rank": 1,
-            "value": 18
-          },
-          "entity_id": "mark_K_Maia",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              616.4,
-              105.143,
-              634.4,
-              562.0
-            ],
-            "category_label": "K",
-            "category_label_center_px": [
-              625.4,
-              554.0
-            ],
-            "category_rank": 3,
-            "mark_bbox_px": [
-              617.4,
-              197.333,
-              633.4,
-              213.333
-            ],
-            "mark_center_px": [
-              625.4,
-              205.333
-            ],
-            "mark_fill_rgb": [
-              21,
-              45,
-              101
-            ],
-            "mark_outline_rgb": [
-              12,
-              25,
-              56
-            ],
-            "scene_variant": "multi_line",
-            "series_label": "Lotz",
-            "series_rank": 2,
-            "value": 14
-          },
-          "entity_id": "mark_K_Lotz",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              768.8,
-              197.333,
-              786.8,
-              562.0
-            ],
-            "category_label": "Y",
-            "category_label_center_px": [
-              777.8,
-              554.0
-            ],
-            "category_rank": 4,
-            "mark_bbox_px": [
-              769.8,
-              197.333,
-              785.8,
-              213.333
-            ],
-            "mark_center_px": [
-              777.8,
-              205.333
-            ],
-            "mark_fill_rgb": [
-              67,
-              211,
-              210
-            ],
-            "mark_outline_rgb": [
-              37,
-              116,
-              116
-            ],
-            "scene_variant": "multi_line",
-            "series_label": "Lara",
-            "series_rank": 0,
-            "value": 14
-          },
-          "entity_id": "mark_Y_Lara",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              768.8,
-              197.333,
-              786.8,
-              562.0
-            ],
-            "category_label": "Y",
-            "category_label_center_px": [
-              777.8,
-              554.0
-            ],
-            "category_rank": 4,
-            "mark_bbox_px": [
-              769.8,
+              147.5,
               427.81,
-              785.8,
+              163.5,
               443.81
             ],
             "mark_center_px": [
-              777.8,
+              155.5,
               435.81
             ],
             "mark_fill_rgb": [
-              2,
-              211,
-              98
+              201,
+              62,
+              136
             ],
             "mark_outline_rgb": [
-              1,
-              116,
-              54
+              111,
+              34,
+              75
             ],
             "scene_variant": "multi_line",
-            "series_label": "Maia",
+            "series_label": "Mok",
             "series_rank": 1,
             "value": 4
           },
-          "entity_id": "mark_Y_Maia",
+          "entity_id": "mark_P_Mok",
           "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              768.8,
-              197.333,
-              786.8,
+              147.5,
+              105.143,
+              163.5,
               562.0
             ],
-            "category_label": "Y",
+            "category_label": "P",
             "category_label_center_px": [
-              777.8,
+              155.5,
+              554.0
+            ],
+            "category_rank": 0,
+            "mark_bbox_px": [
+              147.5,
+              105.143,
+              163.5,
+              121.143
+            ],
+            "mark_center_px": [
+              155.5,
+              113.143
+            ],
+            "mark_fill_rgb": [
+              80,
+              141,
+              86
+            ],
+            "mark_outline_rgb": [
+              44,
+              78,
+              47
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Agle",
+            "series_rank": 2,
+            "value": 18
+          },
+          "entity_id": "mark_P_Agle",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              273.5,
+              312.571,
+              291.5,
+              562.0
+            ],
+            "category_label": "D",
+            "category_label_center_px": [
+              282.5,
+              554.0
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              274.5,
+              381.714,
+              290.5,
+              397.714
+            ],
+            "mark_center_px": [
+              282.5,
+              389.714
+            ],
+            "mark_fill_rgb": [
+              80,
+              13,
+              163
+            ],
+            "mark_outline_rgb": [
+              44,
+              7,
+              90
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Axe",
+            "series_rank": 0,
+            "value": 6
+          },
+          "entity_id": "mark_D_Axe",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              273.5,
+              312.571,
+              291.5,
+              562.0
+            ],
+            "category_label": "D",
+            "category_label_center_px": [
+              282.5,
+              554.0
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              274.5,
+              312.571,
+              290.5,
+              328.571
+            ],
+            "mark_center_px": [
+              282.5,
+              320.571
+            ],
+            "mark_fill_rgb": [
+              201,
+              62,
+              136
+            ],
+            "mark_outline_rgb": [
+              111,
+              34,
+              75
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Mok",
+            "series_rank": 1,
+            "value": 9
+          },
+          "entity_id": "mark_D_Mok",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              273.5,
+              312.571,
+              291.5,
+              562.0
+            ],
+            "category_label": "D",
+            "category_label_center_px": [
+              282.5,
+              554.0
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              274.5,
+              450.857,
+              290.5,
+              466.857
+            ],
+            "mark_center_px": [
+              282.5,
+              458.857
+            ],
+            "mark_fill_rgb": [
+              80,
+              141,
+              86
+            ],
+            "mark_outline_rgb": [
+              44,
+              78,
+              47
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Agle",
+            "series_rank": 2,
+            "value": 3
+          },
+          "entity_id": "mark_D_Agle",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              401.5,
+              220.381,
+              417.5,
+              562.0
+            ],
+            "category_label": "Z",
+            "category_label_center_px": [
+              409.5,
+              554.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              401.5,
+              312.571,
+              417.5,
+              328.571
+            ],
+            "mark_center_px": [
+              409.5,
+              320.571
+            ],
+            "mark_fill_rgb": [
+              80,
+              13,
+              163
+            ],
+            "mark_outline_rgb": [
+              44,
+              7,
+              90
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Axe",
+            "series_rank": 0,
+            "value": 9
+          },
+          "entity_id": "mark_Z_Axe",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              401.5,
+              220.381,
+              417.5,
+              562.0
+            ],
+            "category_label": "Z",
+            "category_label_center_px": [
+              409.5,
+              554.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              401.5,
+              220.381,
+              417.5,
+              236.381
+            ],
+            "mark_center_px": [
+              409.5,
+              228.381
+            ],
+            "mark_fill_rgb": [
+              201,
+              62,
+              136
+            ],
+            "mark_outline_rgb": [
+              111,
+              34,
+              75
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Mok",
+            "series_rank": 1,
+            "value": 13
+          },
+          "entity_id": "mark_Z_Mok",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              401.5,
+              220.381,
+              417.5,
+              562.0
+            ],
+            "category_label": "Z",
+            "category_label_center_px": [
+              409.5,
+              554.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              401.5,
+              427.81,
+              417.5,
+              443.81
+            ],
+            "mark_center_px": [
+              409.5,
+              435.81
+            ],
+            "mark_fill_rgb": [
+              80,
+              141,
+              86
+            ],
+            "mark_outline_rgb": [
+              44,
+              78,
+              47
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Agle",
+            "series_rank": 2,
+            "value": 4
+          },
+          "entity_id": "mark_Z_Agle",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              528.0,
+              59.048,
+              545.0,
+              562.0
+            ],
+            "category_label": "A",
+            "category_label_center_px": [
+              536.5,
+              554.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              528.5,
+              312.571,
+              544.5,
+              328.571
+            ],
+            "mark_center_px": [
+              536.5,
+              320.571
+            ],
+            "mark_fill_rgb": [
+              80,
+              13,
+              163
+            ],
+            "mark_outline_rgb": [
+              44,
+              7,
+              90
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Axe",
+            "series_rank": 0,
+            "value": 9
+          },
+          "entity_id": "mark_A_Axe",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              528.0,
+              59.048,
+              545.0,
+              562.0
+            ],
+            "category_label": "A",
+            "category_label_center_px": [
+              536.5,
+              554.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              528.5,
+              59.048,
+              544.5,
+              75.048
+            ],
+            "mark_center_px": [
+              536.5,
+              67.048
+            ],
+            "mark_fill_rgb": [
+              201,
+              62,
+              136
+            ],
+            "mark_outline_rgb": [
+              111,
+              34,
+              75
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Mok",
+            "series_rank": 1,
+            "value": 20
+          },
+          "entity_id": "mark_A_Mok",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              528.0,
+              59.048,
+              545.0,
+              562.0
+            ],
+            "category_label": "A",
+            "category_label_center_px": [
+              536.5,
+              554.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              528.5,
+              450.857,
+              544.5,
+              466.857
+            ],
+            "mark_center_px": [
+              536.5,
+              458.857
+            ],
+            "mark_fill_rgb": [
+              80,
+              141,
+              86
+            ],
+            "mark_outline_rgb": [
+              44,
+              78,
+              47
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Agle",
+            "series_rank": 2,
+            "value": 3
+          },
+          "entity_id": "mark_A_Agle",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              655.0,
+              128.19,
+              672.0,
+              562.0
+            ],
+            "category_label": "X",
+            "category_label_center_px": [
+              663.5,
               554.0
             ],
             "category_rank": 4,
             "mark_bbox_px": [
-              769.8,
-              289.524,
-              785.8,
-              305.524
+              655.5,
+              266.476,
+              671.5,
+              282.476
             ],
             "mark_center_px": [
-              777.8,
-              297.524
+              663.5,
+              274.476
             ],
             "mark_fill_rgb": [
-              21,
-              45,
-              101
+              80,
+              13,
+              163
             ],
             "mark_outline_rgb": [
-              12,
-              25,
-              56
+              44,
+              7,
+              90
             ],
             "scene_variant": "multi_line",
-            "series_label": "Lotz",
-            "series_rank": 2,
-            "value": 10
+            "series_label": "Axe",
+            "series_rank": 0,
+            "value": 11
           },
-          "entity_id": "mark_Y_Lotz",
+          "entity_id": "mark_X_Axe",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              655.0,
+              128.19,
+              672.0,
+              562.0
+            ],
+            "category_label": "X",
+            "category_label_center_px": [
+              663.5,
+              554.0
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              655.5,
+              128.19,
+              671.5,
+              144.19
+            ],
+            "mark_center_px": [
+              663.5,
+              136.19
+            ],
+            "mark_fill_rgb": [
+              201,
+              62,
+              136
+            ],
+            "mark_outline_rgb": [
+              111,
+              34,
+              75
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Mok",
+            "series_rank": 1,
+            "value": 17
+          },
+          "entity_id": "mark_X_Mok",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              655.0,
+              128.19,
+              672.0,
+              562.0
+            ],
+            "category_label": "X",
+            "category_label_center_px": [
+              663.5,
+              554.0
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              655.5,
+              473.905,
+              671.5,
+              489.905
+            ],
+            "mark_center_px": [
+              663.5,
+              481.905
+            ],
+            "mark_fill_rgb": [
+              80,
+              141,
+              86
+            ],
+            "mark_outline_rgb": [
+              44,
+              78,
+              47
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Agle",
+            "series_rank": 2,
+            "value": 2
+          },
+          "entity_id": "mark_X_Agle",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              781.0,
+              59.048,
+              800.0,
+              563.5
+            ],
+            "category_label": "Q",
+            "category_label_center_px": [
+              790.5,
+              554.0
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              782.5,
+              197.333,
+              798.5,
+              213.333
+            ],
+            "mark_center_px": [
+              790.5,
+              205.333
+            ],
+            "mark_fill_rgb": [
+              80,
+              13,
+              163
+            ],
+            "mark_outline_rgb": [
+              44,
+              7,
+              90
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Axe",
+            "series_rank": 0,
+            "value": 14
+          },
+          "entity_id": "mark_Q_Axe",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              781.0,
+              59.048,
+              800.0,
+              563.5
+            ],
+            "category_label": "Q",
+            "category_label_center_px": [
+              790.5,
+              554.0
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              782.5,
+              59.048,
+              798.5,
+              75.048
+            ],
+            "mark_center_px": [
+              790.5,
+              67.048
+            ],
+            "mark_fill_rgb": [
+              201,
+              62,
+              136
+            ],
+            "mark_outline_rgb": [
+              111,
+              34,
+              75
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Mok",
+            "series_rank": 1,
+            "value": 20
+          },
+          "entity_id": "mark_Q_Mok",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              781.0,
+              59.048,
+              800.0,
+              563.5
+            ],
+            "category_label": "Q",
+            "category_label_center_px": [
+              790.5,
+              554.0
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              782.5,
+              473.905,
+              798.5,
+              489.905
+            ],
+            "mark_center_px": [
+              790.5,
+              481.905
+            ],
+            "mark_fill_rgb": [
+              80,
+              141,
+              86
+            ],
+            "mark_outline_rgb": [
+              44,
+              78,
+              47
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Agle",
+            "series_rank": 2,
+            "value": 2
+          },
+          "entity_id": "mark_Q_Agle",
           "entity_type": "point"
         }
       ],
       "relations": {
         "comparison": "greater_than",
         "evidence_labels": [
-          "F",
-          "Y"
+          "A",
+          "D",
+          "Q",
+          "X",
+          "Z"
         ],
         "queried_series_labels": [
-          "Lara",
-          "Maia"
+          "Mok",
+          "Agle"
         ],
         "scene_variant": "multi_line",
         "task_variant": "series_a_gt_b_count"
@@ -1122,8 +1312,11 @@
     },
     "witness_symbolic": {
       "labels": [
-        "F",
-        "Y"
+        "A",
+        "D",
+        "Q",
+        "X",
+        "Z"
       ],
       "type": "label_set"
     }

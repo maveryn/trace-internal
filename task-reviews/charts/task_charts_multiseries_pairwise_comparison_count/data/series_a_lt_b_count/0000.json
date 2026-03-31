@@ -1,64 +1,66 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 5
+    "value": 4
   },
   "evidence_gt": {
     "type": "label_set",
     "value": [
       "D",
-      "J",
-      "M",
-      "Y",
-      "Z"
+      "G",
+      "T",
+      "X"
     ]
   },
   "image": {
     "format": "png",
     "path": "charts/task_charts_multiseries_pairwise_comparison_count/images/series_a_lt_b_count/0000.png"
   },
-  "instance_seed": 5338036269108216,
-  "prompt": "Work from the multiseries chart shown in the image: a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Read the chart values and count the categories where the stated series relation holds. Across the labeled categories, in how many categories is Edva lower than Bred?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+  "instance_seed": 6319177116588189,
+  "prompt": "Use the chart in the image. It shows a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Compare the two queried series category by category. Find how many category labels show Lisa lower than Lai.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
   "prompt_variants": {
-    "answer_and_evidence": "Work from the multiseries chart shown in the image: a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Read the chart values and count the categories where the stated series relation holds. Across the labeled categories, in how many categories is Edva lower than Bred?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
-    "answer_only": "Work from the multiseries chart shown in the image: a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Read the chart values and count the categories where the stated series relation holds. Across the labeled categories, in how many categories is Edva lower than Bred?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
+    "answer_and_evidence": "Use the chart in the image. It shows a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Compare the two queried series category by category. Find how many category labels show Lisa lower than Lai.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+    "answer_only": "Use the chart in the image. It shows a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Compare the two queried series category by category. Find how many category labels show Lisa lower than Lai.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
   },
   "task": "task_charts_multiseries_pairwise_comparison_count",
   "task_variant": "series_a_lt_b_count",
   "trace_payload": {
     "execution_trace": {
-      "answer_value": 5,
-      "category_count": 6,
+      "answer_value": 4,
+      "category_count": 10,
       "category_count_range": [
         5,
         10
       ],
       "category_labels": [
-        "J",
-        "M",
-        "D",
-        "Y",
+        "N",
+        "H",
+        "F",
+        "L",
+        "X",
+        "G",
         "Z",
-        "C"
+        "B",
+        "D",
+        "T"
       ],
       "comparison": "less_than",
       "evidence_labels": [
         "D",
-        "J",
-        "M",
-        "Y",
-        "Z"
+        "G",
+        "T",
+        "X"
       ],
-      "left_series_label": "Edva",
+      "left_series_label": "Lisa",
       "mark_color_distance_space": "lab",
       "mark_color_min_distance": 40.0,
       "mark_color_sampling_policy": "random_rgb_palette",
       "queried_series_labels": [
-        "Edva",
-        "Bred"
+        "Lisa",
+        "Lai"
       ],
       "question_format": "numeric_open",
-      "right_series_label": "Bred",
+      "right_series_label": "Lai",
       "scene_variant": "grouped_lollipop",
       "scene_variant_probabilities": {
         "grouped_bar": 0.25,
@@ -73,182 +75,187 @@
       ],
       "series_fill_palette_rgb": [
         [
-          13,
-          27,
-          15
-        ],
-        [
-          62,
-          134,
-          163
-        ],
-        [
-          58,
+          110,
           97,
-          207
+          193
+        ],
+        [
+          198,
+          131,
+          11
+        ],
+        [
+          122,
+          152,
+          100
         ]
       ],
       "series_labels": [
-        "Edva",
-        "Bred",
-        "Rima"
+        "Yvon",
+        "Lisa",
+        "Lai"
       ],
       "series_outline_palette_rgb": [
         [
-          7,
-          15,
-          8
-        ],
-        [
-          34,
-          74,
-          90
-        ],
-        [
-          32,
+          61,
           53,
-          114
+          106
+        ],
+        [
+          109,
+          72,
+          6
+        ],
+        [
+          67,
+          84,
+          55
         ]
       ],
-      "target_answer": 5,
+      "target_answer": 4,
       "target_answer_range": [
         0,
         8
       ],
       "task_variant": "series_a_lt_b_count",
       "task_variant_probabilities": {
-        "series_a_gt_b_count": 0.5,
-        "series_a_lt_b_count": 0.5
+        "series_a_gt_b_count": 0.0,
+        "series_a_lt_b_count": 1.0
       },
       "values_by_category": {
-        "C": {
-          "Bred": 9,
-          "Edva": 20,
-          "Rima": 17
+        "B": {
+          "Lai": 2,
+          "Lisa": 19,
+          "Yvon": 9
         },
         "D": {
-          "Bred": 17,
-          "Edva": 2,
-          "Rima": 12
+          "Lai": 20,
+          "Lisa": 3,
+          "Yvon": 5
         },
-        "J": {
-          "Bred": 18,
-          "Edva": 16,
-          "Rima": 17
+        "F": {
+          "Lai": 1,
+          "Lisa": 15,
+          "Yvon": 9
         },
-        "M": {
-          "Bred": 11,
-          "Edva": 5,
-          "Rima": 9
+        "G": {
+          "Lai": 19,
+          "Lisa": 7,
+          "Yvon": 16
         },
-        "Y": {
-          "Bred": 15,
-          "Edva": 5,
-          "Rima": 10
+        "H": {
+          "Lai": 2,
+          "Lisa": 20,
+          "Yvon": 7
+        },
+        "L": {
+          "Lai": 3,
+          "Lisa": 16,
+          "Yvon": 13
+        },
+        "N": {
+          "Lai": 3,
+          "Lisa": 7,
+          "Yvon": 4
+        },
+        "T": {
+          "Lai": 16,
+          "Lisa": 4,
+          "Yvon": 9
+        },
+        "X": {
+          "Lai": 6,
+          "Lisa": 1,
+          "Yvon": 5
         },
         "Z": {
-          "Bred": 18,
-          "Edva": 6,
-          "Rima": 16
+          "Lai": 3,
+          "Lisa": 16,
+          "Yvon": 6
         }
       }
     },
     "projected_evidence": {
       "bbox_set": [
         [
-          376.1,
-          128.19,
-          442.9,
+          716.46,
+          59.048,
+          762.94,
           562.0
         ],
         [
-          122.1,
-          105.143,
-          188.9,
-          564.0
-        ],
-        [
-          249.1,
-          266.476,
-          315.9,
+          487.86,
+          82.095,
+          534.34,
           562.0
         ],
         [
-          503.1,
-          174.286,
-          569.9,
+          792.66,
+          151.238,
+          839.14,
           562.0
         ],
         [
-          630.1,
-          105.143,
-          696.9,
+          411.66,
+          381.714,
+          458.14,
           562.0
         ]
       ],
       "label_set": [
         "D",
-        "J",
-        "M",
-        "Y",
-        "Z"
+        "G",
+        "T",
+        "X"
       ],
       "pixel_point_map": {
         "D": [
-          409.5,
+          739.7,
           554.0
         ],
-        "J": [
-          155.5,
+        "G": [
+          511.1,
           554.0
         ],
-        "M": [
-          282.5,
+        "T": [
+          815.9,
           554.0
         ],
-        "Y": [
-          536.5,
-          554.0
-        ],
-        "Z": [
-          663.5,
+        "X": [
+          434.9,
           554.0
         ]
       },
       "pixel_point_set": [
         [
-          409.5,
+          739.7,
           554.0
         ],
         [
-          155.5,
+          511.1,
           554.0
         ],
         [
-          282.5,
+          815.9,
           554.0
         ],
         [
-          536.5,
-          554.0
-        ],
-        [
-          663.5,
+          434.9,
           554.0
         ]
       ]
     },
     "query_spec": {
       "params": {
-        "category_count": 6,
+        "category_count": 10,
         "category_count_range": [
           5,
           10
         ],
         "comparison": "less_than",
         "queried_series_labels": [
-          "Edva",
-          "Bred"
+          "Lisa",
+          "Lai"
         ],
         "scene_variant": "grouped_lollipop",
         "scene_variant_probabilities": {
@@ -262,15 +269,15 @@
           2,
           3
         ],
-        "target_answer": 5,
+        "target_answer": 4,
         "target_answer_range": [
           0,
           8
         ],
         "task_variant": "series_a_lt_b_count",
         "task_variant_probabilities": {
-          "series_a_gt_b_count": 0.5,
-          "series_a_lt_b_count": 0.5
+          "series_a_gt_b_count": 0.0,
+          "series_a_lt_b_count": 1.0
         }
       },
       "prompt_variant": {
@@ -285,16 +292,16 @@
           "json_example_answer_only": "{\"answer\":2}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "left_series": "Edva",
+          "left_series": "Lisa",
           "object_description": "a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis",
-          "right_series": "Bred"
+          "right_series": "Lai"
         },
         "task_family_key": "multiseries_chart_comparison",
-        "task_family_variant_index": 2,
+        "task_family_variant_index": 1,
         "task_key": "pairwise_comparison_count_query",
-        "task_variant_index": 3,
+        "task_variant_index": 0,
         "task_variant_key": "series_a_lt_b_count",
-        "task_variant_template_index": 0,
+        "task_variant_template_index": 4,
         "template_paths": [
           "charts/multiseries/charts_multiseries_v1.json"
         ],
@@ -320,16 +327,16 @@
               "json_example_answer_only": "{\"answer\":2}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "left_series": "Edva",
+              "left_series": "Lisa",
               "object_description": "a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis",
-              "right_series": "Bred"
+              "right_series": "Lai"
             },
             "task_family_key": "multiseries_chart_comparison",
-            "task_family_variant_index": 2,
+            "task_family_variant_index": 1,
             "task_key": "pairwise_comparison_count_query",
-            "task_variant_index": 3,
+            "task_variant_index": 0,
             "task_variant_key": "series_a_lt_b_count",
-            "task_variant_template_index": 0,
+            "task_variant_template_index": 4,
             "template_paths": [
               "charts/multiseries/charts_multiseries_v1.json"
             ],
@@ -340,12 +347,12 @@
               "task_variant:series_a_lt_b_count": 5
             }
           },
-          "prompt": "Work from the multiseries chart shown in the image: a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Read the chart values and count the categories where the stated series relation holds. Across the labeled categories, in how many categories is Edva lower than Bred?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}"
+          "prompt": "Use the chart in the image. It shows a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Compare the two queried series category by category. Find how many category labels show Lisa lower than Lai.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 4,
+            "answer_or_evidence_variant_index": 1,
             "prompt_bundle_id": "charts_multiseries_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -355,16 +362,16 @@
               "json_example_answer_only": "{\"answer\":2}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "left_series": "Edva",
+              "left_series": "Lisa",
               "object_description": "a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis",
-              "right_series": "Bred"
+              "right_series": "Lai"
             },
             "task_family_key": "multiseries_chart_comparison",
-            "task_family_variant_index": 2,
+            "task_family_variant_index": 1,
             "task_key": "pairwise_comparison_count_query",
-            "task_variant_index": 3,
+            "task_variant_index": 0,
             "task_variant_key": "series_a_lt_b_count",
-            "task_variant_template_index": 0,
+            "task_variant_template_index": 4,
             "template_paths": [
               "charts/multiseries/charts_multiseries_v1.json"
             ],
@@ -375,7 +382,7 @@
               "task_variant:series_a_lt_b_count": 5
             }
           },
-          "prompt": "Work from the multiseries chart shown in the image: a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Read the chart values and count the categories where the stated series relation holds. Across the labeled categories, in how many categories is Edva lower than Bred?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
+          "prompt": "Use the chart in the image. It shows a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Compare the two queried series category by category. Find how many category labels show Lisa lower than Lai.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
         }
       },
       "task_variant": "series_a_lt_b_count",
@@ -383,28 +390,44 @@
     },
     "render_map": {
       "category_label_centers_px": {
-        "C": [
-          790.5,
+        "B": [
+          663.5,
           554.0
         ],
         "D": [
-          409.5,
+          739.7,
           554.0
         ],
-        "J": [
-          155.5,
-          554.0
-        ],
-        "M": [
+        "F": [
           282.5,
           554.0
         ],
-        "Y": [
-          536.5,
+        "G": [
+          511.1,
+          554.0
+        ],
+        "H": [
+          206.3,
+          554.0
+        ],
+        "L": [
+          358.7,
+          554.0
+        ],
+        "N": [
+          130.1,
+          554.0
+        ],
+        "T": [
+          815.9,
+          554.0
+        ],
+        "X": [
+          434.9,
           554.0
         ],
         "Z": [
-          663.5,
+          587.3,
           554.0
         ]
       },
@@ -446,36 +469,36 @@
         "sampling_policy": "random_rgb_palette",
         "series_fill_palette_rgb": [
           [
-            13,
-            27,
-            15
-          ],
-          [
-            62,
-            134,
-            163
-          ],
-          [
-            58,
+            110,
             97,
-            207
+            193
+          ],
+          [
+            198,
+            131,
+            11
+          ],
+          [
+            122,
+            152,
+            100
           ]
         ],
         "series_outline_palette_rgb": [
           [
-            7,
-            15,
-            8
-          ],
-          [
-            34,
-            74,
-            90
-          ],
-          [
-            32,
+            61,
             53,
-            114
+            106
+          ],
+          [
+            109,
+            72,
+            6
+          ],
+          [
+            67,
+            84,
+            55
           ]
         ]
       },
@@ -538,757 +561,1261 @@
         {
           "attrs": {
             "category_group_bbox_px": [
-              122.1,
-              105.143,
-              188.9,
-              564.0
+              106.86,
+              358.667,
+              153.34,
+              562.0
             ],
-            "category_label": "J",
+            "category_label": "N",
             "category_label_center_px": [
-              155.5,
+              130.1,
+              554.0
+            ],
+            "category_rank": 0,
+            "mark_bbox_px": [
+              106.86,
+              427.81,
+              122.86,
+              443.81
+            ],
+            "mark_center_px": [
+              114.86,
+              435.81
+            ],
+            "mark_fill_rgb": [
+              110,
+              97,
+              193
+            ],
+            "mark_outline_rgb": [
+              61,
+              53,
+              106
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Yvon",
+            "series_rank": 0,
+            "value": 4
+          },
+          "entity_id": "mark_N_Yvon",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              106.86,
+              358.667,
+              153.34,
+              562.0
+            ],
+            "category_label": "N",
+            "category_label_center_px": [
+              130.1,
               554.0
             ],
             "category_rank": 0,
             "mark_bbox_px": [
               122.1,
-              151.238,
+              358.667,
               138.1,
-              167.238
+              374.667
             ],
             "mark_center_px": [
               130.1,
-              159.238
+              366.667
             ],
             "mark_fill_rgb": [
-              13,
-              27,
-              15
+              198,
+              131,
+              11
             ],
             "mark_outline_rgb": [
-              7,
-              15,
-              8
+              109,
+              72,
+              6
             ],
             "scene_variant": "grouped_lollipop",
-            "series_label": "Edva",
-            "series_rank": 0,
-            "value": 16
+            "series_label": "Lisa",
+            "series_rank": 1,
+            "value": 7
           },
-          "entity_id": "mark_J_Edva",
+          "entity_id": "mark_N_Lisa",
           "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              122.1,
-              105.143,
-              188.9,
-              564.0
+              106.86,
+              358.667,
+              153.34,
+              562.0
             ],
-            "category_label": "J",
+            "category_label": "N",
             "category_label_center_px": [
-              155.5,
+              130.1,
               554.0
             ],
             "category_rank": 0,
             "mark_bbox_px": [
-              147.5,
-              105.143,
-              163.5,
-              121.143
+              137.34,
+              450.857,
+              153.34,
+              466.857
             ],
             "mark_center_px": [
-              155.5,
-              113.143
+              145.34,
+              458.857
             ],
             "mark_fill_rgb": [
-              62,
-              134,
-              163
+              122,
+              152,
+              100
             ],
             "mark_outline_rgb": [
-              34,
-              74,
-              90
+              67,
+              84,
+              55
             ],
             "scene_variant": "grouped_lollipop",
-            "series_label": "Bred",
-            "series_rank": 1,
-            "value": 18
-          },
-          "entity_id": "mark_J_Bred",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              122.1,
-              105.143,
-              188.9,
-              564.0
-            ],
-            "category_label": "J",
-            "category_label_center_px": [
-              155.5,
-              554.0
-            ],
-            "category_rank": 0,
-            "mark_bbox_px": [
-              172.9,
-              128.19,
-              188.9,
-              144.19
-            ],
-            "mark_center_px": [
-              180.9,
-              136.19
-            ],
-            "mark_fill_rgb": [
-              58,
-              97,
-              207
-            ],
-            "mark_outline_rgb": [
-              32,
-              53,
-              114
-            ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Rima",
+            "series_label": "Lai",
             "series_rank": 2,
-            "value": 17
+            "value": 3
           },
-          "entity_id": "mark_J_Rima",
+          "entity_id": "mark_N_Lai",
           "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              249.1,
-              266.476,
-              315.9,
-              562.0
-            ],
-            "category_label": "M",
-            "category_label_center_px": [
-              282.5,
-              554.0
-            ],
-            "category_rank": 1,
-            "mark_bbox_px": [
-              249.1,
-              404.762,
-              265.1,
-              420.762
-            ],
-            "mark_center_px": [
-              257.1,
-              412.762
-            ],
-            "mark_fill_rgb": [
-              13,
-              27,
-              15
-            ],
-            "mark_outline_rgb": [
-              7,
-              15,
-              8
-            ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Edva",
-            "series_rank": 0,
-            "value": 5
-          },
-          "entity_id": "mark_M_Edva",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              249.1,
-              266.476,
-              315.9,
-              562.0
-            ],
-            "category_label": "M",
-            "category_label_center_px": [
-              282.5,
-              554.0
-            ],
-            "category_rank": 1,
-            "mark_bbox_px": [
-              274.5,
-              266.476,
-              290.5,
-              282.476
-            ],
-            "mark_center_px": [
-              282.5,
-              274.476
-            ],
-            "mark_fill_rgb": [
-              62,
-              134,
-              163
-            ],
-            "mark_outline_rgb": [
-              34,
-              74,
-              90
-            ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Bred",
-            "series_rank": 1,
-            "value": 11
-          },
-          "entity_id": "mark_M_Bred",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              249.1,
-              266.476,
-              315.9,
-              562.0
-            ],
-            "category_label": "M",
-            "category_label_center_px": [
-              282.5,
-              554.0
-            ],
-            "category_rank": 1,
-            "mark_bbox_px": [
-              299.9,
-              312.571,
-              315.9,
-              328.571
-            ],
-            "mark_center_px": [
-              307.9,
-              320.571
-            ],
-            "mark_fill_rgb": [
-              58,
-              97,
-              207
-            ],
-            "mark_outline_rgb": [
-              32,
-              53,
-              114
-            ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Rima",
-            "series_rank": 2,
-            "value": 9
-          },
-          "entity_id": "mark_M_Rima",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              376.1,
-              128.19,
-              442.9,
-              562.0
-            ],
-            "category_label": "D",
-            "category_label_center_px": [
-              409.5,
-              554.0
-            ],
-            "category_rank": 2,
-            "mark_bbox_px": [
-              376.1,
-              473.905,
-              392.1,
-              489.905
-            ],
-            "mark_center_px": [
-              384.1,
-              481.905
-            ],
-            "mark_fill_rgb": [
-              13,
-              27,
-              15
-            ],
-            "mark_outline_rgb": [
-              7,
-              15,
-              8
-            ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Edva",
-            "series_rank": 0,
-            "value": 2
-          },
-          "entity_id": "mark_D_Edva",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              376.1,
-              128.19,
-              442.9,
-              562.0
-            ],
-            "category_label": "D",
-            "category_label_center_px": [
-              409.5,
-              554.0
-            ],
-            "category_rank": 2,
-            "mark_bbox_px": [
-              401.5,
-              128.19,
-              417.5,
-              144.19
-            ],
-            "mark_center_px": [
-              409.5,
-              136.19
-            ],
-            "mark_fill_rgb": [
-              62,
-              134,
-              163
-            ],
-            "mark_outline_rgb": [
-              34,
-              74,
-              90
-            ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Bred",
-            "series_rank": 1,
-            "value": 17
-          },
-          "entity_id": "mark_D_Bred",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              376.1,
-              128.19,
-              442.9,
-              562.0
-            ],
-            "category_label": "D",
-            "category_label_center_px": [
-              409.5,
-              554.0
-            ],
-            "category_rank": 2,
-            "mark_bbox_px": [
-              426.9,
-              243.429,
-              442.9,
-              259.429
-            ],
-            "mark_center_px": [
-              434.9,
-              251.429
-            ],
-            "mark_fill_rgb": [
-              58,
-              97,
-              207
-            ],
-            "mark_outline_rgb": [
-              32,
-              53,
-              114
-            ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Rima",
-            "series_rank": 2,
-            "value": 12
-          },
-          "entity_id": "mark_D_Rima",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              503.1,
-              174.286,
-              569.9,
-              562.0
-            ],
-            "category_label": "Y",
-            "category_label_center_px": [
-              536.5,
-              554.0
-            ],
-            "category_rank": 3,
-            "mark_bbox_px": [
-              503.1,
-              404.762,
-              519.1,
-              420.762
-            ],
-            "mark_center_px": [
-              511.1,
-              412.762
-            ],
-            "mark_fill_rgb": [
-              13,
-              27,
-              15
-            ],
-            "mark_outline_rgb": [
-              7,
-              15,
-              8
-            ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Edva",
-            "series_rank": 0,
-            "value": 5
-          },
-          "entity_id": "mark_Y_Edva",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              503.1,
-              174.286,
-              569.9,
-              562.0
-            ],
-            "category_label": "Y",
-            "category_label_center_px": [
-              536.5,
-              554.0
-            ],
-            "category_rank": 3,
-            "mark_bbox_px": [
-              528.5,
-              174.286,
-              544.5,
-              190.286
-            ],
-            "mark_center_px": [
-              536.5,
-              182.286
-            ],
-            "mark_fill_rgb": [
-              62,
-              134,
-              163
-            ],
-            "mark_outline_rgb": [
-              34,
-              74,
-              90
-            ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Bred",
-            "series_rank": 1,
-            "value": 15
-          },
-          "entity_id": "mark_Y_Bred",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              503.1,
-              174.286,
-              569.9,
-              562.0
-            ],
-            "category_label": "Y",
-            "category_label_center_px": [
-              536.5,
-              554.0
-            ],
-            "category_rank": 3,
-            "mark_bbox_px": [
-              553.9,
-              289.524,
-              569.9,
-              305.524
-            ],
-            "mark_center_px": [
-              561.9,
-              297.524
-            ],
-            "mark_fill_rgb": [
-              58,
-              97,
-              207
-            ],
-            "mark_outline_rgb": [
-              32,
-              53,
-              114
-            ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Rima",
-            "series_rank": 2,
-            "value": 10
-          },
-          "entity_id": "mark_Y_Rima",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              630.1,
-              105.143,
-              696.9,
-              562.0
-            ],
-            "category_label": "Z",
-            "category_label_center_px": [
-              663.5,
-              554.0
-            ],
-            "category_rank": 4,
-            "mark_bbox_px": [
-              630.1,
-              381.714,
-              646.1,
-              397.714
-            ],
-            "mark_center_px": [
-              638.1,
-              389.714
-            ],
-            "mark_fill_rgb": [
-              13,
-              27,
-              15
-            ],
-            "mark_outline_rgb": [
-              7,
-              15,
-              8
-            ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Edva",
-            "series_rank": 0,
-            "value": 6
-          },
-          "entity_id": "mark_Z_Edva",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              630.1,
-              105.143,
-              696.9,
-              562.0
-            ],
-            "category_label": "Z",
-            "category_label_center_px": [
-              663.5,
-              554.0
-            ],
-            "category_rank": 4,
-            "mark_bbox_px": [
-              655.5,
-              105.143,
-              671.5,
-              121.143
-            ],
-            "mark_center_px": [
-              663.5,
-              113.143
-            ],
-            "mark_fill_rgb": [
-              62,
-              134,
-              163
-            ],
-            "mark_outline_rgb": [
-              34,
-              74,
-              90
-            ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Bred",
-            "series_rank": 1,
-            "value": 18
-          },
-          "entity_id": "mark_Z_Bred",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              630.1,
-              105.143,
-              696.9,
-              562.0
-            ],
-            "category_label": "Z",
-            "category_label_center_px": [
-              663.5,
-              554.0
-            ],
-            "category_rank": 4,
-            "mark_bbox_px": [
-              680.9,
-              151.238,
-              696.9,
-              167.238
-            ],
-            "mark_center_px": [
-              688.9,
-              159.238
-            ],
-            "mark_fill_rgb": [
-              58,
-              97,
-              207
-            ],
-            "mark_outline_rgb": [
-              32,
-              53,
-              114
-            ],
-            "scene_variant": "grouped_lollipop",
-            "series_label": "Rima",
-            "series_rank": 2,
-            "value": 16
-          },
-          "entity_id": "mark_Z_Rima",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              757.1,
+              183.06,
               59.048,
-              823.9,
+              229.54,
               562.0
             ],
-            "category_label": "C",
+            "category_label": "H",
             "category_label_center_px": [
-              790.5,
+              206.3,
               554.0
             ],
-            "category_rank": 5,
+            "category_rank": 1,
             "mark_bbox_px": [
-              757.1,
+              183.06,
+              358.667,
+              199.06,
+              374.667
+            ],
+            "mark_center_px": [
+              191.06,
+              366.667
+            ],
+            "mark_fill_rgb": [
+              110,
+              97,
+              193
+            ],
+            "mark_outline_rgb": [
+              61,
+              53,
+              106
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Yvon",
+            "series_rank": 0,
+            "value": 7
+          },
+          "entity_id": "mark_H_Yvon",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              183.06,
               59.048,
-              773.1,
+              229.54,
+              562.0
+            ],
+            "category_label": "H",
+            "category_label_center_px": [
+              206.3,
+              554.0
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              198.3,
+              59.048,
+              214.3,
               75.048
             ],
             "mark_center_px": [
-              765.1,
+              206.3,
               67.048
             ],
             "mark_fill_rgb": [
-              13,
-              27,
-              15
+              198,
+              131,
+              11
             ],
             "mark_outline_rgb": [
-              7,
-              15,
-              8
+              109,
+              72,
+              6
             ],
             "scene_variant": "grouped_lollipop",
-            "series_label": "Edva",
-            "series_rank": 0,
+            "series_label": "Lisa",
+            "series_rank": 1,
             "value": 20
           },
-          "entity_id": "mark_C_Edva",
+          "entity_id": "mark_H_Lisa",
           "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              757.1,
+              183.06,
               59.048,
-              823.9,
+              229.54,
               562.0
             ],
-            "category_label": "C",
+            "category_label": "H",
             "category_label_center_px": [
-              790.5,
+              206.3,
               554.0
             ],
-            "category_rank": 5,
+            "category_rank": 1,
             "mark_bbox_px": [
-              782.5,
+              213.54,
+              473.905,
+              229.54,
+              489.905
+            ],
+            "mark_center_px": [
+              221.54,
+              481.905
+            ],
+            "mark_fill_rgb": [
+              122,
+              152,
+              100
+            ],
+            "mark_outline_rgb": [
+              67,
+              84,
+              55
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Lai",
+            "series_rank": 2,
+            "value": 2
+          },
+          "entity_id": "mark_H_Lai",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              259.26,
+              174.286,
+              305.74,
+              562.0
+            ],
+            "category_label": "F",
+            "category_label_center_px": [
+              282.5,
+              554.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              259.26,
               312.571,
-              798.5,
+              275.26,
               328.571
             ],
             "mark_center_px": [
-              790.5,
+              267.26,
               320.571
             ],
             "mark_fill_rgb": [
-              62,
-              134,
-              163
+              110,
+              97,
+              193
             ],
             "mark_outline_rgb": [
-              34,
-              74,
-              90
+              61,
+              53,
+              106
             ],
             "scene_variant": "grouped_lollipop",
-            "series_label": "Bred",
-            "series_rank": 1,
+            "series_label": "Yvon",
+            "series_rank": 0,
             "value": 9
           },
-          "entity_id": "mark_C_Bred",
+          "entity_id": "mark_F_Yvon",
           "entity_type": "point"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              757.1,
-              59.048,
-              823.9,
+              259.26,
+              174.286,
+              305.74,
               562.0
             ],
-            "category_label": "C",
+            "category_label": "F",
             "category_label_center_px": [
-              790.5,
+              282.5,
+              554.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              274.5,
+              174.286,
+              290.5,
+              190.286
+            ],
+            "mark_center_px": [
+              282.5,
+              182.286
+            ],
+            "mark_fill_rgb": [
+              198,
+              131,
+              11
+            ],
+            "mark_outline_rgb": [
+              109,
+              72,
+              6
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Lisa",
+            "series_rank": 1,
+            "value": 15
+          },
+          "entity_id": "mark_F_Lisa",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              259.26,
+              174.286,
+              305.74,
+              562.0
+            ],
+            "category_label": "F",
+            "category_label_center_px": [
+              282.5,
+              554.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              289.74,
+              496.952,
+              305.74,
+              512.952
+            ],
+            "mark_center_px": [
+              297.74,
+              504.952
+            ],
+            "mark_fill_rgb": [
+              122,
+              152,
+              100
+            ],
+            "mark_outline_rgb": [
+              67,
+              84,
+              55
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Lai",
+            "series_rank": 2,
+            "value": 1
+          },
+          "entity_id": "mark_F_Lai",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              335.46,
+              151.238,
+              381.94,
+              562.0
+            ],
+            "category_label": "L",
+            "category_label_center_px": [
+              358.7,
+              554.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              335.46,
+              220.381,
+              351.46,
+              236.381
+            ],
+            "mark_center_px": [
+              343.46,
+              228.381
+            ],
+            "mark_fill_rgb": [
+              110,
+              97,
+              193
+            ],
+            "mark_outline_rgb": [
+              61,
+              53,
+              106
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Yvon",
+            "series_rank": 0,
+            "value": 13
+          },
+          "entity_id": "mark_L_Yvon",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              335.46,
+              151.238,
+              381.94,
+              562.0
+            ],
+            "category_label": "L",
+            "category_label_center_px": [
+              358.7,
+              554.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              350.7,
+              151.238,
+              366.7,
+              167.238
+            ],
+            "mark_center_px": [
+              358.7,
+              159.238
+            ],
+            "mark_fill_rgb": [
+              198,
+              131,
+              11
+            ],
+            "mark_outline_rgb": [
+              109,
+              72,
+              6
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Lisa",
+            "series_rank": 1,
+            "value": 16
+          },
+          "entity_id": "mark_L_Lisa",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              335.46,
+              151.238,
+              381.94,
+              562.0
+            ],
+            "category_label": "L",
+            "category_label_center_px": [
+              358.7,
+              554.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              365.94,
+              450.857,
+              381.94,
+              466.857
+            ],
+            "mark_center_px": [
+              373.94,
+              458.857
+            ],
+            "mark_fill_rgb": [
+              122,
+              152,
+              100
+            ],
+            "mark_outline_rgb": [
+              67,
+              84,
+              55
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Lai",
+            "series_rank": 2,
+            "value": 3
+          },
+          "entity_id": "mark_L_Lai",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              411.66,
+              381.714,
+              458.14,
+              562.0
+            ],
+            "category_label": "X",
+            "category_label_center_px": [
+              434.9,
+              554.0
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              411.66,
+              404.762,
+              427.66,
+              420.762
+            ],
+            "mark_center_px": [
+              419.66,
+              412.762
+            ],
+            "mark_fill_rgb": [
+              110,
+              97,
+              193
+            ],
+            "mark_outline_rgb": [
+              61,
+              53,
+              106
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Yvon",
+            "series_rank": 0,
+            "value": 5
+          },
+          "entity_id": "mark_X_Yvon",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              411.66,
+              381.714,
+              458.14,
+              562.0
+            ],
+            "category_label": "X",
+            "category_label_center_px": [
+              434.9,
+              554.0
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              426.9,
+              496.952,
+              442.9,
+              512.952
+            ],
+            "mark_center_px": [
+              434.9,
+              504.952
+            ],
+            "mark_fill_rgb": [
+              198,
+              131,
+              11
+            ],
+            "mark_outline_rgb": [
+              109,
+              72,
+              6
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Lisa",
+            "series_rank": 1,
+            "value": 1
+          },
+          "entity_id": "mark_X_Lisa",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              411.66,
+              381.714,
+              458.14,
+              562.0
+            ],
+            "category_label": "X",
+            "category_label_center_px": [
+              434.9,
+              554.0
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              442.14,
+              381.714,
+              458.14,
+              397.714
+            ],
+            "mark_center_px": [
+              450.14,
+              389.714
+            ],
+            "mark_fill_rgb": [
+              122,
+              152,
+              100
+            ],
+            "mark_outline_rgb": [
+              67,
+              84,
+              55
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Lai",
+            "series_rank": 2,
+            "value": 6
+          },
+          "entity_id": "mark_X_Lai",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              487.86,
+              82.095,
+              534.34,
+              562.0
+            ],
+            "category_label": "G",
+            "category_label_center_px": [
+              511.1,
               554.0
             ],
             "category_rank": 5,
             "mark_bbox_px": [
+              487.86,
+              151.238,
+              503.86,
+              167.238
+            ],
+            "mark_center_px": [
+              495.86,
+              159.238
+            ],
+            "mark_fill_rgb": [
+              110,
+              97,
+              193
+            ],
+            "mark_outline_rgb": [
+              61,
+              53,
+              106
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Yvon",
+            "series_rank": 0,
+            "value": 16
+          },
+          "entity_id": "mark_G_Yvon",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              487.86,
+              82.095,
+              534.34,
+              562.0
+            ],
+            "category_label": "G",
+            "category_label_center_px": [
+              511.1,
+              554.0
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              503.1,
+              358.667,
+              519.1,
+              374.667
+            ],
+            "mark_center_px": [
+              511.1,
+              366.667
+            ],
+            "mark_fill_rgb": [
+              198,
+              131,
+              11
+            ],
+            "mark_outline_rgb": [
+              109,
+              72,
+              6
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Lisa",
+            "series_rank": 1,
+            "value": 7
+          },
+          "entity_id": "mark_G_Lisa",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              487.86,
+              82.095,
+              534.34,
+              562.0
+            ],
+            "category_label": "G",
+            "category_label_center_px": [
+              511.1,
+              554.0
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              518.34,
+              82.095,
+              534.34,
+              98.095
+            ],
+            "mark_center_px": [
+              526.34,
+              90.095
+            ],
+            "mark_fill_rgb": [
+              122,
+              152,
+              100
+            ],
+            "mark_outline_rgb": [
+              67,
+              84,
+              55
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Lai",
+            "series_rank": 2,
+            "value": 19
+          },
+          "entity_id": "mark_G_Lai",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              564.06,
+              151.238,
+              610.54,
+              562.0
+            ],
+            "category_label": "Z",
+            "category_label_center_px": [
+              587.3,
+              554.0
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              564.06,
+              381.714,
+              580.06,
+              397.714
+            ],
+            "mark_center_px": [
+              572.06,
+              389.714
+            ],
+            "mark_fill_rgb": [
+              110,
+              97,
+              193
+            ],
+            "mark_outline_rgb": [
+              61,
+              53,
+              106
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Yvon",
+            "series_rank": 0,
+            "value": 6
+          },
+          "entity_id": "mark_Z_Yvon",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              564.06,
+              151.238,
+              610.54,
+              562.0
+            ],
+            "category_label": "Z",
+            "category_label_center_px": [
+              587.3,
+              554.0
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              579.3,
+              151.238,
+              595.3,
+              167.238
+            ],
+            "mark_center_px": [
+              587.3,
+              159.238
+            ],
+            "mark_fill_rgb": [
+              198,
+              131,
+              11
+            ],
+            "mark_outline_rgb": [
+              109,
+              72,
+              6
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Lisa",
+            "series_rank": 1,
+            "value": 16
+          },
+          "entity_id": "mark_Z_Lisa",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              564.06,
+              151.238,
+              610.54,
+              562.0
+            ],
+            "category_label": "Z",
+            "category_label_center_px": [
+              587.3,
+              554.0
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              594.54,
+              450.857,
+              610.54,
+              466.857
+            ],
+            "mark_center_px": [
+              602.54,
+              458.857
+            ],
+            "mark_fill_rgb": [
+              122,
+              152,
+              100
+            ],
+            "mark_outline_rgb": [
+              67,
+              84,
+              55
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Lai",
+            "series_rank": 2,
+            "value": 3
+          },
+          "entity_id": "mark_Z_Lai",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              640.26,
+              82.095,
+              686.74,
+              562.0
+            ],
+            "category_label": "B",
+            "category_label_center_px": [
+              663.5,
+              554.0
+            ],
+            "category_rank": 7,
+            "mark_bbox_px": [
+              640.26,
+              312.571,
+              656.26,
+              328.571
+            ],
+            "mark_center_px": [
+              648.26,
+              320.571
+            ],
+            "mark_fill_rgb": [
+              110,
+              97,
+              193
+            ],
+            "mark_outline_rgb": [
+              61,
+              53,
+              106
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Yvon",
+            "series_rank": 0,
+            "value": 9
+          },
+          "entity_id": "mark_B_Yvon",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              640.26,
+              82.095,
+              686.74,
+              562.0
+            ],
+            "category_label": "B",
+            "category_label_center_px": [
+              663.5,
+              554.0
+            ],
+            "category_rank": 7,
+            "mark_bbox_px": [
+              655.5,
+              82.095,
+              671.5,
+              98.095
+            ],
+            "mark_center_px": [
+              663.5,
+              90.095
+            ],
+            "mark_fill_rgb": [
+              198,
+              131,
+              11
+            ],
+            "mark_outline_rgb": [
+              109,
+              72,
+              6
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Lisa",
+            "series_rank": 1,
+            "value": 19
+          },
+          "entity_id": "mark_B_Lisa",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              640.26,
+              82.095,
+              686.74,
+              562.0
+            ],
+            "category_label": "B",
+            "category_label_center_px": [
+              663.5,
+              554.0
+            ],
+            "category_rank": 7,
+            "mark_bbox_px": [
+              670.74,
+              473.905,
+              686.74,
+              489.905
+            ],
+            "mark_center_px": [
+              678.74,
+              481.905
+            ],
+            "mark_fill_rgb": [
+              122,
+              152,
+              100
+            ],
+            "mark_outline_rgb": [
+              67,
+              84,
+              55
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Lai",
+            "series_rank": 2,
+            "value": 2
+          },
+          "entity_id": "mark_B_Lai",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              716.46,
+              59.048,
+              762.94,
+              562.0
+            ],
+            "category_label": "D",
+            "category_label_center_px": [
+              739.7,
+              554.0
+            ],
+            "category_rank": 8,
+            "mark_bbox_px": [
+              716.46,
+              404.762,
+              732.46,
+              420.762
+            ],
+            "mark_center_px": [
+              724.46,
+              412.762
+            ],
+            "mark_fill_rgb": [
+              110,
+              97,
+              193
+            ],
+            "mark_outline_rgb": [
+              61,
+              53,
+              106
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Yvon",
+            "series_rank": 0,
+            "value": 5
+          },
+          "entity_id": "mark_D_Yvon",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              716.46,
+              59.048,
+              762.94,
+              562.0
+            ],
+            "category_label": "D",
+            "category_label_center_px": [
+              739.7,
+              554.0
+            ],
+            "category_rank": 8,
+            "mark_bbox_px": [
+              731.7,
+              450.857,
+              747.7,
+              466.857
+            ],
+            "mark_center_px": [
+              739.7,
+              458.857
+            ],
+            "mark_fill_rgb": [
+              198,
+              131,
+              11
+            ],
+            "mark_outline_rgb": [
+              109,
+              72,
+              6
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Lisa",
+            "series_rank": 1,
+            "value": 3
+          },
+          "entity_id": "mark_D_Lisa",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              716.46,
+              59.048,
+              762.94,
+              562.0
+            ],
+            "category_label": "D",
+            "category_label_center_px": [
+              739.7,
+              554.0
+            ],
+            "category_rank": 8,
+            "mark_bbox_px": [
+              746.94,
+              59.048,
+              762.94,
+              75.048
+            ],
+            "mark_center_px": [
+              754.94,
+              67.048
+            ],
+            "mark_fill_rgb": [
+              122,
+              152,
+              100
+            ],
+            "mark_outline_rgb": [
+              67,
+              84,
+              55
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Lai",
+            "series_rank": 2,
+            "value": 20
+          },
+          "entity_id": "mark_D_Lai",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              792.66,
+              151.238,
+              839.14,
+              562.0
+            ],
+            "category_label": "T",
+            "category_label_center_px": [
+              815.9,
+              554.0
+            ],
+            "category_rank": 9,
+            "mark_bbox_px": [
+              792.66,
+              312.571,
+              808.66,
+              328.571
+            ],
+            "mark_center_px": [
+              800.66,
+              320.571
+            ],
+            "mark_fill_rgb": [
+              110,
+              97,
+              193
+            ],
+            "mark_outline_rgb": [
+              61,
+              53,
+              106
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Yvon",
+            "series_rank": 0,
+            "value": 9
+          },
+          "entity_id": "mark_T_Yvon",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              792.66,
+              151.238,
+              839.14,
+              562.0
+            ],
+            "category_label": "T",
+            "category_label_center_px": [
+              815.9,
+              554.0
+            ],
+            "category_rank": 9,
+            "mark_bbox_px": [
               807.9,
-              128.19,
+              427.81,
               823.9,
-              144.19
+              443.81
             ],
             "mark_center_px": [
               815.9,
-              136.19
+              435.81
             ],
             "mark_fill_rgb": [
-              58,
-              97,
-              207
+              198,
+              131,
+              11
             ],
             "mark_outline_rgb": [
-              32,
-              53,
-              114
+              109,
+              72,
+              6
             ],
             "scene_variant": "grouped_lollipop",
-            "series_label": "Rima",
-            "series_rank": 2,
-            "value": 17
+            "series_label": "Lisa",
+            "series_rank": 1,
+            "value": 4
           },
-          "entity_id": "mark_C_Rima",
+          "entity_id": "mark_T_Lisa",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              792.66,
+              151.238,
+              839.14,
+              562.0
+            ],
+            "category_label": "T",
+            "category_label_center_px": [
+              815.9,
+              554.0
+            ],
+            "category_rank": 9,
+            "mark_bbox_px": [
+              823.14,
+              151.238,
+              839.14,
+              167.238
+            ],
+            "mark_center_px": [
+              831.14,
+              159.238
+            ],
+            "mark_fill_rgb": [
+              122,
+              152,
+              100
+            ],
+            "mark_outline_rgb": [
+              67,
+              84,
+              55
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Lai",
+            "series_rank": 2,
+            "value": 16
+          },
+          "entity_id": "mark_T_Lai",
           "entity_type": "point"
         }
       ],
@@ -1296,14 +1823,13 @@
         "comparison": "less_than",
         "evidence_labels": [
           "D",
-          "J",
-          "M",
-          "Y",
-          "Z"
+          "G",
+          "T",
+          "X"
         ],
         "queried_series_labels": [
-          "Edva",
-          "Bred"
+          "Lisa",
+          "Lai"
         ],
         "scene_variant": "grouped_lollipop",
         "task_variant": "series_a_lt_b_count"
@@ -1313,10 +1839,9 @@
     "witness_symbolic": {
       "labels": [
         "D",
-        "J",
-        "M",
-        "Y",
-        "Z"
+        "G",
+        "T",
+        "X"
       ],
       "type": "label_set"
     }

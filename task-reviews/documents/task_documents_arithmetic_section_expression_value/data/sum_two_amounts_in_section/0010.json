@@ -1,7 +1,7 @@
 {
   "answer_gt": {
     "type": "string",
-    "value": "$190.87"
+    "value": "$312.16"
   },
   "evidence_gt": {
     "type": "bbox_set",
@@ -15,7 +15,7 @@
       [
         214.0,
         722.5,
-        297.0,
+        315.0,
         749.5
       ]
     ]
@@ -24,18 +24,18 @@
     "format": "png",
     "path": "documents/task_documents_arithmetic_section_expression_value/images/sum_two_amounts_in_section/0010.png"
   },
-  "instance_seed": 2272087831179991,
-  "prompt": "Read the named sections in this document: an invoice with visible named sections, labeled header fields, and summary blocks. Use the visible section headers and values to answer: In the Billing Summary section, what is Subtotal plus Tax? Return the amount as $0.00. Compute the exact amount from the shown values.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing one bounding box for each referenced operand value, in the same order as the expression in the prompt.\nAnswer format: set \"answer\" to the computed amount formatted exactly as $0.00.\nExample JSON:\n{\"evidence\":[[150,260,364,294],[150,320,364,354]],\"answer\":\"$146.80\"}",
+  "instance_seed": 2356683938867420,
+  "prompt": "You are given an invoice with visible named sections, labeled header fields, and summary blocks. Locate the relevant section before computing the answer: In the Billing Summary section, what is Subtotal plus Tax? Return the amount as $0.00. Return the computed amount in the same currency format.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing one bounding box for each referenced operand value, in the same order as the expression in the prompt.\nAnswer: set \"answer\" to the computed amount formatted exactly as $0.00.\nExample JSON:\n{\"evidence\":[[150,260,364,294],[150,320,364,354]],\"answer\":\"$146.80\"}",
   "prompt_variants": {
-    "answer_and_evidence": "Read the named sections in this document: an invoice with visible named sections, labeled header fields, and summary blocks. Use the visible section headers and values to answer: In the Billing Summary section, what is Subtotal plus Tax? Return the amount as $0.00. Compute the exact amount from the shown values.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing one bounding box for each referenced operand value, in the same order as the expression in the prompt.\nAnswer format: set \"answer\" to the computed amount formatted exactly as $0.00.\nExample JSON:\n{\"evidence\":[[150,260,364,294],[150,320,364,354]],\"answer\":\"$146.80\"}",
-    "answer_only": "Read the named sections in this document: an invoice with visible named sections, labeled header fields, and summary blocks. Use the visible section headers and values to answer: In the Billing Summary section, what is Subtotal plus Tax? Return the amount as $0.00. Compute the exact amount from the shown values.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the computed amount formatted exactly as $0.00.\nExample JSON:\n{\"answer\":\"$146.80\"}"
+    "answer_and_evidence": "You are given an invoice with visible named sections, labeled header fields, and summary blocks. Locate the relevant section before computing the answer: In the Billing Summary section, what is Subtotal plus Tax? Return the amount as $0.00. Return the computed amount in the same currency format.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing one bounding box for each referenced operand value, in the same order as the expression in the prompt.\nAnswer: set \"answer\" to the computed amount formatted exactly as $0.00.\nExample JSON:\n{\"evidence\":[[150,260,364,294],[150,320,364,354]],\"answer\":\"$146.80\"}",
+    "answer_only": "You are given an invoice with visible named sections, labeled header fields, and summary blocks. Locate the relevant section before computing the answer: In the Billing Summary section, what is Subtotal plus Tax? Return the amount as $0.00. Return the computed amount in the same currency format.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the computed amount formatted exactly as $0.00.\nExample JSON:\n{\"answer\":\"$146.80\"}"
   },
   "task": "task_documents_arithmetic_section_expression_value",
   "task_variant": "sum_two_amounts_in_section",
   "trace_payload": {
     "answer_gt": {
       "type": "string",
-      "value": "$190.87"
+      "value": "$312.16"
     },
     "background": {
       "available_styles": [
@@ -64,15 +64,15 @@
         [
           214.0,
           722.5,
-          297.0,
+          315.0,
           749.5
         ]
       ]
     },
     "execution_trace": {
       "expression_operand_cents": [
-        18497,
-        590
+        29938,
+        1278
       ],
       "field_count": 11,
       "field_specs": [
@@ -80,7 +80,7 @@
           "comparison_kind": "other",
           "field_id": "vendor_name",
           "field_label": "Vendor",
-          "field_value": "Riverbend Studio",
+          "field_value": "Copper Studio",
           "label_bbox_id": "vendor_name:label",
           "section_id": "parties",
           "section_label": "Parties",
@@ -90,7 +90,7 @@
           "comparison_kind": "other",
           "field_id": "customer_name",
           "field_label": "Customer",
-          "field_value": "Levi Patel",
+          "field_value": "Ezra Martin",
           "label_bbox_id": "customer_name:label",
           "section_id": "parties",
           "section_label": "Parties",
@@ -100,7 +100,7 @@
           "comparison_kind": "other",
           "field_id": "invoice_number",
           "field_label": "Invoice Number",
-          "field_value": "INV-75694",
+          "field_value": "INV-62495",
           "label_bbox_id": "invoice_number:label",
           "section_id": "parties",
           "section_label": "Parties",
@@ -110,7 +110,7 @@
           "comparison_kind": "other",
           "field_id": "account_id",
           "field_label": "Account ID",
-          "field_value": "ACC-9948",
+          "field_value": "ACC-1975",
           "label_bbox_id": "account_id:label",
           "section_id": "account",
           "section_label": "Account",
@@ -120,7 +120,7 @@
           "comparison_kind": "other",
           "field_id": "contact_email",
           "field_label": "Contact Email",
-          "field_value": "riverbendstudi@mailhub.net",
+          "field_value": "copperstudio@example.com",
           "label_bbox_id": "contact_email:label",
           "section_id": "account",
           "section_label": "Account",
@@ -130,7 +130,7 @@
           "comparison_kind": "other",
           "field_id": "issue_date",
           "field_label": "Issue Date",
-          "field_value": "2026-03-08",
+          "field_value": "2026-03-10",
           "label_bbox_id": "issue_date:label",
           "section_id": "dates",
           "section_label": "Dates",
@@ -140,7 +140,7 @@
           "comparison_kind": "other",
           "field_id": "service_date",
           "field_label": "Service Date",
-          "field_value": "2026-03-14",
+          "field_value": "2026-03-16",
           "label_bbox_id": "service_date:label",
           "section_id": "dates",
           "section_label": "Dates",
@@ -150,7 +150,7 @@
           "comparison_kind": "other",
           "field_id": "due_date",
           "field_label": "Due Date",
-          "field_value": "2026-03-25",
+          "field_value": "2026-03-30",
           "label_bbox_id": "due_date:label",
           "section_id": "dates",
           "section_label": "Dates",
@@ -160,7 +160,7 @@
           "comparison_kind": "amount",
           "field_id": "subtotal_amount",
           "field_label": "Subtotal",
-          "field_value": "$184.97",
+          "field_value": "$299.38",
           "label_bbox_id": "subtotal_amount:label",
           "section_id": "billing_summary",
           "section_label": "Billing Summary",
@@ -170,7 +170,7 @@
           "comparison_kind": "amount",
           "field_id": "tax_amount",
           "field_label": "Tax",
-          "field_value": "$5.90",
+          "field_value": "$12.78",
           "label_bbox_id": "tax_amount:label",
           "section_id": "billing_summary",
           "section_label": "Billing Summary",
@@ -180,7 +180,7 @@
           "comparison_kind": "amount",
           "field_id": "discount_amount",
           "field_label": "Discount",
-          "field_value": "$12.66",
+          "field_value": "$16.84",
           "label_bbox_id": "discount_amount:label",
           "section_id": "billing_summary",
           "section_label": "Billing Summary",
@@ -196,8 +196,8 @@
         "Tax"
       ],
       "operand_field_values": [
-        "$184.97",
-        "$5.90"
+        "$299.38",
+        "$12.78"
       ],
       "operand_value_bbox_ids": [
         "subtotal_amount:value",
@@ -210,8 +210,8 @@
       "query_section_label": "Billing Summary",
       "question_format": "document_section_expression_value",
       "question_text": "In the Billing Summary section, what is Subtotal plus Tax? Return the amount as $0.00.",
-      "result_cents": 19087,
-      "result_value": "$190.87",
+      "result_cents": 31216,
+      "result_value": "$312.16",
       "scene_title": "Invoice",
       "scene_variant": "invoice_sheet",
       "section_specs": [
@@ -281,7 +281,7 @@
         [
           214.0,
           722.5,
-          297.0,
+          315.0,
           749.5
         ]
       ]
@@ -309,7 +309,7 @@
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 1,
+        "answer_or_evidence_variant_index": 0,
         "prompt_bundle_id": "documents_arithmetic_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -323,11 +323,11 @@
           "question_text": "In the Billing Summary section, what is Subtotal plus Tax? Return the amount as $0.00."
         },
         "task_family_key": "structured_document_sections",
-        "task_family_variant_index": 4,
+        "task_family_variant_index": 2,
         "task_key": "section_expression_query",
-        "task_variant_index": 3,
+        "task_variant_index": 4,
         "task_variant_key": "sum_two_amounts_in_section",
-        "task_variant_template_index": 0,
+        "task_variant_template_index": 1,
         "template_paths": [
           "documents/arithmetic/documents_arithmetic_v1.json"
         ],
@@ -343,7 +343,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 1,
+            "answer_or_evidence_variant_index": 0,
             "prompt_bundle_id": "documents_arithmetic_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -357,11 +357,11 @@
               "question_text": "In the Billing Summary section, what is Subtotal plus Tax? Return the amount as $0.00."
             },
             "task_family_key": "structured_document_sections",
-            "task_family_variant_index": 4,
+            "task_family_variant_index": 2,
             "task_key": "section_expression_query",
-            "task_variant_index": 3,
+            "task_variant_index": 4,
             "task_variant_key": "sum_two_amounts_in_section",
-            "task_variant_template_index": 0,
+            "task_variant_template_index": 1,
             "template_paths": [
               "documents/arithmetic/documents_arithmetic_v1.json"
             ],
@@ -372,7 +372,7 @@
               "task_variant:sum_two_amounts_in_section": 5
             }
           },
-          "prompt": "Read the named sections in this document: an invoice with visible named sections, labeled header fields, and summary blocks. Use the visible section headers and values to answer: In the Billing Summary section, what is Subtotal plus Tax? Return the amount as $0.00. Compute the exact amount from the shown values.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing one bounding box for each referenced operand value, in the same order as the expression in the prompt.\nAnswer format: set \"answer\" to the computed amount formatted exactly as $0.00.\nExample JSON:\n{\"evidence\":[[150,260,364,294],[150,320,364,354]],\"answer\":\"$146.80\"}"
+          "prompt": "You are given an invoice with visible named sections, labeled header fields, and summary blocks. Locate the relevant section before computing the answer: In the Billing Summary section, what is Subtotal plus Tax? Return the amount as $0.00. Return the computed amount in the same currency format.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing one bounding box for each referenced operand value, in the same order as the expression in the prompt.\nAnswer: set \"answer\" to the computed amount formatted exactly as $0.00.\nExample JSON:\n{\"evidence\":[[150,260,364,294],[150,320,364,354]],\"answer\":\"$146.80\"}"
         },
         "answer_only": {
           "metadata": {
@@ -391,11 +391,11 @@
               "question_text": "In the Billing Summary section, what is Subtotal plus Tax? Return the amount as $0.00."
             },
             "task_family_key": "structured_document_sections",
-            "task_family_variant_index": 4,
+            "task_family_variant_index": 2,
             "task_key": "section_expression_query",
-            "task_variant_index": 3,
+            "task_variant_index": 4,
             "task_variant_key": "sum_two_amounts_in_section",
-            "task_variant_template_index": 0,
+            "task_variant_template_index": 1,
             "template_paths": [
               "documents/arithmetic/documents_arithmetic_v1.json"
             ],
@@ -406,7 +406,7 @@
               "task_variant:sum_two_amounts_in_section": 5
             }
           },
-          "prompt": "Read the named sections in this document: an invoice with visible named sections, labeled header fields, and summary blocks. Use the visible section headers and values to answer: In the Billing Summary section, what is Subtotal plus Tax? Return the amount as $0.00. Compute the exact amount from the shown values.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the computed amount formatted exactly as $0.00.\nExample JSON:\n{\"answer\":\"$146.80\"}"
+          "prompt": "You are given an invoice with visible named sections, labeled header fields, and summary blocks. Locate the relevant section before computing the answer: In the Billing Summary section, what is Subtotal plus Tax? Return the amount as $0.00. Return the computed amount in the same currency format.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the computed amount formatted exactly as $0.00.\nExample JSON:\n{\"answer\":\"$146.80\"}"
         }
       },
       "task_variant": "sum_two_amounts_in_section",
@@ -558,14 +558,14 @@
         ],
         "contact_email:value": [
           811.333,
-          373.5,
-          1066.333,
-          392.5
+          373.0,
+          1069.333,
+          393.0
         ],
         "customer_name:value": [
           665.0,
           255.5,
-          804.0,
+          828.0,
           278.5
         ],
         "discount_amount:value": [
@@ -607,14 +607,14 @@
         "tax_amount:value": [
           214.0,
           722.5,
-          297.0,
+          315.0,
           749.5
         ],
         "vendor_name:value": [
           214.0,
-          255.5,
-          459.0,
-          278.5
+          252.5,
+          417.0,
+          281.5
         ]
       },
       "page_bbox_px": [
@@ -685,7 +685,7 @@
     "render_spec": {
       "canvas_height": 920,
       "canvas_width": 1280,
-      "geometry_seed": 2272087831179991,
+      "geometry_seed": 2356683938867420,
       "page_shadow_offset_px": 14,
       "receipt_page_height_px": 760,
       "receipt_page_width_px": 520,
@@ -814,14 +814,14 @@
           "bbox_id": "vendor_name:value",
           "bbox_px": [
             214.0,
-            255.5,
-            459.0,
-            278.5
+            252.5,
+            417.0,
+            281.5
           ],
           "entity_id": "vendor_name:value",
           "entity_type": "document_field_value",
           "field_id": "vendor_name",
-          "text": "Riverbend Studio"
+          "text": "Copper Studio"
         },
         {
           "bbox_id": "customer_name",
@@ -853,13 +853,13 @@
           "bbox_px": [
             665.0,
             255.5,
-            804.0,
+            828.0,
             278.5
           ],
           "entity_id": "customer_name:value",
           "entity_type": "document_field_value",
           "field_id": "customer_name",
-          "text": "Levi Patel"
+          "text": "Ezra Martin"
         },
         {
           "bbox_id": "invoice_number",
@@ -897,7 +897,7 @@
           "entity_id": "invoice_number:value",
           "entity_type": "document_field_value",
           "field_id": "invoice_number",
-          "text": "INV-75694"
+          "text": "INV-62495"
         },
         {
           "bbox_id": "account_id",
@@ -935,7 +935,7 @@
           "entity_id": "account_id:value",
           "entity_type": "document_field_value",
           "field_id": "account_id",
-          "text": "ACC-9948"
+          "text": "ACC-1975"
         },
         {
           "bbox_id": "contact_email",
@@ -966,14 +966,14 @@
           "bbox_id": "contact_email:value",
           "bbox_px": [
             811.333,
-            373.5,
-            1066.333,
-            392.5
+            373.0,
+            1069.333,
+            393.0
           ],
           "entity_id": "contact_email:value",
           "entity_type": "document_field_value",
           "field_id": "contact_email",
-          "text": "riverbendstudi@mailhub.net"
+          "text": "copperstudio@example.com"
         },
         {
           "bbox_id": "issue_date",
@@ -1011,7 +1011,7 @@
           "entity_id": "issue_date:value",
           "entity_type": "document_field_value",
           "field_id": "issue_date",
-          "text": "2026-03-08"
+          "text": "2026-03-10"
         },
         {
           "bbox_id": "service_date",
@@ -1049,7 +1049,7 @@
           "entity_id": "service_date:value",
           "entity_type": "document_field_value",
           "field_id": "service_date",
-          "text": "2026-03-14"
+          "text": "2026-03-16"
         },
         {
           "bbox_id": "due_date",
@@ -1087,7 +1087,7 @@
           "entity_id": "due_date:value",
           "entity_type": "document_field_value",
           "field_id": "due_date",
-          "text": "2026-03-25"
+          "text": "2026-03-30"
         },
         {
           "bbox_id": "subtotal_amount",
@@ -1125,7 +1125,7 @@
           "entity_id": "subtotal_amount:value",
           "entity_type": "document_field_value",
           "field_id": "subtotal_amount",
-          "text": "$184.97"
+          "text": "$299.38"
         },
         {
           "bbox_id": "tax_amount",
@@ -1157,13 +1157,13 @@
           "bbox_px": [
             214.0,
             722.5,
-            297.0,
+            315.0,
             749.5
           ],
           "entity_id": "tax_amount:value",
           "entity_type": "document_field_value",
           "field_id": "tax_amount",
-          "text": "$5.90"
+          "text": "$12.78"
         },
         {
           "bbox_id": "discount_amount",
@@ -1201,7 +1201,7 @@
           "entity_id": "discount_amount:value",
           "entity_type": "document_field_value",
           "field_id": "discount_amount",
-          "text": "$12.66"
+          "text": "$16.84"
         },
         {
           "bbox_id": "parties:label",

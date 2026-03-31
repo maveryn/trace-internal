@@ -44,6 +44,7 @@ Use this whenever the task lives under `domain=physics`.
 - `trace/tasks/shared/text_rendering.py`
 
 ## Pair with
+- `skills/domain-audit/SKILL.md`
 - `skills/task-design/SKILL.md`
 - `skills/task-complexity/SKILL.md`
 - `skills/task-implementation/SKILL.md`

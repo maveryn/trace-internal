@@ -1,37 +1,37 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 73
+    "value": 51
   },
   "evidence_gt": {
     "type": "integer_list",
     "value": [
-      4,
-      77
+      22,
+      73
     ]
   },
   "image": {
     "format": "png",
     "path": "charts/task_charts_readout_subset_value/images/difference_two_abs/0009.png"
   },
-  "instance_seed": 5931634909095370,
-  "prompt": "You are given a labeled chart: a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Read the requested values directly from the chart and answer the question. Find the absolute value of the difference between labels Y and L.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question.\nAnswer: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[14,9],\"answer\":5}",
+  "instance_seed": 312474884907938,
+  "prompt": "Work from the labeled chart shown in the image: a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Determine the requested value from the two specified chart labels. For labels Q and U, what is the absolute difference between their values?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question.\nAnswer field: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[14,9],\"answer\":5}",
   "prompt_variants": {
-    "answer_and_evidence": "You are given a labeled chart: a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Read the requested values directly from the chart and answer the question. Find the absolute value of the difference between labels Y and L.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question.\nAnswer: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[14,9],\"answer\":5}",
-    "answer_only": "You are given a labeled chart: a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Read the requested values directly from the chart and answer the question. Find the absolute value of the difference between labels Y and L.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":5}"
+    "answer_and_evidence": "Work from the labeled chart shown in the image: a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Determine the requested value from the two specified chart labels. For labels Q and U, what is the absolute difference between their values?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question.\nAnswer field: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[14,9],\"answer\":5}",
+    "answer_only": "Work from the labeled chart shown in the image: a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Determine the requested value from the two specified chart labels. For labels Q and U, what is the absolute difference between their values?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":5}"
   },
   "task": "task_charts_readout_subset_value",
   "task_variant": "difference_two_abs",
   "trace_payload": {
     "execution_trace": {
-      "answer_value": 73,
+      "answer_value": 51,
       "composition_total": 100,
       "labels": [
-        "G",
-        "Y",
-        "V",
-        "L",
-        "X"
+        "E",
+        "J",
+        "Q",
+        "C",
+        "U"
       ],
       "mark_color_distance_space": "lab",
       "mark_color_min_distance": 58.0,
@@ -42,23 +42,23 @@
         8
       ],
       "mark_fill_rgb": [
-        121,
-        0,
-        196
+        162,
+        95,
+        177
       ],
       "mark_outline_rgb": [
-        67,
-        0,
-        108
+        89,
+        52,
+        97
       ],
       "pie_like_mark_color_channel_max": 200,
       "query_labels": [
-        "Y",
-        "L"
+        "Q",
+        "U"
       ],
       "query_values": [
-        4,
-        77
+        22,
+        73
       ],
       "question_format": "numeric_open",
       "scene_variant": "donut",
@@ -76,126 +76,126 @@
       },
       "slice_fill_palette_rgb": [
         [
-          121,
-          0,
-          196
+          162,
+          95,
+          177
         ],
         [
-          88,
-          92,
+          2,
+          122,
+          90
+        ],
+        [
+          169,
+          75,
+          9
+        ],
+        [
+          1,
+          190,
+          7
+        ],
+        [
+          25,
+          12,
           0
-        ],
-        [
-          160,
-          32,
-          11
-        ],
-        [
-          18,
-          185,
-          54
-        ],
-        [
-          66,
-          58,
-          121
         ]
       ],
       "slice_outline_palette_rgb": [
         [
+          89,
+          52,
+          97
+        ],
+        [
+          1,
           67,
-          0,
-          108
+          50
         ],
         [
-          48,
-          51,
+          93,
+          41,
+          5
+        ],
+        [
+          1,
+          105,
+          4
+        ],
+        [
+          14,
+          7,
           0
-        ],
-        [
-          88,
-          18,
-          6
-        ],
-        [
-          10,
-          102,
-          30
-        ],
-        [
-          36,
-          32,
-          67
         ]
       ],
-      "target_answer": 73,
+      "target_answer": 51,
       "target_answer_range": [
         0,
         90
       ],
       "task_variant": "difference_two_abs",
       "task_variant_probabilities": {
-        "difference_two_abs": 0.2,
-        "max_two": 0.2,
-        "mean_two": 0.2,
-        "min_two": 0.2,
-        "sum_two": 0.2
+        "difference_two_abs": 1.0,
+        "max_two": 0.0,
+        "mean_two": 0.0,
+        "min_two": 0.0,
+        "sum_two": 0.0
       },
       "value_max": 99,
       "value_min": 1,
       "value_semantics": "percentage",
       "values": [
+        2,
+        2,
+        22,
         1,
-        4,
-        6,
-        77,
-        12
+        73
       ],
       "values_by_label": {
-        "G": 1,
-        "L": 77,
-        "V": 6,
-        "X": 12,
-        "Y": 4
+        "C": 1,
+        "E": 2,
+        "J": 2,
+        "Q": 22,
+        "U": 73
       }
     },
     "projected_evidence": {
       "bbox_set": [
         [
           319.32,
-          68.889,
-          383.447,
-          276.0
+          75.0,
+          526.431,
+          289.03
         ],
         [
-          112.646,
-          116.103,
-          526.762,
-          483.418
+          111.982,
+          68.48,
+          525.204,
+          482.792
         ]
       ],
       "integer_list": [
-        4,
-        77
+        22,
+        73
       ],
       "pixel_point_map": {
-        "L": [
-          323.948,
-          423.266
+        "Q": [
+          438.52,
+          189.396
         ],
-        "Y": [
-          346.929,
-          131.271
+        "U": [
+          208.799,
+          373.437
         ]
       },
       "pixel_point_set": [
         [
-          346.929,
-          131.271
+          438.52,
+          189.396
         ],
         [
-          323.948,
-          423.266
+          208.799,
+          373.437
         ]
       ]
     },
@@ -203,8 +203,8 @@
       "params": {
         "mark_count": 5,
         "query_labels": [
-          "Y",
-          "L"
+          "Q",
+          "U"
         ],
         "scene_variant": "donut",
         "scene_variant_probabilities": {
@@ -219,23 +219,23 @@
           "radar": 0.1,
           "scatter": 0.1
         },
-        "target_answer": 73,
+        "target_answer": 51,
         "target_answer_range": [
           0,
           90
         ],
         "task_variant": "difference_two_abs",
         "task_variant_probabilities": {
-          "difference_two_abs": 0.2,
-          "max_two": 0.2,
-          "mean_two": 0.2,
-          "min_two": 0.2,
-          "sum_two": 0.2
+          "difference_two_abs": 1.0,
+          "max_two": 0.0,
+          "mean_two": 0.0,
+          "min_two": 0.0,
+          "sum_two": 0.0
         }
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 0,
+        "answer_or_evidence_variant_index": 3,
         "prompt_bundle_id": "charts_readout_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -246,15 +246,15 @@
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
           "object_description": "a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices",
-          "query_label_a": "Y",
-          "query_label_b": "L"
+          "query_label_a": "Q",
+          "query_label_b": "U"
         },
         "task_family_key": "labeled_chart_readout",
-        "task_family_variant_index": 4,
+        "task_family_variant_index": 2,
         "task_key": "subset_value_query",
-        "task_variant_index": 0,
+        "task_variant_index": 4,
         "task_variant_key": "difference_two_abs",
-        "task_variant_template_index": 2,
+        "task_variant_template_index": 0,
         "template_paths": [
           "charts/readout/charts_readout_v1.json"
         ],
@@ -270,7 +270,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 0,
+            "answer_or_evidence_variant_index": 3,
             "prompt_bundle_id": "charts_readout_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -281,15 +281,15 @@
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices",
-              "query_label_a": "Y",
-              "query_label_b": "L"
+              "query_label_a": "Q",
+              "query_label_b": "U"
             },
             "task_family_key": "labeled_chart_readout",
-            "task_family_variant_index": 4,
+            "task_family_variant_index": 2,
             "task_key": "subset_value_query",
-            "task_variant_index": 0,
+            "task_variant_index": 4,
             "task_variant_key": "difference_two_abs",
-            "task_variant_template_index": 2,
+            "task_variant_template_index": 0,
             "template_paths": [
               "charts/readout/charts_readout_v1.json"
             ],
@@ -300,12 +300,12 @@
               "task_variant:difference_two_abs": 5
             }
           },
-          "prompt": "You are given a labeled chart: a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Read the requested values directly from the chart and answer the question. Find the absolute value of the difference between labels Y and L.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question.\nAnswer: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[14,9],\"answer\":5}"
+          "prompt": "Work from the labeled chart shown in the image: a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Determine the requested value from the two specified chart labels. For labels Q and U, what is the absolute difference between their values?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question.\nAnswer field: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[14,9],\"answer\":5}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 4,
+            "answer_or_evidence_variant_index": 1,
             "prompt_bundle_id": "charts_readout_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -316,15 +316,15 @@
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices",
-              "query_label_a": "Y",
-              "query_label_b": "L"
+              "query_label_a": "Q",
+              "query_label_b": "U"
             },
             "task_family_key": "labeled_chart_readout",
-            "task_family_variant_index": 4,
+            "task_family_variant_index": 2,
             "task_key": "subset_value_query",
-            "task_variant_index": 0,
+            "task_variant_index": 4,
             "task_variant_key": "difference_two_abs",
-            "task_variant_template_index": 2,
+            "task_variant_template_index": 0,
             "template_paths": [
               "charts/readout/charts_readout_v1.json"
             ],
@@ -335,7 +335,7 @@
               "task_variant:difference_two_abs": 5
             }
           },
-          "prompt": "You are given a labeled chart: a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Read the requested values directly from the chart and answer the question. Find the absolute value of the difference between labels Y and L.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":5}"
+          "prompt": "Work from the labeled chart shown in the image: a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices. Determine the requested value from the two specified chart labels. For labels Q and U, what is the absolute difference between their values?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":5}"
         }
       },
       "task_variant": "difference_two_abs",
@@ -344,25 +344,25 @@
     "render_map": {
       "image_id": "img0",
       "label_centers_px": {
-        "G": [
-          625.64,
-          185.0
-        ],
-        "L": [
-          623.64,
+        "C": [
+          624.64,
           311.0
         ],
-        "V": [
-          625.14,
+        "E": [
+          624.14,
+          185.0
+        ],
+        "J": [
+          621.64,
+          227.0
+        ],
+        "Q": [
+          626.14,
           269.0
         ],
-        "X": [
-          625.14,
-          353.0
-        ],
-        "Y": [
+        "U": [
           625.64,
-          227.0
+          353.0
         ]
       },
       "plot_bbox_px": [
@@ -400,69 +400,69 @@
         "mark_color_distance_space": "lab",
         "mark_color_min_distance": 58.0,
         "mark_fill_rgb": [
-          121,
-          0,
-          196
+          162,
+          95,
+          177
         ],
         "mark_outline_rgb": [
-          67,
-          0,
-          108
+          89,
+          52,
+          97
         ],
         "pie_like_mark_color_channel_max": 200,
         "sampling_policy": "random_rgb_palette",
         "slice_fill_palette_rgb": [
           [
-            121,
-            0,
-            196
+            162,
+            95,
+            177
           ],
           [
-            88,
-            92,
+            2,
+            122,
+            90
+          ],
+          [
+            169,
+            75,
+            9
+          ],
+          [
+            1,
+            190,
+            7
+          ],
+          [
+            25,
+            12,
             0
-          ],
-          [
-            160,
-            32,
-            11
-          ],
-          [
-            18,
-            185,
-            54
-          ],
-          [
-            66,
-            58,
-            121
           ]
         ],
         "slice_outline_palette_rgb": [
           [
+            89,
+            52,
+            97
+          ],
+          [
+            1,
             67,
-            0,
-            108
+            50
           ],
           [
-            48,
-            51,
+            93,
+            41,
+            5
+          ],
+          [
+            1,
+            105,
+            4
+          ],
+          [
+            14,
+            7,
             0
-          ],
-          [
-            88,
-            18,
-            6
-          ],
-          [
-            10,
-            102,
-            30
-          ],
-          [
-            36,
-            32,
-            67
           ]
         ]
       },
@@ -494,7 +494,7 @@
         "label_stroke_width_px": 2,
         "tick_font_size_px": 18
       },
-      "y_axis_max": 78,
+      "y_axis_max": 74,
       "y_ticks": [
         0,
         1,
@@ -570,27 +570,23 @@
         71,
         72,
         73,
-        74,
-        75,
-        76,
-        77,
-        78
+        74
       ]
     },
     "scene_ir": {
       "entities": [
         {
           "attrs": {
-            "end_angle_deg": -86.4,
-            "label": "G",
+            "end_angle_deg": -82.8,
+            "label": "E",
             "label_bbox_px": [
               616.64,
               177.0,
-              634.64,
+              631.64,
               193.0
             ],
             "label_center_px": [
-              625.64,
+              624.14,
               185.0
             ],
             "legend_swatch_bbox_px": [
@@ -602,53 +598,53 @@
             "mark_bbox_px": [
               319.32,
               68.48,
-              332.35,
+              345.329,
               276.0
             ],
             "mark_center_px": [
-              323.948,
-              128.734
+              328.572,
+              128.952
             ],
             "mark_fill_rgb": [
-              121,
-              0,
-              196
+              162,
+              95,
+              177
             ],
             "mark_outline_rgb": [
-              67,
-              0,
-              108
+              89,
+              52,
+              97
             ],
             "percentage_bbox_px": [
-              307.841,
-              44.59,
-              344.841,
-              60.59
+              314.855,
+              44.921,
+              351.855,
+              60.921
             ],
             "percentage_center_px": [
-              326.341,
-              52.59
+              333.355,
+              52.921
             ],
             "scene_variant": "donut",
             "start_angle_deg": -90.0,
-            "value": 1,
+            "value": 2,
             "x_rank": 0
           },
-          "entity_id": "mark_G",
+          "entity_id": "mark_E",
           "entity_type": "slice"
         },
         {
           "attrs": {
-            "end_angle_deg": -72.0,
-            "label": "Y",
+            "end_angle_deg": -75.6,
+            "label": "J",
             "label_bbox_px": [
               616.64,
-              219.0,
-              634.64,
-              235.0
+              217.0,
+              626.64,
+              237.0
             ],
             "label_center_px": [
-              625.64,
+              621.64,
               227.0
             ],
             "legend_swatch_bbox_px": [
@@ -659,8 +655,8 @@
             ],
             "mark_bbox_px": [
               319.32,
-              68.889,
-              383.447,
+              70.116,
+              370.928,
               276.0
             ],
             "mark_center_px": [
@@ -668,14 +664,14 @@
               131.271
             ],
             "mark_fill_rgb": [
-              88,
-              92,
-              0
+              2,
+              122,
+              90
             ],
             "mark_outline_rgb": [
-              48,
-              51,
-              0
+              1,
+              67,
+              50
             ],
             "percentage_bbox_px": [
               342.703,
@@ -688,25 +684,25 @@
               56.439
             ],
             "scene_variant": "donut",
-            "start_angle_deg": -86.4,
-            "value": 4,
+            "start_angle_deg": -82.8,
+            "value": 2,
             "x_rank": 1
           },
-          "entity_id": "mark_Y",
+          "entity_id": "mark_J",
           "entity_type": "slice"
         },
         {
           "attrs": {
-            "end_angle_deg": -50.4,
-            "label": "V",
+            "end_angle_deg": 3.6,
+            "label": "Q",
             "label_bbox_px": [
               616.64,
-              261.0,
-              633.64,
-              277.0
+              259.5,
+              635.64,
+              278.5
             ],
             "label_center_px": [
-              625.14,
+              626.14,
               269.0
             ],
             "legend_swatch_bbox_px": [
@@ -717,54 +713,54 @@
             ],
             "mark_bbox_px": [
               319.32,
-              78.637,
-              451.598,
-              276.0
+              75.0,
+              526.431,
+              289.03
             ],
             "mark_center_px": [
-              390.301,
-              146.886
+              438.52,
+              189.396
             ],
             "mark_fill_rgb": [
-              160,
-              32,
-              11
+              169,
+              75,
+              9
             ],
             "mark_outline_rgb": [
-              88,
-              18,
-              6
+              93,
+              41,
+              5
             ],
             "percentage_bbox_px": [
-              371.801,
-              138.886,
-              408.801,
-              154.886
+              412.52,
+              181.396,
+              464.52,
+              197.396
             ],
             "percentage_center_px": [
-              390.301,
-              146.886
+              438.52,
+              189.396
             ],
             "scene_variant": "donut",
-            "start_angle_deg": -72.0,
-            "value": 6,
+            "start_angle_deg": -75.6,
+            "value": 22,
             "x_rank": 2
           },
-          "entity_id": "mark_V",
+          "entity_id": "mark_Q",
           "entity_type": "slice"
         },
         {
           "attrs": {
-            "end_angle_deg": 226.8,
-            "label": "L",
+            "end_angle_deg": 7.2,
+            "label": "C",
             "label_bbox_px": [
               616.64,
               303.0,
-              630.64,
+              632.64,
               319.0
             ],
             "label_center_px": [
-              623.64,
+              624.64,
               311.0
             ],
             "legend_swatch_bbox_px": [
@@ -774,55 +770,55 @@
               325.0
             ],
             "mark_bbox_px": [
-              112.646,
-              116.103,
-              526.762,
-              483.418
+              319.32,
+              276.0,
+              526.431,
+              302.009
             ],
             "mark_center_px": [
-              323.948,
-              423.266
+              466.005,
+              289.866
             ],
             "mark_fill_rgb": [
-              18,
-              185,
-              54
+              1,
+              190,
+              7
             ],
             "mark_outline_rgb": [
-              10,
-              102,
-              30
+              1,
+              105,
+              4
             ],
             "percentage_bbox_px": [
-              297.948,
-              415.266,
-              349.948,
-              431.266
+              523.348,
+              289.035,
+              560.348,
+              305.035
             ],
             "percentage_center_px": [
-              323.948,
-              423.266
+              541.848,
+              297.035
             ],
             "scene_variant": "donut",
-            "start_angle_deg": -50.4,
-            "value": 77,
+            "start_angle_deg": 3.6,
+            "value": 1,
             "x_rank": 3
           },
-          "entity_id": "mark_L",
+          "entity_id": "mark_C",
           "entity_type": "slice"
         },
         {
           "attrs": {
             "end_angle_deg": 270.0,
-            "label": "X",
+            "label": "U",
             "label_bbox_px": [
               616.64,
               345.0,
-              633.64,
+              634.64,
               361.0
             ],
             "label_center_px": [
-              625.14,
+              625.64,
               353.0
             ],
             "legend_swatch_bbox_px": [
@@ -832,53 +828,53 @@
               367.0
             ],
             "mark_bbox_px": [
-              177.263,
+              111.982,
               68.48,
-              319.32,
-              276.0
+              525.204,
+              482.792
             ],
             "mark_center_px": [
-              265.081,
-              139.007
+              208.799,
+              373.437
             ],
             "mark_fill_rgb": [
-              66,
-              58,
-              121
+              25,
+              12,
+              0
             ],
             "mark_outline_rgb": [
-              36,
-              32,
-              67
+              14,
+              7,
+              0
             ],
             "percentage_bbox_px": [
-              239.081,
-              131.007,
-              291.081,
-              147.007
+              182.799,
+              365.437,
+              234.799,
+              381.437
             ],
             "percentage_center_px": [
-              265.081,
-              139.007
+              208.799,
+              373.437
             ],
             "scene_variant": "donut",
-            "start_angle_deg": 226.8,
-            "value": 12,
+            "start_angle_deg": 7.2,
+            "value": 73,
             "x_rank": 4
           },
-          "entity_id": "mark_X",
+          "entity_id": "mark_U",
           "entity_type": "slice"
         }
       ],
       "relations": {
-        "answer_value": 73,
+        "answer_value": 51,
         "query_labels": [
-          "Y",
-          "L"
+          "Q",
+          "U"
         ],
         "query_values": [
-          4,
-          77
+          22,
+          73
         ],
         "scene_variant": "donut",
         "task_variant": "difference_two_abs"
@@ -887,13 +883,13 @@
     },
     "witness_symbolic": {
       "query_labels": [
-        "Y",
-        "L"
+        "Q",
+        "U"
       ],
       "type": "integer_list",
       "values": [
-        4,
-        77
+        22,
+        73
       ]
     }
   },

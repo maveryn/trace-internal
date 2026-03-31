@@ -1,16 +1,16 @@
 {
   "answer_gt": {
     "type": "string",
-    "value": "Dates"
+    "value": "Parties"
   },
   "evidence_gt": {
     "type": "bbox_set",
     "value": [
       [
         204.0,
-        408.0,
-        302.0,
-        430.0
+        176.0,
+        319.0,
+        198.0
       ]
     ]
   },
@@ -18,18 +18,18 @@
     "format": "png",
     "path": "documents/task_documents_layout_section_membership_label/images/section_of_label_value_pair/0016.png"
   },
-  "instance_seed": 8944072794330257,
-  "prompt": "You are given an invoice with visible named sections, labeled header fields, and summary blocks. Locate the relevant section before answering: Which section contains the field labeled Service Date with value 2026-03-11? Return the exact section title shown. Respond with the exact section title from the document.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing exactly one bounding box for the matching section header.\nAnswer: set \"answer\" to the exact section title shown in the document.\nExample JSON:\n{\"evidence\":[[132,182,260,214]],\"answer\":\"Billing Summary\"}",
+  "instance_seed": 8477786822347004,
+  "prompt": "You are given an invoice with visible named sections, labeled header fields, and summary blocks. Find the correct section and then answer: Which section contains the field labeled Customer with value Kai Clark? Return the exact section title shown. Answer using the exact section heading.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing exactly one bounding box for the matching section header.\nAnswer rule: set \"answer\" to the exact section title shown in the document.\nExample JSON:\n{\"evidence\":[[132,182,260,214]],\"answer\":\"Billing Summary\"}",
   "prompt_variants": {
-    "answer_and_evidence": "You are given an invoice with visible named sections, labeled header fields, and summary blocks. Locate the relevant section before answering: Which section contains the field labeled Service Date with value 2026-03-11? Return the exact section title shown. Respond with the exact section title from the document.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing exactly one bounding box for the matching section header.\nAnswer: set \"answer\" to the exact section title shown in the document.\nExample JSON:\n{\"evidence\":[[132,182,260,214]],\"answer\":\"Billing Summary\"}",
-    "answer_only": "You are given an invoice with visible named sections, labeled header fields, and summary blocks. Locate the relevant section before answering: Which section contains the field labeled Service Date with value 2026-03-11? Return the exact section title shown. Respond with the exact section title from the document.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the exact section title shown in the document.\nExample JSON:\n{\"answer\":\"Billing Summary\"}"
+    "answer_and_evidence": "You are given an invoice with visible named sections, labeled header fields, and summary blocks. Find the correct section and then answer: Which section contains the field labeled Customer with value Kai Clark? Return the exact section title shown. Answer using the exact section heading.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing exactly one bounding box for the matching section header.\nAnswer rule: set \"answer\" to the exact section title shown in the document.\nExample JSON:\n{\"evidence\":[[132,182,260,214]],\"answer\":\"Billing Summary\"}",
+    "answer_only": "You are given an invoice with visible named sections, labeled header fields, and summary blocks. Find the correct section and then answer: Which section contains the field labeled Customer with value Kai Clark? Return the exact section title shown. Answer using the exact section heading.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the exact section title shown in the document.\nExample JSON:\n{\"answer\":\"Billing Summary\"}"
   },
   "task": "task_documents_layout_section_membership_label",
   "task_variant": "section_of_label_value_pair",
   "trace_payload": {
     "answer_gt": {
       "type": "string",
-      "value": "Dates"
+      "value": "Parties"
     },
     "background": {
       "available_styles": [
@@ -51,9 +51,9 @@
       "value": [
         [
           204.0,
-          408.0,
-          302.0,
-          430.0
+          176.0,
+          319.0,
+          198.0
         ]
       ]
     },
@@ -64,7 +64,7 @@
           "comparison_kind": "other",
           "field_id": "vendor_name",
           "field_label": "Vendor",
-          "field_value": "Harbor Supply",
+          "field_value": "Summit Market",
           "label_bbox_id": "vendor_name:label",
           "section_id": "parties",
           "section_label": "Parties",
@@ -74,7 +74,7 @@
           "comparison_kind": "other",
           "field_id": "customer_name",
           "field_label": "Customer",
-          "field_value": "Jade Carter",
+          "field_value": "Kai Clark",
           "label_bbox_id": "customer_name:label",
           "section_id": "parties",
           "section_label": "Parties",
@@ -84,7 +84,7 @@
           "comparison_kind": "other",
           "field_id": "invoice_number",
           "field_label": "Invoice Number",
-          "field_value": "INV-14931",
+          "field_value": "INV-76271",
           "label_bbox_id": "invoice_number:label",
           "section_id": "parties",
           "section_label": "Parties",
@@ -94,7 +94,7 @@
           "comparison_kind": "other",
           "field_id": "account_id",
           "field_label": "Account ID",
-          "field_value": "ACC-4585",
+          "field_value": "ACC-3787",
           "label_bbox_id": "account_id:label",
           "section_id": "account",
           "section_label": "Account",
@@ -104,7 +104,7 @@
           "comparison_kind": "other",
           "field_id": "contact_email",
           "field_label": "Contact Email",
-          "field_value": "harborsupply@northpost.co",
+          "field_value": "summitmarket@brightdesk.io",
           "label_bbox_id": "contact_email:label",
           "section_id": "account",
           "section_label": "Account",
@@ -114,7 +114,7 @@
           "comparison_kind": "other",
           "field_id": "issue_date",
           "field_label": "Issue Date",
-          "field_value": "2026-03-04",
+          "field_value": "2026-03-05",
           "label_bbox_id": "issue_date:label",
           "section_id": "dates",
           "section_label": "Dates",
@@ -124,7 +124,7 @@
           "comparison_kind": "other",
           "field_id": "service_date",
           "field_label": "Service Date",
-          "field_value": "2026-03-11",
+          "field_value": "2026-03-10",
           "label_bbox_id": "service_date:label",
           "section_id": "dates",
           "section_label": "Dates",
@@ -134,7 +134,7 @@
           "comparison_kind": "other",
           "field_id": "due_date",
           "field_label": "Due Date",
-          "field_value": "2026-04-01",
+          "field_value": "2026-03-25",
           "label_bbox_id": "due_date:label",
           "section_id": "dates",
           "section_label": "Dates",
@@ -144,7 +144,7 @@
           "comparison_kind": "amount",
           "field_id": "subtotal_amount",
           "field_label": "Subtotal",
-          "field_value": "$154.89",
+          "field_value": "$175.47",
           "label_bbox_id": "subtotal_amount:label",
           "section_id": "billing_summary",
           "section_label": "Billing Summary",
@@ -154,7 +154,7 @@
           "comparison_kind": "amount",
           "field_id": "tax_amount",
           "field_label": "Tax",
-          "field_value": "$12.29",
+          "field_value": "$15.21",
           "label_bbox_id": "tax_amount:label",
           "section_id": "billing_summary",
           "section_label": "Billing Summary",
@@ -164,21 +164,21 @@
           "comparison_kind": "amount",
           "field_id": "discount_amount",
           "field_label": "Discount",
-          "field_value": "$19.14",
+          "field_value": "$17.96",
           "label_bbox_id": "discount_amount:label",
           "section_id": "billing_summary",
           "section_label": "Billing Summary",
           "value_bbox_id": "discount_amount:value"
         }
       ],
-      "query_field_id": "service_date",
-      "query_field_label": "Service Date",
-      "query_field_value": "2026-03-11",
-      "query_section_id": "dates",
-      "query_section_label": "Dates",
-      "query_section_label_bbox_id": "dates",
+      "query_field_id": "customer_name",
+      "query_field_label": "Customer",
+      "query_field_value": "Kai Clark",
+      "query_section_id": "parties",
+      "query_section_label": "Parties",
+      "query_section_label_bbox_id": "parties",
       "question_format": "document_section_membership_label",
-      "question_text": "Which section contains the field labeled Service Date with value 2026-03-11? Return the exact section title shown.",
+      "question_text": "Which section contains the field labeled Customer with value Kai Clark? Return the exact section title shown.",
       "scene_title": "Invoice",
       "scene_variant": "invoice_sheet",
       "section_specs": [
@@ -241,9 +241,9 @@
       "bbox_set": [
         [
           204.0,
-          408.0,
-          302.0,
-          430.0
+          176.0,
+          319.0,
+          198.0
         ]
       ]
     },
@@ -270,7 +270,7 @@
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 0,
+        "answer_or_evidence_variant_index": 4,
         "prompt_bundle_id": "documents_layout_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -281,14 +281,14 @@
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
           "object_description": "an invoice with visible named sections, labeled header fields, and summary blocks",
-          "question_text": "Which section contains the field labeled Service Date with value 2026-03-11? Return the exact section title shown."
+          "question_text": "Which section contains the field labeled Customer with value Kai Clark? Return the exact section title shown."
         },
         "task_family_key": "structured_document_sections",
         "task_family_variant_index": 2,
         "task_key": "section_membership_query",
-        "task_variant_index": 4,
+        "task_variant_index": 2,
         "task_variant_key": "section_of_label_value_pair",
-        "task_variant_template_index": 2,
+        "task_variant_template_index": 4,
         "template_paths": [
           "documents/layout/documents_layout_v1.json"
         ],
@@ -304,7 +304,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 0,
+            "answer_or_evidence_variant_index": 4,
             "prompt_bundle_id": "documents_layout_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -315,14 +315,14 @@
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "an invoice with visible named sections, labeled header fields, and summary blocks",
-              "question_text": "Which section contains the field labeled Service Date with value 2026-03-11? Return the exact section title shown."
+              "question_text": "Which section contains the field labeled Customer with value Kai Clark? Return the exact section title shown."
             },
             "task_family_key": "structured_document_sections",
             "task_family_variant_index": 2,
             "task_key": "section_membership_query",
-            "task_variant_index": 4,
+            "task_variant_index": 2,
             "task_variant_key": "section_of_label_value_pair",
-            "task_variant_template_index": 2,
+            "task_variant_template_index": 4,
             "template_paths": [
               "documents/layout/documents_layout_v1.json"
             ],
@@ -333,12 +333,12 @@
               "task_variant:section_of_label_value_pair": 5
             }
           },
-          "prompt": "You are given an invoice with visible named sections, labeled header fields, and summary blocks. Locate the relevant section before answering: Which section contains the field labeled Service Date with value 2026-03-11? Return the exact section title shown. Respond with the exact section title from the document.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing exactly one bounding box for the matching section header.\nAnswer: set \"answer\" to the exact section title shown in the document.\nExample JSON:\n{\"evidence\":[[132,182,260,214]],\"answer\":\"Billing Summary\"}"
+          "prompt": "You are given an invoice with visible named sections, labeled header fields, and summary blocks. Find the correct section and then answer: Which section contains the field labeled Customer with value Kai Clark? Return the exact section title shown. Answer using the exact section heading.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing exactly one bounding box for the matching section header.\nAnswer rule: set \"answer\" to the exact section title shown in the document.\nExample JSON:\n{\"evidence\":[[132,182,260,214]],\"answer\":\"Billing Summary\"}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 1,
+            "answer_or_evidence_variant_index": 4,
             "prompt_bundle_id": "documents_layout_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -349,14 +349,14 @@
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "an invoice with visible named sections, labeled header fields, and summary blocks",
-              "question_text": "Which section contains the field labeled Service Date with value 2026-03-11? Return the exact section title shown."
+              "question_text": "Which section contains the field labeled Customer with value Kai Clark? Return the exact section title shown."
             },
             "task_family_key": "structured_document_sections",
             "task_family_variant_index": 2,
             "task_key": "section_membership_query",
-            "task_variant_index": 4,
+            "task_variant_index": 2,
             "task_variant_key": "section_of_label_value_pair",
-            "task_variant_template_index": 2,
+            "task_variant_template_index": 4,
             "template_paths": [
               "documents/layout/documents_layout_v1.json"
             ],
@@ -367,7 +367,7 @@
               "task_variant:section_of_label_value_pair": 5
             }
           },
-          "prompt": "You are given an invoice with visible named sections, labeled header fields, and summary blocks. Locate the relevant section before answering: Which section contains the field labeled Service Date with value 2026-03-11? Return the exact section title shown. Respond with the exact section title from the document.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the exact section title shown in the document.\nExample JSON:\n{\"answer\":\"Billing Summary\"}"
+          "prompt": "You are given an invoice with visible named sections, labeled header fields, and summary blocks. Find the correct section and then answer: Which section contains the field labeled Customer with value Kai Clark? Return the exact section title shown. Answer using the exact section heading.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the exact section title shown in the document.\nExample JSON:\n{\"answer\":\"Billing Summary\"}"
         }
       },
       "task_variant": "section_of_label_value_pair",
@@ -520,14 +520,14 @@
         "contact_email:value": [
           811.333,
           373.0,
-          1059.333,
+          1078.333,
           393.0
         ],
         "customer_name:value": [
           665.0,
-          252.5,
-          827.0,
-          281.5
+          255.5,
+          793.0,
+          278.5
         ],
         "discount_amount:value": [
           665.0,
@@ -573,9 +573,9 @@
         ],
         "vendor_name:value": [
           214.0,
-          252.5,
-          419.0,
-          281.5
+          255.5,
+          431.0,
+          278.5
         ]
       },
       "page_bbox_px": [
@@ -646,7 +646,7 @@
     "render_spec": {
       "canvas_height": 920,
       "canvas_width": 1280,
-      "geometry_seed": 8944072794330257,
+      "geometry_seed": 8477786822347004,
       "page_shadow_offset_px": 14,
       "receipt_page_height_px": 760,
       "receipt_page_width_px": 520,
@@ -775,14 +775,14 @@
           "bbox_id": "vendor_name:value",
           "bbox_px": [
             214.0,
-            252.5,
-            419.0,
-            281.5
+            255.5,
+            431.0,
+            278.5
           ],
           "entity_id": "vendor_name:value",
           "entity_type": "document_field_value",
           "field_id": "vendor_name",
-          "text": "Harbor Supply"
+          "text": "Summit Market"
         },
         {
           "bbox_id": "customer_name",
@@ -813,14 +813,14 @@
           "bbox_id": "customer_name:value",
           "bbox_px": [
             665.0,
-            252.5,
-            827.0,
-            281.5
+            255.5,
+            793.0,
+            278.5
           ],
           "entity_id": "customer_name:value",
           "entity_type": "document_field_value",
           "field_id": "customer_name",
-          "text": "Jade Carter"
+          "text": "Kai Clark"
         },
         {
           "bbox_id": "invoice_number",
@@ -858,7 +858,7 @@
           "entity_id": "invoice_number:value",
           "entity_type": "document_field_value",
           "field_id": "invoice_number",
-          "text": "INV-14931"
+          "text": "INV-76271"
         },
         {
           "bbox_id": "account_id",
@@ -896,7 +896,7 @@
           "entity_id": "account_id:value",
           "entity_type": "document_field_value",
           "field_id": "account_id",
-          "text": "ACC-4585"
+          "text": "ACC-3787"
         },
         {
           "bbox_id": "contact_email",
@@ -928,13 +928,13 @@
           "bbox_px": [
             811.333,
             373.0,
-            1059.333,
+            1078.333,
             393.0
           ],
           "entity_id": "contact_email:value",
           "entity_type": "document_field_value",
           "field_id": "contact_email",
-          "text": "harborsupply@northpost.co"
+          "text": "summitmarket@brightdesk.io"
         },
         {
           "bbox_id": "issue_date",
@@ -972,7 +972,7 @@
           "entity_id": "issue_date:value",
           "entity_type": "document_field_value",
           "field_id": "issue_date",
-          "text": "2026-03-04"
+          "text": "2026-03-05"
         },
         {
           "bbox_id": "service_date",
@@ -1010,7 +1010,7 @@
           "entity_id": "service_date:value",
           "entity_type": "document_field_value",
           "field_id": "service_date",
-          "text": "2026-03-11"
+          "text": "2026-03-10"
         },
         {
           "bbox_id": "due_date",
@@ -1048,7 +1048,7 @@
           "entity_id": "due_date:value",
           "entity_type": "document_field_value",
           "field_id": "due_date",
-          "text": "2026-04-01"
+          "text": "2026-03-25"
         },
         {
           "bbox_id": "subtotal_amount",
@@ -1086,7 +1086,7 @@
           "entity_id": "subtotal_amount:value",
           "entity_type": "document_field_value",
           "field_id": "subtotal_amount",
-          "text": "$154.89"
+          "text": "$175.47"
         },
         {
           "bbox_id": "tax_amount",
@@ -1124,7 +1124,7 @@
           "entity_id": "tax_amount:value",
           "entity_type": "document_field_value",
           "field_id": "tax_amount",
-          "text": "$12.29"
+          "text": "$15.21"
         },
         {
           "bbox_id": "discount_amount",
@@ -1162,7 +1162,7 @@
           "entity_id": "discount_amount:value",
           "entity_type": "document_field_value",
           "field_id": "discount_amount",
-          "text": "$19.14"
+          "text": "$17.96"
         },
         {
           "bbox_id": "parties:label",
@@ -1218,8 +1218,8 @@
         }
       ],
       "relations": {
-        "query_section_id": "dates",
-        "query_section_label": "Dates",
+        "query_section_id": "parties",
+        "query_section_label": "Parties",
         "scene_variant": "invoice_sheet",
         "task_variant": "section_of_label_value_pair",
         "view_family": "structured_document"
@@ -1228,9 +1228,9 @@
     },
     "witness_symbolic": {
       "bbox_id_sequence": [
-        "dates"
+        "parties"
       ],
-      "field_id": "service_date"
+      "field_id": "customer_name"
     }
   },
   "versions": {

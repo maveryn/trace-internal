@@ -1,24 +1,23 @@
 {
   "answer_gt": {
     "type": "number",
-    "value": 123.1
+    "value": 107.5
   },
   "evidence_gt": {
     "type": "measurement_ref_map",
     "value": {
-      "AC": 55,
-      "BC": 7
+      "AY": 38
     }
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_2d_value/images/perimeter/0015.png"
   },
-  "instance_seed": 4972457562058352,
-  "prompt": "You are given an image showing a geometric scene with measurement annotations. Question: The rectangle shows one side and its diagonal. What is the perimeter of the rectangle?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: BC, AC.\nAnswer format: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"BC\":2,\"AC\":3},\"answer\":42.3}",
+  "instance_seed": 874015401544789,
+  "prompt": "Work from the annotated scene showing a geometric scene with measurement annotations. Question: The square is inscribed in the circle, and a diameter is annotated. What is the perimeter of the square?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: AY.\nAnswer format: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"AY\":2},\"answer\":42.3}",
   "prompt_variants": {
-    "answer_and_evidence": "You are given an image showing a geometric scene with measurement annotations. Question: The rectangle shows one side and its diagonal. What is the perimeter of the rectangle?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: BC, AC.\nAnswer format: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"BC\":2,\"AC\":3},\"answer\":42.3}",
-    "answer_only": "You are given an image showing a geometric scene with measurement annotations. Question: The rectangle shows one side and its diagonal. What is the perimeter of the rectangle?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"answer\":42.3}"
+    "answer_and_evidence": "Work from the annotated scene showing a geometric scene with measurement annotations. Question: The square is inscribed in the circle, and a diameter is annotated. What is the perimeter of the square?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: AY.\nAnswer format: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"AY\":2},\"answer\":42.3}",
+    "answer_only": "Work from the annotated scene showing a geometric scene with measurement annotations. Question: The square is inscribed in the circle, and a diameter is annotated. What is the perimeter of the square?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"answer\":42.3}"
   },
   "task": "task_geometry_analytical_2d_value",
   "task_variant": "perimeter",
@@ -26,28 +25,24 @@
     "execution_trace": {
       "answer_max": 250,
       "answer_min": 8,
-      "answer_scalar": 1231,
+      "answer_scalar": 1075,
       "answer_type": "number",
-      "answer_value": 123.1,
+      "answer_value": 107.5,
       "evidence_map": {
-        "AC": 55,
-        "BC": 7
+        "AY": 38
       },
       "evidence_role_tokens": {
-        "diagonal": "AC",
-        "known_side": "BC"
+        "diameter": "AY"
       },
       "evidence_role_values": {
-        "diagonal": 55,
-        "known_side": 7
+        "diameter": 38
       },
       "evidence_roles": [
-        "known_side",
-        "diagonal"
+        "diameter"
       ],
-      "formula_expression": "2 * (known_side + sqrt(diagonal^2 - known_side^2))",
-      "legacy_query_variant": "rectangle_side_diagonal",
-      "legacy_scene_variant": "rectangle",
+      "formula_expression": "2 * sqrt(2) * diameter",
+      "legacy_query_variant": "inscribed_square_diameter",
+      "legacy_scene_variant": "circle",
       "legacy_task_id": "task_geometry_analytical_2d_perimeter",
       "query_variant": "perimeter",
       "query_variant_probabilities": {
@@ -56,12 +51,11 @@
         "length": 0.0,
         "perimeter": 1.0
       },
-      "raw_answer_value": 123.10545357588684,
+      "raw_answer_value": 107.48023074035522,
       "required_annotations": [
-        "BC",
-        "AC"
+        "AY"
       ],
-      "scene_variant": "rectangle",
+      "scene_variant": "circle",
       "scene_variant_probabilities": {
         "circle": 0.2,
         "composite_region": 0.0,
@@ -81,44 +75,33 @@
         "perimeter": 1.0
       },
       "variant_probabilities": {
-        "inscribed_square_diameter": 0.0,
+        "inscribed_square_diameter": 1.0,
         "isosceles_trapezoid_bases_height": 0.0,
-        "rectangle_side_diagonal": 1.0,
+        "rectangle_side_diagonal": 0.0,
         "rhombus_diagonals": 0.0,
         "right_triangle_leg_hypotenuse": 0.0
       }
     },
     "projected_evidence": {
       "annotation_labels": {
-        "diagonal": "AC",
-        "known_side": "BC"
+        "diameter": "AY"
       },
       "id_set": [
-        "BC",
-        "AC"
+        "AY"
       ],
       "measurement_ref_map": {
-        "AC": 55,
-        "BC": 7
+        "AY": 38
       },
       "pixel_annotation_centers": {
-        "AC": [
-          262.29212121212123,
-          415.99077961563876
-        ],
-        "BC": [
-          452.02666666666664,
-          390.3344668959757
+        "AY": [
+          335.5,
+          306.53333333333336
         ]
       },
       "pixel_point_set": [
         [
-          452.02666666666664,
-          390.3344668959757
-        ],
-        [
-          262.29212121212123,
-          415.99077961563876
+          335.5,
+          306.53333333333336
         ]
       ]
     },
@@ -126,8 +109,8 @@
       "params": {
         "answer_max": 250,
         "answer_min": 8,
-        "legacy_query_variant": "rectangle_side_diagonal",
-        "legacy_scene_variant": "rectangle",
+        "legacy_query_variant": "inscribed_square_diameter",
+        "legacy_scene_variant": "circle",
         "legacy_task_id": "task_geometry_analytical_2d_perimeter",
         "query_variant": "perimeter",
         "query_variant_probabilities": {
@@ -136,7 +119,7 @@
           "length": 0.0,
           "perimeter": 1.0
         },
-        "scene_variant": "rectangle",
+        "scene_variant": "circle",
         "scene_variant_probabilities": {
           "circle": 0.2,
           "composite_region": 0.0,
@@ -147,7 +130,7 @@
           "trapezoid": 0.2,
           "triangle": 0.2
         },
-        "task_variant": "rectangle_side_diagonal",
+        "task_variant": "inscribed_square_diameter",
         "variant_probabilities": {
           "area": 0.0,
           "composite_area": 0.0,
@@ -162,16 +145,16 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the perimeter value rounded to one decimal place",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: BC, AC",
-          "json_example": "{\"evidence\":{\"BC\":2,\"AC\":3},\"answer\":42.3}",
+          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: AY",
+          "json_example": "{\"evidence\":{\"AY\":2},\"answer\":42.3}",
           "json_example_answer_only": "{\"answer\":42.3}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
           "object_description": "a geometric scene with measurement annotations",
-          "question_text": "The rectangle shows one side and its diagonal. What is the perimeter of the rectangle?"
+          "question_text": "The square is inscribed in the circle, and a diameter is annotated. What is the perimeter of the square?"
         },
         "task_family_key": "analytical_perimeter_scene",
-        "task_family_variant_index": 0,
+        "task_family_variant_index": 4,
         "task_key": "analytical_perimeter_query",
         "task_variant_index": 1,
         "task_variant_key": null,
@@ -195,16 +178,16 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the perimeter value rounded to one decimal place",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: BC, AC",
-              "json_example": "{\"evidence\":{\"BC\":2,\"AC\":3},\"answer\":42.3}",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: AY",
+              "json_example": "{\"evidence\":{\"AY\":2},\"answer\":42.3}",
               "json_example_answer_only": "{\"answer\":42.3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a geometric scene with measurement annotations",
-              "question_text": "The rectangle shows one side and its diagonal. What is the perimeter of the rectangle?"
+              "question_text": "The square is inscribed in the circle, and a diameter is annotated. What is the perimeter of the square?"
             },
             "task_family_key": "analytical_perimeter_scene",
-            "task_family_variant_index": 0,
+            "task_family_variant_index": 4,
             "task_key": "analytical_perimeter_query",
             "task_variant_index": 1,
             "task_variant_key": null,
@@ -218,7 +201,7 @@
               "task_family:analytical_perimeter_scene": 5
             }
           },
-          "prompt": "You are given an image showing a geometric scene with measurement annotations. Question: The rectangle shows one side and its diagonal. What is the perimeter of the rectangle?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: BC, AC.\nAnswer format: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"BC\":2,\"AC\":3},\"answer\":42.3}"
+          "prompt": "Work from the annotated scene showing a geometric scene with measurement annotations. Question: The square is inscribed in the circle, and a diameter is annotated. What is the perimeter of the square?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: AY.\nAnswer format: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"AY\":2},\"answer\":42.3}"
         },
         "answer_only": {
           "metadata": {
@@ -228,16 +211,16 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the perimeter value rounded to one decimal place",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: BC, AC",
-              "json_example": "{\"evidence\":{\"BC\":2,\"AC\":3},\"answer\":42.3}",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: AY",
+              "json_example": "{\"evidence\":{\"AY\":2},\"answer\":42.3}",
               "json_example_answer_only": "{\"answer\":42.3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a geometric scene with measurement annotations",
-              "question_text": "The rectangle shows one side and its diagonal. What is the perimeter of the rectangle?"
+              "question_text": "The square is inscribed in the circle, and a diameter is annotated. What is the perimeter of the square?"
             },
             "task_family_key": "analytical_perimeter_scene",
-            "task_family_variant_index": 0,
+            "task_family_variant_index": 4,
             "task_key": "analytical_perimeter_query",
             "task_variant_index": 1,
             "task_variant_key": null,
@@ -251,7 +234,7 @@
               "task_family:analytical_perimeter_scene": 5
             }
           },
-          "prompt": "You are given an image showing a geometric scene with measurement annotations. Question: The rectangle shows one side and its diagonal. What is the perimeter of the rectangle?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"answer\":42.3}"
+          "prompt": "Work from the annotated scene showing a geometric scene with measurement annotations. Question: The square is inscribed in the circle, and a diameter is annotated. What is the perimeter of the square?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"answer\":42.3}"
         }
       },
       "task_variant": "perimeter",
@@ -259,26 +242,21 @@
     },
     "render_map": {
       "annotation_centers": {
-        "AC": [
-          262.29212121212123,
-          415.99077961563876
-        ],
-        "BC": [
-          452.02666666666664,
-          390.3344668959757
+        "AY": [
+          335.5,
+          306.53333333333336
         ]
       },
       "annotation_labels": {
-        "diagonal": "AC",
-        "known_side": "BC"
+        "diameter": "AY"
       },
       "coord_space": "pixel",
       "instance_anchor": {
         "bbox": [
-          82.14000000000001,
-          367.64045922863374,
-          435.86,
-          413.0284745633177
+          102.03,
+          102.03,
+          568.97,
+          568.97
         ],
         "coord_space": "pixel"
       }
@@ -303,35 +281,37 @@
           "kind": "solid"
         }
       },
-      "canvas_size": 518,
+      "canvas_size": 671,
       "coord_space": "pixel",
       "graph_coordinate_frame": {
         "coord_space": "graph_unit",
-        "full_cells_x": 10,
-        "full_cells_y": 10,
+        "full_cells_x": 4,
+        "full_cells_y": 4,
+        "origin_fraction_x": 0.5,
+        "origin_fraction_y": 0.5,
         "origin_pixel": [
-          258,
-          258
+          335,
+          335
         ],
         "outer_margin_px": 16,
         "partial_edge_cells": true,
-        "spacing_px": 47,
-        "target_cells_x": 11,
-        "target_cells_y": 11,
+        "spacing_px": 112,
+        "target_cells_x": 6,
+        "target_cells_y": 6,
         "x_positive": "right",
         "y_positive": "up"
       },
       "graph_paper_grid": {
-        "full_cells_x": 10,
-        "full_cells_y": 10,
+        "full_cells_x": 4,
+        "full_cells_y": 4,
         "partial_edge_cells": true,
-        "spacing_px": 47,
-        "target_cells_x": 11,
-        "target_cells_y": 11
+        "spacing_px": 112,
+        "target_cells_x": 6,
+        "target_cells_y": 6
       },
-      "legacy_scene_variant": "rectangle",
+      "legacy_scene_variant": "circle",
       "post_image_noise": {
-        "applied": false,
+        "applied": true,
         "apply_prob": 0.5,
         "edit_count_range": [
           1,
@@ -343,26 +323,33 @@
           "jpeg",
           "noise"
         ],
-        "edits": [],
+        "edits": [
+          {
+            "params": {
+              "radius": 0.331979
+            },
+            "type": "blur"
+          }
+        ],
         "enabled": true
       },
       "query_variant": "perimeter",
-      "scene_variant": "rectangle",
+      "scene_variant": "circle",
       "shape_style": {
         "label_color": [
-          32,
-          97,
-          138
+          149,
+          79,
+          31
         ],
         "label_stroke_color": [
-          250,
-          254,
+          252,
+          249,
           251
         ],
         "line_color": [
-          32,
-          97,
-          138
+          149,
+          79,
+          31
         ]
       }
     },
@@ -373,49 +360,60 @@
             "fill_kind": "none",
             "vertices": [
               [
-                82.14000000000001,
-                413.0284745633177
+                335.5,
+                102.03
               ],
               [
-                435.86,
-                413.0284745633177
+                568.97,
+                335.5
               ],
               [
-                435.86,
-                367.64045922863374
+                335.5,
+                568.97
               ],
               [
-                82.14000000000001,
-                367.64045922863374
+                102.03,
+                335.5
               ]
             ]
           },
-          "entity_id": "rectangle_1",
-          "entity_type": "rectangle"
+          "entity_id": "square_1",
+          "entity_type": "square"
+        },
+        {
+          "attrs": {
+            "center": [
+              335.5,
+              335.5
+            ],
+            "radius_px": 233
+          },
+          "entity_id": "circle_1",
+          "entity_type": "circle"
         },
         {
           "attrs": {
             "helper": true,
             "point_a": [
-              82.14000000000001,
-              413.0284745633177
+              102.03,
+              335.5
             ],
             "point_b": [
-              435.86,
-              367.64045922863374
+              568.97,
+              335.5
             ]
           },
-          "entity_id": "diagonal_1",
-          "entity_type": "diagonal"
+          "entity_id": "diameter_1",
+          "entity_type": "diameter"
         }
       ],
       "frames": {
         "graph_unit": {
           "origin_pixel": [
-            258,
-            258
+            335,
+            335
           ],
-          "spacing_px": 47,
+          "spacing_px": 112,
           "x_positive": "right",
           "y_positive": "up"
         },
@@ -429,33 +427,29 @@
         }
       },
       "relations": {
-        "legacy_query_variant": "rectangle_side_diagonal",
-        "legacy_scene_variant": "rectangle",
+        "legacy_query_variant": "inscribed_square_diameter",
+        "legacy_scene_variant": "circle",
         "legacy_task_id": "task_geometry_analytical_2d_perimeter",
         "query_variant": "perimeter",
-        "scene_variant": "rectangle"
+        "scene_variant": "circle"
       },
       "scene_kind": "geometry_2d_analytical_perimeter"
     },
     "witness_symbolic": {
       "annotation_ids": [
-        "BC",
-        "AC"
+        "AY"
       ],
       "annotation_labels": {
-        "diagonal": "AC",
-        "known_side": "BC"
+        "diameter": "AY"
       },
       "annotation_values": {
-        "AC": 55,
-        "BC": 7
+        "AY": 38
       },
-      "formula_expression": "2 * (known_side + sqrt(diagonal^2 - known_side^2))",
+      "formula_expression": "2 * sqrt(2) * diameter",
       "measurement_ref_map": {
-        "AC": 55,
-        "BC": 7
+        "AY": 38
       },
-      "task_variant": "rectangle_side_diagonal",
+      "task_variant": "inscribed_square_diameter",
       "type": "annotation_measurement_map"
     }
   },

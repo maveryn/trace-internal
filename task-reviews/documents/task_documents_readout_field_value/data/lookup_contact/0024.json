@@ -1,22 +1,22 @@
 {
   "answer_gt": {
     "type": "string",
-    "value": "emmaclark@mailhub.net"
+    "value": "(310) 958-3304"
   },
   "evidence_gt": {
     "type": "bbox_set",
     "value": [
       [
-        218.0,
-        473.5,
-        289.0,
-        492.5
+        666.0,
+        347.5,
+        746.0,
+        366.5
       ],
       [
-        218.0,
-        512.0,
-        573.0,
-        540.0
+        666.0,
+        386.5,
+        889.0,
+        413.5
       ]
     ]
   },
@@ -24,18 +24,18 @@
     "format": "png",
     "path": "documents/task_documents_readout_field_value/images/lookup_contact/0024.png"
   },
-  "instance_seed": 3579790477451716,
-  "prompt": "Use the structured document in the image: a structured application form with labeled fields and boxed sections. Locate the field and then answer: What is the email address? Answer with the exact text shown.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value.\nAnswer: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"ava.lee@example.com\"}",
+  "instance_seed": 8720903637840080,
+  "prompt": "Use the structured document in the image: a structured application form with labeled fields and boxed sections. Find the requested field in the document: What is the phone number? Respond with the exact contact text from the document.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value.\nAnswer: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"ava.lee@example.com\"}",
   "prompt_variants": {
-    "answer_and_evidence": "Use the structured document in the image: a structured application form with labeled fields and boxed sections. Locate the field and then answer: What is the email address? Answer with the exact text shown.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value.\nAnswer: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"ava.lee@example.com\"}",
-    "answer_only": "Use the structured document in the image: a structured application form with labeled fields and boxed sections. Locate the field and then answer: What is the email address? Answer with the exact text shown.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"answer\":\"ava.lee@example.com\"}"
+    "answer_and_evidence": "Use the structured document in the image: a structured application form with labeled fields and boxed sections. Find the requested field in the document: What is the phone number? Respond with the exact contact text from the document.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value.\nAnswer: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"ava.lee@example.com\"}",
+    "answer_only": "Use the structured document in the image: a structured application form with labeled fields and boxed sections. Find the requested field in the document: What is the phone number? Respond with the exact contact text from the document.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"answer\":\"ava.lee@example.com\"}"
   },
   "task": "task_documents_readout_field_value",
   "task_variant": "lookup_contact",
   "trace_payload": {
     "answer_gt": {
       "type": "string",
-      "value": "emmaclark@mailhub.net"
+      "value": "(310) 958-3304"
     },
     "background": {
       "available_styles": [
@@ -56,16 +56,16 @@
       "type": "bbox_set",
       "value": [
         [
-          218.0,
-          473.5,
-          289.0,
-          492.5
+          666.0,
+          347.5,
+          746.0,
+          366.5
         ],
         [
-          218.0,
-          512.0,
-          573.0,
-          540.0
+          666.0,
+          386.5,
+          889.0,
+          413.5
         ]
       ]
     },
@@ -76,7 +76,7 @@
           "field_category": "lookup_name",
           "field_id": "applicant_name",
           "field_label": "Applicant Name",
-          "field_value": "Emma Clark",
+          "field_value": "Nora Gomez",
           "label_bbox_id": "applicant_name:label",
           "question_name": "applicant name",
           "value_bbox_id": "applicant_name:value"
@@ -85,7 +85,7 @@
           "field_category": "lookup_identifier",
           "field_id": "reference_id",
           "field_label": "Reference ID",
-          "field_value": "REF-57627",
+          "field_value": "REF-82494",
           "label_bbox_id": "reference_id:label",
           "question_name": "reference ID",
           "value_bbox_id": "reference_id:value"
@@ -94,7 +94,7 @@
           "field_category": "lookup_date",
           "field_id": "submission_date",
           "field_label": "Submission Date",
-          "field_value": "01/31/2026",
+          "field_value": "01/14/2026",
           "label_bbox_id": "submission_date:label",
           "question_name": "submission date",
           "value_bbox_id": "submission_date:value"
@@ -103,7 +103,7 @@
           "field_category": "lookup_contact",
           "field_id": "contact_phone",
           "field_label": "Phone",
-          "field_value": "(310) 810-6825",
+          "field_value": "(310) 958-3304",
           "label_bbox_id": "contact_phone:label",
           "question_name": "phone number",
           "value_bbox_id": "contact_phone:value"
@@ -112,7 +112,7 @@
           "field_category": "lookup_contact",
           "field_id": "contact_email",
           "field_label": "Email",
-          "field_value": "emmaclark@mailhub.net",
+          "field_value": "noragomez@mailhub.net",
           "label_bbox_id": "contact_email:label",
           "question_name": "email address",
           "value_bbox_id": "contact_email:value"
@@ -121,7 +121,7 @@
           "field_category": "lookup_name",
           "field_id": "department",
           "field_label": "Department",
-          "field_value": "Finance",
+          "field_value": "Support",
           "label_bbox_id": "department:label",
           "question_name": "department",
           "value_bbox_id": "department:value"
@@ -130,7 +130,7 @@
           "field_category": "lookup_name",
           "field_id": "city",
           "field_label": "City",
-          "field_value": "Westhaven",
+          "field_value": "Oakridge",
           "label_bbox_id": "city:label",
           "question_name": "city",
           "value_bbox_id": "city:value"
@@ -139,7 +139,7 @@
           "field_category": "lookup_amount",
           "field_id": "fee_amount",
           "field_label": "Fee Amount",
-          "field_value": "$82.67",
+          "field_value": "$64.57",
           "label_bbox_id": "fee_amount:label",
           "question_name": "fee amount",
           "value_bbox_id": "fee_amount:value"
@@ -148,20 +148,20 @@
           "field_category": "lookup_name",
           "field_id": "reviewer_name",
           "field_label": "Reviewer",
-          "field_value": "Clara Martin",
+          "field_value": "Nia Young",
           "label_bbox_id": "reviewer_name:label",
           "question_name": "reviewer name",
           "value_bbox_id": "reviewer_name:value"
         }
       ],
       "query_field_category": "lookup_contact",
-      "query_field_id": "contact_email",
-      "query_field_label": "Email",
-      "query_field_value": "emmaclark@mailhub.net",
-      "query_label_bbox_id": "contact_email:label",
-      "query_value_bbox_id": "contact_email:value",
+      "query_field_id": "contact_phone",
+      "query_field_label": "Phone",
+      "query_field_value": "(310) 958-3304",
+      "query_label_bbox_id": "contact_phone:label",
+      "query_value_bbox_id": "contact_phone:value",
       "question_format": "document_field_lookup",
-      "question_text": "What is the email address?",
+      "question_text": "What is the phone number?",
       "scene_title": "Application Form",
       "scene_variant": "form_sheet",
       "task_variant": "lookup_contact",
@@ -186,16 +186,16 @@
     "projected_evidence": {
       "bbox_set": [
         [
-          218.0,
-          473.5,
-          289.0,
-          492.5
+          666.0,
+          347.5,
+          746.0,
+          366.5
         ],
         [
-          218.0,
-          512.0,
-          573.0,
-          540.0
+          666.0,
+          386.5,
+          889.0,
+          413.5
         ]
       ]
     },
@@ -234,14 +234,14 @@
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
           "object_description": "a structured application form with labeled fields and boxed sections",
-          "question_text": "What is the email address?"
+          "question_text": "What is the phone number?"
         },
         "task_family_key": "structured_document",
         "task_family_variant_index": 3,
         "task_key": "field_lookup_query",
-        "task_variant_index": 4,
+        "task_variant_index": 2,
         "task_variant_key": "lookup_contact",
-        "task_variant_template_index": 0,
+        "task_variant_template_index": 2,
         "template_paths": [
           "documents/readout/documents_readout_v1.json"
         ],
@@ -268,14 +268,14 @@
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a structured application form with labeled fields and boxed sections",
-              "question_text": "What is the email address?"
+              "question_text": "What is the phone number?"
             },
             "task_family_key": "structured_document",
             "task_family_variant_index": 3,
             "task_key": "field_lookup_query",
-            "task_variant_index": 4,
+            "task_variant_index": 2,
             "task_variant_key": "lookup_contact",
-            "task_variant_template_index": 0,
+            "task_variant_template_index": 2,
             "template_paths": [
               "documents/readout/documents_readout_v1.json"
             ],
@@ -286,12 +286,12 @@
               "task_variant:lookup_contact": 5
             }
           },
-          "prompt": "Use the structured document in the image: a structured application form with labeled fields and boxed sections. Locate the field and then answer: What is the email address? Answer with the exact text shown.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value.\nAnswer: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"ava.lee@example.com\"}"
+          "prompt": "Use the structured document in the image: a structured application form with labeled fields and boxed sections. Find the requested field in the document: What is the phone number? Respond with the exact contact text from the document.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value.\nAnswer: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"ava.lee@example.com\"}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 3,
+            "answer_or_evidence_variant_index": 4,
             "prompt_bundle_id": "documents_readout_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -302,14 +302,14 @@
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
               "object_description": "a structured application form with labeled fields and boxed sections",
-              "question_text": "What is the email address?"
+              "question_text": "What is the phone number?"
             },
             "task_family_key": "structured_document",
             "task_family_variant_index": 3,
             "task_key": "field_lookup_query",
-            "task_variant_index": 4,
+            "task_variant_index": 2,
             "task_variant_key": "lookup_contact",
-            "task_variant_template_index": 0,
+            "task_variant_template_index": 2,
             "template_paths": [
               "documents/readout/documents_readout_v1.json"
             ],
@@ -320,7 +320,7 @@
               "task_variant:lookup_contact": 5
             }
           },
-          "prompt": "Use the structured document in the image: a structured application form with labeled fields and boxed sections. Locate the field and then answer: What is the email address? Answer with the exact text shown.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"answer\":\"ava.lee@example.com\"}"
+          "prompt": "Use the structured document in the image: a structured application form with labeled fields and boxed sections. Find the requested field in the document: What is the phone number? Respond with the exact contact text from the document.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"answer\":\"ava.lee@example.com\"}"
         }
       },
       "task_variant": "lookup_contact",
@@ -442,21 +442,21 @@
       "field_value_bboxes_px": {
         "applicant_name:value": [
           218.0,
-          262.5,
-          392.0,
-          285.5
+          263.0,
+          394.0,
+          285.0
         ],
         "city:value": [
           218.0,
-          640.5,
-          378.0,
-          663.5
+          637.5,
+          348.0,
+          666.5
         ],
         "contact_email:value": [
           218.0,
-          512.0,
-          573.0,
-          540.0
+          511.5,
+          575.0,
+          540.5
         ],
         "contact_phone:value": [
           666.0,
@@ -466,9 +466,9 @@
         ],
         "department:value": [
           666.0,
-          514.5,
-          777.0,
-          537.5
+          512.0,
+          780.0,
+          540.0
         ],
         "fee_amount:value": [
           666.0,
@@ -484,9 +484,9 @@
         ],
         "reviewer_name:value": [
           218.0,
-          766.5,
-          393.0,
-          789.5
+          763.5,
+          363.0,
+          792.5
         ],
         "submission_date:value": [
           218.0,
@@ -511,7 +511,7 @@
     "render_spec": {
       "canvas_height": 920,
       "canvas_width": 1280,
-      "geometry_seed": 3579790477451716,
+      "geometry_seed": 8720903637840080,
       "page_shadow_offset_px": 14,
       "receipt_page_height_px": 760,
       "receipt_page_width_px": 520,
@@ -573,14 +573,14 @@
           "bbox_id": "applicant_name:value",
           "bbox_px": [
             218.0,
-            262.5,
-            392.0,
-            285.5
+            263.0,
+            394.0,
+            285.0
           ],
           "entity_id": "applicant_name:value",
           "entity_type": "document_field_value",
           "field_id": "applicant_name",
-          "text": "Emma Clark"
+          "text": "Nora Gomez"
         },
         {
           "bbox_id": "reference_id",
@@ -618,7 +618,7 @@
           "entity_id": "reference_id:value",
           "entity_type": "document_field_value",
           "field_id": "reference_id",
-          "text": "REF-57627"
+          "text": "REF-82494"
         },
         {
           "bbox_id": "submission_date",
@@ -656,7 +656,7 @@
           "entity_id": "submission_date:value",
           "entity_type": "document_field_value",
           "field_id": "submission_date",
-          "text": "01/31/2026"
+          "text": "01/14/2026"
         },
         {
           "bbox_id": "contact_phone",
@@ -694,7 +694,7 @@
           "entity_id": "contact_phone:value",
           "entity_type": "document_field_value",
           "field_id": "contact_phone",
-          "text": "(310) 810-6825"
+          "text": "(310) 958-3304"
         },
         {
           "bbox_id": "contact_email",
@@ -725,14 +725,14 @@
           "bbox_id": "contact_email:value",
           "bbox_px": [
             218.0,
-            512.0,
-            573.0,
-            540.0
+            511.5,
+            575.0,
+            540.5
           ],
           "entity_id": "contact_email:value",
           "entity_type": "document_field_value",
           "field_id": "contact_email",
-          "text": "emmaclark@mailhub.net"
+          "text": "noragomez@mailhub.net"
         },
         {
           "bbox_id": "department",
@@ -763,14 +763,14 @@
           "bbox_id": "department:value",
           "bbox_px": [
             666.0,
-            514.5,
-            777.0,
-            537.5
+            512.0,
+            780.0,
+            540.0
           ],
           "entity_id": "department:value",
           "entity_type": "document_field_value",
           "field_id": "department",
-          "text": "Finance"
+          "text": "Support"
         },
         {
           "bbox_id": "city",
@@ -801,14 +801,14 @@
           "bbox_id": "city:value",
           "bbox_px": [
             218.0,
-            640.5,
-            378.0,
-            663.5
+            637.5,
+            348.0,
+            666.5
           ],
           "entity_id": "city:value",
           "entity_type": "document_field_value",
           "field_id": "city",
-          "text": "Westhaven"
+          "text": "Oakridge"
         },
         {
           "bbox_id": "fee_amount",
@@ -846,7 +846,7 @@
           "entity_id": "fee_amount:value",
           "entity_type": "document_field_value",
           "field_id": "fee_amount",
-          "text": "$82.67"
+          "text": "$64.57"
         },
         {
           "bbox_id": "reviewer_name",
@@ -877,19 +877,19 @@
           "bbox_id": "reviewer_name:value",
           "bbox_px": [
             218.0,
-            766.5,
-            393.0,
-            789.5
+            763.5,
+            363.0,
+            792.5
           ],
           "entity_id": "reviewer_name:value",
           "entity_type": "document_field_value",
           "field_id": "reviewer_name",
-          "text": "Clara Martin"
+          "text": "Nia Young"
         }
       ],
       "relations": {
-        "query_field_id": "contact_email",
-        "query_field_label": "Email",
+        "query_field_id": "contact_phone",
+        "query_field_label": "Phone",
         "scene_variant": "form_sheet",
         "task_variant": "lookup_contact",
         "view_family": "structured_document"
@@ -898,10 +898,10 @@
     },
     "witness_symbolic": {
       "bbox_id_sequence": [
-        "contact_email:label",
-        "contact_email:value"
+        "contact_phone:label",
+        "contact_phone:value"
       ],
-      "field_id": "contact_email"
+      "field_id": "contact_phone"
     }
   },
   "versions": {

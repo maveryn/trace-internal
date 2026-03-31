@@ -15,15 +15,15 @@
       "lookup_name"
     ],
     "generated_variant_counts": {
-      "lookup_amount": 100,
-      "lookup_contact": 124,
-      "lookup_date": 104,
+      "lookup_amount": 103,
+      "lookup_contact": 104,
+      "lookup_date": 103,
       "lookup_identifier": 100,
-      "lookup_name": 116
+      "lookup_name": 100
     },
     "generation_error_counts": {},
     "target_count_per_variant": 100,
-    "total_generated": 544
+    "total_generated": 510
   },
   "domain": "documents",
   "failed_variants": [],
@@ -37,7 +37,7 @@
     },
     "checks": {
       "max_answer_frequency": {
-        "observed": 0.006,
+        "observed": 0.012,
         "pass": true,
         "threshold": 0.25
       },
@@ -47,55 +47,79 @@
         "status": "not_applicable_non_numeric_answers"
       },
       "min_unique_answers": {
-        "observed": 477,
+        "observed": 465,
         "pass": true,
         "threshold": 5
       }
     },
     "five_bin_numeric": null,
-    "max_answer_count": 3,
-    "max_answer_frequency": 0.006,
+    "max_answer_count": 6,
+    "max_answer_frequency": 0.012,
     "pass": true,
     "sample_count": 500,
     "top_answers": [
       {
-        "answer_label": "2026-02-25",
+        "answer_label": "Finance",
+        "count": 6
+      },
+      {
+        "answer_label": "Facilities",
+        "count": 4
+      },
+      {
+        "answer_label": "Operations",
+        "count": 4
+      },
+      {
+        "answer_label": "Mar 05, 2026",
         "count": 3
       },
       {
-        "answer_label": "Northgate",
-        "count": 3
-      },
-      {
-        "answer_label": "05/27/2026",
+        "answer_label": "$8.40",
         "count": 2
       },
       {
-        "answer_label": "06/18/2026",
+        "answer_label": "03/07/2026",
         "count": 2
       },
       {
-        "answer_label": "2026-03-02",
+        "answer_label": "05/11/2026",
         "count": 2
       },
       {
-        "answer_label": "2026-03-16",
+        "answer_label": "05/20/2026",
         "count": 2
       },
       {
-        "answer_label": "2026-03-19",
+        "answer_label": "05/26/2026",
         "count": 2
       },
       {
-        "answer_label": "2026-03-27",
+        "answer_label": "2026-02-24",
         "count": 2
       },
       {
-        "answer_label": "Apr 05, 2026",
+        "answer_label": "2026-03-03",
         "count": 2
       },
       {
-        "answer_label": "Apr 07, 2026",
+        "answer_label": "2026-03-30",
+        "count": 2
+      },
+      {
+        "answer_label": "2026-04-01",
+        "count": 2
+      },
+      {
+        "answer_label": "Ada Patel",
+        "count": 2
+      },
+      {
+        "answer_label": "Albany",
+        "count": 2
+      },
+      {
+        "answer_label": "Amber Studio",
         "count": 2
       },
       {
@@ -103,403 +127,339 @@
         "count": 2
       },
       {
-        "answer_label": "Bayside",
+        "answer_label": "Ben Ellis",
         "count": 2
       },
       {
-        "answer_label": "Central Office",
+        "answer_label": "Dana Shaw",
         "count": 2
       },
       {
-        "answer_label": "Feb 09, 2026",
+        "answer_label": "Ezra Ward",
         "count": 2
       },
       {
-        "answer_label": "Harbor Point",
+        "answer_label": "Feb 06, 2026",
         "count": 2
       },
       {
-        "answer_label": "Mapleton",
+        "answer_label": "Lakewood",
         "count": 2
       },
       {
-        "answer_label": "Mar 27, 2026",
+        "answer_label": "Riverton",
         "count": 2
       },
       {
-        "answer_label": "May 24, 2026",
+        "answer_label": "Silverton",
         "count": 2
       },
       {
-        "answer_label": "Maya Clark",
+        "answer_label": "Support",
         "count": 2
       },
       {
-        "answer_label": "Operations",
+        "answer_label": "hanadavis@brightdesk.io",
         "count": 2
       },
       {
-        "answer_label": "Summerset",
-        "count": 2
-      },
-      {
-        "answer_label": "$1.40",
-        "count": 1
-      },
-      {
-        "answer_label": "$1.93",
-        "count": 1
-      },
-      {
-        "answer_label": "$110.59",
-        "count": 1
-      },
-      {
-        "answer_label": "$119.00",
-        "count": 1
-      },
-      {
-        "answer_label": "$12.77",
-        "count": 1
-      },
-      {
-        "answer_label": "$123.75",
-        "count": 1
-      },
-      {
-        "answer_label": "$127.95",
-        "count": 1
-      },
-      {
-        "answer_label": "$130.58",
-        "count": 1
-      },
-      {
-        "answer_label": "$130.92",
-        "count": 1
-      },
-      {
-        "answer_label": "$131.00",
-        "count": 1
-      },
-      {
-        "answer_label": "$134.46",
-        "count": 1
-      },
-      {
-        "answer_label": "$135.71",
-        "count": 1
-      },
-      {
-        "answer_label": "$136.73",
-        "count": 1
-      },
-      {
-        "answer_label": "$14.20",
-        "count": 1
-      },
-      {
-        "answer_label": "$14.38",
-        "count": 1
-      },
-      {
-        "answer_label": "$140.50",
+        "answer_label": "$1.60",
         "count": 1
       },
       {
-        "answer_label": "$143.63",
+        "answer_label": "$1.73",
         "count": 1
       },
       {
-        "answer_label": "$144.14",
+        "answer_label": "$10.93",
         "count": 1
       },
       {
-        "answer_label": "$144.52",
+        "answer_label": "$11.39",
         "count": 1
       },
       {
-        "answer_label": "$146.27",
+        "answer_label": "$11.56",
         "count": 1
       },
       {
-        "answer_label": "$147.00",
+        "answer_label": "$113.03",
         "count": 1
       },
       {
-        "answer_label": "$147.19",
+        "answer_label": "$115.78",
         "count": 1
       },
       {
-        "answer_label": "$156.93",
+        "answer_label": "$122.45",
         "count": 1
       },
       {
-        "answer_label": "$16.20",
+        "answer_label": "$123.64",
         "count": 1
       },
       {
-        "answer_label": "$160.99",
+        "answer_label": "$124.61",
         "count": 1
       },
       {
-        "answer_label": "$17.20",
+        "answer_label": "$131.31",
         "count": 1
       },
       {
-        "answer_label": "$17.41",
+        "answer_label": "$132.43",
         "count": 1
       },
       {
-        "answer_label": "$174.70",
+        "answer_label": "$137.17",
         "count": 1
       },
       {
-        "answer_label": "$186.06",
+        "answer_label": "$139.03",
         "count": 1
       },
       {
-        "answer_label": "$19.16",
+        "answer_label": "$14.14",
         "count": 1
       },
       {
-        "answer_label": "$2.16",
+        "answer_label": "$14.51",
         "count": 1
       },
       {
-        "answer_label": "$2.65",
+        "answer_label": "$144.85",
         "count": 1
       },
       {
-        "answer_label": "$20.27",
+        "answer_label": "$146.95",
         "count": 1
       },
       {
-        "answer_label": "$202.17",
+        "answer_label": "$16.06",
         "count": 1
       },
       {
-        "answer_label": "$204.80",
+        "answer_label": "$162.49",
         "count": 1
       },
       {
-        "answer_label": "$211.87",
+        "answer_label": "$163.98",
         "count": 1
       },
       {
-        "answer_label": "$217.06",
+        "answer_label": "$170.02",
         "count": 1
       },
       {
-        "answer_label": "$22.05",
+        "answer_label": "$170.16",
         "count": 1
       },
       {
-        "answer_label": "$22.92",
+        "answer_label": "$19.56",
         "count": 1
       },
       {
-        "answer_label": "$22.93",
+        "answer_label": "$19.58",
         "count": 1
       },
       {
-        "answer_label": "$23.78",
+        "answer_label": "$193.51",
         "count": 1
       },
       {
-        "answer_label": "$247.19",
+        "answer_label": "$2.85",
         "count": 1
       },
       {
-        "answer_label": "$26.76",
+        "answer_label": "$208.28",
         "count": 1
       },
       {
-        "answer_label": "$269.61",
+        "answer_label": "$21.20",
         "count": 1
       },
       {
-        "answer_label": "$28.83",
+        "answer_label": "$21.43",
         "count": 1
       },
       {
-        "answer_label": "$28.97",
+        "answer_label": "$21.60",
         "count": 1
       },
       {
-        "answer_label": "$281.65",
+        "answer_label": "$22.57",
         "count": 1
       },
       {
-        "answer_label": "$3.30",
+        "answer_label": "$222.14",
         "count": 1
       },
       {
-        "answer_label": "$3.57",
+        "answer_label": "$223.74",
         "count": 1
       },
       {
-        "answer_label": "$3.81",
+        "answer_label": "$225.93",
         "count": 1
       },
       {
-        "answer_label": "$3.85",
+        "answer_label": "$232.35",
         "count": 1
       },
       {
-        "answer_label": "$30.05",
+        "answer_label": "$24.91",
         "count": 1
       },
       {
-        "answer_label": "$310.40",
+        "answer_label": "$26.49",
         "count": 1
       },
       {
-        "answer_label": "$32.95",
+        "answer_label": "$268.92",
         "count": 1
       },
       {
-        "answer_label": "$33.16",
+        "answer_label": "$27.16",
         "count": 1
       },
       {
-        "answer_label": "$33.54",
+        "answer_label": "$287.84",
         "count": 1
       },
       {
-        "answer_label": "$333.41",
+        "answer_label": "$3.92",
         "count": 1
       },
       {
-        "answer_label": "$4.27",
+        "answer_label": "$30.59",
         "count": 1
       },
       {
-        "answer_label": "$4.63",
+        "answer_label": "$303.77",
         "count": 1
       },
       {
-        "answer_label": "$40.73",
+        "answer_label": "$305.75",
         "count": 1
       },
       {
-        "answer_label": "$40.86",
+        "answer_label": "$31.12",
         "count": 1
       },
       {
-        "answer_label": "$43.01",
+        "answer_label": "$32.97",
         "count": 1
       },
       {
-        "answer_label": "$43.91",
+        "answer_label": "$33.28",
         "count": 1
       },
       {
-        "answer_label": "$5.55",
+        "answer_label": "$334.95",
         "count": 1
       },
       {
-        "answer_label": "$51.26",
+        "answer_label": "$34.34",
         "count": 1
       },
       {
-        "answer_label": "$51.64",
+        "answer_label": "$340.44",
         "count": 1
       },
       {
-        "answer_label": "$55.28",
+        "answer_label": "$35.59",
         "count": 1
       },
       {
-        "answer_label": "$58.83",
+        "answer_label": "$35.76",
         "count": 1
       },
       {
-        "answer_label": "$6.10",
+        "answer_label": "$37.55",
         "count": 1
       },
       {
-        "answer_label": "$6.13",
+        "answer_label": "$4.16",
         "count": 1
       },
       {
-        "answer_label": "$60.58",
+        "answer_label": "$4.70",
         "count": 1
       },
       {
-        "answer_label": "$61.62",
+        "answer_label": "$4.76",
         "count": 1
       },
       {
-        "answer_label": "$62.42",
+        "answer_label": "$4.82",
         "count": 1
       },
       {
-        "answer_label": "$62.74",
+        "answer_label": "$52.01",
         "count": 1
       },
       {
-        "answer_label": "$62.96",
+        "answer_label": "$53.61",
         "count": 1
       },
       {
-        "answer_label": "$65.51",
+        "answer_label": "$54.26",
         "count": 1
       },
       {
-        "answer_label": "$65.90",
+        "answer_label": "$54.33",
         "count": 1
       },
       {
-        "answer_label": "$66.48",
+        "answer_label": "$59.79",
         "count": 1
       },
       {
-        "answer_label": "$68.76",
+        "answer_label": "$59.85",
         "count": 1
       },
       {
-        "answer_label": "$7.13",
+        "answer_label": "$6.44",
         "count": 1
       },
       {
-        "answer_label": "$7.22",
+        "answer_label": "$6.53",
         "count": 1
       },
       {
-        "answer_label": "$7.64",
+        "answer_label": "$60.89",
         "count": 1
       },
       {
-        "answer_label": "$7.91",
+        "answer_label": "$63.01",
         "count": 1
       },
       {
-        "answer_label": "$70.93",
+        "answer_label": "$64.75",
         "count": 1
       },
       {
-        "answer_label": "$71.54",
+        "answer_label": "$7.21",
         "count": 1
       },
       {
-        "answer_label": "$72.62",
+        "answer_label": "$7.62",
         "count": 1
       },
       {
-        "answer_label": "$75.55",
+        "answer_label": "$71.30",
         "count": 1
       },
       {
-        "answer_label": "$77.68",
+        "answer_label": "$73.76",
         "count": 1
       },
       {
-        "answer_label": "$78.91",
+        "answer_label": "$76.91",
         "count": 1
       },
       {
-        "answer_label": "$78.98",
+        "answer_label": "$78.85",
         "count": 1
       },
       {
@@ -507,219 +467,291 @@
         "count": 1
       },
       {
-        "answer_label": "$8.17",
+        "answer_label": "$8.19",
         "count": 1
       },
       {
-        "answer_label": "$8.51",
+        "answer_label": "$8.27",
         "count": 1
       },
       {
-        "answer_label": "$8.53",
+        "answer_label": "$8.57",
         "count": 1
       },
       {
-        "answer_label": "$9.38",
+        "answer_label": "$8.99",
         "count": 1
       },
       {
-        "answer_label": "$91.39",
+        "answer_label": "$80.33",
         "count": 1
       },
       {
-        "answer_label": "$94.89",
+        "answer_label": "$80.87",
         "count": 1
       },
       {
-        "answer_label": "$95.39",
+        "answer_label": "$83.28",
         "count": 1
       },
       {
-        "answer_label": "$95.99",
+        "answer_label": "$83.65",
         "count": 1
       },
       {
-        "answer_label": "$96.22",
+        "answer_label": "$85.68",
         "count": 1
       },
       {
-        "answer_label": "(212) 216-6790",
+        "answer_label": "$85.99",
         "count": 1
       },
       {
-        "answer_label": "(212) 354-5554",
+        "answer_label": "$89.13",
         "count": 1
       },
       {
-        "answer_label": "(212) 700-8566",
+        "answer_label": "$9.51",
         "count": 1
       },
       {
-        "answer_label": "(212) 757-1461",
+        "answer_label": "$90.35",
         "count": 1
       },
       {
-        "answer_label": "(310) 126-8268",
+        "answer_label": "$91.42",
         "count": 1
       },
       {
-        "answer_label": "(310) 349-5014",
+        "answer_label": "$91.94",
         "count": 1
       },
       {
-        "answer_label": "(310) 647-3120",
+        "answer_label": "$92.59",
         "count": 1
       },
       {
-        "answer_label": "(310) 862-9003",
+        "answer_label": "$93.60",
         "count": 1
       },
       {
-        "answer_label": "(415) 471-6519",
+        "answer_label": "$93.93",
         "count": 1
       },
       {
-        "answer_label": "(415) 524-3646",
+        "answer_label": "$95.38",
         "count": 1
       },
       {
-        "answer_label": "(415) 713-3946",
+        "answer_label": "$95.63",
         "count": 1
       },
       {
-        "answer_label": "(415) 767-1969",
+        "answer_label": "$96.73",
         "count": 1
       },
       {
-        "answer_label": "(415) 988-5890",
+        "answer_label": "$97.90",
         "count": 1
       },
       {
-        "answer_label": "(503) 247-7347",
+        "answer_label": "(212) 136-3647",
         "count": 1
       },
       {
-        "answer_label": "(503) 373-6754",
+        "answer_label": "(212) 166-5900",
         "count": 1
       },
       {
-        "answer_label": "(503) 504-6310",
+        "answer_label": "(212) 184-1844",
         "count": 1
       },
       {
-        "answer_label": "(503) 736-8313",
+        "answer_label": "(212) 357-2104",
         "count": 1
       },
       {
-        "answer_label": "(503) 845-7184",
+        "answer_label": "(212) 420-4007",
         "count": 1
       },
       {
-        "answer_label": "(503) 862-7031",
+        "answer_label": "(212) 636-8725",
         "count": 1
       },
       {
-        "answer_label": "(503) 898-9741",
+        "answer_label": "(212) 680-2544",
         "count": 1
       },
       {
-        "answer_label": "(617) 288-2233",
+        "answer_label": "(212) 716-5309",
         "count": 1
       },
       {
-        "answer_label": "(617) 346-3371",
+        "answer_label": "(212) 854-9058",
         "count": 1
       },
       {
-        "answer_label": "(617) 488-9262",
+        "answer_label": "(212) 947-8919",
         "count": 1
       },
       {
-        "answer_label": "(617) 512-6599",
+        "answer_label": "(310) 223-3608",
         "count": 1
       },
       {
-        "answer_label": "(617) 672-3968",
+        "answer_label": "(310) 325-4151",
         "count": 1
       },
       {
-        "answer_label": "(617) 718-5168",
+        "answer_label": "(310) 353-6747",
         "count": 1
       },
       {
-        "answer_label": "(617) 907-6665",
+        "answer_label": "(310) 480-1416",
         "count": 1
       },
       {
-        "answer_label": "(617) 959-7711",
+        "answer_label": "(310) 597-2346",
         "count": 1
       },
       {
-        "answer_label": "(704) 117-3706",
+        "answer_label": "(310) 772-6582",
         "count": 1
       },
       {
-        "answer_label": "(704) 283-4281",
+        "answer_label": "(310) 807-4346",
         "count": 1
       },
       {
-        "answer_label": "(704) 465-6356",
+        "answer_label": "(310) 923-7454",
         "count": 1
       },
       {
-        "answer_label": "(704) 721-6967",
+        "answer_label": "(310) 958-3304",
         "count": 1
       },
       {
-        "answer_label": "(704) 728-4586",
+        "answer_label": "(415) 314-3869",
         "count": 1
       },
       {
-        "answer_label": "(704) 861-2923",
+        "answer_label": "(415) 450-7160",
         "count": 1
       },
       {
-        "answer_label": "(704) 984-5891",
+        "answer_label": "(415) 494-1283",
         "count": 1
       },
       {
-        "answer_label": "(818) 118-2938",
+        "answer_label": "(415) 780-4341",
         "count": 1
       },
       {
-        "answer_label": "(818) 118-5865",
+        "answer_label": "(415) 888-6820",
         "count": 1
       },
       {
-        "answer_label": "(818) 875-4568",
+        "answer_label": "(415) 962-2950",
         "count": 1
       },
       {
-        "answer_label": "(818) 941-1241",
+        "answer_label": "(415) 989-1544",
         "count": 1
       },
       {
-        "answer_label": "(929) 290-2350",
+        "answer_label": "(503) 169-9447",
         "count": 1
       },
       {
-        "answer_label": "(929) 331-6248",
+        "answer_label": "(503) 379-4657",
         "count": 1
       },
       {
-        "answer_label": "(929) 409-1252",
+        "answer_label": "(503) 551-7270",
         "count": 1
       },
       {
-        "answer_label": "(929) 699-3536",
+        "answer_label": "(503) 623-4346",
         "count": 1
       },
       {
-        "answer_label": "(929) 706-3635",
+        "answer_label": "(503) 797-5786",
         "count": 1
       },
       {
-        "answer_label": "(929) 806-4098",
+        "answer_label": "(503) 836-2174",
+        "count": 1
+      },
+      {
+        "answer_label": "(617) 142-9826",
+        "count": 1
+      },
+      {
+        "answer_label": "(617) 319-1243",
+        "count": 1
+      },
+      {
+        "answer_label": "(617) 435-6744",
+        "count": 1
+      },
+      {
+        "answer_label": "(617) 728-8558",
+        "count": 1
+      },
+      {
+        "answer_label": "(617) 759-1069",
+        "count": 1
+      },
+      {
+        "answer_label": "(617) 985-4376",
+        "count": 1
+      },
+      {
+        "answer_label": "(704) 110-6580",
+        "count": 1
+      },
+      {
+        "answer_label": "(704) 112-1137",
+        "count": 1
+      },
+      {
+        "answer_label": "(704) 449-8530",
+        "count": 1
+      },
+      {
+        "answer_label": "(704) 457-7778",
+        "count": 1
+      },
+      {
+        "answer_label": "(704) 590-9450",
+        "count": 1
+      },
+      {
+        "answer_label": "(704) 888-6752",
+        "count": 1
+      },
+      {
+        "answer_label": "(818) 166-3280",
+        "count": 1
+      },
+      {
+        "answer_label": "(818) 200-8375",
+        "count": 1
+      },
+      {
+        "answer_label": "(818) 361-3517",
+        "count": 1
+      },
+      {
+        "answer_label": "(818) 706-8622",
+        "count": 1
+      },
+      {
+        "answer_label": "(818) 759-7328",
+        "count": 1
+      },
+      {
+        "answer_label": "(818) 868-9985",
         "count": 1
       },
       {
@@ -727,63 +759,75 @@
         "count": 1
       },
       {
-        "answer_label": "01/07/2026",
+        "answer_label": "01/08/2026",
         "count": 1
       },
       {
-        "answer_label": "01/17/2026",
+        "answer_label": "01/13/2026",
         "count": 1
       },
       {
-        "answer_label": "01/20/2026",
+        "answer_label": "01/16/2026",
         "count": 1
       },
       {
-        "answer_label": "01/27/2026",
+        "answer_label": "02/04/2026",
         "count": 1
       },
       {
-        "answer_label": "03/02/2026",
+        "answer_label": "02/07/2026",
         "count": 1
       },
       {
-        "answer_label": "03/04/2026",
+        "answer_label": "02/17/2026",
         "count": 1
       },
       {
-        "answer_label": "03/13/2026",
+        "answer_label": "02/26/2026",
         "count": 1
       },
       {
-        "answer_label": "03/21/2026",
+        "answer_label": "02/28/2026",
         "count": 1
       },
       {
-        "answer_label": "03/23/2026",
+        "answer_label": "03/09/2026",
         "count": 1
       },
       {
-        "answer_label": "04/04/2026",
+        "answer_label": "03/15/2026",
         "count": 1
       },
       {
-        "answer_label": "04/10/2026",
+        "answer_label": "03/18/2026",
         "count": 1
       },
       {
-        "answer_label": "04/13/2026",
+        "answer_label": "03/20/2026",
         "count": 1
       },
       {
-        "answer_label": "04/19/2026",
+        "answer_label": "04/01/2026",
         "count": 1
       },
       {
-        "answer_label": "04/23/2026",
+        "answer_label": "04/15/2026",
         "count": 1
       },
       {
-        "answer_label": "05/02/2026",
+        "answer_label": "04/21/2026",
+        "count": 1
+      },
+      {
+        "answer_label": "04/22/2026",
+        "count": 1
+      },
+      {
+        "answer_label": "05/10/2026",
+        "count": 1
+      },
+      {
+        "answer_label": "05/15/2026",
         "count": 1
       },
       {
@@ -791,19 +835,7 @@
         "count": 1
       },
       {
-        "answer_label": "05/22/2026",
-        "count": 1
-      },
-      {
-        "answer_label": "05/25/2026",
-        "count": 1
-      },
-      {
-        "answer_label": "05/28/2026",
-        "count": 1
-      },
-      {
-        "answer_label": "05/31/2026",
+        "answer_label": "05/27/2026",
         "count": 1
       },
       {
@@ -811,7 +843,7 @@
         "count": 1
       },
       {
-        "answer_label": "06/08/2026",
+        "answer_label": "06/05/2026",
         "count": 1
       },
       {
@@ -819,19 +851,31 @@
         "count": 1
       },
       {
-        "answer_label": "06/20/2026",
+        "answer_label": "06/16/2026",
         "count": 1
       },
       {
-        "answer_label": "06/30/2026",
+        "answer_label": "06/27/2026",
         "count": 1
       },
       {
-        "answer_label": "2026-02-13",
+        "answer_label": "2026-02-07",
         "count": 1
       },
       {
-        "answer_label": "2026-02-21",
+        "answer_label": "2026-02-08",
+        "count": 1
+      },
+      {
+        "answer_label": "2026-02-10",
+        "count": 1
+      },
+      {
+        "answer_label": "2026-02-12",
+        "count": 1
+      },
+      {
+        "answer_label": "2026-02-20",
         "count": 1
       },
       {
@@ -839,15 +883,7 @@
         "count": 1
       },
       {
-        "answer_label": "2026-02-24",
-        "count": 1
-      },
-      {
         "answer_label": "2026-02-26",
-        "count": 1
-      },
-      {
-        "answer_label": "2026-02-28",
         "count": 1
       },
       {
@@ -855,19 +891,27 @@
         "count": 1
       },
       {
-        "answer_label": "2026-03-04",
+        "answer_label": "2026-03-08",
         "count": 1
       },
       {
-        "answer_label": "2026-03-05",
+        "answer_label": "2026-03-09",
         "count": 1
       },
       {
-        "answer_label": "2026-03-06",
+        "answer_label": "2026-03-12",
         "count": 1
       },
       {
-        "answer_label": "2026-03-20",
+        "answer_label": "2026-03-13",
+        "count": 1
+      },
+      {
+        "answer_label": "2026-03-17",
+        "count": 1
+      },
+      {
+        "answer_label": "2026-03-18",
         "count": 1
       },
       {
@@ -875,7 +919,19 @@
         "count": 1
       },
       {
-        "answer_label": "2026-03-30",
+        "answer_label": "2026-03-24",
+        "count": 1
+      },
+      {
+        "answer_label": "2026-03-27",
+        "count": 1
+      },
+      {
+        "answer_label": "2026-03-28",
+        "count": 1
+      },
+      {
+        "answer_label": "2026-03-29",
         "count": 1
       },
       {
@@ -883,131 +939,103 @@
         "count": 1
       },
       {
-        "answer_label": "2026-04-01",
-        "count": 1
-      },
-      {
-        "answer_label": "2026-04-02",
-        "count": 1
-      },
-      {
-        "answer_label": "2026-04-03",
-        "count": 1
-      },
-      {
         "answer_label": "2026-04-05",
         "count": 1
       },
       {
-        "answer_label": "2026-04-17",
+        "answer_label": "2026-04-06",
         "count": 1
       },
       {
-        "answer_label": "2026-04-21",
+        "answer_label": "2026-04-12",
         "count": 1
       },
       {
-        "answer_label": "2026-04-23",
+        "answer_label": "2026-04-18",
         "count": 1
       },
       {
-        "answer_label": "2026-04-28",
+        "answer_label": "2026-04-30",
         "count": 1
       },
       {
-        "answer_label": "ACC-1457",
+        "answer_label": "ACC-1526",
         "count": 1
       },
       {
-        "answer_label": "ACC-1527",
+        "answer_label": "ACC-2478",
         "count": 1
       },
       {
-        "answer_label": "ACC-1619",
+        "answer_label": "ACC-2878",
         "count": 1
       },
       {
-        "answer_label": "ACC-2872",
+        "answer_label": "ACC-3362",
         "count": 1
       },
       {
-        "answer_label": "ACC-3130",
+        "answer_label": "ACC-3751",
         "count": 1
       },
       {
-        "answer_label": "ACC-3426",
+        "answer_label": "ACC-3938",
         "count": 1
       },
       {
-        "answer_label": "ACC-3480",
+        "answer_label": "ACC-4482",
         "count": 1
       },
       {
-        "answer_label": "ACC-4523",
+        "answer_label": "ACC-4537",
         "count": 1
       },
       {
-        "answer_label": "ACC-4613",
+        "answer_label": "ACC-5797",
         "count": 1
       },
       {
-        "answer_label": "ACC-4872",
+        "answer_label": "ACC-8498",
         "count": 1
       },
       {
-        "answer_label": "ACC-6936",
+        "answer_label": "ACC-8541",
         "count": 1
       },
       {
-        "answer_label": "ACC-7476",
+        "answer_label": "ACC-8631",
         "count": 1
       },
       {
-        "answer_label": "ACC-7490",
+        "answer_label": "ACC-8951",
         "count": 1
       },
       {
-        "answer_label": "ACC-7589",
+        "answer_label": "ACC-9477",
         "count": 1
       },
       {
-        "answer_label": "ACC-7669",
+        "answer_label": "Ada Bailey",
         "count": 1
       },
       {
-        "answer_label": "ACC-7748",
+        "answer_label": "Amber Office",
         "count": 1
       },
       {
-        "answer_label": "ACC-8397",
+        "answer_label": "Amber Supply",
         "count": 1
       },
       {
-        "answer_label": "ACC-8743",
+        "answer_label": "Apr 04, 2026",
         "count": 1
       },
       {
-        "answer_label": "ACC-8848",
+        "answer_label": "Apr 08, 2026",
         "count": 1
       },
       {
-        "answer_label": "ACC-9962",
-        "count": 1
-      },
-      {
-        "answer_label": "Ada Foster",
-        "count": 1
-      },
-      {
-        "answer_label": "Ada Reed",
-        "count": 1
-      },
-      {
-        "answer_label": "Apr 03, 2026",
-        "count": 1
-      },
-      {
-        "answer_label": "Apr 17, 2026",
+        "answer_label": "Apr 20, 2026",
         "count": 1
       },
       {
@@ -1015,19 +1043,11 @@
         "count": 1
       },
       {
-        "answer_label": "Apr 22, 2026",
+        "answer_label": "Apr 23, 2026",
         "count": 1
       },
       {
-        "answer_label": "Apr 28, 2026",
-        "count": 1
-      },
-      {
-        "answer_label": "Apr 29, 2026",
-        "count": 1
-      },
-      {
-        "answer_label": "Aria Lopez",
+        "answer_label": "Apr 27, 2026",
         "count": 1
       },
       {
@@ -1039,19 +1059,11 @@
         "count": 1
       },
       {
-        "answer_label": "Ava Hill",
+        "answer_label": "Aster Office",
         "count": 1
       },
       {
-        "answer_label": "Ava Patel",
-        "count": 1
-      },
-      {
-        "answer_label": "Ben Gomez",
-        "count": 1
-      },
-      {
-        "answer_label": "Ben Miller",
+        "answer_label": "Beacon Partners",
         "count": 1
       },
       {
@@ -1059,103 +1071,63 @@
         "count": 1
       },
       {
-        "answer_label": "Blue Oak Studio",
+        "answer_label": "Blue Oak Partners",
         "count": 1
       },
       {
-        "answer_label": "Blue Oak Supply",
+        "answer_label": "Cedar Market",
         "count": 1
       },
       {
-        "answer_label": "Brookfield",
+        "answer_label": "Cedar Works",
         "count": 1
       },
       {
-        "answer_label": "Cedar Point",
+        "answer_label": "Clara Davis",
         "count": 1
       },
       {
-        "answer_label": "Central Co.",
+        "answer_label": "Copper Office",
         "count": 1
       },
       {
-        "answer_label": "Civic Office",
+        "answer_label": "Copper Studio",
         "count": 1
       },
       {
-        "answer_label": "Clara Howard",
+        "answer_label": "Copper Supply",
         "count": 1
       },
       {
-        "answer_label": "Clara Patel",
+        "answer_label": "Dana Santos",
         "count": 1
       },
       {
-        "answer_label": "Cole Ward",
+        "answer_label": "Elm Co.",
         "count": 1
       },
       {
-        "answer_label": "Copper Co.",
+        "answer_label": "Elm Office",
         "count": 1
       },
       {
-        "answer_label": "Dana Carter",
+        "answer_label": "Ezra Rivera",
         "count": 1
       },
       {
-        "answer_label": "Dana Davis",
+        "answer_label": "Fairview",
         "count": 1
       },
       {
-        "answer_label": "Eli Garcia",
+        "answer_label": "Feb 16, 2026",
         "count": 1
       },
       {
-        "answer_label": "Elmhurst",
+        "answer_label": "Feb 21, 2026",
         "count": 1
       },
       {
-        "answer_label": "Emma Foster",
-        "count": 1
-      },
-      {
-        "answer_label": "Enrollment",
-        "count": 1
-      },
-      {
-        "answer_label": "Facilities",
-        "count": 1
-      },
-      {
-        "answer_label": "Finance",
-        "count": 1
-      },
-      {
-        "answer_label": "Gia Martin",
-        "count": 1
-      },
-      {
-        "answer_label": "Gia Price",
-        "count": 1
-      },
-      {
-        "answer_label": "Grand Lake",
-        "count": 1
-      },
-      {
-        "answer_label": "Granite Studio",
-        "count": 1
-      },
-      {
-        "answer_label": "Granite Works",
-        "count": 1
-      },
-      {
-        "answer_label": "Hana Lopez",
-        "count": 1
-      },
-      {
-        "answer_label": "Hana Moore",
+        "answer_label": "Gia Hill",
         "count": 1
       },
       {
@@ -1163,87 +1135,111 @@
         "count": 1
       },
       {
-        "answer_label": "Harbor Office",
+        "answer_label": "INV-13478",
         "count": 1
       },
       {
-        "answer_label": "INV-11627",
+        "answer_label": "INV-14928",
         "count": 1
       },
       {
-        "answer_label": "INV-33842",
+        "answer_label": "INV-16822",
         "count": 1
       },
       {
-        "answer_label": "INV-37027",
+        "answer_label": "INV-17726",
         "count": 1
       },
       {
-        "answer_label": "INV-42398",
+        "answer_label": "INV-25455",
         "count": 1
       },
       {
-        "answer_label": "INV-51199",
+        "answer_label": "INV-31818",
         "count": 1
       },
       {
-        "answer_label": "INV-54247",
+        "answer_label": "INV-36899",
         "count": 1
       },
       {
-        "answer_label": "INV-63815",
+        "answer_label": "INV-37392",
         "count": 1
       },
       {
-        "answer_label": "INV-68411",
+        "answer_label": "INV-38327",
         "count": 1
       },
       {
-        "answer_label": "INV-80840",
+        "answer_label": "INV-45022",
         "count": 1
       },
       {
-        "answer_label": "INV-87160",
+        "answer_label": "INV-59494",
         "count": 1
       },
       {
-        "answer_label": "INV-88635",
+        "answer_label": "INV-61335",
         "count": 1
       },
       {
-        "answer_label": "INV-89690",
+        "answer_label": "INV-78768",
         "count": 1
       },
       {
-        "answer_label": "INV-94326",
+        "answer_label": "INV-79897",
         "count": 1
       },
       {
-        "answer_label": "Iris Santos",
+        "answer_label": "INV-81378",
         "count": 1
       },
       {
-        "answer_label": "Jade Miller",
+        "answer_label": "INV-83347",
         "count": 1
       },
       {
-        "answer_label": "Jan 07, 2026",
+        "answer_label": "INV-84878",
         "count": 1
       },
       {
-        "answer_label": "Jan 18, 2026",
+        "answer_label": "INV-88388",
         "count": 1
       },
       {
-        "answer_label": "Jan 20, 2026",
+        "answer_label": "INV-93048",
         "count": 1
       },
       {
-        "answer_label": "Jan 23, 2026",
+        "answer_label": "Iris Ellis",
         "count": 1
       },
       {
-        "answer_label": "Jonah Davis",
+        "answer_label": "Iris Shaw",
+        "count": 1
+      },
+      {
+        "answer_label": "Jade Chen",
+        "count": 1
+      },
+      {
+        "answer_label": "Jade Clark",
+        "count": 1
+      },
+      {
+        "answer_label": "Jan 10, 2026",
+        "count": 1
+      },
+      {
+        "answer_label": "Jan 19, 2026",
+        "count": 1
+      },
+      {
+        "answer_label": "Jan 29, 2026",
+        "count": 1
+      },
+      {
+        "answer_label": "Jonah Howard",
         "count": 1
       },
       {
@@ -1251,47 +1247,47 @@
         "count": 1
       },
       {
-        "answer_label": "Jun 13, 2026",
+        "answer_label": "Jun 14, 2026",
         "count": 1
       },
       {
-        "answer_label": "Jun 18, 2026",
+        "answer_label": "Jun 21, 2026",
         "count": 1
       },
       {
-        "answer_label": "Jun 24, 2026",
+        "answer_label": "Jun 25, 2026",
         "count": 1
       },
       {
-        "answer_label": "Kai Lopez",
+        "answer_label": "Jun 28, 2026",
         "count": 1
       },
       {
-        "answer_label": "Kai Price",
+        "answer_label": "Juniper Office",
         "count": 1
       },
       {
-        "answer_label": "Kingston",
+        "answer_label": "Kai Moore",
         "count": 1
       },
       {
-        "answer_label": "Lakeview Supply",
+        "answer_label": "Kai Young",
         "count": 1
       },
       {
-        "answer_label": "Lakewood",
+        "answer_label": "Levi Lee",
         "count": 1
       },
       {
-        "answer_label": "Lila Ellis",
+        "answer_label": "Lila Foster",
         "count": 1
       },
       {
-        "answer_label": "Lila Gomez",
+        "answer_label": "Lila Moore",
         "count": 1
       },
       {
-        "answer_label": "Lila Price",
+        "answer_label": "Lila Ortiz",
         "count": 1
       },
       {
@@ -1299,115 +1295,135 @@
         "count": 1
       },
       {
-        "answer_label": "M-1023",
+        "answer_label": "Luca Diaz",
         "count": 1
       },
       {
-        "answer_label": "M-1361",
+        "answer_label": "Luca Shaw",
         "count": 1
       },
       {
-        "answer_label": "M-1364",
+        "answer_label": "M-1538",
         "count": 1
       },
       {
-        "answer_label": "M-1595",
+        "answer_label": "M-1876",
         "count": 1
       },
       {
-        "answer_label": "M-2207",
+        "answer_label": "M-1930",
         "count": 1
       },
       {
-        "answer_label": "M-2647",
+        "answer_label": "M-2097",
         "count": 1
       },
       {
-        "answer_label": "M-3428",
+        "answer_label": "M-3158",
         "count": 1
       },
       {
-        "answer_label": "M-3940",
+        "answer_label": "M-3417",
         "count": 1
       },
       {
-        "answer_label": "M-3993",
+        "answer_label": "M-3627",
         "count": 1
       },
       {
-        "answer_label": "M-4317",
+        "answer_label": "M-4109",
         "count": 1
       },
       {
-        "answer_label": "M-5911",
+        "answer_label": "M-4253",
         "count": 1
       },
       {
-        "answer_label": "M-5977",
+        "answer_label": "M-4693",
         "count": 1
       },
       {
-        "answer_label": "M-7853",
+        "answer_label": "M-5035",
         "count": 1
       },
       {
-        "answer_label": "M-8247",
+        "answer_label": "M-5161",
         "count": 1
       },
       {
-        "answer_label": "M-9661",
+        "answer_label": "M-5332",
         "count": 1
       },
       {
-        "answer_label": "M-9878",
+        "answer_label": "M-5581",
         "count": 1
       },
       {
-        "answer_label": "Mar 02, 2026",
+        "answer_label": "M-5706",
         "count": 1
       },
       {
-        "answer_label": "Mar 03, 2026",
+        "answer_label": "M-7303",
         "count": 1
       },
       {
-        "answer_label": "Mar 04, 2026",
+        "answer_label": "M-8226",
         "count": 1
       },
       {
-        "answer_label": "Mar 20, 2026",
+        "answer_label": "M-8336",
         "count": 1
       },
       {
-        "answer_label": "Mar 23, 2026",
+        "answer_label": "M-8550",
         "count": 1
       },
       {
-        "answer_label": "Mara Clark",
+        "answer_label": "M-9364",
         "count": 1
       },
       {
-        "answer_label": "Mara Patel",
+        "answer_label": "Maple Office",
         "count": 1
       },
       {
-        "answer_label": "Mara Turner",
+        "answer_label": "Mar 08, 2026",
         "count": 1
       },
       {
-        "answer_label": "Mara Young",
+        "answer_label": "Mar 10, 2026",
         "count": 1
       },
       {
-        "answer_label": "May 08, 2026",
+        "answer_label": "Mar 15, 2026",
         "count": 1
       },
       {
-        "answer_label": "May 11, 2026",
+        "answer_label": "Mar 22, 2026",
         "count": 1
       },
       {
-        "answer_label": "May 14, 2026",
+        "answer_label": "Mar 30, 2026",
+        "count": 1
+      },
+      {
+        "answer_label": "Mara Santos",
+        "count": 1
+      },
+      {
+        "answer_label": "May 01, 2026",
+        "count": 1
+      },
+      {
+        "answer_label": "May 03, 2026",
+        "count": 1
+      },
+      {
+        "answer_label": "May 07, 2026",
+        "count": 1
+      },
+      {
+        "answer_label": "May 10, 2026",
         "count": 1
       },
       {
@@ -1415,59 +1431,39 @@
         "count": 1
       },
       {
-        "answer_label": "May 20, 2026",
+        "answer_label": "May 24, 2026",
         "count": 1
       },
       {
-        "answer_label": "May 21, 2026",
+        "answer_label": "May 27, 2026",
         "count": 1
       },
       {
-        "answer_label": "May 29, 2026",
+        "answer_label": "Maya Kim",
         "count": 1
       },
       {
-        "answer_label": "May 30, 2026",
+        "answer_label": "Milo Turner",
         "count": 1
       },
       {
-        "answer_label": "Maya Lopez",
+        "answer_label": "Nia Shaw",
         "count": 1
       },
       {
-        "answer_label": "Milo Ward",
+        "answer_label": "Orbit Supply",
         "count": 1
       },
       {
-        "answer_label": "Nia Bailey",
+        "answer_label": "Owen Lopez",
         "count": 1
       },
       {
-        "answer_label": "Northwind Partners",
+        "answer_label": "Pinecrest",
         "count": 1
       },
       {
-        "answer_label": "Oakridge",
-        "count": 1
-      },
-      {
-        "answer_label": "Orbit Studio",
-        "count": 1
-      },
-      {
-        "answer_label": "Owen Ellis",
-        "count": 1
-      },
-      {
-        "answer_label": "Owen Nguyen",
-        "count": 1
-      },
-      {
-        "answer_label": "Owen Rivera",
-        "count": 1
-      },
-      {
-        "answer_label": "Owen Santos",
+        "answer_label": "Pinecrest Partners",
         "count": 1
       },
       {
@@ -1475,299 +1471,295 @@
         "count": 1
       },
       {
-        "answer_label": "R-15146",
+        "answer_label": "Planning",
         "count": 1
       },
       {
-        "answer_label": "R-18652",
+        "answer_label": "R-11509",
         "count": 1
       },
       {
-        "answer_label": "R-25781",
+        "answer_label": "R-28995",
         "count": 1
       },
       {
-        "answer_label": "R-38570",
+        "answer_label": "R-30784",
         "count": 1
       },
       {
-        "answer_label": "R-47011",
+        "answer_label": "R-34151",
         "count": 1
       },
       {
-        "answer_label": "R-47199",
+        "answer_label": "R-35294",
         "count": 1
       },
       {
-        "answer_label": "R-47483",
+        "answer_label": "R-49155",
         "count": 1
       },
       {
-        "answer_label": "R-48505",
+        "answer_label": "R-57848",
         "count": 1
       },
       {
-        "answer_label": "R-67739",
+        "answer_label": "R-63760",
         "count": 1
       },
       {
-        "answer_label": "R-73288",
+        "answer_label": "R-75054",
         "count": 1
       },
       {
-        "answer_label": "R-83972",
+        "answer_label": "R-77311",
         "count": 1
       },
       {
-        "answer_label": "R-84651",
+        "answer_label": "R-83719",
         "count": 1
       },
       {
-        "answer_label": "R-94628",
+        "answer_label": "R-93078",
         "count": 1
       },
       {
-        "answer_label": "REF-12800",
+        "answer_label": "R-97418",
         "count": 1
       },
       {
-        "answer_label": "REF-15721",
+        "answer_label": "REF-16609",
         "count": 1
       },
       {
-        "answer_label": "REF-18159",
+        "answer_label": "REF-18484",
         "count": 1
       },
       {
-        "answer_label": "REF-20270",
+        "answer_label": "REF-19573",
         "count": 1
       },
       {
-        "answer_label": "REF-24438",
+        "answer_label": "REF-22594",
         "count": 1
       },
       {
-        "answer_label": "REF-26611",
+        "answer_label": "REF-24717",
         "count": 1
       },
       {
-        "answer_label": "REF-28168",
+        "answer_label": "REF-32002",
         "count": 1
       },
       {
-        "answer_label": "REF-31253",
+        "answer_label": "REF-33662",
         "count": 1
       },
       {
-        "answer_label": "REF-34600",
+        "answer_label": "REF-36876",
         "count": 1
       },
       {
-        "answer_label": "REF-35423",
+        "answer_label": "REF-38358",
         "count": 1
       },
       {
-        "answer_label": "REF-35963",
+        "answer_label": "REF-42540",
         "count": 1
       },
       {
-        "answer_label": "REF-37292",
+        "answer_label": "REF-50383",
         "count": 1
       },
       {
-        "answer_label": "REF-41595",
+        "answer_label": "REF-56429",
         "count": 1
       },
       {
-        "answer_label": "REF-43213",
+        "answer_label": "REF-59259",
         "count": 1
       },
       {
-        "answer_label": "REF-51456",
+        "answer_label": "REF-59779",
         "count": 1
       },
       {
-        "answer_label": "REF-51572",
+        "answer_label": "REF-60981",
         "count": 1
       },
       {
-        "answer_label": "REF-51584",
+        "answer_label": "REF-62168",
         "count": 1
       },
       {
-        "answer_label": "REF-51761",
+        "answer_label": "REF-62930",
         "count": 1
       },
       {
-        "answer_label": "REF-51853",
+        "answer_label": "REF-63889",
         "count": 1
       },
       {
-        "answer_label": "REF-54408",
+        "answer_label": "REF-66487",
         "count": 1
       },
       {
-        "answer_label": "REF-55875",
+        "answer_label": "REF-70501",
         "count": 1
       },
       {
-        "answer_label": "REF-57172",
+        "answer_label": "REF-70512",
         "count": 1
       },
       {
-        "answer_label": "REF-58069",
+        "answer_label": "REF-71964",
         "count": 1
       },
       {
-        "answer_label": "REF-58480",
+        "answer_label": "REF-75326",
         "count": 1
       },
       {
-        "answer_label": "REF-59496",
+        "answer_label": "REF-75738",
         "count": 1
       },
       {
-        "answer_label": "REF-63089",
+        "answer_label": "REF-87712",
         "count": 1
       },
       {
-        "answer_label": "REF-63932",
+        "answer_label": "REF-88894",
         "count": 1
       },
       {
-        "answer_label": "REF-67412",
+        "answer_label": "REF-90415",
         "count": 1
       },
       {
-        "answer_label": "REF-74632",
+        "answer_label": "REF-91792",
         "count": 1
       },
       {
-        "answer_label": "REF-79273",
+        "answer_label": "REF-93226",
         "count": 1
       },
       {
-        "answer_label": "REF-81290",
+        "answer_label": "REF-95884",
         "count": 1
       },
       {
-        "answer_label": "REF-81736",
+        "answer_label": "REF-96540",
         "count": 1
       },
       {
-        "answer_label": "REF-82263",
+        "answer_label": "REF-98736",
         "count": 1
       },
       {
-        "answer_label": "REF-85205",
+        "answer_label": "REF-99006",
         "count": 1
       },
       {
-        "answer_label": "REF-85404",
+        "answer_label": "REF-99989",
         "count": 1
       },
       {
-        "answer_label": "REF-87014",
+        "answer_label": "Rhea Martin",
         "count": 1
       },
       {
-        "answer_label": "REF-87853",
+        "answer_label": "Rhea Santos",
         "count": 1
       },
       {
-        "answer_label": "REF-95516",
+        "answer_label": "Sage Cruz",
         "count": 1
       },
       {
-        "answer_label": "Redwood",
+        "answer_label": "Sage Shaw",
         "count": 1
       },
       {
-        "answer_label": "Sage Hill",
+        "answer_label": "Silver Market",
         "count": 1
       },
       {
-        "answer_label": "Silver Partners",
+        "answer_label": "Summit Partners",
         "count": 1
       },
       {
-        "answer_label": "Silver Studio",
+        "answer_label": "Summit Works",
         "count": 1
       },
       {
-        "answer_label": "Silver Works",
+        "answer_label": "Sunline Co.",
         "count": 1
       },
       {
-        "answer_label": "Southridge Studio",
+        "answer_label": "Theo Martin",
         "count": 1
       },
       {
-        "answer_label": "Support",
+        "answer_label": "Theo Shaw",
         "count": 1
       },
       {
-        "answer_label": "Tess Price",
+        "answer_label": "Trailhead Partners",
         "count": 1
       },
       {
-        "answer_label": "Tess Shaw",
+        "answer_label": "Willow Partners",
         "count": 1
       },
       {
-        "answer_label": "Theo Howard",
+        "answer_label": "Willow Studio",
         "count": 1
       },
       {
-        "answer_label": "Timber Works",
+        "answer_label": "Windward Co.",
         "count": 1
       },
       {
-        "answer_label": "Trailhead Market",
+        "answer_label": "Windward Partners",
         "count": 1
       },
       {
-        "answer_label": "Trailhead Office",
+        "answer_label": "Zane Kim",
         "count": 1
       },
       {
-        "answer_label": "Westhaven",
+        "answer_label": "amberoffice@brightdesk.io",
         "count": 1
       },
       {
-        "answer_label": "Windward Office",
+        "answer_label": "amberworks@example.com",
         "count": 1
       },
       {
-        "answer_label": "Windward Studio",
+        "answer_label": "ariahoward@example.com",
         "count": 1
       },
       {
-        "answer_label": "Zane Hill",
+        "answer_label": "ariamartin@brightdesk.io",
         "count": 1
       },
       {
-        "answer_label": "amberworks@mailhub.net",
+        "answer_label": "asterpartners@brightdesk.io",
         "count": 1
       },
       {
-        "answer_label": "asterpartners@mailhub.net",
+        "answer_label": "blueoakco@example.com",
         "count": 1
       },
       {
-        "answer_label": "avacruz@example.com",
+        "answer_label": "cedarmarket@mailhub.net",
         "count": 1
       },
       {
-        "answer_label": "beaconco@mailhub.net",
+        "answer_label": "centralco@mailhub.net",
         "count": 1
       },
       {
-        "answer_label": "beaconoffice@northpost.co",
-        "count": 1
-      },
-      {
-        "answer_label": "blueoakoffice@example.com",
+        "answer_label": "centralmarket@northpost.co",
         "count": 1
       },
       {
@@ -1775,199 +1767,159 @@
         "count": 1
       },
       {
-        "answer_label": "civicworks@brightdesk.io",
+        "answer_label": "civicpartners@mailhub.net",
         "count": 1
       },
       {
-        "answer_label": "coleortiz@example.com",
+        "answer_label": "civicpartners@northpost.co",
         "count": 1
       },
       {
-        "answer_label": "copperpartners@northpost.co",
+        "answer_label": "claraturner@brightdesk.io",
         "count": 1
       },
       {
-        "answer_label": "coppersupply@example.com",
+        "answer_label": "evergreensuppl@mailhub.net",
         "count": 1
       },
       {
-        "answer_label": "copperworks@northpost.co",
+        "answer_label": "giaellis@mailhub.net",
         "count": 1
       },
       {
-        "answer_label": "danakim@northpost.co",
+        "answer_label": "giashaw@mailhub.net",
         "count": 1
       },
       {
-        "answer_label": "eligarcia@example.com",
+        "answer_label": "graniteoffice@example.com",
         "count": 1
       },
       {
-        "answer_label": "elmworks@northpost.co",
+        "answer_label": "graniteoffice@mailhub.net",
         "count": 1
       },
       {
-        "answer_label": "emmachen@brightdesk.io",
+        "answer_label": "harborsupply@northpost.co",
         "count": 1
       },
       {
-        "answer_label": "emmaclark@mailhub.net",
+        "answer_label": "jadeward@brightdesk.io",
         "count": 1
       },
       {
-        "answer_label": "evergreenstudi@northpost.co",
+        "answer_label": "juniperco@mailhub.net",
         "count": 1
       },
       {
-        "answer_label": "giacruz@northpost.co",
+        "answer_label": "juniperoffice@brightdesk.io",
         "count": 1
       },
       {
-        "answer_label": "granitesupply@northpost.co",
+        "answer_label": "lakeviewmarket@mailhub.net",
         "count": 1
       },
       {
-        "answer_label": "hanamartin@example.com",
+        "answer_label": "lakeviewpartne@northpost.co",
         "count": 1
       },
       {
-        "answer_label": "harboroffice@example.com",
+        "answer_label": "levikim@mailhub.net",
         "count": 1
       },
       {
-        "answer_label": "harborworks@northpost.co",
+        "answer_label": "levireed@brightdesk.io",
         "count": 1
       },
       {
-        "answer_label": "jadeprice@northpost.co",
+        "answer_label": "maplemarket@brightdesk.io",
         "count": 1
       },
       {
-        "answer_label": "jonahortiz@northpost.co",
+        "answer_label": "milodiaz@mailhub.net",
         "count": 1
       },
       {
-        "answer_label": "juniperco@northpost.co",
+        "answer_label": "niahayes@northpost.co",
         "count": 1
       },
       {
-        "answer_label": "juniperoffice@northpost.co",
+        "answer_label": "niahoward@northpost.co",
         "count": 1
       },
       {
-        "answer_label": "juniperpartner@brightdesk.io",
+        "answer_label": "northwindstudi@example.com",
         "count": 1
       },
       {
-        "answer_label": "lakeviewmarket@brightdesk.io",
+        "answer_label": "oakstreetpartn@mailhub.net",
         "count": 1
       },
       {
-        "answer_label": "lakeviewstudio@example.com",
+        "answer_label": "pinecrestworks@brightdesk.io",
         "count": 1
       },
       {
-        "answer_label": "leviyoung@brightdesk.io",
+        "answer_label": "riverbendpartn@brightdesk.io",
         "count": 1
       },
       {
-        "answer_label": "lilacarter@mailhub.net",
+        "answer_label": "riverbendsuppl@example.com",
         "count": 1
       },
       {
-        "answer_label": "lucalopez@northpost.co",
+        "answer_label": "riverbendworks@mailhub.net",
         "count": 1
       },
       {
-        "answer_label": "mapleoffice@brightdesk.io",
+        "answer_label": "sagediaz@example.com",
         "count": 1
       },
       {
-        "answer_label": "marasantos@example.com",
+        "answer_label": "sageturner@mailhub.net",
         "count": 1
       },
       {
-        "answer_label": "mayarivera@example.com",
+        "answer_label": "silverpartners@brightdesk.io",
         "count": 1
       },
       {
-        "answer_label": "northwindco@example.com",
+        "answer_label": "silversupply@mailhub.net",
         "count": 1
       },
       {
-        "answer_label": "oakstreetstudi@mailhub.net",
+        "answer_label": "sunlineco@example.com",
         "count": 1
       },
       {
-        "answer_label": "orbitco@brightdesk.io",
+        "answer_label": "sunlinemarket@northpost.co",
         "count": 1
       },
       {
-        "answer_label": "orbitco@example.com",
+        "answer_label": "theoortiz@brightdesk.io",
         "count": 1
       },
       {
-        "answer_label": "orbitmarket@example.com",
+        "answer_label": "trailheadworks@brightdesk.io",
         "count": 1
       },
       {
-        "answer_label": "orbitsupply@brightdesk.io",
+        "answer_label": "willowpartners@northpost.co",
         "count": 1
       },
       {
-        "answer_label": "owencruz@brightdesk.io",
-        "count": 1
-      },
-      {
-        "answer_label": "owenturner@brightdesk.io",
-        "count": 1
-      },
-      {
-        "answer_label": "pinecreststudi@example.com",
-        "count": 1
-      },
-      {
-        "answer_label": "pinecrestworks@northpost.co",
-        "count": 1
-      },
-      {
-        "answer_label": "riverbendco@northpost.co",
-        "count": 1
-      },
-      {
-        "answer_label": "riverbendworks@brightdesk.io",
-        "count": 1
-      },
-      {
-        "answer_label": "sunlinemarket@mailhub.net",
-        "count": 1
-      },
-      {
-        "answer_label": "sunlinesupply@mailhub.net",
-        "count": 1
-      },
-      {
-        "answer_label": "sunlineworks@example.com",
-        "count": 1
-      },
-      {
-        "answer_label": "timbermarket@northpost.co",
-        "count": 1
-      },
-      {
-        "answer_label": "trailheadstudi@mailhub.net",
-        "count": 1
-      },
-      {
-        "answer_label": "willowoffice@northpost.co",
+        "answer_label": "windwardco@northpost.co",
         "count": 1
       },
       {
         "answer_label": "windwardworks@northpost.co",
         "count": 1
+      },
+      {
+        "answer_label": "zanehill@mailhub.net",
+        "count": 1
       }
     ],
-    "unique_answers": 477
+    "unique_answers": 465
   },
   "pass": true,
   "per_task_variant": {
@@ -1977,7 +1929,7 @@
       },
       "checks": {
         "max_answer_frequency": {
-          "observed": 0.01,
+          "observed": 0.02,
           "pass": true,
           "threshold": 0.25
         },
@@ -1987,375 +1939,319 @@
           "status": "not_applicable_non_numeric_answers"
         },
         "min_unique_answers": {
-          "observed": 100,
+          "observed": 99,
           "pass": true,
           "threshold": 5
         }
       },
       "five_bin_numeric": null,
-      "max_answer_count": 1,
-      "max_answer_frequency": 0.01,
+      "max_answer_count": 2,
+      "max_answer_frequency": 0.02,
       "pass": true,
       "sample_count": 100,
       "top_answers": [
         {
-          "answer_label": "$1.40",
-          "count": 1
-        },
-        {
-          "answer_label": "$1.93",
-          "count": 1
-        },
-        {
-          "answer_label": "$110.59",
-          "count": 1
-        },
-        {
-          "answer_label": "$119.00",
-          "count": 1
-        },
-        {
-          "answer_label": "$12.77",
-          "count": 1
-        },
-        {
-          "answer_label": "$123.75",
-          "count": 1
-        },
-        {
-          "answer_label": "$127.95",
-          "count": 1
-        },
-        {
-          "answer_label": "$130.58",
-          "count": 1
-        },
-        {
-          "answer_label": "$130.92",
-          "count": 1
-        },
-        {
-          "answer_label": "$131.00",
-          "count": 1
-        },
-        {
-          "answer_label": "$134.46",
-          "count": 1
-        },
-        {
-          "answer_label": "$135.71",
-          "count": 1
-        },
-        {
-          "answer_label": "$136.73",
-          "count": 1
-        },
-        {
-          "answer_label": "$14.20",
-          "count": 1
-        },
-        {
-          "answer_label": "$14.38",
-          "count": 1
+          "answer_label": "$8.40",
+          "count": 2
         },
         {
-          "answer_label": "$140.50",
+          "answer_label": "$1.60",
           "count": 1
         },
         {
-          "answer_label": "$143.63",
+          "answer_label": "$1.73",
           "count": 1
         },
         {
-          "answer_label": "$144.14",
+          "answer_label": "$10.93",
           "count": 1
         },
         {
-          "answer_label": "$144.52",
+          "answer_label": "$11.39",
           "count": 1
         },
         {
-          "answer_label": "$146.27",
+          "answer_label": "$11.56",
           "count": 1
         },
         {
-          "answer_label": "$147.00",
+          "answer_label": "$113.03",
           "count": 1
         },
         {
-          "answer_label": "$147.19",
+          "answer_label": "$115.78",
           "count": 1
         },
         {
-          "answer_label": "$156.93",
+          "answer_label": "$122.45",
           "count": 1
         },
         {
-          "answer_label": "$16.20",
+          "answer_label": "$123.64",
           "count": 1
         },
         {
-          "answer_label": "$160.99",
+          "answer_label": "$124.61",
           "count": 1
         },
         {
-          "answer_label": "$17.20",
+          "answer_label": "$131.31",
           "count": 1
         },
         {
-          "answer_label": "$17.41",
+          "answer_label": "$132.43",
           "count": 1
         },
         {
-          "answer_label": "$174.70",
+          "answer_label": "$137.17",
           "count": 1
         },
         {
-          "answer_label": "$186.06",
+          "answer_label": "$139.03",
           "count": 1
         },
         {
-          "answer_label": "$19.16",
+          "answer_label": "$14.14",
           "count": 1
         },
         {
-          "answer_label": "$2.16",
+          "answer_label": "$14.51",
           "count": 1
         },
         {
-          "answer_label": "$2.65",
+          "answer_label": "$144.85",
           "count": 1
         },
         {
-          "answer_label": "$20.27",
+          "answer_label": "$146.95",
           "count": 1
         },
         {
-          "answer_label": "$202.17",
+          "answer_label": "$16.06",
           "count": 1
         },
         {
-          "answer_label": "$204.80",
+          "answer_label": "$162.49",
           "count": 1
         },
         {
-          "answer_label": "$211.87",
+          "answer_label": "$163.98",
           "count": 1
         },
         {
-          "answer_label": "$217.06",
+          "answer_label": "$170.02",
           "count": 1
         },
         {
-          "answer_label": "$22.05",
+          "answer_label": "$170.16",
           "count": 1
         },
         {
-          "answer_label": "$22.92",
+          "answer_label": "$19.56",
           "count": 1
         },
         {
-          "answer_label": "$22.93",
+          "answer_label": "$19.58",
           "count": 1
         },
         {
-          "answer_label": "$23.78",
+          "answer_label": "$193.51",
           "count": 1
         },
         {
-          "answer_label": "$247.19",
+          "answer_label": "$2.85",
           "count": 1
         },
         {
-          "answer_label": "$26.76",
+          "answer_label": "$208.28",
           "count": 1
         },
         {
-          "answer_label": "$269.61",
+          "answer_label": "$21.20",
           "count": 1
         },
         {
-          "answer_label": "$28.83",
+          "answer_label": "$21.43",
           "count": 1
         },
         {
-          "answer_label": "$28.97",
+          "answer_label": "$21.60",
           "count": 1
         },
         {
-          "answer_label": "$281.65",
+          "answer_label": "$22.57",
           "count": 1
         },
         {
-          "answer_label": "$3.30",
+          "answer_label": "$222.14",
           "count": 1
         },
         {
-          "answer_label": "$3.57",
+          "answer_label": "$223.74",
           "count": 1
         },
         {
-          "answer_label": "$3.81",
+          "answer_label": "$225.93",
           "count": 1
         },
         {
-          "answer_label": "$3.85",
+          "answer_label": "$232.35",
           "count": 1
         },
         {
-          "answer_label": "$30.05",
+          "answer_label": "$24.91",
           "count": 1
         },
         {
-          "answer_label": "$310.40",
+          "answer_label": "$26.49",
           "count": 1
         },
         {
-          "answer_label": "$32.95",
+          "answer_label": "$268.92",
           "count": 1
         },
         {
-          "answer_label": "$33.16",
+          "answer_label": "$27.16",
           "count": 1
         },
         {
-          "answer_label": "$33.54",
+          "answer_label": "$287.84",
           "count": 1
         },
         {
-          "answer_label": "$333.41",
+          "answer_label": "$3.92",
           "count": 1
         },
         {
-          "answer_label": "$4.27",
+          "answer_label": "$30.59",
           "count": 1
         },
         {
-          "answer_label": "$4.63",
+          "answer_label": "$303.77",
           "count": 1
         },
         {
-          "answer_label": "$40.73",
+          "answer_label": "$305.75",
           "count": 1
         },
         {
-          "answer_label": "$40.86",
+          "answer_label": "$31.12",
           "count": 1
         },
         {
-          "answer_label": "$43.01",
+          "answer_label": "$32.97",
           "count": 1
         },
         {
-          "answer_label": "$43.91",
+          "answer_label": "$33.28",
           "count": 1
         },
         {
-          "answer_label": "$5.55",
+          "answer_label": "$334.95",
           "count": 1
         },
         {
-          "answer_label": "$51.26",
+          "answer_label": "$34.34",
           "count": 1
         },
         {
-          "answer_label": "$51.64",
+          "answer_label": "$340.44",
           "count": 1
         },
         {
-          "answer_label": "$55.28",
+          "answer_label": "$35.59",
           "count": 1
         },
         {
-          "answer_label": "$58.83",
+          "answer_label": "$35.76",
           "count": 1
         },
         {
-          "answer_label": "$6.10",
+          "answer_label": "$37.55",
           "count": 1
         },
         {
-          "answer_label": "$6.13",
+          "answer_label": "$4.16",
           "count": 1
         },
         {
-          "answer_label": "$60.58",
+          "answer_label": "$4.70",
           "count": 1
         },
         {
-          "answer_label": "$61.62",
+          "answer_label": "$4.76",
           "count": 1
         },
         {
-          "answer_label": "$62.42",
+          "answer_label": "$4.82",
           "count": 1
         },
         {
-          "answer_label": "$62.74",
+          "answer_label": "$52.01",
           "count": 1
         },
         {
-          "answer_label": "$62.96",
+          "answer_label": "$53.61",
           "count": 1
         },
         {
-          "answer_label": "$65.51",
+          "answer_label": "$54.26",
           "count": 1
         },
         {
-          "answer_label": "$65.90",
+          "answer_label": "$54.33",
           "count": 1
         },
         {
-          "answer_label": "$66.48",
+          "answer_label": "$59.79",
           "count": 1
         },
         {
-          "answer_label": "$68.76",
+          "answer_label": "$59.85",
           "count": 1
         },
         {
-          "answer_label": "$7.13",
+          "answer_label": "$6.44",
           "count": 1
         },
         {
-          "answer_label": "$7.22",
+          "answer_label": "$6.53",
           "count": 1
         },
         {
-          "answer_label": "$7.64",
+          "answer_label": "$60.89",
           "count": 1
         },
         {
-          "answer_label": "$7.91",
+          "answer_label": "$63.01",
           "count": 1
         },
         {
-          "answer_label": "$70.93",
+          "answer_label": "$64.75",
           "count": 1
         },
         {
-          "answer_label": "$71.54",
+          "answer_label": "$7.21",
           "count": 1
         },
         {
-          "answer_label": "$72.62",
+          "answer_label": "$7.62",
           "count": 1
         },
         {
-          "answer_label": "$75.55",
+          "answer_label": "$71.30",
           "count": 1
         },
         {
-          "answer_label": "$77.68",
+          "answer_label": "$73.76",
           "count": 1
         },
         {
-          "answer_label": "$78.91",
+          "answer_label": "$76.91",
           "count": 1
         },
         {
-          "answer_label": "$78.98",
+          "answer_label": "$78.85",
           "count": 1
         },
         {
@@ -2363,43 +2259,95 @@
           "count": 1
         },
         {
-          "answer_label": "$8.17",
+          "answer_label": "$8.19",
           "count": 1
         },
         {
-          "answer_label": "$8.51",
+          "answer_label": "$8.27",
           "count": 1
         },
         {
-          "answer_label": "$8.53",
+          "answer_label": "$8.57",
           "count": 1
         },
         {
-          "answer_label": "$9.38",
+          "answer_label": "$8.99",
           "count": 1
         },
         {
-          "answer_label": "$91.39",
+          "answer_label": "$80.33",
           "count": 1
         },
         {
-          "answer_label": "$94.89",
+          "answer_label": "$80.87",
           "count": 1
         },
         {
-          "answer_label": "$95.39",
+          "answer_label": "$83.28",
           "count": 1
         },
         {
-          "answer_label": "$95.99",
+          "answer_label": "$83.65",
           "count": 1
         },
         {
-          "answer_label": "$96.22",
+          "answer_label": "$85.68",
+          "count": 1
+        },
+        {
+          "answer_label": "$85.99",
+          "count": 1
+        },
+        {
+          "answer_label": "$89.13",
+          "count": 1
+        },
+        {
+          "answer_label": "$9.51",
+          "count": 1
+        },
+        {
+          "answer_label": "$90.35",
+          "count": 1
+        },
+        {
+          "answer_label": "$91.42",
+          "count": 1
+        },
+        {
+          "answer_label": "$91.94",
+          "count": 1
+        },
+        {
+          "answer_label": "$92.59",
+          "count": 1
+        },
+        {
+          "answer_label": "$93.60",
+          "count": 1
+        },
+        {
+          "answer_label": "$93.93",
+          "count": 1
+        },
+        {
+          "answer_label": "$95.38",
+          "count": 1
+        },
+        {
+          "answer_label": "$95.63",
+          "count": 1
+        },
+        {
+          "answer_label": "$96.73",
+          "count": 1
+        },
+        {
+          "answer_label": "$97.90",
           "count": 1
         }
       ],
-      "unique_answers": 100
+      "unique_answers": 99
     },
     "lookup_contact": {
       "answer_type_counts": {
@@ -2407,7 +2355,7 @@
       },
       "checks": {
         "max_answer_frequency": {
-          "observed": 0.01,
+          "observed": 0.02,
           "pass": true,
           "threshold": 0.25
         },
@@ -2417,219 +2365,255 @@
           "status": "not_applicable_non_numeric_answers"
         },
         "min_unique_answers": {
-          "observed": 100,
+          "observed": 99,
           "pass": true,
           "threshold": 5
         }
       },
       "five_bin_numeric": null,
-      "max_answer_count": 1,
-      "max_answer_frequency": 0.01,
+      "max_answer_count": 2,
+      "max_answer_frequency": 0.02,
       "pass": true,
       "sample_count": 100,
       "top_answers": [
         {
-          "answer_label": "(212) 216-6790",
+          "answer_label": "hanadavis@brightdesk.io",
+          "count": 2
+        },
+        {
+          "answer_label": "(212) 136-3647",
           "count": 1
         },
         {
-          "answer_label": "(212) 354-5554",
+          "answer_label": "(212) 166-5900",
           "count": 1
         },
         {
-          "answer_label": "(212) 700-8566",
+          "answer_label": "(212) 184-1844",
           "count": 1
         },
         {
-          "answer_label": "(212) 757-1461",
+          "answer_label": "(212) 357-2104",
           "count": 1
         },
         {
-          "answer_label": "(310) 126-8268",
+          "answer_label": "(212) 420-4007",
           "count": 1
         },
         {
-          "answer_label": "(310) 349-5014",
+          "answer_label": "(212) 636-8725",
           "count": 1
         },
         {
-          "answer_label": "(310) 647-3120",
+          "answer_label": "(212) 680-2544",
           "count": 1
         },
         {
-          "answer_label": "(310) 862-9003",
+          "answer_label": "(212) 716-5309",
           "count": 1
         },
         {
-          "answer_label": "(415) 471-6519",
+          "answer_label": "(212) 854-9058",
           "count": 1
         },
         {
-          "answer_label": "(415) 524-3646",
+          "answer_label": "(212) 947-8919",
           "count": 1
         },
         {
-          "answer_label": "(415) 713-3946",
+          "answer_label": "(310) 223-3608",
           "count": 1
         },
         {
-          "answer_label": "(415) 767-1969",
+          "answer_label": "(310) 325-4151",
           "count": 1
         },
         {
-          "answer_label": "(415) 988-5890",
+          "answer_label": "(310) 353-6747",
           "count": 1
         },
         {
-          "answer_label": "(503) 247-7347",
+          "answer_label": "(310) 480-1416",
           "count": 1
         },
         {
-          "answer_label": "(503) 373-6754",
+          "answer_label": "(310) 597-2346",
           "count": 1
         },
         {
-          "answer_label": "(503) 504-6310",
+          "answer_label": "(310) 772-6582",
           "count": 1
         },
         {
-          "answer_label": "(503) 736-8313",
+          "answer_label": "(310) 807-4346",
           "count": 1
         },
         {
-          "answer_label": "(503) 845-7184",
+          "answer_label": "(310) 923-7454",
           "count": 1
         },
         {
-          "answer_label": "(503) 862-7031",
+          "answer_label": "(310) 958-3304",
           "count": 1
         },
         {
-          "answer_label": "(503) 898-9741",
+          "answer_label": "(415) 314-3869",
           "count": 1
         },
         {
-          "answer_label": "(617) 288-2233",
+          "answer_label": "(415) 450-7160",
           "count": 1
         },
         {
-          "answer_label": "(617) 346-3371",
+          "answer_label": "(415) 494-1283",
           "count": 1
         },
         {
-          "answer_label": "(617) 488-9262",
+          "answer_label": "(415) 780-4341",
           "count": 1
         },
         {
-          "answer_label": "(617) 512-6599",
+          "answer_label": "(415) 888-6820",
           "count": 1
         },
         {
-          "answer_label": "(617) 672-3968",
+          "answer_label": "(415) 962-2950",
           "count": 1
         },
         {
-          "answer_label": "(617) 718-5168",
+          "answer_label": "(415) 989-1544",
           "count": 1
         },
         {
-          "answer_label": "(617) 907-6665",
+          "answer_label": "(503) 169-9447",
           "count": 1
         },
         {
-          "answer_label": "(617) 959-7711",
+          "answer_label": "(503) 379-4657",
           "count": 1
         },
         {
-          "answer_label": "(704) 117-3706",
+          "answer_label": "(503) 551-7270",
           "count": 1
         },
         {
-          "answer_label": "(704) 283-4281",
+          "answer_label": "(503) 623-4346",
           "count": 1
         },
         {
-          "answer_label": "(704) 465-6356",
+          "answer_label": "(503) 797-5786",
           "count": 1
         },
         {
-          "answer_label": "(704) 721-6967",
+          "answer_label": "(503) 836-2174",
           "count": 1
         },
         {
-          "answer_label": "(704) 728-4586",
+          "answer_label": "(617) 142-9826",
           "count": 1
         },
         {
-          "answer_label": "(704) 861-2923",
+          "answer_label": "(617) 319-1243",
           "count": 1
         },
         {
-          "answer_label": "(704) 984-5891",
+          "answer_label": "(617) 435-6744",
           "count": 1
         },
         {
-          "answer_label": "(818) 118-2938",
+          "answer_label": "(617) 728-8558",
           "count": 1
         },
         {
-          "answer_label": "(818) 118-5865",
+          "answer_label": "(617) 759-1069",
           "count": 1
         },
         {
-          "answer_label": "(818) 875-4568",
+          "answer_label": "(617) 985-4376",
           "count": 1
         },
         {
-          "answer_label": "(818) 941-1241",
+          "answer_label": "(704) 110-6580",
           "count": 1
         },
         {
-          "answer_label": "(929) 290-2350",
+          "answer_label": "(704) 112-1137",
           "count": 1
         },
         {
-          "answer_label": "(929) 331-6248",
+          "answer_label": "(704) 449-8530",
           "count": 1
         },
         {
-          "answer_label": "(929) 409-1252",
+          "answer_label": "(704) 457-7778",
           "count": 1
         },
         {
-          "answer_label": "(929) 699-3536",
+          "answer_label": "(704) 590-9450",
           "count": 1
         },
         {
-          "answer_label": "(929) 706-3635",
+          "answer_label": "(704) 888-6752",
           "count": 1
         },
         {
-          "answer_label": "(929) 806-4098",
+          "answer_label": "(818) 166-3280",
           "count": 1
         },
         {
-          "answer_label": "amberworks@mailhub.net",
+          "answer_label": "(818) 200-8375",
           "count": 1
         },
         {
-          "answer_label": "asterpartners@mailhub.net",
+          "answer_label": "(818) 361-3517",
           "count": 1
         },
         {
-          "answer_label": "avacruz@example.com",
+          "answer_label": "(818) 706-8622",
           "count": 1
         },
         {
-          "answer_label": "beaconco@mailhub.net",
+          "answer_label": "(818) 759-7328",
           "count": 1
         },
         {
-          "answer_label": "beaconoffice@northpost.co",
+          "answer_label": "(818) 868-9985",
           "count": 1
         },
         {
-          "answer_label": "blueoakoffice@example.com",
+          "answer_label": "amberoffice@brightdesk.io",
+          "count": 1
+        },
+        {
+          "answer_label": "amberworks@example.com",
+          "count": 1
+        },
+        {
+          "answer_label": "ariahoward@example.com",
+          "count": 1
+        },
+        {
+          "answer_label": "ariamartin@brightdesk.io",
+          "count": 1
+        },
+        {
+          "answer_label": "asterpartners@brightdesk.io",
+          "count": 1
+        },
+        {
+          "answer_label": "blueoakco@example.com",
+          "count": 1
+        },
+        {
+          "answer_label": "cedarmarket@mailhub.net",
+          "count": 1
+        },
+        {
+          "answer_label": "centralco@mailhub.net",
+          "count": 1
+        },
+        {
+          "answer_label": "centralmarket@northpost.co",
           "count": 1
         },
         {
@@ -2637,199 +2621,159 @@
           "count": 1
         },
         {
-          "answer_label": "civicworks@brightdesk.io",
+          "answer_label": "civicpartners@mailhub.net",
           "count": 1
         },
         {
-          "answer_label": "coleortiz@example.com",
+          "answer_label": "civicpartners@northpost.co",
           "count": 1
         },
         {
-          "answer_label": "copperpartners@northpost.co",
+          "answer_label": "claraturner@brightdesk.io",
           "count": 1
         },
         {
-          "answer_label": "coppersupply@example.com",
+          "answer_label": "evergreensuppl@mailhub.net",
           "count": 1
         },
         {
-          "answer_label": "copperworks@northpost.co",
+          "answer_label": "giaellis@mailhub.net",
           "count": 1
         },
         {
-          "answer_label": "danakim@northpost.co",
+          "answer_label": "giashaw@mailhub.net",
           "count": 1
         },
         {
-          "answer_label": "eligarcia@example.com",
+          "answer_label": "graniteoffice@example.com",
           "count": 1
         },
         {
-          "answer_label": "elmworks@northpost.co",
+          "answer_label": "graniteoffice@mailhub.net",
           "count": 1
         },
         {
-          "answer_label": "emmachen@brightdesk.io",
+          "answer_label": "harborsupply@northpost.co",
           "count": 1
         },
         {
-          "answer_label": "emmaclark@mailhub.net",
+          "answer_label": "jadeward@brightdesk.io",
           "count": 1
         },
         {
-          "answer_label": "evergreenstudi@northpost.co",
+          "answer_label": "juniperco@mailhub.net",
           "count": 1
         },
         {
-          "answer_label": "giacruz@northpost.co",
+          "answer_label": "juniperoffice@brightdesk.io",
           "count": 1
         },
         {
-          "answer_label": "granitesupply@northpost.co",
+          "answer_label": "lakeviewmarket@mailhub.net",
           "count": 1
         },
         {
-          "answer_label": "hanamartin@example.com",
+          "answer_label": "lakeviewpartne@northpost.co",
           "count": 1
         },
         {
-          "answer_label": "harboroffice@example.com",
+          "answer_label": "levikim@mailhub.net",
           "count": 1
         },
         {
-          "answer_label": "harborworks@northpost.co",
+          "answer_label": "levireed@brightdesk.io",
           "count": 1
         },
         {
-          "answer_label": "jadeprice@northpost.co",
+          "answer_label": "maplemarket@brightdesk.io",
           "count": 1
         },
         {
-          "answer_label": "jonahortiz@northpost.co",
+          "answer_label": "milodiaz@mailhub.net",
           "count": 1
         },
         {
-          "answer_label": "juniperco@northpost.co",
+          "answer_label": "niahayes@northpost.co",
           "count": 1
         },
         {
-          "answer_label": "juniperoffice@northpost.co",
+          "answer_label": "niahoward@northpost.co",
           "count": 1
         },
         {
-          "answer_label": "juniperpartner@brightdesk.io",
+          "answer_label": "northwindstudi@example.com",
           "count": 1
         },
         {
-          "answer_label": "lakeviewmarket@brightdesk.io",
+          "answer_label": "oakstreetpartn@mailhub.net",
           "count": 1
         },
         {
-          "answer_label": "lakeviewstudio@example.com",
+          "answer_label": "pinecrestworks@brightdesk.io",
           "count": 1
         },
         {
-          "answer_label": "leviyoung@brightdesk.io",
+          "answer_label": "riverbendpartn@brightdesk.io",
           "count": 1
         },
         {
-          "answer_label": "lilacarter@mailhub.net",
+          "answer_label": "riverbendsuppl@example.com",
           "count": 1
         },
         {
-          "answer_label": "lucalopez@northpost.co",
+          "answer_label": "riverbendworks@mailhub.net",
           "count": 1
         },
         {
-          "answer_label": "mapleoffice@brightdesk.io",
+          "answer_label": "sagediaz@example.com",
           "count": 1
         },
         {
-          "answer_label": "marasantos@example.com",
+          "answer_label": "sageturner@mailhub.net",
           "count": 1
         },
         {
-          "answer_label": "mayarivera@example.com",
+          "answer_label": "silverpartners@brightdesk.io",
           "count": 1
         },
         {
-          "answer_label": "northwindco@example.com",
+          "answer_label": "silversupply@mailhub.net",
           "count": 1
         },
         {
-          "answer_label": "oakstreetstudi@mailhub.net",
+          "answer_label": "sunlineco@example.com",
           "count": 1
         },
         {
-          "answer_label": "orbitco@brightdesk.io",
+          "answer_label": "sunlinemarket@northpost.co",
           "count": 1
         },
         {
-          "answer_label": "orbitco@example.com",
+          "answer_label": "theoortiz@brightdesk.io",
           "count": 1
         },
         {
-          "answer_label": "orbitmarket@example.com",
+          "answer_label": "trailheadworks@brightdesk.io",
           "count": 1
         },
         {
-          "answer_label": "orbitsupply@brightdesk.io",
+          "answer_label": "willowpartners@northpost.co",
           "count": 1
         },
         {
-          "answer_label": "owencruz@brightdesk.io",
-          "count": 1
-        },
-        {
-          "answer_label": "owenturner@brightdesk.io",
-          "count": 1
-        },
-        {
-          "answer_label": "pinecreststudi@example.com",
-          "count": 1
-        },
-        {
-          "answer_label": "pinecrestworks@northpost.co",
-          "count": 1
-        },
-        {
-          "answer_label": "riverbendco@northpost.co",
-          "count": 1
-        },
-        {
-          "answer_label": "riverbendworks@brightdesk.io",
-          "count": 1
-        },
-        {
-          "answer_label": "sunlinemarket@mailhub.net",
-          "count": 1
-        },
-        {
-          "answer_label": "sunlinesupply@mailhub.net",
-          "count": 1
-        },
-        {
-          "answer_label": "sunlineworks@example.com",
-          "count": 1
-        },
-        {
-          "answer_label": "timbermarket@northpost.co",
-          "count": 1
-        },
-        {
-          "answer_label": "trailheadstudi@mailhub.net",
-          "count": 1
-        },
-        {
-          "answer_label": "willowoffice@northpost.co",
+          "answer_label": "windwardco@northpost.co",
           "count": 1
         },
         {
           "answer_label": "windwardworks@northpost.co",
           "count": 1
+        },
+        {
+          "answer_label": "zanehill@mailhub.net",
+          "count": 1
         }
       ],
-      "unique_answers": 100
+      "unique_answers": 99
     },
     "lookup_date": {
       "answer_type_counts": {
@@ -2847,7 +2791,7 @@
           "status": "not_applicable_non_numeric_answers"
         },
         "min_unique_answers": {
-          "observed": 87,
+          "observed": 89,
           "pass": true,
           "threshold": 5
         }
@@ -2859,51 +2803,43 @@
       "sample_count": 100,
       "top_answers": [
         {
-          "answer_label": "2026-02-25",
+          "answer_label": "Mar 05, 2026",
           "count": 3
         },
         {
-          "answer_label": "05/27/2026",
+          "answer_label": "03/07/2026",
           "count": 2
         },
         {
-          "answer_label": "06/18/2026",
+          "answer_label": "05/11/2026",
           "count": 2
         },
         {
-          "answer_label": "2026-03-02",
+          "answer_label": "05/20/2026",
           "count": 2
         },
         {
-          "answer_label": "2026-03-16",
+          "answer_label": "05/26/2026",
           "count": 2
         },
         {
-          "answer_label": "2026-03-19",
+          "answer_label": "2026-02-24",
           "count": 2
         },
         {
-          "answer_label": "2026-03-27",
+          "answer_label": "2026-03-03",
           "count": 2
         },
         {
-          "answer_label": "Apr 05, 2026",
+          "answer_label": "2026-03-30",
           "count": 2
         },
         {
-          "answer_label": "Apr 07, 2026",
+          "answer_label": "2026-04-01",
           "count": 2
         },
         {
-          "answer_label": "Feb 09, 2026",
-          "count": 2
-        },
-        {
-          "answer_label": "Mar 27, 2026",
-          "count": 2
-        },
-        {
-          "answer_label": "May 24, 2026",
+          "answer_label": "Feb 06, 2026",
           "count": 2
         },
         {
@@ -2911,63 +2847,75 @@
           "count": 1
         },
         {
-          "answer_label": "01/07/2026",
+          "answer_label": "01/08/2026",
           "count": 1
         },
         {
-          "answer_label": "01/17/2026",
+          "answer_label": "01/13/2026",
           "count": 1
         },
         {
-          "answer_label": "01/20/2026",
+          "answer_label": "01/16/2026",
           "count": 1
         },
         {
-          "answer_label": "01/27/2026",
+          "answer_label": "02/04/2026",
           "count": 1
         },
         {
-          "answer_label": "03/02/2026",
+          "answer_label": "02/07/2026",
           "count": 1
         },
         {
-          "answer_label": "03/04/2026",
+          "answer_label": "02/17/2026",
           "count": 1
         },
         {
-          "answer_label": "03/13/2026",
+          "answer_label": "02/26/2026",
           "count": 1
         },
         {
-          "answer_label": "03/21/2026",
+          "answer_label": "02/28/2026",
           "count": 1
         },
         {
-          "answer_label": "03/23/2026",
+          "answer_label": "03/09/2026",
           "count": 1
         },
         {
-          "answer_label": "04/04/2026",
+          "answer_label": "03/15/2026",
           "count": 1
         },
         {
-          "answer_label": "04/10/2026",
+          "answer_label": "03/18/2026",
           "count": 1
         },
         {
-          "answer_label": "04/13/2026",
+          "answer_label": "03/20/2026",
           "count": 1
         },
         {
-          "answer_label": "04/19/2026",
+          "answer_label": "04/01/2026",
           "count": 1
         },
         {
-          "answer_label": "04/23/2026",
+          "answer_label": "04/15/2026",
           "count": 1
         },
         {
-          "answer_label": "05/02/2026",
+          "answer_label": "04/21/2026",
+          "count": 1
+        },
+        {
+          "answer_label": "04/22/2026",
+          "count": 1
+        },
+        {
+          "answer_label": "05/10/2026",
+          "count": 1
+        },
+        {
+          "answer_label": "05/15/2026",
           "count": 1
         },
         {
@@ -2975,19 +2923,7 @@
           "count": 1
         },
         {
-          "answer_label": "05/22/2026",
-          "count": 1
-        },
-        {
-          "answer_label": "05/25/2026",
-          "count": 1
-        },
-        {
-          "answer_label": "05/28/2026",
-          "count": 1
-        },
-        {
-          "answer_label": "05/31/2026",
+          "answer_label": "05/27/2026",
           "count": 1
         },
         {
@@ -2995,7 +2931,7 @@
           "count": 1
         },
         {
-          "answer_label": "06/08/2026",
+          "answer_label": "06/05/2026",
           "count": 1
         },
         {
@@ -3003,19 +2939,31 @@
           "count": 1
         },
         {
-          "answer_label": "06/20/2026",
+          "answer_label": "06/16/2026",
           "count": 1
         },
         {
-          "answer_label": "06/30/2026",
+          "answer_label": "06/27/2026",
           "count": 1
         },
         {
-          "answer_label": "2026-02-13",
+          "answer_label": "2026-02-07",
           "count": 1
         },
         {
-          "answer_label": "2026-02-21",
+          "answer_label": "2026-02-08",
+          "count": 1
+        },
+        {
+          "answer_label": "2026-02-10",
+          "count": 1
+        },
+        {
+          "answer_label": "2026-02-12",
+          "count": 1
+        },
+        {
+          "answer_label": "2026-02-20",
           "count": 1
         },
         {
@@ -3023,15 +2971,7 @@
           "count": 1
         },
         {
-          "answer_label": "2026-02-24",
-          "count": 1
-        },
-        {
           "answer_label": "2026-02-26",
-          "count": 1
-        },
-        {
-          "answer_label": "2026-02-28",
           "count": 1
         },
         {
@@ -3039,19 +2979,27 @@
           "count": 1
         },
         {
-          "answer_label": "2026-03-04",
+          "answer_label": "2026-03-08",
           "count": 1
         },
         {
-          "answer_label": "2026-03-05",
+          "answer_label": "2026-03-09",
           "count": 1
         },
         {
-          "answer_label": "2026-03-06",
+          "answer_label": "2026-03-12",
           "count": 1
         },
         {
-          "answer_label": "2026-03-20",
+          "answer_label": "2026-03-13",
+          "count": 1
+        },
+        {
+          "answer_label": "2026-03-17",
+          "count": 1
+        },
+        {
+          "answer_label": "2026-03-18",
           "count": 1
         },
         {
@@ -3059,7 +3007,19 @@
           "count": 1
         },
         {
-          "answer_label": "2026-03-30",
+          "answer_label": "2026-03-24",
+          "count": 1
+        },
+        {
+          "answer_label": "2026-03-27",
+          "count": 1
+        },
+        {
+          "answer_label": "2026-03-28",
+          "count": 1
+        },
+        {
+          "answer_label": "2026-03-29",
           "count": 1
         },
         {
@@ -3067,43 +3027,35 @@
           "count": 1
         },
         {
-          "answer_label": "2026-04-01",
-          "count": 1
-        },
-        {
-          "answer_label": "2026-04-02",
-          "count": 1
-        },
-        {
-          "answer_label": "2026-04-03",
-          "count": 1
-        },
-        {
           "answer_label": "2026-04-05",
           "count": 1
         },
         {
-          "answer_label": "2026-04-17",
+          "answer_label": "2026-04-06",
           "count": 1
         },
         {
-          "answer_label": "2026-04-21",
+          "answer_label": "2026-04-12",
           "count": 1
         },
         {
-          "answer_label": "2026-04-23",
+          "answer_label": "2026-04-18",
           "count": 1
         },
         {
-          "answer_label": "2026-04-28",
+          "answer_label": "2026-04-30",
           "count": 1
         },
         {
-          "answer_label": "Apr 03, 2026",
+          "answer_label": "Apr 04, 2026",
           "count": 1
         },
         {
-          "answer_label": "Apr 17, 2026",
+          "answer_label": "Apr 08, 2026",
+          "count": 1
+        },
+        {
+          "answer_label": "Apr 20, 2026",
           "count": 1
         },
         {
@@ -3111,31 +3063,31 @@
           "count": 1
         },
         {
-          "answer_label": "Apr 22, 2026",
+          "answer_label": "Apr 23, 2026",
           "count": 1
         },
         {
-          "answer_label": "Apr 28, 2026",
+          "answer_label": "Apr 27, 2026",
           "count": 1
         },
         {
-          "answer_label": "Apr 29, 2026",
+          "answer_label": "Feb 16, 2026",
           "count": 1
         },
         {
-          "answer_label": "Jan 07, 2026",
+          "answer_label": "Feb 21, 2026",
           "count": 1
         },
         {
-          "answer_label": "Jan 18, 2026",
+          "answer_label": "Jan 10, 2026",
           "count": 1
         },
         {
-          "answer_label": "Jan 20, 2026",
+          "answer_label": "Jan 19, 2026",
           "count": 1
         },
         {
-          "answer_label": "Jan 23, 2026",
+          "answer_label": "Jan 29, 2026",
           "count": 1
         },
         {
@@ -3143,47 +3095,55 @@
           "count": 1
         },
         {
-          "answer_label": "Jun 13, 2026",
+          "answer_label": "Jun 14, 2026",
           "count": 1
         },
         {
-          "answer_label": "Jun 18, 2026",
+          "answer_label": "Jun 21, 2026",
           "count": 1
         },
         {
-          "answer_label": "Jun 24, 2026",
+          "answer_label": "Jun 25, 2026",
           "count": 1
         },
         {
-          "answer_label": "Mar 02, 2026",
+          "answer_label": "Jun 28, 2026",
           "count": 1
         },
         {
-          "answer_label": "Mar 03, 2026",
+          "answer_label": "Mar 08, 2026",
           "count": 1
         },
         {
-          "answer_label": "Mar 04, 2026",
+          "answer_label": "Mar 10, 2026",
           "count": 1
         },
         {
-          "answer_label": "Mar 20, 2026",
+          "answer_label": "Mar 15, 2026",
           "count": 1
         },
         {
-          "answer_label": "Mar 23, 2026",
+          "answer_label": "Mar 22, 2026",
           "count": 1
         },
         {
-          "answer_label": "May 08, 2026",
+          "answer_label": "Mar 30, 2026",
           "count": 1
         },
         {
-          "answer_label": "May 11, 2026",
+          "answer_label": "May 01, 2026",
           "count": 1
         },
         {
-          "answer_label": "May 14, 2026",
+          "answer_label": "May 03, 2026",
+          "count": 1
+        },
+        {
+          "answer_label": "May 07, 2026",
+          "count": 1
+        },
+        {
+          "answer_label": "May 10, 2026",
           "count": 1
         },
         {
@@ -3191,23 +3151,15 @@
           "count": 1
         },
         {
-          "answer_label": "May 20, 2026",
+          "answer_label": "May 24, 2026",
           "count": 1
         },
         {
-          "answer_label": "May 21, 2026",
-          "count": 1
-        },
-        {
-          "answer_label": "May 29, 2026",
-          "count": 1
-        },
-        {
-          "answer_label": "May 30, 2026",
+          "answer_label": "May 27, 2026",
           "count": 1
         }
       ],
-      "unique_answers": 87
+      "unique_answers": 89
     },
     "lookup_identifier": {
       "answer_type_counts": {
@@ -3237,403 +3189,403 @@
       "sample_count": 100,
       "top_answers": [
         {
-          "answer_label": "ACC-1457",
+          "answer_label": "ACC-1526",
           "count": 1
         },
         {
-          "answer_label": "ACC-1527",
+          "answer_label": "ACC-2478",
           "count": 1
         },
         {
-          "answer_label": "ACC-1619",
+          "answer_label": "ACC-2878",
           "count": 1
         },
         {
-          "answer_label": "ACC-2872",
+          "answer_label": "ACC-3362",
           "count": 1
         },
         {
-          "answer_label": "ACC-3130",
+          "answer_label": "ACC-3751",
           "count": 1
         },
         {
-          "answer_label": "ACC-3426",
+          "answer_label": "ACC-3938",
           "count": 1
         },
         {
-          "answer_label": "ACC-3480",
+          "answer_label": "ACC-4482",
           "count": 1
         },
         {
-          "answer_label": "ACC-4523",
+          "answer_label": "ACC-4537",
           "count": 1
         },
         {
-          "answer_label": "ACC-4613",
+          "answer_label": "ACC-5797",
           "count": 1
         },
         {
-          "answer_label": "ACC-4872",
+          "answer_label": "ACC-8498",
           "count": 1
         },
         {
-          "answer_label": "ACC-6936",
+          "answer_label": "ACC-8541",
           "count": 1
         },
         {
-          "answer_label": "ACC-7476",
+          "answer_label": "ACC-8631",
           "count": 1
         },
         {
-          "answer_label": "ACC-7490",
+          "answer_label": "ACC-8951",
           "count": 1
         },
         {
-          "answer_label": "ACC-7589",
+          "answer_label": "ACC-9477",
           "count": 1
         },
         {
-          "answer_label": "ACC-7669",
+          "answer_label": "INV-13478",
           "count": 1
         },
         {
-          "answer_label": "ACC-7748",
+          "answer_label": "INV-14928",
           "count": 1
         },
         {
-          "answer_label": "ACC-8397",
+          "answer_label": "INV-16822",
           "count": 1
         },
         {
-          "answer_label": "ACC-8743",
+          "answer_label": "INV-17726",
           "count": 1
         },
         {
-          "answer_label": "ACC-8848",
+          "answer_label": "INV-25455",
           "count": 1
         },
         {
-          "answer_label": "ACC-9962",
+          "answer_label": "INV-31818",
           "count": 1
         },
         {
-          "answer_label": "INV-11627",
+          "answer_label": "INV-36899",
           "count": 1
         },
         {
-          "answer_label": "INV-33842",
+          "answer_label": "INV-37392",
           "count": 1
         },
         {
-          "answer_label": "INV-37027",
+          "answer_label": "INV-38327",
           "count": 1
         },
         {
-          "answer_label": "INV-42398",
+          "answer_label": "INV-45022",
           "count": 1
         },
         {
-          "answer_label": "INV-51199",
+          "answer_label": "INV-59494",
           "count": 1
         },
         {
-          "answer_label": "INV-54247",
+          "answer_label": "INV-61335",
           "count": 1
         },
         {
-          "answer_label": "INV-63815",
+          "answer_label": "INV-78768",
           "count": 1
         },
         {
-          "answer_label": "INV-68411",
+          "answer_label": "INV-79897",
           "count": 1
         },
         {
-          "answer_label": "INV-80840",
+          "answer_label": "INV-81378",
           "count": 1
         },
         {
-          "answer_label": "INV-87160",
+          "answer_label": "INV-83347",
           "count": 1
         },
         {
-          "answer_label": "INV-88635",
+          "answer_label": "INV-84878",
           "count": 1
         },
         {
-          "answer_label": "INV-89690",
+          "answer_label": "INV-88388",
           "count": 1
         },
         {
-          "answer_label": "INV-94326",
+          "answer_label": "INV-93048",
           "count": 1
         },
         {
-          "answer_label": "M-1023",
+          "answer_label": "M-1538",
           "count": 1
         },
         {
-          "answer_label": "M-1361",
+          "answer_label": "M-1876",
           "count": 1
         },
         {
-          "answer_label": "M-1364",
+          "answer_label": "M-1930",
           "count": 1
         },
         {
-          "answer_label": "M-1595",
+          "answer_label": "M-2097",
           "count": 1
         },
         {
-          "answer_label": "M-2207",
+          "answer_label": "M-3158",
           "count": 1
         },
         {
-          "answer_label": "M-2647",
+          "answer_label": "M-3417",
           "count": 1
         },
         {
-          "answer_label": "M-3428",
+          "answer_label": "M-3627",
           "count": 1
         },
         {
-          "answer_label": "M-3940",
+          "answer_label": "M-4109",
           "count": 1
         },
         {
-          "answer_label": "M-3993",
+          "answer_label": "M-4253",
           "count": 1
         },
         {
-          "answer_label": "M-4317",
+          "answer_label": "M-4693",
           "count": 1
         },
         {
-          "answer_label": "M-5911",
+          "answer_label": "M-5035",
           "count": 1
         },
         {
-          "answer_label": "M-5977",
+          "answer_label": "M-5161",
           "count": 1
         },
         {
-          "answer_label": "M-7853",
+          "answer_label": "M-5332",
           "count": 1
         },
         {
-          "answer_label": "M-8247",
+          "answer_label": "M-5581",
           "count": 1
         },
         {
-          "answer_label": "M-9661",
+          "answer_label": "M-5706",
           "count": 1
         },
         {
-          "answer_label": "M-9878",
+          "answer_label": "M-7303",
           "count": 1
         },
         {
-          "answer_label": "R-15146",
+          "answer_label": "M-8226",
           "count": 1
         },
         {
-          "answer_label": "R-18652",
+          "answer_label": "M-8336",
           "count": 1
         },
         {
-          "answer_label": "R-25781",
+          "answer_label": "M-8550",
           "count": 1
         },
         {
-          "answer_label": "R-38570",
+          "answer_label": "M-9364",
           "count": 1
         },
         {
-          "answer_label": "R-47011",
+          "answer_label": "R-11509",
           "count": 1
         },
         {
-          "answer_label": "R-47199",
+          "answer_label": "R-28995",
           "count": 1
         },
         {
-          "answer_label": "R-47483",
+          "answer_label": "R-30784",
           "count": 1
         },
         {
-          "answer_label": "R-48505",
+          "answer_label": "R-34151",
           "count": 1
         },
         {
-          "answer_label": "R-67739",
+          "answer_label": "R-35294",
           "count": 1
         },
         {
-          "answer_label": "R-73288",
+          "answer_label": "R-49155",
           "count": 1
         },
         {
-          "answer_label": "R-83972",
+          "answer_label": "R-57848",
           "count": 1
         },
         {
-          "answer_label": "R-84651",
+          "answer_label": "R-63760",
           "count": 1
         },
         {
-          "answer_label": "R-94628",
+          "answer_label": "R-75054",
           "count": 1
         },
         {
-          "answer_label": "REF-12800",
+          "answer_label": "R-77311",
           "count": 1
         },
         {
-          "answer_label": "REF-15721",
+          "answer_label": "R-83719",
           "count": 1
         },
         {
-          "answer_label": "REF-18159",
+          "answer_label": "R-93078",
           "count": 1
         },
         {
-          "answer_label": "REF-20270",
+          "answer_label": "R-97418",
           "count": 1
         },
         {
-          "answer_label": "REF-24438",
+          "answer_label": "REF-16609",
           "count": 1
         },
         {
-          "answer_label": "REF-26611",
+          "answer_label": "REF-18484",
           "count": 1
         },
         {
-          "answer_label": "REF-28168",
+          "answer_label": "REF-19573",
           "count": 1
         },
         {
-          "answer_label": "REF-31253",
+          "answer_label": "REF-22594",
           "count": 1
         },
         {
-          "answer_label": "REF-34600",
+          "answer_label": "REF-24717",
           "count": 1
         },
         {
-          "answer_label": "REF-35423",
+          "answer_label": "REF-32002",
           "count": 1
         },
         {
-          "answer_label": "REF-35963",
+          "answer_label": "REF-33662",
           "count": 1
         },
         {
-          "answer_label": "REF-37292",
+          "answer_label": "REF-36876",
           "count": 1
         },
         {
-          "answer_label": "REF-41595",
+          "answer_label": "REF-38358",
           "count": 1
         },
         {
-          "answer_label": "REF-43213",
+          "answer_label": "REF-42540",
           "count": 1
         },
         {
-          "answer_label": "REF-51456",
+          "answer_label": "REF-50383",
           "count": 1
         },
         {
-          "answer_label": "REF-51572",
+          "answer_label": "REF-56429",
           "count": 1
         },
         {
-          "answer_label": "REF-51584",
+          "answer_label": "REF-59259",
           "count": 1
         },
         {
-          "answer_label": "REF-51761",
+          "answer_label": "REF-59779",
           "count": 1
         },
         {
-          "answer_label": "REF-51853",
+          "answer_label": "REF-60981",
           "count": 1
         },
         {
-          "answer_label": "REF-54408",
+          "answer_label": "REF-62168",
           "count": 1
         },
         {
-          "answer_label": "REF-55875",
+          "answer_label": "REF-62930",
           "count": 1
         },
         {
-          "answer_label": "REF-57172",
+          "answer_label": "REF-63889",
           "count": 1
         },
         {
-          "answer_label": "REF-58069",
+          "answer_label": "REF-66487",
           "count": 1
         },
         {
-          "answer_label": "REF-58480",
+          "answer_label": "REF-70501",
           "count": 1
         },
         {
-          "answer_label": "REF-59496",
+          "answer_label": "REF-70512",
           "count": 1
         },
         {
-          "answer_label": "REF-63089",
+          "answer_label": "REF-71964",
           "count": 1
         },
         {
-          "answer_label": "REF-63932",
+          "answer_label": "REF-75326",
           "count": 1
         },
         {
-          "answer_label": "REF-67412",
+          "answer_label": "REF-75738",
           "count": 1
         },
         {
-          "answer_label": "REF-74632",
+          "answer_label": "REF-87712",
           "count": 1
         },
         {
-          "answer_label": "REF-79273",
+          "answer_label": "REF-88894",
           "count": 1
         },
         {
-          "answer_label": "REF-81290",
+          "answer_label": "REF-90415",
           "count": 1
         },
         {
-          "answer_label": "REF-81736",
+          "answer_label": "REF-91792",
           "count": 1
         },
         {
-          "answer_label": "REF-82263",
+          "answer_label": "REF-93226",
           "count": 1
         },
         {
-          "answer_label": "REF-85205",
+          "answer_label": "REF-95884",
           "count": 1
         },
         {
-          "answer_label": "REF-85404",
+          "answer_label": "REF-96540",
           "count": 1
         },
         {
-          "answer_label": "REF-87014",
+          "answer_label": "REF-98736",
           "count": 1
         },
         {
-          "answer_label": "REF-87853",
+          "answer_label": "REF-99006",
           "count": 1
         },
         {
-          "answer_label": "REF-95516",
+          "answer_label": "REF-99989",
           "count": 1
         }
       ],
@@ -3645,7 +3597,7 @@
       },
       "checks": {
         "max_answer_frequency": {
-          "observed": 0.03,
+          "observed": 0.06,
           "pass": true,
           "threshold": 0.25
         },
@@ -3655,63 +3607,83 @@
           "status": "not_applicable_non_numeric_answers"
         },
         "min_unique_answers": {
-          "observed": 90,
+          "observed": 78,
           "pass": true,
           "threshold": 5
         }
       },
       "five_bin_numeric": null,
-      "max_answer_count": 3,
-      "max_answer_frequency": 0.03,
+      "max_answer_count": 6,
+      "max_answer_frequency": 0.06,
       "pass": true,
       "sample_count": 100,
       "top_answers": [
         {
-          "answer_label": "Northgate",
-          "count": 3
+          "answer_label": "Finance",
+          "count": 6
+        },
+        {
+          "answer_label": "Facilities",
+          "count": 4
+        },
+        {
+          "answer_label": "Operations",
+          "count": 4
+        },
+        {
+          "answer_label": "Ada Patel",
+          "count": 2
+        },
+        {
+          "answer_label": "Albany",
+          "count": 2
+        },
+        {
+          "answer_label": "Amber Studio",
+          "count": 2
         },
         {
           "answer_label": "Arbor",
           "count": 2
         },
         {
-          "answer_label": "Bayside",
+          "answer_label": "Ben Ellis",
           "count": 2
         },
         {
-          "answer_label": "Central Office",
+          "answer_label": "Dana Shaw",
           "count": 2
         },
         {
-          "answer_label": "Harbor Point",
+          "answer_label": "Ezra Ward",
           "count": 2
         },
         {
-          "answer_label": "Mapleton",
+          "answer_label": "Lakewood",
           "count": 2
         },
         {
-          "answer_label": "Maya Clark",
+          "answer_label": "Riverton",
           "count": 2
         },
         {
-          "answer_label": "Operations",
+          "answer_label": "Silverton",
           "count": 2
         },
         {
-          "answer_label": "Summerset",
+          "answer_label": "Support",
           "count": 2
         },
         {
-          "answer_label": "Ada Foster",
+          "answer_label": "Ada Bailey",
           "count": 1
         },
         {
-          "answer_label": "Ada Reed",
+          "answer_label": "Amber Office",
           "count": 1
         },
         {
-          "answer_label": "Aria Lopez",
+          "answer_label": "Amber Supply",
           "count": 1
         },
         {
@@ -3723,19 +3695,11 @@
           "count": 1
         },
         {
-          "answer_label": "Ava Hill",
+          "answer_label": "Aster Office",
           "count": 1
         },
         {
-          "answer_label": "Ava Patel",
-          "count": 1
-        },
-        {
-          "answer_label": "Ben Gomez",
-          "count": 1
-        },
-        {
-          "answer_label": "Ben Miller",
+          "answer_label": "Beacon Partners",
           "count": 1
         },
         {
@@ -3743,103 +3707,55 @@
           "count": 1
         },
         {
-          "answer_label": "Blue Oak Studio",
+          "answer_label": "Blue Oak Partners",
           "count": 1
         },
         {
-          "answer_label": "Blue Oak Supply",
+          "answer_label": "Cedar Market",
           "count": 1
         },
         {
-          "answer_label": "Brookfield",
+          "answer_label": "Cedar Works",
           "count": 1
         },
         {
-          "answer_label": "Cedar Point",
+          "answer_label": "Clara Davis",
           "count": 1
         },
         {
-          "answer_label": "Central Co.",
+          "answer_label": "Copper Office",
           "count": 1
         },
         {
-          "answer_label": "Civic Office",
+          "answer_label": "Copper Studio",
           "count": 1
         },
         {
-          "answer_label": "Clara Howard",
+          "answer_label": "Copper Supply",
           "count": 1
         },
         {
-          "answer_label": "Clara Patel",
+          "answer_label": "Dana Santos",
           "count": 1
         },
         {
-          "answer_label": "Cole Ward",
+          "answer_label": "Elm Co.",
           "count": 1
         },
         {
-          "answer_label": "Copper Co.",
+          "answer_label": "Elm Office",
           "count": 1
         },
         {
-          "answer_label": "Dana Carter",
+          "answer_label": "Ezra Rivera",
           "count": 1
         },
         {
-          "answer_label": "Dana Davis",
+          "answer_label": "Fairview",
           "count": 1
         },
         {
-          "answer_label": "Eli Garcia",
-          "count": 1
-        },
-        {
-          "answer_label": "Elmhurst",
-          "count": 1
-        },
-        {
-          "answer_label": "Emma Foster",
-          "count": 1
-        },
-        {
-          "answer_label": "Enrollment",
-          "count": 1
-        },
-        {
-          "answer_label": "Facilities",
-          "count": 1
-        },
-        {
-          "answer_label": "Finance",
-          "count": 1
-        },
-        {
-          "answer_label": "Gia Martin",
-          "count": 1
-        },
-        {
-          "answer_label": "Gia Price",
-          "count": 1
-        },
-        {
-          "answer_label": "Grand Lake",
-          "count": 1
-        },
-        {
-          "answer_label": "Granite Studio",
-          "count": 1
-        },
-        {
-          "answer_label": "Granite Works",
-          "count": 1
-        },
-        {
-          "answer_label": "Hana Lopez",
-          "count": 1
-        },
-        {
-          "answer_label": "Hana Moore",
+          "answer_label": "Gia Hill",
           "count": 1
         },
         {
@@ -3847,51 +3763,51 @@
           "count": 1
         },
         {
-          "answer_label": "Harbor Office",
+          "answer_label": "Iris Ellis",
           "count": 1
         },
         {
-          "answer_label": "Iris Santos",
+          "answer_label": "Iris Shaw",
           "count": 1
         },
         {
-          "answer_label": "Jade Miller",
+          "answer_label": "Jade Chen",
           "count": 1
         },
         {
-          "answer_label": "Jonah Davis",
+          "answer_label": "Jade Clark",
           "count": 1
         },
         {
-          "answer_label": "Kai Lopez",
+          "answer_label": "Jonah Howard",
           "count": 1
         },
         {
-          "answer_label": "Kai Price",
+          "answer_label": "Juniper Office",
           "count": 1
         },
         {
-          "answer_label": "Kingston",
+          "answer_label": "Kai Moore",
           "count": 1
         },
         {
-          "answer_label": "Lakeview Supply",
+          "answer_label": "Kai Young",
           "count": 1
         },
         {
-          "answer_label": "Lakewood",
+          "answer_label": "Levi Lee",
           "count": 1
         },
         {
-          "answer_label": "Lila Ellis",
+          "answer_label": "Lila Foster",
           "count": 1
         },
         {
-          "answer_label": "Lila Gomez",
+          "answer_label": "Lila Moore",
           "count": 1
         },
         {
-          "answer_label": "Lila Price",
+          "answer_label": "Lila Ortiz",
           "count": 1
         },
         {
@@ -3899,59 +3815,47 @@
           "count": 1
         },
         {
-          "answer_label": "Mara Clark",
+          "answer_label": "Luca Diaz",
           "count": 1
         },
         {
-          "answer_label": "Mara Patel",
+          "answer_label": "Luca Shaw",
           "count": 1
         },
         {
-          "answer_label": "Mara Turner",
+          "answer_label": "Maple Office",
           "count": 1
         },
         {
-          "answer_label": "Mara Young",
+          "answer_label": "Mara Santos",
           "count": 1
         },
         {
-          "answer_label": "Maya Lopez",
+          "answer_label": "Maya Kim",
           "count": 1
         },
         {
-          "answer_label": "Milo Ward",
+          "answer_label": "Milo Turner",
           "count": 1
         },
         {
-          "answer_label": "Nia Bailey",
+          "answer_label": "Nia Shaw",
           "count": 1
         },
         {
-          "answer_label": "Northwind Partners",
+          "answer_label": "Orbit Supply",
           "count": 1
         },
         {
-          "answer_label": "Oakridge",
+          "answer_label": "Owen Lopez",
           "count": 1
         },
         {
-          "answer_label": "Orbit Studio",
+          "answer_label": "Pinecrest",
           "count": 1
         },
         {
-          "answer_label": "Owen Ellis",
-          "count": 1
-        },
-        {
-          "answer_label": "Owen Nguyen",
-          "count": 1
-        },
-        {
-          "answer_label": "Owen Rivera",
-          "count": 1
-        },
-        {
-          "answer_label": "Owen Santos",
+          "answer_label": "Pinecrest Partners",
           "count": 1
         },
         {
@@ -3959,75 +3863,75 @@
           "count": 1
         },
         {
-          "answer_label": "Redwood",
+          "answer_label": "Planning",
           "count": 1
         },
         {
-          "answer_label": "Sage Hill",
+          "answer_label": "Rhea Martin",
           "count": 1
         },
         {
-          "answer_label": "Silver Partners",
+          "answer_label": "Rhea Santos",
           "count": 1
         },
         {
-          "answer_label": "Silver Studio",
+          "answer_label": "Sage Cruz",
           "count": 1
         },
         {
-          "answer_label": "Silver Works",
+          "answer_label": "Sage Shaw",
           "count": 1
         },
         {
-          "answer_label": "Southridge Studio",
+          "answer_label": "Silver Market",
           "count": 1
         },
         {
-          "answer_label": "Support",
+          "answer_label": "Summit Partners",
           "count": 1
         },
         {
-          "answer_label": "Tess Price",
+          "answer_label": "Summit Works",
           "count": 1
         },
         {
-          "answer_label": "Tess Shaw",
+          "answer_label": "Sunline Co.",
           "count": 1
         },
         {
-          "answer_label": "Theo Howard",
+          "answer_label": "Theo Martin",
           "count": 1
         },
         {
-          "answer_label": "Timber Works",
+          "answer_label": "Theo Shaw",
           "count": 1
         },
         {
-          "answer_label": "Trailhead Market",
+          "answer_label": "Trailhead Partners",
           "count": 1
         },
         {
-          "answer_label": "Trailhead Office",
+          "answer_label": "Willow Partners",
           "count": 1
         },
         {
-          "answer_label": "Westhaven",
+          "answer_label": "Willow Studio",
           "count": 1
         },
         {
-          "answer_label": "Windward Office",
+          "answer_label": "Windward Co.",
           "count": 1
         },
         {
-          "answer_label": "Windward Studio",
+          "answer_label": "Windward Partners",
           "count": 1
         },
         {
-          "answer_label": "Zane Hill",
+          "answer_label": "Zane Kim",
           "count": 1
         }
       ],
-      "unique_answers": 90
+      "unique_answers": 78
     }
   },
   "sampling_axes": {

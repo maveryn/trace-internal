@@ -1,7 +1,7 @@
 {
   "answer_gt": {
     "type": "string",
-    "value": "$71.54"
+    "value": "$94.41"
   },
   "evidence_gt": {
     "type": "bbox_set",
@@ -24,18 +24,18 @@
     "format": "png",
     "path": "documents/task_documents_readout_field_value/images/lookup_amount/0014.png"
   },
-  "instance_seed": 7854785949840709,
-  "prompt": "The image shows a structured application form with labeled fields and boxed sections. Find the requested field in the document: What is the fee amount? Return the exact field text as written.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value.\nAnswer requirement: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"$128.40\"}",
+  "instance_seed": 3442455579866757,
+  "prompt": "Read the labeled fields in this document: a structured application form with labeled fields and boxed sections. Read the document and answer this question: What is the fee amount? Return the exact field text as written.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value.\nAnswer format: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"$128.40\"}",
   "prompt_variants": {
-    "answer_and_evidence": "The image shows a structured application form with labeled fields and boxed sections. Find the requested field in the document: What is the fee amount? Return the exact field text as written.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value.\nAnswer requirement: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"$128.40\"}",
-    "answer_only": "The image shows a structured application form with labeled fields and boxed sections. Find the requested field in the document: What is the fee amount? Return the exact field text as written.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"answer\":\"$128.40\"}"
+    "answer_and_evidence": "Read the labeled fields in this document: a structured application form with labeled fields and boxed sections. Read the document and answer this question: What is the fee amount? Return the exact field text as written.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value.\nAnswer format: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"$128.40\"}",
+    "answer_only": "Read the labeled fields in this document: a structured application form with labeled fields and boxed sections. Read the document and answer this question: What is the fee amount? Return the exact field text as written.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"answer\":\"$128.40\"}"
   },
   "task": "task_documents_readout_field_value",
   "task_variant": "lookup_amount",
   "trace_payload": {
     "answer_gt": {
       "type": "string",
-      "value": "$71.54"
+      "value": "$94.41"
     },
     "background": {
       "available_styles": [
@@ -76,7 +76,7 @@
           "field_category": "lookup_name",
           "field_id": "applicant_name",
           "field_label": "Applicant Name",
-          "field_value": "Luca Foster",
+          "field_value": "Rhea Chen",
           "label_bbox_id": "applicant_name:label",
           "question_name": "applicant name",
           "value_bbox_id": "applicant_name:value"
@@ -85,7 +85,7 @@
           "field_category": "lookup_identifier",
           "field_id": "reference_id",
           "field_label": "Reference ID",
-          "field_value": "REF-36757",
+          "field_value": "REF-24913",
           "label_bbox_id": "reference_id:label",
           "question_name": "reference ID",
           "value_bbox_id": "reference_id:value"
@@ -94,7 +94,7 @@
           "field_category": "lookup_date",
           "field_id": "submission_date",
           "field_label": "Submission Date",
-          "field_value": "02/22/2026",
+          "field_value": "05/14/2026",
           "label_bbox_id": "submission_date:label",
           "question_name": "submission date",
           "value_bbox_id": "submission_date:value"
@@ -103,7 +103,7 @@
           "field_category": "lookup_contact",
           "field_id": "contact_phone",
           "field_label": "Phone",
-          "field_value": "(704) 156-9721",
+          "field_value": "(310) 356-9648",
           "label_bbox_id": "contact_phone:label",
           "question_name": "phone number",
           "value_bbox_id": "contact_phone:value"
@@ -112,7 +112,7 @@
           "field_category": "lookup_contact",
           "field_id": "contact_email",
           "field_label": "Email",
-          "field_value": "lucafoster@mailhub.net",
+          "field_value": "rheachen@brightdesk.io",
           "label_bbox_id": "contact_email:label",
           "question_name": "email address",
           "value_bbox_id": "contact_email:value"
@@ -130,7 +130,7 @@
           "field_category": "lookup_name",
           "field_id": "city",
           "field_label": "City",
-          "field_value": "Northgate",
+          "field_value": "Redwood",
           "label_bbox_id": "city:label",
           "question_name": "city",
           "value_bbox_id": "city:value"
@@ -139,7 +139,7 @@
           "field_category": "lookup_amount",
           "field_id": "fee_amount",
           "field_label": "Fee Amount",
-          "field_value": "$71.54",
+          "field_value": "$94.41",
           "label_bbox_id": "fee_amount:label",
           "question_name": "fee amount",
           "value_bbox_id": "fee_amount:value"
@@ -148,7 +148,7 @@
           "field_category": "lookup_name",
           "field_id": "reviewer_name",
           "field_label": "Reviewer",
-          "field_value": "Hana Carter",
+          "field_value": "Owen Davis",
           "label_bbox_id": "reviewer_name:label",
           "question_name": "reviewer name",
           "value_bbox_id": "reviewer_name:value"
@@ -157,7 +157,7 @@
       "query_field_category": "lookup_amount",
       "query_field_id": "fee_amount",
       "query_field_label": "Fee Amount",
-      "query_field_value": "$71.54",
+      "query_field_value": "$94.41",
       "query_label_bbox_id": "fee_amount:label",
       "query_value_bbox_id": "fee_amount:value",
       "question_format": "document_field_lookup",
@@ -223,7 +223,7 @@
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 2,
+        "answer_or_evidence_variant_index": 1,
         "prompt_bundle_id": "documents_readout_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -237,9 +237,9 @@
           "question_text": "What is the fee amount?"
         },
         "task_family_key": "structured_document",
-        "task_family_variant_index": 0,
+        "task_family_variant_index": 4,
         "task_key": "field_lookup_query",
-        "task_variant_index": 2,
+        "task_variant_index": 1,
         "task_variant_key": "lookup_amount",
         "task_variant_template_index": 1,
         "template_paths": [
@@ -257,7 +257,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 2,
+            "answer_or_evidence_variant_index": 1,
             "prompt_bundle_id": "documents_readout_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -271,9 +271,9 @@
               "question_text": "What is the fee amount?"
             },
             "task_family_key": "structured_document",
-            "task_family_variant_index": 0,
+            "task_family_variant_index": 4,
             "task_key": "field_lookup_query",
-            "task_variant_index": 2,
+            "task_variant_index": 1,
             "task_variant_key": "lookup_amount",
             "task_variant_template_index": 1,
             "template_paths": [
@@ -286,12 +286,12 @@
               "task_variant:lookup_amount": 5
             }
           },
-          "prompt": "The image shows a structured application form with labeled fields and boxed sections. Find the requested field in the document: What is the fee amount? Return the exact field text as written.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value.\nAnswer requirement: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"$128.40\"}"
+          "prompt": "Read the labeled fields in this document: a structured application form with labeled fields and boxed sections. Read the document and answer this question: What is the fee amount? Return the exact field text as written.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value.\nAnswer format: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"$128.40\"}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 2,
+            "answer_or_evidence_variant_index": 0,
             "prompt_bundle_id": "documents_readout_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -305,9 +305,9 @@
               "question_text": "What is the fee amount?"
             },
             "task_family_key": "structured_document",
-            "task_family_variant_index": 0,
+            "task_family_variant_index": 4,
             "task_key": "field_lookup_query",
-            "task_variant_index": 2,
+            "task_variant_index": 1,
             "task_variant_key": "lookup_amount",
             "task_variant_template_index": 1,
             "template_paths": [
@@ -320,7 +320,7 @@
               "task_variant:lookup_amount": 5
             }
           },
-          "prompt": "The image shows a structured application form with labeled fields and boxed sections. Find the requested field in the document: What is the fee amount? Return the exact field text as written.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"answer\":\"$128.40\"}"
+          "prompt": "Read the labeled fields in this document: a structured application form with labeled fields and boxed sections. Read the document and answer this question: What is the fee amount? Return the exact field text as written.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"answer\":\"$128.40\"}"
         }
       },
       "task_variant": "lookup_amount",
@@ -442,21 +442,21 @@
       "field_value_bboxes_px": {
         "applicant_name:value": [
           218.0,
-          263.0,
-          383.0,
-          285.0
+          262.5,
+          373.0,
+          285.5
         ],
         "city:value": [
           218.0,
-          637.5,
-          362.0,
-          666.5
+          640.5,
+          349.0,
+          663.5
         ],
         "contact_email:value": [
           218.0,
-          512.0,
-          557.0,
-          540.0
+          511.5,
+          565.0,
+          540.5
         ],
         "contact_phone:value": [
           666.0,
@@ -484,9 +484,9 @@
         ],
         "reviewer_name:value": [
           218.0,
-          767.0,
-          391.0,
-          789.0
+          766.5,
+          388.0,
+          789.5
         ],
         "submission_date:value": [
           218.0,
@@ -511,7 +511,7 @@
     "render_spec": {
       "canvas_height": 920,
       "canvas_width": 1280,
-      "geometry_seed": 7854785949840709,
+      "geometry_seed": 3442455579866757,
       "page_shadow_offset_px": 14,
       "receipt_page_height_px": 760,
       "receipt_page_width_px": 520,
@@ -573,14 +573,14 @@
           "bbox_id": "applicant_name:value",
           "bbox_px": [
             218.0,
-            263.0,
-            383.0,
-            285.0
+            262.5,
+            373.0,
+            285.5
           ],
           "entity_id": "applicant_name:value",
           "entity_type": "document_field_value",
           "field_id": "applicant_name",
-          "text": "Luca Foster"
+          "text": "Rhea Chen"
         },
         {
           "bbox_id": "reference_id",
@@ -618,7 +618,7 @@
           "entity_id": "reference_id:value",
           "entity_type": "document_field_value",
           "field_id": "reference_id",
-          "text": "REF-36757"
+          "text": "REF-24913"
         },
         {
           "bbox_id": "submission_date",
@@ -656,7 +656,7 @@
           "entity_id": "submission_date:value",
           "entity_type": "document_field_value",
           "field_id": "submission_date",
-          "text": "02/22/2026"
+          "text": "05/14/2026"
         },
         {
           "bbox_id": "contact_phone",
@@ -694,7 +694,7 @@
           "entity_id": "contact_phone:value",
           "entity_type": "document_field_value",
           "field_id": "contact_phone",
-          "text": "(704) 156-9721"
+          "text": "(310) 356-9648"
         },
         {
           "bbox_id": "contact_email",
@@ -725,14 +725,14 @@
           "bbox_id": "contact_email:value",
           "bbox_px": [
             218.0,
-            512.0,
-            557.0,
-            540.0
+            511.5,
+            565.0,
+            540.5
           ],
           "entity_id": "contact_email:value",
           "entity_type": "document_field_value",
           "field_id": "contact_email",
-          "text": "lucafoster@mailhub.net"
+          "text": "rheachen@brightdesk.io"
         },
         {
           "bbox_id": "department",
@@ -801,14 +801,14 @@
           "bbox_id": "city:value",
           "bbox_px": [
             218.0,
-            637.5,
-            362.0,
-            666.5
+            640.5,
+            349.0,
+            663.5
           ],
           "entity_id": "city:value",
           "entity_type": "document_field_value",
           "field_id": "city",
-          "text": "Northgate"
+          "text": "Redwood"
         },
         {
           "bbox_id": "fee_amount",
@@ -846,7 +846,7 @@
           "entity_id": "fee_amount:value",
           "entity_type": "document_field_value",
           "field_id": "fee_amount",
-          "text": "$71.54"
+          "text": "$94.41"
         },
         {
           "bbox_id": "reviewer_name",
@@ -877,14 +877,14 @@
           "bbox_id": "reviewer_name:value",
           "bbox_px": [
             218.0,
-            767.0,
-            391.0,
-            789.0
+            766.5,
+            388.0,
+            789.5
           ],
           "entity_id": "reviewer_name:value",
           "entity_type": "document_field_value",
           "field_id": "reviewer_name",
-          "text": "Hana Carter"
+          "text": "Owen Davis"
         }
       ],
       "relations": {

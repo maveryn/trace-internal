@@ -1,7 +1,7 @@
 {
   "answer_gt": {
     "type": "string",
-    "value": "May 14, 2026"
+    "value": "Feb 08, 2026"
   },
   "evidence_gt": {
     "type": "bbox_set",
@@ -13,10 +13,10 @@
         371.0
       ],
       [
-        669.0,
-        348.0,
+        676.0,
+        348.5,
         864.0,
-        376.0
+        375.5
       ]
     ]
   },
@@ -24,18 +24,18 @@
     "format": "png",
     "path": "documents/task_documents_readout_field_value/images/lookup_date/0019.png"
   },
-  "instance_seed": 1971658862788109,
-  "prompt": "You are given a receipt-style document with labeled rows and totals. Locate the field and then answer: What is the purchase date? Respond with the exact date text from the document.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value.\nAnswer: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"2026-03-18\"}",
+  "instance_seed": 4977213820438573,
+  "prompt": "Look at the document in the image: a receipt-style document with labeled rows and totals. Find the requested field in the document: What is the purchase date? Answer using the exact field value.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value.\nAnswer requirement: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"2026-03-18\"}",
   "prompt_variants": {
-    "answer_and_evidence": "You are given a receipt-style document with labeled rows and totals. Locate the field and then answer: What is the purchase date? Respond with the exact date text from the document.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value.\nAnswer: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"2026-03-18\"}",
-    "answer_only": "You are given a receipt-style document with labeled rows and totals. Locate the field and then answer: What is the purchase date? Respond with the exact date text from the document.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"answer\":\"2026-03-18\"}"
+    "answer_and_evidence": "Look at the document in the image: a receipt-style document with labeled rows and totals. Find the requested field in the document: What is the purchase date? Answer using the exact field value.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value.\nAnswer requirement: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"2026-03-18\"}",
+    "answer_only": "Look at the document in the image: a receipt-style document with labeled rows and totals. Find the requested field in the document: What is the purchase date? Answer using the exact field value.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"answer\":\"2026-03-18\"}"
   },
   "task": "task_documents_readout_field_value",
   "task_variant": "lookup_date",
   "trace_payload": {
     "answer_gt": {
       "type": "string",
-      "value": "May 14, 2026"
+      "value": "Feb 08, 2026"
     },
     "background": {
       "available_styles": [
@@ -62,10 +62,10 @@
           371.0
         ],
         [
-          669.0,
-          348.0,
+          676.0,
+          348.5,
           864.0,
-          376.0
+          375.5
         ]
       ]
     },
@@ -76,7 +76,7 @@
           "field_category": "lookup_name",
           "field_id": "store_name",
           "field_label": "Store Name",
-          "field_value": "Elm Works",
+          "field_value": "Oak Street Market",
           "label_bbox_id": "store_name:label",
           "question_name": "store name",
           "value_bbox_id": "store_name:value"
@@ -85,7 +85,7 @@
           "field_category": "lookup_identifier",
           "field_id": "receipt_number",
           "field_label": "Receipt No.",
-          "field_value": "R-10413",
+          "field_value": "R-45244",
           "label_bbox_id": "receipt_number:label",
           "question_name": "receipt number",
           "value_bbox_id": "receipt_number:value"
@@ -94,7 +94,7 @@
           "field_category": "lookup_date",
           "field_id": "purchase_date",
           "field_label": "Purchase Date",
-          "field_value": "May 14, 2026",
+          "field_value": "Feb 08, 2026",
           "label_bbox_id": "purchase_date:label",
           "question_name": "purchase date",
           "value_bbox_id": "purchase_date:value"
@@ -103,7 +103,7 @@
           "field_category": "lookup_name",
           "field_id": "cashier_name",
           "field_label": "Cashier",
-          "field_value": "Levi Chen",
+          "field_value": "Eli Clark",
           "label_bbox_id": "cashier_name:label",
           "question_name": "cashier name",
           "value_bbox_id": "cashier_name:value"
@@ -112,7 +112,7 @@
           "field_category": "lookup_identifier",
           "field_id": "member_id",
           "field_label": "Member ID",
-          "field_value": "M-2426",
+          "field_value": "M-4999",
           "label_bbox_id": "member_id:label",
           "question_name": "member ID",
           "value_bbox_id": "member_id:value"
@@ -121,7 +121,7 @@
           "field_category": "lookup_contact",
           "field_id": "contact_phone",
           "field_label": "Phone",
-          "field_value": "(929) 967-4290",
+          "field_value": "(704) 446-8327",
           "label_bbox_id": "contact_phone:label",
           "question_name": "phone number",
           "value_bbox_id": "contact_phone:value"
@@ -130,7 +130,7 @@
           "field_category": "lookup_contact",
           "field_id": "contact_email",
           "field_label": "Email",
-          "field_value": "elmworks@northpost.co",
+          "field_value": "oakstreetmarke@northpost.co",
           "label_bbox_id": "contact_email:label",
           "question_name": "email address",
           "value_bbox_id": "contact_email:value"
@@ -139,7 +139,7 @@
           "field_category": "lookup_amount",
           "field_id": "tax_amount",
           "field_label": "Tax",
-          "field_value": "$5.05",
+          "field_value": "$5.25",
           "label_bbox_id": "tax_amount:label",
           "question_name": "tax amount",
           "value_bbox_id": "tax_amount:value"
@@ -148,7 +148,7 @@
           "field_category": "lookup_amount",
           "field_id": "total_paid",
           "field_label": "Total Paid",
-          "field_value": "$32.65",
+          "field_value": "$73.59",
           "label_bbox_id": "total_paid:label",
           "question_name": "total paid",
           "value_bbox_id": "total_paid:value"
@@ -157,7 +157,7 @@
       "query_field_category": "lookup_date",
       "query_field_id": "purchase_date",
       "query_field_label": "Purchase Date",
-      "query_field_value": "May 14, 2026",
+      "query_field_value": "Feb 08, 2026",
       "query_label_bbox_id": "purchase_date:label",
       "query_value_bbox_id": "purchase_date:value",
       "question_format": "document_field_lookup",
@@ -192,10 +192,10 @@
           371.0
         ],
         [
-          669.0,
-          348.0,
+          676.0,
+          348.5,
           864.0,
-          376.0
+          375.5
         ]
       ]
     },
@@ -223,7 +223,7 @@
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 0,
+        "answer_or_evidence_variant_index": 2,
         "prompt_bundle_id": "documents_readout_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -237,11 +237,11 @@
           "question_text": "What is the purchase date?"
         },
         "task_family_key": "structured_document",
-        "task_family_variant_index": 2,
+        "task_family_variant_index": 1,
         "task_key": "field_lookup_query",
-        "task_variant_index": 4,
+        "task_variant_index": 2,
         "task_variant_key": "lookup_date",
-        "task_variant_template_index": 2,
+        "task_variant_template_index": 4,
         "template_paths": [
           "documents/readout/documents_readout_v1.json"
         ],
@@ -257,7 +257,7 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 0,
+            "answer_or_evidence_variant_index": 2,
             "prompt_bundle_id": "documents_readout_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -271,11 +271,11 @@
               "question_text": "What is the purchase date?"
             },
             "task_family_key": "structured_document",
-            "task_family_variant_index": 2,
+            "task_family_variant_index": 1,
             "task_key": "field_lookup_query",
-            "task_variant_index": 4,
+            "task_variant_index": 2,
             "task_variant_key": "lookup_date",
-            "task_variant_template_index": 2,
+            "task_variant_template_index": 4,
             "template_paths": [
               "documents/readout/documents_readout_v1.json"
             ],
@@ -286,7 +286,7 @@
               "task_variant:lookup_date": 5
             }
           },
-          "prompt": "You are given a receipt-style document with labeled rows and totals. Locate the field and then answer: What is the purchase date? Respond with the exact date text from the document.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value.\nAnswer: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"2026-03-18\"}"
+          "prompt": "Look at the document in the image: a receipt-style document with labeled rows and totals. Find the requested field in the document: What is the purchase date? Answer using the exact field value.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value.\nAnswer requirement: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"2026-03-18\"}"
         },
         "answer_only": {
           "metadata": {
@@ -305,11 +305,11 @@
               "question_text": "What is the purchase date?"
             },
             "task_family_key": "structured_document",
-            "task_family_variant_index": 2,
+            "task_family_variant_index": 1,
             "task_key": "field_lookup_query",
-            "task_variant_index": 4,
+            "task_variant_index": 2,
             "task_variant_key": "lookup_date",
-            "task_variant_template_index": 2,
+            "task_variant_template_index": 4,
             "template_paths": [
               "documents/readout/documents_readout_v1.json"
             ],
@@ -320,7 +320,7 @@
               "task_variant:lookup_date": 5
             }
           },
-          "prompt": "You are given a receipt-style document with labeled rows and totals. Locate the field and then answer: What is the purchase date? Respond with the exact date text from the document.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"answer\":\"2026-03-18\"}"
+          "prompt": "Look at the document in the image: a receipt-style document with labeled rows and totals. Find the requested field in the document: What is the purchase date? Answer using the exact field value.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"answer\":\"2026-03-18\"}"
         }
       },
       "task_variant": "lookup_date",
@@ -441,16 +441,16 @@
       },
       "field_value_bboxes_px": {
         "cashier_name:value": [
-          722.0,
+          745.0,
           420.5,
           864.0,
           443.5
         ],
         "contact_email:value": [
-          621.0,
-          631.5,
+          591.0,
+          632.0,
           864.0,
-          652.5
+          652.0
         ],
         "contact_phone:value": [
           641.0,
@@ -465,10 +465,10 @@
           513.0
         ],
         "purchase_date:value": [
-          669.0,
-          348.0,
+          676.0,
+          348.5,
           864.0,
-          376.0
+          375.5
         ],
         "receipt_number:value": [
           743.0,
@@ -477,10 +477,10 @@
           303.0
         ],
         "store_name:value": [
-          712.0,
-          210.5,
+          625.0,
+          211.0,
           864.0,
-          233.5
+          233.0
         ],
         "tax_amount:value": [
           781.0,
@@ -511,7 +511,7 @@
     "render_spec": {
       "canvas_height": 920,
       "canvas_width": 1280,
-      "geometry_seed": 1971658862788109,
+      "geometry_seed": 4977213820438573,
       "page_shadow_offset_px": 14,
       "receipt_page_height_px": 760,
       "receipt_page_width_px": 520,
@@ -572,15 +572,15 @@
         {
           "bbox_id": "store_name:value",
           "bbox_px": [
-            712.0,
-            210.5,
+            625.0,
+            211.0,
             864.0,
-            233.5
+            233.0
           ],
           "entity_id": "store_name:value",
           "entity_type": "document_field_value",
           "field_id": "store_name",
-          "text": "Elm Works"
+          "text": "Oak Street Market"
         },
         {
           "bbox_id": "receipt_number",
@@ -618,7 +618,7 @@
           "entity_id": "receipt_number:value",
           "entity_type": "document_field_value",
           "field_id": "receipt_number",
-          "text": "R-10413"
+          "text": "R-45244"
         },
         {
           "bbox_id": "purchase_date",
@@ -648,15 +648,15 @@
         {
           "bbox_id": "purchase_date:value",
           "bbox_px": [
-            669.0,
-            348.0,
+            676.0,
+            348.5,
             864.0,
-            376.0
+            375.5
           ],
           "entity_id": "purchase_date:value",
           "entity_type": "document_field_value",
           "field_id": "purchase_date",
-          "text": "May 14, 2026"
+          "text": "Feb 08, 2026"
         },
         {
           "bbox_id": "cashier_name",
@@ -686,7 +686,7 @@
         {
           "bbox_id": "cashier_name:value",
           "bbox_px": [
-            722.0,
+            745.0,
             420.5,
             864.0,
             443.5
@@ -694,7 +694,7 @@
           "entity_id": "cashier_name:value",
           "entity_type": "document_field_value",
           "field_id": "cashier_name",
-          "text": "Levi Chen"
+          "text": "Eli Clark"
         },
         {
           "bbox_id": "member_id",
@@ -732,7 +732,7 @@
           "entity_id": "member_id:value",
           "entity_type": "document_field_value",
           "field_id": "member_id",
-          "text": "M-2426"
+          "text": "M-4999"
         },
         {
           "bbox_id": "contact_phone",
@@ -770,7 +770,7 @@
           "entity_id": "contact_phone:value",
           "entity_type": "document_field_value",
           "field_id": "contact_phone",
-          "text": "(929) 967-4290"
+          "text": "(704) 446-8327"
         },
         {
           "bbox_id": "contact_email",
@@ -800,15 +800,15 @@
         {
           "bbox_id": "contact_email:value",
           "bbox_px": [
-            621.0,
-            631.5,
+            591.0,
+            632.0,
             864.0,
-            652.5
+            652.0
           ],
           "entity_id": "contact_email:value",
           "entity_type": "document_field_value",
           "field_id": "contact_email",
-          "text": "elmworks@northpost.co"
+          "text": "oakstreetmarke@northpost.co"
         },
         {
           "bbox_id": "tax_amount",
@@ -846,7 +846,7 @@
           "entity_id": "tax_amount:value",
           "entity_type": "document_field_value",
           "field_id": "tax_amount",
-          "text": "$5.05"
+          "text": "$5.25"
         },
         {
           "bbox_id": "total_paid",
@@ -884,7 +884,7 @@
           "entity_id": "total_paid:value",
           "entity_type": "document_field_value",
           "field_id": "total_paid",
-          "text": "$32.65"
+          "text": "$73.59"
         }
       ],
       "relations": {

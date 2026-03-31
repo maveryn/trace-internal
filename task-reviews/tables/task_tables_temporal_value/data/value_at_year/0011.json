@@ -1,16 +1,16 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 29
+    "value": 7
   },
   "evidence_gt": {
     "type": "bbox_set",
     "value": [
       [
         436.56,
-        351.556,
+        469.778,
         587.04,
-        410.667
+        528.889
       ]
     ]
   },
@@ -18,22 +18,22 @@
     "format": "png",
     "path": "tables/task_tables_temporal_value/images/value_at_year/0011.png"
   },
-  "instance_seed": 5465665472733967,
-  "prompt": "You are given a table with chronological year columns: a card-style table with one Name column, several year columns in chronological order, a rounded outer frame, and a shaded header row. Use the row's values across the ordered year columns to compute the requested result. What value is listed for Good in the year 2022 column?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the queried year cell.\nAnswer requirement: set \"answer\" to the exact integer temporal result.\nExample JSON:\n{\"evidence\":[[260,180,372,236]],\"answer\":17}",
+  "instance_seed": 7410975457728492,
+  "prompt": "Work from the styled table shown in the image: a zebra-striped table with one Name column, several year columns in chronological order, alternating row shading, and a shaded header row. Answer this question about one row across the year columns. Determine the value where row Ciel intersects year 2024.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the queried year cell.\nAnswer requirement: set \"answer\" to the exact integer temporal result.\nExample JSON:\n{\"evidence\":[[260,180,372,236]],\"answer\":17}",
   "prompt_variants": {
-    "answer_and_evidence": "You are given a table with chronological year columns: a card-style table with one Name column, several year columns in chronological order, a rounded outer frame, and a shaded header row. Use the row's values across the ordered year columns to compute the requested result. What value is listed for Good in the year 2022 column?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the queried year cell.\nAnswer requirement: set \"answer\" to the exact integer temporal result.\nExample JSON:\n{\"evidence\":[[260,180,372,236]],\"answer\":17}",
-    "answer_only": "You are given a table with chronological year columns: a card-style table with one Name column, several year columns in chronological order, a rounded outer frame, and a shaded header row. Use the row's values across the ordered year columns to compute the requested result. What value is listed for Good in the year 2022 column?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the exact integer temporal result.\nExample JSON:\n{\"answer\":17}"
+    "answer_and_evidence": "Work from the styled table shown in the image: a zebra-striped table with one Name column, several year columns in chronological order, alternating row shading, and a shaded header row. Answer this question about one row across the year columns. Determine the value where row Ciel intersects year 2024.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the queried year cell.\nAnswer requirement: set \"answer\" to the exact integer temporal result.\nExample JSON:\n{\"evidence\":[[260,180,372,236]],\"answer\":17}",
+    "answer_only": "Work from the styled table shown in the image: a zebra-striped table with one Name column, several year columns in chronological order, alternating row shading, and a shaded header row. Answer this question about one row across the year columns. Determine the value where row Ciel intersects year 2024.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the exact integer temporal result.\nExample JSON:\n{\"answer\":17}"
   },
   "task": "task_tables_temporal_value",
   "task_variant": "value_at_year",
   "trace_payload": {
     "execution_trace": {
-      "answer_value": 29,
+      "answer_value": 7,
       "column_headers": [
-        "2021",
-        "2022",
         "2023",
-        "2024"
+        "2024",
+        "2025",
+        "2026"
       ],
       "numeric_column_count": 4,
       "numeric_column_count_range": [
@@ -42,20 +42,20 @@
       ],
       "query_cells": [
         {
-          "cell_id": "cell_r5_c2",
-          "column": "2022",
+          "cell_id": "cell_r7_c2",
+          "column": "2024",
           "column_index": 1,
-          "row_index": 4,
-          "row_label": "Good",
-          "value": 29
+          "row_index": 6,
+          "row_label": "Ciel",
+          "value": 7
         }
       ],
-      "query_row_index": 4,
-      "query_row_label": "Good",
-      "query_year_end": "2022",
-      "query_year_start": "2022",
+      "query_row_index": 6,
+      "query_row_label": "Ciel",
+      "query_year_end": "2024",
+      "query_year_start": "2024",
       "query_years": [
-        "2022"
+        "2024"
       ],
       "row_count": 8,
       "row_count_range": [
@@ -63,18 +63,18 @@
         10
       ],
       "row_labels": [
-        "Lola",
-        "Fina",
-        "Oza",
-        "Marx",
-        "Good",
-        "Ulla",
-        "Dev",
-        "Bock"
+        "Elva",
+        "Pat",
+        "Bryn",
+        "Bork",
+        "Sage",
+        "Tol",
+        "Ciel",
+        "Lina"
       ],
-      "scene_variant": "card_table",
+      "scene_variant": "zebra",
       "supporting_cell_ids": [
-        "cell_r5_c2"
+        "cell_r7_c2"
       ],
       "task_variant": "value_at_year",
       "value_range": [
@@ -82,53 +82,53 @@
         32
       ],
       "values_by_row": {
-        "Bock": {
-          "2021": 11,
-          "2022": 11,
-          "2023": 13,
-          "2024": 23
+        "Bork": {
+          "2023": 6,
+          "2024": 27,
+          "2025": 2,
+          "2026": 32
         },
-        "Dev": {
-          "2021": 30,
-          "2022": 30,
-          "2023": 3,
-          "2024": 28
+        "Bryn": {
+          "2023": 2,
+          "2024": 21,
+          "2025": 4,
+          "2026": 17
         },
-        "Fina": {
-          "2021": 22,
-          "2022": 31,
-          "2023": 9,
-          "2024": 2
+        "Ciel": {
+          "2023": 4,
+          "2024": 7,
+          "2025": 10,
+          "2026": 22
         },
-        "Good": {
-          "2021": 12,
-          "2022": 29,
-          "2023": 14,
-          "2024": 19
+        "Elva": {
+          "2023": 15,
+          "2024": 23,
+          "2025": 12,
+          "2026": 15
         },
-        "Lola": {
-          "2021": 13,
-          "2022": 32,
-          "2023": 12,
-          "2024": 31
+        "Lina": {
+          "2023": 21,
+          "2024": 8,
+          "2025": 13,
+          "2026": 13
         },
-        "Marx": {
-          "2021": 8,
-          "2022": 5,
-          "2023": 9,
-          "2024": 6
+        "Pat": {
+          "2023": 31,
+          "2024": 22,
+          "2025": 7,
+          "2026": 1
         },
-        "Oza": {
-          "2021": 17,
-          "2022": 2,
-          "2023": 24,
-          "2024": 3
+        "Sage": {
+          "2023": 28,
+          "2024": 3,
+          "2025": 3,
+          "2026": 17
         },
-        "Ulla": {
-          "2021": 31,
-          "2022": 14,
-          "2023": 22,
-          "2024": 21
+        "Tol": {
+          "2023": 23,
+          "2024": 9,
+          "2025": 18,
+          "2026": 26
         }
       }
     },
@@ -136,21 +136,21 @@
       "bbox_set": [
         [
           436.56,
-          351.556,
+          469.778,
           587.04,
-          410.667
+          528.889
         ]
       ]
     },
     "query_spec": {
       "params": {
         "numeric_column_count": 4,
-        "query_row_label": "Good",
+        "query_row_label": "Ciel",
         "query_years": [
-          "2022"
+          "2024"
         ],
         "row_count": 8,
-        "scene_variant": "card_table",
+        "scene_variant": "zebra",
         "scene_variant_probabilities": {
           "card_table": 0.25,
           "ledger": 0.25,
@@ -178,16 +178,16 @@
           "json_example_answer_only": "{\"answer\":17}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "object_description": "a card-style table with one Name column, several year columns in chronological order, a rounded outer frame, and a shaded header row",
-          "query_row_label": "Good",
-          "query_year": "2022"
+          "object_description": "a zebra-striped table with one Name column, several year columns in chronological order, alternating row shading, and a shaded header row",
+          "query_row_label": "Ciel",
+          "query_year": "2024"
         },
         "task_family_key": "styled_table_temporal",
-        "task_family_variant_index": 4,
+        "task_family_variant_index": 2,
         "task_key": "temporal_value_query",
-        "task_variant_index": 1,
+        "task_variant_index": 0,
         "task_variant_key": "value_at_year",
-        "task_variant_template_index": 3,
+        "task_variant_template_index": 4,
         "template_paths": [
           "tables/temporal/tables_temporal_v1.json"
         ],
@@ -213,16 +213,16 @@
               "json_example_answer_only": "{\"answer\":17}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a card-style table with one Name column, several year columns in chronological order, a rounded outer frame, and a shaded header row",
-              "query_row_label": "Good",
-              "query_year": "2022"
+              "object_description": "a zebra-striped table with one Name column, several year columns in chronological order, alternating row shading, and a shaded header row",
+              "query_row_label": "Ciel",
+              "query_year": "2024"
             },
             "task_family_key": "styled_table_temporal",
-            "task_family_variant_index": 4,
+            "task_family_variant_index": 2,
             "task_key": "temporal_value_query",
-            "task_variant_index": 1,
+            "task_variant_index": 0,
             "task_variant_key": "value_at_year",
-            "task_variant_template_index": 3,
+            "task_variant_template_index": 4,
             "template_paths": [
               "tables/temporal/tables_temporal_v1.json"
             ],
@@ -233,12 +233,12 @@
               "task_variant:value_at_year": 5
             }
           },
-          "prompt": "You are given a table with chronological year columns: a card-style table with one Name column, several year columns in chronological order, a rounded outer frame, and a shaded header row. Use the row's values across the ordered year columns to compute the requested result. What value is listed for Good in the year 2022 column?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the queried year cell.\nAnswer requirement: set \"answer\" to the exact integer temporal result.\nExample JSON:\n{\"evidence\":[[260,180,372,236]],\"answer\":17}"
+          "prompt": "Work from the styled table shown in the image: a zebra-striped table with one Name column, several year columns in chronological order, alternating row shading, and a shaded header row. Answer this question about one row across the year columns. Determine the value where row Ciel intersects year 2024.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the queried year cell.\nAnswer requirement: set \"answer\" to the exact integer temporal result.\nExample JSON:\n{\"evidence\":[[260,180,372,236]],\"answer\":17}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 2,
+            "answer_or_evidence_variant_index": 4,
             "prompt_bundle_id": "tables_temporal_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -248,16 +248,16 @@
               "json_example_answer_only": "{\"answer\":17}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a card-style table with one Name column, several year columns in chronological order, a rounded outer frame, and a shaded header row",
-              "query_row_label": "Good",
-              "query_year": "2022"
+              "object_description": "a zebra-striped table with one Name column, several year columns in chronological order, alternating row shading, and a shaded header row",
+              "query_row_label": "Ciel",
+              "query_year": "2024"
             },
             "task_family_key": "styled_table_temporal",
-            "task_family_variant_index": 4,
+            "task_family_variant_index": 2,
             "task_key": "temporal_value_query",
-            "task_variant_index": 1,
+            "task_variant_index": 0,
             "task_variant_key": "value_at_year",
-            "task_variant_template_index": 3,
+            "task_variant_template_index": 4,
             "template_paths": [
               "tables/temporal/tables_temporal_v1.json"
             ],
@@ -268,7 +268,7 @@
               "task_variant:value_at_year": 5
             }
           },
-          "prompt": "You are given a table with chronological year columns: a card-style table with one Name column, several year columns in chronological order, a rounded outer frame, and a shaded header row. Use the row's values across the ordered year columns to compute the requested result. What value is listed for Good in the year 2022 column?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the exact integer temporal result.\nExample JSON:\n{\"answer\":17}"
+          "prompt": "Work from the styled table shown in the image: a zebra-striped table with one Name column, several year columns in chronological order, alternating row shading, and a shaded header row. Answer this question about one row across the year columns. Determine the value where row Ciel intersects year 2024.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the exact integer temporal result.\nExample JSON:\n{\"answer\":17}"
         }
       },
       "task_variant": "value_at_year",
@@ -548,25 +548,25 @@
         ]
       },
       "column_region_bboxes_px": {
-        "2021": [
+        "2023": [
           286.08,
           115.111,
           436.56,
           588.0
         ],
-        "2022": [
+        "2024": [
           436.56,
           115.111,
           587.04,
           588.0
         ],
-        "2023": [
+        "2025": [
           587.04,
           115.111,
           737.52,
           588.0
         ],
-        "2024": [
+        "2026": [
           737.52,
           115.111,
           888.0,
@@ -574,25 +574,25 @@
         ]
       },
       "header_bboxes_px": {
-        "2021": [
+        "2023": [
           286.08,
           56.0,
           436.56,
           115.111
         ],
-        "2022": [
+        "2024": [
           436.56,
           56.0,
           587.04,
           115.111
         ],
-        "2023": [
+        "2025": [
           587.04,
           56.0,
           737.52,
           115.111
         ],
-        "2024": [
+        "2026": [
           737.52,
           56.0,
           888.0,
@@ -601,49 +601,49 @@
       },
       "image_id": "img0",
       "row_label_bboxes_px": {
-        "Bock": [
-          52.0,
-          528.889,
-          286.08,
-          588.0
-        ],
-        "Dev": [
-          52.0,
-          469.778,
-          286.08,
-          528.889
-        ],
-        "Fina": [
-          52.0,
-          174.222,
-          286.08,
-          233.333
-        ],
-        "Good": [
-          52.0,
-          351.556,
-          286.08,
-          410.667
-        ],
-        "Lola": [
-          52.0,
-          115.111,
-          286.08,
-          174.222
-        ],
-        "Marx": [
+        "Bork": [
           52.0,
           292.444,
           286.08,
           351.556
         ],
-        "Oza": [
+        "Bryn": [
           52.0,
           233.333,
           286.08,
           292.444
         ],
-        "Ulla": [
+        "Ciel": [
+          52.0,
+          469.778,
+          286.08,
+          528.889
+        ],
+        "Elva": [
+          52.0,
+          115.111,
+          286.08,
+          174.222
+        ],
+        "Lina": [
+          52.0,
+          528.889,
+          286.08,
+          588.0
+        ],
+        "Pat": [
+          52.0,
+          174.222,
+          286.08,
+          233.333
+        ],
+        "Sage": [
+          52.0,
+          351.556,
+          286.08,
+          410.667
+        ],
+        "Tol": [
           52.0,
           410.667,
           286.08,
@@ -651,49 +651,49 @@
         ]
       },
       "row_region_bboxes_px": {
-        "Bock": [
-          286.08,
-          528.889,
-          888.0,
-          588.0
-        ],
-        "Dev": [
-          286.08,
-          469.778,
-          888.0,
-          528.889
-        ],
-        "Fina": [
-          286.08,
-          174.222,
-          888.0,
-          233.333
-        ],
-        "Good": [
-          286.08,
-          351.556,
-          888.0,
-          410.667
-        ],
-        "Lola": [
-          286.08,
-          115.111,
-          888.0,
-          174.222
-        ],
-        "Marx": [
+        "Bork": [
           286.08,
           292.444,
           888.0,
           351.556
         ],
-        "Oza": [
+        "Bryn": [
           286.08,
           233.333,
           888.0,
           292.444
         ],
-        "Ulla": [
+        "Ciel": [
+          286.08,
+          469.778,
+          888.0,
+          528.889
+        ],
+        "Elva": [
+          286.08,
+          115.111,
+          888.0,
+          174.222
+        ],
+        "Lina": [
+          286.08,
+          528.889,
+          888.0,
+          588.0
+        ],
+        "Pat": [
+          286.08,
+          174.222,
+          888.0,
+          233.333
+        ],
+        "Sage": [
+          286.08,
+          351.556,
+          888.0,
+          410.667
+        ],
+        "Tol": [
           286.08,
           410.667,
           888.0,
@@ -746,7 +746,7 @@
         "edits": [],
         "enabled": false
       },
-      "scene_variant": "card_table",
+      "scene_variant": "zebra",
       "table_bbox_px": [
         52.0,
         56.0,
@@ -788,11 +788,11 @@
         {
           "attrs": {
             "cell_role": "header",
-            "column_header": "2021",
+            "column_header": "2023",
             "column_index": 1,
             "row_index": 0,
             "row_label": null,
-            "text": "2021",
+            "text": "2023",
             "text_bbox_px": [
               327.32,
               76.556,
@@ -813,11 +813,11 @@
         {
           "attrs": {
             "cell_role": "header",
-            "column_header": "2022",
+            "column_header": "2024",
             "column_index": 2,
             "row_index": 0,
             "row_label": null,
-            "text": "2022",
+            "text": "2024",
             "text_bbox_px": [
               477.8,
               76.556,
@@ -838,11 +838,11 @@
         {
           "attrs": {
             "cell_role": "header",
-            "column_header": "2023",
+            "column_header": "2025",
             "column_index": 3,
             "row_index": 0,
             "row_label": null,
-            "text": "2023",
+            "text": "2025",
             "text_bbox_px": [
               628.28,
               76.556,
@@ -863,11 +863,11 @@
         {
           "attrs": {
             "cell_role": "header",
-            "column_header": "2024",
+            "column_header": "2026",
             "column_index": 4,
             "row_index": 0,
             "row_label": null,
-            "text": "2024",
+            "text": "2026",
             "text_bbox_px": [
               778.76,
               76.556,
@@ -891,12 +891,12 @@
             "column_header": "Name",
             "column_index": 0,
             "row_index": 1,
-            "row_label": "Lola",
-            "text": "Lola",
+            "row_label": "Elva",
+            "text": "Elva",
             "text_bbox_px": [
               66.0,
               135.667,
-              121.0,
+              122.0,
               153.667
             ],
             "value": null
@@ -913,18 +913,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "2021",
+            "column_header": "2023",
             "column_index": 1,
             "row_index": 1,
-            "row_label": "Lola",
-            "text": "13",
+            "row_label": "Elva",
+            "text": "15",
             "text_bbox_px": [
               347.32,
               136.667,
               375.32,
               152.667
             ],
-            "value": 13
+            "value": 15
           },
           "bbox_px": [
             286.08,
@@ -938,18 +938,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "2022",
+            "column_header": "2024",
             "column_index": 2,
             "row_index": 1,
-            "row_label": "Lola",
-            "text": "32",
+            "row_label": "Elva",
+            "text": "23",
             "text_bbox_px": [
               497.8,
               136.667,
               525.8,
               152.667
             ],
-            "value": 32
+            "value": 23
           },
           "bbox_px": [
             436.56,
@@ -963,10 +963,10 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "2023",
+            "column_header": "2025",
             "column_index": 3,
             "row_index": 1,
-            "row_label": "Lola",
+            "row_label": "Elva",
             "text": "12",
             "text_bbox_px": [
               648.28,
@@ -988,18 +988,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "2024",
+            "column_header": "2026",
             "column_index": 4,
             "row_index": 1,
-            "row_label": "Lola",
-            "text": "31",
+            "row_label": "Elva",
+            "text": "15",
             "text_bbox_px": [
               798.76,
               136.667,
               826.76,
               152.667
             ],
-            "value": 31
+            "value": 15
           },
           "bbox_px": [
             737.52,
@@ -1016,12 +1016,12 @@
             "column_header": "Name",
             "column_index": 0,
             "row_index": 2,
-            "row_label": "Fina",
-            "text": "Fina",
+            "row_label": "Pat",
+            "text": "Pat",
             "text_bbox_px": [
               66.0,
               194.778,
-              123.0,
+              111.0,
               212.778
             ],
             "value": null
@@ -1038,18 +1038,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "2021",
+            "column_header": "2023",
             "column_index": 1,
             "row_index": 2,
-            "row_label": "Fina",
-            "text": "22",
+            "row_label": "Pat",
+            "text": "31",
             "text_bbox_px": [
               347.32,
               195.778,
               375.32,
               211.778
             ],
-            "value": 22
+            "value": 31
           },
           "bbox_px": [
             286.08,
@@ -1063,18 +1063,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "2022",
+            "column_header": "2024",
             "column_index": 2,
             "row_index": 2,
-            "row_label": "Fina",
-            "text": "31",
+            "row_label": "Pat",
+            "text": "22",
             "text_bbox_px": [
               497.8,
               195.778,
               525.8,
               211.778
             ],
-            "value": 31
+            "value": 22
           },
           "bbox_px": [
             436.56,
@@ -1088,18 +1088,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "2023",
+            "column_header": "2025",
             "column_index": 3,
             "row_index": 2,
-            "row_label": "Fina",
-            "text": "9",
+            "row_label": "Pat",
+            "text": "7",
             "text_bbox_px": [
               655.28,
               195.778,
               669.28,
               211.778
             ],
-            "value": 9
+            "value": 7
           },
           "bbox_px": [
             587.04,
@@ -1113,18 +1113,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "2024",
+            "column_header": "2026",
             "column_index": 4,
             "row_index": 2,
-            "row_label": "Fina",
-            "text": "2",
+            "row_label": "Pat",
+            "text": "1",
             "text_bbox_px": [
               805.76,
               195.778,
               819.76,
               211.778
             ],
-            "value": 2
+            "value": 1
           },
           "bbox_px": [
             737.52,
@@ -1141,13 +1141,13 @@
             "column_header": "Name",
             "column_index": 0,
             "row_index": 3,
-            "row_label": "Oza",
-            "text": "Oza",
+            "row_label": "Bryn",
+            "text": "Bryn",
             "text_bbox_px": [
               66.0,
-              253.889,
-              116.0,
-              271.889
+              251.389,
+              129.0,
+              274.389
             ],
             "value": null
           },
@@ -1163,18 +1163,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "2021",
+            "column_header": "2023",
             "column_index": 1,
             "row_index": 3,
-            "row_label": "Oza",
-            "text": "17",
+            "row_label": "Bryn",
+            "text": "2",
             "text_bbox_px": [
-              347.32,
+              354.32,
               254.889,
-              375.32,
+              368.32,
               270.889
             ],
-            "value": 17
+            "value": 2
           },
           "bbox_px": [
             286.08,
@@ -1188,18 +1188,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "2022",
+            "column_header": "2024",
             "column_index": 2,
             "row_index": 3,
-            "row_label": "Oza",
-            "text": "2",
+            "row_label": "Bryn",
+            "text": "21",
             "text_bbox_px": [
-              504.8,
+              497.8,
               254.889,
-              518.8,
+              525.8,
               270.889
             ],
-            "value": 2
+            "value": 21
           },
           "bbox_px": [
             436.56,
@@ -1213,18 +1213,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "2023",
+            "column_header": "2025",
             "column_index": 3,
             "row_index": 3,
-            "row_label": "Oza",
-            "text": "24",
+            "row_label": "Bryn",
+            "text": "4",
             "text_bbox_px": [
-              648.28,
+              655.28,
               254.889,
-              676.28,
+              669.28,
               270.889
             ],
-            "value": 24
+            "value": 4
           },
           "bbox_px": [
             587.04,
@@ -1238,18 +1238,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "2024",
+            "column_header": "2026",
             "column_index": 4,
             "row_index": 3,
-            "row_label": "Oza",
-            "text": "3",
+            "row_label": "Bryn",
+            "text": "17",
             "text_bbox_px": [
-              805.76,
+              798.76,
               254.889,
-              819.76,
+              826.76,
               270.889
             ],
-            "value": 3
+            "value": 17
           },
           "bbox_px": [
             737.52,
@@ -1266,12 +1266,12 @@
             "column_header": "Name",
             "column_index": 0,
             "row_index": 4,
-            "row_label": "Marx",
-            "text": "Marx",
+            "row_label": "Bork",
+            "text": "Bork",
             "text_bbox_px": [
               66.0,
               313.0,
-              134.0,
+              129.0,
               331.0
             ],
             "value": null
@@ -1288,18 +1288,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "2021",
+            "column_header": "2023",
             "column_index": 1,
             "row_index": 4,
-            "row_label": "Marx",
-            "text": "8",
+            "row_label": "Bork",
+            "text": "6",
             "text_bbox_px": [
               354.32,
               314.0,
               368.32,
               330.0
             ],
-            "value": 8
+            "value": 6
           },
           "bbox_px": [
             286.08,
@@ -1313,18 +1313,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "2022",
+            "column_header": "2024",
             "column_index": 2,
             "row_index": 4,
-            "row_label": "Marx",
-            "text": "5",
+            "row_label": "Bork",
+            "text": "27",
             "text_bbox_px": [
-              504.8,
+              497.8,
               314.0,
-              518.8,
+              525.8,
               330.0
             ],
-            "value": 5
+            "value": 27
           },
           "bbox_px": [
             436.56,
@@ -1338,18 +1338,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "2023",
+            "column_header": "2025",
             "column_index": 3,
             "row_index": 4,
-            "row_label": "Marx",
-            "text": "9",
+            "row_label": "Bork",
+            "text": "2",
             "text_bbox_px": [
               655.28,
               314.0,
               669.28,
               330.0
             ],
-            "value": 9
+            "value": 2
           },
           "bbox_px": [
             587.04,
@@ -1363,18 +1363,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "2024",
+            "column_header": "2026",
             "column_index": 4,
             "row_index": 4,
-            "row_label": "Marx",
-            "text": "6",
+            "row_label": "Bork",
+            "text": "32",
             "text_bbox_px": [
-              805.76,
+              798.76,
               314.0,
-              819.76,
+              826.76,
               330.0
             ],
-            "value": 6
+            "value": 32
           },
           "bbox_px": [
             737.52,
@@ -1391,13 +1391,13 @@
             "column_header": "Name",
             "column_index": 0,
             "row_index": 5,
-            "row_label": "Good",
-            "text": "Good",
+            "row_label": "Sage",
+            "text": "Sage",
             "text_bbox_px": [
               66.0,
-              372.111,
-              135.0,
-              390.111
+              369.611,
+              132.0,
+              392.611
             ],
             "value": null
           },
@@ -1413,18 +1413,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "2021",
+            "column_header": "2023",
             "column_index": 1,
             "row_index": 5,
-            "row_label": "Good",
-            "text": "12",
+            "row_label": "Sage",
+            "text": "28",
             "text_bbox_px": [
               347.32,
               373.111,
               375.32,
               389.111
             ],
-            "value": 12
+            "value": 28
           },
           "bbox_px": [
             286.08,
@@ -1438,18 +1438,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "2022",
+            "column_header": "2024",
             "column_index": 2,
             "row_index": 5,
-            "row_label": "Good",
-            "text": "29",
+            "row_label": "Sage",
+            "text": "3",
             "text_bbox_px": [
-              497.8,
+              504.8,
               373.111,
-              525.8,
+              518.8,
               389.111
             ],
-            "value": 29
+            "value": 3
           },
           "bbox_px": [
             436.56,
@@ -1463,18 +1463,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "2023",
+            "column_header": "2025",
             "column_index": 3,
             "row_index": 5,
-            "row_label": "Good",
-            "text": "14",
+            "row_label": "Sage",
+            "text": "3",
             "text_bbox_px": [
-              648.28,
+              655.28,
               373.111,
-              676.28,
+              669.28,
               389.111
             ],
-            "value": 14
+            "value": 3
           },
           "bbox_px": [
             587.04,
@@ -1488,18 +1488,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "2024",
+            "column_header": "2026",
             "column_index": 4,
             "row_index": 5,
-            "row_label": "Good",
-            "text": "19",
+            "row_label": "Sage",
+            "text": "17",
             "text_bbox_px": [
               798.76,
               373.111,
               826.76,
               389.111
             ],
-            "value": 19
+            "value": 17
           },
           "bbox_px": [
             737.52,
@@ -1516,12 +1516,12 @@
             "column_header": "Name",
             "column_index": 0,
             "row_index": 6,
-            "row_label": "Ulla",
-            "text": "Ulla",
+            "row_label": "Tol",
+            "text": "Tol",
             "text_bbox_px": [
               66.0,
               431.222,
-              117.0,
+              106.0,
               449.222
             ],
             "value": null
@@ -1538,18 +1538,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "2021",
+            "column_header": "2023",
             "column_index": 1,
             "row_index": 6,
-            "row_label": "Ulla",
-            "text": "31",
+            "row_label": "Tol",
+            "text": "23",
             "text_bbox_px": [
               347.32,
               432.222,
               375.32,
               448.222
             ],
-            "value": 31
+            "value": 23
           },
           "bbox_px": [
             286.08,
@@ -1563,18 +1563,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "2022",
+            "column_header": "2024",
             "column_index": 2,
             "row_index": 6,
-            "row_label": "Ulla",
-            "text": "14",
+            "row_label": "Tol",
+            "text": "9",
             "text_bbox_px": [
-              497.8,
+              504.8,
               432.222,
-              525.8,
+              518.8,
               448.222
             ],
-            "value": 14
+            "value": 9
           },
           "bbox_px": [
             436.56,
@@ -1588,18 +1588,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "2023",
+            "column_header": "2025",
             "column_index": 3,
             "row_index": 6,
-            "row_label": "Ulla",
-            "text": "22",
+            "row_label": "Tol",
+            "text": "18",
             "text_bbox_px": [
               648.28,
               432.222,
               676.28,
               448.222
             ],
-            "value": 22
+            "value": 18
           },
           "bbox_px": [
             587.04,
@@ -1613,18 +1613,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "2024",
+            "column_header": "2026",
             "column_index": 4,
             "row_index": 6,
-            "row_label": "Ulla",
-            "text": "21",
+            "row_label": "Tol",
+            "text": "26",
             "text_bbox_px": [
               798.76,
               432.222,
               826.76,
               448.222
             ],
-            "value": 21
+            "value": 26
           },
           "bbox_px": [
             737.52,
@@ -1641,12 +1641,12 @@
             "column_header": "Name",
             "column_index": 0,
             "row_index": 7,
-            "row_label": "Dev",
-            "text": "Dev",
+            "row_label": "Ciel",
+            "text": "Ciel",
             "text_bbox_px": [
               66.0,
               490.333,
-              118.0,
+              116.0,
               508.333
             ],
             "value": null
@@ -1663,18 +1663,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "2021",
+            "column_header": "2023",
             "column_index": 1,
             "row_index": 7,
-            "row_label": "Dev",
-            "text": "30",
+            "row_label": "Ciel",
+            "text": "4",
             "text_bbox_px": [
-              347.32,
+              354.32,
               491.333,
-              375.32,
+              368.32,
               507.333
             ],
-            "value": 30
+            "value": 4
           },
           "bbox_px": [
             286.08,
@@ -1688,18 +1688,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "2022",
+            "column_header": "2024",
             "column_index": 2,
             "row_index": 7,
-            "row_label": "Dev",
-            "text": "30",
+            "row_label": "Ciel",
+            "text": "7",
             "text_bbox_px": [
-              497.8,
+              504.8,
               491.333,
-              525.8,
+              518.8,
               507.333
             ],
-            "value": 30
+            "value": 7
           },
           "bbox_px": [
             436.56,
@@ -1713,18 +1713,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "2023",
+            "column_header": "2025",
             "column_index": 3,
             "row_index": 7,
-            "row_label": "Dev",
-            "text": "3",
+            "row_label": "Ciel",
+            "text": "10",
             "text_bbox_px": [
-              655.28,
+              648.28,
               491.333,
-              669.28,
+              676.28,
               507.333
             ],
-            "value": 3
+            "value": 10
           },
           "bbox_px": [
             587.04,
@@ -1738,18 +1738,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "2024",
+            "column_header": "2026",
             "column_index": 4,
             "row_index": 7,
-            "row_label": "Dev",
-            "text": "28",
+            "row_label": "Ciel",
+            "text": "22",
             "text_bbox_px": [
               798.76,
               491.333,
               826.76,
               507.333
             ],
-            "value": 28
+            "value": 22
           },
           "bbox_px": [
             737.52,
@@ -1766,12 +1766,12 @@
             "column_header": "Name",
             "column_index": 0,
             "row_index": 8,
-            "row_label": "Bock",
-            "text": "Bock",
+            "row_label": "Lina",
+            "text": "Lina",
             "text_bbox_px": [
               66.0,
               549.444,
-              131.0,
+              122.0,
               567.444
             ],
             "value": null
@@ -1788,18 +1788,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "2021",
+            "column_header": "2023",
             "column_index": 1,
             "row_index": 8,
-            "row_label": "Bock",
-            "text": "11",
+            "row_label": "Lina",
+            "text": "21",
             "text_bbox_px": [
               347.32,
               550.444,
               375.32,
               566.444
             ],
-            "value": 11
+            "value": 21
           },
           "bbox_px": [
             286.08,
@@ -1813,18 +1813,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "2022",
+            "column_header": "2024",
             "column_index": 2,
             "row_index": 8,
-            "row_label": "Bock",
-            "text": "11",
+            "row_label": "Lina",
+            "text": "8",
             "text_bbox_px": [
-              497.8,
+              504.8,
               550.444,
-              525.8,
+              518.8,
               566.444
             ],
-            "value": 11
+            "value": 8
           },
           "bbox_px": [
             436.56,
@@ -1838,10 +1838,10 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "2023",
+            "column_header": "2025",
             "column_index": 3,
             "row_index": 8,
-            "row_label": "Bock",
+            "row_label": "Lina",
             "text": "13",
             "text_bbox_px": [
               648.28,
@@ -1863,18 +1863,18 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "2024",
+            "column_header": "2026",
             "column_index": 4,
             "row_index": 8,
-            "row_label": "Bock",
-            "text": "23",
+            "row_label": "Lina",
+            "text": "13",
             "text_bbox_px": [
               798.76,
               550.444,
               826.76,
               566.444
             ],
-            "value": 23
+            "value": 13
           },
           "bbox_px": [
             737.52,
@@ -1887,18 +1887,18 @@
         }
       ],
       "relations": {
-        "answer_value": 29,
-        "query_row_label": "Good",
+        "answer_value": 7,
+        "query_row_label": "Ciel",
         "query_years": [
-          "2022"
+          "2024"
         ],
-        "scene_variant": "card_table",
+        "scene_variant": "zebra",
         "supporting_cell_ids": [
-          "cell_r5_c2"
+          "cell_r7_c2"
         ],
         "task_variant": "value_at_year"
       },
-      "scene_kind": "table_card_table_temporal"
+      "scene_kind": "table_zebra_temporal"
     },
     "verifier_spec": {
       "answer_type": "integer",

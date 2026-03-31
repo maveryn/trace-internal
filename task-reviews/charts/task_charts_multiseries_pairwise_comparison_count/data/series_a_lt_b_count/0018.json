@@ -1,60 +1,73 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 2
+    "value": 8
   },
   "evidence_gt": {
     "type": "label_set",
     "value": [
+      "D",
+      "E",
+      "H",
+      "K",
       "L",
-      "M"
+      "M",
+      "R",
+      "W"
     ]
   },
   "image": {
     "format": "png",
     "path": "charts/task_charts_multiseries_pairwise_comparison_count/images/series_a_lt_b_count/0018.png"
   },
-  "instance_seed": 3896689252268679,
-  "prompt": "You are given a multiseries chart: a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Read the chart values and count the categories where the stated series relation holds. Count the category labels where Nagy is below Nata.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer requirement: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+  "instance_seed": 659187808209777,
+  "prompt": "Look at the multiseries chart in the image. It shows a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Work category by category and count the labels where the requested series comparison is true. Determine the number of categories where Gala is less than Adam.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer requirement: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
   "prompt_variants": {
-    "answer_and_evidence": "You are given a multiseries chart: a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Read the chart values and count the categories where the stated series relation holds. Count the category labels where Nagy is below Nata.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer requirement: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
-    "answer_only": "You are given a multiseries chart: a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Read the chart values and count the categories where the stated series relation holds. Count the category labels where Nagy is below Nata.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
+    "answer_and_evidence": "Look at the multiseries chart in the image. It shows a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Work category by category and count the labels where the requested series comparison is true. Determine the number of categories where Gala is less than Adam.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer requirement: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+    "answer_only": "Look at the multiseries chart in the image. It shows a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Work category by category and count the labels where the requested series comparison is true. Determine the number of categories where Gala is less than Adam.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
   },
   "task": "task_charts_multiseries_pairwise_comparison_count",
   "task_variant": "series_a_lt_b_count",
   "trace_payload": {
     "execution_trace": {
-      "answer_value": 2,
-      "category_count": 7,
+      "answer_value": 8,
+      "category_count": 8,
       "category_count_range": [
         5,
         10
       ],
       "category_labels": [
-        "L",
-        "T",
-        "C",
-        "E",
+        "M",
         "D",
-        "S",
-        "M"
+        "R",
+        "E",
+        "W",
+        "K",
+        "H",
+        "L"
       ],
       "comparison": "less_than",
       "evidence_labels": [
+        "D",
+        "E",
+        "H",
+        "K",
         "L",
-        "M"
+        "M",
+        "R",
+        "W"
       ],
-      "left_series_label": "Nagy",
+      "left_series_label": "Gala",
       "mark_color_distance_space": "lab",
       "mark_color_min_distance": 40.0,
       "mark_color_sampling_policy": "random_rgb_palette",
       "queried_series_labels": [
-        "Nagy",
-        "Nata"
+        "Gala",
+        "Adam"
       ],
       "question_format": "numeric_open",
-      "right_series_label": "Nata",
-      "scene_variant": "grouped_bar",
+      "right_series_label": "Adam",
+      "scene_variant": "grouped_horizontal_bar",
       "scene_variant_probabilities": {
         "grouped_bar": 0.25,
         "grouped_horizontal_bar": 0.25,
@@ -68,126 +81,220 @@
       ],
       "series_fill_palette_rgb": [
         [
-          79,
-          11,
-          209
+          166,
+          168,
+          4
         ],
         [
           49,
-          74,
-          160
-        ]
-      ],
-      "series_labels": [
-        "Nagy",
-        "Nata"
-      ],
-      "series_outline_palette_rgb": [
-        [
-          43,
-          6,
-          115
-        ],
-        [
-          27,
-          41,
+          92,
           88
         ]
       ],
-      "target_answer": 2,
+      "series_labels": [
+        "Gala",
+        "Adam"
+      ],
+      "series_outline_palette_rgb": [
+        [
+          91,
+          92,
+          2
+        ],
+        [
+          27,
+          51,
+          48
+        ]
+      ],
+      "target_answer": 8,
       "target_answer_range": [
         0,
         8
       ],
       "task_variant": "series_a_lt_b_count",
       "task_variant_probabilities": {
-        "series_a_gt_b_count": 0.5,
-        "series_a_lt_b_count": 0.5
+        "series_a_gt_b_count": 0.0,
+        "series_a_lt_b_count": 1.0
       },
       "values_by_category": {
-        "C": {
-          "Nagy": 18,
-          "Nata": 6
-        },
         "D": {
-          "Nagy": 13,
-          "Nata": 2
+          "Adam": 12,
+          "Gala": 4
         },
         "E": {
-          "Nagy": 18,
-          "Nata": 9
+          "Adam": 14,
+          "Gala": 5
+        },
+        "H": {
+          "Adam": 19,
+          "Gala": 9
+        },
+        "K": {
+          "Adam": 20,
+          "Gala": 2
         },
         "L": {
-          "Nagy": 16,
-          "Nata": 18
+          "Adam": 20,
+          "Gala": 7
         },
         "M": {
-          "Nagy": 2,
-          "Nata": 9
+          "Adam": 10,
+          "Gala": 4
         },
-        "S": {
-          "Nagy": 14,
-          "Nata": 10
+        "R": {
+          "Adam": 19,
+          "Gala": 4
         },
-        "T": {
-          "Nagy": 10,
-          "Nata": 2
+        "W": {
+          "Adam": 18,
+          "Gala": 11
         }
       }
     },
     "projected_evidence": {
       "bbox_set": [
         [
-          118.343,
-          69.474,
-          174.514,
-          562.0
+          53.0,
+          119.141,
+          527.429,
+          150.359
         ],
         [
-          771.486,
-          298.737,
-          827.657,
-          562.0
+          54.5,
+          240.141,
+          600.0,
+          271.359
+        ],
+        [
+          53.0,
+          421.641,
+          781.429,
+          452.859
+        ],
+        [
+          53.0,
+          361.141,
+          817.714,
+          392.359
+        ],
+        [
+          55.0,
+          482.141,
+          817.714,
+          513.359
+        ],
+        [
+          51.0,
+          58.641,
+          454.857,
+          89.859
+        ],
+        [
+          53.5,
+          179.641,
+          781.429,
+          210.859
+        ],
+        [
+          50.0,
+          300.641,
+          745.143,
+          331.859
         ]
       ],
       "label_set": [
+        "D",
+        "E",
+        "H",
+        "K",
         "L",
-        "M"
+        "M",
+        "R",
+        "W"
       ],
       "pixel_point_map": {
+        "D": [
+          62.0,
+          134.75
+        ],
+        "E": [
+          62.0,
+          255.75
+        ],
+        "H": [
+          62.0,
+          437.25
+        ],
+        "K": [
+          62.0,
+          376.75
+        ],
         "L": [
-          146.429,
-          554.0
+          62.0,
+          497.75
         ],
         "M": [
-          799.571,
-          554.0
+          62.0,
+          74.25
+        ],
+        "R": [
+          62.0,
+          195.25
+        ],
+        "W": [
+          62.0,
+          316.25
         ]
       },
       "pixel_point_set": [
         [
-          146.429,
-          554.0
+          62.0,
+          134.75
         ],
         [
-          799.571,
-          554.0
+          62.0,
+          255.75
+        ],
+        [
+          62.0,
+          437.25
+        ],
+        [
+          62.0,
+          376.75
+        ],
+        [
+          62.0,
+          497.75
+        ],
+        [
+          62.0,
+          74.25
+        ],
+        [
+          62.0,
+          195.25
+        ],
+        [
+          62.0,
+          316.25
         ]
       ]
     },
     "query_spec": {
       "params": {
-        "category_count": 7,
+        "category_count": 8,
         "category_count_range": [
           5,
           10
         ],
         "comparison": "less_than",
         "queried_series_labels": [
-          "Nagy",
-          "Nata"
+          "Gala",
+          "Adam"
         ],
-        "scene_variant": "grouped_bar",
+        "scene_variant": "grouped_horizontal_bar",
         "scene_variant_probabilities": {
           "grouped_bar": 0.25,
           "grouped_horizontal_bar": 0.25,
@@ -199,15 +306,15 @@
           2,
           3
         ],
-        "target_answer": 2,
+        "target_answer": 8,
         "target_answer_range": [
           0,
           8
         ],
         "task_variant": "series_a_lt_b_count",
         "task_variant_probabilities": {
-          "series_a_gt_b_count": 0.5,
-          "series_a_lt_b_count": 0.5
+          "series_a_gt_b_count": 0.0,
+          "series_a_lt_b_count": 1.0
         }
       },
       "prompt_variant": {
@@ -222,16 +329,16 @@
           "json_example_answer_only": "{\"answer\":2}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "left_series": "Nagy",
-          "object_description": "a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category",
-          "right_series": "Nata"
+          "left_series": "Gala",
+          "object_description": "a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category",
+          "right_series": "Adam"
         },
         "task_family_key": "multiseries_chart_comparison",
-        "task_family_variant_index": 4,
+        "task_family_variant_index": 3,
         "task_key": "pairwise_comparison_count_query",
-        "task_variant_index": 3,
+        "task_variant_index": 4,
         "task_variant_key": "series_a_lt_b_count",
-        "task_variant_template_index": 1,
+        "task_variant_template_index": 3,
         "template_paths": [
           "charts/multiseries/charts_multiseries_v1.json"
         ],
@@ -257,16 +364,16 @@
               "json_example_answer_only": "{\"answer\":2}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "left_series": "Nagy",
-              "object_description": "a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category",
-              "right_series": "Nata"
+              "left_series": "Gala",
+              "object_description": "a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category",
+              "right_series": "Adam"
             },
             "task_family_key": "multiseries_chart_comparison",
-            "task_family_variant_index": 4,
+            "task_family_variant_index": 3,
             "task_key": "pairwise_comparison_count_query",
-            "task_variant_index": 3,
+            "task_variant_index": 4,
             "task_variant_key": "series_a_lt_b_count",
-            "task_variant_template_index": 1,
+            "task_variant_template_index": 3,
             "template_paths": [
               "charts/multiseries/charts_multiseries_v1.json"
             ],
@@ -277,12 +384,12 @@
               "task_variant:series_a_lt_b_count": 5
             }
           },
-          "prompt": "You are given a multiseries chart: a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Read the chart values and count the categories where the stated series relation holds. Count the category labels where Nagy is below Nata.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer requirement: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}"
+          "prompt": "Look at the multiseries chart in the image. It shows a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Work category by category and count the labels where the requested series comparison is true. Determine the number of categories where Gala is less than Adam.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer requirement: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 0,
+            "answer_or_evidence_variant_index": 4,
             "prompt_bundle_id": "charts_multiseries_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -292,16 +399,16 @@
               "json_example_answer_only": "{\"answer\":2}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "left_series": "Nagy",
-              "object_description": "a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category",
-              "right_series": "Nata"
+              "left_series": "Gala",
+              "object_description": "a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category",
+              "right_series": "Adam"
             },
             "task_family_key": "multiseries_chart_comparison",
-            "task_family_variant_index": 4,
+            "task_family_variant_index": 3,
             "task_key": "pairwise_comparison_count_query",
-            "task_variant_index": 3,
+            "task_variant_index": 4,
             "task_variant_key": "series_a_lt_b_count",
-            "task_variant_template_index": 1,
+            "task_variant_template_index": 3,
             "template_paths": [
               "charts/multiseries/charts_multiseries_v1.json"
             ],
@@ -312,7 +419,7 @@
               "task_variant:series_a_lt_b_count": 5
             }
           },
-          "prompt": "You are given a multiseries chart: a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Read the chart values and count the categories where the stated series relation holds. Count the category labels where Nagy is below Nata.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
+          "prompt": "Look at the multiseries chart in the image. It shows a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Work category by category and count the labels where the requested series comparison is true. Determine the number of categories where Gala is less than Adam.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
         }
       },
       "task_variant": "series_a_lt_b_count",
@@ -320,33 +427,37 @@
     },
     "render_map": {
       "category_label_centers_px": {
-        "C": [
-          364.143,
-          554.0
-        ],
         "D": [
-          581.857,
-          554.0
+          62.0,
+          134.75
         ],
         "E": [
-          473.0,
-          554.0
+          62.0,
+          255.75
+        ],
+        "H": [
+          62.0,
+          437.25
+        ],
+        "K": [
+          62.0,
+          376.75
         ],
         "L": [
-          146.429,
-          554.0
+          62.0,
+          497.75
         ],
         "M": [
-          799.571,
-          554.0
+          62.0,
+          74.25
         ],
-        "S": [
-          690.714,
-          554.0
+        "R": [
+          62.0,
+          195.25
         ],
-        "T": [
-          255.286,
-          554.0
+        "W": [
+          62.0,
+          316.25
         ]
       },
       "image_id": "img0",
@@ -387,26 +498,26 @@
         "sampling_policy": "random_rgb_palette",
         "series_fill_palette_rgb": [
           [
-            79,
-            11,
-            209
+            166,
+            168,
+            4
           ],
           [
             49,
-            74,
-            160
+            92,
+            88
           ]
         ],
         "series_outline_palette_rgb": [
           [
-            43,
-            6,
-            115
+            91,
+            92,
+            2
           ],
           [
             27,
-            41,
-            88
+            51,
+            48
           ]
         ]
       },
@@ -432,13 +543,13 @@
         "edits": [],
         "enabled": false
       },
-      "scene_variant": "grouped_bar",
+      "scene_variant": "grouped_horizontal_bar",
       "text_style": {
         "label_font_size_px": 22,
         "label_stroke_width_px": 2,
         "tick_font_size_px": 18
       },
-      "y_axis_max": 19,
+      "y_axis_max": 21,
       "y_ticks": [
         0,
         1,
@@ -459,7 +570,9 @@
         16,
         17,
         18,
-        19
+        19,
+        20,
+        21
       ]
     },
     "scene_ir": {
@@ -467,611 +580,707 @@
         {
           "attrs": {
             "category_group_bbox_px": [
-              118.343,
-              69.474,
-              174.514,
-              562.0
+              51.0,
+              58.641,
+              454.857,
+              89.859
             ],
-            "category_label": "L",
+            "category_label": "M",
             "category_label_center_px": [
-              146.429,
-              554.0
+              62.0,
+              74.25
             ],
             "category_rank": 0,
             "mark_bbox_px": [
-              118.343,
-              120.421,
-              141.857,
-              528.0
+              92.0,
+              58.641,
+              237.143,
+              71.709
             ],
             "mark_center_px": [
-              130.1,
-              120.421
+              164.571,
+              65.175
             ],
             "mark_fill_rgb": [
-              79,
-              11,
-              209
+              166,
+              168,
+              4
             ],
             "mark_outline_rgb": [
-              43,
-              6,
-              115
+              91,
+              92,
+              2
             ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Nagy",
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Gala",
             "series_rank": 0,
-            "value": 16
+            "value": 4
           },
-          "entity_id": "mark_L_Nagy",
+          "entity_id": "mark_M_Gala",
           "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              118.343,
-              69.474,
-              174.514,
-              562.0
+              51.0,
+              58.641,
+              454.857,
+              89.859
             ],
-            "category_label": "L",
+            "category_label": "M",
             "category_label_center_px": [
-              146.429,
-              554.0
+              62.0,
+              74.25
             ],
             "category_rank": 0,
             "mark_bbox_px": [
-              151.001,
-              69.474,
-              174.514,
-              528.0
+              92.0,
+              76.791,
+              454.857,
+              89.859
             ],
             "mark_center_px": [
-              162.757,
-              69.474
+              273.429,
+              83.325
             ],
             "mark_fill_rgb": [
               49,
-              74,
-              160
+              92,
+              88
             ],
             "mark_outline_rgb": [
               27,
-              41,
-              88
+              51,
+              48
             ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Nata",
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Adam",
             "series_rank": 1,
-            "value": 18
-          },
-          "entity_id": "mark_L_Nata",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              227.201,
-              273.263,
-              283.371,
-              562.0
-            ],
-            "category_label": "T",
-            "category_label_center_px": [
-              255.286,
-              554.0
-            ],
-            "category_rank": 1,
-            "mark_bbox_px": [
-              227.201,
-              273.263,
-              250.714,
-              528.0
-            ],
-            "mark_center_px": [
-              238.957,
-              273.263
-            ],
-            "mark_fill_rgb": [
-              79,
-              11,
-              209
-            ],
-            "mark_outline_rgb": [
-              43,
-              6,
-              115
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Nagy",
-            "series_rank": 0,
             "value": 10
           },
-          "entity_id": "mark_T_Nagy",
+          "entity_id": "mark_M_Adam",
           "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              227.201,
-              273.263,
-              283.371,
-              562.0
+              53.0,
+              119.141,
+              527.429,
+              150.359
             ],
-            "category_label": "T",
+            "category_label": "D",
             "category_label_center_px": [
-              255.286,
-              554.0
+              62.0,
+              134.75
             ],
             "category_rank": 1,
             "mark_bbox_px": [
-              259.858,
-              477.053,
-              283.371,
-              528.0
+              92.0,
+              119.141,
+              237.143,
+              132.209
             ],
             "mark_center_px": [
-              271.614,
-              477.053
+              164.571,
+              125.675
             ],
             "mark_fill_rgb": [
-              49,
-              74,
-              160
+              166,
+              168,
+              4
             ],
             "mark_outline_rgb": [
-              27,
-              41,
-              88
+              91,
+              92,
+              2
             ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Nata",
-            "series_rank": 1,
-            "value": 2
-          },
-          "entity_id": "mark_T_Nata",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              336.058,
-              69.474,
-              392.228,
-              562.0
-            ],
-            "category_label": "C",
-            "category_label_center_px": [
-              364.143,
-              554.0
-            ],
-            "category_rank": 2,
-            "mark_bbox_px": [
-              336.058,
-              69.474,
-              359.571,
-              528.0
-            ],
-            "mark_center_px": [
-              347.814,
-              69.474
-            ],
-            "mark_fill_rgb": [
-              79,
-              11,
-              209
-            ],
-            "mark_outline_rgb": [
-              43,
-              6,
-              115
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Nagy",
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Gala",
             "series_rank": 0,
-            "value": 18
+            "value": 4
           },
-          "entity_id": "mark_C_Nagy",
+          "entity_id": "mark_D_Gala",
           "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              336.058,
-              69.474,
-              392.228,
-              562.0
-            ],
-            "category_label": "C",
-            "category_label_center_px": [
-              364.143,
-              554.0
-            ],
-            "category_rank": 2,
-            "mark_bbox_px": [
-              368.715,
-              375.158,
-              392.228,
-              528.0
-            ],
-            "mark_center_px": [
-              380.471,
-              375.158
-            ],
-            "mark_fill_rgb": [
-              49,
-              74,
-              160
-            ],
-            "mark_outline_rgb": [
-              27,
-              41,
-              88
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Nata",
-            "series_rank": 1,
-            "value": 6
-          },
-          "entity_id": "mark_C_Nata",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              444.915,
-              69.474,
-              501.085,
-              562.0
-            ],
-            "category_label": "E",
-            "category_label_center_px": [
-              473.0,
-              554.0
-            ],
-            "category_rank": 3,
-            "mark_bbox_px": [
-              444.915,
-              69.474,
-              468.428,
-              528.0
-            ],
-            "mark_center_px": [
-              456.671,
-              69.474
-            ],
-            "mark_fill_rgb": [
-              79,
-              11,
-              209
-            ],
-            "mark_outline_rgb": [
-              43,
-              6,
-              115
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Nagy",
-            "series_rank": 0,
-            "value": 18
-          },
-          "entity_id": "mark_E_Nagy",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              444.915,
-              69.474,
-              501.085,
-              562.0
-            ],
-            "category_label": "E",
-            "category_label_center_px": [
-              473.0,
-              554.0
-            ],
-            "category_rank": 3,
-            "mark_bbox_px": [
-              477.572,
-              298.737,
-              501.085,
-              528.0
-            ],
-            "mark_center_px": [
-              489.329,
-              298.737
-            ],
-            "mark_fill_rgb": [
-              49,
-              74,
-              160
-            ],
-            "mark_outline_rgb": [
-              27,
-              41,
-              88
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Nata",
-            "series_rank": 1,
-            "value": 9
-          },
-          "entity_id": "mark_E_Nata",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              553.772,
-              196.842,
-              609.942,
-              562.0
+              53.0,
+              119.141,
+              527.429,
+              150.359
             ],
             "category_label": "D",
             "category_label_center_px": [
-              581.857,
-              554.0
+              62.0,
+              134.75
             ],
-            "category_rank": 4,
+            "category_rank": 1,
             "mark_bbox_px": [
-              553.772,
-              196.842,
-              577.285,
-              528.0
+              92.0,
+              137.291,
+              527.429,
+              150.359
             ],
             "mark_center_px": [
-              565.529,
-              196.842
-            ],
-            "mark_fill_rgb": [
-              79,
-              11,
-              209
-            ],
-            "mark_outline_rgb": [
-              43,
-              6,
-              115
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Nagy",
-            "series_rank": 0,
-            "value": 13
-          },
-          "entity_id": "mark_D_Nagy",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              553.772,
-              196.842,
-              609.942,
-              562.0
-            ],
-            "category_label": "D",
-            "category_label_center_px": [
-              581.857,
-              554.0
-            ],
-            "category_rank": 4,
-            "mark_bbox_px": [
-              586.429,
-              477.053,
-              609.942,
-              528.0
-            ],
-            "mark_center_px": [
-              598.186,
-              477.053
+              309.714,
+              143.825
             ],
             "mark_fill_rgb": [
               49,
-              74,
-              160
+              92,
+              88
             ],
             "mark_outline_rgb": [
               27,
-              41,
-              88
+              51,
+              48
             ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Nata",
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Adam",
             "series_rank": 1,
-            "value": 2
+            "value": 12
           },
-          "entity_id": "mark_D_Nata",
+          "entity_id": "mark_D_Adam",
           "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              662.629,
-              171.368,
-              718.799,
-              562.0
+              53.5,
+              179.641,
+              781.429,
+              210.859
             ],
-            "category_label": "S",
+            "category_label": "R",
             "category_label_center_px": [
-              690.714,
-              554.0
+              62.0,
+              195.25
             ],
-            "category_rank": 5,
+            "category_rank": 2,
             "mark_bbox_px": [
-              662.629,
-              171.368,
-              686.142,
-              528.0
+              92.0,
+              179.641,
+              237.143,
+              192.709
             ],
             "mark_center_px": [
-              674.386,
-              171.368
+              164.571,
+              186.175
             ],
             "mark_fill_rgb": [
-              79,
-              11,
-              209
+              166,
+              168,
+              4
             ],
             "mark_outline_rgb": [
-              43,
-              6,
-              115
+              91,
+              92,
+              2
             ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Nagy",
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Gala",
             "series_rank": 0,
+            "value": 4
+          },
+          "entity_id": "mark_R_Gala",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.5,
+              179.641,
+              781.429,
+              210.859
+            ],
+            "category_label": "R",
+            "category_label_center_px": [
+              62.0,
+              195.25
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              92.0,
+              197.791,
+              781.429,
+              210.859
+            ],
+            "mark_center_px": [
+              436.714,
+              204.325
+            ],
+            "mark_fill_rgb": [
+              49,
+              92,
+              88
+            ],
+            "mark_outline_rgb": [
+              27,
+              51,
+              48
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Adam",
+            "series_rank": 1,
+            "value": 19
+          },
+          "entity_id": "mark_R_Adam",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              54.5,
+              240.141,
+              600.0,
+              271.359
+            ],
+            "category_label": "E",
+            "category_label_center_px": [
+              62.0,
+              255.75
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              92.0,
+              240.141,
+              273.429,
+              253.209
+            ],
+            "mark_center_px": [
+              182.714,
+              246.675
+            ],
+            "mark_fill_rgb": [
+              166,
+              168,
+              4
+            ],
+            "mark_outline_rgb": [
+              91,
+              92,
+              2
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Gala",
+            "series_rank": 0,
+            "value": 5
+          },
+          "entity_id": "mark_E_Gala",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              54.5,
+              240.141,
+              600.0,
+              271.359
+            ],
+            "category_label": "E",
+            "category_label_center_px": [
+              62.0,
+              255.75
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              92.0,
+              258.291,
+              600.0,
+              271.359
+            ],
+            "mark_center_px": [
+              346.0,
+              264.825
+            ],
+            "mark_fill_rgb": [
+              49,
+              92,
+              88
+            ],
+            "mark_outline_rgb": [
+              27,
+              51,
+              48
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Adam",
+            "series_rank": 1,
             "value": 14
           },
-          "entity_id": "mark_S_Nagy",
+          "entity_id": "mark_E_Adam",
           "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              662.629,
-              171.368,
-              718.799,
-              562.0
+              50.0,
+              300.641,
+              745.143,
+              331.859
             ],
-            "category_label": "S",
+            "category_label": "W",
             "category_label_center_px": [
-              690.714,
-              554.0
+              62.0,
+              316.25
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              92.0,
+              300.641,
+              491.143,
+              313.709
+            ],
+            "mark_center_px": [
+              291.571,
+              307.175
+            ],
+            "mark_fill_rgb": [
+              166,
+              168,
+              4
+            ],
+            "mark_outline_rgb": [
+              91,
+              92,
+              2
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Gala",
+            "series_rank": 0,
+            "value": 11
+          },
+          "entity_id": "mark_W_Gala",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              50.0,
+              300.641,
+              745.143,
+              331.859
+            ],
+            "category_label": "W",
+            "category_label_center_px": [
+              62.0,
+              316.25
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              92.0,
+              318.791,
+              745.143,
+              331.859
+            ],
+            "mark_center_px": [
+              418.571,
+              325.325
+            ],
+            "mark_fill_rgb": [
+              49,
+              92,
+              88
+            ],
+            "mark_outline_rgb": [
+              27,
+              51,
+              48
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Adam",
+            "series_rank": 1,
+            "value": 18
+          },
+          "entity_id": "mark_W_Adam",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.0,
+              361.141,
+              817.714,
+              392.359
+            ],
+            "category_label": "K",
+            "category_label_center_px": [
+              62.0,
+              376.75
             ],
             "category_rank": 5,
             "mark_bbox_px": [
-              695.286,
-              273.263,
-              718.799,
-              528.0
+              92.0,
+              361.141,
+              164.571,
+              374.209
             ],
             "mark_center_px": [
-              707.043,
-              273.263
+              128.286,
+              367.675
             ],
             "mark_fill_rgb": [
-              49,
-              74,
-              160
+              166,
+              168,
+              4
             ],
             "mark_outline_rgb": [
-              27,
-              41,
-              88
+              91,
+              92,
+              2
             ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Nata",
-            "series_rank": 1,
-            "value": 10
-          },
-          "entity_id": "mark_S_Nata",
-          "entity_type": "bar"
-        },
-        {
-          "attrs": {
-            "category_group_bbox_px": [
-              771.486,
-              298.737,
-              827.657,
-              562.0
-            ],
-            "category_label": "M",
-            "category_label_center_px": [
-              799.571,
-              554.0
-            ],
-            "category_rank": 6,
-            "mark_bbox_px": [
-              771.486,
-              477.053,
-              794.999,
-              528.0
-            ],
-            "mark_center_px": [
-              783.243,
-              477.053
-            ],
-            "mark_fill_rgb": [
-              79,
-              11,
-              209
-            ],
-            "mark_outline_rgb": [
-              43,
-              6,
-              115
-            ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Nagy",
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Gala",
             "series_rank": 0,
             "value": 2
           },
-          "entity_id": "mark_M_Nagy",
+          "entity_id": "mark_K_Gala",
           "entity_type": "bar"
         },
         {
           "attrs": {
             "category_group_bbox_px": [
-              771.486,
-              298.737,
-              827.657,
-              562.0
+              53.0,
+              361.141,
+              817.714,
+              392.359
             ],
-            "category_label": "M",
+            "category_label": "K",
             "category_label_center_px": [
-              799.571,
-              554.0
+              62.0,
+              376.75
             ],
-            "category_rank": 6,
+            "category_rank": 5,
             "mark_bbox_px": [
-              804.143,
-              298.737,
-              827.657,
-              528.0
+              92.0,
+              379.291,
+              817.714,
+              392.359
             ],
             "mark_center_px": [
-              815.9,
-              298.737
+              454.857,
+              385.825
             ],
             "mark_fill_rgb": [
               49,
-              74,
-              160
+              92,
+              88
             ],
             "mark_outline_rgb": [
               27,
-              41,
-              88
+              51,
+              48
             ],
-            "scene_variant": "grouped_bar",
-            "series_label": "Nata",
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Adam",
             "series_rank": 1,
+            "value": 20
+          },
+          "entity_id": "mark_K_Adam",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.0,
+              421.641,
+              781.429,
+              452.859
+            ],
+            "category_label": "H",
+            "category_label_center_px": [
+              62.0,
+              437.25
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              92.0,
+              421.641,
+              418.571,
+              434.709
+            ],
+            "mark_center_px": [
+              255.286,
+              428.175
+            ],
+            "mark_fill_rgb": [
+              166,
+              168,
+              4
+            ],
+            "mark_outline_rgb": [
+              91,
+              92,
+              2
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Gala",
+            "series_rank": 0,
             "value": 9
           },
-          "entity_id": "mark_M_Nata",
+          "entity_id": "mark_H_Gala",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.0,
+              421.641,
+              781.429,
+              452.859
+            ],
+            "category_label": "H",
+            "category_label_center_px": [
+              62.0,
+              437.25
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              92.0,
+              439.791,
+              781.429,
+              452.859
+            ],
+            "mark_center_px": [
+              436.714,
+              446.325
+            ],
+            "mark_fill_rgb": [
+              49,
+              92,
+              88
+            ],
+            "mark_outline_rgb": [
+              27,
+              51,
+              48
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Adam",
+            "series_rank": 1,
+            "value": 19
+          },
+          "entity_id": "mark_H_Adam",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              55.0,
+              482.141,
+              817.714,
+              513.359
+            ],
+            "category_label": "L",
+            "category_label_center_px": [
+              62.0,
+              497.75
+            ],
+            "category_rank": 7,
+            "mark_bbox_px": [
+              92.0,
+              482.141,
+              346.0,
+              495.209
+            ],
+            "mark_center_px": [
+              219.0,
+              488.675
+            ],
+            "mark_fill_rgb": [
+              166,
+              168,
+              4
+            ],
+            "mark_outline_rgb": [
+              91,
+              92,
+              2
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Gala",
+            "series_rank": 0,
+            "value": 7
+          },
+          "entity_id": "mark_L_Gala",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              55.0,
+              482.141,
+              817.714,
+              513.359
+            ],
+            "category_label": "L",
+            "category_label_center_px": [
+              62.0,
+              497.75
+            ],
+            "category_rank": 7,
+            "mark_bbox_px": [
+              92.0,
+              500.291,
+              817.714,
+              513.359
+            ],
+            "mark_center_px": [
+              454.857,
+              506.825
+            ],
+            "mark_fill_rgb": [
+              49,
+              92,
+              88
+            ],
+            "mark_outline_rgb": [
+              27,
+              51,
+              48
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Adam",
+            "series_rank": 1,
+            "value": 20
+          },
+          "entity_id": "mark_L_Adam",
           "entity_type": "bar"
         }
       ],
       "relations": {
         "comparison": "less_than",
         "evidence_labels": [
+          "D",
+          "E",
+          "H",
+          "K",
           "L",
-          "M"
+          "M",
+          "R",
+          "W"
         ],
         "queried_series_labels": [
-          "Nagy",
-          "Nata"
+          "Gala",
+          "Adam"
         ],
-        "scene_variant": "grouped_bar",
+        "scene_variant": "grouped_horizontal_bar",
         "task_variant": "series_a_lt_b_count"
       },
-      "scene_kind": "chart_grouped_bar_multiseries"
+      "scene_kind": "chart_grouped_horizontal_bar_multiseries"
     },
     "witness_symbolic": {
       "labels": [
+        "D",
+        "E",
+        "H",
+        "K",
         "L",
-        "M"
+        "M",
+        "R",
+        "W"
       ],
       "type": "label_set"
     }

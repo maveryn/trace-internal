@@ -1,70 +1,68 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 13
+    "value": 10
   },
   "evidence_gt": {
     "type": "integer_list",
     "value": [
-      5,
-      13
+      10,
+      10
     ]
   },
   "image": {
     "format": "png",
     "path": "charts/task_charts_readout_subset_value/images/max_two/0024.png"
   },
-  "instance_seed": 7052628102531485,
-  "prompt": "The image shows a labeled scatter plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Use the labeled chart values for the named labels to answer the question. What is the maximum of the values for labels N and L?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question.\nAnswer: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[6,13],\"answer\":13}",
+  "instance_seed": 4878961147320691,
+  "prompt": "You are given a labeled chart: a labeled lollipop chart. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Use the chart values for the specified labels and answer the question. Between labels E and T, what is the greater value?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question.\nAnswer: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[6,13],\"answer\":13}",
   "prompt_variants": {
-    "answer_and_evidence": "The image shows a labeled scatter plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Use the labeled chart values for the named labels to answer the question. What is the maximum of the values for labels N and L?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question.\nAnswer: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[6,13],\"answer\":13}",
-    "answer_only": "The image shows a labeled scatter plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Use the labeled chart values for the named labels to answer the question. What is the maximum of the values for labels N and L?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":13}"
+    "answer_and_evidence": "You are given a labeled chart: a labeled lollipop chart. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Use the chart values for the specified labels and answer the question. Between labels E and T, what is the greater value?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question.\nAnswer: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[6,13],\"answer\":13}",
+    "answer_only": "You are given a labeled chart: a labeled lollipop chart. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Use the chart values for the specified labels and answer the question. Between labels E and T, what is the greater value?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":13}"
   },
   "task": "task_charts_readout_subset_value",
   "task_variant": "max_two",
   "trace_payload": {
     "execution_trace": {
-      "answer_value": 13,
+      "answer_value": 10,
       "labels": [
+        "J",
+        "H",
+        "E",
+        "X",
         "T",
-        "L",
-        "R",
-        "B",
         "N",
-        "M",
-        "V",
-        "U",
-        "Y",
-        "X"
+        "Q",
+        "M"
       ],
       "mark_color_distance_space": "lab",
       "mark_color_min_distance": 40.0,
       "mark_color_sampling_policy": "random_rgb",
-      "mark_count": 10,
+      "mark_count": 8,
       "mark_count_range": [
         5,
         10
       ],
       "mark_fill_rgb": [
-        200,
-        22,
-        96
+        182,
+        112,
+        104
       ],
       "mark_outline_rgb": [
-        110,
-        12,
-        53
+        100,
+        62,
+        57
       ],
       "query_labels": [
-        "N",
-        "L"
+        "E",
+        "T"
       ],
       "query_values": [
-        5,
-        13
+        10,
+        10
       ],
       "question_format": "numeric_open",
-      "scene_variant": "scatter",
+      "scene_variant": "lollipop",
       "scene_variant_probabilities": {
         "area": 0.1,
         "bar": 0.1,
@@ -77,94 +75,90 @@
         "radar": 0.1,
         "scatter": 0.1
       },
-      "target_answer": 13,
+      "target_answer": 10,
       "target_answer_range": [
         1,
         20
       ],
       "task_variant": "max_two",
       "task_variant_probabilities": {
-        "difference_two_abs": 0.2,
-        "max_two": 0.2,
-        "mean_two": 0.2,
-        "min_two": 0.2,
-        "sum_two": 0.2
+        "difference_two_abs": 0.0,
+        "max_two": 1.0,
+        "mean_two": 0.0,
+        "min_two": 0.0,
+        "sum_two": 0.0
       },
       "value_max": 20,
       "value_min": 1,
       "values": [
-        1,
         13,
-        4,
-        12,
-        5,
-        3,
-        4,
-        18,
-        13,
-        18
+        14,
+        10,
+        16,
+        10,
+        9,
+        8,
+        16
       ],
       "values_by_label": {
-        "B": 12,
-        "L": 13,
-        "M": 3,
-        "N": 5,
-        "R": 4,
-        "T": 1,
-        "U": 18,
-        "V": 4,
-        "X": 18,
-        "Y": 13
+        "E": 10,
+        "H": 14,
+        "J": 13,
+        "M": 16,
+        "N": 9,
+        "Q": 8,
+        "T": 10,
+        "X": 16
       }
     },
     "projected_evidence": {
       "bbox_set": [
         [
-          383.157,
-          377.895,
-          399.157,
-          393.895
+          290.875,
+          227.059,
+          306.875,
+          243.059
         ],
         [
-          194.355,
-          182.526,
-          210.355,
-          198.526
+          456.375,
+          227.059,
+          472.375,
+          243.059
         ]
       ],
       "integer_list": [
-        5,
-        13
+        10,
+        10
       ],
       "pixel_point_map": {
-        "L": [
-          202.355,
-          190.526
+        "E": [
+          298.875,
+          235.059
         ],
-        "N": [
-          391.157,
-          385.895
+        "T": [
+          464.375,
+          235.059
         ]
       },
       "pixel_point_set": [
         [
-          391.157,
-          385.895
+          298.875,
+          235.059
         ],
         [
-          202.355,
-          190.526
+          464.375,
+          235.059
         ]
       ]
     },
     "query_spec": {
       "params": {
-        "mark_count": 10,
+        "mark_count": 8,
         "query_labels": [
-          "N",
-          "L"
+          "E",
+          "T"
         ],
-        "scene_variant": "scatter",
+        "scene_variant": "lollipop",
         "scene_variant_probabilities": {
           "area": 0.1,
           "bar": 0.1,
@@ -177,18 +171,18 @@
           "radar": 0.1,
           "scatter": 0.1
         },
-        "target_answer": 13,
+        "target_answer": 10,
         "target_answer_range": [
           1,
           20
         ],
         "task_variant": "max_two",
         "task_variant_probabilities": {
-          "difference_two_abs": 0.2,
-          "max_two": 0.2,
-          "mean_two": 0.2,
-          "min_two": 0.2,
-          "sum_two": 0.2
+          "difference_two_abs": 0.0,
+          "max_two": 1.0,
+          "mean_two": 0.0,
+          "min_two": 0.0,
+          "sum_two": 0.0
         }
       },
       "prompt_variant": {
@@ -203,16 +197,16 @@
           "json_example_answer_only": "{\"answer\":13}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "object_description": "a labeled scatter plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis",
-          "query_label_a": "N",
-          "query_label_b": "L"
+          "object_description": "a labeled lollipop chart. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis",
+          "query_label_a": "E",
+          "query_label_b": "T"
         },
         "task_family_key": "labeled_chart_readout",
-        "task_family_variant_index": 0,
+        "task_family_variant_index": 4,
         "task_key": "subset_value_query",
-        "task_variant_index": 3,
+        "task_variant_index": 1,
         "task_variant_key": "max_two",
-        "task_variant_template_index": 1,
+        "task_variant_template_index": 2,
         "template_paths": [
           "charts/readout/charts_readout_v1.json"
         ],
@@ -238,16 +232,16 @@
               "json_example_answer_only": "{\"answer\":13}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a labeled scatter plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis",
-              "query_label_a": "N",
-              "query_label_b": "L"
+              "object_description": "a labeled lollipop chart. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis",
+              "query_label_a": "E",
+              "query_label_b": "T"
             },
             "task_family_key": "labeled_chart_readout",
-            "task_family_variant_index": 0,
+            "task_family_variant_index": 4,
             "task_key": "subset_value_query",
-            "task_variant_index": 3,
+            "task_variant_index": 1,
             "task_variant_key": "max_two",
-            "task_variant_template_index": 1,
+            "task_variant_template_index": 2,
             "template_paths": [
               "charts/readout/charts_readout_v1.json"
             ],
@@ -258,12 +252,12 @@
               "task_variant:max_two": 5
             }
           },
-          "prompt": "The image shows a labeled scatter plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Use the labeled chart values for the named labels to answer the question. What is the maximum of the values for labels N and L?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question.\nAnswer: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[6,13],\"answer\":13}"
+          "prompt": "You are given a labeled chart: a labeled lollipop chart. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Use the chart values for the specified labels and answer the question. Between labels E and T, what is the greater value?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question.\nAnswer: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[6,13],\"answer\":13}"
         },
         "answer_only": {
           "metadata": {
             "answer_or_evidence_key": "answer_only",
-            "answer_or_evidence_variant_index": 0,
+            "answer_or_evidence_variant_index": 4,
             "prompt_bundle_id": "charts_readout_v1",
             "schema_version": "v1",
             "slot_values": {
@@ -273,16 +267,16 @@
               "json_example_answer_only": "{\"answer\":13}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a labeled scatter plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis",
-              "query_label_a": "N",
-              "query_label_b": "L"
+              "object_description": "a labeled lollipop chart. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis",
+              "query_label_a": "E",
+              "query_label_b": "T"
             },
             "task_family_key": "labeled_chart_readout",
-            "task_family_variant_index": 0,
+            "task_family_variant_index": 4,
             "task_key": "subset_value_query",
-            "task_variant_index": 3,
+            "task_variant_index": 1,
             "task_variant_key": "max_two",
-            "task_variant_template_index": 1,
+            "task_variant_template_index": 2,
             "template_paths": [
               "charts/readout/charts_readout_v1.json"
             ],
@@ -293,7 +287,7 @@
               "task_variant:max_two": 5
             }
           },
-          "prompt": "The image shows a labeled scatter plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Use the labeled chart values for the named labels to answer the question. What is the maximum of the values for labels N and L?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":13}"
+          "prompt": "You are given a labeled chart: a labeled lollipop chart. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Use the chart values for the specified labels and answer the question. Between labels E and T, what is the greater value?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":13}"
         }
       },
       "task_variant": "max_two",
@@ -302,45 +296,37 @@
     "render_map": {
       "image_id": "img0",
       "label_centers_px": {
-        "B": [
-          330.491,
-          192.947
+        "E": [
+          298.875,
+          213.059
         ],
-        "L": [
-          202.355,
-          168.526
+        "H": [
+          216.125,
+          103.882
+        ],
+        "J": [
+          133.375,
+          131.176
         ],
         "M": [
-          449.47,
-          412.737
+          712.625,
+          49.294
         ],
         "N": [
-          391.157,
-          363.895
+          547.125,
+          240.353
         ],
-        "R": [
-          260.71,
-          388.316
+        "Q": [
+          629.875,
+          267.647
         ],
         "T": [
-          121.986,
-          461.579
-        ],
-        "U": [
-          590.091,
-          46.421
-        ],
-        "V": [
-          525.351,
-          388.316
+          464.375,
+          213.059
         ],
         "X": [
-          722.551,
-          46.421
-        ],
-        "Y": [
-          660.146,
-          168.526
+          381.625,
+          49.294
         ]
       },
       "plot_bbox_px": [
@@ -378,14 +364,14 @@
         "mark_color_distance_space": "lab",
         "mark_color_min_distance": 40.0,
         "mark_fill_rgb": [
-          200,
-          22,
-          96
+          182,
+          112,
+          104
         ],
         "mark_outline_rgb": [
-          110,
-          12,
-          53
+          100,
+          62,
+          57
         ],
         "sampling_policy": "random_rgb"
       },
@@ -411,13 +397,13 @@
         "edits": [],
         "enabled": false
       },
-      "scene_variant": "scatter",
+      "scene_variant": "lollipop",
       "text_style": {
         "label_font_size_px": 22,
         "label_stroke_width_px": 2,
         "tick_font_size_px": 18
       },
-      "y_axis_max": 19,
+      "y_axis_max": 17,
       "y_ticks": [
         0,
         1,
@@ -436,378 +422,308 @@
         14,
         15,
         16,
-        17,
-        18,
-        19
+        17
       ]
     },
     "scene_ir": {
       "entities": [
         {
           "attrs": {
-            "label": "T",
+            "label": "J",
             "label_center_px": [
-              121.986,
-              461.579
+              133.375,
+              131.176
             ],
             "mark_bbox_px": [
-              113.986,
-              475.579,
-              129.986,
-              491.579
+              125.375,
+              145.176,
+              141.375,
+              161.176
             ],
             "mark_center_px": [
-              121.986,
-              483.579
+              133.375,
+              153.176
             ],
             "mark_fill_rgb": [
-              200,
-              22,
-              96
+              182,
+              112,
+              104
             ],
             "mark_outline_rgb": [
-              110,
-              12,
-              53
+              100,
+              62,
+              57
             ],
-            "scene_variant": "scatter",
-            "value": 1,
+            "scene_variant": "lollipop",
+            "value": 13,
             "x_rank": 0
           },
-          "entity_id": "mark_T",
+          "entity_id": "mark_J",
           "entity_type": "point"
         },
         {
           "attrs": {
-            "label": "L",
+            "label": "H",
             "label_center_px": [
-              202.355,
-              168.526
+              216.125,
+              103.882
             ],
             "mark_bbox_px": [
-              194.355,
-              182.526,
-              210.355,
-              198.526
+              208.125,
+              117.882,
+              224.125,
+              133.882
             ],
             "mark_center_px": [
-              202.355,
-              190.526
+              216.125,
+              125.882
             ],
             "mark_fill_rgb": [
-              200,
-              22,
-              96
+              182,
+              112,
+              104
             ],
             "mark_outline_rgb": [
-              110,
-              12,
-              53
+              100,
+              62,
+              57
             ],
-            "scene_variant": "scatter",
-            "value": 13,
+            "scene_variant": "lollipop",
+            "value": 14,
             "x_rank": 1
           },
-          "entity_id": "mark_L",
+          "entity_id": "mark_H",
           "entity_type": "point"
         },
         {
           "attrs": {
-            "label": "R",
+            "label": "E",
             "label_center_px": [
-              260.71,
-              388.316
+              298.875,
+              213.059
             ],
             "mark_bbox_px": [
-              252.71,
-              402.316,
-              268.71,
-              418.316
+              290.875,
+              227.059,
+              306.875,
+              243.059
             ],
             "mark_center_px": [
-              260.71,
-              410.316
+              298.875,
+              235.059
             ],
             "mark_fill_rgb": [
-              200,
-              22,
-              96
+              182,
+              112,
+              104
             ],
             "mark_outline_rgb": [
-              110,
-              12,
-              53
+              100,
+              62,
+              57
             ],
-            "scene_variant": "scatter",
-            "value": 4,
+            "scene_variant": "lollipop",
+            "value": 10,
             "x_rank": 2
           },
-          "entity_id": "mark_R",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "label": "B",
-            "label_center_px": [
-              330.491,
-              192.947
-            ],
-            "mark_bbox_px": [
-              322.491,
-              206.947,
-              338.491,
-              222.947
-            ],
-            "mark_center_px": [
-              330.491,
-              214.947
-            ],
-            "mark_fill_rgb": [
-              200,
-              22,
-              96
-            ],
-            "mark_outline_rgb": [
-              110,
-              12,
-              53
-            ],
-            "scene_variant": "scatter",
-            "value": 12,
-            "x_rank": 3
-          },
-          "entity_id": "mark_B",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "label": "N",
-            "label_center_px": [
-              391.157,
-              363.895
-            ],
-            "mark_bbox_px": [
-              383.157,
-              377.895,
-              399.157,
-              393.895
-            ],
-            "mark_center_px": [
-              391.157,
-              385.895
-            ],
-            "mark_fill_rgb": [
-              200,
-              22,
-              96
-            ],
-            "mark_outline_rgb": [
-              110,
-              12,
-              53
-            ],
-            "scene_variant": "scatter",
-            "value": 5,
-            "x_rank": 4
-          },
-          "entity_id": "mark_N",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "label": "M",
-            "label_center_px": [
-              449.47,
-              412.737
-            ],
-            "mark_bbox_px": [
-              441.47,
-              426.737,
-              457.47,
-              442.737
-            ],
-            "mark_center_px": [
-              449.47,
-              434.737
-            ],
-            "mark_fill_rgb": [
-              200,
-              22,
-              96
-            ],
-            "mark_outline_rgb": [
-              110,
-              12,
-              53
-            ],
-            "scene_variant": "scatter",
-            "value": 3,
-            "x_rank": 5
-          },
-          "entity_id": "mark_M",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "label": "V",
-            "label_center_px": [
-              525.351,
-              388.316
-            ],
-            "mark_bbox_px": [
-              517.351,
-              402.316,
-              533.351,
-              418.316
-            ],
-            "mark_center_px": [
-              525.351,
-              410.316
-            ],
-            "mark_fill_rgb": [
-              200,
-              22,
-              96
-            ],
-            "mark_outline_rgb": [
-              110,
-              12,
-              53
-            ],
-            "scene_variant": "scatter",
-            "value": 4,
-            "x_rank": 6
-          },
-          "entity_id": "mark_V",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "label": "U",
-            "label_center_px": [
-              590.091,
-              46.421
-            ],
-            "mark_bbox_px": [
-              582.091,
-              60.421,
-              598.091,
-              76.421
-            ],
-            "mark_center_px": [
-              590.091,
-              68.421
-            ],
-            "mark_fill_rgb": [
-              200,
-              22,
-              96
-            ],
-            "mark_outline_rgb": [
-              110,
-              12,
-              53
-            ],
-            "scene_variant": "scatter",
-            "value": 18,
-            "x_rank": 7
-          },
-          "entity_id": "mark_U",
-          "entity_type": "point"
-        },
-        {
-          "attrs": {
-            "label": "Y",
-            "label_center_px": [
-              660.146,
-              168.526
-            ],
-            "mark_bbox_px": [
-              652.146,
-              182.526,
-              668.146,
-              198.526
-            ],
-            "mark_center_px": [
-              660.146,
-              190.526
-            ],
-            "mark_fill_rgb": [
-              200,
-              22,
-              96
-            ],
-            "mark_outline_rgb": [
-              110,
-              12,
-              53
-            ],
-            "scene_variant": "scatter",
-            "value": 13,
-            "x_rank": 8
-          },
-          "entity_id": "mark_Y",
+          "entity_id": "mark_E",
           "entity_type": "point"
         },
         {
           "attrs": {
             "label": "X",
             "label_center_px": [
-              722.551,
-              46.421
+              381.625,
+              49.294
             ],
             "mark_bbox_px": [
-              714.551,
-              60.421,
-              730.551,
-              76.421
+              373.625,
+              63.294,
+              389.625,
+              79.294
             ],
             "mark_center_px": [
-              722.551,
-              68.421
+              381.625,
+              71.294
             ],
             "mark_fill_rgb": [
-              200,
-              22,
-              96
+              182,
+              112,
+              104
             ],
             "mark_outline_rgb": [
-              110,
-              12,
-              53
+              100,
+              62,
+              57
             ],
-            "scene_variant": "scatter",
-            "value": 18,
-            "x_rank": 9
+            "scene_variant": "lollipop",
+            "value": 16,
+            "x_rank": 3
           },
           "entity_id": "mark_X",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "T",
+            "label_center_px": [
+              464.375,
+              213.059
+            ],
+            "mark_bbox_px": [
+              456.375,
+              227.059,
+              472.375,
+              243.059
+            ],
+            "mark_center_px": [
+              464.375,
+              235.059
+            ],
+            "mark_fill_rgb": [
+              182,
+              112,
+              104
+            ],
+            "mark_outline_rgb": [
+              100,
+              62,
+              57
+            ],
+            "scene_variant": "lollipop",
+            "value": 10,
+            "x_rank": 4
+          },
+          "entity_id": "mark_T",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "N",
+            "label_center_px": [
+              547.125,
+              240.353
+            ],
+            "mark_bbox_px": [
+              539.125,
+              254.353,
+              555.125,
+              270.353
+            ],
+            "mark_center_px": [
+              547.125,
+              262.353
+            ],
+            "mark_fill_rgb": [
+              182,
+              112,
+              104
+            ],
+            "mark_outline_rgb": [
+              100,
+              62,
+              57
+            ],
+            "scene_variant": "lollipop",
+            "value": 9,
+            "x_rank": 5
+          },
+          "entity_id": "mark_N",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "Q",
+            "label_center_px": [
+              629.875,
+              267.647
+            ],
+            "mark_bbox_px": [
+              621.875,
+              281.647,
+              637.875,
+              297.647
+            ],
+            "mark_center_px": [
+              629.875,
+              289.647
+            ],
+            "mark_fill_rgb": [
+              182,
+              112,
+              104
+            ],
+            "mark_outline_rgb": [
+              100,
+              62,
+              57
+            ],
+            "scene_variant": "lollipop",
+            "value": 8,
+            "x_rank": 6
+          },
+          "entity_id": "mark_Q",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "M",
+            "label_center_px": [
+              712.625,
+              49.294
+            ],
+            "mark_bbox_px": [
+              704.625,
+              63.294,
+              720.625,
+              79.294
+            ],
+            "mark_center_px": [
+              712.625,
+              71.294
+            ],
+            "mark_fill_rgb": [
+              182,
+              112,
+              104
+            ],
+            "mark_outline_rgb": [
+              100,
+              62,
+              57
+            ],
+            "scene_variant": "lollipop",
+            "value": 16,
+            "x_rank": 7
+          },
+          "entity_id": "mark_M",
           "entity_type": "point"
         }
       ],
       "relations": {
-        "answer_value": 13,
+        "answer_value": 10,
         "query_labels": [
-          "N",
-          "L"
+          "E",
+          "T"
         ],
         "query_values": [
-          5,
-          13
+          10,
+          10
         ],
-        "scene_variant": "scatter",
+        "scene_variant": "lollipop",
         "task_variant": "max_two"
       },
-      "scene_kind": "chart_scatter_readout"
+      "scene_kind": "chart_lollipop_readout"
     },
     "witness_symbolic": {
       "query_labels": [
-        "N",
-        "L"
+        "E",
+        "T"
       ],
       "type": "integer_list",
       "values": [
-        5,
-        13
+        10,
+        10
       ]
     }
   },

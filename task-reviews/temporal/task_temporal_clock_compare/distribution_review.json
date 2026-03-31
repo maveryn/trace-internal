@@ -10,11 +10,11 @@
     ],
     "generated_variant_counts": {
       "earliest_time": 100,
-      "latest_time": 107
+      "latest_time": 101
     },
     "generation_error_counts": {},
     "target_count_per_variant": 100,
-    "total_generated": 207
+    "total_generated": 201
   },
   "domain": "temporal",
   "failed_variants": [],
@@ -28,7 +28,7 @@
     },
     "checks": {
       "max_answer_frequency": {
-        "observed": 0.155,
+        "observed": 0.12,
         "pass": true,
         "threshold": 0.25
       },
@@ -44,46 +44,46 @@
       }
     },
     "five_bin_numeric": null,
-    "max_answer_count": 31,
-    "max_answer_frequency": 0.155,
+    "max_answer_count": 24,
+    "max_answer_frequency": 0.12,
     "pass": true,
     "sample_count": 200,
     "top_answers": [
       {
-        "answer_label": "G",
-        "count": 31
-      },
-      {
-        "answer_label": "C",
-        "count": 28
-      },
-      {
-        "answer_label": "H",
-        "count": 26
+        "answer_label": "A",
+        "count": 24
       },
       {
         "answer_label": "B",
         "count": 22
       },
       {
-        "answer_label": "I",
-        "count": 21
-      },
-      {
-        "answer_label": "A",
-        "count": 19
+        "answer_label": "C",
+        "count": 22
       },
       {
         "answer_label": "D",
-        "count": 18
+        "count": 22
       },
       {
         "answer_label": "E",
-        "count": 18
+        "count": 22
       },
       {
         "answer_label": "F",
-        "count": 17
+        "count": 22
+      },
+      {
+        "answer_label": "G",
+        "count": 22
+      },
+      {
+        "answer_label": "H",
+        "count": 22
+      },
+      {
+        "answer_label": "I",
+        "count": 22
       }
     ],
     "unique_answers": 9
@@ -96,7 +96,7 @@
       },
       "checks": {
         "max_answer_frequency": {
-          "observed": 0.16,
+          "observed": 0.12,
           "pass": true,
           "threshold": 0.25
         },
@@ -112,46 +112,46 @@
         }
       },
       "five_bin_numeric": null,
-      "max_answer_count": 16,
-      "max_answer_frequency": 0.16,
+      "max_answer_count": 12,
+      "max_answer_frequency": 0.12,
       "pass": true,
       "sample_count": 100,
       "top_answers": [
         {
-          "answer_label": "G",
-          "count": 16
-        },
-        {
-          "answer_label": "C",
-          "count": 14
-        },
-        {
-          "answer_label": "H",
-          "count": 14
-        },
-        {
-          "answer_label": "B",
+          "answer_label": "A",
           "count": 12
         },
         {
+          "answer_label": "B",
+          "count": 11
+        },
+        {
+          "answer_label": "C",
+          "count": 11
+        },
+        {
           "answer_label": "D",
-          "count": 10
+          "count": 11
         },
         {
           "answer_label": "E",
-          "count": 10
-        },
-        {
-          "answer_label": "A",
-          "count": 9
-        },
-        {
-          "answer_label": "I",
-          "count": 8
+          "count": 11
         },
         {
           "answer_label": "F",
-          "count": 7
+          "count": 11
+        },
+        {
+          "answer_label": "G",
+          "count": 11
+        },
+        {
+          "answer_label": "H",
+          "count": 11
+        },
+        {
+          "answer_label": "I",
+          "count": 11
         }
       ],
       "unique_answers": 9
@@ -162,7 +162,7 @@
       },
       "checks": {
         "max_answer_frequency": {
-          "observed": 0.15,
+          "observed": 0.12,
           "pass": true,
           "threshold": 0.25
         },
@@ -178,46 +178,46 @@
         }
       },
       "five_bin_numeric": null,
-      "max_answer_count": 15,
-      "max_answer_frequency": 0.15,
+      "max_answer_count": 12,
+      "max_answer_frequency": 0.12,
       "pass": true,
       "sample_count": 100,
       "top_answers": [
         {
-          "answer_label": "G",
-          "count": 15
-        },
-        {
-          "answer_label": "C",
-          "count": 14
-        },
-        {
-          "answer_label": "I",
-          "count": 13
-        },
-        {
-          "answer_label": "H",
+          "answer_label": "A",
           "count": 12
         },
         {
-          "answer_label": "A",
-          "count": 10
-        },
-        {
           "answer_label": "B",
-          "count": 10
+          "count": 11
         },
         {
-          "answer_label": "F",
-          "count": 10
+          "answer_label": "C",
+          "count": 11
         },
         {
           "answer_label": "D",
-          "count": 8
+          "count": 11
         },
         {
           "answer_label": "E",
-          "count": 8
+          "count": 11
+        },
+        {
+          "answer_label": "F",
+          "count": 11
+        },
+        {
+          "answer_label": "G",
+          "count": 11
+        },
+        {
+          "answer_label": "H",
+          "count": 11
+        },
+        {
+          "answer_label": "I",
+          "count": 11
         }
       ],
       "unique_answers": 9

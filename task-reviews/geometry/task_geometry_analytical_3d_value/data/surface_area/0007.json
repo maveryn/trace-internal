@@ -1,24 +1,24 @@
 {
   "answer_gt": {
     "type": "pi_expression",
-    "value": "85π"
+    "value": "638π"
   },
   "evidence_gt": {
     "type": "measurement_ref_map",
     "value": {
-      "FG": 5,
-      "HG": 12
+      "GH": 11,
+      "IH": 47
     }
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_3d_value/images/surface_area/0007.png"
   },
-  "instance_seed": 6573221049652373,
-  "prompt": "You are given an image showing an annotated 3D solid. Read the marked measurements and answer: The cone has an annotated radius and slant height. What is its total surface area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: FG, HG.\nAnswer requirement: set \"answer\" to the value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":{\"FG\":2,\"HG\":3},\"answer\":\"12π\"}",
+  "instance_seed": 5131989709445648,
+  "prompt": "Work from the annotated figure showing an annotated 3D solid. The cone has an annotated radius and slant height. What is its total surface area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: GH, IH.\nAnswer rule: set \"answer\" to the value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":{\"GH\":2,\"IH\":3},\"answer\":\"12π\"}",
   "prompt_variants": {
-    "answer_and_evidence": "You are given an image showing an annotated 3D solid. Read the marked measurements and answer: The cone has an annotated radius and slant height. What is its total surface area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: FG, HG.\nAnswer requirement: set \"answer\" to the value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":{\"FG\":2,\"HG\":3},\"answer\":\"12π\"}",
-    "answer_only": "You are given an image showing an annotated 3D solid. Read the marked measurements and answer: The cone has an annotated radius and slant height. What is its total surface area? Express the result in kπ form.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the value in the form kπ (for example 12π).\nExample JSON:\n{\"answer\":\"12π\"}"
+    "answer_and_evidence": "Work from the annotated figure showing an annotated 3D solid. The cone has an annotated radius and slant height. What is its total surface area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: GH, IH.\nAnswer rule: set \"answer\" to the value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":{\"GH\":2,\"IH\":3},\"answer\":\"12π\"}",
+    "answer_only": "Work from the annotated figure showing an annotated 3D solid. The cone has an annotated radius and slant height. What is its total surface area? Express the result in kπ form.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the value in the form kπ (for example 12π).\nExample JSON:\n{\"answer\":\"12π\"}"
   },
   "task": "task_geometry_analytical_3d_value",
   "task_variant": "surface_area",
@@ -26,20 +26,20 @@
     "execution_trace": {
       "answer_max": 200000,
       "answer_min": 8,
-      "answer_scalar": 85,
+      "answer_scalar": 638,
       "answer_type": "pi_expression",
-      "answer_value": "85π",
+      "answer_value": "638π",
       "evidence_map": {
-        "FG": 5,
-        "HG": 12
+        "GH": 11,
+        "IH": 47
       },
       "evidence_role_tokens": {
-        "l": "HG",
-        "r": "FG"
+        "l": "IH",
+        "r": "GH"
       },
       "evidence_role_values": {
-        "l": 12,
-        "r": 5
+        "l": 47,
+        "r": 11
       },
       "evidence_roles": [
         "r",
@@ -55,8 +55,8 @@
         "volume": 0.0
       },
       "required_annotations": [
-        "FG",
-        "HG"
+        "GH",
+        "IH"
       ],
       "scene_variant": "cone",
       "scene_variant_probabilities": {
@@ -83,35 +83,35 @@
     },
     "projected_evidence": {
       "annotation_labels": {
-        "l": "HG",
-        "r": "FG"
+        "l": "IH",
+        "r": "GH"
       },
       "id_set": [
-        "FG",
-        "HG"
+        "GH",
+        "IH"
       ],
       "measurement_ref_map": {
-        "FG": 5,
-        "HG": 12
+        "GH": 11,
+        "IH": 47
       },
       "pixel_annotation_centers": {
-        "FG": [
-          457.9660560940326,
-          428.84
+        "GH": [
+          434.60278386160115,
+          456.03999999999996
         ],
-        "HG": [
-          484.27744947603804,
-          174.23628086210735
+        "IH": [
+          462.60278386160115,
+          155.52222708928088
         ]
       },
       "pixel_point_set": [
         [
-          457.9660560940326,
-          428.84
+          434.60278386160115,
+          456.03999999999996
         ],
         [
-          484.27744947603804,
-          174.23628086210735
+          462.60278386160115,
+          155.52222708928088
         ]
       ]
     },
@@ -144,13 +144,13 @@
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 2,
+        "answer_or_evidence_variant_index": 4,
         "prompt_bundle_id": "geometry_analytical_surface_area_v1",
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the value in the form kπ (for example 12π)",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: FG, HG",
-          "json_example": "{\"evidence\":{\"FG\":2,\"HG\":3},\"answer\":\"12π\"}",
+          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: GH, IH",
+          "json_example": "{\"evidence\":{\"GH\":2,\"IH\":3},\"answer\":\"12π\"}",
           "json_example_answer_only": "{\"answer\":\"12π\"}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -158,9 +158,9 @@
           "question_text": "The cone has an annotated radius and slant height. What is its total surface area? Express the result in kπ form."
         },
         "task_family_key": "analytical_single_solid",
-        "task_family_variant_index": 0,
+        "task_family_variant_index": 4,
         "task_key": "analytical_surface_area_query",
-        "task_variant_index": 3,
+        "task_variant_index": 0,
         "task_variant_key": null,
         "task_variant_template_index": null,
         "template_paths": [
@@ -177,13 +177,13 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 2,
+            "answer_or_evidence_variant_index": 4,
             "prompt_bundle_id": "geometry_analytical_surface_area_v1",
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the value in the form kπ (for example 12π)",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: FG, HG",
-              "json_example": "{\"evidence\":{\"FG\":2,\"HG\":3},\"answer\":\"12π\"}",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: GH, IH",
+              "json_example": "{\"evidence\":{\"GH\":2,\"IH\":3},\"answer\":\"12π\"}",
               "json_example_answer_only": "{\"answer\":\"12π\"}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -191,9 +191,9 @@
               "question_text": "The cone has an annotated radius and slant height. What is its total surface area? Express the result in kπ form."
             },
             "task_family_key": "analytical_single_solid",
-            "task_family_variant_index": 0,
+            "task_family_variant_index": 4,
             "task_key": "analytical_surface_area_query",
-            "task_variant_index": 3,
+            "task_variant_index": 0,
             "task_variant_key": null,
             "task_variant_template_index": null,
             "template_paths": [
@@ -205,7 +205,7 @@
               "task_family:analytical_single_solid": 5
             }
           },
-          "prompt": "You are given an image showing an annotated 3D solid. Read the marked measurements and answer: The cone has an annotated radius and slant height. What is its total surface area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: FG, HG.\nAnswer requirement: set \"answer\" to the value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":{\"FG\":2,\"HG\":3},\"answer\":\"12π\"}"
+          "prompt": "Work from the annotated figure showing an annotated 3D solid. The cone has an annotated radius and slant height. What is its total surface area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: GH, IH.\nAnswer rule: set \"answer\" to the value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":{\"GH\":2,\"IH\":3},\"answer\":\"12π\"}"
         },
         "answer_only": {
           "metadata": {
@@ -215,8 +215,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the value in the form kπ (for example 12π)",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: FG, HG",
-              "json_example": "{\"evidence\":{\"FG\":2,\"HG\":3},\"answer\":\"12π\"}",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: GH, IH",
+              "json_example": "{\"evidence\":{\"GH\":2,\"IH\":3},\"answer\":\"12π\"}",
               "json_example_answer_only": "{\"answer\":\"12π\"}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -224,9 +224,9 @@
               "question_text": "The cone has an annotated radius and slant height. What is its total surface area? Express the result in kπ form."
             },
             "task_family_key": "analytical_single_solid",
-            "task_family_variant_index": 0,
+            "task_family_variant_index": 4,
             "task_key": "analytical_surface_area_query",
-            "task_variant_index": 3,
+            "task_variant_index": 0,
             "task_variant_key": null,
             "task_variant_template_index": null,
             "template_paths": [
@@ -238,7 +238,7 @@
               "task_family:analytical_single_solid": 5
             }
           },
-          "prompt": "You are given an image showing an annotated 3D solid. Read the marked measurements and answer: The cone has an annotated radius and slant height. What is its total surface area? Express the result in kπ form.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the value in the form kπ (for example 12π).\nExample JSON:\n{\"answer\":\"12π\"}"
+          "prompt": "Work from the annotated figure showing an annotated 3D solid. The cone has an annotated radius and slant height. What is its total surface area? Express the result in kπ form.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the value in the form kπ (for example 12π).\nExample JSON:\n{\"answer\":\"12π\"}"
         }
       },
       "task_variant": "surface_area",
@@ -246,43 +246,43 @@
     },
     "render_map": {
       "annotation_centers": {
-        "FG": [
-          457.9660560940326,
-          428.84
+        "GH": [
+          434.60278386160115,
+          456.03999999999996
         ],
-        "HG": [
-          484.27744947603804,
-          174.23628086210735
+        "IH": [
+          462.60278386160115,
+          155.52222708928088
         ]
       },
       "annotation_labels": {
-        "l": "HG",
-        "r": "FG"
+        "l": "IH",
+        "r": "GH"
       },
       "coord_space": "pixel",
       "entity_id": "solid_1",
       "instance_anchor": {
         "coord_space": "pixel",
         "point": [
-          354.0,
-          297.22642243761305
+          369.0,
+          291.78111354464045
         ],
         "polyline": [
           [
-            354.0,
-            -43.014310249547805
+            369.0,
+            -116.99554582143821
           ],
           [
-            354.0,
-            410.64
+            369.0,
+            428.03999999999996
           ],
           [
-            146.0678878119348,
-            410.64
+            237.79443227679766,
+            428.03999999999996
           ],
           [
-            561.9321121880652,
-            410.64
+            500.2055677232023,
+            428.03999999999996
           ]
         ]
       }
@@ -297,45 +297,47 @@
         ],
         "enabled": true,
         "render_scale": 3,
-        "selected_style": "solid_offwhite",
+        "selected_style": "solid_cool",
         "style_spec": {
           "color": [
-            252,
-            252,
+            246,
+            248,
             252
           ],
           "kind": "solid"
         }
       },
-      "canvas_size": 708,
+      "canvas_size": 738,
       "coord_space": "pixel",
       "graph_coordinate_frame": {
         "coord_space": "graph_unit",
-        "full_cells_x": 6,
-        "full_cells_y": 6,
+        "full_cells_x": 10,
+        "full_cells_y": 10,
+        "origin_fraction_x": 0.5,
+        "origin_fraction_y": 0.5,
         "origin_pixel": [
-          354,
-          354
+          368,
+          368
         ],
         "outer_margin_px": 16,
         "partial_edge_cells": true,
-        "spacing_px": 88,
-        "target_cells_x": 8,
-        "target_cells_y": 8,
+        "spacing_px": 67,
+        "target_cells_x": 11,
+        "target_cells_y": 11,
         "x_positive": "right",
         "y_positive": "up"
       },
       "graph_paper_grid": {
-        "full_cells_x": 6,
-        "full_cells_y": 6,
+        "full_cells_x": 10,
+        "full_cells_y": 10,
         "partial_edge_cells": true,
-        "spacing_px": 88,
-        "target_cells_x": 8,
-        "target_cells_y": 8
+        "spacing_px": 67,
+        "target_cells_x": 11,
+        "target_cells_y": 11
       },
       "legacy_scene_variant": "cone_given_r_slant_height",
       "post_image_noise": {
-        "applied": true,
+        "applied": false,
         "apply_prob": 0.5,
         "edit_count_range": [
           1,
@@ -347,33 +349,26 @@
           "jpeg",
           "noise"
         ],
-        "edits": [
-          {
-            "params": {
-              "radius": 0.299574
-            },
-            "type": "blur"
-          }
-        ],
+        "edits": [],
         "enabled": true
       },
       "query_variant": "surface_area",
       "scene_variant": "cone",
       "shape_style": {
         "label_color": [
-          118,
-          29,
-          145
+          109,
+          145,
+          72
         ],
         "label_stroke_color": [
-          251,
-          254,
-          248
+          250,
+          249,
+          255
         ],
         "line_color": [
-          118,
-          29,
-          145
+          109,
+          145,
+          72
         ]
       }
     },
@@ -381,28 +376,28 @@
       "entities": [
         {
           "attrs": {
-            "height_units": 10.908712114635714,
+            "height_units": 45.69463863518345,
             "points": {
               "apex": [
-                354.0,
-                -43.014310249547805
+                369.0,
+                -116.99554582143821
               ],
               "base_center": [
-                354.0,
-                410.64
+                369.0,
+                428.03999999999996
               ],
               "left_base": [
-                146.0678878119348,
-                410.64
+                237.79443227679766,
+                428.03999999999996
               ],
               "right_base": [
-                561.9321121880652,
-                410.64
+                500.2055677232023,
+                428.03999999999996
               ]
             },
-            "radius_units": 5,
-            "slant_height_units": 12,
-            "surface_area_pi_coefficient": 85,
+            "radius_units": 11,
+            "slant_height_units": 47,
+            "surface_area_pi_coefficient": 638,
             "task_variant": "cone_given_r_slant_height"
           },
           "entity_id": "solid_1",
@@ -412,10 +407,10 @@
       "frames": {
         "graph_unit": {
           "origin_pixel": [
-            354,
-            354
+            368,
+            368
           ],
-          "spacing_px": 88,
+          "spacing_px": 67,
           "x_positive": "right",
           "y_positive": "up"
         },
@@ -439,21 +434,21 @@
     },
     "witness_symbolic": {
       "annotation_ids": [
-        "FG",
-        "HG"
+        "GH",
+        "IH"
       ],
       "annotation_labels": {
-        "l": "HG",
-        "r": "FG"
+        "l": "IH",
+        "r": "GH"
       },
       "annotation_values": {
-        "FG": 5,
-        "HG": 12
+        "GH": 11,
+        "IH": 47
       },
       "formula_expression": "SA = π * r * (r + l)",
       "measurement_ref_map": {
-        "FG": 5,
-        "HG": 12
+        "GH": 11,
+        "IH": 47
       },
       "task_variant": "cone_given_r_slant_height",
       "type": "annotation_measurement_map"

@@ -21,18 +21,18 @@
   },
   "task_variant_templates": {
     "overlap_count": [
-      "How many scheduled events overlap the highlighted reference event?",
-      "Count the events that overlap the highlighted reference event.",
-      "Among the scheduled events, how many overlap the highlighted reference event?",
-      "How many event blocks overlap the highlighted reference event?",
-      "Count the scheduled events that intersect the highlighted reference event."
+      "How many other scheduled events overlap the highlighted reference event?",
+      "Count the other events that overlap the highlighted reference event.",
+      "Among the other scheduled events, how many overlap the highlighted reference event?",
+      "How many other event blocks overlap the highlighted reference event?",
+      "Count the other scheduled events that intersect the highlighted reference event."
     ],
     "longer_than_reference_count": [
-      "How many scheduled events are longer than the highlighted reference event?",
-      "Count the events whose duration is longer than the highlighted reference event.",
-      "Among the scheduled events, how many last longer than the highlighted reference event?",
-      "How many event blocks are longer than the highlighted reference event?",
-      "Count the scheduled events with a longer duration than the highlighted reference event."
+      "How many other scheduled events are longer than the highlighted reference event?",
+      "Count the other events whose duration is longer than the highlighted reference event.",
+      "Among the other scheduled events, how many last longer than the highlighted reference event?",
+      "How many other event blocks are longer than the highlighted reference event?",
+      "Count the other scheduled events with a longer duration than the highlighted reference event."
     ],
     "maximum_non_overlapping_count": [
       "What is the maximum number of scheduled events that can be selected without any overlap?",

@@ -1,7 +1,7 @@
 {
   "answer_gt": {
     "type": "string",
-    "value": "REF-26611"
+    "value": "REF-76063"
   },
   "evidence_gt": {
     "type": "bbox_set",
@@ -24,18 +24,18 @@
     "format": "png",
     "path": "documents/task_documents_readout_field_value/images/lookup_identifier/0011.png"
   },
-  "instance_seed": 5451490807932786,
-  "prompt": "Read the labeled fields in this document: a structured application form with labeled fields and boxed sections. Use the labeled fields to answer: What is the reference ID? Return the exact field text as written.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value.\nAnswer requirement: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"INV-48217\"}",
+  "instance_seed": 8443185317254229,
+  "prompt": "Read the labeled fields in this document: a structured application form with labeled fields and boxed sections. Find the requested field in the document: What is the reference ID? Return the exact field text as written.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value.\nAnswer format: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"INV-48217\"}",
   "prompt_variants": {
-    "answer_and_evidence": "Read the labeled fields in this document: a structured application form with labeled fields and boxed sections. Use the labeled fields to answer: What is the reference ID? Return the exact field text as written.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value.\nAnswer requirement: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"INV-48217\"}",
-    "answer_only": "Read the labeled fields in this document: a structured application form with labeled fields and boxed sections. Use the labeled fields to answer: What is the reference ID? Return the exact field text as written.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"answer\":\"INV-48217\"}"
+    "answer_and_evidence": "Read the labeled fields in this document: a structured application form with labeled fields and boxed sections. Find the requested field in the document: What is the reference ID? Return the exact field text as written.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value.\nAnswer format: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"INV-48217\"}",
+    "answer_only": "Read the labeled fields in this document: a structured application form with labeled fields and boxed sections. Find the requested field in the document: What is the reference ID? Return the exact field text as written.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"answer\":\"INV-48217\"}"
   },
   "task": "task_documents_readout_field_value",
   "task_variant": "lookup_identifier",
   "trace_payload": {
     "answer_gt": {
       "type": "string",
-      "value": "REF-26611"
+      "value": "REF-76063"
     },
     "background": {
       "available_styles": [
@@ -76,7 +76,7 @@
           "field_category": "lookup_name",
           "field_id": "applicant_name",
           "field_label": "Applicant Name",
-          "field_value": "Luca Howard",
+          "field_value": "Emma Miller",
           "label_bbox_id": "applicant_name:label",
           "question_name": "applicant name",
           "value_bbox_id": "applicant_name:value"
@@ -85,7 +85,7 @@
           "field_category": "lookup_identifier",
           "field_id": "reference_id",
           "field_label": "Reference ID",
-          "field_value": "REF-26611",
+          "field_value": "REF-76063",
           "label_bbox_id": "reference_id:label",
           "question_name": "reference ID",
           "value_bbox_id": "reference_id:value"
@@ -94,7 +94,7 @@
           "field_category": "lookup_date",
           "field_id": "submission_date",
           "field_label": "Submission Date",
-          "field_value": "06/08/2026",
+          "field_value": "02/16/2026",
           "label_bbox_id": "submission_date:label",
           "question_name": "submission date",
           "value_bbox_id": "submission_date:value"
@@ -103,7 +103,7 @@
           "field_category": "lookup_contact",
           "field_id": "contact_phone",
           "field_label": "Phone",
-          "field_value": "(929) 367-1480",
+          "field_value": "(818) 933-5581",
           "label_bbox_id": "contact_phone:label",
           "question_name": "phone number",
           "value_bbox_id": "contact_phone:value"
@@ -112,7 +112,7 @@
           "field_category": "lookup_contact",
           "field_id": "contact_email",
           "field_label": "Email",
-          "field_value": "lucahoward@brightdesk.io",
+          "field_value": "emmamiller@northpost.co",
           "label_bbox_id": "contact_email:label",
           "question_name": "email address",
           "value_bbox_id": "contact_email:value"
@@ -121,7 +121,7 @@
           "field_category": "lookup_name",
           "field_id": "department",
           "field_label": "Department",
-          "field_value": "Operations",
+          "field_value": "Support",
           "label_bbox_id": "department:label",
           "question_name": "department",
           "value_bbox_id": "department:value"
@@ -130,7 +130,7 @@
           "field_category": "lookup_name",
           "field_id": "city",
           "field_label": "City",
-          "field_value": "Albany",
+          "field_value": "Summerset",
           "label_bbox_id": "city:label",
           "question_name": "city",
           "value_bbox_id": "city:value"
@@ -139,7 +139,7 @@
           "field_category": "lookup_amount",
           "field_id": "fee_amount",
           "field_label": "Fee Amount",
-          "field_value": "$92.94",
+          "field_value": "$66.80",
           "label_bbox_id": "fee_amount:label",
           "question_name": "fee amount",
           "value_bbox_id": "fee_amount:value"
@@ -148,7 +148,7 @@
           "field_category": "lookup_name",
           "field_id": "reviewer_name",
           "field_label": "Reviewer",
-          "field_value": "Lena Ellis",
+          "field_value": "Kai Santos",
           "label_bbox_id": "reviewer_name:label",
           "question_name": "reviewer name",
           "value_bbox_id": "reviewer_name:value"
@@ -157,7 +157,7 @@
       "query_field_category": "lookup_identifier",
       "query_field_id": "reference_id",
       "query_field_label": "Reference ID",
-      "query_field_value": "REF-26611",
+      "query_field_value": "REF-76063",
       "query_label_bbox_id": "reference_id:label",
       "query_value_bbox_id": "reference_id:value",
       "question_format": "document_field_lookup",
@@ -223,7 +223,7 @@
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 2,
+        "answer_or_evidence_variant_index": 1,
         "prompt_bundle_id": "documents_readout_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -239,7 +239,7 @@
         "task_family_key": "structured_document",
         "task_family_variant_index": 4,
         "task_key": "field_lookup_query",
-        "task_variant_index": 3,
+        "task_variant_index": 2,
         "task_variant_key": "lookup_identifier",
         "task_variant_template_index": 1,
         "template_paths": [
@@ -257,40 +257,6 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 2,
-            "prompt_bundle_id": "documents_readout_v1",
-            "schema_version": "v1",
-            "slot_values": {
-              "answer_hint": "set \"answer\" to the exact field text shown in the document",
-              "evidence_hint": "set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value",
-              "json_example": "{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"INV-48217\"}",
-              "json_example_answer_only": "{\"answer\":\"INV-48217\"}",
-              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
-              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a structured application form with labeled fields and boxed sections",
-              "question_text": "What is the reference ID?"
-            },
-            "task_family_key": "structured_document",
-            "task_family_variant_index": 4,
-            "task_key": "field_lookup_query",
-            "task_variant_index": 3,
-            "task_variant_key": "lookup_identifier",
-            "task_variant_template_index": 1,
-            "template_paths": [
-              "documents/readout/documents_readout_v1.json"
-            ],
-            "variant_count_by_key": {
-              "answer_or_evidence:answer_and_evidence": 5,
-              "task:field_lookup_query": 5,
-              "task_family:structured_document": 5,
-              "task_variant:lookup_identifier": 5
-            }
-          },
-          "prompt": "Read the labeled fields in this document: a structured application form with labeled fields and boxed sections. Use the labeled fields to answer: What is the reference ID? Return the exact field text as written.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value.\nAnswer requirement: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"INV-48217\"}"
-        },
-        "answer_only": {
-          "metadata": {
-            "answer_or_evidence_key": "answer_only",
             "answer_or_evidence_variant_index": 1,
             "prompt_bundle_id": "documents_readout_v1",
             "schema_version": "v1",
@@ -307,7 +273,41 @@
             "task_family_key": "structured_document",
             "task_family_variant_index": 4,
             "task_key": "field_lookup_query",
-            "task_variant_index": 3,
+            "task_variant_index": 2,
+            "task_variant_key": "lookup_identifier",
+            "task_variant_template_index": 1,
+            "template_paths": [
+              "documents/readout/documents_readout_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:field_lookup_query": 5,
+              "task_family:structured_document": 5,
+              "task_variant:lookup_identifier": 5
+            }
+          },
+          "prompt": "Read the labeled fields in this document: a structured application form with labeled fields and boxed sections. Find the requested field in the document: What is the reference ID? Return the exact field text as written.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value.\nAnswer format: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"INV-48217\"}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 4,
+            "prompt_bundle_id": "documents_readout_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the exact field text shown in the document",
+              "evidence_hint": "set \"evidence\" to an array containing exactly two bounding boxes in this order: first the queried field label, then the queried field value",
+              "json_example": "{\"evidence\":[[148,218,314,244],[150,260,364,294]],\"answer\":\"INV-48217\"}",
+              "json_example_answer_only": "{\"answer\":\"INV-48217\"}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a structured application form with labeled fields and boxed sections",
+              "question_text": "What is the reference ID?"
+            },
+            "task_family_key": "structured_document",
+            "task_family_variant_index": 4,
+            "task_key": "field_lookup_query",
+            "task_variant_index": 2,
             "task_variant_key": "lookup_identifier",
             "task_variant_template_index": 1,
             "template_paths": [
@@ -320,7 +320,7 @@
               "task_variant:lookup_identifier": 5
             }
           },
-          "prompt": "Read the labeled fields in this document: a structured application form with labeled fields and boxed sections. Use the labeled fields to answer: What is the reference ID? Return the exact field text as written.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"answer\":\"INV-48217\"}"
+          "prompt": "Read the labeled fields in this document: a structured application form with labeled fields and boxed sections. Find the requested field in the document: What is the reference ID? Return the exact field text as written.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the exact field text shown in the document.\nExample JSON:\n{\"answer\":\"INV-48217\"}"
         }
       },
       "task_variant": "lookup_identifier",
@@ -443,19 +443,19 @@
         "applicant_name:value": [
           218.0,
           262.5,
-          403.0,
+          395.0,
           285.5
         ],
         "city:value": [
           218.0,
-          637.5,
-          317.0,
-          666.5
+          641.0,
+          382.0,
+          663.0
         ],
         "contact_email:value": [
           218.0,
           511.5,
-          596.0,
+          594.0,
           540.5
         ],
         "contact_phone:value": [
@@ -466,9 +466,9 @@
         ],
         "department:value": [
           666.0,
-          511.5,
-          823.0,
-          540.5
+          512.0,
+          780.0,
+          540.0
         ],
         "fee_amount:value": [
           666.0,
@@ -485,7 +485,7 @@
         "reviewer_name:value": [
           218.0,
           766.5,
-          354.0,
+          368.0,
           789.5
         ],
         "submission_date:value": [
@@ -511,7 +511,7 @@
     "render_spec": {
       "canvas_height": 920,
       "canvas_width": 1280,
-      "geometry_seed": 5451490807932786,
+      "geometry_seed": 8443185317254229,
       "page_shadow_offset_px": 14,
       "receipt_page_height_px": 760,
       "receipt_page_width_px": 520,
@@ -574,13 +574,13 @@
           "bbox_px": [
             218.0,
             262.5,
-            403.0,
+            395.0,
             285.5
           ],
           "entity_id": "applicant_name:value",
           "entity_type": "document_field_value",
           "field_id": "applicant_name",
-          "text": "Luca Howard"
+          "text": "Emma Miller"
         },
         {
           "bbox_id": "reference_id",
@@ -618,7 +618,7 @@
           "entity_id": "reference_id:value",
           "entity_type": "document_field_value",
           "field_id": "reference_id",
-          "text": "REF-26611"
+          "text": "REF-76063"
         },
         {
           "bbox_id": "submission_date",
@@ -656,7 +656,7 @@
           "entity_id": "submission_date:value",
           "entity_type": "document_field_value",
           "field_id": "submission_date",
-          "text": "06/08/2026"
+          "text": "02/16/2026"
         },
         {
           "bbox_id": "contact_phone",
@@ -694,7 +694,7 @@
           "entity_id": "contact_phone:value",
           "entity_type": "document_field_value",
           "field_id": "contact_phone",
-          "text": "(929) 367-1480"
+          "text": "(818) 933-5581"
         },
         {
           "bbox_id": "contact_email",
@@ -726,13 +726,13 @@
           "bbox_px": [
             218.0,
             511.5,
-            596.0,
+            594.0,
             540.5
           ],
           "entity_id": "contact_email:value",
           "entity_type": "document_field_value",
           "field_id": "contact_email",
-          "text": "lucahoward@brightdesk.io"
+          "text": "emmamiller@northpost.co"
         },
         {
           "bbox_id": "department",
@@ -763,14 +763,14 @@
           "bbox_id": "department:value",
           "bbox_px": [
             666.0,
-            511.5,
-            823.0,
-            540.5
+            512.0,
+            780.0,
+            540.0
           ],
           "entity_id": "department:value",
           "entity_type": "document_field_value",
           "field_id": "department",
-          "text": "Operations"
+          "text": "Support"
         },
         {
           "bbox_id": "city",
@@ -801,14 +801,14 @@
           "bbox_id": "city:value",
           "bbox_px": [
             218.0,
-            637.5,
-            317.0,
-            666.5
+            641.0,
+            382.0,
+            663.0
           ],
           "entity_id": "city:value",
           "entity_type": "document_field_value",
           "field_id": "city",
-          "text": "Albany"
+          "text": "Summerset"
         },
         {
           "bbox_id": "fee_amount",
@@ -846,7 +846,7 @@
           "entity_id": "fee_amount:value",
           "entity_type": "document_field_value",
           "field_id": "fee_amount",
-          "text": "$92.94"
+          "text": "$66.80"
         },
         {
           "bbox_id": "reviewer_name",
@@ -878,13 +878,13 @@
           "bbox_px": [
             218.0,
             766.5,
-            354.0,
+            368.0,
             789.5
           ],
           "entity_id": "reviewer_name:value",
           "entity_type": "document_field_value",
           "field_id": "reviewer_name",
-          "text": "Lena Ellis"
+          "text": "Kai Santos"
         }
       ],
       "relations": {

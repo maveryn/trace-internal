@@ -8,15 +8,15 @@
     "value": [
       [
         666.0,
-        325.0,
-        690.0,
-        349.0
-      ],
-      [
-        666.0,
         381.0,
         690.0,
         405.0
+      ],
+      [
+        666.0,
+        437.0,
+        690.0,
+        461.0
       ]
     ]
   },
@@ -24,11 +24,11 @@
     "format": "png",
     "path": "documents/task_documents_selection_checkbox_count/images/unchecked_box_count/0019.png"
   },
-  "instance_seed": 5028120900314373,
-  "prompt": "Look at the document in the image: an invoice with visible named sections, header fields, and checkbox groups. In the Billing Flags section, how many checkboxes are not checked? Return only the number of unchecked boxes.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing one bounding box for each counted checkbox, in reading order.\nAnswer field: set \"answer\" to the number of counted checkboxes.\nExample JSON:\n{\"evidence\":[[154,356,178,380]],\"answer\":1}",
+  "instance_seed": 1512534493779564,
+  "prompt": "Read the named sections in this document: an invoice with visible named sections, header fields, and checkbox groups. Read the document and answer this question: In the Billing Flags section, how many checkboxes are not checked? Return only the number of unchecked boxes.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing one bounding box for each counted checkbox, in reading order.\nAnswer: set \"answer\" to the number of counted checkboxes.\nExample JSON:\n{\"evidence\":[[154,356,178,380]],\"answer\":1}",
   "prompt_variants": {
-    "answer_and_evidence": "Look at the document in the image: an invoice with visible named sections, header fields, and checkbox groups. In the Billing Flags section, how many checkboxes are not checked? Return only the number of unchecked boxes.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing one bounding box for each counted checkbox, in reading order.\nAnswer field: set \"answer\" to the number of counted checkboxes.\nExample JSON:\n{\"evidence\":[[154,356,178,380]],\"answer\":1}",
-    "answer_only": "Look at the document in the image: an invoice with visible named sections, header fields, and checkbox groups. In the Billing Flags section, how many checkboxes are not checked? Return only the number of unchecked boxes.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the number of counted checkboxes.\nExample JSON:\n{\"answer\":1}"
+    "answer_and_evidence": "Read the named sections in this document: an invoice with visible named sections, header fields, and checkbox groups. Read the document and answer this question: In the Billing Flags section, how many checkboxes are not checked? Return only the number of unchecked boxes.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing one bounding box for each counted checkbox, in reading order.\nAnswer: set \"answer\" to the number of counted checkboxes.\nExample JSON:\n{\"evidence\":[[154,356,178,380]],\"answer\":1}",
+    "answer_only": "Read the named sections in this document: an invoice with visible named sections, header fields, and checkbox groups. Read the document and answer this question: In the Billing Flags section, how many checkboxes are not checked? Return only the number of unchecked boxes.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the number of counted checkboxes.\nExample JSON:\n{\"answer\":1}"
   },
   "task": "task_documents_selection_checkbox_count",
   "task_variant": "unchecked_box_count",
@@ -57,15 +57,15 @@
       "value": [
         [
           666.0,
-          325.0,
-          690.0,
-          349.0
-        ],
-        [
-          666.0,
           381.0,
           690.0,
           405.0
+        ],
+        [
+          666.0,
+          437.0,
+          690.0,
+          461.0
         ]
       ]
     },
@@ -91,7 +91,7 @@
             },
             {
               "checkbox_bbox_id": "delivery_options:2:checkbox",
-              "checked": false,
+              "checked": true,
               "item_id": "delivery_options:2",
               "label": "Signature Required",
               "label_bbox_id": "delivery_options:2:label"
@@ -111,7 +111,7 @@
           "items": [
             {
               "checkbox_bbox_id": "billing_flags:0:checkbox",
-              "checked": false,
+              "checked": true,
               "item_id": "billing_flags:0",
               "label": "Paid Deposit",
               "label_bbox_id": "billing_flags:0:label"
@@ -125,7 +125,7 @@
             },
             {
               "checkbox_bbox_id": "billing_flags:2:checkbox",
-              "checked": true,
+              "checked": false,
               "item_id": "billing_flags:2",
               "label": "Auto Renew",
               "label_bbox_id": "billing_flags:2:label"
@@ -146,28 +146,28 @@
         {
           "field_id": "vendor_name",
           "field_label": "Vendor",
-          "field_value": "Elm Co.",
+          "field_value": "Copper Office",
           "label_bbox_id": "vendor_name:label",
           "value_bbox_id": "vendor_name:value"
         },
         {
           "field_id": "invoice_number",
           "field_label": "Invoice Number",
-          "field_value": "INV-35630",
+          "field_value": "INV-93469",
           "label_bbox_id": "invoice_number:label",
           "value_bbox_id": "invoice_number:value"
         },
         {
           "field_id": "due_date",
           "field_label": "Due Date",
-          "field_value": "2026-04-11",
+          "field_value": "2026-06-10",
           "label_bbox_id": "due_date:label",
           "value_bbox_id": "due_date:value"
         }
       ],
       "evidence_checkbox_bbox_ids": [
-        "billing_flags:0:checkbox",
-        "billing_flags:1:checkbox"
+        "billing_flags:1:checkbox",
+        "billing_flags:2:checkbox"
       ],
       "field_count": 3,
       "query_section_id": "billing_flags",
@@ -184,9 +184,9 @@
         "billing_flags:3"
       ],
       "target_checkbox_states": {
-        "billing_flags:0": false,
+        "billing_flags:0": true,
         "billing_flags:1": false,
-        "billing_flags:2": true,
+        "billing_flags:2": false,
         "billing_flags:3": true
       },
       "task_variant": "unchecked_box_count",
@@ -212,15 +212,15 @@
       "bbox_set": [
         [
           666.0,
-          325.0,
-          690.0,
-          349.0
-        ],
-        [
-          666.0,
           381.0,
           690.0,
           405.0
+        ],
+        [
+          666.0,
+          437.0,
+          690.0,
+          461.0
         ]
       ]
     },
@@ -246,7 +246,7 @@
       },
       "prompt_variant": {
         "answer_or_evidence_key": "answer_and_evidence",
-        "answer_or_evidence_variant_index": 3,
+        "answer_or_evidence_variant_index": 0,
         "prompt_bundle_id": "documents_selection_v1",
         "schema_version": "v1",
         "slot_values": {
@@ -260,9 +260,9 @@
           "question_text": "In the Billing Flags section, how many checkboxes are not checked?"
         },
         "task_family_key": "structured_document_sections",
-        "task_family_variant_index": 1,
+        "task_family_variant_index": 4,
         "task_key": "checkbox_count_query",
-        "task_variant_index": 0,
+        "task_variant_index": 1,
         "task_variant_key": "unchecked_box_count",
         "task_variant_template_index": 1,
         "template_paths": [
@@ -280,40 +280,6 @@
         "answer_and_evidence": {
           "metadata": {
             "answer_or_evidence_key": "answer_and_evidence",
-            "answer_or_evidence_variant_index": 3,
-            "prompt_bundle_id": "documents_selection_v1",
-            "schema_version": "v1",
-            "slot_values": {
-              "answer_hint": "set \"answer\" to the number of counted checkboxes",
-              "evidence_hint": "set \"evidence\" to an array containing one bounding box for each counted checkbox, in reading order",
-              "json_example": "{\"evidence\":[[154,356,178,380]],\"answer\":1}",
-              "json_example_answer_only": "{\"answer\":1}",
-              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
-              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "an invoice with visible named sections, header fields, and checkbox groups",
-              "question_text": "In the Billing Flags section, how many checkboxes are not checked?"
-            },
-            "task_family_key": "structured_document_sections",
-            "task_family_variant_index": 1,
-            "task_key": "checkbox_count_query",
-            "task_variant_index": 0,
-            "task_variant_key": "unchecked_box_count",
-            "task_variant_template_index": 1,
-            "template_paths": [
-              "documents/selection/documents_selection_v1.json"
-            ],
-            "variant_count_by_key": {
-              "answer_or_evidence:answer_and_evidence": 5,
-              "task:checkbox_count_query": 5,
-              "task_family:structured_document_sections": 5,
-              "task_variant:unchecked_box_count": 5
-            }
-          },
-          "prompt": "Look at the document in the image: an invoice with visible named sections, header fields, and checkbox groups. In the Billing Flags section, how many checkboxes are not checked? Return only the number of unchecked boxes.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing one bounding box for each counted checkbox, in reading order.\nAnswer field: set \"answer\" to the number of counted checkboxes.\nExample JSON:\n{\"evidence\":[[154,356,178,380]],\"answer\":1}"
-        },
-        "answer_only": {
-          "metadata": {
-            "answer_or_evidence_key": "answer_only",
             "answer_or_evidence_variant_index": 0,
             "prompt_bundle_id": "documents_selection_v1",
             "schema_version": "v1",
@@ -328,9 +294,43 @@
               "question_text": "In the Billing Flags section, how many checkboxes are not checked?"
             },
             "task_family_key": "structured_document_sections",
-            "task_family_variant_index": 1,
+            "task_family_variant_index": 4,
             "task_key": "checkbox_count_query",
-            "task_variant_index": 0,
+            "task_variant_index": 1,
+            "task_variant_key": "unchecked_box_count",
+            "task_variant_template_index": 1,
+            "template_paths": [
+              "documents/selection/documents_selection_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:checkbox_count_query": 5,
+              "task_family:structured_document_sections": 5,
+              "task_variant:unchecked_box_count": 5
+            }
+          },
+          "prompt": "Read the named sections in this document: an invoice with visible named sections, header fields, and checkbox groups. Read the document and answer this question: In the Billing Flags section, how many checkboxes are not checked? Return only the number of unchecked boxes.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing one bounding box for each counted checkbox, in reading order.\nAnswer: set \"answer\" to the number of counted checkboxes.\nExample JSON:\n{\"evidence\":[[154,356,178,380]],\"answer\":1}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 1,
+            "prompt_bundle_id": "documents_selection_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the number of counted checkboxes",
+              "evidence_hint": "set \"evidence\" to an array containing one bounding box for each counted checkbox, in reading order",
+              "json_example": "{\"evidence\":[[154,356,178,380]],\"answer\":1}",
+              "json_example_answer_only": "{\"answer\":1}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "an invoice with visible named sections, header fields, and checkbox groups",
+              "question_text": "In the Billing Flags section, how many checkboxes are not checked?"
+            },
+            "task_family_key": "structured_document_sections",
+            "task_family_variant_index": 4,
+            "task_key": "checkbox_count_query",
+            "task_variant_index": 1,
             "task_variant_key": "unchecked_box_count",
             "task_variant_template_index": 1,
             "template_paths": [
@@ -343,7 +343,7 @@
               "task_variant:unchecked_box_count": 5
             }
           },
-          "prompt": "Look at the document in the image: an invoice with visible named sections, header fields, and checkbox groups. In the Billing Flags section, how many checkboxes are not checked? Return only the number of unchecked boxes.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the number of counted checkboxes.\nExample JSON:\n{\"answer\":1}"
+          "prompt": "Read the named sections in this document: an invoice with visible named sections, header fields, and checkbox groups. Read the document and answer this question: In the Billing Flags section, how many checkboxes are not checked? Return only the number of unchecked boxes.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the number of counted checkboxes.\nExample JSON:\n{\"answer\":1}"
         }
       },
       "task_variant": "unchecked_box_count",
@@ -505,9 +505,9 @@
         ],
         "vendor_name:value": [
           214.0,
-          245.5,
-          324.0,
-          268.5
+          242.5,
+          409.0,
+          271.5
         ]
       },
       "page_bbox_px": [
@@ -554,7 +554,7 @@
     "render_spec": {
       "canvas_height": 920,
       "canvas_width": 1280,
-      "geometry_seed": 5028120900314373,
+      "geometry_seed": 1512534493779564,
       "page_shadow_offset_px": 14,
       "receipt_page_height_px": 760,
       "receipt_page_width_px": 520,
@@ -616,14 +616,14 @@
           "bbox_id": "vendor_name:value",
           "bbox_px": [
             214.0,
-            245.5,
-            324.0,
-            268.5
+            242.5,
+            409.0,
+            271.5
           ],
           "entity_id": "vendor_name:value",
           "entity_type": "document_field_value",
           "field_id": "vendor_name",
-          "text": "Elm Co."
+          "text": "Copper Office"
         },
         {
           "bbox_id": "invoice_number",
@@ -661,7 +661,7 @@
           "entity_id": "invoice_number:value",
           "entity_type": "document_field_value",
           "field_id": "invoice_number",
-          "text": "INV-35630"
+          "text": "INV-93469"
         },
         {
           "bbox_id": "due_date",
@@ -699,7 +699,7 @@
           "entity_id": "due_date:value",
           "entity_type": "document_field_value",
           "field_id": "due_date",
-          "text": "2026-04-11"
+          "text": "2026-06-10"
         },
         {
           "bbox_id": "delivery_options",
@@ -796,7 +796,7 @@
             238.0,
             461.0
           ],
-          "checked": false,
+          "checked": true,
           "entity_id": "delivery_options:2:checkbox",
           "entity_type": "document_checkbox",
           "item_id": "delivery_options:2",
@@ -883,7 +883,7 @@
             690.0,
             349.0
           ],
-          "checked": false,
+          "checked": true,
           "entity_id": "billing_flags:0:checkbox",
           "entity_type": "document_checkbox",
           "item_id": "billing_flags:0",
@@ -939,7 +939,7 @@
             690.0,
             461.0
           ],
-          "checked": true,
+          "checked": false,
           "entity_id": "billing_flags:2:checkbox",
           "entity_type": "document_checkbox",
           "item_id": "billing_flags:2",
@@ -999,8 +999,8 @@
     },
     "witness_symbolic": {
       "bbox_id_sequence": [
-        "billing_flags:0:checkbox",
-        "billing_flags:1:checkbox"
+        "billing_flags:1:checkbox",
+        "billing_flags:2:checkbox"
       ],
       "section_id": "billing_flags"
     }

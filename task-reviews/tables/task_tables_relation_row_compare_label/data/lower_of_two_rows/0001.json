@@ -1,22 +1,22 @@
 {
   "answer_gt": {
     "type": "string",
-    "value": "Darb"
+    "value": "Voss"
   },
   "evidence_gt": {
     "type": "bbox_set",
     "value": [
       [
-        737.52,
-        528.889,
-        888.0,
-        588.0
+        406.464,
+        144.667,
+        526.848,
+        233.333
       ],
       [
-        737.52,
-        292.444,
-        888.0,
-        351.556
+        406.464,
+        322.0,
+        526.848,
+        410.667
       ]
     ]
   },
@@ -24,62 +24,60 @@
     "format": "png",
     "path": "tables/task_tables_relation_row_compare_label/images/lower_of_two_rows/0001.png"
   },
-  "instance_seed": 295710198618759,
-  "prompt": "Use the table in the image. It shows a zebra-striped table with one Name column, several numeric columns, alternating row shading, and a shaded header row. Use the table values to decide which named row wins the comparison. Look at the Score column for rows Saba and Darb. Which row is smaller?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly two bounding boxes [x1, y1, x2, y2] in the same order as the two compared value cells in the prompt.\nAnswer requirement: set \"answer\" to the row label with the requested higher or lower value.\nExample JSON:\n{\"evidence\":[[260,180,372,236],[260,238,372,294]],\"answer\":\"Milo\"}",
+  "instance_seed": 5195950928412901,
+  "prompt": "Use the table in the image. It shows a ledger-style table with one Name column, several numeric columns, strong horizontal rules, and minimal vertical separators. Answer this question. In the Rank column, which row is smaller: Egin or Voss?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly two bounding boxes [x1, y1, x2, y2] in the same order as the two compared value cells in the prompt.\nAnswer requirement: set \"answer\" to the row label with the requested higher or lower value.\nExample JSON:\n{\"evidence\":[[260,180,372,236],[260,238,372,294]],\"answer\":\"Milo\"}",
   "prompt_variants": {
-    "answer_and_evidence": "Use the table in the image. It shows a zebra-striped table with one Name column, several numeric columns, alternating row shading, and a shaded header row. Use the table values to decide which named row wins the comparison. Look at the Score column for rows Saba and Darb. Which row is smaller?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly two bounding boxes [x1, y1, x2, y2] in the same order as the two compared value cells in the prompt.\nAnswer requirement: set \"answer\" to the row label with the requested higher or lower value.\nExample JSON:\n{\"evidence\":[[260,180,372,236],[260,238,372,294]],\"answer\":\"Milo\"}",
-    "answer_only": "Use the table in the image. It shows a zebra-striped table with one Name column, several numeric columns, alternating row shading, and a shaded header row. Use the table values to decide which named row wins the comparison. Look at the Score column for rows Saba and Darb. Which row is smaller?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the row label with the requested higher or lower value.\nExample JSON:\n{\"answer\":\"Milo\"}"
+    "answer_and_evidence": "Use the table in the image. It shows a ledger-style table with one Name column, several numeric columns, strong horizontal rules, and minimal vertical separators. Answer this question. In the Rank column, which row is smaller: Egin or Voss?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly two bounding boxes [x1, y1, x2, y2] in the same order as the two compared value cells in the prompt.\nAnswer requirement: set \"answer\" to the row label with the requested higher or lower value.\nExample JSON:\n{\"evidence\":[[260,180,372,236],[260,238,372,294]],\"answer\":\"Milo\"}",
+    "answer_only": "Use the table in the image. It shows a ledger-style table with one Name column, several numeric columns, strong horizontal rules, and minimal vertical separators. Answer this question. In the Rank column, which row is smaller: Egin or Voss?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the row label with the requested higher or lower value.\nExample JSON:\n{\"answer\":\"Milo\"}"
   },
   "task": "task_tables_relation_row_compare_label",
   "task_variant": "lower_of_two_rows",
   "trace_payload": {
     "execution_trace": {
-      "answer_row_index": 3,
-      "answer_row_label": "Darb",
-      "answer_value": 8,
+      "answer_row_index": 2,
+      "answer_row_label": "Voss",
+      "answer_value": 21,
       "column_headers": [
-        "Rate",
-        "Age",
-        "Time",
-        "Score"
+        "Gain",
+        "Rank",
+        "Pts",
+        "Temp",
+        "Mass"
       ],
-      "numeric_column_count": 4,
+      "numeric_column_count": 5,
       "numeric_column_count_range": [
         3,
         5
       ],
-      "query_column": "Score",
-      "query_column_index": 3,
+      "query_column": "Rank",
+      "query_column_index": 1,
       "query_rows": [
         {
-          "cell_id": "cell_r8_c4",
-          "row_index": 7,
-          "row_label": "Saba",
-          "value": 27
+          "cell_id": "cell_r1_c2",
+          "row_index": 0,
+          "row_label": "Egin",
+          "value": 30
         },
         {
-          "cell_id": "cell_r4_c4",
-          "row_index": 3,
-          "row_label": "Darb",
-          "value": 8
+          "cell_id": "cell_r3_c2",
+          "row_index": 2,
+          "row_label": "Voss",
+          "value": 21
         }
       ],
-      "row_count": 8,
+      "row_count": 5,
       "row_count_range": [
         5,
         10
       ],
       "row_labels": [
-        "Lose",
-        "Otis",
-        "Itch",
-        "Darb",
-        "Irma",
-        "Maud",
-        "Jase",
-        "Saba"
+        "Egin",
+        "Gelb",
+        "Voss",
+        "Tara",
+        "Ax"
       ],
-      "scene_variant": "zebra",
+      "scene_variant": "ledger",
       "scene_variant_probabilities": {
         "card_table": 0.25,
         "ledger": 0.25,
@@ -87,8 +85,8 @@
         "zebra": 0.25
       },
       "supporting_cell_ids": [
-        "cell_r8_c4",
-        "cell_r4_c4"
+        "cell_r1_c2",
+        "cell_r3_c2"
       ],
       "task_variant": "lower_of_two_rows",
       "task_variant_probabilities": {
@@ -100,92 +98,79 @@
         32
       ],
       "values_by_row": {
-        "Darb": {
-          "Age": 11,
-          "Rate": 19,
-          "Score": 8,
-          "Time": 22
+        "Ax": {
+          "Gain": 20,
+          "Mass": 18,
+          "Pts": 3,
+          "Rank": 30,
+          "Temp": 32
         },
-        "Irma": {
-          "Age": 29,
-          "Rate": 12,
-          "Score": 6,
-          "Time": 23
+        "Egin": {
+          "Gain": 28,
+          "Mass": 31,
+          "Pts": 29,
+          "Rank": 30,
+          "Temp": 20
         },
-        "Itch": {
-          "Age": 23,
-          "Rate": 25,
-          "Score": 4,
-          "Time": 2
+        "Gelb": {
+          "Gain": 1,
+          "Mass": 14,
+          "Pts": 18,
+          "Rank": 32,
+          "Temp": 22
         },
-        "Jase": {
-          "Age": 8,
-          "Rate": 31,
-          "Score": 2,
-          "Time": 31
+        "Tara": {
+          "Gain": 11,
+          "Mass": 22,
+          "Pts": 21,
+          "Rank": 24,
+          "Temp": 26
         },
-        "Lose": {
-          "Age": 27,
-          "Rate": 15,
-          "Score": 22,
-          "Time": 4
-        },
-        "Maud": {
-          "Age": 6,
-          "Rate": 16,
-          "Score": 23,
-          "Time": 12
-        },
-        "Otis": {
-          "Age": 18,
-          "Rate": 14,
-          "Score": 23,
-          "Time": 27
-        },
-        "Saba": {
-          "Age": 21,
-          "Rate": 6,
-          "Score": 27,
-          "Time": 18
+        "Voss": {
+          "Gain": 7,
+          "Mass": 4,
+          "Pts": 4,
+          "Rank": 21,
+          "Temp": 11
         }
       }
     },
     "projected_evidence": {
       "bbox_set": [
         [
-          737.52,
-          528.889,
-          888.0,
-          588.0
+          406.464,
+          144.667,
+          526.848,
+          233.333
         ],
         [
-          737.52,
-          292.444,
-          888.0,
-          351.556
+          406.464,
+          322.0,
+          526.848,
+          410.667
         ]
       ]
     },
     "query_spec": {
       "params": {
-        "numeric_column_count": 4,
-        "query_column": "Score",
+        "numeric_column_count": 5,
+        "query_column": "Rank",
         "query_rows": [
           {
-            "cell_id": "cell_r8_c4",
-            "row_index": 7,
-            "row_label": "Saba",
-            "value": 27
+            "cell_id": "cell_r1_c2",
+            "row_index": 0,
+            "row_label": "Egin",
+            "value": 30
           },
           {
-            "cell_id": "cell_r4_c4",
-            "row_index": 3,
-            "row_label": "Darb",
-            "value": 8
+            "cell_id": "cell_r3_c2",
+            "row_index": 2,
+            "row_label": "Voss",
+            "value": 21
           }
         ],
-        "row_count": 8,
-        "scene_variant": "zebra",
+        "row_count": 5,
+        "scene_variant": "ledger",
         "scene_variant_probabilities": {
           "card_table": 0.25,
           "ledger": 0.25,
@@ -210,17 +195,17 @@
           "json_example_answer_only": "{\"answer\":\"Milo\"}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "object_description": "a zebra-striped table with one Name column, several numeric columns, alternating row shading, and a shaded header row",
-          "query_column": "Score",
-          "query_row_label_a": "Saba",
-          "query_row_label_b": "Darb"
+          "object_description": "a ledger-style table with one Name column, several numeric columns, strong horizontal rules, and minimal vertical separators",
+          "query_column": "Rank",
+          "query_row_label_a": "Egin",
+          "query_row_label_b": "Voss"
         },
         "task_family_key": "styled_table_relation",
         "task_family_variant_index": 1,
         "task_key": "row_compare_label_query",
-        "task_variant_index": 2,
+        "task_variant_index": 0,
         "task_variant_key": "lower_of_two_rows",
-        "task_variant_template_index": 1,
+        "task_variant_template_index": 4,
         "template_paths": [
           "tables/relation/tables_relation_v1.json"
         ],
@@ -246,17 +231,17 @@
               "json_example_answer_only": "{\"answer\":\"Milo\"}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a zebra-striped table with one Name column, several numeric columns, alternating row shading, and a shaded header row",
-              "query_column": "Score",
-              "query_row_label_a": "Saba",
-              "query_row_label_b": "Darb"
+              "object_description": "a ledger-style table with one Name column, several numeric columns, strong horizontal rules, and minimal vertical separators",
+              "query_column": "Rank",
+              "query_row_label_a": "Egin",
+              "query_row_label_b": "Voss"
             },
             "task_family_key": "styled_table_relation",
             "task_family_variant_index": 1,
             "task_key": "row_compare_label_query",
-            "task_variant_index": 2,
+            "task_variant_index": 0,
             "task_variant_key": "lower_of_two_rows",
-            "task_variant_template_index": 1,
+            "task_variant_template_index": 4,
             "template_paths": [
               "tables/relation/tables_relation_v1.json"
             ],
@@ -267,7 +252,7 @@
               "task_variant:lower_of_two_rows": 5
             }
           },
-          "prompt": "Use the table in the image. It shows a zebra-striped table with one Name column, several numeric columns, alternating row shading, and a shaded header row. Use the table values to decide which named row wins the comparison. Look at the Score column for rows Saba and Darb. Which row is smaller?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly two bounding boxes [x1, y1, x2, y2] in the same order as the two compared value cells in the prompt.\nAnswer requirement: set \"answer\" to the row label with the requested higher or lower value.\nExample JSON:\n{\"evidence\":[[260,180,372,236],[260,238,372,294]],\"answer\":\"Milo\"}"
+          "prompt": "Use the table in the image. It shows a ledger-style table with one Name column, several numeric columns, strong horizontal rules, and minimal vertical separators. Answer this question. In the Rank column, which row is smaller: Egin or Voss?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly two bounding boxes [x1, y1, x2, y2] in the same order as the two compared value cells in the prompt.\nAnswer requirement: set \"answer\" to the row label with the requested higher or lower value.\nExample JSON:\n{\"evidence\":[[260,180,372,236],[260,238,372,294]],\"answer\":\"Milo\"}"
         },
         "answer_only": {
           "metadata": {
@@ -282,17 +267,17 @@
               "json_example_answer_only": "{\"answer\":\"Milo\"}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a zebra-striped table with one Name column, several numeric columns, alternating row shading, and a shaded header row",
-              "query_column": "Score",
-              "query_row_label_a": "Saba",
-              "query_row_label_b": "Darb"
+              "object_description": "a ledger-style table with one Name column, several numeric columns, strong horizontal rules, and minimal vertical separators",
+              "query_column": "Rank",
+              "query_row_label_a": "Egin",
+              "query_row_label_b": "Voss"
             },
             "task_family_key": "styled_table_relation",
             "task_family_variant_index": 1,
             "task_key": "row_compare_label_query",
-            "task_variant_index": 2,
+            "task_variant_index": 0,
             "task_variant_key": "lower_of_two_rows",
-            "task_variant_template_index": 1,
+            "task_variant_template_index": 4,
             "template_paths": [
               "tables/relation/tables_relation_v1.json"
             ],
@@ -303,7 +288,7 @@
               "task_variant:lower_of_two_rows": 5
             }
           },
-          "prompt": "Use the table in the image. It shows a zebra-striped table with one Name column, several numeric columns, alternating row shading, and a shaded header row. Use the table values to decide which named row wins the comparison. Look at the Score column for rows Saba and Darb. Which row is smaller?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the row label with the requested higher or lower value.\nExample JSON:\n{\"answer\":\"Milo\"}"
+          "prompt": "Use the table in the image. It shows a ledger-style table with one Name column, several numeric columns, strong horizontal rules, and minimal vertical separators. Answer this question. In the Rank column, which row is smaller: Egin or Voss?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the row label with the requested higher or lower value.\nExample JSON:\n{\"answer\":\"Milo\"}"
         }
       },
       "task_variant": "lower_of_two_rows",
@@ -315,424 +300,346 @@
           52.0,
           56.0,
           286.08,
-          115.111
+          144.667
         ],
         "cell_r0_c1": [
           286.08,
           56.0,
-          436.56,
-          115.111
+          406.464,
+          144.667
         ],
         "cell_r0_c2": [
-          436.56,
+          406.464,
           56.0,
-          587.04,
-          115.111
+          526.848,
+          144.667
         ],
         "cell_r0_c3": [
-          587.04,
+          526.848,
           56.0,
-          737.52,
-          115.111
+          647.232,
+          144.667
         ],
         "cell_r0_c4": [
-          737.52,
+          647.232,
+          56.0,
+          767.616,
+          144.667
+        ],
+        "cell_r0_c5": [
+          767.616,
           56.0,
           888.0,
-          115.111
+          144.667
         ],
         "cell_r1_c0": [
           52.0,
-          115.111,
+          144.667,
           286.08,
-          174.222
+          233.333
         ],
         "cell_r1_c1": [
           286.08,
-          115.111,
-          436.56,
-          174.222
+          144.667,
+          406.464,
+          233.333
         ],
         "cell_r1_c2": [
-          436.56,
-          115.111,
-          587.04,
-          174.222
+          406.464,
+          144.667,
+          526.848,
+          233.333
         ],
         "cell_r1_c3": [
-          587.04,
-          115.111,
-          737.52,
-          174.222
+          526.848,
+          144.667,
+          647.232,
+          233.333
         ],
         "cell_r1_c4": [
-          737.52,
-          115.111,
+          647.232,
+          144.667,
+          767.616,
+          233.333
+        ],
+        "cell_r1_c5": [
+          767.616,
+          144.667,
           888.0,
-          174.222
+          233.333
         ],
         "cell_r2_c0": [
           52.0,
-          174.222,
+          233.333,
           286.08,
-          233.333
+          322.0
         ],
         "cell_r2_c1": [
           286.08,
-          174.222,
-          436.56,
-          233.333
+          233.333,
+          406.464,
+          322.0
         ],
         "cell_r2_c2": [
-          436.56,
-          174.222,
-          587.04,
-          233.333
+          406.464,
+          233.333,
+          526.848,
+          322.0
         ],
         "cell_r2_c3": [
-          587.04,
-          174.222,
-          737.52,
-          233.333
+          526.848,
+          233.333,
+          647.232,
+          322.0
         ],
         "cell_r2_c4": [
-          737.52,
-          174.222,
+          647.232,
+          233.333,
+          767.616,
+          322.0
+        ],
+        "cell_r2_c5": [
+          767.616,
+          233.333,
           888.0,
-          233.333
+          322.0
         ],
         "cell_r3_c0": [
           52.0,
-          233.333,
+          322.0,
           286.08,
-          292.444
+          410.667
         ],
         "cell_r3_c1": [
           286.08,
-          233.333,
-          436.56,
-          292.444
+          322.0,
+          406.464,
+          410.667
         ],
         "cell_r3_c2": [
-          436.56,
-          233.333,
-          587.04,
-          292.444
+          406.464,
+          322.0,
+          526.848,
+          410.667
         ],
         "cell_r3_c3": [
-          587.04,
-          233.333,
-          737.52,
-          292.444
+          526.848,
+          322.0,
+          647.232,
+          410.667
         ],
         "cell_r3_c4": [
-          737.52,
-          233.333,
+          647.232,
+          322.0,
+          767.616,
+          410.667
+        ],
+        "cell_r3_c5": [
+          767.616,
+          322.0,
           888.0,
-          292.444
+          410.667
         ],
         "cell_r4_c0": [
           52.0,
-          292.444,
+          410.667,
           286.08,
-          351.556
+          499.333
         ],
         "cell_r4_c1": [
           286.08,
-          292.444,
-          436.56,
-          351.556
+          410.667,
+          406.464,
+          499.333
         ],
         "cell_r4_c2": [
-          436.56,
-          292.444,
-          587.04,
-          351.556
+          406.464,
+          410.667,
+          526.848,
+          499.333
         ],
         "cell_r4_c3": [
-          587.04,
-          292.444,
-          737.52,
-          351.556
+          526.848,
+          410.667,
+          647.232,
+          499.333
         ],
         "cell_r4_c4": [
-          737.52,
-          292.444,
+          647.232,
+          410.667,
+          767.616,
+          499.333
+        ],
+        "cell_r4_c5": [
+          767.616,
+          410.667,
           888.0,
-          351.556
+          499.333
         ],
         "cell_r5_c0": [
           52.0,
-          351.556,
+          499.333,
           286.08,
-          410.667
+          588.0
         ],
         "cell_r5_c1": [
           286.08,
-          351.556,
-          436.56,
-          410.667
+          499.333,
+          406.464,
+          588.0
         ],
         "cell_r5_c2": [
-          436.56,
-          351.556,
-          587.04,
-          410.667
+          406.464,
+          499.333,
+          526.848,
+          588.0
         ],
         "cell_r5_c3": [
-          587.04,
-          351.556,
-          737.52,
-          410.667
+          526.848,
+          499.333,
+          647.232,
+          588.0
         ],
         "cell_r5_c4": [
-          737.52,
-          351.556,
-          888.0,
-          410.667
-        ],
-        "cell_r6_c0": [
-          52.0,
-          410.667,
-          286.08,
-          469.778
-        ],
-        "cell_r6_c1": [
-          286.08,
-          410.667,
-          436.56,
-          469.778
-        ],
-        "cell_r6_c2": [
-          436.56,
-          410.667,
-          587.04,
-          469.778
-        ],
-        "cell_r6_c3": [
-          587.04,
-          410.667,
-          737.52,
-          469.778
-        ],
-        "cell_r6_c4": [
-          737.52,
-          410.667,
-          888.0,
-          469.778
-        ],
-        "cell_r7_c0": [
-          52.0,
-          469.778,
-          286.08,
-          528.889
-        ],
-        "cell_r7_c1": [
-          286.08,
-          469.778,
-          436.56,
-          528.889
-        ],
-        "cell_r7_c2": [
-          436.56,
-          469.778,
-          587.04,
-          528.889
-        ],
-        "cell_r7_c3": [
-          587.04,
-          469.778,
-          737.52,
-          528.889
-        ],
-        "cell_r7_c4": [
-          737.52,
-          469.778,
-          888.0,
-          528.889
-        ],
-        "cell_r8_c0": [
-          52.0,
-          528.889,
-          286.08,
+          647.232,
+          499.333,
+          767.616,
           588.0
         ],
-        "cell_r8_c1": [
-          286.08,
-          528.889,
-          436.56,
-          588.0
-        ],
-        "cell_r8_c2": [
-          436.56,
-          528.889,
-          587.04,
-          588.0
-        ],
-        "cell_r8_c3": [
-          587.04,
-          528.889,
-          737.52,
-          588.0
-        ],
-        "cell_r8_c4": [
-          737.52,
-          528.889,
+        "cell_r5_c5": [
+          767.616,
+          499.333,
           888.0,
           588.0
         ]
       },
       "column_region_bboxes_px": {
-        "Age": [
-          436.56,
-          115.111,
-          587.04,
-          588.0
-        ],
-        "Rate": [
+        "Gain": [
           286.08,
-          115.111,
-          436.56,
+          144.667,
+          406.464,
           588.0
         ],
-        "Score": [
-          737.52,
-          115.111,
+        "Mass": [
+          767.616,
+          144.667,
           888.0,
           588.0
         ],
-        "Time": [
-          587.04,
-          115.111,
-          737.52,
+        "Pts": [
+          526.848,
+          144.667,
+          647.232,
+          588.0
+        ],
+        "Rank": [
+          406.464,
+          144.667,
+          526.848,
+          588.0
+        ],
+        "Temp": [
+          647.232,
+          144.667,
+          767.616,
           588.0
         ]
       },
       "header_bboxes_px": {
-        "Age": [
-          436.56,
-          56.0,
-          587.04,
-          115.111
-        ],
-        "Rate": [
+        "Gain": [
           286.08,
           56.0,
-          436.56,
-          115.111
+          406.464,
+          144.667
         ],
-        "Score": [
-          737.52,
+        "Mass": [
+          767.616,
           56.0,
           888.0,
-          115.111
+          144.667
         ],
-        "Time": [
-          587.04,
+        "Pts": [
+          526.848,
           56.0,
-          737.52,
-          115.111
+          647.232,
+          144.667
+        ],
+        "Rank": [
+          406.464,
+          56.0,
+          526.848,
+          144.667
+        ],
+        "Temp": [
+          647.232,
+          56.0,
+          767.616,
+          144.667
         ]
       },
       "image_id": "img0",
       "row_label_bboxes_px": {
-        "Darb": [
+        "Ax": [
           52.0,
-          292.444,
+          499.333,
           286.08,
-          351.556
+          588.0
         ],
-        "Irma": [
+        "Egin": [
           52.0,
-          351.556,
-          286.08,
-          410.667
-        ],
-        "Itch": [
-          52.0,
-          233.333,
-          286.08,
-          292.444
-        ],
-        "Jase": [
-          52.0,
-          469.778,
-          286.08,
-          528.889
-        ],
-        "Lose": [
-          52.0,
-          115.111,
-          286.08,
-          174.222
-        ],
-        "Maud": [
-          52.0,
-          410.667,
-          286.08,
-          469.778
-        ],
-        "Otis": [
-          52.0,
-          174.222,
+          144.667,
           286.08,
           233.333
         ],
-        "Saba": [
+        "Gelb": [
           52.0,
-          528.889,
+          233.333,
           286.08,
-          588.0
+          322.0
+        ],
+        "Tara": [
+          52.0,
+          410.667,
+          286.08,
+          499.333
+        ],
+        "Voss": [
+          52.0,
+          322.0,
+          286.08,
+          410.667
         ]
       },
       "row_region_bboxes_px": {
-        "Darb": [
+        "Ax": [
           286.08,
-          292.444,
+          499.333,
           888.0,
-          351.556
+          588.0
         ],
-        "Irma": [
+        "Egin": [
           286.08,
-          351.556,
-          888.0,
-          410.667
-        ],
-        "Itch": [
-          286.08,
-          233.333,
-          888.0,
-          292.444
-        ],
-        "Jase": [
-          286.08,
-          469.778,
-          888.0,
-          528.889
-        ],
-        "Lose": [
-          286.08,
-          115.111,
-          888.0,
-          174.222
-        ],
-        "Maud": [
-          286.08,
-          410.667,
-          888.0,
-          469.778
-        ],
-        "Otis": [
-          286.08,
-          174.222,
+          144.667,
           888.0,
           233.333
         ],
-        "Saba": [
+        "Gelb": [
           286.08,
-          528.889,
+          233.333,
           888.0,
-          588.0
+          322.0
+        ],
+        "Tara": [
+          286.08,
+          410.667,
+          888.0,
+          499.333
+        ],
+        "Voss": [
+          286.08,
+          322.0,
+          888.0,
+          410.667
         ]
       },
       "table_bbox_px": [
@@ -781,7 +688,7 @@
         "edits": [],
         "enabled": false
       },
-      "scene_variant": "zebra",
+      "scene_variant": "ledger",
       "table_bbox_px": [
         52.0,
         56.0,
@@ -805,9 +712,9 @@
             "text": "Name",
             "text_bbox_px": [
               130.54,
-              76.556,
+              91.333,
               207.54,
-              94.556
+              109.333
             ],
             "value": null
           },
@@ -815,7 +722,7 @@
             52.0,
             56.0,
             286.08,
-            115.111
+            144.667
           ],
           "entity_id": "cell_r0_c0",
           "entity_type": "table_cell"
@@ -823,24 +730,24 @@
         {
           "attrs": {
             "cell_role": "header",
-            "column_header": "Rate",
+            "column_header": "Gain",
             "column_index": 1,
             "row_index": 0,
             "row_label": null,
-            "text": "Rate",
+            "text": "Gain",
             "text_bbox_px": [
-              330.82,
-              76.556,
-              391.82,
-              94.556
+              315.772,
+              91.333,
+              376.772,
+              109.333
             ],
             "value": null
           },
           "bbox_px": [
             286.08,
             56.0,
-            436.56,
-            115.111
+            406.464,
+            144.667
           ],
           "entity_id": "cell_r0_c1",
           "entity_type": "table_cell"
@@ -848,24 +755,24 @@
         {
           "attrs": {
             "cell_role": "header",
-            "column_header": "Age",
+            "column_header": "Rank",
             "column_index": 2,
             "row_index": 0,
             "row_label": null,
-            "text": "Age",
+            "text": "Rank",
             "text_bbox_px": [
-              485.8,
-              74.056,
-              537.8,
-              97.056
+              432.656,
+              91.333,
+              500.656,
+              109.333
             ],
             "value": null
           },
           "bbox_px": [
-            436.56,
+            406.464,
             56.0,
-            587.04,
-            115.111
+            526.848,
+            144.667
           ],
           "entity_id": "cell_r0_c2",
           "entity_type": "table_cell"
@@ -873,24 +780,24 @@
         {
           "attrs": {
             "cell_role": "header",
-            "column_header": "Time",
+            "column_header": "Pts",
             "column_index": 3,
             "row_index": 0,
             "row_label": null,
-            "text": "Time",
+            "text": "Pts",
             "text_bbox_px": [
-              629.78,
-              76.556,
-              694.78,
-              94.556
+              565.54,
+              91.333,
+              608.54,
+              109.333
             ],
             "value": null
           },
           "bbox_px": [
-            587.04,
+            526.848,
             56.0,
-            737.52,
-            115.111
+            647.232,
+            144.667
           ],
           "entity_id": "cell_r0_c3",
           "entity_type": "table_cell"
@@ -898,26 +805,51 @@
         {
           "attrs": {
             "cell_role": "header",
-            "column_header": "Score",
+            "column_header": "Temp",
             "column_index": 4,
             "row_index": 0,
             "row_label": null,
-            "text": "Score",
+            "text": "Temp",
             "text_bbox_px": [
-              775.26,
-              76.556,
-              850.26,
-              94.556
+              670.424,
+              88.833,
+              744.424,
+              111.833
             ],
             "value": null
           },
           "bbox_px": [
-            737.52,
+            647.232,
             56.0,
-            888.0,
-            115.111
+            767.616,
+            144.667
           ],
           "entity_id": "cell_r0_c4",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "header",
+            "column_header": "Mass",
+            "column_index": 5,
+            "row_index": 0,
+            "row_label": null,
+            "text": "Mass",
+            "text_bbox_px": [
+              793.808,
+              91.333,
+              861.808,
+              109.333
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            767.616,
+            56.0,
+            888.0,
+            144.667
+          ],
+          "entity_id": "cell_r0_c5",
           "entity_type": "table_cell"
         },
         {
@@ -926,21 +858,21 @@
             "column_header": "Name",
             "column_index": 0,
             "row_index": 1,
-            "row_label": "Lose",
-            "text": "Lose",
+            "row_label": "Egin",
+            "text": "Egin",
             "text_bbox_px": [
               66.0,
-              135.667,
-              127.0,
-              153.667
+              177.5,
+              124.0,
+              200.5
             ],
             "value": null
           },
           "bbox_px": [
             52.0,
-            115.111,
+            144.667,
             286.08,
-            174.222
+            233.333
           ],
           "entity_id": "cell_r1_c0",
           "entity_type": "table_cell"
@@ -948,24 +880,24 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Rate",
+            "column_header": "Gain",
             "column_index": 1,
             "row_index": 1,
-            "row_label": "Lose",
-            "text": "15",
+            "row_label": "Egin",
+            "text": "28",
             "text_bbox_px": [
-              347.32,
-              136.667,
-              375.32,
-              152.667
+              332.272,
+              181.0,
+              360.272,
+              197.0
             ],
-            "value": 15
+            "value": 28
           },
           "bbox_px": [
             286.08,
-            115.111,
-            436.56,
-            174.222
+            144.667,
+            406.464,
+            233.333
           ],
           "entity_id": "cell_r1_c1",
           "entity_type": "table_cell"
@@ -973,24 +905,24 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Age",
+            "column_header": "Rank",
             "column_index": 2,
             "row_index": 1,
-            "row_label": "Lose",
-            "text": "27",
+            "row_label": "Egin",
+            "text": "30",
             "text_bbox_px": [
-              497.8,
-              136.667,
-              525.8,
-              152.667
+              452.656,
+              181.0,
+              480.656,
+              197.0
             ],
-            "value": 27
+            "value": 30
           },
           "bbox_px": [
-            436.56,
-            115.111,
-            587.04,
-            174.222
+            406.464,
+            144.667,
+            526.848,
+            233.333
           ],
           "entity_id": "cell_r1_c2",
           "entity_type": "table_cell"
@@ -998,24 +930,24 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Time",
+            "column_header": "Pts",
             "column_index": 3,
             "row_index": 1,
-            "row_label": "Lose",
-            "text": "4",
+            "row_label": "Egin",
+            "text": "29",
             "text_bbox_px": [
-              655.28,
-              136.667,
-              669.28,
-              152.667
+              573.04,
+              181.0,
+              601.04,
+              197.0
             ],
-            "value": 4
+            "value": 29
           },
           "bbox_px": [
-            587.04,
-            115.111,
-            737.52,
-            174.222
+            526.848,
+            144.667,
+            647.232,
+            233.333
           ],
           "entity_id": "cell_r1_c3",
           "entity_type": "table_cell"
@@ -1023,26 +955,51 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Score",
+            "column_header": "Temp",
             "column_index": 4,
             "row_index": 1,
-            "row_label": "Lose",
-            "text": "22",
+            "row_label": "Egin",
+            "text": "20",
             "text_bbox_px": [
-              798.76,
-              136.667,
-              826.76,
-              152.667
+              693.424,
+              181.0,
+              721.424,
+              197.0
             ],
-            "value": 22
+            "value": 20
           },
           "bbox_px": [
-            737.52,
-            115.111,
-            888.0,
-            174.222
+            647.232,
+            144.667,
+            767.616,
+            233.333
           ],
           "entity_id": "cell_r1_c4",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Mass",
+            "column_index": 5,
+            "row_index": 1,
+            "row_label": "Egin",
+            "text": "31",
+            "text_bbox_px": [
+              813.808,
+              181.0,
+              841.808,
+              197.0
+            ],
+            "value": 31
+          },
+          "bbox_px": [
+            767.616,
+            144.667,
+            888.0,
+            233.333
+          ],
+          "entity_id": "cell_r1_c5",
           "entity_type": "table_cell"
         },
         {
@@ -1051,21 +1008,21 @@
             "column_header": "Name",
             "column_index": 0,
             "row_index": 2,
-            "row_label": "Otis",
-            "text": "Otis",
+            "row_label": "Gelb",
+            "text": "Gelb",
             "text_bbox_px": [
               66.0,
-              194.778,
-              119.0,
-              212.778
+              268.667,
+              127.0,
+              286.667
             ],
             "value": null
           },
           "bbox_px": [
             52.0,
-            174.222,
+            233.333,
             286.08,
-            233.333
+            322.0
           ],
           "entity_id": "cell_r2_c0",
           "entity_type": "table_cell"
@@ -1073,24 +1030,24 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Rate",
+            "column_header": "Gain",
             "column_index": 1,
             "row_index": 2,
-            "row_label": "Otis",
-            "text": "14",
+            "row_label": "Gelb",
+            "text": "1",
             "text_bbox_px": [
-              347.32,
-              195.778,
-              375.32,
-              211.778
+              339.272,
+              269.667,
+              353.272,
+              285.667
             ],
-            "value": 14
+            "value": 1
           },
           "bbox_px": [
             286.08,
-            174.222,
-            436.56,
-            233.333
+            233.333,
+            406.464,
+            322.0
           ],
           "entity_id": "cell_r2_c1",
           "entity_type": "table_cell"
@@ -1098,24 +1055,24 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Age",
+            "column_header": "Rank",
             "column_index": 2,
             "row_index": 2,
-            "row_label": "Otis",
-            "text": "18",
+            "row_label": "Gelb",
+            "text": "32",
             "text_bbox_px": [
-              497.8,
-              195.778,
-              525.8,
-              211.778
+              452.656,
+              269.667,
+              480.656,
+              285.667
             ],
-            "value": 18
+            "value": 32
           },
           "bbox_px": [
-            436.56,
-            174.222,
-            587.04,
-            233.333
+            406.464,
+            233.333,
+            526.848,
+            322.0
           ],
           "entity_id": "cell_r2_c2",
           "entity_type": "table_cell"
@@ -1123,24 +1080,24 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Time",
+            "column_header": "Pts",
             "column_index": 3,
             "row_index": 2,
-            "row_label": "Otis",
-            "text": "27",
+            "row_label": "Gelb",
+            "text": "18",
             "text_bbox_px": [
-              648.28,
-              195.778,
-              676.28,
-              211.778
+              573.04,
+              269.667,
+              601.04,
+              285.667
             ],
-            "value": 27
+            "value": 18
           },
           "bbox_px": [
-            587.04,
-            174.222,
-            737.52,
-            233.333
+            526.848,
+            233.333,
+            647.232,
+            322.0
           ],
           "entity_id": "cell_r2_c3",
           "entity_type": "table_cell"
@@ -1148,26 +1105,51 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Score",
+            "column_header": "Temp",
             "column_index": 4,
             "row_index": 2,
-            "row_label": "Otis",
-            "text": "23",
+            "row_label": "Gelb",
+            "text": "22",
             "text_bbox_px": [
-              798.76,
-              195.778,
-              826.76,
-              211.778
+              693.424,
+              269.667,
+              721.424,
+              285.667
             ],
-            "value": 23
+            "value": 22
           },
           "bbox_px": [
-            737.52,
-            174.222,
-            888.0,
-            233.333
+            647.232,
+            233.333,
+            767.616,
+            322.0
           ],
           "entity_id": "cell_r2_c4",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Mass",
+            "column_index": 5,
+            "row_index": 2,
+            "row_label": "Gelb",
+            "text": "14",
+            "text_bbox_px": [
+              813.808,
+              269.667,
+              841.808,
+              285.667
+            ],
+            "value": 14
+          },
+          "bbox_px": [
+            767.616,
+            233.333,
+            888.0,
+            322.0
+          ],
+          "entity_id": "cell_r2_c5",
           "entity_type": "table_cell"
         },
         {
@@ -1176,21 +1158,21 @@
             "column_header": "Name",
             "column_index": 0,
             "row_index": 3,
-            "row_label": "Itch",
-            "text": "Itch",
+            "row_label": "Voss",
+            "text": "Voss",
             "text_bbox_px": [
               66.0,
-              253.889,
-              117.0,
-              271.889
+              357.333,
+              129.0,
+              375.333
             ],
             "value": null
           },
           "bbox_px": [
             52.0,
-            233.333,
+            322.0,
             286.08,
-            292.444
+            410.667
           ],
           "entity_id": "cell_r3_c0",
           "entity_type": "table_cell"
@@ -1198,24 +1180,24 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Rate",
+            "column_header": "Gain",
             "column_index": 1,
             "row_index": 3,
-            "row_label": "Itch",
-            "text": "25",
+            "row_label": "Voss",
+            "text": "7",
             "text_bbox_px": [
-              347.32,
-              254.889,
-              375.32,
-              270.889
+              339.272,
+              358.333,
+              353.272,
+              374.333
             ],
-            "value": 25
+            "value": 7
           },
           "bbox_px": [
             286.08,
-            233.333,
-            436.56,
-            292.444
+            322.0,
+            406.464,
+            410.667
           ],
           "entity_id": "cell_r3_c1",
           "entity_type": "table_cell"
@@ -1223,24 +1205,24 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Age",
+            "column_header": "Rank",
             "column_index": 2,
             "row_index": 3,
-            "row_label": "Itch",
-            "text": "23",
+            "row_label": "Voss",
+            "text": "21",
             "text_bbox_px": [
-              497.8,
-              254.889,
-              525.8,
-              270.889
+              452.656,
+              358.333,
+              480.656,
+              374.333
             ],
-            "value": 23
+            "value": 21
           },
           "bbox_px": [
-            436.56,
-            233.333,
-            587.04,
-            292.444
+            406.464,
+            322.0,
+            526.848,
+            410.667
           ],
           "entity_id": "cell_r3_c2",
           "entity_type": "table_cell"
@@ -1248,24 +1230,24 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Time",
+            "column_header": "Pts",
             "column_index": 3,
             "row_index": 3,
-            "row_label": "Itch",
-            "text": "2",
+            "row_label": "Voss",
+            "text": "4",
             "text_bbox_px": [
-              655.28,
-              254.889,
-              669.28,
-              270.889
+              580.04,
+              358.333,
+              594.04,
+              374.333
             ],
-            "value": 2
+            "value": 4
           },
           "bbox_px": [
-            587.04,
-            233.333,
-            737.52,
-            292.444
+            526.848,
+            322.0,
+            647.232,
+            410.667
           ],
           "entity_id": "cell_r3_c3",
           "entity_type": "table_cell"
@@ -1273,26 +1255,51 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Score",
+            "column_header": "Temp",
             "column_index": 4,
             "row_index": 3,
-            "row_label": "Itch",
+            "row_label": "Voss",
+            "text": "11",
+            "text_bbox_px": [
+              693.424,
+              358.333,
+              721.424,
+              374.333
+            ],
+            "value": 11
+          },
+          "bbox_px": [
+            647.232,
+            322.0,
+            767.616,
+            410.667
+          ],
+          "entity_id": "cell_r3_c4",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Mass",
+            "column_index": 5,
+            "row_index": 3,
+            "row_label": "Voss",
             "text": "4",
             "text_bbox_px": [
-              805.76,
-              254.889,
-              819.76,
-              270.889
+              820.808,
+              358.333,
+              834.808,
+              374.333
             ],
             "value": 4
           },
           "bbox_px": [
-            737.52,
-            233.333,
+            767.616,
+            322.0,
             888.0,
-            292.444
+            410.667
           ],
-          "entity_id": "cell_r3_c4",
+          "entity_id": "cell_r3_c5",
           "entity_type": "table_cell"
         },
         {
@@ -1301,21 +1308,21 @@
             "column_header": "Name",
             "column_index": 0,
             "row_index": 4,
-            "row_label": "Darb",
-            "text": "Darb",
+            "row_label": "Tara",
+            "text": "Tara",
             "text_bbox_px": [
               66.0,
-              313.0,
-              131.0,
-              331.0
+              446.0,
+              126.0,
+              464.0
             ],
             "value": null
           },
           "bbox_px": [
             52.0,
-            292.444,
+            410.667,
             286.08,
-            351.556
+            499.333
           ],
           "entity_id": "cell_r4_c0",
           "entity_type": "table_cell"
@@ -1323,24 +1330,24 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Rate",
+            "column_header": "Gain",
             "column_index": 1,
             "row_index": 4,
-            "row_label": "Darb",
-            "text": "19",
+            "row_label": "Tara",
+            "text": "11",
             "text_bbox_px": [
-              347.32,
-              314.0,
-              375.32,
-              330.0
+              332.272,
+              447.0,
+              360.272,
+              463.0
             ],
-            "value": 19
+            "value": 11
           },
           "bbox_px": [
             286.08,
-            292.444,
-            436.56,
-            351.556
+            410.667,
+            406.464,
+            499.333
           ],
           "entity_id": "cell_r4_c1",
           "entity_type": "table_cell"
@@ -1348,24 +1355,24 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Age",
+            "column_header": "Rank",
             "column_index": 2,
             "row_index": 4,
-            "row_label": "Darb",
-            "text": "11",
+            "row_label": "Tara",
+            "text": "24",
             "text_bbox_px": [
-              497.8,
-              314.0,
-              525.8,
-              330.0
+              452.656,
+              447.0,
+              480.656,
+              463.0
             ],
-            "value": 11
+            "value": 24
           },
           "bbox_px": [
-            436.56,
-            292.444,
-            587.04,
-            351.556
+            406.464,
+            410.667,
+            526.848,
+            499.333
           ],
           "entity_id": "cell_r4_c2",
           "entity_type": "table_cell"
@@ -1373,24 +1380,24 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Time",
+            "column_header": "Pts",
             "column_index": 3,
             "row_index": 4,
-            "row_label": "Darb",
-            "text": "22",
+            "row_label": "Tara",
+            "text": "21",
             "text_bbox_px": [
-              648.28,
-              314.0,
-              676.28,
-              330.0
+              573.04,
+              447.0,
+              601.04,
+              463.0
             ],
-            "value": 22
+            "value": 21
           },
           "bbox_px": [
-            587.04,
-            292.444,
-            737.52,
-            351.556
+            526.848,
+            410.667,
+            647.232,
+            499.333
           ],
           "entity_id": "cell_r4_c3",
           "entity_type": "table_cell"
@@ -1398,26 +1405,51 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Score",
+            "column_header": "Temp",
             "column_index": 4,
             "row_index": 4,
-            "row_label": "Darb",
-            "text": "8",
+            "row_label": "Tara",
+            "text": "26",
             "text_bbox_px": [
-              805.76,
-              314.0,
-              819.76,
-              330.0
+              693.424,
+              447.0,
+              721.424,
+              463.0
             ],
-            "value": 8
+            "value": 26
           },
           "bbox_px": [
-            737.52,
-            292.444,
-            888.0,
-            351.556
+            647.232,
+            410.667,
+            767.616,
+            499.333
           ],
           "entity_id": "cell_r4_c4",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Mass",
+            "column_index": 5,
+            "row_index": 4,
+            "row_label": "Tara",
+            "text": "22",
+            "text_bbox_px": [
+              813.808,
+              447.0,
+              841.808,
+              463.0
+            ],
+            "value": 22
+          },
+          "bbox_px": [
+            767.616,
+            410.667,
+            888.0,
+            499.333
+          ],
+          "entity_id": "cell_r4_c5",
           "entity_type": "table_cell"
         },
         {
@@ -1426,21 +1458,21 @@
             "column_header": "Name",
             "column_index": 0,
             "row_index": 5,
-            "row_label": "Irma",
-            "text": "Irma",
+            "row_label": "Ax",
+            "text": "Ax",
             "text_bbox_px": [
               66.0,
-              372.111,
-              128.0,
-              390.111
+              534.667,
+              101.0,
+              552.667
             ],
             "value": null
           },
           "bbox_px": [
             52.0,
-            351.556,
+            499.333,
             286.08,
-            410.667
+            588.0
           ],
           "entity_id": "cell_r5_c0",
           "entity_type": "table_cell"
@@ -1448,24 +1480,24 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Rate",
+            "column_header": "Gain",
             "column_index": 1,
             "row_index": 5,
-            "row_label": "Irma",
-            "text": "12",
+            "row_label": "Ax",
+            "text": "20",
             "text_bbox_px": [
-              347.32,
-              373.111,
-              375.32,
-              389.111
+              332.272,
+              535.667,
+              360.272,
+              551.667
             ],
-            "value": 12
+            "value": 20
           },
           "bbox_px": [
             286.08,
-            351.556,
-            436.56,
-            410.667
+            499.333,
+            406.464,
+            588.0
           ],
           "entity_id": "cell_r5_c1",
           "entity_type": "table_cell"
@@ -1473,24 +1505,24 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Age",
+            "column_header": "Rank",
             "column_index": 2,
             "row_index": 5,
-            "row_label": "Irma",
-            "text": "29",
+            "row_label": "Ax",
+            "text": "30",
             "text_bbox_px": [
-              497.8,
-              373.111,
-              525.8,
-              389.111
+              452.656,
+              535.667,
+              480.656,
+              551.667
             ],
-            "value": 29
+            "value": 30
           },
           "bbox_px": [
-            436.56,
-            351.556,
-            587.04,
-            410.667
+            406.464,
+            499.333,
+            526.848,
+            588.0
           ],
           "entity_id": "cell_r5_c2",
           "entity_type": "table_cell"
@@ -1498,24 +1530,24 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Time",
+            "column_header": "Pts",
             "column_index": 3,
             "row_index": 5,
-            "row_label": "Irma",
-            "text": "23",
+            "row_label": "Ax",
+            "text": "3",
             "text_bbox_px": [
-              648.28,
-              373.111,
-              676.28,
-              389.111
+              580.04,
+              535.667,
+              594.04,
+              551.667
             ],
-            "value": 23
+            "value": 3
           },
           "bbox_px": [
-            587.04,
-            351.556,
-            737.52,
-            410.667
+            526.848,
+            499.333,
+            647.232,
+            588.0
           ],
           "entity_id": "cell_r5_c3",
           "entity_type": "table_cell"
@@ -1523,445 +1555,95 @@
         {
           "attrs": {
             "cell_role": "value",
-            "column_header": "Score",
+            "column_header": "Temp",
             "column_index": 4,
             "row_index": 5,
-            "row_label": "Irma",
-            "text": "6",
+            "row_label": "Ax",
+            "text": "32",
             "text_bbox_px": [
-              805.76,
-              373.111,
-              819.76,
-              389.111
+              693.424,
+              535.667,
+              721.424,
+              551.667
             ],
-            "value": 6
+            "value": 32
           },
           "bbox_px": [
-            737.52,
-            351.556,
-            888.0,
-            410.667
+            647.232,
+            499.333,
+            767.616,
+            588.0
           ],
           "entity_id": "cell_r5_c4",
           "entity_type": "table_cell"
         },
         {
           "attrs": {
-            "cell_role": "row_label",
-            "column_header": "Name",
-            "column_index": 0,
-            "row_index": 6,
-            "row_label": "Maud",
-            "text": "Maud",
-            "text_bbox_px": [
-              66.0,
-              431.222,
-              140.0,
-              449.222
-            ],
-            "value": null
-          },
-          "bbox_px": [
-            52.0,
-            410.667,
-            286.08,
-            469.778
-          ],
-          "entity_id": "cell_r6_c0",
-          "entity_type": "table_cell"
-        },
-        {
-          "attrs": {
             "cell_role": "value",
-            "column_header": "Rate",
-            "column_index": 1,
-            "row_index": 6,
-            "row_label": "Maud",
-            "text": "16",
-            "text_bbox_px": [
-              347.32,
-              432.222,
-              375.32,
-              448.222
-            ],
-            "value": 16
-          },
-          "bbox_px": [
-            286.08,
-            410.667,
-            436.56,
-            469.778
-          ],
-          "entity_id": "cell_r6_c1",
-          "entity_type": "table_cell"
-        },
-        {
-          "attrs": {
-            "cell_role": "value",
-            "column_header": "Age",
-            "column_index": 2,
-            "row_index": 6,
-            "row_label": "Maud",
-            "text": "6",
-            "text_bbox_px": [
-              504.8,
-              432.222,
-              518.8,
-              448.222
-            ],
-            "value": 6
-          },
-          "bbox_px": [
-            436.56,
-            410.667,
-            587.04,
-            469.778
-          ],
-          "entity_id": "cell_r6_c2",
-          "entity_type": "table_cell"
-        },
-        {
-          "attrs": {
-            "cell_role": "value",
-            "column_header": "Time",
-            "column_index": 3,
-            "row_index": 6,
-            "row_label": "Maud",
-            "text": "12",
-            "text_bbox_px": [
-              648.28,
-              432.222,
-              676.28,
-              448.222
-            ],
-            "value": 12
-          },
-          "bbox_px": [
-            587.04,
-            410.667,
-            737.52,
-            469.778
-          ],
-          "entity_id": "cell_r6_c3",
-          "entity_type": "table_cell"
-        },
-        {
-          "attrs": {
-            "cell_role": "value",
-            "column_header": "Score",
-            "column_index": 4,
-            "row_index": 6,
-            "row_label": "Maud",
-            "text": "23",
-            "text_bbox_px": [
-              798.76,
-              432.222,
-              826.76,
-              448.222
-            ],
-            "value": 23
-          },
-          "bbox_px": [
-            737.52,
-            410.667,
-            888.0,
-            469.778
-          ],
-          "entity_id": "cell_r6_c4",
-          "entity_type": "table_cell"
-        },
-        {
-          "attrs": {
-            "cell_role": "row_label",
-            "column_header": "Name",
-            "column_index": 0,
-            "row_index": 7,
-            "row_label": "Jase",
-            "text": "Jase",
-            "text_bbox_px": [
-              66.0,
-              487.833,
-              123.0,
-              510.833
-            ],
-            "value": null
-          },
-          "bbox_px": [
-            52.0,
-            469.778,
-            286.08,
-            528.889
-          ],
-          "entity_id": "cell_r7_c0",
-          "entity_type": "table_cell"
-        },
-        {
-          "attrs": {
-            "cell_role": "value",
-            "column_header": "Rate",
-            "column_index": 1,
-            "row_index": 7,
-            "row_label": "Jase",
-            "text": "31",
-            "text_bbox_px": [
-              347.32,
-              491.333,
-              375.32,
-              507.333
-            ],
-            "value": 31
-          },
-          "bbox_px": [
-            286.08,
-            469.778,
-            436.56,
-            528.889
-          ],
-          "entity_id": "cell_r7_c1",
-          "entity_type": "table_cell"
-        },
-        {
-          "attrs": {
-            "cell_role": "value",
-            "column_header": "Age",
-            "column_index": 2,
-            "row_index": 7,
-            "row_label": "Jase",
-            "text": "8",
-            "text_bbox_px": [
-              504.8,
-              491.333,
-              518.8,
-              507.333
-            ],
-            "value": 8
-          },
-          "bbox_px": [
-            436.56,
-            469.778,
-            587.04,
-            528.889
-          ],
-          "entity_id": "cell_r7_c2",
-          "entity_type": "table_cell"
-        },
-        {
-          "attrs": {
-            "cell_role": "value",
-            "column_header": "Time",
-            "column_index": 3,
-            "row_index": 7,
-            "row_label": "Jase",
-            "text": "31",
-            "text_bbox_px": [
-              648.28,
-              491.333,
-              676.28,
-              507.333
-            ],
-            "value": 31
-          },
-          "bbox_px": [
-            587.04,
-            469.778,
-            737.52,
-            528.889
-          ],
-          "entity_id": "cell_r7_c3",
-          "entity_type": "table_cell"
-        },
-        {
-          "attrs": {
-            "cell_role": "value",
-            "column_header": "Score",
-            "column_index": 4,
-            "row_index": 7,
-            "row_label": "Jase",
-            "text": "2",
-            "text_bbox_px": [
-              805.76,
-              491.333,
-              819.76,
-              507.333
-            ],
-            "value": 2
-          },
-          "bbox_px": [
-            737.52,
-            469.778,
-            888.0,
-            528.889
-          ],
-          "entity_id": "cell_r7_c4",
-          "entity_type": "table_cell"
-        },
-        {
-          "attrs": {
-            "cell_role": "row_label",
-            "column_header": "Name",
-            "column_index": 0,
-            "row_index": 8,
-            "row_label": "Saba",
-            "text": "Saba",
-            "text_bbox_px": [
-              66.0,
-              549.444,
-              132.0,
-              567.444
-            ],
-            "value": null
-          },
-          "bbox_px": [
-            52.0,
-            528.889,
-            286.08,
-            588.0
-          ],
-          "entity_id": "cell_r8_c0",
-          "entity_type": "table_cell"
-        },
-        {
-          "attrs": {
-            "cell_role": "value",
-            "column_header": "Rate",
-            "column_index": 1,
-            "row_index": 8,
-            "row_label": "Saba",
-            "text": "6",
-            "text_bbox_px": [
-              354.32,
-              550.444,
-              368.32,
-              566.444
-            ],
-            "value": 6
-          },
-          "bbox_px": [
-            286.08,
-            528.889,
-            436.56,
-            588.0
-          ],
-          "entity_id": "cell_r8_c1",
-          "entity_type": "table_cell"
-        },
-        {
-          "attrs": {
-            "cell_role": "value",
-            "column_header": "Age",
-            "column_index": 2,
-            "row_index": 8,
-            "row_label": "Saba",
-            "text": "21",
-            "text_bbox_px": [
-              497.8,
-              550.444,
-              525.8,
-              566.444
-            ],
-            "value": 21
-          },
-          "bbox_px": [
-            436.56,
-            528.889,
-            587.04,
-            588.0
-          ],
-          "entity_id": "cell_r8_c2",
-          "entity_type": "table_cell"
-        },
-        {
-          "attrs": {
-            "cell_role": "value",
-            "column_header": "Time",
-            "column_index": 3,
-            "row_index": 8,
-            "row_label": "Saba",
+            "column_header": "Mass",
+            "column_index": 5,
+            "row_index": 5,
+            "row_label": "Ax",
             "text": "18",
             "text_bbox_px": [
-              648.28,
-              550.444,
-              676.28,
-              566.444
+              813.808,
+              535.667,
+              841.808,
+              551.667
             ],
             "value": 18
           },
           "bbox_px": [
-            587.04,
-            528.889,
-            737.52,
-            588.0
-          ],
-          "entity_id": "cell_r8_c3",
-          "entity_type": "table_cell"
-        },
-        {
-          "attrs": {
-            "cell_role": "value",
-            "column_header": "Score",
-            "column_index": 4,
-            "row_index": 8,
-            "row_label": "Saba",
-            "text": "27",
-            "text_bbox_px": [
-              798.76,
-              550.444,
-              826.76,
-              566.444
-            ],
-            "value": 27
-          },
-          "bbox_px": [
-            737.52,
-            528.889,
+            767.616,
+            499.333,
             888.0,
             588.0
           ],
-          "entity_id": "cell_r8_c4",
+          "entity_id": "cell_r5_c5",
           "entity_type": "table_cell"
         }
       ],
       "relations": {
-        "answer_row_label": "Darb",
-        "answer_value": 8,
-        "query_column": "Score",
+        "answer_row_label": "Voss",
+        "answer_value": 21,
+        "query_column": "Rank",
         "query_rows": [
           {
-            "cell_id": "cell_r8_c4",
-            "row_index": 7,
-            "row_label": "Saba",
-            "value": 27
+            "cell_id": "cell_r1_c2",
+            "row_index": 0,
+            "row_label": "Egin",
+            "value": 30
           },
           {
-            "cell_id": "cell_r4_c4",
-            "row_index": 3,
-            "row_label": "Darb",
-            "value": 8
+            "cell_id": "cell_r3_c2",
+            "row_index": 2,
+            "row_label": "Voss",
+            "value": 21
           }
         ],
-        "scene_variant": "zebra",
+        "scene_variant": "ledger",
         "supporting_cell_ids": [
-          "cell_r8_c4",
-          "cell_r4_c4"
+          "cell_r1_c2",
+          "cell_r3_c2"
         ],
         "task_variant": "lower_of_two_rows"
       },
-      "scene_kind": "table_zebra_relation"
+      "scene_kind": "table_ledger_relation"
     },
     "witness_symbolic": {
       "type": "bbox_set",
       "value": [
         [
-          737.52,
-          528.889,
-          888.0,
-          588.0
+          406.464,
+          144.667,
+          526.848,
+          233.333
         ],
         [
-          737.52,
-          292.444,
-          888.0,
-          351.556
+          406.464,
+          322.0,
+          526.848,
+          410.667
         ]
       ]
     }

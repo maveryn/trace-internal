@@ -1,0 +1,66 @@
+generation:
+  shared: {}
+  task_overrides:
+    task_games_mancala_move_count:
+      scene_variant_weights:
+        midgame_board: 1.0
+        crowded_board: 1.0
+      query_variant_weights:
+        extra_turn_move_count: 1.0
+        capture_move_count: 1.0
+      style_variant_weights:
+        classic: 1.0
+        soft: 1.0
+        outlined: 1.0
+      balanced_scene_variant_sampling: true
+      balanced_query_variant_sampling: true
+      balanced_style_variant_sampling: true
+      balanced_target_answer_sampling: true
+      extra_turn_move_count_support: [0, 1, 2, 3, 4, 5]
+      capture_move_count_support: [0, 1, 2, 3, 4]
+
+rendering:
+  shared:
+    canvas_width: 1120
+    canvas_height: 760
+    panel_margin_px: 40
+    player_badge_height_px: 50
+    player_badge_width_px: 220
+    header_gap_px: 16
+    board_width_px: 980
+    board_height_px: 520
+    board_corner_radius_px: 34
+    board_frame_width_px: 14
+    pit_gap_px: 16
+    store_width_px: 110
+    pit_corner_radius_px: 28
+    count_font_size_px: 34
+    side_label_font_size_px: 24
+    player_badge_font_size_px: 22
+
+complexity:
+  shared: {}
+  task_overrides:
+    task_games_mancala_move_count:
+      criteria_weights:
+        visual_scan: 0.30
+        card_reasoning: 0.44
+        ambiguity: 0.16
+        output_burden: 0.10
+
+prompt:
+  shared:
+    bundle_id: games_mancala_v1
+  task_overrides:
+    task_games_mancala_move_count:
+      task_family_key: visible_mancala_board
+      task_key: mancala_move_query
+      object_description_midgame_board: one visible Mancala board with six pits per side and two side stores
+      object_description_crowded_board: one crowded visible Mancala board with six pits per side and two side stores
+      turn_rule_text: Blue controls the bottom row and the right store. On a move, choose one non-empty pit on Blue's row, pick up all stones from that pit, and place them one by one into the following pits moving counterclockwise, including Blue's store but skipping Orange's store.
+      extra_turn_rule_text: A move gives Blue another turn if the last stone lands in Blue's store.
+      capture_rule_text: A move causes a capture if the last stone lands in an empty pit on Blue's row and the opposite Orange pit contains one or more stones; then Blue moves both that last stone and all stones from the opposite pit into Blue's store.
+      evidence_hint_extra_turn_move_count: set "evidence" to an array of bounding boxes [x1, y1, x2, y2] for every bottom-row pit that would give Blue another turn
+      evidence_hint_capture_move_count: set "evidence" to an array of bounding boxes [x1, y1, x2, y2] for every bottom-row pit that would cause a capture
+      answer_hint_extra_turn_move_count: set "answer" to the number of bottom-row pits that would give Blue another turn
+      answer_hint_capture_move_count: set "answer" to the number of bottom-row pits that would cause a capture

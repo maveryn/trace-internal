@@ -210,7 +210,7 @@ Define how we split tasks into reusable families so each dataset slice stays com
 
 ## Games direction (current)
 1. Games should start with real game-state artifacts whose visible pieces are sufficient to answer the question; do not hide state or rely on unstated house rules in early tasks.
-2. The active games families are `cards`, `dominoes`, `reversi`, `connect_four`, and `checkers`.
+2. The active games families are `cards`, `dominoes`, `reversi`, `connect_four`, `checkers`, and `mancala`.
 3. `task_games_cards_hand_count`
    - uses scene variants `single_row|two_row`
    - uses query variants `same_suit_as_reference_count|higher_than_reference_count|pair_count|longest_run_length`
@@ -236,12 +236,18 @@ Define how we split tasks into reusable families so each dataset slice stays com
    - uses query variants `legal_move_count|capture_move_count`
    - keeps integer answers with unordered `bbox_set` evidence over landing squares, and constrains counted moves to unique landing squares by construction
    - uses one non-semantic `style_variant` axis `classic|soft|outlined` for board chrome only
-8. Card-hand tasks should keep visible card counts in the `7..14` range, with two-row layouts reserved for larger hands so cards stay readable.
-9. Domino-chain tasks should keep the top chain as reference/context and the loose dominoes below as the counted witness set, with explicit rule text whenever the query depends on open-end matching, pip sums, or doubles.
-10. Reversi tasks should keep the current player explicit in both the image and the prompt, and should ground evidence on board squares rather than on decorative board chrome.
-11. Connect Four tasks should keep gravity semantics explicit in the prompt, show the current player on the board badge, define “safe” directly when a query depends on next-turn threats, and ground evidence on landing cells instead of whole columns.
-12. Checkers tasks should make forward movement direction explicit in the prompt, avoid king semantics in early versions, and ground evidence on landing squares instead of the moving pieces themselves.
-13. When a card-hand task depends on display order across wrapped rows (for example longest-run questions), keep an explicit continuation cue in the image and state the reading order directly in the prompt.
+8. `task_games_mancala_move_count`
+   - uses scene variants `midgame_board|crowded_board`
+   - uses query variants `extra_turn_move_count|capture_move_count`
+   - keeps integer answers with unordered `bbox_set` evidence over the qualifying starting pits on Blue's bottom row
+   - uses one non-semantic `style_variant` axis `classic|soft|outlined` for board chrome only
+9. Card-hand tasks should keep visible card counts in the `7..14` range, with two-row layouts reserved for larger hands so cards stay readable.
+10. Domino-chain tasks should keep the top chain as reference/context and the loose dominoes below as the counted witness set, with explicit rule text whenever the query depends on open-end matching, pip sums, or doubles.
+11. Reversi tasks should keep the current player explicit in both the image and the prompt, and should ground evidence on board squares rather than on decorative board chrome.
+12. Connect Four tasks should keep gravity semantics explicit in the prompt, show the current player on the board badge, define “safe” directly when a query depends on next-turn threats, and ground evidence on landing cells instead of whole columns.
+13. Checkers tasks should make forward movement direction explicit in the prompt, avoid king semantics in early versions, and ground evidence on landing squares instead of the moving pieces themselves.
+14. Mancala tasks should teach the sowing rule directly in the prompt, keep the active side fixed and explicit in both the image and prompt, and ground evidence on the starting pits themselves rather than on implied landing locations or stores.
+15. When a card-hand task depends on display order across wrapped rows (for example longest-run questions), keep an explicit continuation cue in the image and state the reading order directly in the prompt.
 
 ## Geometry direction (current)
 1. Geometry now exposes ten active task ids:

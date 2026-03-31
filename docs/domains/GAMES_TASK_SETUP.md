@@ -78,6 +78,20 @@ Use this document for the active `games` domain contract.
    - state that captures are not mandatory for `legal_move_count`,
    - state that only the first jump counts for `capture_move_count`.
 
+### `mancala`
+1. Active tasks:
+   - `task_games_mancala_move_count`
+2. `task_games_mancala_move_count` scene/query surface:
+   - `scene_variant`: `midgame_board|crowded_board`
+   - `query_variant`: `extra_turn_move_count|capture_move_count`
+3. `task_games_mancala_move_count` evidence contract:
+   - unordered pit `bbox_set` evidence over the qualifying starting pits on Blue's bottom row
+4. `task_games_mancala_move_count` prompt policy:
+   - explicitly state that Blue controls the bottom row and the right store,
+   - explain that sowing moves counterclockwise, includes Blue's store, and skips Orange's store,
+   - define the extra-turn and capture rule directly in the prompt instead of assuming Mancala conventions,
+   - keep evidence on the starting pits rather than on stores or implied landing pits.
+
 ## 3) V1 games-domain policy
 1. Prefer one stable visible game scaffold per task id; widen question diversity through `task_variant` before splitting into more task ids.
 2. Keep early tasks fully face-up and fully observable; do not require hidden cards or unstated game conventions.
@@ -95,12 +109,14 @@ Use this document for the active `games` domain contract.
    - `task_games_connect_four_move_count`
 5. `checkers`
    - `task_games_checkers_move_count`
+6. `mancala`
+   - `task_games_mancala_move_count`
 
 ## 5) Shared helper placement
 1. Cross-domain integer-support balancing now lives in `trace/tasks/shared/support_sampling.py`.
 2. Games-domain visual defaults belong in `trace/tasks/games/shared/visual_defaults.py`.
 3. Games-domain shared axis-sampling helpers belong in `trace/tasks/games/shared/sampling.py`.
-4. Games-domain card/domino/Reversi/Connect Four/Checkers theming belongs in `trace/tasks/games/shared/style.py`.
+4. Games-domain card/domino/Reversi/Connect Four/Checkers/Mancala theming belongs in `trace/tasks/games/shared/style.py`.
 5. Games-domain card-hand rendering helpers belong in `trace/tasks/games/shared/card_scene.py`.
 6. Games-domain domino-chain rendering helpers belong in `trace/tasks/games/shared/domino_scene.py`.
 7. Games-domain Reversi rules helpers belong in `trace/tasks/games/shared/reversi_common.py`.
@@ -109,4 +125,6 @@ Use this document for the active `games` domain contract.
 10. Games-domain Connect Four board rendering helpers belong in `trace/tasks/games/shared/connect_four_scene.py`.
 11. Games-domain Checkers rules helpers belong in `trace/tasks/games/shared/checkers_common.py`.
 12. Games-domain Checkers board rendering helpers belong in `trace/tasks/games/shared/checkers_scene.py`.
-13. Games-domain normalized complexity helpers belong in `trace/tasks/games/shared/complexity.py`.
+13. Games-domain Mancala rules helpers belong in `trace/tasks/games/shared/mancala_common.py`.
+14. Games-domain Mancala board rendering helpers belong in `trace/tasks/games/shared/mancala_scene.py`.
+15. Games-domain normalized complexity helpers belong in `trace/tasks/games/shared/complexity.py`.

@@ -1,0 +1,78 @@
+{
+  "bundle_id": "games_mancala_v1",
+  "schema_version": "v1",
+  "task_family_templates": {
+    "visible_mancala_board": [
+      "The image shows {object_description}.",
+      "Look at the visible Mancala board in the image. It shows {object_description}.",
+      "You are given a Mancala board image with {object_description}.",
+      "Work from the Mancala position shown in the image: {object_description}.",
+      "Use the visible Mancala board state in the image. It shows {object_description}."
+    ]
+  },
+  "task_templates": {
+    "mancala_move_query": [
+      "Answer the question using the visible board state.",
+      "Read the board and determine the requested value.",
+      "Work from the shown Mancala position to answer the question.",
+      "Use the displayed Mancala state to determine the requested count.",
+      "Determine the requested move value from the visible board."
+    ]
+  },
+  "task_variant_templates": {
+    "extra_turn_move_count": [
+      "{turn_rule_text} {extra_turn_rule_text} How many bottom-row pits would give Blue another turn? Answer with an integer.",
+      "{turn_rule_text} {extra_turn_rule_text} Count the bottom-row pits that would give Blue an extra turn. Answer with an integer.",
+      "{turn_rule_text} {extra_turn_rule_text} What is the number of Blue pits that end in Blue's store? Answer with an integer.",
+      "{turn_rule_text} {extra_turn_rule_text} How many possible starting pits on Blue's row would end with another turn for Blue? Answer with an integer.",
+      "{turn_rule_text} {extra_turn_rule_text} Determine how many bottom-row pits would let Blue move again immediately. Answer with an integer."
+    ],
+    "capture_move_count": [
+      "{turn_rule_text} {capture_rule_text} How many bottom-row pits would cause a capture? Answer with an integer.",
+      "{turn_rule_text} {capture_rule_text} Count the bottom-row pits that would make Blue capture stones on this move. Answer with an integer.",
+      "{turn_rule_text} {capture_rule_text} What is the number of Blue pits that would trigger a capture? Answer with an integer.",
+      "{turn_rule_text} {capture_rule_text} How many possible starting pits on Blue's row would capture the opposite stones? Answer with an integer.",
+      "{turn_rule_text} {capture_rule_text} Determine how many bottom-row pits would cause Blue to capture stones immediately. Answer with an integer."
+    ]
+  },
+  "required_slots_by_key": {
+    "task_family:visible_mancala_board": [
+      "object_description"
+    ],
+    "task_variant:extra_turn_move_count": [
+      "turn_rule_text",
+      "extra_turn_rule_text"
+    ],
+    "task_variant:capture_move_count": [
+      "turn_rule_text",
+      "capture_rule_text"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence: {evidence_hint}.\nAnswer: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence requirement: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence field: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence rule: {evidence_hint}.\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  }
+}

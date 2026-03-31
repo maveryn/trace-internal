@@ -8,7 +8,7 @@
     "random_count": 100,
     "seed": 0,
     "tasks": [
-      "task_games_checkers_move_count"
+      "task_games_mancala_move_count"
     ],
     "workers": 16
   },
@@ -22,18 +22,18 @@
       "distribution_pass": true,
       "domain": "games",
       "inspection_count": 50,
-      "inspection_workbook": "games/task_games_checkers_move_count/task_games_checkers_move_count.xlsx",
+      "inspection_workbook": "games/task_games_mancala_move_count/task_games_mancala_move_count.xlsx",
       "inspection_workbook_sheets": {
         "capture_move_count": "capture_move_count",
-        "legal_move_count": "legal_move_count"
+        "extra_turn_move_count": "extra_turn_move_count"
       },
       "reports": {
-        "distribution_review": "games/task_games_checkers_move_count/distribution_review.json",
-        "inspection_manifest": "games/task_games_checkers_move_count/manifest.json",
-        "random_review": "games/task_games_checkers_move_count/random_review_100.json"
+        "distribution_review": "games/task_games_mancala_move_count/distribution_review.json",
+        "inspection_manifest": "games/task_games_mancala_move_count/manifest.json",
+        "random_review": "games/task_games_mancala_move_count/random_review_100.json"
       },
-      "task_group": "checkers",
-      "task_id": "task_games_checkers_move_count"
+      "task_group": "mancala",
+      "task_id": "task_games_mancala_move_count"
     }
   ]
 }

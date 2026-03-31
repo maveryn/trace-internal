@@ -56,7 +56,7 @@ Implementation map for the contracts in `docs/core/BLUEPRINT.md`.
 2. `trace/tasks/base.py` — task protocol and `TaskOutput`.
 3. `trace/tasks/shared/*` — reusable query/layout/evidence/config/prompt helpers.
 4. `trace/tasks/<domain>/<task_group>/*.py` — concrete tasks plus reusable task-group bases by default (for example `trace/tasks/geometry/measurement/shape_measure_base.py`); tile is the current exception and keeps concrete task modules flat under `trace/tasks/tile/<task_group>_<task_name>.py` with shared helpers in `trace/tasks/tile/shared/`.
-5. `trace/tasks/<domain>/shared/*` — domain/task-family shared helpers (for example `trace/tasks/icons/shared/*` for curated icon scenes, `trace/tasks/graph/shared/*` for labeled node-link graph sampling/rendering, `trace/tasks/temporal/shared/*` for time-format plus clock/calendar/schedule/timeline rendering helpers, `trace/tasks/physics/shared/*` for physics-domain visual defaults, complexity scoring, resistor-network rendering, color themes, optics-board rendering, and shared integer-support sampling, and `trace/tasks/games/shared/*` for games-domain card/domino/Reversi/Connect Four/Checkers rendering, rule helpers, styling, sampling, complexity, and visual defaults).
+5. `trace/tasks/<domain>/shared/*` — domain/task-family shared helpers (for example `trace/tasks/icons/shared/*` for curated icon scenes, `trace/tasks/graph/shared/*` for labeled node-link graph sampling/rendering, `trace/tasks/temporal/shared/*` for time-format plus clock/calendar/schedule/timeline rendering helpers, `trace/tasks/physics/shared/*` for physics-domain visual defaults, complexity scoring, resistor-network rendering, color themes, optics-board rendering, and shared integer-support sampling, and `trace/tasks/games/shared/*` for games-domain card/domino/Reversi/Connect Four/Checkers/Mancala rendering, rule helpers, styling, sampling, complexity, and visual defaults).
 
 ## 4) Current active tasks
 1. Tile:
@@ -168,6 +168,7 @@ Implementation map for the contracts in `docs/core/BLUEPRINT.md`.
    - `trace/tasks/games/checkers/move_count.py`
    - `trace/tasks/games/connect_four/move_count.py`
    - `trace/tasks/games/dominoes/chain_count.py`
+   - `trace/tasks/games/mancala/move_count.py`
    - `trace/tasks/games/reversi/move_count.py`
 ## 5) Architecture invariants
 1. Determinism from config + seeds + versions.

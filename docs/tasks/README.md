@@ -108,3 +108,4 @@ Current task docs:
 98. [task_games_reversi_move_count.md](task_games_reversi_move_count.md)
 99. [task_games_connect_four_move_count.md](task_games_connect_four_move_count.md)
 100. [task_games_checkers_move_count.md](task_games_checkers_move_count.md)
+101. [task_games_mancala_move_count.md](task_games_mancala_move_count.md)

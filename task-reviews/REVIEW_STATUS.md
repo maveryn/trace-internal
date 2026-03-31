@@ -55,3 +55,4 @@ Update this table after each review run.
 | task_games_reversi_move_count | task_games_reversi_move_count | alright_for_now | distribution pass (compact/classic visible Reversi boards with legal-move, corner-move, and marked flip-count queries) |
 | task_games_connect_four_move_count | task_games_connect_four_move_count | alright_for_now | distribution pass (midgame/crowded Connect Four boards with immediate-win and safe-move count variants) |
 | task_games_checkers_move_count | task_games_checkers_move_count | alright_for_now | distribution pass (midgame/crowded Checkers boards with legal-move and capture-move count variants over unique landing squares) |
+| task_games_mancala_move_count | task_games_mancala_move_count | alright_for_now | distribution pass (midgame/crowded visible Mancala boards with Blue-to-move extra-turn and capture count variants grounded on starting pits) |

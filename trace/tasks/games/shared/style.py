@@ -114,6 +114,25 @@ class CheckersTheme:
     piece_outline_width_px: int
 
 
+@dataclass(frozen=True)
+class MancalaTheme:
+    """Resolved Mancala board palette for one style variant."""
+
+    board_frame_rgb: Tuple[int, int, int]
+    board_fill_rgb: Tuple[int, int, int]
+    pit_fill_rgb: Tuple[int, int, int]
+    pit_outline_rgb: Tuple[int, int, int]
+    pit_outline_width_px: int
+    store_fill_rgb: Tuple[int, int, int]
+    store_outline_rgb: Tuple[int, int, int]
+    badge_fill_rgb: Tuple[int, int, int]
+    badge_outline_rgb: Tuple[int, int, int]
+    badge_text_rgb: Tuple[int, int, int]
+    top_side_text_rgb: Tuple[int, int, int]
+    bottom_side_text_rgb: Tuple[int, int, int]
+    count_text_rgb: Tuple[int, int, int]
+
+
 def build_games_card_theme(*, style_variant: str) -> CardTheme:
     """Return one resolved card-scene theme for the active style variant."""
 
@@ -397,6 +416,59 @@ def build_games_checkers_theme(*, style_variant: str) -> CheckersTheme:
     )
 
 
+def build_games_mancala_theme(*, style_variant: str) -> MancalaTheme:
+    """Return one resolved Mancala board theme for the active style variant."""
+
+    variant = str(style_variant)
+    if variant == "soft":
+        return MancalaTheme(
+            board_frame_rgb=(124, 88, 58),
+            board_fill_rgb=(201, 160, 112),
+            pit_fill_rgb=(231, 205, 166),
+            pit_outline_rgb=(152, 115, 77),
+            pit_outline_width_px=3,
+            store_fill_rgb=(224, 194, 152),
+            store_outline_rgb=(148, 108, 72),
+            badge_fill_rgb=(241, 244, 247),
+            badge_outline_rgb=(102, 112, 122),
+            badge_text_rgb=(32, 38, 44),
+            top_side_text_rgb=(213, 120, 63),
+            bottom_side_text_rgb=(72, 116, 196),
+            count_text_rgb=(53, 41, 31),
+        )
+    if variant == "outlined":
+        return MancalaTheme(
+            board_frame_rgb=(112, 78, 46),
+            board_fill_rgb=(214, 176, 127),
+            pit_fill_rgb=(247, 233, 209),
+            pit_outline_rgb=(128, 92, 57),
+            pit_outline_width_px=4,
+            store_fill_rgb=(239, 220, 190),
+            store_outline_rgb=(124, 87, 54),
+            badge_fill_rgb=(255, 255, 255),
+            badge_outline_rgb=(72, 82, 92),
+            badge_text_rgb=(26, 30, 36),
+            top_side_text_rgb=(220, 112, 50),
+            bottom_side_text_rgb=(54, 108, 204),
+            count_text_rgb=(48, 37, 27),
+        )
+    return MancalaTheme(
+        board_frame_rgb=(118, 82, 50),
+        board_fill_rgb=(206, 167, 117),
+        pit_fill_rgb=(237, 214, 178),
+        pit_outline_rgb=(145, 105, 68),
+        pit_outline_width_px=3,
+        store_fill_rgb=(229, 204, 165),
+        store_outline_rgb=(140, 101, 66),
+        badge_fill_rgb=(248, 249, 251),
+        badge_outline_rgb=(94, 102, 110),
+        badge_text_rgb=(27, 32, 38),
+        top_side_text_rgb=(216, 116, 56),
+        bottom_side_text_rgb=(61, 112, 201),
+        count_text_rgb=(50, 39, 29),
+    )
+
+
 def suit_color(theme: CardTheme, *, suit_name: str) -> Tuple[int, int, int]:
     """Return the rendered suit/rank color for one suit under the active theme."""
 
@@ -419,12 +491,14 @@ __all__ = [
     "CheckersTheme",
     "ConnectFourTheme",
     "DominoTheme",
+    "MancalaTheme",
     "ReversiTheme",
     "SUPPORTED_GAMES_STYLE_VARIANTS",
     "build_games_card_theme",
     "build_games_checkers_theme",
     "build_games_connect_four_theme",
     "build_games_domino_theme",
+    "build_games_mancala_theme",
     "build_games_reversi_theme",
     "style_probability_map",
     "suit_color",

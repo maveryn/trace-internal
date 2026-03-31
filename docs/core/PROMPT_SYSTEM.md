@@ -133,6 +133,7 @@ Active bundles:
    - `prompts/games/checkers/games_checkers_v1.json`
    - `prompts/games/connect_four/games_connect_four_v1.json`
    - `prompts/games/dominoes/games_dominoes_v1.json`
+   - `prompts/games/mancala/games_mancala_v1.json`
    - `prompts/games/reversi/games_reversi_v1.json`
 12. Physics:
    - `prompts/physics/mechanics/physics_mechanics_v1.json`
@@ -218,6 +219,7 @@ Active task-to-bundle mapping:
    - `task_games_checkers_move_count` -> `games_checkers_v1`
    - `task_games_connect_four_move_count` -> `games_connect_four_v1`
    - `task_games_dominoes_chain_count` -> `games_dominoes_v1`
+   - `task_games_mancala_move_count` -> `games_mancala_v1`
    - `task_games_reversi_move_count` -> `games_reversi_v1`
 19. Physics:
    - `task_physics_mechanics_force_diagram|task_physics_mechanics_lever_balance|task_physics_mechanics_spring_extension` -> `physics_mechanics_v1`

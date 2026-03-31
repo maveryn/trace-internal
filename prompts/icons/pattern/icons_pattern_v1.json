@@ -2,6 +2,13 @@
   "bundle_id": "icons_pattern_v1",
   "schema_version": "v1",
   "task_family_templates": {
+    "structured_violation_scene": [
+      "You are given an image with {object_description}.",
+      "The image shows {object_description}.",
+      "Look at the image with {object_description}.",
+      "Use the image containing {object_description}.",
+      "Work from the image with {object_description}."
+    ],
     "numbered_grid_rotation_pattern": [
       "You are given an image with {object_description}.",
       "The image shows {object_description}.",
@@ -11,6 +18,13 @@
     ]
   },
   "task_templates": {
+    "structured_violation_query": [
+      "{question_text}",
+      "Question: {question_text}",
+      "Task: {question_text}",
+      "Answer this question: {question_text}",
+      "Determine the answer: {question_text}"
+    ],
     "grid_rotation_violation_query": [
       "{question_text}",
       "Question: {question_text}",
@@ -27,8 +41,14 @@
     ]
   },
   "required_slots_by_key": {
+    "task_family:structured_violation_scene": [
+      "object_description"
+    ],
     "task_family:numbered_grid_rotation_pattern": [
       "object_description"
+    ],
+    "task:structured_violation_query": [
+      "question_text"
     ],
     "task:grid_rotation_violation_query": [
       "question_text"

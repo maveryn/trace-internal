@@ -129,11 +129,14 @@ Active bundles:
    - `prompts/diagrams/schematic/diagrams_schematic_v1.json`
    - `prompts/diagrams/set_diagram/diagrams_set_diagram_v1.json`
 11. Games:
+   - `prompts/games/bingo/games_bingo_v1.json`
    - `prompts/games/cards/games_cards_v1.json`
    - `prompts/games/checkers/games_checkers_v1.json`
    - `prompts/games/connect_four/games_connect_four_v1.json`
    - `prompts/games/dominoes/games_dominoes_v1.json`
+   - `prompts/games/dots_and_boxes/games_dots_and_boxes_v1.json`
    - `prompts/games/mancala/games_mancala_v1.json`
+   - `prompts/games/nine_mens_morris/games_nine_mens_morris_v1.json`
    - `prompts/games/reversi/games_reversi_v1.json`
 12. Physics:
    - `prompts/physics/mechanics/physics_mechanics_v1.json`
@@ -157,10 +160,10 @@ Active task-to-bundle mapping:
 7. Geometry similarity task (`task_geometry_similarity_count`) delegates to `geometry_similarity_v1`
 8. Geometry coordinate task (`task_geometry_coordinate_relation`) delegates to `geometry_coordinate_v1`
 9. Icons:
-   - `task_icons_counting_type|orientation|color|attribute_binding|size_relation|singleton_type` -> `icons_counting_v1`
-   - `task_icons_pattern_grid_rotation_violation|task_icons_pattern_grid_size_violation` -> `icons_pattern_v1`
+   - `task_icons_counting_reference_match_count|size_relation|singleton_type` -> `icons_counting_v1`
+   - `task_icons_pattern_structured_violation` -> `icons_pattern_v1`
    - `task_icons_relation_relative_position_type|between_two_anchors_count|mirror_symmetry|occlusion_order` -> `icons_relation_v1`
-   - `task_icons_sequence_missing_count|rotation_violation` -> `icons_sequence_v1`
+   - `task_icons_sequence_missing_count` -> `icons_sequence_v1`
    - `task_icons_transformation_pair_count` -> `icons_transformation_v1`
 10. Graph:
    - `task_graph_counting_degree_count|articulation_point_count|bridge_count` -> `graph_counting_v1`
@@ -215,11 +218,14 @@ Active task-to-bundle mapping:
    - `task_documents_relation_section_extremum_value` -> `documents_relation_v1`
    - `task_documents_selection_checkbox_count` -> `documents_selection_v1`
 18. Games:
+   - `task_games_bingo_completed_line_count` -> `games_bingo_v1`
    - `task_games_cards_hand_count` -> `games_cards_v1`
    - `task_games_checkers_move_count` -> `games_checkers_v1`
    - `task_games_connect_four_move_count` -> `games_connect_four_v1`
    - `task_games_dominoes_chain_count` -> `games_dominoes_v1`
+   - `task_games_dots_and_boxes_capture_count` -> `games_dots_and_boxes_v1`
    - `task_games_mancala_move_count` -> `games_mancala_v1`
+   - `task_games_nine_mens_morris_pieces_in_mill_count` -> `games_nine_mens_morris_v1`
    - `task_games_reversi_move_count` -> `games_reversi_v1`
 19. Physics:
    - `task_physics_mechanics_force_diagram|task_physics_mechanics_lever_balance|task_physics_mechanics_spring_extension` -> `physics_mechanics_v1`

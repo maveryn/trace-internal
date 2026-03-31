@@ -1,0 +1,86 @@
+{
+  "bundle_id": "games_nine_mens_morris_v1",
+  "schema_version": "v1",
+  "task_family_templates": {
+    "visible_nine_mens_morris_board": [
+      "The image shows {object_description}.",
+      "Look at the nine men's morris board in the image. It shows {object_description}.",
+      "You are given an image with {object_description}.",
+      "Work from the nine men's morris board shown in the image: {object_description}.",
+      "Use the visible nine men's morris board in the image. It shows {object_description}."
+    ]
+  },
+  "task_templates": {
+    "pieces_in_mill_query": [
+      "Answer the question using the visible pieces on the board.",
+      "Use the shown nine men's morris position to answer the requested count.",
+      "Work from the displayed board position to determine the requested value.",
+      "Determine the requested mill-piece count from the visible board.",
+      "Use the current board state to answer the question."
+    ]
+  },
+  "task_variant_templates": {
+    "white_pieces_in_mill_count": [
+      "{mill_rule_text} How many white pieces belong to at least one mill? Answer with an integer.",
+      "Count the white pieces that are part of a mill. {mill_rule_text} Answer with an integer.",
+      "{mill_rule_text} What is the number of white pieces that belong to a mill? Answer with an integer.",
+      "Looking at the visible board only, how many white pieces are in a mill? {mill_rule_text} Answer with an integer.",
+      "How many light pieces belong to at least one mill? {mill_rule_text} Answer with an integer."
+    ],
+    "black_pieces_in_mill_count": [
+      "{mill_rule_text} How many black pieces belong to at least one mill? Answer with an integer.",
+      "Count the black pieces that are part of a mill. {mill_rule_text} Answer with an integer.",
+      "{mill_rule_text} What is the number of black pieces that belong to a mill? Answer with an integer.",
+      "Looking at the visible board only, how many black pieces are in a mill? {mill_rule_text} Answer with an integer.",
+      "How many dark pieces belong to at least one mill? {mill_rule_text} Answer with an integer."
+    ],
+    "all_pieces_in_mill_count": [
+      "{mill_rule_text} How many pieces belong to at least one mill in total? Answer with an integer.",
+      "Count all pieces that are part of a mill. {mill_rule_text} Answer with an integer.",
+      "{mill_rule_text} What is the total number of pieces that belong to a mill? Answer with an integer.",
+      "Looking at both colors together, how many pieces are in a mill? {mill_rule_text} Answer with an integer.",
+      "How many visible pieces belong to at least one mill overall? {mill_rule_text} Answer with an integer."
+    ]
+  },
+  "required_slots_by_key": {
+    "task_family:visible_nine_mens_morris_board": [
+      "object_description"
+    ],
+    "task_variant:white_pieces_in_mill_count": [
+      "mill_rule_text"
+    ],
+    "task_variant:black_pieces_in_mill_count": [
+      "mill_rule_text"
+    ],
+    "task_variant:all_pieces_in_mill_count": [
+      "mill_rule_text"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence: {evidence_hint}.\nAnswer: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence requirement: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence field: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence rule: {evidence_hint}.\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  }
+}

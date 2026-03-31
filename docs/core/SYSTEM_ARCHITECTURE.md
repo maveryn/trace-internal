@@ -80,20 +80,15 @@ Implementation map for the contracts in `docs/core/BLUEPRINT.md`.
    - `trace/tasks/geometry/similarity/count.py`
    - `trace/tasks/geometry/coordinate/relation.py`
 3. Icons:
-   - `trace/tasks/icons/counting/type.py`
-   - `trace/tasks/icons/counting/orientation.py`
-   - `trace/tasks/icons/counting/color.py`
-   - `trace/tasks/icons/counting/attribute_binding.py`
+   - `trace/tasks/icons/counting/reference_match_count.py`
    - `trace/tasks/icons/counting/size_relation.py`
    - `trace/tasks/icons/counting/singleton_type.py`
-   - `trace/tasks/icons/pattern/grid_rotation_violation.py`
-   - `trace/tasks/icons/pattern/grid_size_violation.py`
+   - `trace/tasks/icons/pattern/structured_violation.py`
    - `trace/tasks/icons/relation/relative_position_type.py`
    - `trace/tasks/icons/relation/between_two_anchors_count.py`
    - `trace/tasks/icons/relation/mirror_symmetry.py`
    - `trace/tasks/icons/relation/occlusion_order.py`
    - `trace/tasks/icons/sequence/missing_count.py`
-   - `trace/tasks/icons/sequence/rotation_violation.py`
    - `trace/tasks/icons/transformation/pair_count.py`
 4. Charts:
    - `trace/tasks/charts/statistics/summary_value.py`
@@ -164,11 +159,14 @@ Implementation map for the contracts in `docs/core/BLUEPRINT.md`.
    - `trace/tasks/physics/mechanics/spring_extension.py`
    - `trace/tasks/physics/optics/ray_trace.py`
 12. Games:
+   - `trace/tasks/games/bingo/completed_line_count.py`
    - `trace/tasks/games/cards/hand_count.py`
    - `trace/tasks/games/checkers/move_count.py`
    - `trace/tasks/games/connect_four/move_count.py`
    - `trace/tasks/games/dominoes/chain_count.py`
+   - `trace/tasks/games/dots_and_boxes/capture_count.py`
    - `trace/tasks/games/mancala/move_count.py`
+   - `trace/tasks/games/nine_mens_morris/pieces_in_mill_count.py`
    - `trace/tasks/games/reversi/move_count.py`
 ## 5) Architecture invariants
 1. Determinism from config + seeds + versions.

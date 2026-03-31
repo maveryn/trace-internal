@@ -1,0 +1,792 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 4
+  },
+  "evidence_gt": {
+    "type": "bbox_set",
+    "value": [
+      [
+        456,
+        87,
+        570,
+        201
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "icons/task_icons_pattern_structured_violation/images/row_rotation_violation/0014.png"
+  },
+  "instance_seed": 3024780195647815,
+  "prompt": "Look at the image with a horizontal row of numbered boxes, each containing one icon. Which numbered box breaks the rotation sequence?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON array containing exactly one [x_min, y_min, x_max, y_max] box in image pixel coordinates for the violating grid box.\nAnswer format: set \"answer\" to the violating box index as an integer.\nExample JSON:\n{\"evidence\":[[540,126,654,458]],\"answer\":5}",
+  "prompt_variants": {
+    "answer_and_evidence": "Look at the image with a horizontal row of numbered boxes, each containing one icon. Which numbered box breaks the rotation sequence?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON array containing exactly one [x_min, y_min, x_max, y_max] box in image pixel coordinates for the violating grid box.\nAnswer format: set \"answer\" to the violating box index as an integer.\nExample JSON:\n{\"evidence\":[[540,126,654,458]],\"answer\":5}",
+    "answer_only": "Look at the image with a horizontal row of numbered boxes, each containing one icon. Which numbered box breaks the rotation sequence?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the violating box index as an integer.\nExample JSON:\n{\"answer\":5}"
+  },
+  "task": "task_icons_pattern_structured_violation",
+  "task_variant": "row_rotation_violation",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_index": 4,
+      "cell_box_height_px": 114,
+      "cell_box_width_px": 114,
+      "expected_sequence_rotations_degrees": [
+        180,
+        90,
+        0,
+        270,
+        180,
+        90
+      ],
+      "legacy_scene_variant": "single_panel_sequence_row",
+      "legacy_task_id": "task_icons_sequence_rotation_violation",
+      "legacy_task_variant": "constant_rotation_step_violation",
+      "observed_sequence_rotations_degrees": [
+        180,
+        90,
+        0,
+        90,
+        180,
+        90
+      ],
+      "question_format": "identify_rotation_sequence_violation",
+      "scene_variant": "sequence_row",
+      "scene_variant_probabilities": {
+        "sequence_row": 1.0
+      },
+      "sequence_icon_id": "gi-delapouite-jupiter",
+      "sequence_length": 6,
+      "start_rotation_degrees": 180,
+      "step_delta_degrees": 270,
+      "task_variant": "row_rotation_violation",
+      "task_variant_probabilities": {
+        "grid_rotation_violation": 0.0,
+        "grid_size_violation": 0.0,
+        "row_rotation_violation": 1.0
+      },
+      "violation_cell_index": 3,
+      "violation_rotation_degrees": 90
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          456,
+          87,
+          570,
+          201
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "answer_index": 4,
+        "answer_index_probabilities": {
+          "1": 0.14285714285714285,
+          "2": 0.14285714285714285,
+          "3": 0.14285714285714285,
+          "4": 0.14285714285714285,
+          "5": 0.14285714285714285,
+          "6": 0.14285714285714285,
+          "7": 0.14285714285714285
+        },
+        "cell_box_height_px": 114,
+        "cell_box_width_px": 114,
+        "legacy_scene_variant": "single_panel_sequence_row",
+        "legacy_task_id": "task_icons_sequence_rotation_violation",
+        "legacy_task_variant": "constant_rotation_step_violation",
+        "pool_manifest": "non_symmetry.txt",
+        "rotation_candidates_degrees": [
+          0,
+          90,
+          180,
+          270
+        ],
+        "scene_variant": "sequence_row",
+        "scene_variant_probabilities": {
+          "sequence_row": 1.0
+        },
+        "sequence_length": 6,
+        "sequence_length_probabilities": {
+          "5": 0.3333333333333333,
+          "6": 0.3333333333333333,
+          "7": 0.3333333333333333
+        },
+        "start_rotation_degrees": 180,
+        "step_candidates_degrees": [
+          90,
+          270
+        ],
+        "step_delta_degrees": 270,
+        "task_variant": "row_rotation_violation",
+        "task_variant_probabilities": {
+          "grid_rotation_violation": 0.0,
+          "grid_size_violation": 0.0,
+          "row_rotation_violation": 1.0
+        },
+        "violation_cell_index": 3,
+        "violation_rotation_degrees": 90
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 1,
+        "prompt_bundle_id": "icons_pattern_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the violating box index as an integer",
+          "evidence_hint": "set \"evidence\" to a JSON array containing exactly one [x_min, y_min, x_max, y_max] box in image pixel coordinates for the violating grid box",
+          "json_example": "{\"evidence\":[[540,126,654,458]],\"answer\":5}",
+          "json_example_answer_only": "{\"answer\":5}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a horizontal row of numbered boxes, each containing one icon",
+          "question_text": "Which numbered box breaks the rotation sequence?"
+        },
+        "task_family_key": "structured_violation_scene",
+        "task_family_variant_index": 2,
+        "task_key": "structured_violation_query",
+        "task_variant_index": 0,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "icons/pattern/icons_pattern_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:structured_violation_query": 5,
+          "task_family:structured_violation_scene": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 1,
+            "prompt_bundle_id": "icons_pattern_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the violating box index as an integer",
+              "evidence_hint": "set \"evidence\" to a JSON array containing exactly one [x_min, y_min, x_max, y_max] box in image pixel coordinates for the violating grid box",
+              "json_example": "{\"evidence\":[[540,126,654,458]],\"answer\":5}",
+              "json_example_answer_only": "{\"answer\":5}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a horizontal row of numbered boxes, each containing one icon",
+              "question_text": "Which numbered box breaks the rotation sequence?"
+            },
+            "task_family_key": "structured_violation_scene",
+            "task_family_variant_index": 2,
+            "task_key": "structured_violation_query",
+            "task_variant_index": 0,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "icons/pattern/icons_pattern_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:structured_violation_query": 5,
+              "task_family:structured_violation_scene": 5
+            }
+          },
+          "prompt": "Look at the image with a horizontal row of numbered boxes, each containing one icon. Which numbered box breaks the rotation sequence?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON array containing exactly one [x_min, y_min, x_max, y_max] box in image pixel coordinates for the violating grid box.\nAnswer format: set \"answer\" to the violating box index as an integer.\nExample JSON:\n{\"evidence\":[[540,126,654,458]],\"answer\":5}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 4,
+            "prompt_bundle_id": "icons_pattern_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the violating box index as an integer",
+              "evidence_hint": "set \"evidence\" to a JSON array containing exactly one [x_min, y_min, x_max, y_max] box in image pixel coordinates for the violating grid box",
+              "json_example": "{\"evidence\":[[540,126,654,458]],\"answer\":5}",
+              "json_example_answer_only": "{\"answer\":5}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a horizontal row of numbered boxes, each containing one icon",
+              "question_text": "Which numbered box breaks the rotation sequence?"
+            },
+            "task_family_key": "structured_violation_scene",
+            "task_family_variant_index": 2,
+            "task_key": "structured_violation_query",
+            "task_variant_index": 0,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "icons/pattern/icons_pattern_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:structured_violation_query": 5,
+              "task_family:structured_violation_scene": 5
+            }
+          },
+          "prompt": "Look at the image with a horizontal row of numbered boxes, each containing one icon. Which numbered box breaks the rotation sequence?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the violating box index as an integer.\nExample JSON:\n{\"answer\":5}"
+        }
+      },
+      "task_variant": "row_rotation_violation",
+      "template_id": "icons_pattern_v1"
+    },
+    "render_map": {
+      "anchors": {
+        "violating_cell_bbox": [
+          456,
+          87,
+          570,
+          201
+        ]
+      },
+      "image_id": "img0"
+    },
+    "render_spec": {
+      "canvas_size": [
+        892,
+        255
+      ],
+      "coord_space": "pixel",
+      "legacy_scene_variant": "single_panel_sequence_row",
+      "panel_geometry": {
+        "canvas_size": [
+          892,
+          255
+        ],
+        "scene_content_xyxy": [
+          44,
+          77,
+          848,
+          211
+        ],
+        "scene_panel_xyxy": [
+          24,
+          24,
+          868,
+          231
+        ]
+      },
+      "scene_variant": "sequence_row",
+      "style": {
+        "background_color_rgb": [
+          247,
+          248,
+          251
+        ],
+        "cell_box_height_range_px": [
+          96,
+          136
+        ],
+        "cell_box_width_range_px": [
+          96,
+          136
+        ],
+        "cell_corner_radius_px": 12,
+        "cell_icon_padding_px": 8,
+        "cell_label_color_rgb": [
+          52,
+          60,
+          77
+        ],
+        "cell_label_font_size_px": 22,
+        "cell_padding_px": 10,
+        "color_channel_max": 220,
+        "color_channel_min": 24,
+        "color_distance_space": "lab",
+        "header_text_rgb": [
+          70,
+          78,
+          96
+        ],
+        "icon_noise_edit_count_range": [
+          0,
+          2
+        ],
+        "icon_noise_edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "icon_noise_value_ranges": {
+          "blur": {
+            "radius": [
+              0.2,
+              0.6
+            ]
+          },
+          "downsample": {
+            "scale": [
+              0.85,
+              0.95
+            ]
+          },
+          "jpeg": {
+            "quality": [
+              70.0,
+              90.0
+            ]
+          },
+          "noise": {
+            "alpha": [
+              0.03,
+              0.08
+            ]
+          }
+        },
+        "min_color_distance": 40.0,
+        "palette_size_max": 1,
+        "palette_size_min": 1,
+        "panel_border_rgb": [
+          205,
+          212,
+          224
+        ],
+        "panel_fill_rgb": [
+          255,
+          255,
+          255
+        ],
+        "reference_icon_size_max_px": 0,
+        "reference_icon_size_min_px": 0,
+        "reference_icon_size_px": 0,
+        "sampled_cell_box_size_px": [
+          114,
+          114
+        ],
+        "sampled_palette_rgb": [
+          [
+            194,
+            45,
+            139
+          ]
+        ],
+        "scene_icon_size_max_px": 72,
+        "scene_icon_size_min_px": 48,
+        "scene_max_overlap_fraction": 0.2,
+        "scene_placement_max_attempts": 160,
+        "scene_size_shrink_factor": 0.9,
+        "scene_size_shrink_rounds": 6
+      },
+      "task_variant": "row_rotation_violation"
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "cell_bbox_xyxy": [
+            54,
+            87,
+            168,
+            201
+          ],
+          "cell_index": 0,
+          "cell_label_text": "1",
+          "entity_kind": "sequence_cell",
+          "expected_rotation_degrees": 180,
+          "is_violation": false,
+          "observed_rotation_degrees": 180,
+          "panel": "scene",
+          "rendered_icon_count": 1
+        },
+        {
+          "cell_bbox_xyxy": [
+            188,
+            87,
+            302,
+            201
+          ],
+          "cell_index": 1,
+          "cell_label_text": "2",
+          "entity_kind": "sequence_cell",
+          "expected_rotation_degrees": 90,
+          "is_violation": false,
+          "observed_rotation_degrees": 90,
+          "panel": "scene",
+          "rendered_icon_count": 1
+        },
+        {
+          "cell_bbox_xyxy": [
+            322,
+            87,
+            436,
+            201
+          ],
+          "cell_index": 2,
+          "cell_label_text": "3",
+          "entity_kind": "sequence_cell",
+          "expected_rotation_degrees": 0,
+          "is_violation": false,
+          "observed_rotation_degrees": 0,
+          "panel": "scene",
+          "rendered_icon_count": 1
+        },
+        {
+          "cell_bbox_xyxy": [
+            456,
+            87,
+            570,
+            201
+          ],
+          "cell_index": 3,
+          "cell_label_text": "4",
+          "entity_kind": "sequence_cell",
+          "expected_rotation_degrees": 270,
+          "is_violation": true,
+          "observed_rotation_degrees": 90,
+          "panel": "scene",
+          "rendered_icon_count": 1
+        },
+        {
+          "cell_bbox_xyxy": [
+            590,
+            87,
+            704,
+            201
+          ],
+          "cell_index": 4,
+          "cell_label_text": "5",
+          "entity_kind": "sequence_cell",
+          "expected_rotation_degrees": 180,
+          "is_violation": false,
+          "observed_rotation_degrees": 180,
+          "panel": "scene",
+          "rendered_icon_count": 1
+        },
+        {
+          "cell_bbox_xyxy": [
+            724,
+            87,
+            838,
+            201
+          ],
+          "cell_index": 5,
+          "cell_label_text": "6",
+          "entity_kind": "sequence_cell",
+          "expected_rotation_degrees": 90,
+          "is_violation": false,
+          "observed_rotation_degrees": 90,
+          "panel": "scene",
+          "rendered_icon_count": 1
+        },
+        {
+          "bbox_xyxy": [
+            91,
+            129,
+            138,
+            176
+          ],
+          "cell_bbox_xyxy": [
+            54,
+            87,
+            168,
+            201
+          ],
+          "cell_index": 0,
+          "cell_label_text": "1",
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-jupiter",
+          "instance_id": "scene_cell_0_icon_0",
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "alpha": 0.047756
+              },
+              "type": "noise"
+            }
+          ],
+          "noise_seed": 7456570184085020,
+          "nominal_size_px": 53,
+          "panel": "scene",
+          "rotation_degrees": 180,
+          "tint_rgb": [
+            194,
+            45,
+            139
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            213,
+            134,
+            270,
+            191
+          ],
+          "cell_bbox_xyxy": [
+            188,
+            87,
+            302,
+            201
+          ],
+          "cell_index": 1,
+          "cell_label_text": "2",
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-jupiter",
+          "instance_id": "scene_cell_1_icon_0",
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "alpha": 0.049405
+              },
+              "type": "noise"
+            },
+            {
+              "params": {
+                "scale": 0.860595
+              },
+              "type": "downsample"
+            }
+          ],
+          "noise_seed": 6418466055583504,
+          "nominal_size_px": 63,
+          "panel": "scene",
+          "rotation_degrees": 90,
+          "tint_rgb": [
+            194,
+            45,
+            139
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            363,
+            130,
+            419,
+            186
+          ],
+          "cell_bbox_xyxy": [
+            322,
+            87,
+            436,
+            201
+          ],
+          "cell_index": 2,
+          "cell_label_text": "3",
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-jupiter",
+          "instance_id": "scene_cell_2_icon_0",
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "alpha": 0.060384
+              },
+              "type": "noise"
+            }
+          ],
+          "noise_seed": 4642898763925190,
+          "nominal_size_px": 62,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            194,
+            45,
+            139
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            482,
+            132,
+            538,
+            188
+          ],
+          "cell_bbox_xyxy": [
+            456,
+            87,
+            570,
+            201
+          ],
+          "cell_index": 3,
+          "cell_label_text": "4",
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-jupiter",
+          "instance_id": "scene_cell_3_icon_0",
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 5409776002221801,
+          "nominal_size_px": 64,
+          "panel": "scene",
+          "rotation_degrees": 90,
+          "tint_rgb": [
+            194,
+            45,
+            139
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            623,
+            129,
+            679,
+            185
+          ],
+          "cell_bbox_xyxy": [
+            590,
+            87,
+            704,
+            201
+          ],
+          "cell_index": 4,
+          "cell_label_text": "5",
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-jupiter",
+          "instance_id": "scene_cell_4_icon_0",
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "quality": 81.0
+              },
+              "type": "jpeg"
+            },
+            {
+              "params": {
+                "scale": 0.860998
+              },
+              "type": "downsample"
+            }
+          ],
+          "noise_seed": 6671696824389837,
+          "nominal_size_px": 62,
+          "panel": "scene",
+          "rotation_degrees": 180,
+          "tint_rgb": [
+            194,
+            45,
+            139
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            761,
+            135,
+            815,
+            189
+          ],
+          "cell_bbox_xyxy": [
+            724,
+            87,
+            838,
+            201
+          ],
+          "cell_index": 5,
+          "cell_label_text": "6",
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-jupiter",
+          "instance_id": "scene_cell_5_icon_0",
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "quality": 73.0
+              },
+              "type": "jpeg"
+            },
+            {
+              "params": {
+                "scale": 0.939774
+              },
+              "type": "downsample"
+            }
+          ],
+          "noise_seed": 5951777138738981,
+          "nominal_size_px": 60,
+          "panel": "scene",
+          "rotation_degrees": 90,
+          "tint_rgb": [
+            194,
+            45,
+            139
+          ]
+        }
+      ],
+      "frames": {
+        "panels": {
+          "canvas_size": [
+            892,
+            255
+          ],
+          "scene_content_xyxy": [
+            44,
+            77,
+            848,
+            211
+          ],
+          "scene_panel_xyxy": [
+            24,
+            24,
+            868,
+            231
+          ]
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {
+        "expected_sequence_rotations_degrees": [
+          180,
+          90,
+          0,
+          270,
+          180,
+          90
+        ],
+        "legacy_scene_variant": "single_panel_sequence_row",
+        "legacy_task_id": "task_icons_sequence_rotation_violation",
+        "legacy_task_variant": "constant_rotation_step_violation",
+        "observed_sequence_rotations_degrees": [
+          180,
+          90,
+          0,
+          90,
+          180,
+          90
+        ],
+        "scene_variant": "sequence_row",
+        "sequence_icon_id": "gi-delapouite-jupiter",
+        "sequence_rule": "constant_rotation_step",
+        "start_rotation_degrees": 180,
+        "step_delta_degrees": 270,
+        "task_variant": "row_rotation_violation",
+        "violation_cell_index": 3
+      },
+      "scene_kind": "icons_pattern_structured_violation"
+    },
+    "witness_symbolic": {
+      "expected_sequence_rotations_degrees": [
+        180,
+        90,
+        0,
+        270,
+        180,
+        90
+      ],
+      "observed_sequence_rotations_degrees": [
+        180,
+        90,
+        0,
+        90,
+        180,
+        90
+      ],
+      "sequence_rule": "constant_rotation_step",
+      "start_rotation_degrees": 180,
+      "step_delta_degrees": 270,
+      "violation_cell_index": 3
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

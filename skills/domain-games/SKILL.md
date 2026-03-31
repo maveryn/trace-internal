@@ -1,6 +1,6 @@
 ---
 name: domain-games
-description: Use when designing, implementing, or reviewing TRACE games-domain tasks, especially visible card, domino, Reversi, Connect Four, Checkers, and Mancala state tasks with local piece-level evidence.
+description: Use when designing, implementing, or reviewing TRACE games-domain tasks, especially visible dots-and-boxes, bingo, card, domino, Reversi, Connect Four, Checkers, Mancala, and Morris state tasks with local piece-level evidence.
 ---
 
 # Games Domain
@@ -22,6 +22,10 @@ Use this whenever the task lives under `domain=games`.
 - When a task varies layout scaffold and query type independently, use the chart-style `scene_variant` / `query_variant` split rather than one task id per question stem.
 
 ## Current coverage
+- `dots_and_boxes`
+  - `task_games_dots_and_boxes_capture_count`
+- `bingo`
+  - `task_games_bingo_completed_line_count`
 - `cards`
   - `task_games_cards_hand_count`
 - `dominoes`
@@ -34,13 +38,21 @@ Use this whenever the task lives under `domain=games`.
   - `task_games_checkers_move_count`
 - `mancala`
   - `task_games_mancala_move_count`
+- `nine_mens_morris`
+  - `task_games_nine_mens_morris_pieces_in_mill_count`
 
 ## Shared helpers to prefer
 - `trace/tasks/shared/support_sampling.py`
 - `trace/tasks/shared/variant_sampling.py`
 - `trace/tasks/shared/text_rendering.py`
+- `trace/tasks/games/shared/dots_boxes_common.py`
+- `trace/tasks/games/shared/dots_boxes_scene.py`
+- `trace/tasks/games/shared/bingo_common.py`
+- `trace/tasks/games/shared/bingo_scene.py`
 - `trace/tasks/games/shared/card_scene.py`
 - `trace/tasks/games/shared/domino_scene.py`
+- `trace/tasks/games/shared/morris_common.py`
+- `trace/tasks/games/shared/morris_scene.py`
 - `trace/tasks/games/shared/connect_four_common.py`
 - `trace/tasks/games/shared/connect_four_scene.py`
 - `trace/tasks/games/shared/checkers_common.py`

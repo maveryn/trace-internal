@@ -1879,12 +1879,15 @@ def test_icons_counting_defaults_loaded() -> None:
     assert int(generation_shared["distractor_count_min"]) == 1
     assert int(generation_shared["distractor_count_max"]) == 10
     assert bool(generation_shared["balanced_sampling"]) is True
-    assert "task_icons_counting_color" in cfg["generation"]["task_overrides"]
-    assert "task_icons_counting_attribute_binding" in cfg["generation"]["task_overrides"]
+    assert "task_icons_counting_reference_match_count" in cfg["generation"]["task_overrides"]
     assert "task_icons_counting_size_relation" in cfg["generation"]["task_overrides"]
     assert "task_icons_counting_singleton_type" in cfg["generation"]["task_overrides"]
-    assert "task_icons_counting_type" in cfg["generation"]["task_overrides"]
-    assert "task_icons_counting_orientation" in cfg["generation"]["task_overrides"]
+    assert set(cfg["generation"]["task_overrides"]["task_icons_counting_reference_match_count"]["task_variant_weights"].keys()) == {
+        "match_type",
+        "match_color",
+        "match_orientation",
+        "match_attribute_binding",
+    }
 
     render_shared = cfg["rendering"]["shared"]
     assert int(render_shared["canvas_width"]) > 0
@@ -1917,36 +1920,33 @@ def test_icons_counting_defaults_loaded() -> None:
         "semantic_match": 0.35,
     }
 
-    color_generation, color_rendering, color_prompt = split_generation_rendering_prompt_defaults(
+    reference_generation, reference_rendering, reference_prompt = split_generation_rendering_prompt_defaults(
         cfg,
-        task_id="task_icons_counting_color",
+        task_id="task_icons_counting_reference_match_count",
     )
-    assert str(color_generation["pool_manifest"]).strip() == "all_icons.txt"
-    assert float(color_rendering["min_color_distance"]) == 60.0
-    assert int(color_rendering["palette_size_min"]) == 3
-    assert int(color_rendering["palette_size_max"]) == 4
-    assert str(color_prompt["object_description"]).strip()
-    assert str(color_prompt["question_text"]).strip()
-    assert str(color_prompt["evidence_hint"]).strip()
-    assert str(color_prompt["answer_hint"]).strip()
-    assert str(color_prompt["json_example"]).strip()
-    assert str(color_prompt["json_example_answer_only"]).strip()
-
-    attribute_binding_generation, attribute_binding_rendering, attribute_binding_prompt = split_generation_rendering_prompt_defaults(
-        cfg,
-        task_id="task_icons_counting_attribute_binding",
-    )
-    assert str(attribute_binding_generation["pool_manifest"]).strip() == "non_symmetry.txt"
-    assert list(attribute_binding_generation["rotation_candidates_degrees"]) == [0, 90, 180, 270]
-    assert float(attribute_binding_rendering["min_color_distance"]) == 40.0
-    assert int(attribute_binding_rendering["palette_size_min"]) == 3
-    assert int(attribute_binding_rendering["palette_size_max"]) == 4
-    assert str(attribute_binding_prompt["object_description"]).strip()
-    assert str(attribute_binding_prompt["question_text"]).strip()
-    assert str(attribute_binding_prompt["evidence_hint"]).strip()
-    assert str(attribute_binding_prompt["answer_hint"]).strip()
-    assert str(attribute_binding_prompt["json_example"]).strip()
-    assert str(attribute_binding_prompt["json_example_answer_only"]).strip()
+    assert str(reference_generation["variant_generation_params"]["match_type"]["pool_manifest"]).strip() == "all_icons.txt"
+    assert str(reference_generation["variant_generation_params"]["match_color"]["pool_manifest"]).strip() == "all_icons.txt"
+    assert str(reference_generation["variant_generation_params"]["match_orientation"]["pool_manifest"]).strip() == "non_symmetry.txt"
+    assert list(reference_generation["variant_generation_params"]["match_orientation"]["rotation_candidates_degrees"]) == [0, 90, 180, 270]
+    assert str(reference_generation["variant_generation_params"]["match_attribute_binding"]["pool_manifest"]).strip() == "non_symmetry.txt"
+    assert list(reference_generation["variant_generation_params"]["match_attribute_binding"]["rotation_candidates_degrees"]) == [0, 90, 180, 270]
+    assert float(reference_rendering["variant_render_params"]["match_color"]["min_color_distance"]) == 60.0
+    assert int(reference_rendering["variant_render_params"]["match_color"]["palette_size_min"]) == 3
+    assert int(reference_rendering["variant_render_params"]["match_color"]["palette_size_max"]) == 4
+    assert float(reference_rendering["variant_render_params"]["match_attribute_binding"]["min_color_distance"]) == 40.0
+    assert int(reference_rendering["variant_render_params"]["match_attribute_binding"]["palette_size_min"]) == 3
+    assert int(reference_rendering["variant_render_params"]["match_attribute_binding"]["palette_size_max"]) == 4
+    assert str(reference_prompt["object_description"]).strip()
+    assert set(reference_prompt["question_text_by_variant"].keys()) == {
+        "match_type",
+        "match_color",
+        "match_orientation",
+        "match_attribute_binding",
+    }
+    assert str(reference_prompt["evidence_hint"]).strip()
+    assert str(reference_prompt["answer_hint"]).strip()
+    assert str(reference_prompt["json_example"]).strip()
+    assert str(reference_prompt["json_example_answer_only"]).strip()
 
     size_generation, size_rendering, size_prompt = split_generation_rendering_prompt_defaults(
         cfg,
@@ -1970,20 +1970,6 @@ def test_icons_counting_defaults_loaded() -> None:
     assert str(size_prompt["json_example"]).strip()
     assert str(size_prompt["json_example_answer_only"]).strip()
 
-    type_generation, type_rendering, type_prompt = split_generation_rendering_prompt_defaults(
-        cfg,
-        task_id="task_icons_counting_type",
-    )
-    assert str(type_generation["pool_manifest"]).strip() == "all_icons.txt"
-    assert int(type_rendering["canvas_width"]) > 0
-    assert int(type_rendering["reference_panel_width_px"]) > 0
-    assert str(type_prompt["object_description"]).strip()
-    assert str(type_prompt["question_text"]).strip()
-    assert str(type_prompt["evidence_hint"]).strip()
-    assert str(type_prompt["answer_hint"]).strip()
-    assert str(type_prompt["json_example"]).strip()
-    assert str(type_prompt["json_example_answer_only"]).strip()
-
     singleton_generation, singleton_rendering, singleton_prompt = split_generation_rendering_prompt_defaults(
         cfg,
         task_id="task_icons_counting_singleton_type",
@@ -2006,20 +1992,6 @@ def test_icons_counting_defaults_loaded() -> None:
     assert str(singleton_prompt["answer_hint"]).strip()
     assert str(singleton_prompt["json_example"]).strip()
     assert str(singleton_prompt["json_example_answer_only"]).strip()
-
-    orientation_generation, orientation_rendering, orientation_prompt = split_generation_rendering_prompt_defaults(
-        cfg,
-        task_id="task_icons_counting_orientation",
-    )
-    assert str(orientation_generation["pool_manifest"]).strip() == "non_symmetry.txt"
-    assert list(orientation_generation["rotation_candidates_degrees"]) == [0, 90, 180, 270]
-    assert int(orientation_rendering["canvas_width"]) > 0
-    assert str(orientation_prompt["object_description"]).strip()
-    assert str(orientation_prompt["question_text"]).strip()
-    assert str(orientation_prompt["evidence_hint"]).strip()
-    assert str(orientation_prompt["answer_hint"]).strip()
-    assert str(orientation_prompt["json_example"]).strip()
-    assert str(orientation_prompt["json_example_answer_only"]).strip()
 
 
 def test_graph_counting_defaults_loaded() -> None:
@@ -2831,7 +2803,6 @@ def test_icons_sequence_defaults_loaded() -> None:
     assert int(generation_shared["step_abs_max"]) == 3
     assert bool(generation_shared["balanced_sampling"]) is True
     assert "task_icons_sequence_missing_count" in cfg["generation"]["task_overrides"]
-    assert "task_icons_sequence_rotation_violation" in cfg["generation"]["task_overrides"]
 
     render_shared = cfg["rendering"]["shared"]
     assert int(render_shared["scene_icon_size_min_px"]) == 24
@@ -2868,23 +2839,6 @@ def test_icons_sequence_defaults_loaded() -> None:
     assert str(prompt["json_example"]).strip()
     assert str(prompt["json_example_answer_only"]).strip()
 
-    generation, rendering, prompt = split_generation_rendering_prompt_defaults(
-        cfg,
-        task_id="task_icons_sequence_rotation_violation",
-    )
-    assert str(generation["pool_manifest"]).strip() == "non_symmetry.txt"
-    assert list(generation["rotation_candidates_degrees"]) == [0, 90, 180, 270]
-    assert list(generation["step_candidates_degrees"]) == [90, 270]
-    assert int(generation["sequence_length_min"]) == 5
-    assert int(generation["sequence_length_max"]) == 7
-    assert int(rendering["scene_icon_size_min_px"]) == 48
-    assert int(rendering["scene_icon_size_max_px"]) == 72
-    assert int(rendering["cell_box_width_min_px"]) == 96
-    assert int(rendering["cell_box_width_max_px"]) == 136
-    assert str(prompt["task_family_key"]).strip() == "sequence_rotation_violation"
-    assert str(prompt["task_key"]).strip() == "rotation_violation_query"
-    assert str(prompt["question_text"]).strip()
-
 
 def test_icons_pattern_defaults_loaded() -> None:
     cfg = get_task_group_defaults("icons", "pattern")
@@ -2905,8 +2859,12 @@ def test_icons_pattern_defaults_loaded() -> None:
     assert int(generation_shared["answer_index_min"]) == 1
     assert int(generation_shared["answer_index_max"]) == 9
     assert bool(generation_shared["balanced_sampling"]) is True
-    assert "task_icons_pattern_grid_rotation_violation" in cfg["generation"]["task_overrides"]
-    assert "task_icons_pattern_grid_size_violation" in cfg["generation"]["task_overrides"]
+    assert "task_icons_pattern_structured_violation" in cfg["generation"]["task_overrides"]
+    assert set(cfg["generation"]["task_overrides"]["task_icons_pattern_structured_violation"]["task_variant_weights"].keys()) == {
+        "row_rotation_violation",
+        "grid_rotation_violation",
+        "grid_size_violation",
+    }
 
     render_shared = cfg["rendering"]["shared"]
     assert int(render_shared["scene_icon_size_min_px"]) == 48
@@ -2921,48 +2879,53 @@ def test_icons_pattern_defaults_loaded() -> None:
 
     prompt_shared = cfg["prompt"]["shared"]
     assert str(prompt_shared["bundle_id"]).strip() == "icons_pattern_v1"
-    assert str(prompt_shared["task_family_key"]).strip() == "numbered_grid_rotation_pattern"
-    assert str(prompt_shared["task_key"]).strip() == "grid_rotation_violation_query"
+    assert str(prompt_shared["task_family_key"]).strip() == "structured_violation_scene"
+    assert str(prompt_shared["task_key"]).strip() == "structured_violation_query"
     assert str(prompt_shared["json_output_contract"]).strip()
     assert str(prompt_shared["json_output_contract_answer_only"]).strip()
 
     generation, rendering, prompt = split_generation_rendering_prompt_defaults(
         cfg,
-        task_id="task_icons_pattern_grid_rotation_violation",
+        task_id="task_icons_pattern_structured_violation",
     )
-    assert str(generation["pool_manifest"]).strip() == "non_symmetry.txt"
-    assert list(generation["rotation_candidates_degrees"]) == [0, 90, 180, 270]
-    assert list(generation["row_step_candidates_degrees"]) == [90, 180, 270]
-    assert list(generation["col_step_candidates_degrees"]) == [90, 180, 270]
-    assert int(rendering["scene_icon_size_min_px"]) == 48
-    assert int(rendering["scene_icon_size_max_px"]) == 72
-    assert str(prompt["object_description"]).strip()
-    assert str(prompt["question_text"]).strip()
+    assert str(generation["variant_generation_params"]["row_rotation_violation"]["pool_manifest"]).strip() == "non_symmetry.txt"
+    assert list(generation["variant_generation_params"]["row_rotation_violation"]["step_candidates_degrees"]) == [90, 270]
+    assert int(generation["variant_generation_params"]["row_rotation_violation"]["sequence_length_min"]) == 5
+    assert int(generation["variant_generation_params"]["row_rotation_violation"]["sequence_length_max"]) == 7
+    assert str(generation["variant_generation_params"]["grid_rotation_violation"]["pool_manifest"]).strip() == "non_symmetry.txt"
+    assert list(generation["variant_generation_params"]["grid_rotation_violation"]["rotation_candidates_degrees"]) == [0, 90, 180, 270]
+    assert list(generation["variant_generation_params"]["grid_rotation_violation"]["row_step_candidates_degrees"]) == [90, 180, 270]
+    assert list(generation["variant_generation_params"]["grid_rotation_violation"]["col_step_candidates_degrees"]) == [90, 180, 270]
+    assert str(generation["variant_generation_params"]["grid_size_violation"]["pool_manifest"]).strip() == "all_icons.txt"
+    assert list(generation["variant_generation_params"]["grid_size_violation"]["size_levels"]) == [1, 2, 3, 4, 5]
+    assert list(generation["variant_generation_params"]["grid_size_violation"]["base_level_candidates"]) == [1, 2, 3, 4, 5]
+    assert list(generation["variant_generation_params"]["grid_size_violation"]["row_step_candidates"]) == [-1, 0, 1]
+    assert list(generation["variant_generation_params"]["grid_size_violation"]["col_step_candidates"]) == [-1, 0, 1]
+    assert list(generation["variant_generation_params"]["grid_size_violation"]["shared_rotation_candidates_degrees"]) == [0, 90, 180, 270]
+    assert int(rendering["variant_render_params"]["row_rotation_violation"]["scene_icon_size_min_px"]) == 48
+    assert int(rendering["variant_render_params"]["row_rotation_violation"]["scene_icon_size_max_px"]) == 72
+    assert int(rendering["variant_render_params"]["grid_size_violation"]["scene_icon_size_min_px"]) == 34
+    assert int(rendering["variant_render_params"]["grid_size_violation"]["scene_icon_size_max_px"]) == 82
+    assert int(rendering["variant_render_params"]["grid_size_violation"]["cell_box_width_min_px"]) == 116
+    assert int(rendering["variant_render_params"]["grid_size_violation"]["cell_box_width_max_px"]) == 152
+    assert int(rendering["variant_render_params"]["grid_size_violation"]["cell_box_height_min_px"]) == 116
+    assert int(rendering["variant_render_params"]["grid_size_violation"]["cell_box_height_max_px"]) == 152
+    assert int(rendering["variant_render_params"]["grid_size_violation"]["size_level_gap_px"]) == 8
+    assert list(rendering["variant_render_params"]["grid_size_violation"]["icon_noise_edit_count_range"]) == [0, 1]
+    assert set(prompt["object_description_by_variant"].keys()) == {
+        "row_rotation_violation",
+        "grid_rotation_violation",
+        "grid_size_violation",
+    }
+    assert set(prompt["question_text_by_variant"].keys()) == {
+        "row_rotation_violation",
+        "grid_rotation_violation",
+        "grid_size_violation",
+    }
     assert str(prompt["evidence_hint"]).strip()
     assert str(prompt["answer_hint"]).strip()
     assert str(prompt["json_example"]).strip()
     assert str(prompt["json_example_answer_only"]).strip()
-
-    generation, rendering, prompt = split_generation_rendering_prompt_defaults(
-        cfg,
-        task_id="task_icons_pattern_grid_size_violation",
-    )
-    assert str(generation["pool_manifest"]).strip() == "all_icons.txt"
-    assert list(generation["size_levels"]) == [1, 2, 3, 4, 5]
-    assert list(generation["base_level_candidates"]) == [1, 2, 3, 4, 5]
-    assert list(generation["row_step_candidates"]) == [-1, 0, 1]
-    assert list(generation["col_step_candidates"]) == [-1, 0, 1]
-    assert list(generation["shared_rotation_candidates_degrees"]) == [0, 90, 180, 270]
-    assert int(rendering["scene_icon_size_min_px"]) == 34
-    assert int(rendering["scene_icon_size_max_px"]) == 82
-    assert int(rendering["cell_box_width_min_px"]) == 116
-    assert int(rendering["cell_box_width_max_px"]) == 152
-    assert int(rendering["cell_box_height_min_px"]) == 116
-    assert int(rendering["cell_box_height_max_px"]) == 152
-    assert int(rendering["size_level_gap_px"]) == 8
-    assert list(rendering["icon_noise_edit_count_range"]) == [0, 1]
-    assert str(prompt["task_key"]).strip() == "grid_size_violation_query"
-    assert str(prompt["question_text"]).strip()
 
 
 def test_tile_path_defaults_loaded() -> None:

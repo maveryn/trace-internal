@@ -39,11 +39,8 @@ Use this whenever the task lives under `domain=icons`.
 
 ## Current icon coverage
 - `counting`
-  - `task_icons_counting_type`
-  - `task_icons_counting_color`
-  - `task_icons_counting_orientation`
+  - `task_icons_counting_reference_match_count`
   - `task_icons_counting_size_relation`
-  - `task_icons_counting_attribute_binding`
   - `task_icons_counting_singleton_type`
 - `relation`
   - `task_icons_relation_relative_position_type`
@@ -51,13 +48,11 @@ Use this whenever the task lives under `domain=icons`.
   - `task_icons_relation_occlusion_order`
   - `task_icons_relation_mirror_symmetry`
 - `pattern`
-  - `task_icons_pattern_grid_rotation_violation`
-  - `task_icons_pattern_grid_size_violation`
+  - `task_icons_pattern_structured_violation`
 - `transformation`
   - `task_icons_transformation_pair_count`
 - `sequence`
   - `task_icons_sequence_missing_count`
-  - `task_icons_sequence_rotation_violation`
 
 ## Layout and evidence heuristics
 - Free-placed scene-icon tasks usually want:

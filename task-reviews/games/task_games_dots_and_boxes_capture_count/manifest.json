@@ -1,0 +1,11 @@
+{
+  "inspection_count": 25,
+  "task_id": "task_games_dots_and_boxes_capture_count",
+  "variants": {
+    "": 25
+  },
+  "workbook": "games/task_games_dots_and_boxes_capture_count/task_games_dots_and_boxes_capture_count.xlsx",
+  "workbook_sheets": {
+    "forced_turn_capture_count": "forced_turn_capture_count"
+  }
+}

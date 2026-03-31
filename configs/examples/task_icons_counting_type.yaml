@@ -1,5 +1,0 @@
-task_id: task_icons_counting_type
-params:
-  object_count: 8
-  target_count: 3
-  pool_manifest: all_icons.txt

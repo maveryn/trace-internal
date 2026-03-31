@@ -1,0 +1,61 @@
+generation:
+  shared: {}
+  task_overrides:
+    task_games_nine_mens_morris_pieces_in_mill_count:
+      scene_variant_weights:
+        single_board: 1.0
+      query_variant_weights:
+        white_pieces_in_mill_count: 1.0
+        black_pieces_in_mill_count: 1.0
+        all_pieces_in_mill_count: 1.0
+      style_variant_weights:
+        classic: 1.0
+        soft: 1.0
+        outlined: 1.0
+      balanced_scene_variant_sampling: true
+      balanced_query_variant_sampling: true
+      balanced_style_variant_sampling: true
+      balanced_target_answer_sampling: true
+      white_pieces_in_mill_count_support: [0, 3, 5, 6, 7, 8, 9]
+      black_pieces_in_mill_count_support: [0, 3, 5, 6, 7, 8, 9]
+      all_pieces_in_mill_count_support: [0, 3, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]
+
+rendering:
+  shared:
+    canvas_width: 1180
+    canvas_height: 820
+    board_width_px: 860
+    board_height_px: 660
+    board_corner_radius_px: 24
+    panel_margin_px: 56
+    title_font_size_px: 34
+    title_band_height_px: 62
+    board_padding_px: 72
+    piece_radius_px: 22
+    node_radius_px: 5
+
+complexity:
+  shared: {}
+  task_overrides:
+    task_games_nine_mens_morris_pieces_in_mill_count:
+      criteria_weights:
+        visual_scan: 0.22
+        state_reasoning: 0.46
+        ambiguity: 0.14
+        output_burden: 0.18
+
+prompt:
+  shared:
+    bundle_id: games_nine_mens_morris_v1
+  task_overrides:
+    task_games_nine_mens_morris_pieces_in_mill_count:
+      task_family_key: visible_nine_mens_morris_board
+      task_key: pieces_in_mill_query
+      object_description_single_board: one visible nine men's morris board with light and dark pieces placed on the board intersections
+      mill_rule_text: A mill is 3 same-color pieces on one straight board line. Count each piece only once even if it belongs to more than one mill.
+      evidence_hint_white_pieces_in_mill_count: set "evidence" to an array of bounding boxes [x1, y1, x2, y2] for every white piece that belongs to at least one mill
+      evidence_hint_black_pieces_in_mill_count: set "evidence" to an array of bounding boxes [x1, y1, x2, y2] for every black piece that belongs to at least one mill
+      evidence_hint_all_pieces_in_mill_count: set "evidence" to an array of bounding boxes [x1, y1, x2, y2] for every piece that belongs to at least one mill
+      answer_hint_white_pieces_in_mill_count: set "answer" to the number of white pieces that belong to at least one mill
+      answer_hint_black_pieces_in_mill_count: set "answer" to the number of black pieces that belong to at least one mill
+      answer_hint_all_pieces_in_mill_count: set "answer" to the total number of pieces that belong to at least one mill

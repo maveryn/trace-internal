@@ -1,0 +1,1438 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 3
+  },
+  "evidence_gt": {
+    "type": "bbox_set",
+    "value": [
+      [
+        266.0,
+        192.0,
+        387.6,
+        272.4
+      ],
+      [
+        397.6,
+        192.0,
+        519.2,
+        272.4
+      ],
+      [
+        529.2,
+        192.0,
+        650.8,
+        272.4
+      ],
+      [
+        266.0,
+        282.4,
+        387.6,
+        362.8
+      ],
+      [
+        397.6,
+        282.4,
+        519.2,
+        362.8
+      ],
+      [
+        529.2,
+        282.4,
+        650.8,
+        362.8
+      ],
+      [
+        266.0,
+        372.8,
+        387.6,
+        453.2
+      ],
+      [
+        397.6,
+        372.8,
+        519.2,
+        453.2
+      ],
+      [
+        529.2,
+        372.8,
+        650.8,
+        453.2
+      ],
+      [
+        266.0,
+        463.2,
+        387.6,
+        543.6
+      ],
+      [
+        397.6,
+        463.2,
+        519.2,
+        543.6
+      ],
+      [
+        529.2,
+        463.2,
+        650.8,
+        543.6
+      ],
+      [
+        266.0,
+        553.6,
+        387.6,
+        634.0
+      ],
+      [
+        397.6,
+        553.6,
+        519.2,
+        634.0
+      ],
+      [
+        529.2,
+        553.6,
+        650.8,
+        634.0
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "games/task_games_bingo_completed_line_count/images/completed_column_count/0014.png"
+  },
+  "instance_seed": 2119116952335929,
+  "prompt": "Use the visible bingo card in the image. It shows one face-up 5 x 5 bingo card with some cells marked on a green table. Read the visible bingo card and determine the requested completed-line count. How many columns are completed on the bingo card? A completed column is a column with all five cells marked. Answer with an integer.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every marked cell that belongs to one of the completed columns.\nAnswer rule: set \"answer\" to the number of completed columns.\nExample JSON:\n{\"evidence\": [[120, 220, 220, 320], [230, 220, 330, 320]], \"answer\": 2}",
+  "prompt_variants": {
+    "answer_and_evidence": "Use the visible bingo card in the image. It shows one face-up 5 x 5 bingo card with some cells marked on a green table. Read the visible bingo card and determine the requested completed-line count. How many columns are completed on the bingo card? A completed column is a column with all five cells marked. Answer with an integer.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every marked cell that belongs to one of the completed columns.\nAnswer rule: set \"answer\" to the number of completed columns.\nExample JSON:\n{\"evidence\": [[120, 220, 220, 320], [230, 220, 330, 320]], \"answer\": 2}",
+    "answer_only": "Use the visible bingo card in the image. It shows one face-up 5 x 5 bingo card with some cells marked on a green table. Read the visible bingo card and determine the requested completed-line count. How many columns are completed on the bingo card? A completed column is a column with all five cells marked. Answer with an integer.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the number of completed columns.\nExample JSON:\n{\"answer\": 2}"
+  },
+  "task": "task_games_bingo_completed_line_count",
+  "task_variant": "completed_column_count",
+  "trace_payload": {
+    "background": {
+      "available_styles": [
+        "felt_green"
+      ],
+      "enabled": true,
+      "selected_style": "felt_green",
+      "style_spec": {
+        "color": [
+          42,
+          92,
+          74
+        ],
+        "kind": "solid"
+      }
+    },
+    "execution_trace": {
+      "cell_specs": [
+        {
+          "cell_id": "cell_r0_c0",
+          "column_index": 0,
+          "column_label": "B",
+          "is_marked": true,
+          "number": 2,
+          "row_index": 0
+        },
+        {
+          "cell_id": "cell_r0_c1",
+          "column_index": 1,
+          "column_label": "I",
+          "is_marked": true,
+          "number": 18,
+          "row_index": 0
+        },
+        {
+          "cell_id": "cell_r0_c2",
+          "column_index": 2,
+          "column_label": "N",
+          "is_marked": true,
+          "number": 31,
+          "row_index": 0
+        },
+        {
+          "cell_id": "cell_r0_c3",
+          "column_index": 3,
+          "column_label": "G",
+          "is_marked": false,
+          "number": 48,
+          "row_index": 0
+        },
+        {
+          "cell_id": "cell_r0_c4",
+          "column_index": 4,
+          "column_label": "O",
+          "is_marked": true,
+          "number": 62,
+          "row_index": 0
+        },
+        {
+          "cell_id": "cell_r1_c0",
+          "column_index": 0,
+          "column_label": "B",
+          "is_marked": true,
+          "number": 4,
+          "row_index": 1
+        },
+        {
+          "cell_id": "cell_r1_c1",
+          "column_index": 1,
+          "column_label": "I",
+          "is_marked": true,
+          "number": 21,
+          "row_index": 1
+        },
+        {
+          "cell_id": "cell_r1_c2",
+          "column_index": 2,
+          "column_label": "N",
+          "is_marked": true,
+          "number": 33,
+          "row_index": 1
+        },
+        {
+          "cell_id": "cell_r1_c3",
+          "column_index": 3,
+          "column_label": "G",
+          "is_marked": true,
+          "number": 49,
+          "row_index": 1
+        },
+        {
+          "cell_id": "cell_r1_c4",
+          "column_index": 4,
+          "column_label": "O",
+          "is_marked": false,
+          "number": 63,
+          "row_index": 1
+        },
+        {
+          "cell_id": "cell_r2_c0",
+          "column_index": 0,
+          "column_label": "B",
+          "is_marked": true,
+          "number": 7,
+          "row_index": 2
+        },
+        {
+          "cell_id": "cell_r2_c1",
+          "column_index": 1,
+          "column_label": "I",
+          "is_marked": true,
+          "number": 23,
+          "row_index": 2
+        },
+        {
+          "cell_id": "cell_r2_c2",
+          "column_index": 2,
+          "column_label": "N",
+          "is_marked": true,
+          "number": 41,
+          "row_index": 2
+        },
+        {
+          "cell_id": "cell_r2_c3",
+          "column_index": 3,
+          "column_label": "G",
+          "is_marked": true,
+          "number": 56,
+          "row_index": 2
+        },
+        {
+          "cell_id": "cell_r2_c4",
+          "column_index": 4,
+          "column_label": "O",
+          "is_marked": false,
+          "number": 70,
+          "row_index": 2
+        },
+        {
+          "cell_id": "cell_r3_c0",
+          "column_index": 0,
+          "column_label": "B",
+          "is_marked": true,
+          "number": 13,
+          "row_index": 3
+        },
+        {
+          "cell_id": "cell_r3_c1",
+          "column_index": 1,
+          "column_label": "I",
+          "is_marked": true,
+          "number": 24,
+          "row_index": 3
+        },
+        {
+          "cell_id": "cell_r3_c2",
+          "column_index": 2,
+          "column_label": "N",
+          "is_marked": true,
+          "number": 42,
+          "row_index": 3
+        },
+        {
+          "cell_id": "cell_r3_c3",
+          "column_index": 3,
+          "column_label": "G",
+          "is_marked": true,
+          "number": 58,
+          "row_index": 3
+        },
+        {
+          "cell_id": "cell_r3_c4",
+          "column_index": 4,
+          "column_label": "O",
+          "is_marked": false,
+          "number": 71,
+          "row_index": 3
+        },
+        {
+          "cell_id": "cell_r4_c0",
+          "column_index": 0,
+          "column_label": "B",
+          "is_marked": true,
+          "number": 15,
+          "row_index": 4
+        },
+        {
+          "cell_id": "cell_r4_c1",
+          "column_index": 1,
+          "column_label": "I",
+          "is_marked": true,
+          "number": 30,
+          "row_index": 4
+        },
+        {
+          "cell_id": "cell_r4_c2",
+          "column_index": 2,
+          "column_label": "N",
+          "is_marked": true,
+          "number": 43,
+          "row_index": 4
+        },
+        {
+          "cell_id": "cell_r4_c3",
+          "column_index": 3,
+          "column_label": "G",
+          "is_marked": false,
+          "number": 60,
+          "row_index": 4
+        },
+        {
+          "cell_id": "cell_r4_c4",
+          "column_index": 4,
+          "column_label": "O",
+          "is_marked": false,
+          "number": 75,
+          "row_index": 4
+        }
+      ],
+      "completed_column_indices": [
+        0,
+        1,
+        2
+      ],
+      "completed_row_indices": [],
+      "evidence_entity_ids": [
+        "cell_r0_c0",
+        "cell_r0_c1",
+        "cell_r0_c2",
+        "cell_r1_c0",
+        "cell_r1_c1",
+        "cell_r1_c2",
+        "cell_r2_c0",
+        "cell_r2_c1",
+        "cell_r2_c2",
+        "cell_r3_c0",
+        "cell_r3_c1",
+        "cell_r3_c2",
+        "cell_r4_c0",
+        "cell_r4_c1",
+        "cell_r4_c2"
+      ],
+      "mark_grid": [
+        [
+          true,
+          true,
+          true,
+          false,
+          true
+        ],
+        [
+          true,
+          true,
+          true,
+          true,
+          false
+        ],
+        [
+          true,
+          true,
+          true,
+          true,
+          false
+        ],
+        [
+          true,
+          true,
+          true,
+          true,
+          false
+        ],
+        [
+          true,
+          true,
+          true,
+          false,
+          false
+        ]
+      ],
+      "numbers_grid": [
+        [
+          2,
+          18,
+          31,
+          48,
+          62
+        ],
+        [
+          4,
+          21,
+          33,
+          49,
+          63
+        ],
+        [
+          7,
+          23,
+          41,
+          56,
+          70
+        ],
+        [
+          13,
+          24,
+          42,
+          58,
+          71
+        ],
+        [
+          15,
+          30,
+          43,
+          60,
+          75
+        ]
+      ],
+      "query_variant": "completed_column_count",
+      "scene_variant": "single_card",
+      "style_variant": "classic",
+      "target_answer": 3,
+      "target_answer_support": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "task_variant": "completed_column_count"
+    },
+    "post_image_noise": {
+      "applied": false,
+      "apply_prob": 0.0,
+      "edit_count_range": [
+        1,
+        2
+      ],
+      "edit_types": [
+        "blur",
+        "downsample",
+        "jpeg",
+        "noise"
+      ],
+      "edits": [],
+      "enabled": false
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          266.0,
+          192.0,
+          387.6,
+          272.4
+        ],
+        [
+          397.6,
+          192.0,
+          519.2,
+          272.4
+        ],
+        [
+          529.2,
+          192.0,
+          650.8,
+          272.4
+        ],
+        [
+          266.0,
+          282.4,
+          387.6,
+          362.8
+        ],
+        [
+          397.6,
+          282.4,
+          519.2,
+          362.8
+        ],
+        [
+          529.2,
+          282.4,
+          650.8,
+          362.8
+        ],
+        [
+          266.0,
+          372.8,
+          387.6,
+          453.2
+        ],
+        [
+          397.6,
+          372.8,
+          519.2,
+          453.2
+        ],
+        [
+          529.2,
+          372.8,
+          650.8,
+          453.2
+        ],
+        [
+          266.0,
+          463.2,
+          387.6,
+          543.6
+        ],
+        [
+          397.6,
+          463.2,
+          519.2,
+          543.6
+        ],
+        [
+          529.2,
+          463.2,
+          650.8,
+          543.6
+        ],
+        [
+          266.0,
+          553.6,
+          387.6,
+          634.0
+        ],
+        [
+          397.6,
+          553.6,
+          519.2,
+          634.0
+        ],
+        [
+          529.2,
+          553.6,
+          650.8,
+          634.0
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "query_variant": "completed_column_count",
+        "query_variant_probabilities": {
+          "completed_column_count": 1.0,
+          "completed_row_count": 0.0,
+          "completed_straight_line_count": 0.0
+        },
+        "scene_variant": "single_card",
+        "scene_variant_probabilities": {
+          "single_card": 1.0
+        },
+        "style_variant": "classic",
+        "style_variant_probabilities": {
+          "classic": 0.3333333333333333,
+          "outlined": 0.3333333333333333,
+          "soft": 0.3333333333333333
+        },
+        "target_answer": 3,
+        "target_answer_probabilities": {
+          "0": 0.16666666666666666,
+          "1": 0.16666666666666666,
+          "2": 0.16666666666666666,
+          "3": 0.16666666666666666,
+          "4": 0.16666666666666666,
+          "5": 0.16666666666666666
+        },
+        "target_answer_support": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "task_variant": "completed_column_count",
+        "task_variant_probabilities": {
+          "completed_column_count": 1.0,
+          "completed_row_count": 0.0,
+          "completed_straight_line_count": 0.0
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 4,
+        "prompt_bundle_id": "games_bingo_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the number of completed columns",
+          "completed_column_rule_text": "A completed column is a column with all five cells marked.",
+          "completed_row_rule_text": "A completed row is a row with all five cells marked.",
+          "completed_straight_line_rule_text": "A completed straight line is any row or column with all five cells marked.",
+          "evidence_hint": "set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every marked cell that belongs to one of the completed columns",
+          "json_example": "{\"evidence\": [[120, 220, 220, 320], [230, 220, 330, 320]], \"answer\": 2}",
+          "json_example_answer_only": "{\"answer\": 2}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "one face-up 5 x 5 bingo card with some cells marked on a green table"
+        },
+        "task_family_key": "visible_bingo_card",
+        "task_family_variant_index": 4,
+        "task_key": "bingo_completed_line_query",
+        "task_variant_index": 1,
+        "task_variant_key": "completed_column_count",
+        "task_variant_template_index": 1,
+        "template_paths": [
+          "games/bingo/games_bingo_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:bingo_completed_line_query": 5,
+          "task_family:visible_bingo_card": 5,
+          "task_variant:completed_column_count": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 4,
+            "prompt_bundle_id": "games_bingo_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the number of completed columns",
+              "completed_column_rule_text": "A completed column is a column with all five cells marked.",
+              "completed_row_rule_text": "A completed row is a row with all five cells marked.",
+              "completed_straight_line_rule_text": "A completed straight line is any row or column with all five cells marked.",
+              "evidence_hint": "set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every marked cell that belongs to one of the completed columns",
+              "json_example": "{\"evidence\": [[120, 220, 220, 320], [230, 220, 330, 320]], \"answer\": 2}",
+              "json_example_answer_only": "{\"answer\": 2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "one face-up 5 x 5 bingo card with some cells marked on a green table"
+            },
+            "task_family_key": "visible_bingo_card",
+            "task_family_variant_index": 4,
+            "task_key": "bingo_completed_line_query",
+            "task_variant_index": 1,
+            "task_variant_key": "completed_column_count",
+            "task_variant_template_index": 1,
+            "template_paths": [
+              "games/bingo/games_bingo_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:bingo_completed_line_query": 5,
+              "task_family:visible_bingo_card": 5,
+              "task_variant:completed_column_count": 5
+            }
+          },
+          "prompt": "Use the visible bingo card in the image. It shows one face-up 5 x 5 bingo card with some cells marked on a green table. Read the visible bingo card and determine the requested completed-line count. How many columns are completed on the bingo card? A completed column is a column with all five cells marked. Answer with an integer.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every marked cell that belongs to one of the completed columns.\nAnswer rule: set \"answer\" to the number of completed columns.\nExample JSON:\n{\"evidence\": [[120, 220, 220, 320], [230, 220, 330, 320]], \"answer\": 2}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 3,
+            "prompt_bundle_id": "games_bingo_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the number of completed columns",
+              "completed_column_rule_text": "A completed column is a column with all five cells marked.",
+              "completed_row_rule_text": "A completed row is a row with all five cells marked.",
+              "completed_straight_line_rule_text": "A completed straight line is any row or column with all five cells marked.",
+              "evidence_hint": "set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every marked cell that belongs to one of the completed columns",
+              "json_example": "{\"evidence\": [[120, 220, 220, 320], [230, 220, 330, 320]], \"answer\": 2}",
+              "json_example_answer_only": "{\"answer\": 2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "one face-up 5 x 5 bingo card with some cells marked on a green table"
+            },
+            "task_family_key": "visible_bingo_card",
+            "task_family_variant_index": 4,
+            "task_key": "bingo_completed_line_query",
+            "task_variant_index": 1,
+            "task_variant_key": "completed_column_count",
+            "task_variant_template_index": 1,
+            "template_paths": [
+              "games/bingo/games_bingo_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:bingo_completed_line_query": 5,
+              "task_family:visible_bingo_card": 5,
+              "task_variant:completed_column_count": 5
+            }
+          },
+          "prompt": "Use the visible bingo card in the image. It shows one face-up 5 x 5 bingo card with some cells marked on a green table. Read the visible bingo card and determine the requested completed-line count. How many columns are completed on the bingo card? A completed column is a column with all five cells marked. Answer with an integer.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the number of completed columns.\nExample JSON:\n{\"answer\": 2}"
+        }
+      },
+      "task_variant": "completed_column_count",
+      "template_id": "games_bingo_v1"
+    },
+    "render_map": {
+      "card_bbox_px": [
+        210.0,
+        70.0,
+        970.0,
+        690.0
+      ],
+      "cell_bboxes_px": {
+        "cell_r0_c0": [
+          266.0,
+          192.0,
+          387.6,
+          272.4
+        ],
+        "cell_r0_c1": [
+          397.6,
+          192.0,
+          519.2,
+          272.4
+        ],
+        "cell_r0_c2": [
+          529.2,
+          192.0,
+          650.8,
+          272.4
+        ],
+        "cell_r0_c3": [
+          660.8,
+          192.0,
+          782.4,
+          272.4
+        ],
+        "cell_r0_c4": [
+          792.4,
+          192.0,
+          914.0,
+          272.4
+        ],
+        "cell_r1_c0": [
+          266.0,
+          282.4,
+          387.6,
+          362.8
+        ],
+        "cell_r1_c1": [
+          397.6,
+          282.4,
+          519.2,
+          362.8
+        ],
+        "cell_r1_c2": [
+          529.2,
+          282.4,
+          650.8,
+          362.8
+        ],
+        "cell_r1_c3": [
+          660.8,
+          282.4,
+          782.4,
+          362.8
+        ],
+        "cell_r1_c4": [
+          792.4,
+          282.4,
+          914.0,
+          362.8
+        ],
+        "cell_r2_c0": [
+          266.0,
+          372.8,
+          387.6,
+          453.2
+        ],
+        "cell_r2_c1": [
+          397.6,
+          372.8,
+          519.2,
+          453.2
+        ],
+        "cell_r2_c2": [
+          529.2,
+          372.8,
+          650.8,
+          453.2
+        ],
+        "cell_r2_c3": [
+          660.8,
+          372.8,
+          782.4,
+          453.2
+        ],
+        "cell_r2_c4": [
+          792.4,
+          372.8,
+          914.0,
+          453.2
+        ],
+        "cell_r3_c0": [
+          266.0,
+          463.2,
+          387.6,
+          543.6
+        ],
+        "cell_r3_c1": [
+          397.6,
+          463.2,
+          519.2,
+          543.6
+        ],
+        "cell_r3_c2": [
+          529.2,
+          463.2,
+          650.8,
+          543.6
+        ],
+        "cell_r3_c3": [
+          660.8,
+          463.2,
+          782.4,
+          543.6
+        ],
+        "cell_r3_c4": [
+          792.4,
+          463.2,
+          914.0,
+          543.6
+        ],
+        "cell_r4_c0": [
+          266.0,
+          553.6,
+          387.6,
+          634.0
+        ],
+        "cell_r4_c1": [
+          397.6,
+          553.6,
+          519.2,
+          634.0
+        ],
+        "cell_r4_c2": [
+          529.2,
+          553.6,
+          650.8,
+          634.0
+        ],
+        "cell_r4_c3": [
+          660.8,
+          553.6,
+          782.4,
+          634.0
+        ],
+        "cell_r4_c4": [
+          792.4,
+          553.6,
+          914.0,
+          634.0
+        ]
+      },
+      "cell_mark_centers_px": {
+        "cell_r0_c0": [
+          326.8,
+          232.2
+        ],
+        "cell_r0_c1": [
+          458.4,
+          232.2
+        ],
+        "cell_r0_c2": [
+          590.0,
+          232.2
+        ],
+        "cell_r0_c3": [
+          721.6,
+          232.2
+        ],
+        "cell_r0_c4": [
+          853.2,
+          232.2
+        ],
+        "cell_r1_c0": [
+          326.8,
+          322.6
+        ],
+        "cell_r1_c1": [
+          458.4,
+          322.6
+        ],
+        "cell_r1_c2": [
+          590.0,
+          322.6
+        ],
+        "cell_r1_c3": [
+          721.6,
+          322.6
+        ],
+        "cell_r1_c4": [
+          853.2,
+          322.6
+        ],
+        "cell_r2_c0": [
+          326.8,
+          413.0
+        ],
+        "cell_r2_c1": [
+          458.4,
+          413.0
+        ],
+        "cell_r2_c2": [
+          590.0,
+          413.0
+        ],
+        "cell_r2_c3": [
+          721.6,
+          413.0
+        ],
+        "cell_r2_c4": [
+          853.2,
+          413.0
+        ],
+        "cell_r3_c0": [
+          326.8,
+          503.4
+        ],
+        "cell_r3_c1": [
+          458.4,
+          503.4
+        ],
+        "cell_r3_c2": [
+          590.0,
+          503.4
+        ],
+        "cell_r3_c3": [
+          721.6,
+          503.4
+        ],
+        "cell_r3_c4": [
+          853.2,
+          503.4
+        ],
+        "cell_r4_c0": [
+          326.8,
+          593.8
+        ],
+        "cell_r4_c1": [
+          458.4,
+          593.8
+        ],
+        "cell_r4_c2": [
+          590.0,
+          593.8
+        ],
+        "cell_r4_c3": [
+          721.6,
+          593.8
+        ],
+        "cell_r4_c4": [
+          853.2,
+          593.8
+        ]
+      },
+      "column_header_bboxes_px": {
+        "B": [
+          315.3,
+          142.0,
+          338.3,
+          164.0
+        ],
+        "G": [
+          709.1,
+          142.0,
+          734.1,
+          164.0
+        ],
+        "I": [
+          452.4,
+          142.0,
+          464.4,
+          164.0
+        ],
+        "N": [
+          577.5,
+          142.0,
+          602.5,
+          164.0
+        ],
+        "O": [
+          840.2,
+          142.0,
+          866.2,
+          164.0
+        ]
+      }
+    },
+    "render_spec": {
+      "canvas_height": 760,
+      "canvas_width": 1180,
+      "scene_variant": "single_card",
+      "style_variant": "classic"
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "bbox": [
+            266.0,
+            192.0,
+            387.6,
+            272.4
+          ],
+          "column_index": 0,
+          "column_label": "B",
+          "entity_id": "cell_r0_c0",
+          "is_marked": true,
+          "kind": "bingo_cell",
+          "number": 2,
+          "row_index": 0
+        },
+        {
+          "bbox": [
+            397.6,
+            192.0,
+            519.2,
+            272.4
+          ],
+          "column_index": 1,
+          "column_label": "I",
+          "entity_id": "cell_r0_c1",
+          "is_marked": true,
+          "kind": "bingo_cell",
+          "number": 18,
+          "row_index": 0
+        },
+        {
+          "bbox": [
+            529.2,
+            192.0,
+            650.8,
+            272.4
+          ],
+          "column_index": 2,
+          "column_label": "N",
+          "entity_id": "cell_r0_c2",
+          "is_marked": true,
+          "kind": "bingo_cell",
+          "number": 31,
+          "row_index": 0
+        },
+        {
+          "bbox": [
+            660.8,
+            192.0,
+            782.4,
+            272.4
+          ],
+          "column_index": 3,
+          "column_label": "G",
+          "entity_id": "cell_r0_c3",
+          "is_marked": false,
+          "kind": "bingo_cell",
+          "number": 48,
+          "row_index": 0
+        },
+        {
+          "bbox": [
+            792.4,
+            192.0,
+            914.0,
+            272.4
+          ],
+          "column_index": 4,
+          "column_label": "O",
+          "entity_id": "cell_r0_c4",
+          "is_marked": true,
+          "kind": "bingo_cell",
+          "number": 62,
+          "row_index": 0
+        },
+        {
+          "bbox": [
+            266.0,
+            282.4,
+            387.6,
+            362.8
+          ],
+          "column_index": 0,
+          "column_label": "B",
+          "entity_id": "cell_r1_c0",
+          "is_marked": true,
+          "kind": "bingo_cell",
+          "number": 4,
+          "row_index": 1
+        },
+        {
+          "bbox": [
+            397.6,
+            282.4,
+            519.2,
+            362.8
+          ],
+          "column_index": 1,
+          "column_label": "I",
+          "entity_id": "cell_r1_c1",
+          "is_marked": true,
+          "kind": "bingo_cell",
+          "number": 21,
+          "row_index": 1
+        },
+        {
+          "bbox": [
+            529.2,
+            282.4,
+            650.8,
+            362.8
+          ],
+          "column_index": 2,
+          "column_label": "N",
+          "entity_id": "cell_r1_c2",
+          "is_marked": true,
+          "kind": "bingo_cell",
+          "number": 33,
+          "row_index": 1
+        },
+        {
+          "bbox": [
+            660.8,
+            282.4,
+            782.4,
+            362.8
+          ],
+          "column_index": 3,
+          "column_label": "G",
+          "entity_id": "cell_r1_c3",
+          "is_marked": true,
+          "kind": "bingo_cell",
+          "number": 49,
+          "row_index": 1
+        },
+        {
+          "bbox": [
+            792.4,
+            282.4,
+            914.0,
+            362.8
+          ],
+          "column_index": 4,
+          "column_label": "O",
+          "entity_id": "cell_r1_c4",
+          "is_marked": false,
+          "kind": "bingo_cell",
+          "number": 63,
+          "row_index": 1
+        },
+        {
+          "bbox": [
+            266.0,
+            372.8,
+            387.6,
+            453.2
+          ],
+          "column_index": 0,
+          "column_label": "B",
+          "entity_id": "cell_r2_c0",
+          "is_marked": true,
+          "kind": "bingo_cell",
+          "number": 7,
+          "row_index": 2
+        },
+        {
+          "bbox": [
+            397.6,
+            372.8,
+            519.2,
+            453.2
+          ],
+          "column_index": 1,
+          "column_label": "I",
+          "entity_id": "cell_r2_c1",
+          "is_marked": true,
+          "kind": "bingo_cell",
+          "number": 23,
+          "row_index": 2
+        },
+        {
+          "bbox": [
+            529.2,
+            372.8,
+            650.8,
+            453.2
+          ],
+          "column_index": 2,
+          "column_label": "N",
+          "entity_id": "cell_r2_c2",
+          "is_marked": true,
+          "kind": "bingo_cell",
+          "number": 41,
+          "row_index": 2
+        },
+        {
+          "bbox": [
+            660.8,
+            372.8,
+            782.4,
+            453.2
+          ],
+          "column_index": 3,
+          "column_label": "G",
+          "entity_id": "cell_r2_c3",
+          "is_marked": true,
+          "kind": "bingo_cell",
+          "number": 56,
+          "row_index": 2
+        },
+        {
+          "bbox": [
+            792.4,
+            372.8,
+            914.0,
+            453.2
+          ],
+          "column_index": 4,
+          "column_label": "O",
+          "entity_id": "cell_r2_c4",
+          "is_marked": false,
+          "kind": "bingo_cell",
+          "number": 70,
+          "row_index": 2
+        },
+        {
+          "bbox": [
+            266.0,
+            463.2,
+            387.6,
+            543.6
+          ],
+          "column_index": 0,
+          "column_label": "B",
+          "entity_id": "cell_r3_c0",
+          "is_marked": true,
+          "kind": "bingo_cell",
+          "number": 13,
+          "row_index": 3
+        },
+        {
+          "bbox": [
+            397.6,
+            463.2,
+            519.2,
+            543.6
+          ],
+          "column_index": 1,
+          "column_label": "I",
+          "entity_id": "cell_r3_c1",
+          "is_marked": true,
+          "kind": "bingo_cell",
+          "number": 24,
+          "row_index": 3
+        },
+        {
+          "bbox": [
+            529.2,
+            463.2,
+            650.8,
+            543.6
+          ],
+          "column_index": 2,
+          "column_label": "N",
+          "entity_id": "cell_r3_c2",
+          "is_marked": true,
+          "kind": "bingo_cell",
+          "number": 42,
+          "row_index": 3
+        },
+        {
+          "bbox": [
+            660.8,
+            463.2,
+            782.4,
+            543.6
+          ],
+          "column_index": 3,
+          "column_label": "G",
+          "entity_id": "cell_r3_c3",
+          "is_marked": true,
+          "kind": "bingo_cell",
+          "number": 58,
+          "row_index": 3
+        },
+        {
+          "bbox": [
+            792.4,
+            463.2,
+            914.0,
+            543.6
+          ],
+          "column_index": 4,
+          "column_label": "O",
+          "entity_id": "cell_r3_c4",
+          "is_marked": false,
+          "kind": "bingo_cell",
+          "number": 71,
+          "row_index": 3
+        },
+        {
+          "bbox": [
+            266.0,
+            553.6,
+            387.6,
+            634.0
+          ],
+          "column_index": 0,
+          "column_label": "B",
+          "entity_id": "cell_r4_c0",
+          "is_marked": true,
+          "kind": "bingo_cell",
+          "number": 15,
+          "row_index": 4
+        },
+        {
+          "bbox": [
+            397.6,
+            553.6,
+            519.2,
+            634.0
+          ],
+          "column_index": 1,
+          "column_label": "I",
+          "entity_id": "cell_r4_c1",
+          "is_marked": true,
+          "kind": "bingo_cell",
+          "number": 30,
+          "row_index": 4
+        },
+        {
+          "bbox": [
+            529.2,
+            553.6,
+            650.8,
+            634.0
+          ],
+          "column_index": 2,
+          "column_label": "N",
+          "entity_id": "cell_r4_c2",
+          "is_marked": true,
+          "kind": "bingo_cell",
+          "number": 43,
+          "row_index": 4
+        },
+        {
+          "bbox": [
+            660.8,
+            553.6,
+            782.4,
+            634.0
+          ],
+          "column_index": 3,
+          "column_label": "G",
+          "entity_id": "cell_r4_c3",
+          "is_marked": false,
+          "kind": "bingo_cell",
+          "number": 60,
+          "row_index": 4
+        },
+        {
+          "bbox": [
+            792.4,
+            553.6,
+            914.0,
+            634.0
+          ],
+          "column_index": 4,
+          "column_label": "O",
+          "entity_id": "cell_r4_c4",
+          "is_marked": false,
+          "kind": "bingo_cell",
+          "number": 75,
+          "row_index": 4
+        }
+      ],
+      "relations": {
+        "evidence_entity_ids": [
+          "cell_r0_c0",
+          "cell_r0_c1",
+          "cell_r0_c2",
+          "cell_r1_c0",
+          "cell_r1_c1",
+          "cell_r1_c2",
+          "cell_r2_c0",
+          "cell_r2_c1",
+          "cell_r2_c2",
+          "cell_r3_c0",
+          "cell_r3_c1",
+          "cell_r3_c2",
+          "cell_r4_c0",
+          "cell_r4_c1",
+          "cell_r4_c2"
+        ],
+        "query_variant": "completed_column_count",
+        "scene_variant": "single_card",
+        "style_variant": "classic",
+        "target_answer": 3,
+        "task_variant": "completed_column_count"
+      },
+      "scene_kind": "games_bingo_single_card"
+    },
+    "witness_symbolic": {
+      "ids": [
+        "cell_r0_c0",
+        "cell_r0_c1",
+        "cell_r0_c2",
+        "cell_r1_c0",
+        "cell_r1_c1",
+        "cell_r1_c2",
+        "cell_r2_c0",
+        "cell_r2_c1",
+        "cell_r2_c2",
+        "cell_r3_c0",
+        "cell_r3_c1",
+        "cell_r3_c2",
+        "cell_r4_c0",
+        "cell_r4_c1",
+        "cell_r4_c2"
+      ],
+      "type": "id_set"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

@@ -14,20 +14,15 @@ Update this table after each review run.
 | task_geometry_solid_view_count | task_geometry_solid_view_count | alright_for_now | distribution pass (top/front/right orthographic cube-view count variants) |
 | task_geometry_similarity_count | task_geometry_similarity_count | alright_for_now | distribution pass (triangle/quadrilateral x congruent/similar with `target_count` support `0..5`) |
 | task_geometry_transformation_match | task_geometry_transformation_match | alright_for_now | distribution pass (triangle/quadrilateral x translation/reflection/rotation) |
-| task_icons_counting_type | task_icons_counting_type | alright_for_now | distribution pass |
-| task_icons_counting_orientation | task_icons_counting_orientation | alright_for_now | distribution pass |
-| task_icons_counting_color | task_icons_counting_color | alright_for_now | distribution pass |
-| task_icons_counting_attribute_binding | task_icons_counting_attribute_binding | alright_for_now | distribution pass |
+| task_icons_counting_reference_match_count | task_icons_counting_reference_match_count | alright_for_now | distribution pass (consolidated wrapper over type/color/orientation/attribute-binding legacy generators) |
 | task_icons_counting_size_relation | task_icons_counting_size_relation | alright_for_now | distribution pass |
 | task_icons_counting_singleton_type | task_icons_counting_singleton_type | alright_for_now | distribution pass |
 | task_icons_relation_relative_position_type | task_icons_relation_relative_position_type | alright_for_now | distribution pass |
 | task_icons_relation_occlusion_order | task_icons_relation_occlusion_order | alright_for_now | distribution pass |
 | task_icons_relation_between_two_anchors_count | task_icons_relation_between_two_anchors_count | alright_for_now | distribution pass |
 | task_icons_relation_mirror_symmetry | task_icons_relation_mirror_symmetry | needs_refresh | focused validation pass; 5-variant distribution refresh pending |
-| task_icons_pattern_grid_rotation_violation | task_icons_pattern_grid_rotation_violation | alright_for_now | distribution pass |
-| task_icons_pattern_grid_size_violation | task_icons_pattern_grid_size_violation | alright_for_now | distribution pass |
+| task_icons_pattern_structured_violation | task_icons_pattern_structured_violation | alright_for_now | distribution pass (consolidated wrapper over row/grid legacy violation generators) |
 | task_icons_sequence_missing_count | task_icons_sequence_missing_count | alright_for_now | distribution pass |
-| task_icons_sequence_rotation_violation | task_icons_sequence_rotation_violation | alright_for_now | distribution pass |
 | task_icons_transformation_pair_count | task_icons_transformation_pair_count | alright_for_now | distribution pass |
 | task_tile_path_shortest_path |  |  |  |
 | task_graph_counting_degree_count | task_graph_counting_degree_count | alright_for_now | distribution pass (degree/in-degree/out-degree variants) |
@@ -50,9 +45,12 @@ Update this table after each review run.
 | task_physics_mechanics_spring_extension | task_physics_mechanics_spring_extension | alright_for_now | distribution pass (identical-spring missing-weight / missing-extension / extension-difference variants) |
 | task_physics_circuits_equivalent_resistance | task_physics_circuits_equivalent_resistance | alright_for_now | distribution pass (single-circuit total-resistance scenes plus paired missing-resistor scenes with equal resistance between labeled terminals A and B) |
 | task_physics_optics_ray_trace | task_physics_optics_ray_trace | alright_for_now | distribution pass (hidden-path optics with graph-point evidence over bounce points / hit targets) |
+| task_games_dots_and_boxes_capture_count | task_games_dots_and_boxes_capture_count | alright_for_now | distribution pass (single-board dots-and-boxes scenes with highlighted forced-turn capture counting and box-level evidence over the captured chain) |
+| task_games_bingo_completed_line_count | task_games_bingo_completed_line_count | alright_for_now | distribution pass (single-card `5 x 5` bingo boards with completed-row, completed-column, and completed-straight-line count variants) |
 | task_games_cards_hand_count | task_games_cards_hand_count | alright_for_now | distribution pass (single-row/two-row visible card hands with same-suit, higher-rank, exact-pair, and longest-run count variants) |
 | task_games_dominoes_chain_count | task_games_dominoes_chain_count | alright_for_now | distribution pass (top-chain plus loose-domino scenes with matching-end, higher-sum, target-sum, and double-count variants) |
 | task_games_reversi_move_count | task_games_reversi_move_count | alright_for_now | distribution pass (compact/classic visible Reversi boards with legal-move, corner-move, and marked flip-count queries) |
 | task_games_connect_four_move_count | task_games_connect_four_move_count | alright_for_now | distribution pass (midgame/crowded Connect Four boards with immediate-win and safe-move count variants) |
 | task_games_checkers_move_count | task_games_checkers_move_count | alright_for_now | distribution pass (midgame/crowded Checkers boards with legal-move and capture-move count variants over unique landing squares) |
 | task_games_mancala_move_count | task_games_mancala_move_count | alright_for_now | distribution pass (midgame/crowded visible Mancala boards with Blue-to-move extra-turn and capture count variants grounded on starting pits) |
+| task_games_nine_mens_morris_pieces_in_mill_count | task_games_nine_mens_morris_pieces_in_mill_count | alright_for_now | distribution pass (single-board Morris scenes with white / black / all pieces-in-mill counting and piece-level evidence over the counted witnesses) |

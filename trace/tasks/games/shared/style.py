@@ -133,6 +133,64 @@ class MancalaTheme:
     count_text_rgb: Tuple[int, int, int]
 
 
+@dataclass(frozen=True)
+class BingoTheme:
+    """Resolved bingo-card palette for one style variant."""
+
+    card_fill_rgb: Tuple[int, int, int]
+    card_border_rgb: Tuple[int, int, int]
+    card_border_width_px: int
+    shadow_rgb: Tuple[int, int, int]
+    shadow_alpha: int
+    shadow_offset_px: Tuple[int, int]
+    title_rgb: Tuple[int, int, int]
+    header_rgb: Tuple[int, int, int]
+    grid_line_rgb: Tuple[int, int, int]
+    cell_fill_rgb: Tuple[int, int, int]
+    number_rgb: Tuple[int, int, int]
+    mark_fill_rgba: Tuple[int, int, int, int]
+    mark_outline_rgb: Tuple[int, int, int]
+
+
+@dataclass(frozen=True)
+class DotsAndBoxesTheme:
+    """Resolved dots-and-boxes palette for one style variant."""
+
+    board_fill_rgb: Tuple[int, int, int]
+    board_border_rgb: Tuple[int, int, int]
+    board_border_width_px: int
+    shadow_rgb: Tuple[int, int, int]
+    shadow_alpha: int
+    shadow_offset_px: Tuple[int, int]
+    title_rgb: Tuple[int, int, int]
+    dot_rgb: Tuple[int, int, int]
+    edge_rgb: Tuple[int, int, int]
+    edge_width_px: int
+    highlight_rgb: Tuple[int, int, int]
+    highlight_width_px: int
+    guide_rgb: Tuple[int, int, int]
+
+
+@dataclass(frozen=True)
+class NineMensMorrisTheme:
+    """Resolved nine-men's-morris palette for one style variant."""
+
+    board_fill_rgb: Tuple[int, int, int]
+    board_border_rgb: Tuple[int, int, int]
+    board_border_width_px: int
+    shadow_rgb: Tuple[int, int, int]
+    shadow_alpha: int
+    shadow_offset_px: Tuple[int, int]
+    title_rgb: Tuple[int, int, int]
+    line_rgb: Tuple[int, int, int]
+    line_width_px: int
+    node_rgb: Tuple[int, int, int]
+    white_piece_fill_rgb: Tuple[int, int, int]
+    white_piece_outline_rgb: Tuple[int, int, int]
+    black_piece_fill_rgb: Tuple[int, int, int]
+    black_piece_outline_rgb: Tuple[int, int, int]
+
+
 def build_games_card_theme(*, style_variant: str) -> CardTheme:
     """Return one resolved card-scene theme for the active style variant."""
 
@@ -469,6 +527,168 @@ def build_games_mancala_theme(*, style_variant: str) -> MancalaTheme:
     )
 
 
+def build_games_bingo_theme(*, style_variant: str) -> BingoTheme:
+    """Return one resolved bingo-card theme for the active style variant."""
+
+    variant = str(style_variant)
+    if variant == "soft":
+        return BingoTheme(
+            card_fill_rgb=(251, 246, 236),
+            card_border_rgb=(102, 112, 124),
+            card_border_width_px=3,
+            shadow_rgb=(18, 24, 20),
+            shadow_alpha=56,
+            shadow_offset_px=(5, 6),
+            title_rgb=(40, 63, 121),
+            header_rgb=(56, 84, 146),
+            grid_line_rgb=(132, 142, 152),
+            cell_fill_rgb=(255, 252, 247),
+            number_rgb=(41, 46, 54),
+            mark_fill_rgba=(214, 84, 76, 136),
+            mark_outline_rgb=(184, 58, 54),
+        )
+    if variant == "outlined":
+        return BingoTheme(
+            card_fill_rgb=(255, 255, 255),
+            card_border_rgb=(62, 70, 80),
+            card_border_width_px=4,
+            shadow_rgb=(14, 18, 20),
+            shadow_alpha=40,
+            shadow_offset_px=(4, 5),
+            title_rgb=(44, 75, 168),
+            header_rgb=(51, 88, 186),
+            grid_line_rgb=(92, 100, 110),
+            cell_fill_rgb=(255, 255, 255),
+            number_rgb=(33, 38, 44),
+            mark_fill_rgba=(218, 66, 60, 126),
+            mark_outline_rgb=(196, 48, 44),
+        )
+    return BingoTheme(
+        card_fill_rgb=(255, 253, 247),
+        card_border_rgb=(74, 82, 92),
+        card_border_width_px=3,
+        shadow_rgb=(18, 22, 24),
+        shadow_alpha=48,
+        shadow_offset_px=(4, 5),
+        title_rgb=(42, 72, 160),
+        header_rgb=(48, 82, 180),
+        grid_line_rgb=(108, 116, 126),
+        cell_fill_rgb=(255, 255, 252),
+        number_rgb=(29, 34, 40),
+        mark_fill_rgba=(212, 62, 56, 132),
+        mark_outline_rgb=(190, 46, 42),
+    )
+
+
+def build_games_dots_and_boxes_theme(*, style_variant: str) -> DotsAndBoxesTheme:
+    """Return one resolved dots-and-boxes theme for the active style variant."""
+
+    variant = str(style_variant)
+    if variant == "soft":
+        return DotsAndBoxesTheme(
+            board_fill_rgb=(249, 244, 234),
+            board_border_rgb=(102, 112, 124),
+            board_border_width_px=3,
+            shadow_rgb=(18, 24, 20),
+            shadow_alpha=56,
+            shadow_offset_px=(5, 6),
+            title_rgb=(52, 76, 132),
+            dot_rgb=(54, 60, 68),
+            edge_rgb=(66, 74, 86),
+            edge_width_px=8,
+            highlight_rgb=(202, 74, 60),
+            highlight_width_px=10,
+            guide_rgb=(176, 184, 194),
+        )
+    if variant == "outlined":
+        return DotsAndBoxesTheme(
+            board_fill_rgb=(255, 255, 255),
+            board_border_rgb=(62, 70, 80),
+            board_border_width_px=4,
+            shadow_rgb=(14, 18, 20),
+            shadow_alpha=40,
+            shadow_offset_px=(4, 5),
+            title_rgb=(44, 75, 168),
+            dot_rgb=(36, 40, 46),
+            edge_rgb=(52, 58, 68),
+            edge_width_px=8,
+            highlight_rgb=(214, 60, 54),
+            highlight_width_px=10,
+            guide_rgb=(196, 202, 210),
+        )
+    return DotsAndBoxesTheme(
+        board_fill_rgb=(255, 252, 244),
+        board_border_rgb=(74, 82, 92),
+        board_border_width_px=3,
+        shadow_rgb=(18, 22, 24),
+        shadow_alpha=48,
+        shadow_offset_px=(4, 5),
+        title_rgb=(45, 76, 160),
+        dot_rgb=(30, 34, 40),
+        edge_rgb=(46, 52, 60),
+        edge_width_px=8,
+        highlight_rgb=(210, 58, 52),
+        highlight_width_px=10,
+        guide_rgb=(184, 190, 198),
+    )
+
+
+def build_games_nine_mens_morris_theme(*, style_variant: str) -> NineMensMorrisTheme:
+    """Return one resolved nine-men's-morris theme for the active style variant."""
+
+    variant = str(style_variant)
+    if variant == "soft":
+        return NineMensMorrisTheme(
+            board_fill_rgb=(248, 242, 230),
+            board_border_rgb=(102, 112, 124),
+            board_border_width_px=3,
+            shadow_rgb=(18, 24, 20),
+            shadow_alpha=56,
+            shadow_offset_px=(5, 6),
+            title_rgb=(48, 76, 134),
+            line_rgb=(86, 94, 106),
+            line_width_px=6,
+            node_rgb=(72, 80, 92),
+            white_piece_fill_rgb=(252, 250, 244),
+            white_piece_outline_rgb=(112, 118, 126),
+            black_piece_fill_rgb=(58, 64, 72),
+            black_piece_outline_rgb=(24, 28, 34),
+        )
+    if variant == "outlined":
+        return NineMensMorrisTheme(
+            board_fill_rgb=(255, 255, 255),
+            board_border_rgb=(62, 70, 80),
+            board_border_width_px=4,
+            shadow_rgb=(14, 18, 20),
+            shadow_alpha=40,
+            shadow_offset_px=(4, 5),
+            title_rgb=(44, 75, 168),
+            line_rgb=(58, 64, 72),
+            line_width_px=6,
+            node_rgb=(46, 52, 60),
+            white_piece_fill_rgb=(255, 255, 255),
+            white_piece_outline_rgb=(112, 118, 126),
+            black_piece_fill_rgb=(42, 48, 56),
+            black_piece_outline_rgb=(18, 22, 28),
+        )
+    return NineMensMorrisTheme(
+        board_fill_rgb=(255, 252, 244),
+        board_border_rgb=(74, 82, 92),
+        board_border_width_px=3,
+        shadow_rgb=(18, 22, 24),
+        shadow_alpha=48,
+        shadow_offset_px=(4, 5),
+        title_rgb=(45, 76, 160),
+        line_rgb=(66, 72, 82),
+        line_width_px=6,
+        node_rgb=(44, 50, 58),
+        white_piece_fill_rgb=(254, 252, 248),
+        white_piece_outline_rgb=(106, 112, 120),
+        black_piece_fill_rgb=(36, 42, 50),
+        black_piece_outline_rgb=(18, 22, 28),
+    )
+
+
 def suit_color(theme: CardTheme, *, suit_name: str) -> Tuple[int, int, int]:
     """Return the rendered suit/rank color for one suit under the active theme."""
 
@@ -487,18 +707,24 @@ def style_probability_map() -> Dict[str, float]:
 
 
 __all__ = [
+    "BingoTheme",
     "CardTheme",
     "CheckersTheme",
     "ConnectFourTheme",
     "DominoTheme",
+    "DotsAndBoxesTheme",
     "MancalaTheme",
+    "NineMensMorrisTheme",
     "ReversiTheme",
     "SUPPORTED_GAMES_STYLE_VARIANTS",
+    "build_games_bingo_theme",
     "build_games_card_theme",
     "build_games_checkers_theme",
     "build_games_connect_four_theme",
     "build_games_domino_theme",
+    "build_games_dots_and_boxes_theme",
     "build_games_mancala_theme",
+    "build_games_nine_mens_morris_theme",
     "build_games_reversi_theme",
     "style_probability_map",
     "suit_color",

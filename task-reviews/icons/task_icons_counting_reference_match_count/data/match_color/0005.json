@@ -1,0 +1,900 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 1
+  },
+  "evidence_gt": {
+    "type": "bbox_set",
+    "value": [
+      [
+        573,
+        296,
+        617,
+        340
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "icons/task_icons_counting_reference_match_count/images/match_color/0005.png"
+  },
+  "instance_seed": 4418175211972168,
+  "prompt": "You are given an image with a Reference icon on the left and a Scene panel of icons on the right. Question: How many icons in the Scene panel have the same color as the Reference icon?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right.\nAnswer rule: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[[322,152,377,207],[756,318,820,382]],\"answer\":2}",
+  "prompt_variants": {
+    "answer_and_evidence": "You are given an image with a Reference icon on the left and a Scene panel of icons on the right. Question: How many icons in the Scene panel have the same color as the Reference icon?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right.\nAnswer rule: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[[322,152,377,207],[756,318,820,382]],\"answer\":2}",
+    "answer_only": "You are given an image with a Reference icon on the left and a Scene panel of icons on the right. Question: How many icons in the Scene panel have the same color as the Reference icon?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the count as an integer.\nExample JSON:\n{\"answer\":2}"
+  },
+  "task": "task_icons_counting_reference_match_count",
+  "task_variant": "match_color",
+  "trace_payload": {
+    "execution_trace": {
+      "distractor_count": 9,
+      "distractor_count_probabilities": {
+        "1": 0.1,
+        "10": 0.1,
+        "2": 0.1,
+        "3": 0.1,
+        "4": 0.1,
+        "5": 0.1,
+        "6": 0.1,
+        "7": 0.1,
+        "8": 0.1,
+        "9": 0.1
+      },
+      "legacy_scene_variant": "reference_scene",
+      "legacy_task_id": "task_icons_counting_color",
+      "legacy_task_variant": "same_icon_color",
+      "matching_scene_indices": [
+        6
+      ],
+      "object_count": 10,
+      "object_count_probabilities": {
+        "10": 0.1,
+        "11": 0.1,
+        "2": 0.1,
+        "3": 0.1,
+        "4": 0.1,
+        "5": 0.1,
+        "6": 0.1,
+        "7": 0.1,
+        "8": 0.1,
+        "9": 0.1
+      },
+      "question_format": "count_matching_scene_icons_by_reference",
+      "reference_icon_id": "gi-lorc-plasma-bolt",
+      "reference_tint_rgb": [
+        199,
+        91,
+        45
+      ],
+      "scene_icon_ids": [
+        "gi-lorc-plasma-bolt",
+        "gi-lorc-plasma-bolt",
+        "gi-lorc-plasma-bolt",
+        "gi-lorc-plasma-bolt",
+        "gi-lorc-plasma-bolt",
+        "gi-lorc-plasma-bolt",
+        "gi-lorc-plasma-bolt",
+        "gi-lorc-plasma-bolt",
+        "gi-lorc-plasma-bolt",
+        "gi-lorc-plasma-bolt"
+      ],
+      "scene_tints_rgb": [
+        [
+          101,
+          78,
+          204
+        ],
+        [
+          101,
+          78,
+          204
+        ],
+        [
+          217,
+          209,
+          60
+        ],
+        [
+          217,
+          209,
+          60
+        ],
+        [
+          101,
+          78,
+          204
+        ],
+        [
+          101,
+          78,
+          204
+        ],
+        [
+          199,
+          91,
+          45
+        ],
+        [
+          101,
+          78,
+          204
+        ],
+        [
+          101,
+          78,
+          204
+        ],
+        [
+          217,
+          209,
+          60
+        ]
+      ],
+      "scene_variant": "reference_scene",
+      "scene_variant_probabilities": {
+        "reference_scene": 1.0
+      },
+      "target_count": 1,
+      "target_count_probabilities": {
+        "0": 0.09090909090909091,
+        "1": 0.09090909090909091,
+        "10": 0.09090909090909091,
+        "2": 0.09090909090909091,
+        "3": 0.09090909090909091,
+        "4": 0.09090909090909091,
+        "5": 0.09090909090909091,
+        "6": 0.09090909090909091,
+        "7": 0.09090909090909091,
+        "8": 0.09090909090909091,
+        "9": 0.09090909090909091
+      },
+      "task_variant": "match_color",
+      "task_variant_probabilities": {
+        "match_attribute_binding": 0.0,
+        "match_color": 1.0,
+        "match_orientation": 0.0,
+        "match_type": 0.0
+      }
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          573,
+          296,
+          617,
+          340
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "distractor_count": 9,
+        "distractor_count_probabilities": {
+          "1": 0.1,
+          "10": 0.1,
+          "2": 0.1,
+          "3": 0.1,
+          "4": 0.1,
+          "5": 0.1,
+          "6": 0.1,
+          "7": 0.1,
+          "8": 0.1,
+          "9": 0.1
+        },
+        "legacy_scene_variant": "reference_scene",
+        "legacy_task_id": "task_icons_counting_color",
+        "legacy_task_variant": "same_icon_color",
+        "object_count": 10,
+        "object_count_probabilities": {
+          "10": 0.1,
+          "11": 0.1,
+          "2": 0.1,
+          "3": 0.1,
+          "4": 0.1,
+          "5": 0.1,
+          "6": 0.1,
+          "7": 0.1,
+          "8": 0.1,
+          "9": 0.1
+        },
+        "pool_manifest": "all_icons.txt",
+        "scene_variant": "reference_scene",
+        "scene_variant_probabilities": {
+          "reference_scene": 1.0
+        },
+        "target_count": 1,
+        "target_count_probabilities": {
+          "0": 0.09090909090909091,
+          "1": 0.09090909090909091,
+          "10": 0.09090909090909091,
+          "2": 0.09090909090909091,
+          "3": 0.09090909090909091,
+          "4": 0.09090909090909091,
+          "5": 0.09090909090909091,
+          "6": 0.09090909090909091,
+          "7": 0.09090909090909091,
+          "8": 0.09090909090909091,
+          "9": 0.09090909090909091
+        },
+        "task_variant": "match_color",
+        "task_variant_probabilities": {
+          "match_attribute_binding": 0.0,
+          "match_color": 1.0,
+          "match_orientation": 0.0,
+          "match_type": 0.0
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 4,
+        "prompt_bundle_id": "icons_counting_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the count as an integer",
+          "evidence_hint": "set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right",
+          "json_example": "{\"evidence\":[[322,152,377,207],[756,318,820,382]],\"answer\":2}",
+          "json_example_answer_only": "{\"answer\":2}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a Reference icon on the left and a Scene panel of icons on the right",
+          "question_text": "How many icons in the Scene panel have the same color as the Reference icon?"
+        },
+        "task_family_key": "reference_scene_counting",
+        "task_family_variant_index": 0,
+        "task_key": "counting_query",
+        "task_variant_index": 1,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "icons/counting/icons_counting_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:counting_query": 5,
+          "task_family:reference_scene_counting": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 4,
+            "prompt_bundle_id": "icons_counting_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the count as an integer",
+              "evidence_hint": "set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right",
+              "json_example": "{\"evidence\":[[322,152,377,207],[756,318,820,382]],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a Reference icon on the left and a Scene panel of icons on the right",
+              "question_text": "How many icons in the Scene panel have the same color as the Reference icon?"
+            },
+            "task_family_key": "reference_scene_counting",
+            "task_family_variant_index": 0,
+            "task_key": "counting_query",
+            "task_variant_index": 1,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "icons/counting/icons_counting_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:counting_query": 5,
+              "task_family:reference_scene_counting": 5
+            }
+          },
+          "prompt": "You are given an image with a Reference icon on the left and a Scene panel of icons on the right. Question: How many icons in the Scene panel have the same color as the Reference icon?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right.\nAnswer rule: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[[322,152,377,207],[756,318,820,382]],\"answer\":2}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "icons_counting_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the count as an integer",
+              "evidence_hint": "set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right",
+              "json_example": "{\"evidence\":[[322,152,377,207],[756,318,820,382]],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a Reference icon on the left and a Scene panel of icons on the right",
+              "question_text": "How many icons in the Scene panel have the same color as the Reference icon?"
+            },
+            "task_family_key": "reference_scene_counting",
+            "task_family_variant_index": 0,
+            "task_key": "counting_query",
+            "task_variant_index": 1,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "icons/counting/icons_counting_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:counting_query": 5,
+              "task_family:reference_scene_counting": 5
+            }
+          },
+          "prompt": "You are given an image with a Reference icon on the left and a Scene panel of icons on the right. Question: How many icons in the Scene panel have the same color as the Reference icon?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the count as an integer.\nExample JSON:\n{\"answer\":2}"
+        }
+      },
+      "task_variant": "match_color",
+      "template_id": "icons_counting_v1"
+    },
+    "render_map": {
+      "anchors": {
+        "matching_scene_boxes": [
+          [
+            573,
+            296,
+            617,
+            340
+          ]
+        ],
+        "reference_icon": {
+          "bbox_xyxy": [
+            84,
+            224,
+            212,
+            353
+          ],
+          "icon_id": "gi-lorc-plasma-bolt",
+          "instance_id": "reference_icon",
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "alpha": 0.072726
+              },
+              "type": "noise"
+            }
+          ],
+          "noise_seed": 8399768235749530,
+          "panel": "reference",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            199,
+            91,
+            45
+          ]
+        }
+      },
+      "image_id": "img0"
+    },
+    "render_spec": {
+      "canvas_size": [
+        960,
+        544
+      ],
+      "coord_space": "pixel",
+      "legacy_scene_variant": "reference_scene",
+      "panel_geometry": {
+        "canvas_size": [
+          960,
+          544
+        ],
+        "reference_content_xyxy": [
+          44,
+          77,
+          252,
+          500
+        ],
+        "reference_panel_xyxy": [
+          24,
+          24,
+          272,
+          520
+        ],
+        "scene_content_xyxy": [
+          316,
+          77,
+          916,
+          500
+        ],
+        "scene_panel_xyxy": [
+          296,
+          24,
+          936,
+          520
+        ]
+      },
+      "scene_variant": "reference_scene",
+      "style": {
+        "background_color_rgb": [
+          247,
+          248,
+          251
+        ],
+        "color_channel_max": 220,
+        "color_channel_min": 24,
+        "color_distance_space": "lab",
+        "header_text_rgb": [
+          70,
+          78,
+          96
+        ],
+        "icon_noise_edit_count_range": [
+          0,
+          2
+        ],
+        "icon_noise_edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "icon_noise_value_ranges": {
+          "blur": {
+            "radius": [
+              0.2,
+              0.6
+            ]
+          },
+          "downsample": {
+            "scale": [
+              0.85,
+              0.95
+            ]
+          },
+          "jpeg": {
+            "quality": [
+              70.0,
+              90.0
+            ]
+          },
+          "noise": {
+            "alpha": [
+              0.03,
+              0.08
+            ]
+          }
+        },
+        "min_color_distance": 60.0,
+        "palette_size_max": 4,
+        "palette_size_min": 3,
+        "panel_border_rgb": [
+          205,
+          212,
+          224
+        ],
+        "panel_fill_rgb": [
+          255,
+          255,
+          255
+        ],
+        "reference_icon_size_max_px": 136,
+        "reference_icon_size_min_px": 136,
+        "reference_icon_size_px": 136,
+        "sampled_palette_rgb": [
+          [
+            101,
+            78,
+            204
+          ],
+          [
+            199,
+            91,
+            45
+          ],
+          [
+            217,
+            209,
+            60
+          ]
+        ],
+        "scene_icon_size_max_px": 96,
+        "scene_icon_size_min_px": 40,
+        "scene_max_overlap_fraction": 0.1,
+        "scene_placement_max_attempts": 120,
+        "scene_size_shrink_factor": 0.9,
+        "scene_size_shrink_rounds": 6
+      },
+      "task_variant": "match_color"
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "bbox_xyxy": [
+            84,
+            224,
+            212,
+            353
+          ],
+          "icon_id": "gi-lorc-plasma-bolt",
+          "instance_id": "reference_icon",
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "alpha": 0.072726
+              },
+              "type": "noise"
+            }
+          ],
+          "noise_seed": 8399768235749530,
+          "panel": "reference",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            199,
+            91,
+            45
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            603,
+            225,
+            653,
+            275
+          ],
+          "icon_id": "gi-lorc-plasma-bolt",
+          "index": 0,
+          "instance_id": "scene_icon_0",
+          "is_match": false,
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 924407702090087,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            101,
+            78,
+            204
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            316,
+            392,
+            401,
+            477
+          ],
+          "icon_id": "gi-lorc-plasma-bolt",
+          "index": 1,
+          "instance_id": "scene_icon_1",
+          "is_match": false,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "scale": 0.908247
+              },
+              "type": "downsample"
+            }
+          ],
+          "noise_seed": 5542522337889015,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            101,
+            78,
+            204
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            624,
+            133,
+            699,
+            208
+          ],
+          "icon_id": "gi-lorc-plasma-bolt",
+          "index": 2,
+          "instance_id": "scene_icon_2",
+          "is_match": false,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "alpha": 0.047734
+              },
+              "type": "noise"
+            },
+            {
+              "params": {
+                "radius": 0.342744
+              },
+              "type": "blur"
+            }
+          ],
+          "noise_seed": 2787965312349449,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            217,
+            209,
+            60
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            356,
+            106,
+            436,
+            186
+          ],
+          "icon_id": "gi-lorc-plasma-bolt",
+          "index": 3,
+          "instance_id": "scene_icon_3",
+          "is_match": false,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "scale": 0.878938
+              },
+              "type": "downsample"
+            }
+          ],
+          "noise_seed": 2623490283735873,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            217,
+            209,
+            60
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            831,
+            201,
+            879,
+            249
+          ],
+          "icon_id": "gi-lorc-plasma-bolt",
+          "index": 4,
+          "instance_id": "scene_icon_4",
+          "is_match": false,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "radius": 0.240982
+              },
+              "type": "blur"
+            },
+            {
+              "params": {
+                "alpha": 0.078364
+              },
+              "type": "noise"
+            }
+          ],
+          "noise_seed": 4229284826121582,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            101,
+            78,
+            204
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            728,
+            96,
+            819,
+            187
+          ],
+          "icon_id": "gi-lorc-plasma-bolt",
+          "index": 5,
+          "instance_id": "scene_icon_5",
+          "is_match": false,
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 6650866046013058,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            101,
+            78,
+            204
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            573,
+            296,
+            617,
+            340
+          ],
+          "icon_id": "gi-lorc-plasma-bolt",
+          "index": 6,
+          "instance_id": "scene_icon_6",
+          "is_match": true,
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 5177028674305730,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            199,
+            91,
+            45
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            698,
+            207,
+            771,
+            280
+          ],
+          "icon_id": "gi-lorc-plasma-bolt",
+          "index": 7,
+          "instance_id": "scene_icon_7",
+          "is_match": false,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "scale": 0.914423
+              },
+              "type": "downsample"
+            },
+            {
+              "params": {
+                "quality": 82.0
+              },
+              "type": "jpeg"
+            }
+          ],
+          "noise_seed": 6590844947371341,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            101,
+            78,
+            204
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            438,
+            146,
+            504,
+            213
+          ],
+          "icon_id": "gi-lorc-plasma-bolt",
+          "index": 8,
+          "instance_id": "scene_icon_8",
+          "is_match": false,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "quality": 77.0
+              },
+              "type": "jpeg"
+            }
+          ],
+          "noise_seed": 7193340149970484,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            101,
+            78,
+            204
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            719,
+            296,
+            795,
+            372
+          ],
+          "icon_id": "gi-lorc-plasma-bolt",
+          "index": 9,
+          "instance_id": "scene_icon_9",
+          "is_match": false,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "alpha": 0.033277
+              },
+              "type": "noise"
+            },
+            {
+              "params": {
+                "radius": 0.37451
+              },
+              "type": "blur"
+            }
+          ],
+          "noise_seed": 6631542730080812,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            217,
+            209,
+            60
+          ]
+        }
+      ],
+      "frames": {
+        "panels": {
+          "canvas_size": [
+            960,
+            544
+          ],
+          "reference_content_xyxy": [
+            44,
+            77,
+            252,
+            500
+          ],
+          "reference_panel_xyxy": [
+            24,
+            24,
+            272,
+            520
+          ],
+          "scene_content_xyxy": [
+            316,
+            77,
+            916,
+            500
+          ],
+          "scene_panel_xyxy": [
+            296,
+            24,
+            936,
+            520
+          ]
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {
+        "counting_target": "same_color_as_reference",
+        "legacy_scene_variant": "reference_scene",
+        "legacy_task_id": "task_icons_counting_color",
+        "legacy_task_variant": "same_icon_color",
+        "matching_scene_indices": [
+          6
+        ],
+        "reference_icon_id": "gi-lorc-plasma-bolt",
+        "reference_tint_rgb": [
+          199,
+          91,
+          45
+        ],
+        "scene_variant": "reference_scene",
+        "task_variant": "match_color"
+      },
+      "scene_kind": "icons_reference_match_count"
+    },
+    "witness_symbolic": {
+      "matching_scene_indices": [
+        6
+      ],
+      "reference_tint_rgb": [
+        199,
+        91,
+        45
+      ]
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

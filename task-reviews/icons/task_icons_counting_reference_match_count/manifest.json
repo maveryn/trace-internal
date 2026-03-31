@@ -1,0 +1,17 @@
+{
+  "inspection_count": 100,
+  "task_id": "task_icons_counting_reference_match_count",
+  "variants": {
+    "match_attribute_binding": 25,
+    "match_color": 25,
+    "match_orientation": 25,
+    "match_type": 25
+  },
+  "workbook": "icons/task_icons_counting_reference_match_count/task_icons_counting_reference_match_count.xlsx",
+  "workbook_sheets": {
+    "match_attribute_binding": "match_attribute_binding",
+    "match_color": "match_color",
+    "match_orientation": "match_orientation",
+    "match_type": "match_type"
+  }
+}

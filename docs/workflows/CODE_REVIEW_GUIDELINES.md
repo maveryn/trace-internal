@@ -232,6 +232,7 @@ Use this checklist during implementation and refactor reviews.
 209. When one task balances multiple axes under the same task-review `_sampling_index`, decorrelate those axes with namespace-specific explicit-index salts so scene cycling does not alias the answer-support cycle.
 210. For card-hand tasks whose reasoning depends on display order across wrapped rows, render an explicit continuation cue in the image and state the row-reading rule in the prompt; do not assume solvers will infer whether the second row restarts or continues the first row.
 211. For game-state tasks that use one visible reference/context object plus a separate candidate pool (for example a top domino chain plus loose tiles below), keep the prompt and prompt-facing evidence explicit that only the candidate pool is counted; do not widen evidence to the contextual reference pieces when those pieces are only there to define the predicate.
+212. When consolidating several legacy task ids into one active wrapper task, update the active inventories and operational metadata together in the same patch: task docs, domain status counts, `task-reviews/REVIEW_STATUS.md`, and any `configs/examples/` entries should all move to the new task ids rather than leaving retired ids as the discoverable examples.
 
 ## 3) Process rule
 When a new reusable issue is discovered:

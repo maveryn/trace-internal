@@ -6,18 +6,32 @@ generation:
     answer_index_max: 9
     balanced_sampling: true
   task_overrides:
-    task_icons_pattern_grid_rotation_violation:
-      pool_manifest: non_symmetry.txt
-      rotation_candidates_degrees: [0, 90, 180, 270]
-      row_step_candidates_degrees: [90, 180, 270]
-      col_step_candidates_degrees: [90, 180, 270]
-    task_icons_pattern_grid_size_violation:
-      pool_manifest: all_icons.txt
-      size_levels: [1, 2, 3, 4, 5]
-      base_level_candidates: [1, 2, 3, 4, 5]
-      row_step_candidates: [-1, 0, 1]
-      col_step_candidates: [-1, 0, 1]
-      shared_rotation_candidates_degrees: [0, 90, 180, 270]
+    task_icons_pattern_structured_violation:
+      task_variant_weights:
+        row_rotation_violation: 1.0
+        grid_rotation_violation: 1.0
+        grid_size_violation: 1.0
+      variant_generation_params:
+        row_rotation_violation:
+          sequence_length_min: 5
+          sequence_length_max: 7
+          answer_index_min: 1
+          answer_index_max: 7
+          pool_manifest: non_symmetry.txt
+          rotation_candidates_degrees: [0, 90, 180, 270]
+          step_candidates_degrees: [90, 270]
+        grid_rotation_violation:
+          pool_manifest: non_symmetry.txt
+          rotation_candidates_degrees: [0, 90, 180, 270]
+          row_step_candidates_degrees: [90, 180, 270]
+          col_step_candidates_degrees: [90, 180, 270]
+        grid_size_violation:
+          pool_manifest: all_icons.txt
+          size_levels: [1, 2, 3, 4, 5]
+          base_level_candidates: [1, 2, 3, 4, 5]
+          row_step_candidates: [-1, 0, 1]
+          col_step_candidates: [-1, 0, 1]
+          shared_rotation_candidates_degrees: [0, 90, 180, 270]
 
 rendering:
   shared:
@@ -66,22 +80,44 @@ rendering:
     scene_content_bottom_padding_px: 10
     scene_content_top_offset_px: 40
   task_overrides:
-    task_icons_pattern_grid_size_violation:
-      scene_icon_size_min_px: 34
-      scene_icon_size_max_px: 82
-      cell_box_width_min_px: 116
-      cell_box_width_max_px: 152
-      cell_box_height_min_px: 116
-      cell_box_height_max_px: 152
-      size_level_gap_px: 8
-      icon_noise_edit_count_range: [0, 1]
+    task_icons_pattern_structured_violation:
+      variant_render_params:
+        row_rotation_violation:
+          scene_icon_size_min_px: 48
+          scene_icon_size_max_px: 72
+          cell_box_width_min_px: 96
+          cell_box_width_max_px: 136
+          cell_box_height_min_px: 96
+          cell_box_height_max_px: 136
+        grid_size_violation:
+          scene_icon_size_min_px: 34
+          scene_icon_size_max_px: 82
+          cell_box_width_min_px: 116
+          cell_box_width_max_px: 152
+          cell_box_height_min_px: 116
+          cell_box_height_max_px: 152
+          size_level_gap_px: 8
+          icon_noise_edit_count_range: [0, 1]
 
 prompt:
   shared:
     bundle_id: icons_pattern_v1
-    task_family_key: numbered_grid_rotation_pattern
-    task_key: grid_rotation_violation_query
+    task_family_key: structured_violation_scene
+    task_key: structured_violation_query
   task_overrides:
+    task_icons_pattern_structured_violation:
+      object_description_by_variant:
+        row_rotation_violation: a horizontal row of numbered boxes, each containing one icon
+        grid_rotation_violation: a 3 by 3 grid of numbered boxes, each containing one icon
+        grid_size_violation: a 3 by 3 grid of numbered boxes, each containing one icon
+      question_text_by_variant:
+        row_rotation_violation: Which numbered box breaks the rotation sequence?
+        grid_rotation_violation: Which numbered box breaks the 2D rotation pattern?
+        grid_size_violation: Which numbered box breaks the 2D size pattern?
+      evidence_hint: set "evidence" to a JSON array containing exactly one [x_min, y_min, x_max, y_max] box in image pixel coordinates for the violating grid box
+      answer_hint: set "answer" to the violating box index as an integer
+      json_example: '{"evidence":[[540,126,654,458]],"answer":5}'
+      json_example_answer_only: '{"answer":5}'
     task_icons_pattern_grid_rotation_violation:
       object_description: a 3 by 3 grid of numbered boxes, each containing one icon
       question_text: Which numbered box breaks the 2D rotation pattern?

@@ -4,20 +4,20 @@
     "value": 120.6
   },
   "evidence_gt": {
-    "type": "measurement_ref_map",
-    "value": {
-      "GI": 7,
-      "HI": 57
-    }
+    "type": "label_set",
+    "value": [
+      "GI=7",
+      "HI=57"
+    ]
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_2d_value/images/perimeter/0002.png"
   },
   "instance_seed": 2388771402634054,
-  "prompt": "You are given an image showing a geometric scene with measurement annotations. Read the marked measurements and answer: The right triangle shows one leg and the hypotenuse. What is the perimeter of the triangle?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: GI, HI.\nAnswer: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"GI\":2,\"HI\":3},\"answer\":42.3}",
+  "prompt": "You are given an image showing a geometric scene with measurement annotations. Read the marked measurements and answer: The right triangle shows one leg and the hypotenuse. What is the perimeter of the triangle?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: GI, HI.\nAnswer: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[\"GI=2\",\"HI=3\"],\"answer\":42.3}",
   "prompt_variants": {
-    "answer_and_evidence": "You are given an image showing a geometric scene with measurement annotations. Read the marked measurements and answer: The right triangle shows one leg and the hypotenuse. What is the perimeter of the triangle?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: GI, HI.\nAnswer: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"GI\":2,\"HI\":3},\"answer\":42.3}",
+    "answer_and_evidence": "You are given an image showing a geometric scene with measurement annotations. Read the marked measurements and answer: The right triangle shows one leg and the hypotenuse. What is the perimeter of the triangle?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: GI, HI.\nAnswer: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[\"GI=2\",\"HI=3\"],\"answer\":42.3}",
     "answer_only": "You are given an image showing a geometric scene with measurement annotations. Read the marked measurements and answer: The right triangle shows one leg and the hypotenuse. What is the perimeter of the triangle?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"answer\":42.3}"
   },
   "task": "task_geometry_analytical_2d_value",
@@ -44,6 +44,10 @@
       "evidence_roles": [
         "known_leg",
         "hypotenuse"
+      ],
+      "evidence_tokens": [
+        "GI=7",
+        "HI=57"
       ],
       "formula_expression": "known_leg + hypotenuse + sqrt(hypotenuse^2 - known_leg^2)",
       "legacy_query_variant": "right_triangle_leg_hypotenuse",
@@ -97,6 +101,10 @@
         "GI",
         "HI"
       ],
+      "label_set": [
+        "GI=7",
+        "HI=57"
+      ],
       "measurement_ref_map": {
         "GI": 7,
         "HI": 57
@@ -107,6 +115,16 @@
           297.6985414133253
         ],
         "HI": [
+          324.54502923976605,
+          269.0503789568317
+        ]
+      },
+      "pixel_point_map": {
+        "GI=7": [
+          80.59333333333332,
+          297.6985414133253
+        ],
+        "HI=57": [
           324.54502923976605,
           269.0503789568317
         ]
@@ -162,8 +180,8 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the perimeter value rounded to one decimal place",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: GI, HI",
-          "json_example": "{\"evidence\":{\"GI\":2,\"HI\":3},\"answer\":42.3}",
+          "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: GI, HI",
+          "json_example": "{\"evidence\":[\"GI=2\",\"HI=3\"],\"answer\":42.3}",
           "json_example_answer_only": "{\"answer\":42.3}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -195,8 +213,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the perimeter value rounded to one decimal place",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: GI, HI",
-              "json_example": "{\"evidence\":{\"GI\":2,\"HI\":3},\"answer\":42.3}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: GI, HI",
+              "json_example": "{\"evidence\":[\"GI=2\",\"HI=3\"],\"answer\":42.3}",
               "json_example_answer_only": "{\"answer\":42.3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -218,7 +236,7 @@
               "task_family:analytical_perimeter_scene": 5
             }
           },
-          "prompt": "You are given an image showing a geometric scene with measurement annotations. Read the marked measurements and answer: The right triangle shows one leg and the hypotenuse. What is the perimeter of the triangle?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: GI, HI.\nAnswer: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"GI\":2,\"HI\":3},\"answer\":42.3}"
+          "prompt": "You are given an image showing a geometric scene with measurement annotations. Read the marked measurements and answer: The right triangle shows one leg and the hypotenuse. What is the perimeter of the triangle?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: GI, HI.\nAnswer: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[\"GI=2\",\"HI=3\"],\"answer\":42.3}"
         },
         "answer_only": {
           "metadata": {
@@ -228,8 +246,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the perimeter value rounded to one decimal place",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: GI, HI",
-              "json_example": "{\"evidence\":{\"GI\":2,\"HI\":3},\"answer\":42.3}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: GI, HI",
+              "json_example": "{\"evidence\":[\"GI=2\",\"HI=3\"],\"answer\":42.3}",
               "json_example_answer_only": "{\"answer\":42.3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -436,6 +454,10 @@
         "hypotenuse": "HI",
         "known_leg": "GI"
       },
+      "annotation_value_tokens": [
+        "GI=7",
+        "HI=57"
+      ],
       "annotation_values": {
         "GI": 7,
         "HI": 57

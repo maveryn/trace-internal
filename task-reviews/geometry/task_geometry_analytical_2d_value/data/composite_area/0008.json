@@ -4,22 +4,22 @@
     "value": 388
   },
   "evidence_gt": {
-    "type": "measurement_ref_map",
-    "value": {
-      "CD": 27,
-      "DE": 16,
-      "FE": 11,
-      "GE": 8
-    }
+    "type": "label_set",
+    "value": [
+      "CD=27",
+      "DE=16",
+      "FE=11",
+      "GE=8"
+    ]
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_2d_value/images/composite_area/0008.png"
   },
   "instance_seed": 1091905515962851,
-  "prompt": "Work from the annotated scene showing a shaded composite geometric region with measurement annotations. Question: The shaded region is a rectangle with one triangular corner cut out. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: CD, DE, FE, GE.\nAnswer format: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"CD\":2,\"DE\":3,\"FE\":4,\"GE\":5},\"answer\":8}",
+  "prompt": "Work from the annotated scene showing a shaded composite geometric region with measurement annotations. Question: The shaded region is a rectangle with one triangular corner cut out. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: CD, DE, FE, GE.\nAnswer format: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":[\"CD=2\",\"DE=3\",\"FE=4\",\"GE=5\"],\"answer\":8}",
   "prompt_variants": {
-    "answer_and_evidence": "Work from the annotated scene showing a shaded composite geometric region with measurement annotations. Question: The shaded region is a rectangle with one triangular corner cut out. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: CD, DE, FE, GE.\nAnswer format: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"CD\":2,\"DE\":3,\"FE\":4,\"GE\":5},\"answer\":8}",
+    "answer_and_evidence": "Work from the annotated scene showing a shaded composite geometric region with measurement annotations. Question: The shaded region is a rectangle with one triangular corner cut out. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: CD, DE, FE, GE.\nAnswer format: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":[\"CD=2\",\"DE=3\",\"FE=4\",\"GE=5\"],\"answer\":8}",
     "answer_only": "Work from the annotated scene showing a shaded composite geometric region with measurement annotations. Question: The shaded region is a rectangle with one triangular corner cut out. What is the area of the shaded region in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"answer\":8}"
   },
   "task": "task_geometry_analytical_2d_value",
@@ -54,6 +54,12 @@
         "outer_height",
         "cut_top",
         "cut_right"
+      ],
+      "evidence_tokens": [
+        "CD=27",
+        "DE=16",
+        "FE=11",
+        "GE=8"
       ],
       "formula_expression": "outer_width * outer_height - (cut_top * cut_right) / 2",
       "legacy_query_variant": "rectangle_triangle_cutout",
@@ -114,6 +120,12 @@
         "FE",
         "GE"
       ],
+      "label_set": [
+        "CD=27",
+        "DE=16",
+        "FE=11",
+        "GE=8"
+      ],
       "measurement_ref_map": {
         "CD": 27,
         "DE": 16,
@@ -134,6 +146,24 @@
           207.38333134349048
         ],
         "GE": [
+          543.58,
+          286.42925726941644
+        ]
+      },
+      "pixel_point_map": {
+        "CD=27": [
+          321.0,
+          486.70036838052755
+        ],
+        "DE=16": [
+          553.8466666666667,
+          347.0751831953424
+        ],
+        "FE=11": [
+          442.29185185185196,
+          207.38333134349048
+        ],
+        "GE=8": [
           543.58,
           286.42925726941644
         ]
@@ -197,8 +227,8 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the area value as an integer",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: CD, DE, FE, GE",
-          "json_example": "{\"evidence\":{\"CD\":2,\"DE\":3,\"FE\":4,\"GE\":5},\"answer\":8}",
+          "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: CD, DE, FE, GE",
+          "json_example": "{\"evidence\":[\"CD=2\",\"DE=3\",\"FE=4\",\"GE=5\"],\"answer\":8}",
           "json_example_answer_only": "{\"answer\":8}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -230,8 +260,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the area value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: CD, DE, FE, GE",
-              "json_example": "{\"evidence\":{\"CD\":2,\"DE\":3,\"FE\":4,\"GE\":5},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: CD, DE, FE, GE",
+              "json_example": "{\"evidence\":[\"CD=2\",\"DE=3\",\"FE=4\",\"GE=5\"],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -253,7 +283,7 @@
               "task_family:analytical_composite_area_scene": 5
             }
           },
-          "prompt": "Work from the annotated scene showing a shaded composite geometric region with measurement annotations. Question: The shaded region is a rectangle with one triangular corner cut out. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: CD, DE, FE, GE.\nAnswer format: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"CD\":2,\"DE\":3,\"FE\":4,\"GE\":5},\"answer\":8}"
+          "prompt": "Work from the annotated scene showing a shaded composite geometric region with measurement annotations. Question: The shaded region is a rectangle with one triangular corner cut out. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: CD, DE, FE, GE.\nAnswer format: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":[\"CD=2\",\"DE=3\",\"FE=4\",\"GE=5\"],\"answer\":8}"
         },
         "answer_only": {
           "metadata": {
@@ -263,8 +293,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the area value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: CD, DE, FE, GE",
-              "json_example": "{\"evidence\":{\"CD\":2,\"DE\":3,\"FE\":4,\"GE\":5},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: CD, DE, FE, GE",
+              "json_example": "{\"evidence\":[\"CD=2\",\"DE=3\",\"FE=4\",\"GE=5\"],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -503,6 +533,12 @@
         "outer_height": "DE",
         "outer_width": "CD"
       },
+      "annotation_value_tokens": [
+        "CD=27",
+        "DE=16",
+        "FE=11",
+        "GE=8"
+      ],
       "annotation_values": {
         "CD": 27,
         "DE": 16,

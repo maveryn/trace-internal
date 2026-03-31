@@ -4,21 +4,21 @@
     "value": 7040
   },
   "evidence_gt": {
-    "type": "measurement_ref_map",
-    "value": {
-      "IJ": 22,
-      "IL": 8,
-      "JK": 40
-    }
+    "type": "label_set",
+    "value": [
+      "IJ=22",
+      "IL=8",
+      "JK=40"
+    ]
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_3d_value/images/volume/0007.png"
   },
   "instance_seed": 1105853822194894,
-  "prompt": "The image shows an annotated 3D solid. Based on the shown values, answer this question: The rectangular prism has annotated length, width, and height. What is its volume in cubic units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: IJ, JK, IL.\nAnswer rule: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":{\"IJ\":2,\"JK\":3,\"IL\":4},\"answer\":8}",
+  "prompt": "The image shows an annotated 3D solid. Based on the shown values, answer this question: The rectangular prism has annotated length, width, and height. What is its volume in cubic units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: IJ, JK, IL.\nAnswer rule: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":[\"IJ=2\",\"IL=3\",\"JK=4\"],\"answer\":8}",
   "prompt_variants": {
-    "answer_and_evidence": "The image shows an annotated 3D solid. Based on the shown values, answer this question: The rectangular prism has annotated length, width, and height. What is its volume in cubic units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: IJ, JK, IL.\nAnswer rule: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":{\"IJ\":2,\"JK\":3,\"IL\":4},\"answer\":8}",
+    "answer_and_evidence": "The image shows an annotated 3D solid. Based on the shown values, answer this question: The rectangular prism has annotated length, width, and height. What is its volume in cubic units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: IJ, JK, IL.\nAnswer rule: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":[\"IJ=2\",\"IL=3\",\"JK=4\"],\"answer\":8}",
     "answer_only": "The image shows an annotated 3D solid. Based on the shown values, answer this question: The rectangular prism has annotated length, width, and height. What is its volume in cubic units?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the value as an integer.\nExample JSON:\n{\"answer\":8}"
   },
   "task": "task_geometry_analytical_3d_value",
@@ -49,6 +49,11 @@
         "l",
         "w",
         "h"
+      ],
+      "evidence_tokens": [
+        "IJ=22",
+        "IL=8",
+        "JK=40"
       ],
       "formula_expression": "V = l * w * h",
       "legacy_query_variant": "rectangular_prism_given_lwh",
@@ -98,6 +103,11 @@
         "JK",
         "IL"
       ],
+      "label_set": [
+        "IJ=22",
+        "IL=8",
+        "JK=40"
+      ],
       "measurement_ref_map": {
         "IJ": 22,
         "IL": 8,
@@ -113,6 +123,20 @@
           177.79898384042778
         ],
         "JK": [
+          476.54838705089037,
+          465.97126636671624
+        ]
+      },
+      "pixel_point_map": {
+        "IJ=22": [
+          566.5023684618383,
+          314.5170145172536
+        ],
+        "IL=8": [
+          487.1032258064515,
+          177.79898384042778
+        ],
+        "JK=40": [
           476.54838705089037,
           465.97126636671624
         ]
@@ -166,8 +190,8 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the value as an integer",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: IJ, JK, IL",
-          "json_example": "{\"evidence\":{\"IJ\":2,\"JK\":3,\"IL\":4},\"answer\":8}",
+          "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: IJ, JK, IL",
+          "json_example": "{\"evidence\":[\"IJ=2\",\"IL=3\",\"JK=4\"],\"answer\":8}",
           "json_example_answer_only": "{\"answer\":8}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -199,8 +223,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: IJ, JK, IL",
-              "json_example": "{\"evidence\":{\"IJ\":2,\"JK\":3,\"IL\":4},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: IJ, JK, IL",
+              "json_example": "{\"evidence\":[\"IJ=2\",\"IL=3\",\"JK=4\"],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -222,7 +246,7 @@
               "task_family:analytical_single_solid": 5
             }
           },
-          "prompt": "The image shows an annotated 3D solid. Based on the shown values, answer this question: The rectangular prism has annotated length, width, and height. What is its volume in cubic units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: IJ, JK, IL.\nAnswer rule: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":{\"IJ\":2,\"JK\":3,\"IL\":4},\"answer\":8}"
+          "prompt": "The image shows an annotated 3D solid. Based on the shown values, answer this question: The rectangular prism has annotated length, width, and height. What is its volume in cubic units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: IJ, JK, IL.\nAnswer rule: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":[\"IJ=2\",\"IL=3\",\"JK=4\"],\"answer\":8}"
         },
         "answer_only": {
           "metadata": {
@@ -232,8 +256,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: IJ, JK, IL",
-              "json_example": "{\"evidence\":{\"IJ\":2,\"JK\":3,\"IL\":4},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: IJ, JK, IL",
+              "json_example": "{\"evidence\":[\"IJ=2\",\"IL=3\",\"JK=4\"],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -497,6 +521,11 @@
         "l": "IJ",
         "w": "JK"
       },
+      "annotation_value_tokens": [
+        "IJ=22",
+        "IL=8",
+        "JK=40"
+      ],
       "annotation_values": {
         "IJ": 22,
         "IL": 8,

@@ -4,20 +4,20 @@
     "value": 45.4
   },
   "evidence_gt": {
-    "type": "measurement_ref_map",
-    "value": {
-      "KM": 69,
-      "LN": 59
-    }
+    "type": "label_set",
+    "value": [
+      "KM=69",
+      "LN=59"
+    ]
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_2d_value/images/length/0004.png"
   },
   "instance_seed": 4991817866112967,
-  "prompt": "Work from the annotated scene showing a geometric scene with measurement annotations. Question: The rhombus shows both diagonals. What is the length of segment KL?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: KM, LN.\nAnswer requirement: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"KM\":2,\"LN\":3},\"answer\":42.3}",
+  "prompt": "Work from the annotated scene showing a geometric scene with measurement annotations. Question: The rhombus shows both diagonals. What is the length of segment KL?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: KM, LN.\nAnswer requirement: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[\"KM=2\",\"LN=3\"],\"answer\":42.3}",
   "prompt_variants": {
-    "answer_and_evidence": "Work from the annotated scene showing a geometric scene with measurement annotations. Question: The rhombus shows both diagonals. What is the length of segment KL?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: KM, LN.\nAnswer requirement: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"KM\":2,\"LN\":3},\"answer\":42.3}",
+    "answer_and_evidence": "Work from the annotated scene showing a geometric scene with measurement annotations. Question: The rhombus shows both diagonals. What is the length of segment KL?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: KM, LN.\nAnswer requirement: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[\"KM=2\",\"LN=3\"],\"answer\":42.3}",
     "answer_only": "Work from the annotated scene showing a geometric scene with measurement annotations. Question: The rhombus shows both diagonals. What is the length of segment KL?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"answer\":42.3}"
   },
   "task": "task_geometry_analytical_2d_value",
@@ -44,6 +44,10 @@
       "evidence_roles": [
         "diag_x",
         "diag_y"
+      ],
+      "evidence_tokens": [
+        "KM=69",
+        "LN=59"
       ],
       "formula_expression": "sqrt((diag_x/2)^2 + (diag_y/2)^2)",
       "legacy_query_variant": "rhombus_diagonal_side",
@@ -98,6 +102,10 @@
         "KM",
         "LN"
       ],
+      "label_set": [
+        "KM=69",
+        "LN=59"
+      ],
       "measurement_ref_map": {
         "KM": 69,
         "LN": 59
@@ -108,6 +116,16 @@
           243.1678524118556
         ],
         "LN": [
+          305.03333333333336,
+          226.58027270171067
+        ]
+      },
+      "pixel_point_map": {
+        "KM=69": [
+          217.22300000000004,
+          243.1678524118556
+        ],
+        "LN=59": [
           305.03333333333336,
           226.58027270171067
         ]
@@ -163,8 +181,8 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the length value rounded to one decimal place",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: KM, LN",
-          "json_example": "{\"evidence\":{\"KM\":2,\"LN\":3},\"answer\":42.3}",
+          "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: KM, LN",
+          "json_example": "{\"evidence\":[\"KM=2\",\"LN=3\"],\"answer\":42.3}",
           "json_example_answer_only": "{\"answer\":42.3}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -196,8 +214,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the length value rounded to one decimal place",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: KM, LN",
-              "json_example": "{\"evidence\":{\"KM\":2,\"LN\":3},\"answer\":42.3}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: KM, LN",
+              "json_example": "{\"evidence\":[\"KM=2\",\"LN=3\"],\"answer\":42.3}",
               "json_example_answer_only": "{\"answer\":42.3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -219,7 +237,7 @@
               "task_family:analytical_length_scene": 5
             }
           },
-          "prompt": "Work from the annotated scene showing a geometric scene with measurement annotations. Question: The rhombus shows both diagonals. What is the length of segment KL?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: KM, LN.\nAnswer requirement: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"KM\":2,\"LN\":3},\"answer\":42.3}"
+          "prompt": "Work from the annotated scene showing a geometric scene with measurement annotations. Question: The rhombus shows both diagonals. What is the length of segment KL?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: KM, LN.\nAnswer requirement: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[\"KM=2\",\"LN=3\"],\"answer\":42.3}"
         },
         "answer_only": {
           "metadata": {
@@ -229,8 +247,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the length value rounded to one decimal place",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: KM, LN",
-              "json_example": "{\"evidence\":{\"KM\":2,\"LN\":3},\"answer\":42.3}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: KM, LN",
+              "json_example": "{\"evidence\":[\"KM=2\",\"LN=3\"],\"answer\":42.3}",
               "json_example_answer_only": "{\"answer\":42.3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -463,6 +481,10 @@
         "diag_x": "KM",
         "diag_y": "LN"
       },
+      "annotation_value_tokens": [
+        "KM=69",
+        "LN=59"
+      ],
       "annotation_values": {
         "KM": 69,
         "LN": 59

@@ -4,22 +4,22 @@
     "value": 142
   },
   "evidence_gt": {
-    "type": "measurement_ref_map",
-    "value": {
-      "TU": 11,
-      "UV": 17,
-      "WX": 3,
-      "XY": 15
-    }
+    "type": "label_set",
+    "value": [
+      "TU=11",
+      "UV=17",
+      "WX=3",
+      "XY=15"
+    ]
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_2d_value/images/composite_area/0006.png"
   },
   "instance_seed": 2715635908189095,
-  "prompt": "Work from the annotated scene showing a shaded composite geometric region with measurement annotations. Based on the shown values, answer this question: The shaded region is an outer rectangle with one inner rectangular cutout. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: TU, UV, WX, XY.\nAnswer rule: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"TU\":2,\"UV\":3,\"WX\":4,\"XY\":5},\"answer\":8}",
+  "prompt": "Work from the annotated scene showing a shaded composite geometric region with measurement annotations. Based on the shown values, answer this question: The shaded region is an outer rectangle with one inner rectangular cutout. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: TU, UV, WX, XY.\nAnswer rule: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":[\"TU=2\",\"UV=3\",\"WX=4\",\"XY=5\"],\"answer\":8}",
   "prompt_variants": {
-    "answer_and_evidence": "Work from the annotated scene showing a shaded composite geometric region with measurement annotations. Based on the shown values, answer this question: The shaded region is an outer rectangle with one inner rectangular cutout. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: TU, UV, WX, XY.\nAnswer rule: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"TU\":2,\"UV\":3,\"WX\":4,\"XY\":5},\"answer\":8}",
+    "answer_and_evidence": "Work from the annotated scene showing a shaded composite geometric region with measurement annotations. Based on the shown values, answer this question: The shaded region is an outer rectangle with one inner rectangular cutout. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: TU, UV, WX, XY.\nAnswer rule: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":[\"TU=2\",\"UV=3\",\"WX=4\",\"XY=5\"],\"answer\":8}",
     "answer_only": "Work from the annotated scene showing a shaded composite geometric region with measurement annotations. Based on the shown values, answer this question: The shaded region is an outer rectangle with one inner rectangular cutout. What is the area of the shaded region in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"answer\":8}"
   },
   "task": "task_geometry_analytical_2d_value",
@@ -54,6 +54,12 @@
         "outer_height",
         "inner_width",
         "inner_height"
+      ],
+      "evidence_tokens": [
+        "TU=11",
+        "UV=17",
+        "WX=3",
+        "XY=15"
       ],
       "formula_expression": "outer_width * outer_height - inner_width * inner_height",
       "legacy_query_variant": "rectangle_inner_cutout",
@@ -114,6 +120,12 @@
         "WX",
         "XY"
       ],
+      "label_set": [
+        "TU=11",
+        "UV=17",
+        "WX=3",
+        "XY=15"
+      ],
       "measurement_ref_map": {
         "TU": 11,
         "UV": 17,
@@ -134,6 +146,24 @@
           458.7666666666667
         ],
         "XY": [
+          317.098488800169,
+          306.0
+        ]
+      },
+      "pixel_point_map": {
+        "TU=11": [
+          300.03848880016903,
+          518.98
+        ],
+        "UV=17": [
+          454.378488800169,
+          306.0
+        ],
+        "WX=3": [
+          254.27848880016896,
+          458.7666666666667
+        ],
+        "XY=15": [
           317.098488800169,
           306.0
         ]
@@ -197,8 +227,8 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the area value as an integer",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: TU, UV, WX, XY",
-          "json_example": "{\"evidence\":{\"TU\":2,\"UV\":3,\"WX\":4,\"XY\":5},\"answer\":8}",
+          "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: TU, UV, WX, XY",
+          "json_example": "{\"evidence\":[\"TU=2\",\"UV=3\",\"WX=4\",\"XY=5\"],\"answer\":8}",
           "json_example_answer_only": "{\"answer\":8}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -230,8 +260,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the area value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: TU, UV, WX, XY",
-              "json_example": "{\"evidence\":{\"TU\":2,\"UV\":3,\"WX\":4,\"XY\":5},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: TU, UV, WX, XY",
+              "json_example": "{\"evidence\":[\"TU=2\",\"UV=3\",\"WX=4\",\"XY=5\"],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -253,7 +283,7 @@
               "task_family:analytical_composite_area_scene": 5
             }
           },
-          "prompt": "Work from the annotated scene showing a shaded composite geometric region with measurement annotations. Based on the shown values, answer this question: The shaded region is an outer rectangle with one inner rectangular cutout. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: TU, UV, WX, XY.\nAnswer rule: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"TU\":2,\"UV\":3,\"WX\":4,\"XY\":5},\"answer\":8}"
+          "prompt": "Work from the annotated scene showing a shaded composite geometric region with measurement annotations. Based on the shown values, answer this question: The shaded region is an outer rectangle with one inner rectangular cutout. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: TU, UV, WX, XY.\nAnswer rule: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":[\"TU=2\",\"UV=3\",\"WX=4\",\"XY=5\"],\"answer\":8}"
         },
         "answer_only": {
           "metadata": {
@@ -263,8 +293,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the area value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: TU, UV, WX, XY",
-              "json_example": "{\"evidence\":{\"TU\":2,\"UV\":3,\"WX\":4,\"XY\":5},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: TU, UV, WX, XY",
+              "json_example": "{\"evidence\":[\"TU=2\",\"UV=3\",\"WX=4\",\"XY=5\"],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -514,6 +544,12 @@
         "outer_height": "UV",
         "outer_width": "TU"
       },
+      "annotation_value_tokens": [
+        "TU=11",
+        "UV=17",
+        "WX=3",
+        "XY=15"
+      ],
       "annotation_values": {
         "TU": 11,
         "UV": 17,

@@ -4,20 +4,20 @@
     "value": 169.4
   },
   "evidence_gt": {
-    "type": "measurement_ref_map",
-    "value": {
-      "YA": 73,
-      "ZB": 43
-    }
+    "type": "label_set",
+    "value": [
+      "YA=73",
+      "ZB=43"
+    ]
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_2d_value/images/perimeter/0007.png"
   },
   "instance_seed": 5069055417436197,
-  "prompt": "Use the image showing a geometric scene with measurement annotations. Based on the shown values, answer this question: The rhombus shows both diagonals. What is the perimeter of the rhombus?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: YA, ZB.\nAnswer: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"YA\":2,\"ZB\":3},\"answer\":42.3}",
+  "prompt": "Use the image showing a geometric scene with measurement annotations. Based on the shown values, answer this question: The rhombus shows both diagonals. What is the perimeter of the rhombus?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: YA, ZB.\nAnswer: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[\"YA=2\",\"ZB=3\"],\"answer\":42.3}",
   "prompt_variants": {
-    "answer_and_evidence": "Use the image showing a geometric scene with measurement annotations. Based on the shown values, answer this question: The rhombus shows both diagonals. What is the perimeter of the rhombus?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: YA, ZB.\nAnswer: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"YA\":2,\"ZB\":3},\"answer\":42.3}",
+    "answer_and_evidence": "Use the image showing a geometric scene with measurement annotations. Based on the shown values, answer this question: The rhombus shows both diagonals. What is the perimeter of the rhombus?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: YA, ZB.\nAnswer: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[\"YA=2\",\"ZB=3\"],\"answer\":42.3}",
     "answer_only": "Use the image showing a geometric scene with measurement annotations. Based on the shown values, answer this question: The rhombus shows both diagonals. What is the perimeter of the rhombus?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"answer\":42.3}"
   },
   "task": "task_geometry_analytical_2d_value",
@@ -44,6 +44,10 @@
       "evidence_roles": [
         "diag_x",
         "diag_y"
+      ],
+      "evidence_tokens": [
+        "YA=73",
+        "ZB=43"
       ],
       "formula_expression": "4 * sqrt((diag_x/2)^2 + (diag_y/2)^2)",
       "legacy_query_variant": "rhombus_diagonals",
@@ -97,6 +101,10 @@
         "YA",
         "ZB"
       ],
+      "label_set": [
+        "YA=73",
+        "ZB=43"
+      ],
       "measurement_ref_map": {
         "YA": 73,
         "ZB": 43
@@ -107,6 +115,16 @@
           318.7126933076451
         ],
         "ZB": [
+          316.53333333333336,
+          314.4619718464579
+        ]
+      },
+      "pixel_point_map": {
+        "YA=73": [
+          226.948,
+          318.7126933076451
+        ],
+        "ZB=43": [
           316.53333333333336,
           314.4619718464579
         ]
@@ -162,8 +180,8 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the perimeter value rounded to one decimal place",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: YA, ZB",
-          "json_example": "{\"evidence\":{\"YA\":2,\"ZB\":3},\"answer\":42.3}",
+          "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: YA, ZB",
+          "json_example": "{\"evidence\":[\"YA=2\",\"ZB=3\"],\"answer\":42.3}",
           "json_example_answer_only": "{\"answer\":42.3}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -195,8 +213,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the perimeter value rounded to one decimal place",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: YA, ZB",
-              "json_example": "{\"evidence\":{\"YA\":2,\"ZB\":3},\"answer\":42.3}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: YA, ZB",
+              "json_example": "{\"evidence\":[\"YA=2\",\"ZB=3\"],\"answer\":42.3}",
               "json_example_answer_only": "{\"answer\":42.3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -218,7 +236,7 @@
               "task_family:analytical_perimeter_scene": 5
             }
           },
-          "prompt": "Use the image showing a geometric scene with measurement annotations. Based on the shown values, answer this question: The rhombus shows both diagonals. What is the perimeter of the rhombus?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: YA, ZB.\nAnswer: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"YA\":2,\"ZB\":3},\"answer\":42.3}"
+          "prompt": "Use the image showing a geometric scene with measurement annotations. Based on the shown values, answer this question: The rhombus shows both diagonals. What is the perimeter of the rhombus?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: YA, ZB.\nAnswer: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[\"YA=2\",\"ZB=3\"],\"answer\":42.3}"
         },
         "answer_only": {
           "metadata": {
@@ -228,8 +246,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the perimeter value rounded to one decimal place",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: YA, ZB",
-              "json_example": "{\"evidence\":{\"YA\":2,\"ZB\":3},\"answer\":42.3}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: YA, ZB",
+              "json_example": "{\"evidence\":[\"YA=2\",\"ZB=3\"],\"answer\":42.3}",
               "json_example_answer_only": "{\"answer\":42.3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -470,6 +488,10 @@
         "diag_x": "YA",
         "diag_y": "ZB"
       },
+      "annotation_value_tokens": [
+        "YA=73",
+        "ZB=43"
+      ],
       "annotation_values": {
         "YA": 73,
         "ZB": 43

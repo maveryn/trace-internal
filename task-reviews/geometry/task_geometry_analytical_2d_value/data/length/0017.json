@@ -4,21 +4,21 @@
     "value": 21.5
   },
   "evidence_gt": {
-    "type": "measurement_ref_map",
-    "value": {
-      "RS": 36,
-      "UT": 16,
-      "UV": 19
-    }
+    "type": "label_set",
+    "value": [
+      "RS=36",
+      "UT=16",
+      "UV=19"
+    ]
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_2d_value/images/length/0017.png"
   },
   "instance_seed": 1910292628762096,
-  "prompt": "Use the image showing a geometric scene with measurement annotations. Task: The isosceles trapezoid shows both bases and a height. What is the length of segment RU?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: RS, UT, UV.\nAnswer: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"RS\":2,\"UT\":3,\"UV\":4},\"answer\":42.3}",
+  "prompt": "Use the image showing a geometric scene with measurement annotations. Task: The isosceles trapezoid shows both bases and a height. What is the length of segment RU?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: RS, UT, UV.\nAnswer: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[\"RS=2\",\"UT=3\",\"UV=4\"],\"answer\":42.3}",
   "prompt_variants": {
-    "answer_and_evidence": "Use the image showing a geometric scene with measurement annotations. Task: The isosceles trapezoid shows both bases and a height. What is the length of segment RU?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: RS, UT, UV.\nAnswer: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"RS\":2,\"UT\":3,\"UV\":4},\"answer\":42.3}",
+    "answer_and_evidence": "Use the image showing a geometric scene with measurement annotations. Task: The isosceles trapezoid shows both bases and a height. What is the length of segment RU?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: RS, UT, UV.\nAnswer: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[\"RS=2\",\"UT=3\",\"UV=4\"],\"answer\":42.3}",
     "answer_only": "Use the image showing a geometric scene with measurement annotations. Task: The isosceles trapezoid shows both bases and a height. What is the length of segment RU?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"answer\":42.3}"
   },
   "task": "task_geometry_analytical_2d_value",
@@ -49,6 +49,11 @@
         "base_bottom",
         "base_top",
         "height"
+      ],
+      "evidence_tokens": [
+        "RS=36",
+        "UT=16",
+        "UV=19"
       ],
       "formula_expression": "sqrt(height^2 + ((base_bottom - base_top)/2)^2)",
       "legacy_query_variant": "isosceles_trapezoid_leg",
@@ -106,6 +111,11 @@
         "UT",
         "UV"
       ],
+      "label_set": [
+        "RS=36",
+        "UT=16",
+        "UV=19"
+      ],
       "measurement_ref_map": {
         "RS": 36,
         "UT": 16,
@@ -121,6 +131,20 @@
           86.51900488153359
         ],
         "UV": [
+          208.04888888888888,
+          198.45678265931141
+        ]
+      },
+      "pixel_point_map": {
+        "RS=36": [
+          256.0,
+          309.22789377042244
+        ],
+        "UT=16": [
+          256.0,
+          86.51900488153359
+        ],
+        "UV=19": [
           208.04888888888888,
           198.45678265931141
         ]
@@ -180,8 +204,8 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the length value rounded to one decimal place",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: RS, UT, UV",
-          "json_example": "{\"evidence\":{\"RS\":2,\"UT\":3,\"UV\":4},\"answer\":42.3}",
+          "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: RS, UT, UV",
+          "json_example": "{\"evidence\":[\"RS=2\",\"UT=3\",\"UV=4\"],\"answer\":42.3}",
           "json_example_answer_only": "{\"answer\":42.3}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -213,8 +237,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the length value rounded to one decimal place",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: RS, UT, UV",
-              "json_example": "{\"evidence\":{\"RS\":2,\"UT\":3,\"UV\":4},\"answer\":42.3}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: RS, UT, UV",
+              "json_example": "{\"evidence\":[\"RS=2\",\"UT=3\",\"UV=4\"],\"answer\":42.3}",
               "json_example_answer_only": "{\"answer\":42.3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -236,7 +260,7 @@
               "task_family:analytical_length_scene": 5
             }
           },
-          "prompt": "Use the image showing a geometric scene with measurement annotations. Task: The isosceles trapezoid shows both bases and a height. What is the length of segment RU?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: RS, UT, UV.\nAnswer: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"RS\":2,\"UT\":3,\"UV\":4},\"answer\":42.3}"
+          "prompt": "Use the image showing a geometric scene with measurement annotations. Task: The isosceles trapezoid shows both bases and a height. What is the length of segment RU?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: RS, UT, UV.\nAnswer: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[\"RS=2\",\"UT=3\",\"UV=4\"],\"answer\":42.3}"
         },
         "answer_only": {
           "metadata": {
@@ -246,8 +270,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the length value rounded to one decimal place",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: RS, UT, UV",
-              "json_example": "{\"evidence\":{\"RS\":2,\"UT\":3,\"UV\":4},\"answer\":42.3}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: RS, UT, UV",
+              "json_example": "{\"evidence\":[\"RS=2\",\"UT=3\",\"UV=4\"],\"answer\":42.3}",
               "json_example_answer_only": "{\"answer\":42.3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -472,6 +496,11 @@
         "base_top": "UT",
         "height": "UV"
       },
+      "annotation_value_tokens": [
+        "RS=36",
+        "UT=16",
+        "UV=19"
+      ],
       "annotation_values": {
         "RS": 36,
         "UT": 16,

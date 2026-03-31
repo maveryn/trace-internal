@@ -4,20 +4,20 @@
     "value": 81.3
   },
   "evidence_gt": {
-    "type": "measurement_ref_map",
-    "value": {
-      "NP": 28,
-      "OP": 34
-    }
+    "type": "label_set",
+    "value": [
+      "NP=28",
+      "OP=34"
+    ]
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_2d_value/images/perimeter/0014.png"
   },
   "instance_seed": 4540148977523594,
-  "prompt": "Work from the annotated scene showing a geometric scene with measurement annotations. Based on the shown values, answer this question: The right triangle shows one leg and the hypotenuse. What is the perimeter of the triangle?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: NP, OP.\nAnswer format: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"NP\":2,\"OP\":3},\"answer\":42.3}",
+  "prompt": "Work from the annotated scene showing a geometric scene with measurement annotations. Based on the shown values, answer this question: The right triangle shows one leg and the hypotenuse. What is the perimeter of the triangle?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: NP, OP.\nAnswer format: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[\"NP=2\",\"OP=3\"],\"answer\":42.3}",
   "prompt_variants": {
-    "answer_and_evidence": "Work from the annotated scene showing a geometric scene with measurement annotations. Based on the shown values, answer this question: The right triangle shows one leg and the hypotenuse. What is the perimeter of the triangle?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: NP, OP.\nAnswer format: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"NP\":2,\"OP\":3},\"answer\":42.3}",
+    "answer_and_evidence": "Work from the annotated scene showing a geometric scene with measurement annotations. Based on the shown values, answer this question: The right triangle shows one leg and the hypotenuse. What is the perimeter of the triangle?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: NP, OP.\nAnswer format: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[\"NP=2\",\"OP=3\"],\"answer\":42.3}",
     "answer_only": "Work from the annotated scene showing a geometric scene with measurement annotations. Based on the shown values, answer this question: The right triangle shows one leg and the hypotenuse. What is the perimeter of the triangle?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"answer\":42.3}"
   },
   "task": "task_geometry_analytical_2d_value",
@@ -44,6 +44,10 @@
       "evidence_roles": [
         "known_leg",
         "hypotenuse"
+      ],
+      "evidence_tokens": [
+        "NP=28",
+        "OP=34"
       ],
       "formula_expression": "known_leg + hypotenuse + sqrt(hypotenuse^2 - known_leg^2)",
       "legacy_query_variant": "right_triangle_leg_hypotenuse",
@@ -97,6 +101,10 @@
         "NP",
         "OP"
       ],
+      "label_set": [
+        "NP=28",
+        "OP=34"
+      ],
       "measurement_ref_map": {
         "NP": 28,
         "OP": 34
@@ -107,6 +115,16 @@
           266.0
         ],
         "OP": [
+          270.43237150086605,
+          250.7592499738033
+        ]
+      },
+      "pixel_point_map": {
+        "NP=28": [
+          96.74520145732397,
+          266.0
+        ],
+        "OP=34": [
           270.43237150086605,
           250.7592499738033
         ]
@@ -162,8 +180,8 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the perimeter value rounded to one decimal place",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: NP, OP",
-          "json_example": "{\"evidence\":{\"NP\":2,\"OP\":3},\"answer\":42.3}",
+          "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: NP, OP",
+          "json_example": "{\"evidence\":[\"NP=2\",\"OP=3\"],\"answer\":42.3}",
           "json_example_answer_only": "{\"answer\":42.3}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -195,8 +213,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the perimeter value rounded to one decimal place",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: NP, OP",
-              "json_example": "{\"evidence\":{\"NP\":2,\"OP\":3},\"answer\":42.3}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: NP, OP",
+              "json_example": "{\"evidence\":[\"NP=2\",\"OP=3\"],\"answer\":42.3}",
               "json_example_answer_only": "{\"answer\":42.3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -218,7 +236,7 @@
               "task_family:analytical_perimeter_scene": 5
             }
           },
-          "prompt": "Work from the annotated scene showing a geometric scene with measurement annotations. Based on the shown values, answer this question: The right triangle shows one leg and the hypotenuse. What is the perimeter of the triangle?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: NP, OP.\nAnswer format: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"NP\":2,\"OP\":3},\"answer\":42.3}"
+          "prompt": "Work from the annotated scene showing a geometric scene with measurement annotations. Based on the shown values, answer this question: The right triangle shows one leg and the hypotenuse. What is the perimeter of the triangle?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: NP, OP.\nAnswer format: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[\"NP=2\",\"OP=3\"],\"answer\":42.3}"
         },
         "answer_only": {
           "metadata": {
@@ -228,8 +246,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the perimeter value rounded to one decimal place",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: NP, OP",
-              "json_example": "{\"evidence\":{\"NP\":2,\"OP\":3},\"answer\":42.3}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: NP, OP",
+              "json_example": "{\"evidence\":[\"NP=2\",\"OP=3\"],\"answer\":42.3}",
               "json_example_answer_only": "{\"answer\":42.3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -436,6 +454,10 @@
         "hypotenuse": "OP",
         "known_leg": "NP"
       },
+      "annotation_value_tokens": [
+        "NP=28",
+        "OP=34"
+      ],
       "annotation_values": {
         "NP": 28,
         "OP": 34

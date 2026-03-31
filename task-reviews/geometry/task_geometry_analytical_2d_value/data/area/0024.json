@@ -4,20 +4,20 @@
     "value": 1176
   },
   "evidence_gt": {
-    "type": "measurement_ref_map",
-    "value": {
-      "DE": 35,
-      "DF": 42
-    }
+    "type": "label_set",
+    "value": [
+      "DE=35",
+      "DF=42"
+    ]
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_2d_value/images/area/0024.png"
   },
   "instance_seed": 3293840853164001,
-  "prompt": "Work from the annotated figure showing a geometric shape with measurement annotations. Based on the shown values, answer this question: One side length and one diagonal of the rhombus are annotated. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: DE, DF.\nAnswer requirement: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"DE\":2,\"DF\":3},\"answer\":8}",
+  "prompt": "Work from the annotated figure showing a geometric shape with measurement annotations. Based on the shown values, answer this question: One side length and one diagonal of the rhombus are annotated. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: DE, DF.\nAnswer requirement: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":[\"DE=2\",\"DF=3\"],\"answer\":8}",
   "prompt_variants": {
-    "answer_and_evidence": "Work from the annotated figure showing a geometric shape with measurement annotations. Based on the shown values, answer this question: One side length and one diagonal of the rhombus are annotated. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: DE, DF.\nAnswer requirement: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"DE\":2,\"DF\":3},\"answer\":8}",
+    "answer_and_evidence": "Work from the annotated figure showing a geometric shape with measurement annotations. Based on the shown values, answer this question: One side length and one diagonal of the rhombus are annotated. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: DE, DF.\nAnswer requirement: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":[\"DE=2\",\"DF=3\"],\"answer\":8}",
     "answer_only": "Work from the annotated figure showing a geometric shape with measurement annotations. Based on the shown values, answer this question: One side length and one diagonal of the rhombus are annotated. What is its area in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"answer\":8}"
   },
   "task": "task_geometry_analytical_2d_value",
@@ -49,6 +49,10 @@
       "evidence_roles": [
         "s",
         "d1"
+      ],
+      "evidence_tokens": [
+        "DE=35",
+        "DF=42"
       ],
       "formula_expression": "A = (d1 * sqrt(4*s^2 - d1^2)) / 2",
       "legacy_query_variant": "rhombus_derived",
@@ -108,6 +112,10 @@
         "DE",
         "DF"
       ],
+      "label_set": [
+        "DE=35",
+        "DF=42"
+      ],
       "measurement_ref_map": {
         "DE": 35,
         "DF": 42
@@ -118,6 +126,16 @@
           471.8
         ],
         "DF": [
+          305.0,
+          287.0
+        ]
+      },
+      "pixel_point_map": {
+        "DE=35": [
+          177.6,
+          471.8
+        ],
+        "DF=42": [
           305.0,
           287.0
         ]
@@ -187,8 +205,8 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the area value as an integer",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: DE, DF",
-          "json_example": "{\"evidence\":{\"DE\":2,\"DF\":3},\"answer\":8}",
+          "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: DE, DF",
+          "json_example": "{\"evidence\":[\"DE=2\",\"DF=3\"],\"answer\":8}",
           "json_example_answer_only": "{\"answer\":8}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -220,8 +238,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the area value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: DE, DF",
-              "json_example": "{\"evidence\":{\"DE\":2,\"DF\":3},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: DE, DF",
+              "json_example": "{\"evidence\":[\"DE=2\",\"DF=3\"],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -243,7 +261,7 @@
               "task_family:analytical_single_shape": 5
             }
           },
-          "prompt": "Work from the annotated figure showing a geometric shape with measurement annotations. Based on the shown values, answer this question: One side length and one diagonal of the rhombus are annotated. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: DE, DF.\nAnswer requirement: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"DE\":2,\"DF\":3},\"answer\":8}"
+          "prompt": "Work from the annotated figure showing a geometric shape with measurement annotations. Based on the shown values, answer this question: One side length and one diagonal of the rhombus are annotated. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: DE, DF.\nAnswer requirement: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":[\"DE=2\",\"DF=3\"],\"answer\":8}"
         },
         "answer_only": {
           "metadata": {
@@ -253,8 +271,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the area value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: DE, DF",
-              "json_example": "{\"evidence\":{\"DE\":2,\"DF\":3},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: DE, DF",
+              "json_example": "{\"evidence\":[\"DE=2\",\"DF=3\"],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -484,6 +502,10 @@
         "d1": "DF",
         "s": "DE"
       },
+      "annotation_value_tokens": [
+        "DE=35",
+        "DF=42"
+      ],
       "annotation_values": {
         "DE": 35,
         "DF": 42

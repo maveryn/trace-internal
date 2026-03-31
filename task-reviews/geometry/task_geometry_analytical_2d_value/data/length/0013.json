@@ -4,19 +4,19 @@
     "value": 48.1
   },
   "evidence_gt": {
-    "type": "measurement_ref_map",
-    "value": {
-      "JH": 68
-    }
+    "type": "label_set",
+    "value": [
+      "JH=68"
+    ]
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_2d_value/images/length/0013.png"
   },
   "instance_seed": 677784398001475,
-  "prompt": "Look at the annotated image showing a geometric scene with measurement annotations. The square is inscribed in the circle, and a diameter is annotated. What is the length of segment GH?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: JH.\nAnswer format: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"JH\":2},\"answer\":42.3}",
+  "prompt": "Look at the annotated image showing a geometric scene with measurement annotations. The square is inscribed in the circle, and a diameter is annotated. What is the length of segment GH?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: JH.\nAnswer format: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[\"JH=2\"],\"answer\":42.3}",
   "prompt_variants": {
-    "answer_and_evidence": "Look at the annotated image showing a geometric scene with measurement annotations. The square is inscribed in the circle, and a diameter is annotated. What is the length of segment GH?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: JH.\nAnswer format: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"JH\":2},\"answer\":42.3}",
+    "answer_and_evidence": "Look at the annotated image showing a geometric scene with measurement annotations. The square is inscribed in the circle, and a diameter is annotated. What is the length of segment GH?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: JH.\nAnswer format: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[\"JH=2\"],\"answer\":42.3}",
     "answer_only": "Look at the annotated image showing a geometric scene with measurement annotations. The square is inscribed in the circle, and a diameter is annotated. What is the length of segment GH?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"answer\":42.3}"
   },
   "task": "task_geometry_analytical_2d_value",
@@ -39,6 +39,9 @@
       },
       "evidence_roles": [
         "diameter"
+      ],
+      "evidence_tokens": [
+        "JH=68"
       ],
       "formula_expression": "diameter / sqrt(2)",
       "legacy_query_variant": "inscribed_square_side",
@@ -90,11 +93,20 @@
       "id_set": [
         "JH"
       ],
+      "label_set": [
+        "JH=68"
+      ],
       "measurement_ref_map": {
         "JH": 68
       },
       "pixel_annotation_centers": {
         "JH": [
+          360.5,
+          331.53333333333336
+        ]
+      },
+      "pixel_point_map": {
+        "JH=68": [
           360.5,
           331.53333333333336
         ]
@@ -146,8 +158,8 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the length value rounded to one decimal place",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: JH",
-          "json_example": "{\"evidence\":{\"JH\":2},\"answer\":42.3}",
+          "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: JH",
+          "json_example": "{\"evidence\":[\"JH=2\"],\"answer\":42.3}",
           "json_example_answer_only": "{\"answer\":42.3}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -179,8 +191,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the length value rounded to one decimal place",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: JH",
-              "json_example": "{\"evidence\":{\"JH\":2},\"answer\":42.3}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: JH",
+              "json_example": "{\"evidence\":[\"JH=2\"],\"answer\":42.3}",
               "json_example_answer_only": "{\"answer\":42.3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -202,7 +214,7 @@
               "task_family:analytical_length_scene": 5
             }
           },
-          "prompt": "Look at the annotated image showing a geometric scene with measurement annotations. The square is inscribed in the circle, and a diameter is annotated. What is the length of segment GH?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: JH.\nAnswer format: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"JH\":2},\"answer\":42.3}"
+          "prompt": "Look at the annotated image showing a geometric scene with measurement annotations. The square is inscribed in the circle, and a diameter is annotated. What is the length of segment GH?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: JH.\nAnswer format: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[\"JH=2\"],\"answer\":42.3}"
         },
         "answer_only": {
           "metadata": {
@@ -212,8 +224,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the length value rounded to one decimal place",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: JH",
-              "json_example": "{\"evidence\":{\"JH\":2},\"answer\":42.3}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: JH",
+              "json_example": "{\"evidence\":[\"JH=2\"],\"answer\":42.3}",
               "json_example_answer_only": "{\"answer\":42.3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -442,6 +454,9 @@
       "annotation_labels": {
         "diameter": "JH"
       },
+      "annotation_value_tokens": [
+        "JH=68"
+      ],
       "annotation_values": {
         "JH": 68
       },

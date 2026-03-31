@@ -305,11 +305,11 @@ Define how we split tasks into reusable families so each dataset slice stays com
 7. `task_geometry_analytical_2d_value`
    - uses scene variants `rectangle|triangle|parallelogram|trapezoid|rhombus|circle|ellipse|composite_region`
    - uses query variants `area|length|perimeter|composite_area`
-   - keeps structured `measurement_ref_map` evidence and the legacy analytical answer typing
+   - keeps symbolic `label_set` evidence with `ANNOTATION=VALUE` tokens and the legacy analytical answer typing
 8. `task_geometry_analytical_3d_value`
    - uses scene variants `rectangular_prism|triangular_prism|square_pyramid|cylinder|cone|sphere`
    - uses query variants `volume|surface_area`
-   - keeps structured `measurement_ref_map` evidence and the legacy analytical answer typing
+   - keeps symbolic `label_set` evidence with `ANNOTATION=VALUE` tokens and the legacy analytical answer typing
 9. `task_geometry_transformation_match`
    - uses scene variants `triangle|quadrilateral`
    - uses query variants `translation_match|reflection_match|rotation_match`

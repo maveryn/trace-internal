@@ -4,21 +4,21 @@
     "value": 1539
   },
   "evidence_gt": {
-    "type": "measurement_ref_map",
-    "value": {
-      "BA": 11,
-      "WX": 38,
-      "XY": 35
-    }
+    "type": "label_set",
+    "value": [
+      "BA=11",
+      "WX=38",
+      "XY=35"
+    ]
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_2d_value/images/composite_area/0023.png"
   },
   "instance_seed": 3128314283879842,
-  "prompt": "Use the image showing a shaded composite geometric region with measurement annotations. Based on the shown values, answer this question: The shaded figure is a rectangle with a triangular roof attached. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: WX, XY, BA.\nAnswer format: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"WX\":2,\"XY\":3,\"BA\":4},\"answer\":8}",
+  "prompt": "Use the image showing a shaded composite geometric region with measurement annotations. Based on the shown values, answer this question: The shaded figure is a rectangle with a triangular roof attached. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: WX, XY, BA.\nAnswer format: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":[\"BA=2\",\"WX=3\",\"XY=4\"],\"answer\":8}",
   "prompt_variants": {
-    "answer_and_evidence": "Use the image showing a shaded composite geometric region with measurement annotations. Based on the shown values, answer this question: The shaded figure is a rectangle with a triangular roof attached. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: WX, XY, BA.\nAnswer format: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"WX\":2,\"XY\":3,\"BA\":4},\"answer\":8}",
+    "answer_and_evidence": "Use the image showing a shaded composite geometric region with measurement annotations. Based on the shown values, answer this question: The shaded figure is a rectangle with a triangular roof attached. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: WX, XY, BA.\nAnswer format: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":[\"BA=2\",\"WX=3\",\"XY=4\"],\"answer\":8}",
     "answer_only": "Use the image showing a shaded composite geometric region with measurement annotations. Based on the shown values, answer this question: The shaded figure is a rectangle with a triangular roof attached. What is the area of the shaded region in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"answer\":8}"
   },
   "task": "task_geometry_analytical_2d_value",
@@ -49,6 +49,11 @@
         "width",
         "rect_height",
         "roof_height"
+      ],
+      "evidence_tokens": [
+        "BA=11",
+        "WX=38",
+        "XY=35"
       ],
       "formula_expression": "width * rect_height + (width * roof_height) / 2",
       "legacy_query_variant": "rectangle_triangle_union",
@@ -106,6 +111,11 @@
         "XY",
         "BA"
       ],
+      "label_set": [
+        "BA=11",
+        "WX=38",
+        "XY=35"
+      ],
       "measurement_ref_map": {
         "BA": 11,
         "WX": 38,
@@ -121,6 +131,20 @@
           573.9133333333333
         ],
         "XY": [
+          533.6586555662024,
+          390.2908695652174
+        ]
+      },
+      "pixel_point_map": {
+        "BA=11": [
+          355.67807585605743,
+          173.71086956521734
+        ],
+        "WX=38": [
+          326.2447425227241,
+          573.9133333333333
+        ],
+        "XY=35": [
           533.6586555662024,
           390.2908695652174
         ]
@@ -180,8 +204,8 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the area value as an integer",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: WX, XY, BA",
-          "json_example": "{\"evidence\":{\"WX\":2,\"XY\":3,\"BA\":4},\"answer\":8}",
+          "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: WX, XY, BA",
+          "json_example": "{\"evidence\":[\"BA=2\",\"WX=3\",\"XY=4\"],\"answer\":8}",
           "json_example_answer_only": "{\"answer\":8}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -213,8 +237,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the area value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: WX, XY, BA",
-              "json_example": "{\"evidence\":{\"WX\":2,\"XY\":3,\"BA\":4},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: WX, XY, BA",
+              "json_example": "{\"evidence\":[\"BA=2\",\"WX=3\",\"XY=4\"],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -236,7 +260,7 @@
               "task_family:analytical_composite_area_scene": 5
             }
           },
-          "prompt": "Use the image showing a shaded composite geometric region with measurement annotations. Based on the shown values, answer this question: The shaded figure is a rectangle with a triangular roof attached. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: WX, XY, BA.\nAnswer format: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"WX\":2,\"XY\":3,\"BA\":4},\"answer\":8}"
+          "prompt": "Use the image showing a shaded composite geometric region with measurement annotations. Based on the shown values, answer this question: The shaded figure is a rectangle with a triangular roof attached. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: WX, XY, BA.\nAnswer format: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":[\"BA=2\",\"WX=3\",\"XY=4\"],\"answer\":8}"
         },
         "answer_only": {
           "metadata": {
@@ -246,8 +270,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the area value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: WX, XY, BA",
-              "json_example": "{\"evidence\":{\"WX\":2,\"XY\":3,\"BA\":4},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: WX, XY, BA",
+              "json_example": "{\"evidence\":[\"BA=2\",\"WX=3\",\"XY=4\"],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -494,6 +518,11 @@
         "roof_height": "BA",
         "width": "WX"
       },
+      "annotation_value_tokens": [
+        "BA=11",
+        "WX=38",
+        "XY=35"
+      ],
       "annotation_values": {
         "BA": 11,
         "WX": 38,

@@ -4,19 +4,19 @@
     "value": "1600π"
   },
   "evidence_gt": {
-    "type": "measurement_ref_map",
-    "value": {
-      "QR": 20
-    }
+    "type": "label_set",
+    "value": [
+      "QR=20"
+    ]
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_3d_value/images/surface_area/0022.png"
   },
   "instance_seed": 8215287962366592,
-  "prompt": "Use the image showing an annotated 3D solid. Based on the shown values, answer this question: The sphere has an annotated radius. What is its total surface area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: QR.\nAnswer requirement: set \"answer\" to the value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":{\"QR\":2},\"answer\":\"12π\"}",
+  "prompt": "Use the image showing an annotated 3D solid. Based on the shown values, answer this question: The sphere has an annotated radius. What is its total surface area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: QR.\nAnswer requirement: set \"answer\" to the value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":[\"QR=2\"],\"answer\":\"12π\"}",
   "prompt_variants": {
-    "answer_and_evidence": "Use the image showing an annotated 3D solid. Based on the shown values, answer this question: The sphere has an annotated radius. What is its total surface area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: QR.\nAnswer requirement: set \"answer\" to the value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":{\"QR\":2},\"answer\":\"12π\"}",
+    "answer_and_evidence": "Use the image showing an annotated 3D solid. Based on the shown values, answer this question: The sphere has an annotated radius. What is its total surface area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: QR.\nAnswer requirement: set \"answer\" to the value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":[\"QR=2\"],\"answer\":\"12π\"}",
     "answer_only": "Use the image showing an annotated 3D solid. Based on the shown values, answer this question: The sphere has an annotated radius. What is its total surface area? Express the result in kπ form.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the value in the form kπ (for example 12π).\nExample JSON:\n{\"answer\":\"12π\"}"
   },
   "task": "task_geometry_analytical_3d_value",
@@ -39,6 +39,9 @@
       },
       "evidence_roles": [
         "r"
+      ],
+      "evidence_tokens": [
+        "QR=20"
       ],
       "formula_expression": "SA = 4 * π * r^2",
       "legacy_query_variant": "sphere_given_r",
@@ -82,11 +85,20 @@
       "id_set": [
         "QR"
       ],
+      "label_set": [
+        "QR=20"
+      ],
       "measurement_ref_map": {
         "QR": 20
       },
       "pixel_annotation_centers": {
         "QR": [
+          501.75,
+          334.44
+        ]
+      },
+      "pixel_point_map": {
+        "QR=20": [
           501.75,
           334.44
         ]
@@ -132,8 +144,8 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the value in the form kπ (for example 12π)",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: QR",
-          "json_example": "{\"evidence\":{\"QR\":2},\"answer\":\"12π\"}",
+          "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: QR",
+          "json_example": "{\"evidence\":[\"QR=2\"],\"answer\":\"12π\"}",
           "json_example_answer_only": "{\"answer\":\"12π\"}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -165,8 +177,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the value in the form kπ (for example 12π)",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: QR",
-              "json_example": "{\"evidence\":{\"QR\":2},\"answer\":\"12π\"}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: QR",
+              "json_example": "{\"evidence\":[\"QR=2\"],\"answer\":\"12π\"}",
               "json_example_answer_only": "{\"answer\":\"12π\"}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -188,7 +200,7 @@
               "task_family:analytical_single_solid": 5
             }
           },
-          "prompt": "Use the image showing an annotated 3D solid. Based on the shown values, answer this question: The sphere has an annotated radius. What is its total surface area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: QR.\nAnswer requirement: set \"answer\" to the value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":{\"QR\":2},\"answer\":\"12π\"}"
+          "prompt": "Use the image showing an annotated 3D solid. Based on the shown values, answer this question: The sphere has an annotated radius. What is its total surface area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: QR.\nAnswer requirement: set \"answer\" to the value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":[\"QR=2\"],\"answer\":\"12π\"}"
         },
         "answer_only": {
           "metadata": {
@@ -198,8 +210,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the value in the form kπ (for example 12π)",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: QR",
-              "json_example": "{\"evidence\":{\"QR\":2},\"answer\":\"12π\"}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: QR",
+              "json_example": "{\"evidence\":[\"QR=2\"],\"answer\":\"12π\"}",
               "json_example_answer_only": "{\"answer\":\"12π\"}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -406,6 +418,9 @@
       "annotation_labels": {
         "r": "QR"
       },
+      "annotation_value_tokens": [
+        "QR=20"
+      ],
       "annotation_values": {
         "QR": 20
       },

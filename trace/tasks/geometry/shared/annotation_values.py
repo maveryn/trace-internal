@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, Mapping, Sequence
+from typing import Any, Dict, List, Mapping, Sequence
 
 
 def _coerce_value_for_json(value: Any) -> Any:
@@ -45,6 +45,33 @@ def build_role_value_evidence(
             continue
         evidence[annotation] = coerced_value
     return {str(key): value for key, value in evidence.items()}
+
+
+def build_annotation_value_tokens(evidence_map: Mapping[str, Any]) -> List[str]:
+    """Build one deterministic unordered symbolic evidence set from annotation values."""
+    tokens: List[str] = []
+    for annotation, value in sorted(((str(key), item) for key, item in evidence_map.items()), key=lambda item: item[0]):
+        token = f"{annotation}={format_annotation_value(value)}"
+        tokens.append(str(token))
+    return list(tokens)
+
+
+def build_annotation_value_point_map(
+    *,
+    evidence_map: Mapping[str, Any],
+    annotation_centers: Mapping[str, Sequence[float]],
+) -> Dict[str, List[float]]:
+    """Project annotation=value evidence tokens back to annotation center points."""
+    point_map: Dict[str, List[float]] = {}
+    for annotation, value in sorted(((str(key), item) for key, item in evidence_map.items()), key=lambda item: item[0]):
+        if annotation not in annotation_centers:
+            continue
+        center = annotation_centers[annotation]
+        if not isinstance(center, Sequence) or len(center) != 2:
+            continue
+        token = f"{annotation}={format_annotation_value(value)}"
+        point_map[str(token)] = [float(center[0]), float(center[1])]
+    return dict(point_map)
 
 
 def format_annotation_value(value: Any) -> str:

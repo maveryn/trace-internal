@@ -4,20 +4,20 @@
     "value": "2952π"
   },
   "evidence_gt": {
-    "type": "measurement_ref_map",
-    "value": {
-      "BC": 36,
-      "DC": 46
-    }
+    "type": "label_set",
+    "value": [
+      "BC=36",
+      "DC=46"
+    ]
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_3d_value/images/surface_area/0003.png"
   },
   "instance_seed": 2961404657033117,
-  "prompt": "You are given an image showing an annotated 3D solid. Task: The cone has an annotated radius and slant height. What is its total surface area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: BC, DC.\nAnswer field: set \"answer\" to the value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":{\"BC\":2,\"DC\":3},\"answer\":\"12π\"}",
+  "prompt": "You are given an image showing an annotated 3D solid. Task: The cone has an annotated radius and slant height. What is its total surface area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: BC, DC.\nAnswer field: set \"answer\" to the value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":[\"BC=2\",\"DC=3\"],\"answer\":\"12π\"}",
   "prompt_variants": {
-    "answer_and_evidence": "You are given an image showing an annotated 3D solid. Task: The cone has an annotated radius and slant height. What is its total surface area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: BC, DC.\nAnswer field: set \"answer\" to the value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":{\"BC\":2,\"DC\":3},\"answer\":\"12π\"}",
+    "answer_and_evidence": "You are given an image showing an annotated 3D solid. Task: The cone has an annotated radius and slant height. What is its total surface area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: BC, DC.\nAnswer field: set \"answer\" to the value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":[\"BC=2\",\"DC=3\"],\"answer\":\"12π\"}",
     "answer_only": "You are given an image showing an annotated 3D solid. Task: The cone has an annotated radius and slant height. What is its total surface area? Express the result in kπ form.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the value in the form kπ (for example 12π).\nExample JSON:\n{\"answer\":\"12π\"}"
   },
   "task": "task_geometry_analytical_3d_value",
@@ -44,6 +44,10 @@
       "evidence_roles": [
         "r",
         "l"
+      ],
+      "evidence_tokens": [
+        "BC=36",
+        "DC=46"
       ],
       "formula_expression": "SA = π * r * (r + l)",
       "legacy_query_variant": "cone_given_r_slant_height",
@@ -90,6 +94,10 @@
         "BC",
         "DC"
       ],
+      "label_set": [
+        "BC=36",
+        "DC=46"
+      ],
       "measurement_ref_map": {
         "BC": 36,
         "DC": 46
@@ -100,6 +108,16 @@
           417.18
         ],
         "DC": [
+          490.9362572400917,
+          267.72478806638634
+        ]
+      },
+      "pixel_point_map": {
+        "BC=36": [
+          468.0,
+          417.18
+        ],
+        "DC=46": [
           490.9362572400917,
           267.72478806638634
         ]
@@ -149,8 +167,8 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the value in the form kπ (for example 12π)",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: BC, DC",
-          "json_example": "{\"evidence\":{\"BC\":2,\"DC\":3},\"answer\":\"12π\"}",
+          "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: BC, DC",
+          "json_example": "{\"evidence\":[\"BC=2\",\"DC=3\"],\"answer\":\"12π\"}",
           "json_example_answer_only": "{\"answer\":\"12π\"}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -182,8 +200,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the value in the form kπ (for example 12π)",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: BC, DC",
-              "json_example": "{\"evidence\":{\"BC\":2,\"DC\":3},\"answer\":\"12π\"}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: BC, DC",
+              "json_example": "{\"evidence\":[\"BC=2\",\"DC=3\"],\"answer\":\"12π\"}",
               "json_example_answer_only": "{\"answer\":\"12π\"}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -205,7 +223,7 @@
               "task_family:analytical_single_solid": 5
             }
           },
-          "prompt": "You are given an image showing an annotated 3D solid. Task: The cone has an annotated radius and slant height. What is its total surface area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: BC, DC.\nAnswer field: set \"answer\" to the value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":{\"BC\":2,\"DC\":3},\"answer\":\"12π\"}"
+          "prompt": "You are given an image showing an annotated 3D solid. Task: The cone has an annotated radius and slant height. What is its total surface area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: BC, DC.\nAnswer field: set \"answer\" to the value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":[\"BC=2\",\"DC=3\"],\"answer\":\"12π\"}"
         },
         "answer_only": {
           "metadata": {
@@ -215,8 +233,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the value in the form kπ (for example 12π)",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: BC, DC",
-              "json_example": "{\"evidence\":{\"BC\":2,\"DC\":3},\"answer\":\"12π\"}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: BC, DC",
+              "json_example": "{\"evidence\":[\"BC=2\",\"DC=3\"],\"answer\":\"12π\"}",
               "json_example_answer_only": "{\"answer\":\"12π\"}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -448,6 +466,10 @@
         "l": "DC",
         "r": "BC"
       },
+      "annotation_value_tokens": [
+        "BC=36",
+        "DC=46"
+      ],
       "annotation_values": {
         "BC": 36,
         "DC": 46

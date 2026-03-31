@@ -4,21 +4,21 @@
     "value": 32759
   },
   "evidence_gt": {
-    "type": "measurement_ref_map",
-    "value": {
-      "EF": 47,
-      "EH": 17,
-      "FG": 41
-    }
+    "type": "label_set",
+    "value": [
+      "EF=47",
+      "EH=17",
+      "FG=41"
+    ]
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_3d_value/images/volume/0020.png"
   },
   "instance_seed": 558792218275212,
-  "prompt": "Use the image showing an annotated 3D solid. Question: The rectangular prism has annotated length, width, and height. What is its volume in cubic units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: EF, FG, EH.\nAnswer field: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":{\"EF\":2,\"FG\":3,\"EH\":4},\"answer\":8}",
+  "prompt": "Use the image showing an annotated 3D solid. Question: The rectangular prism has annotated length, width, and height. What is its volume in cubic units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: EF, FG, EH.\nAnswer field: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":[\"EF=2\",\"EH=3\",\"FG=4\"],\"answer\":8}",
   "prompt_variants": {
-    "answer_and_evidence": "Use the image showing an annotated 3D solid. Question: The rectangular prism has annotated length, width, and height. What is its volume in cubic units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: EF, FG, EH.\nAnswer field: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":{\"EF\":2,\"FG\":3,\"EH\":4},\"answer\":8}",
+    "answer_and_evidence": "Use the image showing an annotated 3D solid. Question: The rectangular prism has annotated length, width, and height. What is its volume in cubic units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: EF, FG, EH.\nAnswer field: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":[\"EF=2\",\"EH=3\",\"FG=4\"],\"answer\":8}",
     "answer_only": "Use the image showing an annotated 3D solid. Question: The rectangular prism has annotated length, width, and height. What is its volume in cubic units?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the value as an integer.\nExample JSON:\n{\"answer\":8}"
   },
   "task": "task_geometry_analytical_3d_value",
@@ -49,6 +49,11 @@
         "l",
         "w",
         "h"
+      ],
+      "evidence_tokens": [
+        "EF=47",
+        "EH=17",
+        "FG=41"
       ],
       "formula_expression": "V = l * w * h",
       "legacy_query_variant": "rectangular_prism_given_lwh",
@@ -98,6 +103,11 @@
         "FG",
         "EH"
       ],
+      "label_set": [
+        "EF=47",
+        "EH=17",
+        "FG=41"
+      ],
       "measurement_ref_map": {
         "EF": 47,
         "EH": 17,
@@ -113,6 +123,20 @@
           153.9192741921888
         ],
         "FG": [
+          450.0113635904798,
+          439.01877497544393
+        ]
+      },
+      "pixel_point_map": {
+        "EF=47": [
+          430.9886363177525,
+          326.4354717265791
+        ],
+        "EH=17": [
+          323.97727272727275,
+          153.9192741921888
+        ],
+        "FG=41": [
           450.0113635904798,
           439.01877497544393
         ]
@@ -166,8 +190,8 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the value as an integer",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: EF, FG, EH",
-          "json_example": "{\"evidence\":{\"EF\":2,\"FG\":3,\"EH\":4},\"answer\":8}",
+          "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: EF, FG, EH",
+          "json_example": "{\"evidence\":[\"EF=2\",\"EH=3\",\"FG=4\"],\"answer\":8}",
           "json_example_answer_only": "{\"answer\":8}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -199,8 +223,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: EF, FG, EH",
-              "json_example": "{\"evidence\":{\"EF\":2,\"FG\":3,\"EH\":4},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: EF, FG, EH",
+              "json_example": "{\"evidence\":[\"EF=2\",\"EH=3\",\"FG=4\"],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -222,7 +246,7 @@
               "task_family:analytical_single_solid": 5
             }
           },
-          "prompt": "Use the image showing an annotated 3D solid. Question: The rectangular prism has annotated length, width, and height. What is its volume in cubic units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: EF, FG, EH.\nAnswer field: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":{\"EF\":2,\"FG\":3,\"EH\":4},\"answer\":8}"
+          "prompt": "Use the image showing an annotated 3D solid. Question: The rectangular prism has annotated length, width, and height. What is its volume in cubic units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: EF, FG, EH.\nAnswer field: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":[\"EF=2\",\"EH=3\",\"FG=4\"],\"answer\":8}"
         },
         "answer_only": {
           "metadata": {
@@ -232,8 +256,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: EF, FG, EH",
-              "json_example": "{\"evidence\":{\"EF\":2,\"FG\":3,\"EH\":4},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: EF, FG, EH",
+              "json_example": "{\"evidence\":[\"EF=2\",\"EH=3\",\"FG=4\"],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -497,6 +521,11 @@
         "l": "EF",
         "w": "FG"
       },
+      "annotation_value_tokens": [
+        "EF=47",
+        "EH=17",
+        "FG=41"
+      ],
       "annotation_values": {
         "EF": 47,
         "EH": 17,

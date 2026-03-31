@@ -4,21 +4,21 @@
     "value": 4126
   },
   "evidence_gt": {
-    "type": "measurement_ref_map",
-    "value": {
-      "KL": 13,
-      "KN": 23,
-      "LM": 49
-    }
+    "type": "label_set",
+    "value": [
+      "KL=13",
+      "KN=23",
+      "LM=49"
+    ]
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_3d_value/images/surface_area/0015.png"
   },
   "instance_seed": 1675645771519581,
-  "prompt": "Look at the annotated image showing an annotated 3D solid. Based on the shown values, answer this question: The rectangular prism has annotated length, width, and height. What is its total surface area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: KL, LM, KN.\nAnswer requirement: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":{\"KL\":2,\"LM\":3,\"KN\":4},\"answer\":8}",
+  "prompt": "Look at the annotated image showing an annotated 3D solid. Based on the shown values, answer this question: The rectangular prism has annotated length, width, and height. What is its total surface area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: KL, LM, KN.\nAnswer requirement: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":[\"KL=2\",\"KN=3\",\"LM=4\"],\"answer\":8}",
   "prompt_variants": {
-    "answer_and_evidence": "Look at the annotated image showing an annotated 3D solid. Based on the shown values, answer this question: The rectangular prism has annotated length, width, and height. What is its total surface area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: KL, LM, KN.\nAnswer requirement: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":{\"KL\":2,\"LM\":3,\"KN\":4},\"answer\":8}",
+    "answer_and_evidence": "Look at the annotated image showing an annotated 3D solid. Based on the shown values, answer this question: The rectangular prism has annotated length, width, and height. What is its total surface area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: KL, LM, KN.\nAnswer requirement: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":[\"KL=2\",\"KN=3\",\"LM=4\"],\"answer\":8}",
     "answer_only": "Look at the annotated image showing an annotated 3D solid. Based on the shown values, answer this question: The rectangular prism has annotated length, width, and height. What is its total surface area in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the value as an integer.\nExample JSON:\n{\"answer\":8}"
   },
   "task": "task_geometry_analytical_3d_value",
@@ -49,6 +49,11 @@
         "l",
         "w",
         "h"
+      ],
+      "evidence_tokens": [
+        "KL=13",
+        "KN=23",
+        "LM=49"
       ],
       "formula_expression": "SA = 2 * (l*w + l*h + w*h)",
       "legacy_query_variant": "rectangular_prism_given_lwh",
@@ -98,6 +103,11 @@
         "LM",
         "KN"
       ],
+      "label_set": [
+        "KL=13",
+        "KN=23",
+        "LM=49"
+      ],
       "measurement_ref_map": {
         "KL": 13,
         "KN": 23,
@@ -113,6 +123,20 @@
           166.33333333333334
         ],
         "LM": [
+          391.79720442078275,
+          484.91795538719344
+        ]
+      },
+      "pixel_point_map": {
+        "KL=13": [
+          568.4663860207828,
+          357.7487112794732
+        ],
+        "KN=23": [
+          490.6691816,
+          166.33333333333334
+        ],
+        "LM=49": [
           391.79720442078275,
           484.91795538719344
         ]
@@ -166,8 +190,8 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the value as an integer",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: KL, LM, KN",
-          "json_example": "{\"evidence\":{\"KL\":2,\"LM\":3,\"KN\":4},\"answer\":8}",
+          "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: KL, LM, KN",
+          "json_example": "{\"evidence\":[\"KL=2\",\"KN=3\",\"LM=4\"],\"answer\":8}",
           "json_example_answer_only": "{\"answer\":8}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -199,8 +223,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: KL, LM, KN",
-              "json_example": "{\"evidence\":{\"KL\":2,\"LM\":3,\"KN\":4},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: KL, LM, KN",
+              "json_example": "{\"evidence\":[\"KL=2\",\"KN=3\",\"LM=4\"],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -222,7 +246,7 @@
               "task_family:analytical_single_solid": 5
             }
           },
-          "prompt": "Look at the annotated image showing an annotated 3D solid. Based on the shown values, answer this question: The rectangular prism has annotated length, width, and height. What is its total surface area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: KL, LM, KN.\nAnswer requirement: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":{\"KL\":2,\"LM\":3,\"KN\":4},\"answer\":8}"
+          "prompt": "Look at the annotated image showing an annotated 3D solid. Based on the shown values, answer this question: The rectangular prism has annotated length, width, and height. What is its total surface area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: KL, LM, KN.\nAnswer requirement: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":[\"KL=2\",\"KN=3\",\"LM=4\"],\"answer\":8}"
         },
         "answer_only": {
           "metadata": {
@@ -232,8 +256,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: KL, LM, KN",
-              "json_example": "{\"evidence\":{\"KL\":2,\"LM\":3,\"KN\":4},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: KL, LM, KN",
+              "json_example": "{\"evidence\":[\"KL=2\",\"KN=3\",\"LM=4\"],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -504,6 +528,11 @@
         "l": "KL",
         "w": "LM"
       },
+      "annotation_value_tokens": [
+        "KL=13",
+        "KN=23",
+        "LM=49"
+      ],
       "annotation_values": {
         "KL": 13,
         "KN": 23,

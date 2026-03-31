@@ -4,20 +4,20 @@
     "value": 31.9
   },
   "evidence_gt": {
-    "type": "measurement_ref_map",
-    "value": {
-      "HK": 17,
-      "JK": 27
-    }
+    "type": "label_set",
+    "value": [
+      "HK=17",
+      "JK=27"
+    ]
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_2d_value/images/length/0008.png"
   },
   "instance_seed": 3337701528277021,
-  "prompt": "Work from the annotated scene showing a geometric scene with measurement annotations. Task: The triangle includes an altitude to the base. What is the length of segment HJ?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: JK, HK.\nAnswer requirement: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"JK\":2,\"HK\":3},\"answer\":42.3}",
+  "prompt": "Work from the annotated scene showing a geometric scene with measurement annotations. Task: The triangle includes an altitude to the base. What is the length of segment HJ?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: JK, HK.\nAnswer requirement: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[\"HK=2\",\"JK=3\"],\"answer\":42.3}",
   "prompt_variants": {
-    "answer_and_evidence": "Work from the annotated scene showing a geometric scene with measurement annotations. Task: The triangle includes an altitude to the base. What is the length of segment HJ?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: JK, HK.\nAnswer requirement: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"JK\":2,\"HK\":3},\"answer\":42.3}",
+    "answer_and_evidence": "Work from the annotated scene showing a geometric scene with measurement annotations. Task: The triangle includes an altitude to the base. What is the length of segment HJ?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: JK, HK.\nAnswer requirement: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[\"HK=2\",\"JK=3\"],\"answer\":42.3}",
     "answer_only": "Work from the annotated scene showing a geometric scene with measurement annotations. Task: The triangle includes an altitude to the base. What is the length of segment HJ?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"answer\":42.3}"
   },
   "task": "task_geometry_analytical_2d_value",
@@ -44,6 +44,10 @@
       "evidence_roles": [
         "height",
         "base_part"
+      ],
+      "evidence_tokens": [
+        "HK=17",
+        "JK=27"
       ],
       "formula_expression": "sqrt(height^2 + base_part^2)",
       "legacy_query_variant": "triangle_altitude_side",
@@ -98,6 +102,10 @@
         "JK",
         "HK"
       ],
+      "label_set": [
+        "HK=17",
+        "JK=27"
+      ],
       "measurement_ref_map": {
         "HK": 17,
         "JK": 27
@@ -108,6 +116,16 @@
           488.6982253505487
         ],
         "JK": [
+          259.27611111111105,
+          315.3090586838821
+        ]
+      },
+      "pixel_point_map": {
+        "HK=17": [
+          190.33972222222215,
+          488.6982253505487
+        ],
+        "JK=27": [
           259.27611111111105,
           315.3090586838821
         ]
@@ -163,8 +181,8 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the length value rounded to one decimal place",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: JK, HK",
-          "json_example": "{\"evidence\":{\"JK\":2,\"HK\":3},\"answer\":42.3}",
+          "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: JK, HK",
+          "json_example": "{\"evidence\":[\"HK=2\",\"JK=3\"],\"answer\":42.3}",
           "json_example_answer_only": "{\"answer\":42.3}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -196,8 +214,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the length value rounded to one decimal place",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: JK, HK",
-              "json_example": "{\"evidence\":{\"JK\":2,\"HK\":3},\"answer\":42.3}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: JK, HK",
+              "json_example": "{\"evidence\":[\"HK=2\",\"JK=3\"],\"answer\":42.3}",
               "json_example_answer_only": "{\"answer\":42.3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -219,7 +237,7 @@
               "task_family:analytical_length_scene": 5
             }
           },
-          "prompt": "Work from the annotated scene showing a geometric scene with measurement annotations. Task: The triangle includes an altitude to the base. What is the length of segment HJ?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: JK, HK.\nAnswer requirement: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"JK\":2,\"HK\":3},\"answer\":42.3}"
+          "prompt": "Work from the annotated scene showing a geometric scene with measurement annotations. Task: The triangle includes an altitude to the base. What is the length of segment HJ?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: JK, HK.\nAnswer requirement: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[\"HK=2\",\"JK=3\"],\"answer\":42.3}"
         },
         "answer_only": {
           "metadata": {
@@ -229,8 +247,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the length value rounded to one decimal place",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: JK, HK",
-              "json_example": "{\"evidence\":{\"JK\":2,\"HK\":3},\"answer\":42.3}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: JK, HK",
+              "json_example": "{\"evidence\":[\"HK=2\",\"JK=3\"],\"answer\":42.3}",
               "json_example_answer_only": "{\"answer\":42.3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -444,6 +462,10 @@
         "base_part": "HK",
         "height": "JK"
       },
+      "annotation_value_tokens": [
+        "HK=17",
+        "JK=27"
+      ],
       "annotation_values": {
         "HK": 17,
         "JK": 27

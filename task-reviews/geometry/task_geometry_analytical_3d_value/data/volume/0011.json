@@ -4,21 +4,21 @@
     "value": 3388
   },
   "evidence_gt": {
-    "type": "measurement_ref_map",
-    "value": {
-      "QR": 22,
-      "QS": 28,
-      "QT": 11
-    }
+    "type": "label_set",
+    "value": [
+      "QR=22",
+      "QS=28",
+      "QT=11"
+    ]
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_3d_value/images/volume/0011.png"
   },
   "instance_seed": 1979267592240054,
-  "prompt": "Work from the annotated figure showing an annotated 3D solid. Based on the shown values, answer this question: The triangular prism has an annotated triangle base, triangle height, and prism length. What is its volume in cubic units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: QR, QS, QT.\nAnswer format: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":{\"QR\":2,\"QS\":3,\"QT\":4},\"answer\":8}",
+  "prompt": "Work from the annotated figure showing an annotated 3D solid. Based on the shown values, answer this question: The triangular prism has an annotated triangle base, triangle height, and prism length. What is its volume in cubic units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: QR, QS, QT.\nAnswer format: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":[\"QR=2\",\"QS=3\",\"QT=4\"],\"answer\":8}",
   "prompt_variants": {
-    "answer_and_evidence": "Work from the annotated figure showing an annotated 3D solid. Based on the shown values, answer this question: The triangular prism has an annotated triangle base, triangle height, and prism length. What is its volume in cubic units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: QR, QS, QT.\nAnswer format: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":{\"QR\":2,\"QS\":3,\"QT\":4},\"answer\":8}",
+    "answer_and_evidence": "Work from the annotated figure showing an annotated 3D solid. Based on the shown values, answer this question: The triangular prism has an annotated triangle base, triangle height, and prism length. What is its volume in cubic units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: QR, QS, QT.\nAnswer format: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":[\"QR=2\",\"QS=3\",\"QT=4\"],\"answer\":8}",
     "answer_only": "Work from the annotated figure showing an annotated 3D solid. Based on the shown values, answer this question: The triangular prism has an annotated triangle base, triangle height, and prism length. What is its volume in cubic units?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the value as an integer.\nExample JSON:\n{\"answer\":8}"
   },
   "task": "task_geometry_analytical_3d_value",
@@ -49,6 +49,11 @@
         "b",
         "h",
         "L"
+      ],
+      "evidence_tokens": [
+        "QR=22",
+        "QS=28",
+        "QT=11"
       ],
       "formula_expression": "V = (b * h / 2) * L",
       "legacy_query_variant": "triangular_prism_given_b_h_l",
@@ -98,6 +103,11 @@
         "QS",
         "QT"
       ],
+      "label_set": [
+        "QR=22",
+        "QS=28",
+        "QT=11"
+      ],
       "measurement_ref_map": {
         "QR": 22,
         "QS": 28,
@@ -113,6 +123,20 @@
           213.123595505618
         ],
         "QT": [
+          182.97651001703744,
+          400.7906145632234
+        ]
+      },
+      "pixel_point_map": {
+        "QR=22": [
+          363.76174492265545,
+          484.0801719536305
+        ],
+        "QS=28": [
+          285.23825503146065,
+          213.123595505618
+        ],
+        "QT=11": [
           182.97651001703744,
           400.7906145632234
         ]
@@ -166,8 +190,8 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the value as an integer",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: QR, QS, QT",
-          "json_example": "{\"evidence\":{\"QR\":2,\"QS\":3,\"QT\":4},\"answer\":8}",
+          "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: QR, QS, QT",
+          "json_example": "{\"evidence\":[\"QR=2\",\"QS=3\",\"QT=4\"],\"answer\":8}",
           "json_example_answer_only": "{\"answer\":8}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -199,8 +223,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: QR, QS, QT",
-              "json_example": "{\"evidence\":{\"QR\":2,\"QS\":3,\"QT\":4},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: QR, QS, QT",
+              "json_example": "{\"evidence\":[\"QR=2\",\"QS=3\",\"QT=4\"],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -222,7 +246,7 @@
               "task_family:analytical_single_solid": 5
             }
           },
-          "prompt": "Work from the annotated figure showing an annotated 3D solid. Based on the shown values, answer this question: The triangular prism has an annotated triangle base, triangle height, and prism length. What is its volume in cubic units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: QR, QS, QT.\nAnswer format: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":{\"QR\":2,\"QS\":3,\"QT\":4},\"answer\":8}"
+          "prompt": "Work from the annotated figure showing an annotated 3D solid. Based on the shown values, answer this question: The triangular prism has an annotated triangle base, triangle height, and prism length. What is its volume in cubic units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: QR, QS, QT.\nAnswer format: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":[\"QR=2\",\"QS=3\",\"QT=4\"],\"answer\":8}"
         },
         "answer_only": {
           "metadata": {
@@ -232,8 +256,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: QR, QS, QT",
-              "json_example": "{\"evidence\":{\"QR\":2,\"QS\":3,\"QT\":4},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: QR, QS, QT",
+              "json_example": "{\"evidence\":[\"QR=2\",\"QS=3\",\"QT=4\"],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -488,6 +512,11 @@
         "b": "QR",
         "h": "QS"
       },
+      "annotation_value_tokens": [
+        "QR=22",
+        "QS=28",
+        "QT=11"
+      ],
       "annotation_values": {
         "QR": 22,
         "QS": 28,

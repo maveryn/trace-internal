@@ -4,20 +4,20 @@
     "value": "36π"
   },
   "evidence_gt": {
-    "type": "measurement_ref_map",
-    "value": {
-      "RS": 6,
-      "RT": 6
-    }
+    "type": "label_set",
+    "value": [
+      "RS=6",
+      "RT=6"
+    ]
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_2d_value/images/area/0023.png"
   },
   "instance_seed": 8561685352709680,
-  "prompt": "You are given an image showing a geometric shape with measurement annotations. Question: The ellipse has annotated semimajor and semiminor axes. What is its area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: RS, RT.\nAnswer field: set \"answer\" to the area value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":{\"RS\":2,\"RT\":3},\"answer\":\"12π\"}",
+  "prompt": "You are given an image showing a geometric shape with measurement annotations. Question: The ellipse has annotated semimajor and semiminor axes. What is its area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: RS, RT.\nAnswer field: set \"answer\" to the area value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":[\"RS=2\",\"RT=3\"],\"answer\":\"12π\"}",
   "prompt_variants": {
-    "answer_and_evidence": "You are given an image showing a geometric shape with measurement annotations. Question: The ellipse has annotated semimajor and semiminor axes. What is its area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: RS, RT.\nAnswer field: set \"answer\" to the area value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":{\"RS\":2,\"RT\":3},\"answer\":\"12π\"}",
+    "answer_and_evidence": "You are given an image showing a geometric shape with measurement annotations. Question: The ellipse has annotated semimajor and semiminor axes. What is its area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: RS, RT.\nAnswer field: set \"answer\" to the area value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":[\"RS=2\",\"RT=3\"],\"answer\":\"12π\"}",
     "answer_only": "You are given an image showing a geometric shape with measurement annotations. Question: The ellipse has annotated semimajor and semiminor axes. What is its area? Express the result in kπ form.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the area value in the form kπ (for example 12π).\nExample JSON:\n{\"answer\":\"12π\"}"
   },
   "task": "task_geometry_analytical_2d_value",
@@ -49,6 +49,10 @@
       "evidence_roles": [
         "a",
         "b"
+      ],
+      "evidence_tokens": [
+        "RS=6",
+        "RT=6"
       ],
       "formula_expression": "A = π * a * b",
       "legacy_query_variant": "ellipse_explicit",
@@ -108,6 +112,10 @@
         "RS",
         "RT"
       ],
+      "label_set": [
+        "RS=6",
+        "RT=6"
+      ],
       "measurement_ref_map": {
         "RS": 6,
         "RT": 6
@@ -118,6 +126,16 @@
           91.25
         ],
         "RT": [
+          346.75,
+          144.0
+        ]
+      },
+      "pixel_point_map": {
+        "RS=6": [
+          354.0,
+          91.25
+        ],
+        "RT=6": [
           346.75,
           144.0
         ]
@@ -187,8 +205,8 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the area value in the form kπ (for example 12π)",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: RS, RT",
-          "json_example": "{\"evidence\":{\"RS\":2,\"RT\":3},\"answer\":\"12π\"}",
+          "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: RS, RT",
+          "json_example": "{\"evidence\":[\"RS=2\",\"RT=3\"],\"answer\":\"12π\"}",
           "json_example_answer_only": "{\"answer\":\"12π\"}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -220,8 +238,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the area value in the form kπ (for example 12π)",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: RS, RT",
-              "json_example": "{\"evidence\":{\"RS\":2,\"RT\":3},\"answer\":\"12π\"}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: RS, RT",
+              "json_example": "{\"evidence\":[\"RS=2\",\"RT=3\"],\"answer\":\"12π\"}",
               "json_example_answer_only": "{\"answer\":\"12π\"}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -243,7 +261,7 @@
               "task_family:analytical_single_shape": 5
             }
           },
-          "prompt": "You are given an image showing a geometric shape with measurement annotations. Question: The ellipse has annotated semimajor and semiminor axes. What is its area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: RS, RT.\nAnswer field: set \"answer\" to the area value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":{\"RS\":2,\"RT\":3},\"answer\":\"12π\"}"
+          "prompt": "You are given an image showing a geometric shape with measurement annotations. Question: The ellipse has annotated semimajor and semiminor axes. What is its area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: RS, RT.\nAnswer field: set \"answer\" to the area value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":[\"RS=2\",\"RT=3\"],\"answer\":\"12π\"}"
         },
         "answer_only": {
           "metadata": {
@@ -253,8 +271,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the area value in the form kπ (for example 12π)",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: RS, RT",
-              "json_example": "{\"evidence\":{\"RS\":2,\"RT\":3},\"answer\":\"12π\"}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: RS, RT",
+              "json_example": "{\"evidence\":[\"RS=2\",\"RT=3\"],\"answer\":\"12π\"}",
               "json_example_answer_only": "{\"answer\":\"12π\"}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -460,6 +478,10 @@
         "a": "RS",
         "b": "RT"
       },
+      "annotation_value_tokens": [
+        "RS=6",
+        "RT=6"
+      ],
       "annotation_values": {
         "RS": 6,
         "RT": 6

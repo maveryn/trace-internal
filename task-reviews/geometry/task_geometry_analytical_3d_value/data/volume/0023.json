@@ -4,21 +4,21 @@
     "value": 3780
   },
   "evidence_gt": {
-    "type": "measurement_ref_map",
-    "value": {
-      "XA": 36,
-      "XY": 5,
-      "XZ": 42
-    }
+    "type": "label_set",
+    "value": [
+      "XA=36",
+      "XY=5",
+      "XZ=42"
+    ]
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_3d_value/images/volume/0023.png"
   },
   "instance_seed": 4208138728157935,
-  "prompt": "Look at the annotated image showing an annotated 3D solid. The triangular prism has an annotated triangle base, triangle height, and prism length. What is its volume in cubic units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: XY, XZ, XA.\nAnswer rule: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":{\"XY\":2,\"XZ\":3,\"XA\":4},\"answer\":8}",
+  "prompt": "Look at the annotated image showing an annotated 3D solid. The triangular prism has an annotated triangle base, triangle height, and prism length. What is its volume in cubic units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: XY, XZ, XA.\nAnswer rule: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":[\"XA=2\",\"XY=3\",\"XZ=4\"],\"answer\":8}",
   "prompt_variants": {
-    "answer_and_evidence": "Look at the annotated image showing an annotated 3D solid. The triangular prism has an annotated triangle base, triangle height, and prism length. What is its volume in cubic units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: XY, XZ, XA.\nAnswer rule: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":{\"XY\":2,\"XZ\":3,\"XA\":4},\"answer\":8}",
+    "answer_and_evidence": "Look at the annotated image showing an annotated 3D solid. The triangular prism has an annotated triangle base, triangle height, and prism length. What is its volume in cubic units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: XY, XZ, XA.\nAnswer rule: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":[\"XA=2\",\"XY=3\",\"XZ=4\"],\"answer\":8}",
     "answer_only": "Look at the annotated image showing an annotated 3D solid. The triangular prism has an annotated triangle base, triangle height, and prism length. What is its volume in cubic units?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the value as an integer.\nExample JSON:\n{\"answer\":8}"
   },
   "task": "task_geometry_analytical_3d_value",
@@ -49,6 +49,11 @@
         "b",
         "h",
         "L"
+      ],
+      "evidence_tokens": [
+        "XA=36",
+        "XY=5",
+        "XZ=42"
       ],
       "formula_expression": "V = (b * h / 2) * L",
       "legacy_query_variant": "triangular_prism_given_b_h_l",
@@ -98,6 +103,11 @@
         "XZ",
         "XA"
       ],
+      "label_set": [
+        "XA=36",
+        "XY=5",
+        "XZ=42"
+      ],
       "measurement_ref_map": {
         "XA": 36,
         "XY": 5,
@@ -113,6 +123,20 @@
           398.4000000000001
         ],
         "XZ": [
+          401.1258645599999,
+          220.80000000000004
+        ]
+      },
+      "pixel_point_map": {
+        "XA=36": [
+          277.94744115411606,
+          460.5512887205268
+        ],
+        "XY=5": [
+          448.17842339443837,
+          398.4000000000001
+        ],
+        "XZ=42": [
           401.1258645599999,
           220.80000000000004
         ]
@@ -166,8 +190,8 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the value as an integer",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: XY, XZ, XA",
-          "json_example": "{\"evidence\":{\"XY\":2,\"XZ\":3,\"XA\":4},\"answer\":8}",
+          "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: XY, XZ, XA",
+          "json_example": "{\"evidence\":[\"XA=2\",\"XY=3\",\"XZ=4\"],\"answer\":8}",
           "json_example_answer_only": "{\"answer\":8}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -199,8 +223,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: XY, XZ, XA",
-              "json_example": "{\"evidence\":{\"XY\":2,\"XZ\":3,\"XA\":4},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: XY, XZ, XA",
+              "json_example": "{\"evidence\":[\"XA=2\",\"XY=3\",\"XZ=4\"],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -222,7 +246,7 @@
               "task_family:analytical_single_solid": 5
             }
           },
-          "prompt": "Look at the annotated image showing an annotated 3D solid. The triangular prism has an annotated triangle base, triangle height, and prism length. What is its volume in cubic units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: XY, XZ, XA.\nAnswer rule: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":{\"XY\":2,\"XZ\":3,\"XA\":4},\"answer\":8}"
+          "prompt": "Look at the annotated image showing an annotated 3D solid. The triangular prism has an annotated triangle base, triangle height, and prism length. What is its volume in cubic units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: XY, XZ, XA.\nAnswer rule: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":[\"XA=2\",\"XY=3\",\"XZ=4\"],\"answer\":8}"
         },
         "answer_only": {
           "metadata": {
@@ -232,8 +256,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: XY, XZ, XA",
-              "json_example": "{\"evidence\":{\"XY\":2,\"XZ\":3,\"XA\":4},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: XY, XZ, XA",
+              "json_example": "{\"evidence\":[\"XA=2\",\"XY=3\",\"XZ=4\"],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -488,6 +512,11 @@
         "b": "XY",
         "h": "XZ"
       },
+      "annotation_value_tokens": [
+        "XA=36",
+        "XY=5",
+        "XZ=42"
+      ],
       "annotation_values": {
         "XA": 36,
         "XY": 5,

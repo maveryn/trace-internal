@@ -4,20 +4,20 @@
     "value": 111.7
   },
   "evidence_gt": {
-    "type": "measurement_ref_map",
-    "value": {
-      "VX": 52,
-      "WX": 4
-    }
+    "type": "label_set",
+    "value": [
+      "VX=52",
+      "WX=4"
+    ]
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_2d_value/images/perimeter/0021.png"
   },
   "instance_seed": 6627333208122542,
-  "prompt": "Work from the annotated scene showing a geometric scene with measurement annotations. Based on the shown values, answer this question: The rectangle shows one side and its diagonal. What is the perimeter of the rectangle?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: WX, VX.\nAnswer rule: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"WX\":2,\"VX\":3},\"answer\":42.3}",
+  "prompt": "Work from the annotated scene showing a geometric scene with measurement annotations. Based on the shown values, answer this question: The rectangle shows one side and its diagonal. What is the perimeter of the rectangle?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: WX, VX.\nAnswer rule: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[\"VX=2\",\"WX=3\"],\"answer\":42.3}",
   "prompt_variants": {
-    "answer_and_evidence": "Work from the annotated scene showing a geometric scene with measurement annotations. Based on the shown values, answer this question: The rectangle shows one side and its diagonal. What is the perimeter of the rectangle?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: WX, VX.\nAnswer rule: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"WX\":2,\"VX\":3},\"answer\":42.3}",
+    "answer_and_evidence": "Work from the annotated scene showing a geometric scene with measurement annotations. Based on the shown values, answer this question: The rectangle shows one side and its diagonal. What is the perimeter of the rectangle?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: WX, VX.\nAnswer rule: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[\"VX=2\",\"WX=3\"],\"answer\":42.3}",
     "answer_only": "Work from the annotated scene showing a geometric scene with measurement annotations. Based on the shown values, answer this question: The rectangle shows one side and its diagonal. What is the perimeter of the rectangle?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"answer\":42.3}"
   },
   "task": "task_geometry_analytical_2d_value",
@@ -44,6 +44,10 @@
       "evidence_roles": [
         "known_side",
         "diagonal"
+      ],
+      "evidence_tokens": [
+        "VX=52",
+        "WX=4"
       ],
       "formula_expression": "2 * (known_side + sqrt(diagonal^2 - known_side^2))",
       "legacy_query_variant": "rectangle_side_diagonal",
@@ -97,6 +101,10 @@
         "WX",
         "VX"
       ],
+      "label_set": [
+        "VX=52",
+        "WX=4"
+      ],
       "measurement_ref_map": {
         "VX": 52,
         "WX": 4
@@ -107,6 +115,16 @@
           391.0894592019756
         ],
         "WX": [
+          644.0566666666667,
+          362.30832358750786
+        ]
+      },
+      "pixel_point_map": {
+        "VX=52": [
+          370.7205128205128,
+          391.0894592019756
+        ],
+        "WX=4": [
           644.0566666666667,
           362.30832358750786
         ]
@@ -162,8 +180,8 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the perimeter value rounded to one decimal place",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: WX, VX",
-          "json_example": "{\"evidence\":{\"WX\":2,\"VX\":3},\"answer\":42.3}",
+          "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: WX, VX",
+          "json_example": "{\"evidence\":[\"VX=2\",\"WX=3\"],\"answer\":42.3}",
           "json_example_answer_only": "{\"answer\":42.3}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -195,8 +213,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the perimeter value rounded to one decimal place",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: WX, VX",
-              "json_example": "{\"evidence\":{\"WX\":2,\"VX\":3},\"answer\":42.3}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: WX, VX",
+              "json_example": "{\"evidence\":[\"VX=2\",\"WX=3\"],\"answer\":42.3}",
               "json_example_answer_only": "{\"answer\":42.3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -218,7 +236,7 @@
               "task_family:analytical_perimeter_scene": 5
             }
           },
-          "prompt": "Work from the annotated scene showing a geometric scene with measurement annotations. Based on the shown values, answer this question: The rectangle shows one side and its diagonal. What is the perimeter of the rectangle?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: WX, VX.\nAnswer rule: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"WX\":2,\"VX\":3},\"answer\":42.3}"
+          "prompt": "Work from the annotated scene showing a geometric scene with measurement annotations. Based on the shown values, answer this question: The rectangle shows one side and its diagonal. What is the perimeter of the rectangle?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: WX, VX.\nAnswer rule: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[\"VX=2\",\"WX=3\"],\"answer\":42.3}"
         },
         "answer_only": {
           "metadata": {
@@ -228,8 +246,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the perimeter value rounded to one decimal place",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: WX, VX",
-              "json_example": "{\"evidence\":{\"WX\":2,\"VX\":3},\"answer\":42.3}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: WX, VX",
+              "json_example": "{\"evidence\":[\"VX=2\",\"WX=3\"],\"answer\":42.3}",
               "json_example_answer_only": "{\"answer\":42.3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -455,6 +473,10 @@
         "diagonal": "VX",
         "known_side": "WX"
       },
+      "annotation_value_tokens": [
+        "VX=52",
+        "WX=4"
+      ],
       "annotation_values": {
         "VX": 52,
         "WX": 4

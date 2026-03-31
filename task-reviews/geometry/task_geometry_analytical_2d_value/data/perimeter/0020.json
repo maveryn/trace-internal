@@ -4,20 +4,20 @@
     "value": 79.9
   },
   "evidence_gt": {
-    "type": "measurement_ref_map",
-    "value": {
-      "QS": 31,
-      "RS": 29
-    }
+    "type": "label_set",
+    "value": [
+      "QS=31",
+      "RS=29"
+    ]
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_2d_value/images/perimeter/0020.png"
   },
   "instance_seed": 1453016992082096,
-  "prompt": "Use the image showing a geometric scene with measurement annotations. Based on the shown values, answer this question: The rectangle shows one side and its diagonal. What is the perimeter of the rectangle?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: RS, QS.\nAnswer: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"RS\":2,\"QS\":3},\"answer\":42.3}",
+  "prompt": "Use the image showing a geometric scene with measurement annotations. Based on the shown values, answer this question: The rectangle shows one side and its diagonal. What is the perimeter of the rectangle?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: RS, QS.\nAnswer: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[\"QS=2\",\"RS=3\"],\"answer\":42.3}",
   "prompt_variants": {
-    "answer_and_evidence": "Use the image showing a geometric scene with measurement annotations. Based on the shown values, answer this question: The rectangle shows one side and its diagonal. What is the perimeter of the rectangle?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: RS, QS.\nAnswer: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"RS\":2,\"QS\":3},\"answer\":42.3}",
+    "answer_and_evidence": "Use the image showing a geometric scene with measurement annotations. Based on the shown values, answer this question: The rectangle shows one side and its diagonal. What is the perimeter of the rectangle?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: RS, QS.\nAnswer: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[\"QS=2\",\"RS=3\"],\"answer\":42.3}",
     "answer_only": "Use the image showing a geometric scene with measurement annotations. Based on the shown values, answer this question: The rectangle shows one side and its diagonal. What is the perimeter of the rectangle?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"answer\":42.3}"
   },
   "task": "task_geometry_analytical_2d_value",
@@ -44,6 +44,10 @@
       "evidence_roles": [
         "known_side",
         "diagonal"
+      ],
+      "evidence_tokens": [
+        "QS=31",
+        "RS=29"
       ],
       "formula_expression": "2 * (known_side + sqrt(diagonal^2 - known_side^2))",
       "legacy_query_variant": "rectangle_side_diagonal",
@@ -97,6 +101,10 @@
         "RS",
         "QS"
       ],
+      "label_set": [
+        "QS=31",
+        "RS=29"
+      ],
       "measurement_ref_map": {
         "QS": 31,
         "RS": 29
@@ -107,6 +115,16 @@
           307.31838624461346
         ],
         "RS": [
+          483.27634096427687,
+          297.0
+        ]
+      },
+      "pixel_point_map": {
+        "QS=31": [
+          404.663387350046,
+          307.31838624461346
+        ],
+        "RS=29": [
           483.27634096427687,
           297.0
         ]
@@ -162,8 +180,8 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the perimeter value rounded to one decimal place",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: RS, QS",
-          "json_example": "{\"evidence\":{\"RS\":2,\"QS\":3},\"answer\":42.3}",
+          "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: RS, QS",
+          "json_example": "{\"evidence\":[\"QS=2\",\"RS=3\"],\"answer\":42.3}",
           "json_example_answer_only": "{\"answer\":42.3}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -195,8 +213,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the perimeter value rounded to one decimal place",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: RS, QS",
-              "json_example": "{\"evidence\":{\"RS\":2,\"QS\":3},\"answer\":42.3}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: RS, QS",
+              "json_example": "{\"evidence\":[\"QS=2\",\"RS=3\"],\"answer\":42.3}",
               "json_example_answer_only": "{\"answer\":42.3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -218,7 +236,7 @@
               "task_family:analytical_perimeter_scene": 5
             }
           },
-          "prompt": "Use the image showing a geometric scene with measurement annotations. Based on the shown values, answer this question: The rectangle shows one side and its diagonal. What is the perimeter of the rectangle?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: RS, QS.\nAnswer: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"RS\":2,\"QS\":3},\"answer\":42.3}"
+          "prompt": "Use the image showing a geometric scene with measurement annotations. Based on the shown values, answer this question: The rectangle shows one side and its diagonal. What is the perimeter of the rectangle?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: RS, QS.\nAnswer: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[\"QS=2\",\"RS=3\"],\"answer\":42.3}"
         },
         "answer_only": {
           "metadata": {
@@ -228,8 +246,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the perimeter value rounded to one decimal place",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: RS, QS",
-              "json_example": "{\"evidence\":{\"RS\":2,\"QS\":3},\"answer\":42.3}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: RS, QS",
+              "json_example": "{\"evidence\":[\"QS=2\",\"RS=3\"],\"answer\":42.3}",
               "json_example_answer_only": "{\"answer\":42.3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -448,6 +466,10 @@
         "diagonal": "QS",
         "known_side": "RS"
       },
+      "annotation_value_tokens": [
+        "QS=31",
+        "RS=29"
+      ],
       "annotation_values": {
         "QS": 31,
         "RS": 29

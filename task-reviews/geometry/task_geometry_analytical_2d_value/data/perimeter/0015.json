@@ -4,19 +4,19 @@
     "value": 107.5
   },
   "evidence_gt": {
-    "type": "measurement_ref_map",
-    "value": {
-      "AY": 38
-    }
+    "type": "label_set",
+    "value": [
+      "AY=38"
+    ]
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_2d_value/images/perimeter/0015.png"
   },
   "instance_seed": 874015401544789,
-  "prompt": "Work from the annotated scene showing a geometric scene with measurement annotations. Question: The square is inscribed in the circle, and a diameter is annotated. What is the perimeter of the square?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: AY.\nAnswer format: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"AY\":2},\"answer\":42.3}",
+  "prompt": "Work from the annotated scene showing a geometric scene with measurement annotations. Question: The square is inscribed in the circle, and a diameter is annotated. What is the perimeter of the square?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: AY.\nAnswer format: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[\"AY=2\"],\"answer\":42.3}",
   "prompt_variants": {
-    "answer_and_evidence": "Work from the annotated scene showing a geometric scene with measurement annotations. Question: The square is inscribed in the circle, and a diameter is annotated. What is the perimeter of the square?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: AY.\nAnswer format: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"AY\":2},\"answer\":42.3}",
+    "answer_and_evidence": "Work from the annotated scene showing a geometric scene with measurement annotations. Question: The square is inscribed in the circle, and a diameter is annotated. What is the perimeter of the square?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: AY.\nAnswer format: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[\"AY=2\"],\"answer\":42.3}",
     "answer_only": "Work from the annotated scene showing a geometric scene with measurement annotations. Question: The square is inscribed in the circle, and a diameter is annotated. What is the perimeter of the square?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"answer\":42.3}"
   },
   "task": "task_geometry_analytical_2d_value",
@@ -39,6 +39,9 @@
       },
       "evidence_roles": [
         "diameter"
+      ],
+      "evidence_tokens": [
+        "AY=38"
       ],
       "formula_expression": "2 * sqrt(2) * diameter",
       "legacy_query_variant": "inscribed_square_diameter",
@@ -89,11 +92,20 @@
       "id_set": [
         "AY"
       ],
+      "label_set": [
+        "AY=38"
+      ],
       "measurement_ref_map": {
         "AY": 38
       },
       "pixel_annotation_centers": {
         "AY": [
+          335.5,
+          306.53333333333336
+        ]
+      },
+      "pixel_point_map": {
+        "AY=38": [
           335.5,
           306.53333333333336
         ]
@@ -145,8 +157,8 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the perimeter value rounded to one decimal place",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: AY",
-          "json_example": "{\"evidence\":{\"AY\":2},\"answer\":42.3}",
+          "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: AY",
+          "json_example": "{\"evidence\":[\"AY=2\"],\"answer\":42.3}",
           "json_example_answer_only": "{\"answer\":42.3}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -178,8 +190,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the perimeter value rounded to one decimal place",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: AY",
-              "json_example": "{\"evidence\":{\"AY\":2},\"answer\":42.3}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: AY",
+              "json_example": "{\"evidence\":[\"AY=2\"],\"answer\":42.3}",
               "json_example_answer_only": "{\"answer\":42.3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -201,7 +213,7 @@
               "task_family:analytical_perimeter_scene": 5
             }
           },
-          "prompt": "Work from the annotated scene showing a geometric scene with measurement annotations. Question: The square is inscribed in the circle, and a diameter is annotated. What is the perimeter of the square?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: AY.\nAnswer format: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"AY\":2},\"answer\":42.3}"
+          "prompt": "Work from the annotated scene showing a geometric scene with measurement annotations. Question: The square is inscribed in the circle, and a diameter is annotated. What is the perimeter of the square?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: AY.\nAnswer format: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[\"AY=2\"],\"answer\":42.3}"
         },
         "answer_only": {
           "metadata": {
@@ -211,8 +223,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the perimeter value rounded to one decimal place",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: AY",
-              "json_example": "{\"evidence\":{\"AY\":2},\"answer\":42.3}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: AY",
+              "json_example": "{\"evidence\":[\"AY=2\"],\"answer\":42.3}",
               "json_example_answer_only": "{\"answer\":42.3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -442,6 +454,9 @@
       "annotation_labels": {
         "diameter": "AY"
       },
+      "annotation_value_tokens": [
+        "AY=38"
+      ],
       "annotation_values": {
         "AY": 38
       },

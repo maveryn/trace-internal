@@ -4,20 +4,20 @@
     "value": 161.6
   },
   "evidence_gt": {
-    "type": "measurement_ref_map",
-    "value": {
-      "GI": 17,
-      "HJ": 79
-    }
+    "type": "label_set",
+    "value": [
+      "GI=17",
+      "HJ=79"
+    ]
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_2d_value/images/perimeter/0018.png"
   },
   "instance_seed": 6736766721052406,
-  "prompt": "Look at the annotated image showing a geometric scene with measurement annotations. Read the marked measurements and answer: The rhombus shows both diagonals. What is the perimeter of the rhombus?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: GI, HJ.\nAnswer format: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"GI\":2,\"HJ\":3},\"answer\":42.3}",
+  "prompt": "Look at the annotated image showing a geometric scene with measurement annotations. Read the marked measurements and answer: The rhombus shows both diagonals. What is the perimeter of the rhombus?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: GI, HJ.\nAnswer format: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[\"GI=2\",\"HJ=3\"],\"answer\":42.3}",
   "prompt_variants": {
-    "answer_and_evidence": "Look at the annotated image showing a geometric scene with measurement annotations. Read the marked measurements and answer: The rhombus shows both diagonals. What is the perimeter of the rhombus?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: GI, HJ.\nAnswer format: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"GI\":2,\"HJ\":3},\"answer\":42.3}",
+    "answer_and_evidence": "Look at the annotated image showing a geometric scene with measurement annotations. Read the marked measurements and answer: The rhombus shows both diagonals. What is the perimeter of the rhombus?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: GI, HJ.\nAnswer format: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[\"GI=2\",\"HJ=3\"],\"answer\":42.3}",
     "answer_only": "Look at the annotated image showing a geometric scene with measurement annotations. Read the marked measurements and answer: The rhombus shows both diagonals. What is the perimeter of the rhombus?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"answer\":42.3}"
   },
   "task": "task_geometry_analytical_2d_value",
@@ -44,6 +44,10 @@
       "evidence_roles": [
         "diag_x",
         "diag_y"
+      ],
+      "evidence_tokens": [
+        "GI=17",
+        "HJ=79"
       ],
       "formula_expression": "4 * sqrt((diag_x/2)^2 + (diag_y/2)^2)",
       "legacy_query_variant": "rhombus_diagonals",
@@ -97,6 +101,10 @@
         "GI",
         "HJ"
       ],
+      "label_set": [
+        "GI=17",
+        "HJ=79"
+      ],
       "measurement_ref_map": {
         "GI": 17,
         "HJ": 79
@@ -107,6 +115,16 @@
           232.46666666666667
         ],
         "HJ": [
+          276.50852144893173,
+          209.832
+        ]
+      },
+      "pixel_point_map": {
+        "GI=17": [
+          233.31878305230728,
+          232.46666666666667
+        ],
+        "HJ=79": [
           276.50852144893173,
           209.832
         ]
@@ -162,8 +180,8 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the perimeter value rounded to one decimal place",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: GI, HJ",
-          "json_example": "{\"evidence\":{\"GI\":2,\"HJ\":3},\"answer\":42.3}",
+          "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: GI, HJ",
+          "json_example": "{\"evidence\":[\"GI=2\",\"HJ=3\"],\"answer\":42.3}",
           "json_example_answer_only": "{\"answer\":42.3}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -195,8 +213,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the perimeter value rounded to one decimal place",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: GI, HJ",
-              "json_example": "{\"evidence\":{\"GI\":2,\"HJ\":3},\"answer\":42.3}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: GI, HJ",
+              "json_example": "{\"evidence\":[\"GI=2\",\"HJ=3\"],\"answer\":42.3}",
               "json_example_answer_only": "{\"answer\":42.3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -218,7 +236,7 @@
               "task_family:analytical_perimeter_scene": 5
             }
           },
-          "prompt": "Look at the annotated image showing a geometric scene with measurement annotations. Read the marked measurements and answer: The rhombus shows both diagonals. What is the perimeter of the rhombus?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: GI, HJ.\nAnswer format: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"GI\":2,\"HJ\":3},\"answer\":42.3}"
+          "prompt": "Look at the annotated image showing a geometric scene with measurement annotations. Read the marked measurements and answer: The rhombus shows both diagonals. What is the perimeter of the rhombus?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: GI, HJ.\nAnswer format: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[\"GI=2\",\"HJ=3\"],\"answer\":42.3}"
         },
         "answer_only": {
           "metadata": {
@@ -228,8 +246,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the perimeter value rounded to one decimal place",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: GI, HJ",
-              "json_example": "{\"evidence\":{\"GI\":2,\"HJ\":3},\"answer\":42.3}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: GI, HJ",
+              "json_example": "{\"evidence\":[\"GI=2\",\"HJ=3\"],\"answer\":42.3}",
               "json_example_answer_only": "{\"answer\":42.3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -470,6 +488,10 @@
         "diag_x": "GI",
         "diag_y": "HJ"
       },
+      "annotation_value_tokens": [
+        "GI=17",
+        "HJ=79"
+      ],
       "annotation_values": {
         "GI": 17,
         "HJ": 79

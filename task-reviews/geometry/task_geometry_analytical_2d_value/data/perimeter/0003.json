@@ -4,20 +4,20 @@
     "value": 79.2
   },
   "evidence_gt": {
-    "type": "measurement_ref_map",
-    "value": {
-      "XZ": 20,
-      "YZ": 33
-    }
+    "type": "label_set",
+    "value": [
+      "XZ=20",
+      "YZ=33"
+    ]
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_2d_value/images/perimeter/0003.png"
   },
   "instance_seed": 3776156539444782,
-  "prompt": "Look at the annotated image showing a geometric scene with measurement annotations. Task: The right triangle shows one leg and the hypotenuse. What is the perimeter of the triangle?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: XZ, YZ.\nAnswer field: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"XZ\":2,\"YZ\":3},\"answer\":42.3}",
+  "prompt": "Look at the annotated image showing a geometric scene with measurement annotations. Task: The right triangle shows one leg and the hypotenuse. What is the perimeter of the triangle?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: XZ, YZ.\nAnswer field: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[\"XZ=2\",\"YZ=3\"],\"answer\":42.3}",
   "prompt_variants": {
-    "answer_and_evidence": "Look at the annotated image showing a geometric scene with measurement annotations. Task: The right triangle shows one leg and the hypotenuse. What is the perimeter of the triangle?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: XZ, YZ.\nAnswer field: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"XZ\":2,\"YZ\":3},\"answer\":42.3}",
+    "answer_and_evidence": "Look at the annotated image showing a geometric scene with measurement annotations. Task: The right triangle shows one leg and the hypotenuse. What is the perimeter of the triangle?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: XZ, YZ.\nAnswer field: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[\"XZ=2\",\"YZ=3\"],\"answer\":42.3}",
     "answer_only": "Look at the annotated image showing a geometric scene with measurement annotations. Task: The right triangle shows one leg and the hypotenuse. What is the perimeter of the triangle?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"answer\":42.3}"
   },
   "task": "task_geometry_analytical_2d_value",
@@ -44,6 +44,10 @@
       "evidence_roles": [
         "known_leg",
         "hypotenuse"
+      ],
+      "evidence_tokens": [
+        "XZ=20",
+        "YZ=33"
       ],
       "formula_expression": "known_leg + hypotenuse + sqrt(hypotenuse^2 - known_leg^2)",
       "legacy_query_variant": "right_triangle_leg_hypotenuse",
@@ -97,6 +101,10 @@
         "XZ",
         "YZ"
       ],
+      "label_set": [
+        "XZ=20",
+        "YZ=33"
+      ],
       "measurement_ref_map": {
         "XZ": 20,
         "YZ": 33
@@ -107,6 +115,16 @@
           276.6869384289686
         ],
         "YZ": [
+          338.9949494949495,
+          253.72585860650352
+        ]
+      },
+      "pixel_point_map": {
+        "XZ=20": [
+          70.22333333333336,
+          276.6869384289686
+        ],
+        "YZ=33": [
           338.9949494949495,
           253.72585860650352
         ]
@@ -162,8 +180,8 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the perimeter value rounded to one decimal place",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: XZ, YZ",
-          "json_example": "{\"evidence\":{\"XZ\":2,\"YZ\":3},\"answer\":42.3}",
+          "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: XZ, YZ",
+          "json_example": "{\"evidence\":[\"XZ=2\",\"YZ=3\"],\"answer\":42.3}",
           "json_example_answer_only": "{\"answer\":42.3}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -195,8 +213,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the perimeter value rounded to one decimal place",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: XZ, YZ",
-              "json_example": "{\"evidence\":{\"XZ\":2,\"YZ\":3},\"answer\":42.3}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: XZ, YZ",
+              "json_example": "{\"evidence\":[\"XZ=2\",\"YZ=3\"],\"answer\":42.3}",
               "json_example_answer_only": "{\"answer\":42.3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -218,7 +236,7 @@
               "task_family:analytical_perimeter_scene": 5
             }
           },
-          "prompt": "Look at the annotated image showing a geometric scene with measurement annotations. Task: The right triangle shows one leg and the hypotenuse. What is the perimeter of the triangle?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: XZ, YZ.\nAnswer field: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"XZ\":2,\"YZ\":3},\"answer\":42.3}"
+          "prompt": "Look at the annotated image showing a geometric scene with measurement annotations. Task: The right triangle shows one leg and the hypotenuse. What is the perimeter of the triangle?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: XZ, YZ.\nAnswer field: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[\"XZ=2\",\"YZ=3\"],\"answer\":42.3}"
         },
         "answer_only": {
           "metadata": {
@@ -228,8 +246,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the perimeter value rounded to one decimal place",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: XZ, YZ",
-              "json_example": "{\"evidence\":{\"XZ\":2,\"YZ\":3},\"answer\":42.3}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: XZ, YZ",
+              "json_example": "{\"evidence\":[\"XZ=2\",\"YZ=3\"],\"answer\":42.3}",
               "json_example_answer_only": "{\"answer\":42.3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -436,6 +454,10 @@
         "hypotenuse": "YZ",
         "known_leg": "XZ"
       },
+      "annotation_value_tokens": [
+        "XZ=20",
+        "YZ=33"
+      ],
       "annotation_values": {
         "XZ": 20,
         "YZ": 33

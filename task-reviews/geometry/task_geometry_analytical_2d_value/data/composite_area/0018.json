@@ -4,22 +4,22 @@
     "value": 719
   },
   "evidence_gt": {
-    "type": "measurement_ref_map",
-    "value": {
-      "HI": 27,
-      "IJ": 30,
-      "KL": 13,
-      "LM": 7
-    }
+    "type": "label_set",
+    "value": [
+      "HI=27",
+      "IJ=30",
+      "KL=13",
+      "LM=7"
+    ]
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_2d_value/images/composite_area/0018.png"
   },
   "instance_seed": 2586408543884060,
-  "prompt": "Look at the annotated image showing a shaded composite geometric region with measurement annotations. Task: The shaded region is an outer rectangle with one inner rectangular cutout. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: HI, IJ, KL, LM.\nAnswer requirement: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"HI\":2,\"IJ\":3,\"KL\":4,\"LM\":5},\"answer\":8}",
+  "prompt": "Look at the annotated image showing a shaded composite geometric region with measurement annotations. Task: The shaded region is an outer rectangle with one inner rectangular cutout. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: HI, IJ, KL, LM.\nAnswer requirement: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":[\"HI=2\",\"IJ=3\",\"KL=4\",\"LM=5\"],\"answer\":8}",
   "prompt_variants": {
-    "answer_and_evidence": "Look at the annotated image showing a shaded composite geometric region with measurement annotations. Task: The shaded region is an outer rectangle with one inner rectangular cutout. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: HI, IJ, KL, LM.\nAnswer requirement: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"HI\":2,\"IJ\":3,\"KL\":4,\"LM\":5},\"answer\":8}",
+    "answer_and_evidence": "Look at the annotated image showing a shaded composite geometric region with measurement annotations. Task: The shaded region is an outer rectangle with one inner rectangular cutout. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: HI, IJ, KL, LM.\nAnswer requirement: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":[\"HI=2\",\"IJ=3\",\"KL=4\",\"LM=5\"],\"answer\":8}",
     "answer_only": "Look at the annotated image showing a shaded composite geometric region with measurement annotations. Task: The shaded region is an outer rectangle with one inner rectangular cutout. What is the area of the shaded region in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"answer\":8}"
   },
   "task": "task_geometry_analytical_2d_value",
@@ -54,6 +54,12 @@
         "outer_height",
         "inner_width",
         "inner_height"
+      ],
+      "evidence_tokens": [
+        "HI=27",
+        "IJ=30",
+        "KL=13",
+        "LM=7"
       ],
       "formula_expression": "outer_width * outer_height - inner_width * inner_height",
       "legacy_query_variant": "rectangle_inner_cutout",
@@ -114,6 +120,12 @@
         "KL",
         "LM"
       ],
+      "label_set": [
+        "HI=27",
+        "IJ=30",
+        "KL=13",
+        "LM=7"
+      ],
       "measurement_ref_map": {
         "HI": 27,
         "IJ": 30,
@@ -134,6 +146,24 @@
           219.20266666666672
         ],
         "LM": [
+          460.6661566688754,
+          190.5153333333334
+        ]
+      },
+      "pixel_point_map": {
+        "HI=27": [
+          322.5268233355421,
+          541.8266666666667
+        ],
+        "IJ=30": [
+          534.3208233355421,
+          319.50000000000006
+        ],
+        "KL=13": [
+          390.4134900022088,
+          219.20266666666672
+        ],
+        "LM=7": [
           460.6661566688754,
           190.5153333333334
         ]
@@ -197,8 +227,8 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the area value as an integer",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: HI, IJ, KL, LM",
-          "json_example": "{\"evidence\":{\"HI\":2,\"IJ\":3,\"KL\":4,\"LM\":5},\"answer\":8}",
+          "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: HI, IJ, KL, LM",
+          "json_example": "{\"evidence\":[\"HI=2\",\"IJ=3\",\"KL=4\",\"LM=5\"],\"answer\":8}",
           "json_example_answer_only": "{\"answer\":8}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -230,8 +260,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the area value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: HI, IJ, KL, LM",
-              "json_example": "{\"evidence\":{\"HI\":2,\"IJ\":3,\"KL\":4,\"LM\":5},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: HI, IJ, KL, LM",
+              "json_example": "{\"evidence\":[\"HI=2\",\"IJ=3\",\"KL=4\",\"LM=5\"],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -253,7 +283,7 @@
               "task_family:analytical_composite_area_scene": 5
             }
           },
-          "prompt": "Look at the annotated image showing a shaded composite geometric region with measurement annotations. Task: The shaded region is an outer rectangle with one inner rectangular cutout. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: HI, IJ, KL, LM.\nAnswer requirement: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"HI\":2,\"IJ\":3,\"KL\":4,\"LM\":5},\"answer\":8}"
+          "prompt": "Look at the annotated image showing a shaded composite geometric region with measurement annotations. Task: The shaded region is an outer rectangle with one inner rectangular cutout. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: HI, IJ, KL, LM.\nAnswer requirement: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":[\"HI=2\",\"IJ=3\",\"KL=4\",\"LM=5\"],\"answer\":8}"
         },
         "answer_only": {
           "metadata": {
@@ -263,8 +293,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the area value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: HI, IJ, KL, LM",
-              "json_example": "{\"evidence\":{\"HI\":2,\"IJ\":3,\"KL\":4,\"LM\":5},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: HI, IJ, KL, LM",
+              "json_example": "{\"evidence\":[\"HI=2\",\"IJ=3\",\"KL=4\",\"LM=5\"],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -507,6 +537,12 @@
         "outer_height": "IJ",
         "outer_width": "HI"
       },
+      "annotation_value_tokens": [
+        "HI=27",
+        "IJ=30",
+        "KL=13",
+        "LM=7"
+      ],
       "annotation_values": {
         "HI": 27,
         "IJ": 30,

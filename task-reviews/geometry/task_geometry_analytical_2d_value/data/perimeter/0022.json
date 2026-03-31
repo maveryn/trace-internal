@@ -4,20 +4,20 @@
     "value": 126.0
   },
   "evidence_gt": {
-    "type": "measurement_ref_map",
-    "value": {
-      "KM": 45,
-      "LM": 36
-    }
+    "type": "label_set",
+    "value": [
+      "KM=45",
+      "LM=36"
+    ]
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_2d_value/images/perimeter/0022.png"
   },
   "instance_seed": 1874188931924309,
-  "prompt": "Use the image showing a geometric scene with measurement annotations. Task: The rectangle shows one side and its diagonal. What is the perimeter of the rectangle?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: LM, KM.\nAnswer format: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"LM\":2,\"KM\":3},\"answer\":42.3}",
+  "prompt": "Use the image showing a geometric scene with measurement annotations. Task: The rectangle shows one side and its diagonal. What is the perimeter of the rectangle?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: LM, KM.\nAnswer format: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[\"KM=2\",\"LM=3\"],\"answer\":42.3}",
   "prompt_variants": {
-    "answer_and_evidence": "Use the image showing a geometric scene with measurement annotations. Task: The rectangle shows one side and its diagonal. What is the perimeter of the rectangle?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: LM, KM.\nAnswer format: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"LM\":2,\"KM\":3},\"answer\":42.3}",
+    "answer_and_evidence": "Use the image showing a geometric scene with measurement annotations. Task: The rectangle shows one side and its diagonal. What is the perimeter of the rectangle?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: LM, KM.\nAnswer format: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[\"KM=2\",\"LM=3\"],\"answer\":42.3}",
     "answer_only": "Use the image showing a geometric scene with measurement annotations. Task: The rectangle shows one side and its diagonal. What is the perimeter of the rectangle?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"answer\":42.3}"
   },
   "task": "task_geometry_analytical_2d_value",
@@ -44,6 +44,10 @@
       "evidence_roles": [
         "known_side",
         "diagonal"
+      ],
+      "evidence_tokens": [
+        "KM=45",
+        "LM=36"
       ],
       "formula_expression": "2 * (known_side + sqrt(diagonal^2 - known_side^2))",
       "legacy_query_variant": "rectangle_side_diagonal",
@@ -97,6 +101,10 @@
         "LM",
         "KM"
       ],
+      "label_set": [
+        "KM=45",
+        "LM=36"
+      ],
       "measurement_ref_map": {
         "KM": 45,
         "LM": 36
@@ -107,6 +115,16 @@
           294.32
         ],
         "LM": [
+          400.9057730787999,
+          278.0
+        ]
+      },
+      "pixel_point_map": {
+        "KM=45": [
+          252.97577307879988,
+          294.32
+        ],
+        "LM=36": [
           400.9057730787999,
           278.0
         ]
@@ -162,8 +180,8 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the perimeter value rounded to one decimal place",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: LM, KM",
-          "json_example": "{\"evidence\":{\"LM\":2,\"KM\":3},\"answer\":42.3}",
+          "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: LM, KM",
+          "json_example": "{\"evidence\":[\"KM=2\",\"LM=3\"],\"answer\":42.3}",
           "json_example_answer_only": "{\"answer\":42.3}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -195,8 +213,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the perimeter value rounded to one decimal place",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: LM, KM",
-              "json_example": "{\"evidence\":{\"LM\":2,\"KM\":3},\"answer\":42.3}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: LM, KM",
+              "json_example": "{\"evidence\":[\"KM=2\",\"LM=3\"],\"answer\":42.3}",
               "json_example_answer_only": "{\"answer\":42.3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -218,7 +236,7 @@
               "task_family:analytical_perimeter_scene": 5
             }
           },
-          "prompt": "Use the image showing a geometric scene with measurement annotations. Task: The rectangle shows one side and its diagonal. What is the perimeter of the rectangle?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: LM, KM.\nAnswer format: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"LM\":2,\"KM\":3},\"answer\":42.3}"
+          "prompt": "Use the image showing a geometric scene with measurement annotations. Task: The rectangle shows one side and its diagonal. What is the perimeter of the rectangle?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: LM, KM.\nAnswer format: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[\"KM=2\",\"LM=3\"],\"answer\":42.3}"
         },
         "answer_only": {
           "metadata": {
@@ -228,8 +246,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the perimeter value rounded to one decimal place",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: LM, KM",
-              "json_example": "{\"evidence\":{\"LM\":2,\"KM\":3},\"answer\":42.3}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: LM, KM",
+              "json_example": "{\"evidence\":[\"KM=2\",\"LM=3\"],\"answer\":42.3}",
               "json_example_answer_only": "{\"answer\":42.3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -455,6 +473,10 @@
         "diagonal": "KM",
         "known_side": "LM"
       },
+      "annotation_value_tokens": [
+        "KM=45",
+        "LM=36"
+      ],
       "annotation_values": {
         "KM": 45,
         "LM": 36

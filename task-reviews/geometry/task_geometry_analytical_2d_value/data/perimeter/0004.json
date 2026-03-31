@@ -4,20 +4,20 @@
     "value": 155.2
   },
   "evidence_gt": {
-    "type": "measurement_ref_map",
-    "value": {
-      "SU": 55,
-      "TU": 36
-    }
+    "type": "label_set",
+    "value": [
+      "SU=55",
+      "TU=36"
+    ]
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_2d_value/images/perimeter/0004.png"
   },
   "instance_seed": 54696124727594,
-  "prompt": "You are given an image showing a geometric scene with measurement annotations. Read the marked measurements and answer: The rectangle shows one side and its diagonal. What is the perimeter of the rectangle?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: TU, SU.\nAnswer requirement: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"TU\":2,\"SU\":3},\"answer\":42.3}",
+  "prompt": "You are given an image showing a geometric scene with measurement annotations. Read the marked measurements and answer: The rectangle shows one side and its diagonal. What is the perimeter of the rectangle?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: TU, SU.\nAnswer requirement: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[\"SU=2\",\"TU=3\"],\"answer\":42.3}",
   "prompt_variants": {
-    "answer_and_evidence": "You are given an image showing a geometric scene with measurement annotations. Read the marked measurements and answer: The rectangle shows one side and its diagonal. What is the perimeter of the rectangle?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: TU, SU.\nAnswer requirement: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"TU\":2,\"SU\":3},\"answer\":42.3}",
+    "answer_and_evidence": "You are given an image showing a geometric scene with measurement annotations. Read the marked measurements and answer: The rectangle shows one side and its diagonal. What is the perimeter of the rectangle?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: TU, SU.\nAnswer requirement: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[\"SU=2\",\"TU=3\"],\"answer\":42.3}",
     "answer_only": "You are given an image showing a geometric scene with measurement annotations. Read the marked measurements and answer: The rectangle shows one side and its diagonal. What is the perimeter of the rectangle?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"answer\":42.3}"
   },
   "task": "task_geometry_analytical_2d_value",
@@ -44,6 +44,10 @@
       "evidence_roles": [
         "known_side",
         "diagonal"
+      ],
+      "evidence_tokens": [
+        "SU=55",
+        "TU=36"
       ],
       "formula_expression": "2 * (known_side + sqrt(diagonal^2 - known_side^2))",
       "legacy_query_variant": "rectangle_side_diagonal",
@@ -97,6 +101,10 @@
         "TU",
         "SU"
       ],
+      "label_set": [
+        "SU=55",
+        "TU=36"
+      ],
       "measurement_ref_map": {
         "SU": 55,
         "TU": 36
@@ -107,6 +115,16 @@
           320.03485257504957
         ],
         "TU": [
+          546.14,
+          297.95899118305977
+        ]
+      },
+      "pixel_point_map": {
+        "SU=55": [
+          325.1127272727273,
+          320.03485257504957
+        ],
+        "TU=36": [
           546.14,
           297.95899118305977
         ]
@@ -162,8 +180,8 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the perimeter value rounded to one decimal place",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: TU, SU",
-          "json_example": "{\"evidence\":{\"TU\":2,\"SU\":3},\"answer\":42.3}",
+          "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: TU, SU",
+          "json_example": "{\"evidence\":[\"SU=2\",\"TU=3\"],\"answer\":42.3}",
           "json_example_answer_only": "{\"answer\":42.3}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -195,8 +213,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the perimeter value rounded to one decimal place",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: TU, SU",
-              "json_example": "{\"evidence\":{\"TU\":2,\"SU\":3},\"answer\":42.3}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: TU, SU",
+              "json_example": "{\"evidence\":[\"SU=2\",\"TU=3\"],\"answer\":42.3}",
               "json_example_answer_only": "{\"answer\":42.3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -218,7 +236,7 @@
               "task_family:analytical_perimeter_scene": 5
             }
           },
-          "prompt": "You are given an image showing a geometric scene with measurement annotations. Read the marked measurements and answer: The rectangle shows one side and its diagonal. What is the perimeter of the rectangle?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: TU, SU.\nAnswer requirement: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"TU\":2,\"SU\":3},\"answer\":42.3}"
+          "prompt": "You are given an image showing a geometric scene with measurement annotations. Read the marked measurements and answer: The rectangle shows one side and its diagonal. What is the perimeter of the rectangle?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: TU, SU.\nAnswer requirement: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[\"SU=2\",\"TU=3\"],\"answer\":42.3}"
         },
         "answer_only": {
           "metadata": {
@@ -228,8 +246,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the perimeter value rounded to one decimal place",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: TU, SU",
-              "json_example": "{\"evidence\":{\"TU\":2,\"SU\":3},\"answer\":42.3}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: TU, SU",
+              "json_example": "{\"evidence\":[\"SU=2\",\"TU=3\"],\"answer\":42.3}",
               "json_example_answer_only": "{\"answer\":42.3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -448,6 +466,10 @@
         "diagonal": "SU",
         "known_side": "TU"
       },
+      "annotation_value_tokens": [
+        "SU=55",
+        "TU=36"
+      ],
       "annotation_values": {
         "SU": 55,
         "TU": 36

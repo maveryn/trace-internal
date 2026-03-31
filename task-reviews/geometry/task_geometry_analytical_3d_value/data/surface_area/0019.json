@@ -4,22 +4,22 @@
     "value": 4480
   },
   "evidence_gt": {
-    "type": "measurement_ref_map",
-    "value": {
-      "NO": 16,
-      "NP": 30,
-      "NQ": 50,
-      "OP": 34
-    }
+    "type": "label_set",
+    "value": [
+      "NO=16",
+      "NP=30",
+      "NQ=50",
+      "OP=34"
+    ]
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_3d_value/images/surface_area/0019.png"
   },
   "instance_seed": 5359586476846093,
-  "prompt": "Look at the annotated image showing an annotated 3D solid. Based on the shown values, answer this question: The triangular prism has annotated side lengths for the triangular base and an annotated prism length. What is its total surface area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: NO, NP, OP, NQ.\nAnswer field: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":{\"NO\":2,\"NP\":3,\"OP\":4,\"NQ\":5},\"answer\":8}",
+  "prompt": "Look at the annotated image showing an annotated 3D solid. Based on the shown values, answer this question: The triangular prism has annotated side lengths for the triangular base and an annotated prism length. What is its total surface area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: NO, NP, OP, NQ.\nAnswer field: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":[\"NO=2\",\"NP=3\",\"NQ=4\",\"OP=5\"],\"answer\":8}",
   "prompt_variants": {
-    "answer_and_evidence": "Look at the annotated image showing an annotated 3D solid. Based on the shown values, answer this question: The triangular prism has annotated side lengths for the triangular base and an annotated prism length. What is its total surface area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: NO, NP, OP, NQ.\nAnswer field: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":{\"NO\":2,\"NP\":3,\"OP\":4,\"NQ\":5},\"answer\":8}",
+    "answer_and_evidence": "Look at the annotated image showing an annotated 3D solid. Based on the shown values, answer this question: The triangular prism has annotated side lengths for the triangular base and an annotated prism length. What is its total surface area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: NO, NP, OP, NQ.\nAnswer field: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":[\"NO=2\",\"NP=3\",\"NQ=4\",\"OP=5\"],\"answer\":8}",
     "answer_only": "Look at the annotated image showing an annotated 3D solid. Based on the shown values, answer this question: The triangular prism has annotated side lengths for the triangular base and an annotated prism length. What is its total surface area in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the value as an integer.\nExample JSON:\n{\"answer\":8}"
   },
   "task": "task_geometry_analytical_3d_value",
@@ -54,6 +54,12 @@
         "b",
         "c",
         "L"
+      ],
+      "evidence_tokens": [
+        "NO=16",
+        "NP=30",
+        "NQ=50",
+        "OP=34"
       ],
       "formula_expression": "SA = a*b + L*(a + b + c)",
       "legacy_query_variant": "triangular_prism_given_a_b_c_l",
@@ -106,6 +112,12 @@
         "OP",
         "NQ"
       ],
+      "label_set": [
+        "NO=16",
+        "NP=30",
+        "NQ=50",
+        "OP=34"
+      ],
       "measurement_ref_map": {
         "NO": 16,
         "NP": 30,
@@ -126,6 +138,24 @@
           361.1957331649713
         ],
         "OP": [
+          499.3220392220098,
+          182.63004941094906
+        ]
+      },
+      "pixel_point_map": {
+        "NO=16": [
+          459.0163321763384,
+          339.8042668350287
+        ],
+        "NP=30": [
+          388.0511059111111,
+          159.33333333333334
+        ],
+        "NQ=50": [
+          224.03477364300502,
+          361.1957331649713
+        ],
+        "OP=34": [
           499.3220392220098,
           182.63004941094906
         ]
@@ -183,8 +213,8 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the value as an integer",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: NO, NP, OP, NQ",
-          "json_example": "{\"evidence\":{\"NO\":2,\"NP\":3,\"OP\":4,\"NQ\":5},\"answer\":8}",
+          "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: NO, NP, OP, NQ",
+          "json_example": "{\"evidence\":[\"NO=2\",\"NP=3\",\"NQ=4\",\"OP=5\"],\"answer\":8}",
           "json_example_answer_only": "{\"answer\":8}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -216,8 +246,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: NO, NP, OP, NQ",
-              "json_example": "{\"evidence\":{\"NO\":2,\"NP\":3,\"OP\":4,\"NQ\":5},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: NO, NP, OP, NQ",
+              "json_example": "{\"evidence\":[\"NO=2\",\"NP=3\",\"NQ=4\",\"OP=5\"],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -239,7 +269,7 @@
               "task_family:analytical_single_solid": 5
             }
           },
-          "prompt": "Look at the annotated image showing an annotated 3D solid. Based on the shown values, answer this question: The triangular prism has annotated side lengths for the triangular base and an annotated prism length. What is its total surface area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: NO, NP, OP, NQ.\nAnswer field: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":{\"NO\":2,\"NP\":3,\"OP\":4,\"NQ\":5},\"answer\":8}"
+          "prompt": "Look at the annotated image showing an annotated 3D solid. Based on the shown values, answer this question: The triangular prism has annotated side lengths for the triangular base and an annotated prism length. What is its total surface area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: NO, NP, OP, NQ.\nAnswer field: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":[\"NO=2\",\"NP=3\",\"NQ=4\",\"OP=5\"],\"answer\":8}"
         },
         "answer_only": {
           "metadata": {
@@ -249,8 +279,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: NO, NP, OP, NQ",
-              "json_example": "{\"evidence\":{\"NO\":2,\"NP\":3,\"OP\":4,\"NQ\":5},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: NO, NP, OP, NQ",
+              "json_example": "{\"evidence\":[\"NO=2\",\"NP=3\",\"NQ=4\",\"OP=5\"],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -506,6 +536,12 @@
         "b": "NP",
         "c": "OP"
       },
+      "annotation_value_tokens": [
+        "NO=16",
+        "NP=30",
+        "NQ=50",
+        "OP=34"
+      ],
       "annotation_values": {
         "NO": 16,
         "NP": 30,

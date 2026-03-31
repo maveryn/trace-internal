@@ -4,20 +4,20 @@
     "value": 120
   },
   "evidence_gt": {
-    "type": "measurement_ref_map",
-    "value": {
-      "NO": 24,
-      "OP": 26
-    }
+    "type": "label_set",
+    "value": [
+      "NO=24",
+      "OP=26"
+    ]
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_2d_value/images/area/0002.png"
   },
   "instance_seed": 104513223029979,
-  "prompt": "The image shows a geometric shape with measurement annotations. Read the marked measurements and answer: A leg length and the hypotenuse of the right triangle are annotated. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: NO, OP.\nAnswer rule: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"NO\":2,\"OP\":3},\"answer\":8}",
+  "prompt": "The image shows a geometric shape with measurement annotations. Read the marked measurements and answer: A leg length and the hypotenuse of the right triangle are annotated. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: NO, OP.\nAnswer rule: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":[\"NO=2\",\"OP=3\"],\"answer\":8}",
   "prompt_variants": {
-    "answer_and_evidence": "The image shows a geometric shape with measurement annotations. Read the marked measurements and answer: A leg length and the hypotenuse of the right triangle are annotated. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: NO, OP.\nAnswer rule: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"NO\":2,\"OP\":3},\"answer\":8}",
+    "answer_and_evidence": "The image shows a geometric shape with measurement annotations. Read the marked measurements and answer: A leg length and the hypotenuse of the right triangle are annotated. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: NO, OP.\nAnswer rule: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":[\"NO=2\",\"OP=3\"],\"answer\":8}",
     "answer_only": "The image shows a geometric shape with measurement annotations. Read the marked measurements and answer: A leg length and the hypotenuse of the right triangle are annotated. What is its area in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"answer\":8}"
   },
   "task": "task_geometry_analytical_2d_value",
@@ -49,6 +49,10 @@
       "evidence_roles": [
         "leg",
         "hyp"
+      ],
+      "evidence_tokens": [
+        "NO=24",
+        "OP=26"
       ],
       "formula_expression": "A = (leg * sqrt(hyp^2 - leg^2)) / 2",
       "legacy_query_variant": "triangle_derived",
@@ -108,6 +112,10 @@
         "NO",
         "OP"
       ],
+      "label_set": [
+        "NO=24",
+        "OP=26"
+      ],
       "measurement_ref_map": {
         "NO": 24,
         "OP": 26
@@ -118,6 +126,16 @@
           177.0
         ],
         "OP": [
+          515.7692307692308,
+          280.84615384615387
+        ]
+      },
+      "pixel_point_map": {
+        "NO=24": [
+          505.0,
+          177.0
+        ],
+        "OP=26": [
           515.7692307692308,
           280.84615384615387
         ]
@@ -187,8 +205,8 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the area value as an integer",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: NO, OP",
-          "json_example": "{\"evidence\":{\"NO\":2,\"OP\":3},\"answer\":8}",
+          "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: NO, OP",
+          "json_example": "{\"evidence\":[\"NO=2\",\"OP=3\"],\"answer\":8}",
           "json_example_answer_only": "{\"answer\":8}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -220,8 +238,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the area value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: NO, OP",
-              "json_example": "{\"evidence\":{\"NO\":2,\"OP\":3},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: NO, OP",
+              "json_example": "{\"evidence\":[\"NO=2\",\"OP=3\"],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -243,7 +261,7 @@
               "task_family:analytical_single_shape": 5
             }
           },
-          "prompt": "The image shows a geometric shape with measurement annotations. Read the marked measurements and answer: A leg length and the hypotenuse of the right triangle are annotated. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: NO, OP.\nAnswer rule: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"NO\":2,\"OP\":3},\"answer\":8}"
+          "prompt": "The image shows a geometric shape with measurement annotations. Read the marked measurements and answer: A leg length and the hypotenuse of the right triangle are annotated. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: NO, OP.\nAnswer rule: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":[\"NO=2\",\"OP=3\"],\"answer\":8}"
         },
         "answer_only": {
           "metadata": {
@@ -253,8 +271,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the area value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: NO, OP",
-              "json_example": "{\"evidence\":{\"NO\":2,\"OP\":3},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: NO, OP",
+              "json_example": "{\"evidence\":[\"NO=2\",\"OP=3\"],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -476,6 +494,10 @@
         "hyp": "OP",
         "leg": "NO"
       },
+      "annotation_value_tokens": [
+        "NO=24",
+        "OP=26"
+      ],
       "annotation_values": {
         "NO": 24,
         "OP": 26

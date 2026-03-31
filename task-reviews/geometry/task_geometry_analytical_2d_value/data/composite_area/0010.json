@@ -4,22 +4,22 @@
     "value": 341
   },
   "evidence_gt": {
-    "type": "measurement_ref_map",
-    "value": {
-      "AB": 7,
-      "CB": 13,
-      "ED": 25,
-      "EZ": 10
-    }
+    "type": "label_set",
+    "value": [
+      "AB=7",
+      "CB=13",
+      "ED=25",
+      "EZ=10"
+    ]
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_2d_value/images/composite_area/0010.png"
   },
   "instance_seed": 5793532661633314,
-  "prompt": "Work from the annotated scene showing a shaded composite geometric region with measurement annotations. Task: The shaded figure is a step-shaped union of two rectangles. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: ED, EZ, CB, AB.\nAnswer field: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"ED\":2,\"EZ\":3,\"CB\":4,\"AB\":5},\"answer\":8}",
+  "prompt": "Work from the annotated scene showing a shaded composite geometric region with measurement annotations. Task: The shaded figure is a step-shaped union of two rectangles. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: ED, EZ, CB, AB.\nAnswer field: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":[\"AB=2\",\"CB=3\",\"ED=4\",\"EZ=5\"],\"answer\":8}",
   "prompt_variants": {
-    "answer_and_evidence": "Work from the annotated scene showing a shaded composite geometric region with measurement annotations. Task: The shaded figure is a step-shaped union of two rectangles. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: ED, EZ, CB, AB.\nAnswer field: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"ED\":2,\"EZ\":3,\"CB\":4,\"AB\":5},\"answer\":8}",
+    "answer_and_evidence": "Work from the annotated scene showing a shaded composite geometric region with measurement annotations. Task: The shaded figure is a step-shaped union of two rectangles. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: ED, EZ, CB, AB.\nAnswer field: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":[\"AB=2\",\"CB=3\",\"ED=4\",\"EZ=5\"],\"answer\":8}",
     "answer_only": "Work from the annotated scene showing a shaded composite geometric region with measurement annotations. Task: The shaded figure is a step-shaped union of two rectangles. What is the area of the shaded region in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"answer\":8}"
   },
   "task": "task_geometry_analytical_2d_value",
@@ -54,6 +54,12 @@
         "left_height",
         "right_width",
         "right_height"
+      ],
+      "evidence_tokens": [
+        "AB=7",
+        "CB=13",
+        "ED=25",
+        "EZ=10"
       ],
       "formula_expression": "left_width * left_height + right_width * right_height",
       "legacy_query_variant": "step_rectangles_union",
@@ -114,6 +120,12 @@
         "CB",
         "AB"
       ],
+      "label_set": [
+        "AB=7",
+        "CB=13",
+        "ED=25",
+        "EZ=10"
+      ],
       "measurement_ref_map": {
         "AB": 7,
         "CB": 13,
@@ -134,6 +146,24 @@
           248.92665254187796
         ],
         "EZ": [
+          69.44666666666667,
+          273.3424420155622
+        ]
+      },
+      "pixel_point_map": {
+        "AB=7": [
+          443.62000000000006,
+          286.30717885766745
+        ],
+        "CB=13": [
+          369.5394736842106,
+          274.6227928927552
+        ],
+        "ED=25": [
+          205.3194736842105,
+          248.92665254187796
+        ],
+        "EZ=10": [
           69.44666666666667,
           273.3424420155622
         ]
@@ -197,8 +227,8 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the area value as an integer",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: ED, EZ, CB, AB",
-          "json_example": "{\"evidence\":{\"ED\":2,\"EZ\":3,\"CB\":4,\"AB\":5},\"answer\":8}",
+          "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: ED, EZ, CB, AB",
+          "json_example": "{\"evidence\":[\"AB=2\",\"CB=3\",\"ED=4\",\"EZ=5\"],\"answer\":8}",
           "json_example_answer_only": "{\"answer\":8}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -230,8 +260,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the area value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: ED, EZ, CB, AB",
-              "json_example": "{\"evidence\":{\"ED\":2,\"EZ\":3,\"CB\":4,\"AB\":5},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: ED, EZ, CB, AB",
+              "json_example": "{\"evidence\":[\"AB=2\",\"CB=3\",\"ED=4\",\"EZ=5\"],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -253,7 +283,7 @@
               "task_family:analytical_composite_area_scene": 5
             }
           },
-          "prompt": "Work from the annotated scene showing a shaded composite geometric region with measurement annotations. Task: The shaded figure is a step-shaped union of two rectangles. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: ED, EZ, CB, AB.\nAnswer field: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"ED\":2,\"EZ\":3,\"CB\":4,\"AB\":5},\"answer\":8}"
+          "prompt": "Work from the annotated scene showing a shaded composite geometric region with measurement annotations. Task: The shaded figure is a step-shaped union of two rectangles. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: ED, EZ, CB, AB.\nAnswer field: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":[\"AB=2\",\"CB=3\",\"ED=4\",\"EZ=5\"],\"answer\":8}"
         },
         "answer_only": {
           "metadata": {
@@ -263,8 +293,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the area value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: ED, EZ, CB, AB",
-              "json_example": "{\"evidence\":{\"ED\":2,\"EZ\":3,\"CB\":4,\"AB\":5},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: ED, EZ, CB, AB",
+              "json_example": "{\"evidence\":[\"AB=2\",\"CB=3\",\"ED=4\",\"EZ=5\"],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -490,6 +520,12 @@
         "right_height": "AB",
         "right_width": "CB"
       },
+      "annotation_value_tokens": [
+        "AB=7",
+        "CB=13",
+        "ED=25",
+        "EZ=10"
+      ],
       "annotation_values": {
         "AB": 7,
         "CB": 13,

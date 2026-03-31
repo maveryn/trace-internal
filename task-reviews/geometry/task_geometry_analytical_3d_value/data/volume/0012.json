@@ -4,21 +4,21 @@
     "value": 2760
   },
   "evidence_gt": {
-    "type": "measurement_ref_map",
-    "value": {
-      "DE": 23,
-      "DG": 15,
-      "EF": 8
-    }
+    "type": "label_set",
+    "value": [
+      "DE=23",
+      "DG=15",
+      "EF=8"
+    ]
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_3d_value/images/volume/0012.png"
   },
   "instance_seed": 4276514804363001,
-  "prompt": "Work from the annotated figure showing an annotated 3D solid. Based on the shown values, answer this question: The rectangular prism has annotated length, width, and height. What is its volume in cubic units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: DE, EF, DG.\nAnswer rule: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":{\"DE\":2,\"EF\":3,\"DG\":4},\"answer\":8}",
+  "prompt": "Work from the annotated figure showing an annotated 3D solid. Based on the shown values, answer this question: The rectangular prism has annotated length, width, and height. What is its volume in cubic units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: DE, EF, DG.\nAnswer rule: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":[\"DE=2\",\"DG=3\",\"EF=4\"],\"answer\":8}",
   "prompt_variants": {
-    "answer_and_evidence": "Work from the annotated figure showing an annotated 3D solid. Based on the shown values, answer this question: The rectangular prism has annotated length, width, and height. What is its volume in cubic units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: DE, EF, DG.\nAnswer rule: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":{\"DE\":2,\"EF\":3,\"DG\":4},\"answer\":8}",
+    "answer_and_evidence": "Work from the annotated figure showing an annotated 3D solid. Based on the shown values, answer this question: The rectangular prism has annotated length, width, and height. What is its volume in cubic units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: DE, EF, DG.\nAnswer rule: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":[\"DE=2\",\"DG=3\",\"EF=4\"],\"answer\":8}",
     "answer_only": "Work from the annotated figure showing an annotated 3D solid. Based on the shown values, answer this question: The rectangular prism has annotated length, width, and height. What is its volume in cubic units?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the value as an integer.\nExample JSON:\n{\"answer\":8}"
   },
   "task": "task_geometry_analytical_3d_value",
@@ -49,6 +49,11 @@
         "l",
         "w",
         "h"
+      ],
+      "evidence_tokens": [
+        "DE=23",
+        "DG=15",
+        "EF=8"
       ],
       "formula_expression": "V = l * w * h",
       "legacy_query_variant": "rectangular_prism_given_lwh",
@@ -98,6 +103,11 @@
         "EF",
         "DG"
       ],
+      "label_set": [
+        "DE=23",
+        "DG=15",
+        "EF=8"
+      ],
       "measurement_ref_map": {
         "DE": 23,
         "DG": 15,
@@ -113,6 +123,20 @@
           173.71851795409438
         ],
         "EF": [
+          521.9939661308313,
+          579.9596491437522
+        ]
+      },
+      "pixel_point_map": {
+        "DE=23": [
+          389.5326838360834,
+          467.76510472209617
+        ],
+        "DG=15": [
+          234.25011110331693,
+          173.71851795409438
+        ],
+        "EF=8": [
           521.9939661308313,
           579.9596491437522
         ]
@@ -166,8 +190,8 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the value as an integer",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: DE, EF, DG",
-          "json_example": "{\"evidence\":{\"DE\":2,\"EF\":3,\"DG\":4},\"answer\":8}",
+          "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: DE, EF, DG",
+          "json_example": "{\"evidence\":[\"DE=2\",\"DG=3\",\"EF=4\"],\"answer\":8}",
           "json_example_answer_only": "{\"answer\":8}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -199,8 +223,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: DE, EF, DG",
-              "json_example": "{\"evidence\":{\"DE\":2,\"EF\":3,\"DG\":4},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: DE, EF, DG",
+              "json_example": "{\"evidence\":[\"DE=2\",\"DG=3\",\"EF=4\"],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -222,7 +246,7 @@
               "task_family:analytical_single_solid": 5
             }
           },
-          "prompt": "Work from the annotated figure showing an annotated 3D solid. Based on the shown values, answer this question: The rectangular prism has annotated length, width, and height. What is its volume in cubic units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: DE, EF, DG.\nAnswer rule: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":{\"DE\":2,\"EF\":3,\"DG\":4},\"answer\":8}"
+          "prompt": "Work from the annotated figure showing an annotated 3D solid. Based on the shown values, answer this question: The rectangular prism has annotated length, width, and height. What is its volume in cubic units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: DE, EF, DG.\nAnswer rule: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":[\"DE=2\",\"DG=3\",\"EF=4\"],\"answer\":8}"
         },
         "answer_only": {
           "metadata": {
@@ -232,8 +256,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: DE, EF, DG",
-              "json_example": "{\"evidence\":{\"DE\":2,\"EF\":3,\"DG\":4},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: DE, EF, DG",
+              "json_example": "{\"evidence\":[\"DE=2\",\"DG=3\",\"EF=4\"],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -497,6 +521,11 @@
         "l": "DE",
         "w": "EF"
       },
+      "annotation_value_tokens": [
+        "DE=23",
+        "DG=15",
+        "EF=8"
+      ],
       "annotation_values": {
         "DE": 23,
         "DG": 15,

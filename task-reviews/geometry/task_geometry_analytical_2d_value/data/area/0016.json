@@ -4,20 +4,20 @@
     "value": 24
   },
   "evidence_gt": {
-    "type": "measurement_ref_map",
-    "value": {
-      "JK": 8,
-      "JL": 6
-    }
+    "type": "label_set",
+    "value": [
+      "JK=8",
+      "JL=6"
+    ]
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_2d_value/images/area/0016.png"
   },
   "instance_seed": 6443616671125308,
-  "prompt": "Work from the annotated figure showing a geometric shape with measurement annotations. Task: The right triangle has an annotated base and height. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: JK, JL.\nAnswer field: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"JK\":2,\"JL\":3},\"answer\":8}",
+  "prompt": "Work from the annotated figure showing a geometric shape with measurement annotations. Task: The right triangle has an annotated base and height. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: JK, JL.\nAnswer field: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":[\"JK=2\",\"JL=3\"],\"answer\":8}",
   "prompt_variants": {
-    "answer_and_evidence": "Work from the annotated figure showing a geometric shape with measurement annotations. Task: The right triangle has an annotated base and height. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: JK, JL.\nAnswer field: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"JK\":2,\"JL\":3},\"answer\":8}",
+    "answer_and_evidence": "Work from the annotated figure showing a geometric shape with measurement annotations. Task: The right triangle has an annotated base and height. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: JK, JL.\nAnswer field: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":[\"JK=2\",\"JL=3\"],\"answer\":8}",
     "answer_only": "Work from the annotated figure showing a geometric shape with measurement annotations. Task: The right triangle has an annotated base and height. What is its area in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"answer\":8}"
   },
   "task": "task_geometry_analytical_2d_value",
@@ -49,6 +49,10 @@
       "evidence_roles": [
         "b",
         "h"
+      ],
+      "evidence_tokens": [
+        "JK=8",
+        "JL=6"
       ],
       "formula_expression": "A = (b * h) / 2",
       "legacy_query_variant": "triangle_explicit",
@@ -108,6 +112,10 @@
         "JK",
         "JL"
       ],
+      "label_set": [
+        "JK=8",
+        "JL=6"
+      ],
       "measurement_ref_map": {
         "JK": 8,
         "JL": 6
@@ -118,6 +126,16 @@
           170.5
         ],
         "JL": [
+          190.5,
+          218.0
+        ]
+      },
+      "pixel_point_map": {
+        "JK=8": [
+          248.0,
+          170.5
+        ],
+        "JL=6": [
           190.5,
           218.0
         ]
@@ -187,8 +205,8 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the area value as an integer",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: JK, JL",
-          "json_example": "{\"evidence\":{\"JK\":2,\"JL\":3},\"answer\":8}",
+          "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: JK, JL",
+          "json_example": "{\"evidence\":[\"JK=2\",\"JL=3\"],\"answer\":8}",
           "json_example_answer_only": "{\"answer\":8}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -220,8 +238,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the area value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: JK, JL",
-              "json_example": "{\"evidence\":{\"JK\":2,\"JL\":3},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: JK, JL",
+              "json_example": "{\"evidence\":[\"JK=2\",\"JL=3\"],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -243,7 +261,7 @@
               "task_family:analytical_single_shape": 5
             }
           },
-          "prompt": "Work from the annotated figure showing a geometric shape with measurement annotations. Task: The right triangle has an annotated base and height. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: JK, JL.\nAnswer field: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"JK\":2,\"JL\":3},\"answer\":8}"
+          "prompt": "Work from the annotated figure showing a geometric shape with measurement annotations. Task: The right triangle has an annotated base and height. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: JK, JL.\nAnswer field: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":[\"JK=2\",\"JL=3\"],\"answer\":8}"
         },
         "answer_only": {
           "metadata": {
@@ -253,8 +271,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the area value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: JK, JL",
-              "json_example": "{\"evidence\":{\"JK\":2,\"JL\":3},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: JK, JL",
+              "json_example": "{\"evidence\":[\"JK=2\",\"JL=3\"],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -482,6 +500,10 @@
         "b": "JK",
         "h": "JL"
       },
+      "annotation_value_tokens": [
+        "JK=8",
+        "JL=6"
+      ],
       "annotation_values": {
         "JK": 8,
         "JL": 6

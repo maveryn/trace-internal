@@ -4,20 +4,20 @@
     "value": 864
   },
   "evidence_gt": {
-    "type": "measurement_ref_map",
-    "value": {
-      "UV": 12,
-      "WX": 30
-    }
+    "type": "label_set",
+    "value": [
+      "UV=12",
+      "WX=30"
+    ]
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_3d_value/images/surface_area/0021.png"
   },
   "instance_seed": 5161299296996229,
-  "prompt": "Work from the annotated figure showing an annotated 3D solid. Question: The square pyramid has an annotated base side and slant height. What is its total surface area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: UV, WX.\nAnswer field: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":{\"UV\":2,\"WX\":3},\"answer\":8}",
+  "prompt": "Work from the annotated figure showing an annotated 3D solid. Question: The square pyramid has an annotated base side and slant height. What is its total surface area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: UV, WX.\nAnswer field: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":[\"UV=2\",\"WX=3\"],\"answer\":8}",
   "prompt_variants": {
-    "answer_and_evidence": "Work from the annotated figure showing an annotated 3D solid. Question: The square pyramid has an annotated base side and slant height. What is its total surface area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: UV, WX.\nAnswer field: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":{\"UV\":2,\"WX\":3},\"answer\":8}",
+    "answer_and_evidence": "Work from the annotated figure showing an annotated 3D solid. Question: The square pyramid has an annotated base side and slant height. What is its total surface area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: UV, WX.\nAnswer field: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":[\"UV=2\",\"WX=3\"],\"answer\":8}",
     "answer_only": "Work from the annotated figure showing an annotated 3D solid. Question: The square pyramid has an annotated base side and slant height. What is its total surface area in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the value as an integer.\nExample JSON:\n{\"answer\":8}"
   },
   "task": "task_geometry_analytical_3d_value",
@@ -44,6 +44,10 @@
       "evidence_roles": [
         "s",
         "l"
+      ],
+      "evidence_tokens": [
+        "UV=12",
+        "WX=30"
       ],
       "formula_expression": "SA = s^2 + 2*s*l",
       "legacy_query_variant": "square_pyramid_given_base_side_slant_height",
@@ -90,6 +94,10 @@
         "UV",
         "WX"
       ],
+      "label_set": [
+        "UV=12",
+        "WX=30"
+      ],
       "measurement_ref_map": {
         "UV": 12,
         "WX": 30
@@ -100,6 +108,16 @@
           448.73398807552445
         ],
         "WX": [
+          349.48109553699425,
+          279.86544757738903
+        ]
+      },
+      "pixel_point_map": {
+        "UV=12": [
+          437.6606446729349,
+          448.73398807552445
+        ],
+        "WX=30": [
           349.48109553699425,
           279.86544757738903
         ]
@@ -149,8 +167,8 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the value as an integer",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: UV, WX",
-          "json_example": "{\"evidence\":{\"UV\":2,\"WX\":3},\"answer\":8}",
+          "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: UV, WX",
+          "json_example": "{\"evidence\":[\"UV=2\",\"WX=3\"],\"answer\":8}",
           "json_example_answer_only": "{\"answer\":8}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -182,8 +200,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: UV, WX",
-              "json_example": "{\"evidence\":{\"UV\":2,\"WX\":3},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: UV, WX",
+              "json_example": "{\"evidence\":[\"UV=2\",\"WX=3\"],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -205,7 +223,7 @@
               "task_family:analytical_single_solid": 5
             }
           },
-          "prompt": "Work from the annotated figure showing an annotated 3D solid. Question: The square pyramid has an annotated base side and slant height. What is its total surface area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: UV, WX.\nAnswer field: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":{\"UV\":2,\"WX\":3},\"answer\":8}"
+          "prompt": "Work from the annotated figure showing an annotated 3D solid. Question: The square pyramid has an annotated base side and slant height. What is its total surface area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: UV, WX.\nAnswer field: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":[\"UV=2\",\"WX=3\"],\"answer\":8}"
         },
         "answer_only": {
           "metadata": {
@@ -215,8 +233,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: UV, WX",
-              "json_example": "{\"evidence\":{\"UV\":2,\"WX\":3},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: UV, WX",
+              "json_example": "{\"evidence\":[\"UV=2\",\"WX=3\"],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -464,6 +482,10 @@
         "l": "WX",
         "s": "UV"
       },
+      "annotation_value_tokens": [
+        "UV=12",
+        "WX=30"
+      ],
       "annotation_values": {
         "UV": 12,
         "WX": 30

@@ -123,7 +123,11 @@ def test_geometry_analytical_2d_value_tracks_scene_and_query_variants(scene_vari
     task = GeometryAnalytical2DValueTask()
     out = task.generate(23031, params={"scene_variant": scene_variant, "query_variant": query_variant}, max_attempts=20)
     trace = out.trace_payload
-    assert out.evidence_gt.type == "measurement_ref_map"
+    assert out.evidence_gt.type == "label_set"
+    assert all(isinstance(item, str) and "=" in item for item in out.evidence_gt.value)
+    assert set(out.evidence_gt.value) == set(trace["execution_trace"]["evidence_tokens"])
+    assert set(out.evidence_gt.value) == set(trace["projected_evidence"]["label_set"])
+    assert set(out.evidence_gt.value) == set(trace["projected_evidence"]["pixel_point_map"].keys())
     assert out.task_variant == query_variant
     assert trace["execution_trace"]["scene_variant"] == scene_variant
     assert trace["execution_trace"]["query_variant"] == query_variant
@@ -144,7 +148,11 @@ def test_geometry_analytical_3d_value_tracks_scene_and_query_variants(scene_vari
     task = GeometryAnalytical3DValueTask()
     out = task.generate(23041, params={"scene_variant": scene_variant, "query_variant": query_variant}, max_attempts=20)
     trace = out.trace_payload
-    assert out.evidence_gt.type == "measurement_ref_map"
+    assert out.evidence_gt.type == "label_set"
+    assert all(isinstance(item, str) and "=" in item for item in out.evidence_gt.value)
+    assert set(out.evidence_gt.value) == set(trace["execution_trace"]["evidence_tokens"])
+    assert set(out.evidence_gt.value) == set(trace["projected_evidence"]["label_set"])
+    assert set(out.evidence_gt.value) == set(trace["projected_evidence"]["pixel_point_map"].keys())
     assert out.task_variant == query_variant
     assert trace["execution_trace"]["scene_variant"] == scene_variant
     assert trace["execution_trace"]["query_variant"] == query_variant

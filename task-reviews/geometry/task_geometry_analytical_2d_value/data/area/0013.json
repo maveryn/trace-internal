@@ -4,20 +4,20 @@
     "value": 156
   },
   "evidence_gt": {
-    "type": "measurement_ref_map",
-    "value": {
-      "VW": 52,
-      "XY": 6
-    }
+    "type": "label_set",
+    "value": [
+      "VW=52",
+      "XY=6"
+    ]
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_2d_value/images/area/0013.png"
   },
   "instance_seed": 805500509393064,
-  "prompt": "You are given an image showing a geometric shape with measurement annotations. Read the marked measurements and answer: The rhombus has both diagonals annotated. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: VW, XY.\nAnswer format: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"VW\":2,\"XY\":3},\"answer\":8}",
+  "prompt": "You are given an image showing a geometric shape with measurement annotations. Read the marked measurements and answer: The rhombus has both diagonals annotated. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: VW, XY.\nAnswer format: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":[\"VW=2\",\"XY=3\"],\"answer\":8}",
   "prompt_variants": {
-    "answer_and_evidence": "You are given an image showing a geometric shape with measurement annotations. Read the marked measurements and answer: The rhombus has both diagonals annotated. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: VW, XY.\nAnswer format: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"VW\":2,\"XY\":3},\"answer\":8}",
+    "answer_and_evidence": "You are given an image showing a geometric shape with measurement annotations. Read the marked measurements and answer: The rhombus has both diagonals annotated. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: VW, XY.\nAnswer format: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":[\"VW=2\",\"XY=3\"],\"answer\":8}",
     "answer_only": "You are given an image showing a geometric shape with measurement annotations. Read the marked measurements and answer: The rhombus has both diagonals annotated. What is its area in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"answer\":8}"
   },
   "task": "task_geometry_analytical_2d_value",
@@ -49,6 +49,10 @@
       "evidence_roles": [
         "d1",
         "d2"
+      ],
+      "evidence_tokens": [
+        "VW=52",
+        "XY=6"
       ],
       "formula_expression": "A = (d1 * d2) / 2",
       "legacy_query_variant": "rhombus_explicit",
@@ -108,6 +112,10 @@
         "VW",
         "XY"
       ],
+      "label_set": [
+        "VW=52",
+        "XY=6"
+      ],
       "measurement_ref_map": {
         "VW": 52,
         "XY": 6
@@ -118,6 +126,16 @@
           107.59999999999998
         ],
         "XY": [
+          375.2,
+          89.0
+        ]
+      },
+      "pixel_point_map": {
+        "VW=52": [
+          474.0,
+          107.59999999999998
+        ],
+        "XY=6": [
           375.2,
           89.0
         ]
@@ -187,8 +205,8 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the area value as an integer",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: VW, XY",
-          "json_example": "{\"evidence\":{\"VW\":2,\"XY\":3},\"answer\":8}",
+          "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: VW, XY",
+          "json_example": "{\"evidence\":[\"VW=2\",\"XY=3\"],\"answer\":8}",
           "json_example_answer_only": "{\"answer\":8}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -220,8 +238,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the area value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: VW, XY",
-              "json_example": "{\"evidence\":{\"VW\":2,\"XY\":3},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: VW, XY",
+              "json_example": "{\"evidence\":[\"VW=2\",\"XY=3\"],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -243,7 +261,7 @@
               "task_family:analytical_single_shape": 5
             }
           },
-          "prompt": "You are given an image showing a geometric shape with measurement annotations. Read the marked measurements and answer: The rhombus has both diagonals annotated. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: VW, XY.\nAnswer format: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"VW\":2,\"XY\":3},\"answer\":8}"
+          "prompt": "You are given an image showing a geometric shape with measurement annotations. Read the marked measurements and answer: The rhombus has both diagonals annotated. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: VW, XY.\nAnswer format: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":[\"VW=2\",\"XY=3\"],\"answer\":8}"
         },
         "answer_only": {
           "metadata": {
@@ -253,8 +271,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the area value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: VW, XY",
-              "json_example": "{\"evidence\":{\"VW\":2,\"XY\":3},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: VW, XY",
+              "json_example": "{\"evidence\":[\"VW=2\",\"XY=3\"],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -490,6 +508,10 @@
         "d1": "VW",
         "d2": "XY"
       },
+      "annotation_value_tokens": [
+        "VW=52",
+        "XY=6"
+      ],
       "annotation_values": {
         "VW": 52,
         "XY": 6

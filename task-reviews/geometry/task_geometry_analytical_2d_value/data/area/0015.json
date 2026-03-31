@@ -4,19 +4,19 @@
     "value": "676π"
   },
   "evidence_gt": {
-    "type": "measurement_ref_map",
-    "value": {
-      "VW": 52
-    }
+    "type": "label_set",
+    "value": [
+      "VW=52"
+    ]
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_2d_value/images/area/0015.png"
   },
   "instance_seed": 6841724971648157,
-  "prompt": "The image shows a geometric shape with measurement annotations. Read the marked measurements and answer: The circle has an annotated diameter. What is its area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: VW.\nAnswer rule: set \"answer\" to the area value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":{\"VW\":2},\"answer\":\"12π\"}",
+  "prompt": "The image shows a geometric shape with measurement annotations. Read the marked measurements and answer: The circle has an annotated diameter. What is its area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: VW.\nAnswer rule: set \"answer\" to the area value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":[\"VW=2\"],\"answer\":\"12π\"}",
   "prompt_variants": {
-    "answer_and_evidence": "The image shows a geometric shape with measurement annotations. Read the marked measurements and answer: The circle has an annotated diameter. What is its area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: VW.\nAnswer rule: set \"answer\" to the area value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":{\"VW\":2},\"answer\":\"12π\"}",
+    "answer_and_evidence": "The image shows a geometric shape with measurement annotations. Read the marked measurements and answer: The circle has an annotated diameter. What is its area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: VW.\nAnswer rule: set \"answer\" to the area value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":[\"VW=2\"],\"answer\":\"12π\"}",
     "answer_only": "The image shows a geometric shape with measurement annotations. Read the marked measurements and answer: The circle has an annotated diameter. What is its area? Express the result in kπ form.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the area value in the form kπ (for example 12π).\nExample JSON:\n{\"answer\":\"12π\"}"
   },
   "task": "task_geometry_analytical_2d_value",
@@ -43,6 +43,9 @@
       },
       "evidence_roles": [
         "d"
+      ],
+      "evidence_tokens": [
+        "VW=52"
       ],
       "formula_expression": "A = π * (d/2)^2",
       "legacy_query_variant": "circle_derived",
@@ -99,11 +102,20 @@
       "id_set": [
         "VW"
       ],
+      "label_set": [
+        "VW=52"
+      ],
       "measurement_ref_map": {
         "VW": 52
       },
       "pixel_annotation_centers": {
         "VW": [
+          312.0,
+          244.0
+        ]
+      },
+      "pixel_point_map": {
+        "VW=52": [
           312.0,
           244.0
         ]
@@ -169,8 +181,8 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the area value in the form kπ (for example 12π)",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: VW",
-          "json_example": "{\"evidence\":{\"VW\":2},\"answer\":\"12π\"}",
+          "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: VW",
+          "json_example": "{\"evidence\":[\"VW=2\"],\"answer\":\"12π\"}",
           "json_example_answer_only": "{\"answer\":\"12π\"}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -202,8 +214,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the area value in the form kπ (for example 12π)",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: VW",
-              "json_example": "{\"evidence\":{\"VW\":2},\"answer\":\"12π\"}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: VW",
+              "json_example": "{\"evidence\":[\"VW=2\"],\"answer\":\"12π\"}",
               "json_example_answer_only": "{\"answer\":\"12π\"}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -225,7 +237,7 @@
               "task_family:analytical_single_shape": 5
             }
           },
-          "prompt": "The image shows a geometric shape with measurement annotations. Read the marked measurements and answer: The circle has an annotated diameter. What is its area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: VW.\nAnswer rule: set \"answer\" to the area value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":{\"VW\":2},\"answer\":\"12π\"}"
+          "prompt": "The image shows a geometric shape with measurement annotations. Read the marked measurements and answer: The circle has an annotated diameter. What is its area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: VW.\nAnswer rule: set \"answer\" to the area value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":[\"VW=2\"],\"answer\":\"12π\"}"
         },
         "answer_only": {
           "metadata": {
@@ -235,8 +247,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the area value in the form kπ (for example 12π)",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: VW",
-              "json_example": "{\"evidence\":{\"VW\":2},\"answer\":\"12π\"}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: VW",
+              "json_example": "{\"evidence\":[\"VW=2\"],\"answer\":\"12π\"}",
               "json_example_answer_only": "{\"answer\":\"12π\"}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -428,6 +440,9 @@
       "annotation_labels": {
         "d": "VW"
       },
+      "annotation_value_tokens": [
+        "VW=52"
+      ],
       "annotation_values": {
         "VW": 52
       },

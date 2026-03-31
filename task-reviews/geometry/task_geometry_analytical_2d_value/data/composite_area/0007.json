@@ -4,21 +4,21 @@
     "value": 924
   },
   "evidence_gt": {
-    "type": "measurement_ref_map",
-    "value": {
-      "ST": 33,
-      "TU": 25,
-      "XW": 6
-    }
+    "type": "label_set",
+    "value": [
+      "ST=33",
+      "TU=25",
+      "XW=6"
+    ]
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_2d_value/images/composite_area/0007.png"
   },
   "instance_seed": 5248193880719647,
-  "prompt": "Use the image showing a shaded composite geometric region with measurement annotations. The shaded figure is a rectangle with a triangular roof attached. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: ST, TU, XW.\nAnswer field: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"ST\":2,\"TU\":3,\"XW\":4},\"answer\":8}",
+  "prompt": "Use the image showing a shaded composite geometric region with measurement annotations. The shaded figure is a rectangle with a triangular roof attached. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: ST, TU, XW.\nAnswer field: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":[\"ST=2\",\"TU=3\",\"XW=4\"],\"answer\":8}",
   "prompt_variants": {
-    "answer_and_evidence": "Use the image showing a shaded composite geometric region with measurement annotations. The shaded figure is a rectangle with a triangular roof attached. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: ST, TU, XW.\nAnswer field: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"ST\":2,\"TU\":3,\"XW\":4},\"answer\":8}",
+    "answer_and_evidence": "Use the image showing a shaded composite geometric region with measurement annotations. The shaded figure is a rectangle with a triangular roof attached. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: ST, TU, XW.\nAnswer field: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":[\"ST=2\",\"TU=3\",\"XW=4\"],\"answer\":8}",
     "answer_only": "Use the image showing a shaded composite geometric region with measurement annotations. The shaded figure is a rectangle with a triangular roof attached. What is the area of the shaded region in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"answer\":8}"
   },
   "task": "task_geometry_analytical_2d_value",
@@ -49,6 +49,11 @@
         "width",
         "rect_height",
         "roof_height"
+      ],
+      "evidence_tokens": [
+        "ST=33",
+        "TU=25",
+        "XW=6"
       ],
       "formula_expression": "width * rect_height + (width * roof_height) / 2",
       "legacy_query_variant": "rectangle_triangle_union",
@@ -106,6 +111,11 @@
         "TU",
         "XW"
       ],
+      "label_set": [
+        "ST=33",
+        "TU=25",
+        "XW=6"
+      ],
       "measurement_ref_map": {
         "ST": 33,
         "TU": 25,
@@ -121,6 +131,20 @@
           424.0365328833636
         ],
         "XW": [
+          388.43333333333334,
+          201.09956318639385
+        ]
+      },
+      "pixel_point_map": {
+        "ST=33": [
+          369.0,
+          622.3244116712424
+        ],
+        "TU=25": [
+          634.4866666666667,
+          424.0365328833636
+        ],
+        "XW=6": [
           388.43333333333334,
           201.09956318639385
         ]
@@ -180,8 +204,8 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the area value as an integer",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: ST, TU, XW",
-          "json_example": "{\"evidence\":{\"ST\":2,\"TU\":3,\"XW\":4},\"answer\":8}",
+          "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: ST, TU, XW",
+          "json_example": "{\"evidence\":[\"ST=2\",\"TU=3\",\"XW=4\"],\"answer\":8}",
           "json_example_answer_only": "{\"answer\":8}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -213,8 +237,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the area value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: ST, TU, XW",
-              "json_example": "{\"evidence\":{\"ST\":2,\"TU\":3,\"XW\":4},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: ST, TU, XW",
+              "json_example": "{\"evidence\":[\"ST=2\",\"TU=3\",\"XW=4\"],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -236,7 +260,7 @@
               "task_family:analytical_composite_area_scene": 5
             }
           },
-          "prompt": "Use the image showing a shaded composite geometric region with measurement annotations. The shaded figure is a rectangle with a triangular roof attached. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: ST, TU, XW.\nAnswer field: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"ST\":2,\"TU\":3,\"XW\":4},\"answer\":8}"
+          "prompt": "Use the image showing a shaded composite geometric region with measurement annotations. The shaded figure is a rectangle with a triangular roof attached. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: ST, TU, XW.\nAnswer field: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":[\"ST=2\",\"TU=3\",\"XW=4\"],\"answer\":8}"
         },
         "answer_only": {
           "metadata": {
@@ -246,8 +270,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the area value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: ST, TU, XW",
-              "json_example": "{\"evidence\":{\"ST\":2,\"TU\":3,\"XW\":4},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: ST, TU, XW",
+              "json_example": "{\"evidence\":[\"ST=2\",\"TU=3\",\"XW=4\"],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -494,6 +518,11 @@
         "roof_height": "XW",
         "width": "ST"
       },
+      "annotation_value_tokens": [
+        "ST=33",
+        "TU=25",
+        "XW=6"
+      ],
       "annotation_values": {
         "ST": 33,
         "TU": 25,

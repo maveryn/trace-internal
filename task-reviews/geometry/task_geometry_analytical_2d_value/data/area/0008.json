@@ -4,21 +4,21 @@
     "value": 270
   },
   "evidence_gt": {
-    "type": "measurement_ref_map",
-    "value": {
-      "AB": 25,
-      "AC": 9,
-      "YZ": 35
-    }
+    "type": "label_set",
+    "value": [
+      "AB=25",
+      "AC=9",
+      "YZ=35"
+    ]
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_2d_value/images/area/0008.png"
   },
   "instance_seed": 8733691468812356,
-  "prompt": "You are given an image showing a geometric shape with measurement annotations. Based on the shown values, answer this question: The trapezoid has annotated base lengths and height. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: YZ, AB, AC.\nAnswer rule: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"YZ\":2,\"AB\":3,\"AC\":4},\"answer\":8}",
+  "prompt": "You are given an image showing a geometric shape with measurement annotations. Based on the shown values, answer this question: The trapezoid has annotated base lengths and height. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: YZ, AB, AC.\nAnswer rule: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":[\"AB=2\",\"AC=3\",\"YZ=4\"],\"answer\":8}",
   "prompt_variants": {
-    "answer_and_evidence": "You are given an image showing a geometric shape with measurement annotations. Based on the shown values, answer this question: The trapezoid has annotated base lengths and height. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: YZ, AB, AC.\nAnswer rule: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"YZ\":2,\"AB\":3,\"AC\":4},\"answer\":8}",
+    "answer_and_evidence": "You are given an image showing a geometric shape with measurement annotations. Based on the shown values, answer this question: The trapezoid has annotated base lengths and height. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: YZ, AB, AC.\nAnswer rule: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":[\"AB=2\",\"AC=3\",\"YZ=4\"],\"answer\":8}",
     "answer_only": "You are given an image showing a geometric shape with measurement annotations. Based on the shown values, answer this question: The trapezoid has annotated base lengths and height. What is its area in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"answer\":8}"
   },
   "task": "task_geometry_analytical_2d_value",
@@ -55,6 +55,11 @@
         "b1",
         "b2",
         "h"
+      ],
+      "evidence_tokens": [
+        "AB=25",
+        "AC=9",
+        "YZ=35"
       ],
       "formula_expression": "A = ((b1 + b2) * h) / 2",
       "legacy_query_variant": "trapezoid_explicit",
@@ -117,6 +122,11 @@
         "AB",
         "AC"
       ],
+      "label_set": [
+        "AB=25",
+        "AC=9",
+        "YZ=35"
+      ],
       "measurement_ref_map": {
         "AB": 25,
         "AC": 9,
@@ -132,6 +142,20 @@
           307.0
         ],
         "YZ": [
+          207.0,
+          234.0
+        ]
+      },
+      "pixel_point_map": {
+        "AB=25": [
+          207.0,
+          380.0
+        ],
+        "AC=9": [
+          99.5,
+          307.0
+        ],
+        "YZ=35": [
           207.0,
           234.0
         ]
@@ -205,8 +229,8 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the area value as an integer",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: YZ, AB, AC",
-          "json_example": "{\"evidence\":{\"YZ\":2,\"AB\":3,\"AC\":4},\"answer\":8}",
+          "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: YZ, AB, AC",
+          "json_example": "{\"evidence\":[\"AB=2\",\"AC=3\",\"YZ=4\"],\"answer\":8}",
           "json_example_answer_only": "{\"answer\":8}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -238,8 +262,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the area value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: YZ, AB, AC",
-              "json_example": "{\"evidence\":{\"YZ\":2,\"AB\":3,\"AC\":4},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: YZ, AB, AC",
+              "json_example": "{\"evidence\":[\"AB=2\",\"AC=3\",\"YZ=4\"],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -261,7 +285,7 @@
               "task_family:analytical_single_shape": 5
             }
           },
-          "prompt": "You are given an image showing a geometric shape with measurement annotations. Based on the shown values, answer this question: The trapezoid has annotated base lengths and height. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: YZ, AB, AC.\nAnswer rule: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"YZ\":2,\"AB\":3,\"AC\":4},\"answer\":8}"
+          "prompt": "You are given an image showing a geometric shape with measurement annotations. Based on the shown values, answer this question: The trapezoid has annotated base lengths and height. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: YZ, AB, AC.\nAnswer rule: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":[\"AB=2\",\"AC=3\",\"YZ=4\"],\"answer\":8}"
         },
         "answer_only": {
           "metadata": {
@@ -271,8 +295,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the area value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: YZ, AB, AC",
-              "json_example": "{\"evidence\":{\"YZ\":2,\"AB\":3,\"AC\":4},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: YZ, AB, AC",
+              "json_example": "{\"evidence\":[\"AB=2\",\"AC=3\",\"YZ=4\"],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -517,6 +541,11 @@
         "b2": "AB",
         "h": "AC"
       },
+      "annotation_value_tokens": [
+        "AB=25",
+        "AC=9",
+        "YZ=35"
+      ],
       "annotation_values": {
         "AB": 25,
         "AC": 9,

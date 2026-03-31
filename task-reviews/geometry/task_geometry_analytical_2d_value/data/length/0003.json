@@ -4,19 +4,19 @@
     "value": 36.8
   },
   "evidence_gt": {
-    "type": "measurement_ref_map",
-    "value": {
-      "PN": 52
-    }
+    "type": "label_set",
+    "value": [
+      "PN=52"
+    ]
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_2d_value/images/length/0003.png"
   },
   "instance_seed": 4504130753674564,
-  "prompt": "The image shows a geometric scene with measurement annotations. Task: The square is inscribed in the circle, and a diameter is annotated. What is the length of segment MN?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: PN.\nAnswer field: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"PN\":2},\"answer\":42.3}",
+  "prompt": "The image shows a geometric scene with measurement annotations. Task: The square is inscribed in the circle, and a diameter is annotated. What is the length of segment MN?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: PN.\nAnswer field: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[\"PN=2\"],\"answer\":42.3}",
   "prompt_variants": {
-    "answer_and_evidence": "The image shows a geometric scene with measurement annotations. Task: The square is inscribed in the circle, and a diameter is annotated. What is the length of segment MN?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: PN.\nAnswer field: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"PN\":2},\"answer\":42.3}",
+    "answer_and_evidence": "The image shows a geometric scene with measurement annotations. Task: The square is inscribed in the circle, and a diameter is annotated. What is the length of segment MN?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: PN.\nAnswer field: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[\"PN=2\"],\"answer\":42.3}",
     "answer_only": "The image shows a geometric scene with measurement annotations. Task: The square is inscribed in the circle, and a diameter is annotated. What is the length of segment MN?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"answer\":42.3}"
   },
   "task": "task_geometry_analytical_2d_value",
@@ -39,6 +39,9 @@
       },
       "evidence_roles": [
         "diameter"
+      ],
+      "evidence_tokens": [
+        "PN=52"
       ],
       "formula_expression": "diameter / sqrt(2)",
       "legacy_query_variant": "inscribed_square_side",
@@ -90,11 +93,20 @@
       "id_set": [
         "PN"
       ],
+      "label_set": [
+        "PN=52"
+      ],
       "measurement_ref_map": {
         "PN": 52
       },
       "pixel_annotation_centers": {
         "PN": [
+          358.5,
+          329.8666666666667
+        ]
+      },
+      "pixel_point_map": {
+        "PN=52": [
           358.5,
           329.8666666666667
         ]
@@ -146,8 +158,8 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the length value rounded to one decimal place",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: PN",
-          "json_example": "{\"evidence\":{\"PN\":2},\"answer\":42.3}",
+          "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: PN",
+          "json_example": "{\"evidence\":[\"PN=2\"],\"answer\":42.3}",
           "json_example_answer_only": "{\"answer\":42.3}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -179,8 +191,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the length value rounded to one decimal place",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: PN",
-              "json_example": "{\"evidence\":{\"PN\":2},\"answer\":42.3}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: PN",
+              "json_example": "{\"evidence\":[\"PN=2\"],\"answer\":42.3}",
               "json_example_answer_only": "{\"answer\":42.3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -202,7 +214,7 @@
               "task_family:analytical_length_scene": 5
             }
           },
-          "prompt": "The image shows a geometric scene with measurement annotations. Task: The square is inscribed in the circle, and a diameter is annotated. What is the length of segment MN?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: PN.\nAnswer field: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"PN\":2},\"answer\":42.3}"
+          "prompt": "The image shows a geometric scene with measurement annotations. Task: The square is inscribed in the circle, and a diameter is annotated. What is the length of segment MN?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: PN.\nAnswer field: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[\"PN=2\"],\"answer\":42.3}"
         },
         "answer_only": {
           "metadata": {
@@ -212,8 +224,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the length value rounded to one decimal place",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: PN",
-              "json_example": "{\"evidence\":{\"PN\":2},\"answer\":42.3}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: PN",
+              "json_example": "{\"evidence\":[\"PN=2\"],\"answer\":42.3}",
               "json_example_answer_only": "{\"answer\":42.3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -442,6 +454,9 @@
       "annotation_labels": {
         "diameter": "PN"
       },
+      "annotation_value_tokens": [
+        "PN=52"
+      ],
       "annotation_values": {
         "PN": 52
       },

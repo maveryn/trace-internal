@@ -4,20 +4,20 @@
     "value": "15π"
   },
   "evidence_gt": {
-    "type": "measurement_ref_map",
-    "value": {
-      "QR": 5,
-      "QS": 4
-    }
+    "type": "label_set",
+    "value": [
+      "QR=5",
+      "QS=4"
+    ]
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_2d_value/images/area/0019.png"
   },
   "instance_seed": 3848396498971751,
-  "prompt": "Use the image showing a geometric shape with measurement annotations. The ellipse shows the semimajor axis and focal distance. What is its area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: QR, QS.\nAnswer rule: set \"answer\" to the area value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":{\"QR\":2,\"QS\":3},\"answer\":\"12π\"}",
+  "prompt": "Use the image showing a geometric shape with measurement annotations. The ellipse shows the semimajor axis and focal distance. What is its area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: QR, QS.\nAnswer rule: set \"answer\" to the area value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":[\"QR=2\",\"QS=3\"],\"answer\":\"12π\"}",
   "prompt_variants": {
-    "answer_and_evidence": "Use the image showing a geometric shape with measurement annotations. The ellipse shows the semimajor axis and focal distance. What is its area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: QR, QS.\nAnswer rule: set \"answer\" to the area value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":{\"QR\":2,\"QS\":3},\"answer\":\"12π\"}",
+    "answer_and_evidence": "Use the image showing a geometric shape with measurement annotations. The ellipse shows the semimajor axis and focal distance. What is its area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: QR, QS.\nAnswer rule: set \"answer\" to the area value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":[\"QR=2\",\"QS=3\"],\"answer\":\"12π\"}",
     "answer_only": "Use the image showing a geometric shape with measurement annotations. The ellipse shows the semimajor axis and focal distance. What is its area? Express the result in kπ form.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the area value in the form kπ (for example 12π).\nExample JSON:\n{\"answer\":\"12π\"}"
   },
   "task": "task_geometry_analytical_2d_value",
@@ -49,6 +49,10 @@
       "evidence_roles": [
         "a",
         "c"
+      ],
+      "evidence_tokens": [
+        "QR=5",
+        "QS=4"
       ],
       "formula_expression": "A = π * a * sqrt(a^2 - c^2)",
       "legacy_query_variant": "ellipse_derived",
@@ -108,6 +112,10 @@
         "QR",
         "QS"
       ],
+      "label_set": [
+        "QR=5",
+        "QS=4"
+      ],
       "measurement_ref_map": {
         "QR": 5,
         "QS": 4
@@ -118,6 +126,16 @@
           249.5
         ],
         "QS": [
+          367.0,
+          284.5
+        ]
+      },
+      "pixel_point_map": {
+        "QR=5": [
+          372.0,
+          249.5
+        ],
+        "QS=4": [
           367.0,
           284.5
         ]
@@ -187,8 +205,8 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the area value in the form kπ (for example 12π)",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: QR, QS",
-          "json_example": "{\"evidence\":{\"QR\":2,\"QS\":3},\"answer\":\"12π\"}",
+          "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: QR, QS",
+          "json_example": "{\"evidence\":[\"QR=2\",\"QS=3\"],\"answer\":\"12π\"}",
           "json_example_answer_only": "{\"answer\":\"12π\"}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -220,8 +238,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the area value in the form kπ (for example 12π)",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: QR, QS",
-              "json_example": "{\"evidence\":{\"QR\":2,\"QS\":3},\"answer\":\"12π\"}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: QR, QS",
+              "json_example": "{\"evidence\":[\"QR=2\",\"QS=3\"],\"answer\":\"12π\"}",
               "json_example_answer_only": "{\"answer\":\"12π\"}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -243,7 +261,7 @@
               "task_family:analytical_single_shape": 5
             }
           },
-          "prompt": "Use the image showing a geometric shape with measurement annotations. The ellipse shows the semimajor axis and focal distance. What is its area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: QR, QS.\nAnswer rule: set \"answer\" to the area value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":{\"QR\":2,\"QS\":3},\"answer\":\"12π\"}"
+          "prompt": "Use the image showing a geometric shape with measurement annotations. The ellipse shows the semimajor axis and focal distance. What is its area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: QR, QS.\nAnswer rule: set \"answer\" to the area value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":[\"QR=2\",\"QS=3\"],\"answer\":\"12π\"}"
         },
         "answer_only": {
           "metadata": {
@@ -253,8 +271,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the area value in the form kπ (for example 12π)",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: QR, QS",
-              "json_example": "{\"evidence\":{\"QR\":2,\"QS\":3},\"answer\":\"12π\"}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: QR, QS",
+              "json_example": "{\"evidence\":[\"QR=2\",\"QS=3\"],\"answer\":\"12π\"}",
               "json_example_answer_only": "{\"answer\":\"12π\"}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -454,6 +472,10 @@
         "a": "QR",
         "c": "QS"
       },
+      "annotation_value_tokens": [
+        "QR=5",
+        "QS=4"
+      ],
       "annotation_values": {
         "QR": 5,
         "QS": 4

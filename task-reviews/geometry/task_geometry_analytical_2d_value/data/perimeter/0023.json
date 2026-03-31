@@ -4,20 +4,20 @@
     "value": 152.3
   },
   "evidence_gt": {
-    "type": "measurement_ref_map",
-    "value": {
-      "JL": 76,
-      "KM": 5
-    }
+    "type": "label_set",
+    "value": [
+      "JL=76",
+      "KM=5"
+    ]
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_2d_value/images/perimeter/0023.png"
   },
   "instance_seed": 1580868384862533,
-  "prompt": "You are given an image showing a geometric scene with measurement annotations. Based on the shown values, answer this question: The rhombus shows both diagonals. What is the perimeter of the rhombus?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: JL, KM.\nAnswer rule: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"JL\":2,\"KM\":3},\"answer\":42.3}",
+  "prompt": "You are given an image showing a geometric scene with measurement annotations. Based on the shown values, answer this question: The rhombus shows both diagonals. What is the perimeter of the rhombus?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: JL, KM.\nAnswer rule: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[\"JL=2\",\"KM=3\"],\"answer\":42.3}",
   "prompt_variants": {
-    "answer_and_evidence": "You are given an image showing a geometric scene with measurement annotations. Based on the shown values, answer this question: The rhombus shows both diagonals. What is the perimeter of the rhombus?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: JL, KM.\nAnswer rule: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"JL\":2,\"KM\":3},\"answer\":42.3}",
+    "answer_and_evidence": "You are given an image showing a geometric scene with measurement annotations. Based on the shown values, answer this question: The rhombus shows both diagonals. What is the perimeter of the rhombus?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: JL, KM.\nAnswer rule: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[\"JL=2\",\"KM=3\"],\"answer\":42.3}",
     "answer_only": "You are given an image showing a geometric scene with measurement annotations. Based on the shown values, answer this question: The rhombus shows both diagonals. What is the perimeter of the rhombus?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"answer\":42.3}"
   },
   "task": "task_geometry_analytical_2d_value",
@@ -44,6 +44,10 @@
       "evidence_roles": [
         "diag_x",
         "diag_y"
+      ],
+      "evidence_tokens": [
+        "JL=76",
+        "KM=5"
       ],
       "formula_expression": "4 * sqrt((diag_x/2)^2 + (diag_y/2)^2)",
       "legacy_query_variant": "rhombus_diagonals",
@@ -97,6 +101,10 @@
         "JL",
         "KM"
       ],
+      "label_set": [
+        "JL=76",
+        "KM=5"
+      ],
       "measurement_ref_map": {
         "JL": 76,
         "KM": 5
@@ -107,6 +115,16 @@
           246.9582920194592
         ],
         "KM": [
+          258.5,
+          302.29660342296796
+        ]
+      },
+      "pixel_point_map": {
+        "JL=76": [
+          205.55299999999997,
+          246.9582920194592
+        ],
+        "KM=5": [
           258.5,
           302.29660342296796
         ]
@@ -162,8 +180,8 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the perimeter value rounded to one decimal place",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: JL, KM",
-          "json_example": "{\"evidence\":{\"JL\":2,\"KM\":3},\"answer\":42.3}",
+          "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: JL, KM",
+          "json_example": "{\"evidence\":[\"JL=2\",\"KM=3\"],\"answer\":42.3}",
           "json_example_answer_only": "{\"answer\":42.3}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -195,8 +213,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the perimeter value rounded to one decimal place",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: JL, KM",
-              "json_example": "{\"evidence\":{\"JL\":2,\"KM\":3},\"answer\":42.3}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: JL, KM",
+              "json_example": "{\"evidence\":[\"JL=2\",\"KM=3\"],\"answer\":42.3}",
               "json_example_answer_only": "{\"answer\":42.3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -218,7 +236,7 @@
               "task_family:analytical_perimeter_scene": 5
             }
           },
-          "prompt": "You are given an image showing a geometric scene with measurement annotations. Based on the shown values, answer this question: The rhombus shows both diagonals. What is the perimeter of the rhombus?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: JL, KM.\nAnswer rule: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"JL\":2,\"KM\":3},\"answer\":42.3}"
+          "prompt": "You are given an image showing a geometric scene with measurement annotations. Based on the shown values, answer this question: The rhombus shows both diagonals. What is the perimeter of the rhombus?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: JL, KM.\nAnswer rule: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[\"JL=2\",\"KM=3\"],\"answer\":42.3}"
         },
         "answer_only": {
           "metadata": {
@@ -228,8 +246,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the perimeter value rounded to one decimal place",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: JL, KM",
-              "json_example": "{\"evidence\":{\"JL\":2,\"KM\":3},\"answer\":42.3}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: JL, KM",
+              "json_example": "{\"evidence\":[\"JL=2\",\"KM=3\"],\"answer\":42.3}",
               "json_example_answer_only": "{\"answer\":42.3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -463,6 +481,10 @@
         "diag_x": "JL",
         "diag_y": "KM"
       },
+      "annotation_value_tokens": [
+        "JL=76",
+        "KM=5"
+      ],
       "annotation_values": {
         "JL": 76,
         "KM": 5

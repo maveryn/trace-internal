@@ -4,21 +4,21 @@
     "value": 4524
   },
   "evidence_gt": {
-    "type": "measurement_ref_map",
-    "value": {
-      "OP": 39,
-      "OQ": 8,
-      "OR": 29
-    }
+    "type": "label_set",
+    "value": [
+      "OP=39",
+      "OQ=8",
+      "OR=29"
+    ]
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_3d_value/images/volume/0010.png"
   },
   "instance_seed": 6102506914741584,
-  "prompt": "Work from the annotated figure showing an annotated 3D solid. The triangular prism has an annotated triangle base, triangle height, and prism length. What is its volume in cubic units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: OP, OQ, OR.\nAnswer rule: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":{\"OP\":2,\"OQ\":3,\"OR\":4},\"answer\":8}",
+  "prompt": "Work from the annotated figure showing an annotated 3D solid. The triangular prism has an annotated triangle base, triangle height, and prism length. What is its volume in cubic units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: OP, OQ, OR.\nAnswer rule: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":[\"OP=2\",\"OQ=3\",\"OR=4\"],\"answer\":8}",
   "prompt_variants": {
-    "answer_and_evidence": "Work from the annotated figure showing an annotated 3D solid. The triangular prism has an annotated triangle base, triangle height, and prism length. What is its volume in cubic units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: OP, OQ, OR.\nAnswer rule: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":{\"OP\":2,\"OQ\":3,\"OR\":4},\"answer\":8}",
+    "answer_and_evidence": "Work from the annotated figure showing an annotated 3D solid. The triangular prism has an annotated triangle base, triangle height, and prism length. What is its volume in cubic units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: OP, OQ, OR.\nAnswer rule: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":[\"OP=2\",\"OQ=3\",\"OR=4\"],\"answer\":8}",
     "answer_only": "Work from the annotated figure showing an annotated 3D solid. The triangular prism has an annotated triangle base, triangle height, and prism length. What is its volume in cubic units?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the value as an integer.\nExample JSON:\n{\"answer\":8}"
   },
   "task": "task_geometry_analytical_3d_value",
@@ -49,6 +49,11 @@
         "b",
         "h",
         "L"
+      ],
+      "evidence_tokens": [
+        "OP=39",
+        "OQ=8",
+        "OR=29"
       ],
       "formula_expression": "V = (b * h / 2) * L",
       "legacy_query_variant": "triangular_prism_given_b_h_l",
@@ -98,6 +103,11 @@
         "OQ",
         "OR"
       ],
+      "label_set": [
+        "OP=39",
+        "OQ=8",
+        "OR=29"
+      ],
       "measurement_ref_map": {
         "OP": 39,
         "OQ": 8,
@@ -113,6 +123,20 @@
           136.0530062883333
         ],
         "OR": [
+          125.81432156138403,
+          187.07316987538113
+        ]
+      },
+      "pixel_point_map": {
+        "OP=39": [
+          338.6764705423514,
+          257.74528651237733
+        ],
+        "OQ=8": [
+          242.45534687477414,
+          136.0530062883333
+        ],
+        "OR=29": [
           125.81432156138403,
           187.07316987538113
         ]
@@ -166,8 +190,8 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the value as an integer",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: OP, OQ, OR",
-          "json_example": "{\"evidence\":{\"OP\":2,\"OQ\":3,\"OR\":4},\"answer\":8}",
+          "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: OP, OQ, OR",
+          "json_example": "{\"evidence\":[\"OP=2\",\"OQ=3\",\"OR=4\"],\"answer\":8}",
           "json_example_answer_only": "{\"answer\":8}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -199,8 +223,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: OP, OQ, OR",
-              "json_example": "{\"evidence\":{\"OP\":2,\"OQ\":3,\"OR\":4},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: OP, OQ, OR",
+              "json_example": "{\"evidence\":[\"OP=2\",\"OQ=3\",\"OR=4\"],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -222,7 +246,7 @@
               "task_family:analytical_single_solid": 5
             }
           },
-          "prompt": "Work from the annotated figure showing an annotated 3D solid. The triangular prism has an annotated triangle base, triangle height, and prism length. What is its volume in cubic units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: OP, OQ, OR.\nAnswer rule: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":{\"OP\":2,\"OQ\":3,\"OR\":4},\"answer\":8}"
+          "prompt": "Work from the annotated figure showing an annotated 3D solid. The triangular prism has an annotated triangle base, triangle height, and prism length. What is its volume in cubic units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: OP, OQ, OR.\nAnswer rule: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":[\"OP=2\",\"OQ=3\",\"OR=4\"],\"answer\":8}"
         },
         "answer_only": {
           "metadata": {
@@ -232,8 +256,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: OP, OQ, OR",
-              "json_example": "{\"evidence\":{\"OP\":2,\"OQ\":3,\"OR\":4},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: OP, OQ, OR",
+              "json_example": "{\"evidence\":[\"OP=2\",\"OQ=3\",\"OR=4\"],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -481,6 +505,11 @@
         "b": "OP",
         "h": "OQ"
       },
+      "annotation_value_tokens": [
+        "OP=39",
+        "OQ=8",
+        "OR=29"
+      ],
       "annotation_values": {
         "OP": 39,
         "OQ": 8,

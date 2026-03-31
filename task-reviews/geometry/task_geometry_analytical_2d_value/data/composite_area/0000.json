@@ -4,22 +4,22 @@
     "value": 250
   },
   "evidence_gt": {
-    "type": "measurement_ref_map",
-    "value": {
-      "FG": 17,
-      "HG": 2,
-      "JE": 18,
-      "JI": 12
-    }
+    "type": "label_set",
+    "value": [
+      "FG=17",
+      "HG=2",
+      "JE=18",
+      "JI=12"
+    ]
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_2d_value/images/composite_area/0000.png"
   },
   "instance_seed": 7911349991317349,
-  "prompt": "You are given an image showing a shaded composite geometric region with measurement annotations. Based on the shown values, answer this question: The shaded figure is a step-shaped union of two rectangles. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: JI, JE, HG, FG.\nAnswer requirement: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"JI\":2,\"JE\":3,\"HG\":4,\"FG\":5},\"answer\":8}",
+  "prompt": "You are given an image showing a shaded composite geometric region with measurement annotations. Based on the shown values, answer this question: The shaded figure is a step-shaped union of two rectangles. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: JI, JE, HG, FG.\nAnswer requirement: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":[\"FG=2\",\"HG=3\",\"JE=4\",\"JI=5\"],\"answer\":8}",
   "prompt_variants": {
-    "answer_and_evidence": "You are given an image showing a shaded composite geometric region with measurement annotations. Based on the shown values, answer this question: The shaded figure is a step-shaped union of two rectangles. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: JI, JE, HG, FG.\nAnswer requirement: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"JI\":2,\"JE\":3,\"HG\":4,\"FG\":5},\"answer\":8}",
+    "answer_and_evidence": "You are given an image showing a shaded composite geometric region with measurement annotations. Based on the shown values, answer this question: The shaded figure is a step-shaped union of two rectangles. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: JI, JE, HG, FG.\nAnswer requirement: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":[\"FG=2\",\"HG=3\",\"JE=4\",\"JI=5\"],\"answer\":8}",
     "answer_only": "You are given an image showing a shaded composite geometric region with measurement annotations. Based on the shown values, answer this question: The shaded figure is a step-shaped union of two rectangles. What is the area of the shaded region in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"answer\":8}"
   },
   "task": "task_geometry_analytical_2d_value",
@@ -54,6 +54,12 @@
         "left_height",
         "right_width",
         "right_height"
+      ],
+      "evidence_tokens": [
+        "FG=17",
+        "HG=2",
+        "JE=18",
+        "JI=12"
       ],
       "formula_expression": "left_width * left_height + right_width * right_height",
       "legacy_query_variant": "step_rectangles_union",
@@ -114,6 +120,12 @@
         "HG",
         "FG"
       ],
+      "label_set": [
+        "FG=17",
+        "HG=2",
+        "JE=18",
+        "JI=12"
+      ],
       "measurement_ref_map": {
         "FG": 17,
         "HG": 2,
@@ -134,6 +146,24 @@
           295.0
         ],
         "JI": [
+          258.6475317145062,
+          127.13333333333333
+        ]
+      },
+      "pixel_point_map": {
+        "FG=17": [
+          453.60308727006174,
+          305.3888888888889
+        ],
+        "HG=2": [
+          404.0919761589507,
+          147.67777777777778
+        ],
+        "JE=18": [
+          105.48086504783953,
+          295.0
+        ],
+        "JI=12": [
           258.6475317145062,
           127.13333333333333
         ]
@@ -197,8 +227,8 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the area value as an integer",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: JI, JE, HG, FG",
-          "json_example": "{\"evidence\":{\"JI\":2,\"JE\":3,\"HG\":4,\"FG\":5},\"answer\":8}",
+          "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: JI, JE, HG, FG",
+          "json_example": "{\"evidence\":[\"FG=2\",\"HG=3\",\"JE=4\",\"JI=5\"],\"answer\":8}",
           "json_example_answer_only": "{\"answer\":8}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -230,8 +260,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the area value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: JI, JE, HG, FG",
-              "json_example": "{\"evidence\":{\"JI\":2,\"JE\":3,\"HG\":4,\"FG\":5},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: JI, JE, HG, FG",
+              "json_example": "{\"evidence\":[\"FG=2\",\"HG=3\",\"JE=4\",\"JI=5\"],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -253,7 +283,7 @@
               "task_family:analytical_composite_area_scene": 5
             }
           },
-          "prompt": "You are given an image showing a shaded composite geometric region with measurement annotations. Based on the shown values, answer this question: The shaded figure is a step-shaped union of two rectangles. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: JI, JE, HG, FG.\nAnswer requirement: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"JI\":2,\"JE\":3,\"HG\":4,\"FG\":5},\"answer\":8}"
+          "prompt": "You are given an image showing a shaded composite geometric region with measurement annotations. Based on the shown values, answer this question: The shaded figure is a step-shaped union of two rectangles. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: JI, JE, HG, FG.\nAnswer requirement: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":[\"FG=2\",\"HG=3\",\"JE=4\",\"JI=5\"],\"answer\":8}"
         },
         "answer_only": {
           "metadata": {
@@ -263,8 +293,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the area value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: JI, JE, HG, FG",
-              "json_example": "{\"evidence\":{\"JI\":2,\"JE\":3,\"HG\":4,\"FG\":5},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: JI, JE, HG, FG",
+              "json_example": "{\"evidence\":[\"FG=2\",\"HG=3\",\"JE=4\",\"JI=5\"],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -490,6 +520,12 @@
         "right_height": "FG",
         "right_width": "HG"
       },
+      "annotation_value_tokens": [
+        "FG=17",
+        "HG=2",
+        "JE=18",
+        "JI=12"
+      ],
       "annotation_values": {
         "FG": 17,
         "HG": 2,

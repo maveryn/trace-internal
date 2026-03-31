@@ -4,21 +4,21 @@
     "value": 1003
   },
   "evidence_gt": {
-    "type": "measurement_ref_map",
-    "value": {
-      "AZ": 13,
-      "VW": 34,
-      "WX": 23
-    }
+    "type": "label_set",
+    "value": [
+      "AZ=13",
+      "VW=34",
+      "WX=23"
+    ]
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_2d_value/images/composite_area/0012.png"
   },
   "instance_seed": 5680104576630742,
-  "prompt": "The image shows a shaded composite geometric region with measurement annotations. The shaded figure is a rectangle with a triangular roof attached. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: VW, WX, AZ.\nAnswer format: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"VW\":2,\"WX\":3,\"AZ\":4},\"answer\":8}",
+  "prompt": "The image shows a shaded composite geometric region with measurement annotations. The shaded figure is a rectangle with a triangular roof attached. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: VW, WX, AZ.\nAnswer format: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":[\"AZ=2\",\"VW=3\",\"WX=4\"],\"answer\":8}",
   "prompt_variants": {
-    "answer_and_evidence": "The image shows a shaded composite geometric region with measurement annotations. The shaded figure is a rectangle with a triangular roof attached. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: VW, WX, AZ.\nAnswer format: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"VW\":2,\"WX\":3,\"AZ\":4},\"answer\":8}",
+    "answer_and_evidence": "The image shows a shaded composite geometric region with measurement annotations. The shaded figure is a rectangle with a triangular roof attached. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: VW, WX, AZ.\nAnswer format: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":[\"AZ=2\",\"VW=3\",\"WX=4\"],\"answer\":8}",
     "answer_only": "The image shows a shaded composite geometric region with measurement annotations. The shaded figure is a rectangle with a triangular roof attached. What is the area of the shaded region in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"answer\":8}"
   },
   "task": "task_geometry_analytical_2d_value",
@@ -49,6 +49,11 @@
         "width",
         "rect_height",
         "roof_height"
+      ],
+      "evidence_tokens": [
+        "AZ=13",
+        "VW=34",
+        "WX=23"
       ],
       "formula_expression": "width * rect_height + (width * roof_height) / 2",
       "legacy_query_variant": "rectangle_triangle_union",
@@ -106,6 +111,11 @@
         "WX",
         "AZ"
       ],
+      "label_set": [
+        "AZ=13",
+        "VW=34",
+        "WX=23"
+      ],
       "measurement_ref_map": {
         "AZ": 13,
         "VW": 34,
@@ -121,6 +131,20 @@
           462.7066666666667
         ],
         "WX": [
+          467.2919526753006,
+          335.12555555555554
+        ]
+      },
+      "pixel_point_map": {
+        "AZ=13": [
+          305.7430637864117,
+          163.08555555555552
+        ],
+        "VW=34": [
+          278.3097304530784,
+          462.7066666666667
+        ],
+        "WX=23": [
           467.2919526753006,
           335.12555555555554
         ]
@@ -180,8 +204,8 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the area value as an integer",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: VW, WX, AZ",
-          "json_example": "{\"evidence\":{\"VW\":2,\"WX\":3,\"AZ\":4},\"answer\":8}",
+          "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: VW, WX, AZ",
+          "json_example": "{\"evidence\":[\"AZ=2\",\"VW=3\",\"WX=4\"],\"answer\":8}",
           "json_example_answer_only": "{\"answer\":8}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -213,8 +237,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the area value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: VW, WX, AZ",
-              "json_example": "{\"evidence\":{\"VW\":2,\"WX\":3,\"AZ\":4},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: VW, WX, AZ",
+              "json_example": "{\"evidence\":[\"AZ=2\",\"VW=3\",\"WX=4\"],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -236,7 +260,7 @@
               "task_family:analytical_composite_area_scene": 5
             }
           },
-          "prompt": "The image shows a shaded composite geometric region with measurement annotations. The shaded figure is a rectangle with a triangular roof attached. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: VW, WX, AZ.\nAnswer format: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"VW\":2,\"WX\":3,\"AZ\":4},\"answer\":8}"
+          "prompt": "The image shows a shaded composite geometric region with measurement annotations. The shaded figure is a rectangle with a triangular roof attached. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: VW, WX, AZ.\nAnswer format: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":[\"AZ=2\",\"VW=3\",\"WX=4\"],\"answer\":8}"
         },
         "answer_only": {
           "metadata": {
@@ -246,8 +270,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the area value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: VW, WX, AZ",
-              "json_example": "{\"evidence\":{\"VW\":2,\"WX\":3,\"AZ\":4},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: VW, WX, AZ",
+              "json_example": "{\"evidence\":[\"AZ=2\",\"VW=3\",\"WX=4\"],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -501,6 +525,11 @@
         "roof_height": "AZ",
         "width": "VW"
       },
+      "annotation_value_tokens": [
+        "AZ=13",
+        "VW=34",
+        "WX=23"
+      ],
       "annotation_values": {
         "AZ": 13,
         "VW": 34,

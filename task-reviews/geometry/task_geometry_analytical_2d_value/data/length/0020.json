@@ -4,20 +4,20 @@
     "value": 45.3
   },
   "evidence_gt": {
-    "type": "measurement_ref_map",
-    "value": {
-      "GJ": 31,
-      "IJ": 33
-    }
+    "type": "label_set",
+    "value": [
+      "GJ=31",
+      "IJ=33"
+    ]
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_2d_value/images/length/0020.png"
   },
   "instance_seed": 4095907288465160,
-  "prompt": "Use the image showing a geometric scene with measurement annotations. Task: The triangle includes an altitude to the base. What is the length of segment GI?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: IJ, GJ.\nAnswer: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"IJ\":2,\"GJ\":3},\"answer\":42.3}",
+  "prompt": "Use the image showing a geometric scene with measurement annotations. Task: The triangle includes an altitude to the base. What is the length of segment GI?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: IJ, GJ.\nAnswer: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[\"GJ=2\",\"IJ=3\"],\"answer\":42.3}",
   "prompt_variants": {
-    "answer_and_evidence": "Use the image showing a geometric scene with measurement annotations. Task: The triangle includes an altitude to the base. What is the length of segment GI?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: IJ, GJ.\nAnswer: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"IJ\":2,\"GJ\":3},\"answer\":42.3}",
+    "answer_and_evidence": "Use the image showing a geometric scene with measurement annotations. Task: The triangle includes an altitude to the base. What is the length of segment GI?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: IJ, GJ.\nAnswer: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[\"GJ=2\",\"IJ=3\"],\"answer\":42.3}",
     "answer_only": "Use the image showing a geometric scene with measurement annotations. Task: The triangle includes an altitude to the base. What is the length of segment GI?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"answer\":42.3}"
   },
   "task": "task_geometry_analytical_2d_value",
@@ -44,6 +44,10 @@
       "evidence_roles": [
         "height",
         "base_part"
+      ],
+      "evidence_tokens": [
+        "GJ=31",
+        "IJ=33"
       ],
       "formula_expression": "sqrt(height^2 + base_part^2)",
       "legacy_query_variant": "triangle_altitude_side",
@@ -98,6 +102,10 @@
         "IJ",
         "GJ"
       ],
+      "label_set": [
+        "GJ=31",
+        "IJ=33"
+      ],
       "measurement_ref_map": {
         "GJ": 31,
         "IJ": 33
@@ -108,6 +116,16 @@
           489.6090802827646
         ],
         "IJ": [
+          398.5991525423729,
+          331.6517356499962
+        ]
+      },
+      "pixel_point_map": {
+        "GJ=31": [
+          238.97457627118646,
+          489.6090802827646
+        ],
+        "IJ=33": [
           398.5991525423729,
           331.6517356499962
         ]
@@ -163,8 +181,8 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the length value rounded to one decimal place",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: IJ, GJ",
-          "json_example": "{\"evidence\":{\"IJ\":2,\"GJ\":3},\"answer\":42.3}",
+          "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: IJ, GJ",
+          "json_example": "{\"evidence\":[\"GJ=2\",\"IJ=3\"],\"answer\":42.3}",
           "json_example_answer_only": "{\"answer\":42.3}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -196,8 +214,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the length value rounded to one decimal place",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: IJ, GJ",
-              "json_example": "{\"evidence\":{\"IJ\":2,\"GJ\":3},\"answer\":42.3}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: IJ, GJ",
+              "json_example": "{\"evidence\":[\"GJ=2\",\"IJ=3\"],\"answer\":42.3}",
               "json_example_answer_only": "{\"answer\":42.3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -219,7 +237,7 @@
               "task_family:analytical_length_scene": 5
             }
           },
-          "prompt": "Use the image showing a geometric scene with measurement annotations. Task: The triangle includes an altitude to the base. What is the length of segment GI?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: IJ, GJ.\nAnswer: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"IJ\":2,\"GJ\":3},\"answer\":42.3}"
+          "prompt": "Use the image showing a geometric scene with measurement annotations. Task: The triangle includes an altitude to the base. What is the length of segment GI?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: IJ, GJ.\nAnswer: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[\"GJ=2\",\"IJ=3\"],\"answer\":42.3}"
         },
         "answer_only": {
           "metadata": {
@@ -229,8 +247,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the length value rounded to one decimal place",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: IJ, GJ",
-              "json_example": "{\"evidence\":{\"IJ\":2,\"GJ\":3},\"answer\":42.3}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: IJ, GJ",
+              "json_example": "{\"evidence\":[\"GJ=2\",\"IJ=3\"],\"answer\":42.3}",
               "json_example_answer_only": "{\"answer\":42.3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -451,6 +469,10 @@
         "base_part": "GJ",
         "height": "IJ"
       },
+      "annotation_value_tokens": [
+        "GJ=31",
+        "IJ=33"
+      ],
       "annotation_values": {
         "GJ": 31,
         "IJ": 33

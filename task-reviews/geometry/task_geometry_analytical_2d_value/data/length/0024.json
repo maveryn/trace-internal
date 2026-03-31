@@ -4,20 +4,20 @@
     "value": 19.6
   },
   "evidence_gt": {
-    "type": "measurement_ref_map",
-    "value": {
-      "FG": 11,
-      "FH": 5
-    }
+    "type": "label_set",
+    "value": [
+      "FG=11",
+      "FH=5"
+    ]
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_2d_value/images/length/0024.png"
   },
   "instance_seed": 4006274008629850,
-  "prompt": "You are given an image showing a geometric scene with measurement annotations. The circle shows a chord and the perpendicular distance from the center to that chord. What is the length of segment IJ?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: FG, FH.\nAnswer rule: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"FG\":2,\"FH\":3},\"answer\":42.3}",
+  "prompt": "You are given an image showing a geometric scene with measurement annotations. The circle shows a chord and the perpendicular distance from the center to that chord. What is the length of segment IJ?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: FG, FH.\nAnswer rule: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[\"FG=2\",\"FH=3\"],\"answer\":42.3}",
   "prompt_variants": {
-    "answer_and_evidence": "You are given an image showing a geometric scene with measurement annotations. The circle shows a chord and the perpendicular distance from the center to that chord. What is the length of segment IJ?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: FG, FH.\nAnswer rule: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"FG\":2,\"FH\":3},\"answer\":42.3}",
+    "answer_and_evidence": "You are given an image showing a geometric scene with measurement annotations. The circle shows a chord and the perpendicular distance from the center to that chord. What is the length of segment IJ?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: FG, FH.\nAnswer rule: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[\"FG=2\",\"FH=3\"],\"answer\":42.3}",
     "answer_only": "You are given an image showing a geometric scene with measurement annotations. The circle shows a chord and the perpendicular distance from the center to that chord. What is the length of segment IJ?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"answer\":42.3}"
   },
   "task": "task_geometry_analytical_2d_value",
@@ -44,6 +44,10 @@
       "evidence_roles": [
         "radius",
         "offset"
+      ],
+      "evidence_tokens": [
+        "FG=11",
+        "FH=5"
       ],
       "formula_expression": "2 * sqrt(radius^2 - offset^2)",
       "legacy_query_variant": "circle_chord_length",
@@ -98,6 +102,10 @@
         "FG",
         "FH"
       ],
+      "label_set": [
+        "FG=11",
+        "FH=5"
+      ],
       "measurement_ref_map": {
         "FG": 11,
         "FH": 5
@@ -108,6 +116,16 @@
           278.93333333333334
         ],
         "FH": [
+          243.5666666666667,
+          216.415
+        ]
+      },
+      "pixel_point_map": {
+        "FG=11": [
+          385.838,
+          278.93333333333334
+        ],
+        "FH=5": [
           243.5666666666667,
           216.415
         ]
@@ -163,8 +181,8 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the length value rounded to one decimal place",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: FG, FH",
-          "json_example": "{\"evidence\":{\"FG\":2,\"FH\":3},\"answer\":42.3}",
+          "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: FG, FH",
+          "json_example": "{\"evidence\":[\"FG=2\",\"FH=3\"],\"answer\":42.3}",
           "json_example_answer_only": "{\"answer\":42.3}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -196,8 +214,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the length value rounded to one decimal place",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: FG, FH",
-              "json_example": "{\"evidence\":{\"FG\":2,\"FH\":3},\"answer\":42.3}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: FG, FH",
+              "json_example": "{\"evidence\":[\"FG=2\",\"FH=3\"],\"answer\":42.3}",
               "json_example_answer_only": "{\"answer\":42.3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -219,7 +237,7 @@
               "task_family:analytical_length_scene": 5
             }
           },
-          "prompt": "You are given an image showing a geometric scene with measurement annotations. The circle shows a chord and the perpendicular distance from the center to that chord. What is the length of segment IJ?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: FG, FH.\nAnswer rule: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"FG\":2,\"FH\":3},\"answer\":42.3}"
+          "prompt": "You are given an image showing a geometric scene with measurement annotations. The circle shows a chord and the perpendicular distance from the center to that chord. What is the length of segment IJ?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: FG, FH.\nAnswer rule: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[\"FG=2\",\"FH=3\"],\"answer\":42.3}"
         },
         "answer_only": {
           "metadata": {
@@ -229,8 +247,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the length value rounded to one decimal place",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: FG, FH",
-              "json_example": "{\"evidence\":{\"FG\":2,\"FH\":3},\"answer\":42.3}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: FG, FH",
+              "json_example": "{\"evidence\":[\"FG=2\",\"FH=3\"],\"answer\":42.3}",
               "json_example_answer_only": "{\"answer\":42.3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -472,6 +490,10 @@
         "offset": "FH",
         "radius": "FG"
       },
+      "annotation_value_tokens": [
+        "FG=11",
+        "FH=5"
+      ],
       "annotation_values": {
         "FG": 11,
         "FH": 5

@@ -4,21 +4,21 @@
     "value": 92
   },
   "evidence_gt": {
-    "type": "measurement_ref_map",
-    "value": {
-      "LM": 23,
-      "LN": 5,
-      "LO": 3
-    }
+    "type": "label_set",
+    "value": [
+      "LM=23",
+      "LN=5",
+      "LO=3"
+    ]
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_2d_value/images/area/0012.png"
   },
   "instance_seed": 1822795473072637,
-  "prompt": "The image shows a geometric shape with measurement annotations. The parallelogram shows a base, one side length, and the horizontal offset. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: LM, LN, LO.\nAnswer field: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"LM\":2,\"LN\":3,\"LO\":4},\"answer\":8}",
+  "prompt": "The image shows a geometric shape with measurement annotations. The parallelogram shows a base, one side length, and the horizontal offset. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: LM, LN, LO.\nAnswer field: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":[\"LM=2\",\"LN=3\",\"LO=4\"],\"answer\":8}",
   "prompt_variants": {
-    "answer_and_evidence": "The image shows a geometric shape with measurement annotations. The parallelogram shows a base, one side length, and the horizontal offset. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: LM, LN, LO.\nAnswer field: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"LM\":2,\"LN\":3,\"LO\":4},\"answer\":8}",
+    "answer_and_evidence": "The image shows a geometric shape with measurement annotations. The parallelogram shows a base, one side length, and the horizontal offset. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: LM, LN, LO.\nAnswer field: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":[\"LM=2\",\"LN=3\",\"LO=4\"],\"answer\":8}",
     "answer_only": "The image shows a geometric shape with measurement annotations. The parallelogram shows a base, one side length, and the horizontal offset. What is its area in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"answer\":8}"
   },
   "task": "task_geometry_analytical_2d_value",
@@ -55,6 +55,11 @@
         "b",
         "s",
         "o"
+      ],
+      "evidence_tokens": [
+        "LM=23",
+        "LN=5",
+        "LO=3"
       ],
       "formula_expression": "A = b * sqrt(s^2 - o^2)",
       "legacy_query_variant": "parallelogram_derived",
@@ -117,6 +122,11 @@
         "LN",
         "LO"
       ],
+      "label_set": [
+        "LM=23",
+        "LN=5",
+        "LO=3"
+      ],
       "measurement_ref_map": {
         "LM": 23,
         "LN": 5,
@@ -132,6 +142,20 @@
           81.64999999999999
         ],
         "LO": [
+          353.0,
+          25.25
+        ]
+      },
+      "pixel_point_map": {
+        "LM=23": [
+          453.0,
+          20.0
+        ],
+        "LN=5": [
+          334.8,
+          81.64999999999999
+        ],
+        "LO=3": [
           353.0,
           25.25
         ]
@@ -205,8 +229,8 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the area value as an integer",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: LM, LN, LO",
-          "json_example": "{\"evidence\":{\"LM\":2,\"LN\":3,\"LO\":4},\"answer\":8}",
+          "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: LM, LN, LO",
+          "json_example": "{\"evidence\":[\"LM=2\",\"LN=3\",\"LO=4\"],\"answer\":8}",
           "json_example_answer_only": "{\"answer\":8}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -238,8 +262,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the area value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: LM, LN, LO",
-              "json_example": "{\"evidence\":{\"LM\":2,\"LN\":3,\"LO\":4},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: LM, LN, LO",
+              "json_example": "{\"evidence\":[\"LM=2\",\"LN=3\",\"LO=4\"],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -261,7 +285,7 @@
               "task_family:analytical_single_shape": 5
             }
           },
-          "prompt": "The image shows a geometric shape with measurement annotations. The parallelogram shows a base, one side length, and the horizontal offset. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: LM, LN, LO.\nAnswer field: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"LM\":2,\"LN\":3,\"LO\":4},\"answer\":8}"
+          "prompt": "The image shows a geometric shape with measurement annotations. The parallelogram shows a base, one side length, and the horizontal offset. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: LM, LN, LO.\nAnswer field: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":[\"LM=2\",\"LN=3\",\"LO=4\"],\"answer\":8}"
         },
         "answer_only": {
           "metadata": {
@@ -271,8 +295,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the area value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: LM, LN, LO",
-              "json_example": "{\"evidence\":{\"LM\":2,\"LN\":3,\"LO\":4},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: LM, LN, LO",
+              "json_example": "{\"evidence\":[\"LM=2\",\"LN=3\",\"LO=4\"],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -517,6 +541,11 @@
         "o": "LO",
         "s": "LN"
       },
+      "annotation_value_tokens": [
+        "LM=23",
+        "LN=5",
+        "LO=3"
+      ],
       "annotation_values": {
         "LM": 23,
         "LN": 5,

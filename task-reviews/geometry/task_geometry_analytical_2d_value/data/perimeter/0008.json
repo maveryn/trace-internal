@@ -4,19 +4,19 @@
     "value": 164.0
   },
   "evidence_gt": {
-    "type": "measurement_ref_map",
-    "value": {
-      "MK": 58
-    }
+    "type": "label_set",
+    "value": [
+      "MK=58"
+    ]
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_2d_value/images/perimeter/0008.png"
   },
   "instance_seed": 6153535957913632,
-  "prompt": "The image shows a geometric scene with measurement annotations. The square is inscribed in the circle, and a diameter is annotated. What is the perimeter of the square?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: MK.\nAnswer: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"MK\":2},\"answer\":42.3}",
+  "prompt": "The image shows a geometric scene with measurement annotations. The square is inscribed in the circle, and a diameter is annotated. What is the perimeter of the square?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: MK.\nAnswer: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[\"MK=2\"],\"answer\":42.3}",
   "prompt_variants": {
-    "answer_and_evidence": "The image shows a geometric scene with measurement annotations. The square is inscribed in the circle, and a diameter is annotated. What is the perimeter of the square?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: MK.\nAnswer: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"MK\":2},\"answer\":42.3}",
+    "answer_and_evidence": "The image shows a geometric scene with measurement annotations. The square is inscribed in the circle, and a diameter is annotated. What is the perimeter of the square?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: MK.\nAnswer: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[\"MK=2\"],\"answer\":42.3}",
     "answer_only": "The image shows a geometric scene with measurement annotations. The square is inscribed in the circle, and a diameter is annotated. What is the perimeter of the square?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"answer\":42.3}"
   },
   "task": "task_geometry_analytical_2d_value",
@@ -39,6 +39,9 @@
       },
       "evidence_roles": [
         "diameter"
+      ],
+      "evidence_tokens": [
+        "MK=58"
       ],
       "formula_expression": "2 * sqrt(2) * diameter",
       "legacy_query_variant": "inscribed_square_diameter",
@@ -89,11 +92,20 @@
       "id_set": [
         "MK"
       ],
+      "label_set": [
+        "MK=58"
+      ],
       "measurement_ref_map": {
         "MK": 58
       },
       "pixel_annotation_centers": {
         "MK": [
+          256.5,
+          230.53333333333333
+        ]
+      },
+      "pixel_point_map": {
+        "MK=58": [
           256.5,
           230.53333333333333
         ]
@@ -145,8 +157,8 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the perimeter value rounded to one decimal place",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: MK",
-          "json_example": "{\"evidence\":{\"MK\":2},\"answer\":42.3}",
+          "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: MK",
+          "json_example": "{\"evidence\":[\"MK=2\"],\"answer\":42.3}",
           "json_example_answer_only": "{\"answer\":42.3}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -178,8 +190,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the perimeter value rounded to one decimal place",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: MK",
-              "json_example": "{\"evidence\":{\"MK\":2},\"answer\":42.3}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: MK",
+              "json_example": "{\"evidence\":[\"MK=2\"],\"answer\":42.3}",
               "json_example_answer_only": "{\"answer\":42.3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -201,7 +213,7 @@
               "task_family:analytical_perimeter_scene": 5
             }
           },
-          "prompt": "The image shows a geometric scene with measurement annotations. The square is inscribed in the circle, and a diameter is annotated. What is the perimeter of the square?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: MK.\nAnswer: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"MK\":2},\"answer\":42.3}"
+          "prompt": "The image shows a geometric scene with measurement annotations. The square is inscribed in the circle, and a diameter is annotated. What is the perimeter of the square?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: MK.\nAnswer: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[\"MK=2\"],\"answer\":42.3}"
         },
         "answer_only": {
           "metadata": {
@@ -211,8 +223,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the perimeter value rounded to one decimal place",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: MK",
-              "json_example": "{\"evidence\":{\"MK\":2},\"answer\":42.3}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: MK",
+              "json_example": "{\"evidence\":[\"MK=2\"],\"answer\":42.3}",
               "json_example_answer_only": "{\"answer\":42.3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -435,6 +447,9 @@
       "annotation_labels": {
         "diameter": "MK"
       },
+      "annotation_value_tokens": [
+        "MK=58"
+      ],
       "annotation_values": {
         "MK": 58
       },

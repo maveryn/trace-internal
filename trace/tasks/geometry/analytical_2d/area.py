@@ -36,6 +36,8 @@ from ...shared.text_rendering import (
 )
 from ..shared.background_defaults import load_geometry_background_defaults
 from ..shared.annotation_values import (
+    build_annotation_value_point_map,
+    build_annotation_value_tokens,
     build_role_value_evidence,
     format_annotation_value,
 )
@@ -2840,6 +2842,7 @@ class GeometryAnalyticalArea2DTask:
             role_to_annotation=case.evidence_annotations,
             role_to_value=case.evidence_label_values,
         )
+        evidence_tokens = build_annotation_value_tokens(evidence_map)
         evidence_hint_base = str(prompt_required["evidence_hint_measurement_map"]).strip()
         if evidence_hint_base and evidence_hint_base[-1] not in {".", "!", "?", ":", ";"}:
             evidence_hint_base = f"{evidence_hint_base}."
@@ -2860,7 +2863,7 @@ class GeometryAnalyticalArea2DTask:
             context=f"prompt defaults for {self.task_id}",
         )
         json_example, json_example_answer_only = build_prompt_json_examples(
-            evidence_value=evidence_map,
+            evidence_value=evidence_tokens,
             answer_type=str(case.answer_type),
         )
         prompt_selection = render_task_prompt_variants(
@@ -2888,7 +2891,7 @@ class GeometryAnalyticalArea2DTask:
             answer_gt = TypedValue(type="pi_expression", value=str(case.answer_value))
         else:
             answer_gt = TypedValue(type="integer", value=int(case.answer_value))
-        evidence_gt = TypedValue(type="measurement_ref_map", value=dict(evidence_map))
+        evidence_gt = TypedValue(type="label_set", value=list(evidence_tokens))
         complexity = build_geometry_analytical_complexity(
             task_group_defaults=task_group_defaults if isinstance(task_group_defaults, Mapping) else {},
             task_id=str(self.task_id),
@@ -2904,6 +2907,10 @@ class GeometryAnalyticalArea2DTask:
             for key in evidence_roles
             if key in case.annotation_centers and key in case.evidence_annotations
         }
+        evidence_point_map = build_annotation_value_point_map(
+            evidence_map=evidence_map,
+            annotation_centers=annotation_centers_by_token,
+        )
         projected_point_set = [
             [float(annotation_centers_by_token[key][0]), float(annotation_centers_by_token[key][1])]
             for key in required_annotations
@@ -2969,6 +2976,7 @@ class GeometryAnalyticalArea2DTask:
                 "evidence_label_values": dict(case.evidence_label_values),
                 "evidence_annotations": dict(case.evidence_annotations),
                 "evidence_map": dict(evidence_map),
+                "evidence_tokens": list(evidence_tokens),
                 "shape_probabilities": dict(shape_probs),
                 "mode_probabilities": dict(mode_probs),
                 "answer_min": int(answer_min),
@@ -2983,11 +2991,14 @@ class GeometryAnalyticalArea2DTask:
                 "annotation_ids": list(required_annotations),
                 "annotation_values": dict(evidence_map),
                 "annotation_labels": dict(case.evidence_annotations),
+                "annotation_value_tokens": list(evidence_tokens),
                 "measurement_ref_map": dict(evidence_map),
             },
             "projected_evidence": {
+                "label_set": list(evidence_tokens),
                 "measurement_ref_map": dict(evidence_map),
                 "id_set": list(required_annotations),
+                "pixel_point_map": dict(evidence_point_map),
                 "pixel_point_set": list(projected_point_set),
                 "annotation_labels": dict(case.evidence_annotations),
                 "pixel_annotation_centers": dict(annotation_centers_by_token),

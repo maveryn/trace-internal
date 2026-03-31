@@ -4,21 +4,21 @@
     "value": 10178
   },
   "evidence_gt": {
-    "type": "measurement_ref_map",
-    "value": {
-      "PQ": 42,
-      "PS": 47,
-      "QR": 35
-    }
+    "type": "label_set",
+    "value": [
+      "PQ=42",
+      "PS=47",
+      "QR=35"
+    ]
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_3d_value/images/surface_area/0005.png"
   },
   "instance_seed": 8075421881251309,
-  "prompt": "Use the image showing an annotated 3D solid. The rectangular prism has annotated length, width, and height. What is its total surface area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: PQ, QR, PS.\nAnswer: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":{\"PQ\":2,\"QR\":3,\"PS\":4},\"answer\":8}",
+  "prompt": "Use the image showing an annotated 3D solid. The rectangular prism has annotated length, width, and height. What is its total surface area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: PQ, QR, PS.\nAnswer: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":[\"PQ=2\",\"PS=3\",\"QR=4\"],\"answer\":8}",
   "prompt_variants": {
-    "answer_and_evidence": "Use the image showing an annotated 3D solid. The rectangular prism has annotated length, width, and height. What is its total surface area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: PQ, QR, PS.\nAnswer: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":{\"PQ\":2,\"QR\":3,\"PS\":4},\"answer\":8}",
+    "answer_and_evidence": "Use the image showing an annotated 3D solid. The rectangular prism has annotated length, width, and height. What is its total surface area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: PQ, QR, PS.\nAnswer: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":[\"PQ=2\",\"PS=3\",\"QR=4\"],\"answer\":8}",
     "answer_only": "Use the image showing an annotated 3D solid. The rectangular prism has annotated length, width, and height. What is its total surface area in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the value as an integer.\nExample JSON:\n{\"answer\":8}"
   },
   "task": "task_geometry_analytical_3d_value",
@@ -49,6 +49,11 @@
         "l",
         "w",
         "h"
+      ],
+      "evidence_tokens": [
+        "PQ=42",
+        "PS=47",
+        "QR=35"
       ],
       "formula_expression": "SA = 2 * (l*w + l*h + w*h)",
       "legacy_query_variant": "rectangular_prism_given_lwh",
@@ -98,6 +103,11 @@
         "QR",
         "PS"
       ],
+      "label_set": [
+        "PQ=42",
+        "PS=47",
+        "QR=35"
+      ],
       "measurement_ref_map": {
         "PQ": 42,
         "PS": 47,
@@ -113,6 +123,20 @@
           217.40350877192984
         ],
         "QR": [
+          492.38727532253716,
+          604.2074290714039
+        ]
+      },
+      "pixel_point_map": {
+        "PQ=42": [
+          468.98939609446705,
+          504.1083604022802
+        ],
+        "PS=47": [
+          370.60212077192983,
+          217.40350877192984
+        ],
+        "QR=35": [
           492.38727532253716,
           604.2074290714039
         ]
@@ -166,8 +190,8 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the value as an integer",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: PQ, QR, PS",
-          "json_example": "{\"evidence\":{\"PQ\":2,\"QR\":3,\"PS\":4},\"answer\":8}",
+          "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: PQ, QR, PS",
+          "json_example": "{\"evidence\":[\"PQ=2\",\"PS=3\",\"QR=4\"],\"answer\":8}",
           "json_example_answer_only": "{\"answer\":8}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -199,8 +223,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: PQ, QR, PS",
-              "json_example": "{\"evidence\":{\"PQ\":2,\"QR\":3,\"PS\":4},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: PQ, QR, PS",
+              "json_example": "{\"evidence\":[\"PQ=2\",\"PS=3\",\"QR=4\"],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -222,7 +246,7 @@
               "task_family:analytical_single_solid": 5
             }
           },
-          "prompt": "Use the image showing an annotated 3D solid. The rectangular prism has annotated length, width, and height. What is its total surface area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: PQ, QR, PS.\nAnswer: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":{\"PQ\":2,\"QR\":3,\"PS\":4},\"answer\":8}"
+          "prompt": "Use the image showing an annotated 3D solid. The rectangular prism has annotated length, width, and height. What is its total surface area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: PQ, QR, PS.\nAnswer: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":[\"PQ=2\",\"PS=3\",\"QR=4\"],\"answer\":8}"
         },
         "answer_only": {
           "metadata": {
@@ -232,8 +256,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: PQ, QR, PS",
-              "json_example": "{\"evidence\":{\"PQ\":2,\"QR\":3,\"PS\":4},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: PQ, QR, PS",
+              "json_example": "{\"evidence\":[\"PQ=2\",\"PS=3\",\"QR=4\"],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -504,6 +528,11 @@
         "l": "PQ",
         "w": "QR"
       },
+      "annotation_value_tokens": [
+        "PQ=42",
+        "PS=47",
+        "QR=35"
+      ],
       "annotation_values": {
         "PQ": 42,
         "PS": 47,

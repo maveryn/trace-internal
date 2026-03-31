@@ -4,21 +4,21 @@
     "value": 18450
   },
   "evidence_gt": {
-    "type": "measurement_ref_map",
-    "value": {
-      "VW": 36,
-      "VX": 41,
-      "VY": 25
-    }
+    "type": "label_set",
+    "value": [
+      "VW=36",
+      "VX=41",
+      "VY=25"
+    ]
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_3d_value/images/volume/0017.png"
   },
   "instance_seed": 6513527728746925,
-  "prompt": "Work from the annotated figure showing an annotated 3D solid. Task: The triangular prism has an annotated triangle base, triangle height, and prism length. What is its volume in cubic units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: VW, VX, VY.\nAnswer field: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":{\"VW\":2,\"VX\":3,\"VY\":4},\"answer\":8}",
+  "prompt": "Work from the annotated figure showing an annotated 3D solid. Task: The triangular prism has an annotated triangle base, triangle height, and prism length. What is its volume in cubic units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: VW, VX, VY.\nAnswer field: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":[\"VW=2\",\"VX=3\",\"VY=4\"],\"answer\":8}",
   "prompt_variants": {
-    "answer_and_evidence": "Work from the annotated figure showing an annotated 3D solid. Task: The triangular prism has an annotated triangle base, triangle height, and prism length. What is its volume in cubic units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: VW, VX, VY.\nAnswer field: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":{\"VW\":2,\"VX\":3,\"VY\":4},\"answer\":8}",
+    "answer_and_evidence": "Work from the annotated figure showing an annotated 3D solid. Task: The triangular prism has an annotated triangle base, triangle height, and prism length. What is its volume in cubic units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: VW, VX, VY.\nAnswer field: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":[\"VW=2\",\"VX=3\",\"VY=4\"],\"answer\":8}",
     "answer_only": "Work from the annotated figure showing an annotated 3D solid. Task: The triangular prism has an annotated triangle base, triangle height, and prism length. What is its volume in cubic units?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the value as an integer.\nExample JSON:\n{\"answer\":8}"
   },
   "task": "task_geometry_analytical_3d_value",
@@ -49,6 +49,11 @@
         "b",
         "h",
         "L"
+      ],
+      "evidence_tokens": [
+        "VW=36",
+        "VX=41",
+        "VY=25"
       ],
       "formula_expression": "V = (b * h / 2) * L",
       "legacy_query_variant": "triangular_prism_given_b_h_l",
@@ -98,6 +103,11 @@
         "VX",
         "VY"
       ],
+      "label_set": [
+        "VW=36",
+        "VX=41",
+        "VY=25"
+      ],
       "measurement_ref_map": {
         "VW": 36,
         "VX": 41,
@@ -113,6 +123,20 @@
           207.1678321678322
         ],
         "VY": [
+          190.34183284362663,
+          406.2722677415058
+        ]
+      },
+      "pixel_point_map": {
+        "VW=36": [
+          410.8876160030672,
+          477.7312287619907
+        ],
+        "VX=41": [
+          322.72944893846153,
+          207.1678321678322
+        ],
+        "VY=25": [
           190.34183284362663,
           406.2722677415058
         ]
@@ -166,8 +190,8 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the value as an integer",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: VW, VX, VY",
-          "json_example": "{\"evidence\":{\"VW\":2,\"VX\":3,\"VY\":4},\"answer\":8}",
+          "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: VW, VX, VY",
+          "json_example": "{\"evidence\":[\"VW=2\",\"VX=3\",\"VY=4\"],\"answer\":8}",
           "json_example_answer_only": "{\"answer\":8}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -199,8 +223,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: VW, VX, VY",
-              "json_example": "{\"evidence\":{\"VW\":2,\"VX\":3,\"VY\":4},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: VW, VX, VY",
+              "json_example": "{\"evidence\":[\"VW=2\",\"VX=3\",\"VY=4\"],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -222,7 +246,7 @@
               "task_family:analytical_single_solid": 5
             }
           },
-          "prompt": "Work from the annotated figure showing an annotated 3D solid. Task: The triangular prism has an annotated triangle base, triangle height, and prism length. What is its volume in cubic units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: VW, VX, VY.\nAnswer field: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":{\"VW\":2,\"VX\":3,\"VY\":4},\"answer\":8}"
+          "prompt": "Work from the annotated figure showing an annotated 3D solid. Task: The triangular prism has an annotated triangle base, triangle height, and prism length. What is its volume in cubic units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: VW, VX, VY.\nAnswer field: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":[\"VW=2\",\"VX=3\",\"VY=4\"],\"answer\":8}"
         },
         "answer_only": {
           "metadata": {
@@ -232,8 +256,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: VW, VX, VY",
-              "json_example": "{\"evidence\":{\"VW\":2,\"VX\":3,\"VY\":4},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: VW, VX, VY",
+              "json_example": "{\"evidence\":[\"VW=2\",\"VX=3\",\"VY=4\"],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -488,6 +512,11 @@
         "b": "VW",
         "h": "VX"
       },
+      "annotation_value_tokens": [
+        "VW=36",
+        "VX=41",
+        "VY=25"
+      ],
       "annotation_values": {
         "VW": 36,
         "VX": 41,

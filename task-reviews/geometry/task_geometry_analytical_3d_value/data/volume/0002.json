@@ -4,20 +4,20 @@
     "value": 10890
   },
   "evidence_gt": {
-    "type": "measurement_ref_map",
-    "value": {
-      "XY": 33,
-      "ZA": 30
-    }
+    "type": "label_set",
+    "value": [
+      "XY=33",
+      "ZA=30"
+    ]
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_3d_value/images/volume/0002.png"
   },
   "instance_seed": 1118229189304009,
-  "prompt": "The image shows an annotated 3D solid. Question: The square pyramid has an annotated base side and vertical height. What is its volume in cubic units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: XY, ZA.\nAnswer field: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":{\"XY\":2,\"ZA\":3},\"answer\":8}",
+  "prompt": "The image shows an annotated 3D solid. Question: The square pyramid has an annotated base side and vertical height. What is its volume in cubic units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: XY, ZA.\nAnswer field: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":[\"XY=2\",\"ZA=3\"],\"answer\":8}",
   "prompt_variants": {
-    "answer_and_evidence": "The image shows an annotated 3D solid. Question: The square pyramid has an annotated base side and vertical height. What is its volume in cubic units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: XY, ZA.\nAnswer field: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":{\"XY\":2,\"ZA\":3},\"answer\":8}",
+    "answer_and_evidence": "The image shows an annotated 3D solid. Question: The square pyramid has an annotated base side and vertical height. What is its volume in cubic units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: XY, ZA.\nAnswer field: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":[\"XY=2\",\"ZA=3\"],\"answer\":8}",
     "answer_only": "The image shows an annotated 3D solid. Question: The square pyramid has an annotated base side and vertical height. What is its volume in cubic units?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the value as an integer.\nExample JSON:\n{\"answer\":8}"
   },
   "task": "task_geometry_analytical_3d_value",
@@ -44,6 +44,10 @@
       "evidence_roles": [
         "s",
         "h"
+      ],
+      "evidence_tokens": [
+        "XY=33",
+        "ZA=30"
       ],
       "formula_expression": "V = (s^2 * h) / 3",
       "legacy_query_variant": "square_pyramid_given_base_height",
@@ -90,6 +94,10 @@
         "XY",
         "ZA"
       ],
+      "label_set": [
+        "XY=33",
+        "ZA=30"
+      ],
       "measurement_ref_map": {
         "XY": 33,
         "ZA": 30
@@ -100,6 +108,16 @@
           279.1243555735089
         ],
         "ZA": [
+          288.5976636854677,
+          226.05513690599412
+        ]
+      },
+      "pixel_point_map": {
+        "XY=33": [
+          368.49999995411616,
+          279.1243555735089
+        ],
+        "ZA=30": [
           288.5976636854677,
           226.05513690599412
         ]
@@ -149,8 +167,8 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the value as an integer",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: XY, ZA",
-          "json_example": "{\"evidence\":{\"XY\":2,\"ZA\":3},\"answer\":8}",
+          "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: XY, ZA",
+          "json_example": "{\"evidence\":[\"XY=2\",\"ZA=3\"],\"answer\":8}",
           "json_example_answer_only": "{\"answer\":8}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -182,8 +200,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: XY, ZA",
-              "json_example": "{\"evidence\":{\"XY\":2,\"ZA\":3},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: XY, ZA",
+              "json_example": "{\"evidence\":[\"XY=2\",\"ZA=3\"],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -205,7 +223,7 @@
               "task_family:analytical_single_solid": 5
             }
           },
-          "prompt": "The image shows an annotated 3D solid. Question: The square pyramid has an annotated base side and vertical height. What is its volume in cubic units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: XY, ZA.\nAnswer field: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":{\"XY\":2,\"ZA\":3},\"answer\":8}"
+          "prompt": "The image shows an annotated 3D solid. Question: The square pyramid has an annotated base side and vertical height. What is its volume in cubic units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: XY, ZA.\nAnswer field: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":[\"XY=2\",\"ZA=3\"],\"answer\":8}"
         },
         "answer_only": {
           "metadata": {
@@ -215,8 +233,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: XY, ZA",
-              "json_example": "{\"evidence\":{\"XY\":2,\"ZA\":3},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: XY, ZA",
+              "json_example": "{\"evidence\":[\"XY=2\",\"ZA=3\"],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -456,6 +474,10 @@
         "h": "ZA",
         "s": "XY"
       },
+      "annotation_value_tokens": [
+        "XY=33",
+        "ZA=30"
+      ],
       "annotation_values": {
         "XY": 33,
         "ZA": 30

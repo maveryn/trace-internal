@@ -4,19 +4,19 @@
     "value": 43.8
   },
   "evidence_gt": {
-    "type": "measurement_ref_map",
-    "value": {
-      "QO": 62
-    }
+    "type": "label_set",
+    "value": [
+      "QO=62"
+    ]
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_2d_value/images/length/0016.png"
   },
   "instance_seed": 5758093721894186,
-  "prompt": "You are given an image showing a geometric scene with measurement annotations. Read the marked measurements and answer: The square is inscribed in the circle, and a diameter is annotated. What is the length of segment NO?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: QO.\nAnswer format: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"QO\":2},\"answer\":42.3}",
+  "prompt": "You are given an image showing a geometric scene with measurement annotations. Read the marked measurements and answer: The square is inscribed in the circle, and a diameter is annotated. What is the length of segment NO?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: QO.\nAnswer format: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[\"QO=2\"],\"answer\":42.3}",
   "prompt_variants": {
-    "answer_and_evidence": "You are given an image showing a geometric scene with measurement annotations. Read the marked measurements and answer: The square is inscribed in the circle, and a diameter is annotated. What is the length of segment NO?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: QO.\nAnswer format: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"QO\":2},\"answer\":42.3}",
+    "answer_and_evidence": "You are given an image showing a geometric scene with measurement annotations. Read the marked measurements and answer: The square is inscribed in the circle, and a diameter is annotated. What is the length of segment NO?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: QO.\nAnswer format: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[\"QO=2\"],\"answer\":42.3}",
     "answer_only": "You are given an image showing a geometric scene with measurement annotations. Read the marked measurements and answer: The square is inscribed in the circle, and a diameter is annotated. What is the length of segment NO?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"answer\":42.3}"
   },
   "task": "task_geometry_analytical_2d_value",
@@ -39,6 +39,9 @@
       },
       "evidence_roles": [
         "diameter"
+      ],
+      "evidence_tokens": [
+        "QO=62"
       ],
       "formula_expression": "diameter / sqrt(2)",
       "legacy_query_variant": "inscribed_square_side",
@@ -90,11 +93,20 @@
       "id_set": [
         "QO"
       ],
+      "label_set": [
+        "QO=62"
+      ],
       "measurement_ref_map": {
         "QO": 62
       },
       "pixel_annotation_centers": {
         "QO": [
+          353.5,
+          324.53333333333336
+        ]
+      },
+      "pixel_point_map": {
+        "QO=62": [
           353.5,
           324.53333333333336
         ]
@@ -146,8 +158,8 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the length value rounded to one decimal place",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: QO",
-          "json_example": "{\"evidence\":{\"QO\":2},\"answer\":42.3}",
+          "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: QO",
+          "json_example": "{\"evidence\":[\"QO=2\"],\"answer\":42.3}",
           "json_example_answer_only": "{\"answer\":42.3}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -179,8 +191,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the length value rounded to one decimal place",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: QO",
-              "json_example": "{\"evidence\":{\"QO\":2},\"answer\":42.3}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: QO",
+              "json_example": "{\"evidence\":[\"QO=2\"],\"answer\":42.3}",
               "json_example_answer_only": "{\"answer\":42.3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -202,7 +214,7 @@
               "task_family:analytical_length_scene": 5
             }
           },
-          "prompt": "You are given an image showing a geometric scene with measurement annotations. Read the marked measurements and answer: The square is inscribed in the circle, and a diameter is annotated. What is the length of segment NO?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: QO.\nAnswer format: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"QO\":2},\"answer\":42.3}"
+          "prompt": "You are given an image showing a geometric scene with measurement annotations. Read the marked measurements and answer: The square is inscribed in the circle, and a diameter is annotated. What is the length of segment NO?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: QO.\nAnswer format: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[\"QO=2\"],\"answer\":42.3}"
         },
         "answer_only": {
           "metadata": {
@@ -212,8 +224,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the length value rounded to one decimal place",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: QO",
-              "json_example": "{\"evidence\":{\"QO\":2},\"answer\":42.3}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: QO",
+              "json_example": "{\"evidence\":[\"QO=2\"],\"answer\":42.3}",
               "json_example_answer_only": "{\"answer\":42.3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -435,6 +447,9 @@
       "annotation_labels": {
         "diameter": "QO"
       },
+      "annotation_value_tokens": [
+        "QO=62"
+      ],
       "annotation_values": {
         "QO": 62
       },

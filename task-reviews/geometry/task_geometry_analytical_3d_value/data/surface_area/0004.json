@@ -4,20 +4,20 @@
     "value": 1344
   },
   "evidence_gt": {
-    "type": "measurement_ref_map",
-    "value": {
-      "CD": 14,
-      "EF": 41
-    }
+    "type": "label_set",
+    "value": [
+      "CD=14",
+      "EF=41"
+    ]
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_3d_value/images/surface_area/0004.png"
   },
   "instance_seed": 6317894895206288,
-  "prompt": "Use the image showing an annotated 3D solid. The square pyramid has an annotated base side and slant height. What is its total surface area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: CD, EF.\nAnswer rule: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":{\"CD\":2,\"EF\":3},\"answer\":8}",
+  "prompt": "Use the image showing an annotated 3D solid. The square pyramid has an annotated base side and slant height. What is its total surface area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: CD, EF.\nAnswer rule: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":[\"CD=2\",\"EF=3\"],\"answer\":8}",
   "prompt_variants": {
-    "answer_and_evidence": "Use the image showing an annotated 3D solid. The square pyramid has an annotated base side and slant height. What is its total surface area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: CD, EF.\nAnswer rule: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":{\"CD\":2,\"EF\":3},\"answer\":8}",
+    "answer_and_evidence": "Use the image showing an annotated 3D solid. The square pyramid has an annotated base side and slant height. What is its total surface area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: CD, EF.\nAnswer rule: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":[\"CD=2\",\"EF=3\"],\"answer\":8}",
     "answer_only": "Use the image showing an annotated 3D solid. The square pyramid has an annotated base side and slant height. What is its total surface area in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the value as an integer.\nExample JSON:\n{\"answer\":8}"
   },
   "task": "task_geometry_analytical_3d_value",
@@ -44,6 +44,10 @@
       "evidence_roles": [
         "s",
         "l"
+      ],
+      "evidence_tokens": [
+        "CD=14",
+        "EF=41"
       ],
       "formula_expression": "SA = s^2 + 2*s*l",
       "legacy_query_variant": "square_pyramid_given_base_side_slant_height",
@@ -90,6 +94,10 @@
         "CD",
         "EF"
       ],
+      "label_set": [
+        "CD=14",
+        "EF=41"
+      ],
       "measurement_ref_map": {
         "CD": 14,
         "EF": 41
@@ -100,6 +108,16 @@
           556.3455129333088
         ],
         "EF": [
+          402.7252894504699,
+          304.57275643912413
+        ]
+      },
+      "pixel_point_map": {
+        "CD=14": [
+          498.34903249988633,
+          556.3455129333088
+        ],
+        "EF=41": [
           402.7252894504699,
           304.57275643912413
         ]
@@ -149,8 +167,8 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the value as an integer",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: CD, EF",
-          "json_example": "{\"evidence\":{\"CD\":2,\"EF\":3},\"answer\":8}",
+          "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: CD, EF",
+          "json_example": "{\"evidence\":[\"CD=2\",\"EF=3\"],\"answer\":8}",
           "json_example_answer_only": "{\"answer\":8}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -182,8 +200,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: CD, EF",
-              "json_example": "{\"evidence\":{\"CD\":2,\"EF\":3},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: CD, EF",
+              "json_example": "{\"evidence\":[\"CD=2\",\"EF=3\"],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -205,7 +223,7 @@
               "task_family:analytical_single_solid": 5
             }
           },
-          "prompt": "Use the image showing an annotated 3D solid. The square pyramid has an annotated base side and slant height. What is its total surface area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: CD, EF.\nAnswer rule: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":{\"CD\":2,\"EF\":3},\"answer\":8}"
+          "prompt": "Use the image showing an annotated 3D solid. The square pyramid has an annotated base side and slant height. What is its total surface area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: CD, EF.\nAnswer rule: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":[\"CD=2\",\"EF=3\"],\"answer\":8}"
         },
         "answer_only": {
           "metadata": {
@@ -215,8 +233,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: CD, EF",
-              "json_example": "{\"evidence\":{\"CD\":2,\"EF\":3},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: CD, EF",
+              "json_example": "{\"evidence\":[\"CD=2\",\"EF=3\"],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -464,6 +482,10 @@
         "l": "EF",
         "s": "CD"
       },
+      "annotation_value_tokens": [
+        "CD=14",
+        "EF=41"
+      ],
       "annotation_values": {
         "CD": 14,
         "EF": 41

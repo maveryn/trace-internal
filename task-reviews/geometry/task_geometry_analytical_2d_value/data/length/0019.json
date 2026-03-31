@@ -4,20 +4,20 @@
     "value": 27.9
   },
   "evidence_gt": {
-    "type": "measurement_ref_map",
-    "value": {
-      "QR": 34,
-      "QS": 31
-    }
+    "type": "label_set",
+    "value": [
+      "QR=34",
+      "QS=31"
+    ]
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_2d_value/images/length/0019.png"
   },
   "instance_seed": 3784823274368628,
-  "prompt": "Use the image showing a geometric scene with measurement annotations. Task: The circle shows a chord and the perpendicular distance from the center to that chord. What is the length of segment TU?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: QR, QS.\nAnswer requirement: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"QR\":2,\"QS\":3},\"answer\":42.3}",
+  "prompt": "Use the image showing a geometric scene with measurement annotations. Task: The circle shows a chord and the perpendicular distance from the center to that chord. What is the length of segment TU?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: QR, QS.\nAnswer requirement: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[\"QR=2\",\"QS=3\"],\"answer\":42.3}",
   "prompt_variants": {
-    "answer_and_evidence": "Use the image showing a geometric scene with measurement annotations. Task: The circle shows a chord and the perpendicular distance from the center to that chord. What is the length of segment TU?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: QR, QS.\nAnswer requirement: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"QR\":2,\"QS\":3},\"answer\":42.3}",
+    "answer_and_evidence": "Use the image showing a geometric scene with measurement annotations. Task: The circle shows a chord and the perpendicular distance from the center to that chord. What is the length of segment TU?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: QR, QS.\nAnswer requirement: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[\"QR=2\",\"QS=3\"],\"answer\":42.3}",
     "answer_only": "Use the image showing a geometric scene with measurement annotations. Task: The circle shows a chord and the perpendicular distance from the center to that chord. What is the length of segment TU?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"answer\":42.3}"
   },
   "task": "task_geometry_analytical_2d_value",
@@ -44,6 +44,10 @@
       "evidence_roles": [
         "radius",
         "offset"
+      ],
+      "evidence_tokens": [
+        "QR=34",
+        "QS=31"
       ],
       "formula_expression": "2 * sqrt(radius^2 - offset^2)",
       "legacy_query_variant": "circle_chord_length",
@@ -98,6 +102,10 @@
         "QR",
         "QS"
       ],
+      "label_set": [
+        "QR=34",
+        "QS=31"
+      ],
       "measurement_ref_map": {
         "QR": 34,
         "QS": 31
@@ -108,6 +116,16 @@
           357.26666666666665
         ],
         "QS": [
+          308.06666666666666,
+          219.67948529411763
+        ]
+      },
+      "pixel_point_map": {
+        "QR=34": [
+          501.965,
+          357.26666666666665
+        ],
+        "QS=31": [
           308.06666666666666,
           219.67948529411763
         ]
@@ -163,8 +181,8 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the length value rounded to one decimal place",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: QR, QS",
-          "json_example": "{\"evidence\":{\"QR\":2,\"QS\":3},\"answer\":42.3}",
+          "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: QR, QS",
+          "json_example": "{\"evidence\":[\"QR=2\",\"QS=3\"],\"answer\":42.3}",
           "json_example_answer_only": "{\"answer\":42.3}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -196,8 +214,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the length value rounded to one decimal place",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: QR, QS",
-              "json_example": "{\"evidence\":{\"QR\":2,\"QS\":3},\"answer\":42.3}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: QR, QS",
+              "json_example": "{\"evidence\":[\"QR=2\",\"QS=3\"],\"answer\":42.3}",
               "json_example_answer_only": "{\"answer\":42.3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -219,7 +237,7 @@
               "task_family:analytical_length_scene": 5
             }
           },
-          "prompt": "Use the image showing a geometric scene with measurement annotations. Task: The circle shows a chord and the perpendicular distance from the center to that chord. What is the length of segment TU?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: QR, QS.\nAnswer requirement: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"QR\":2,\"QS\":3},\"answer\":42.3}"
+          "prompt": "Use the image showing a geometric scene with measurement annotations. Task: The circle shows a chord and the perpendicular distance from the center to that chord. What is the length of segment TU?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: QR, QS.\nAnswer requirement: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[\"QR=2\",\"QS=3\"],\"answer\":42.3}"
         },
         "answer_only": {
           "metadata": {
@@ -229,8 +247,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the length value rounded to one decimal place",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: QR, QS",
-              "json_example": "{\"evidence\":{\"QR\":2,\"QS\":3},\"answer\":42.3}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: QR, QS",
+              "json_example": "{\"evidence\":[\"QR=2\",\"QS=3\"],\"answer\":42.3}",
               "json_example_answer_only": "{\"answer\":42.3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -465,6 +483,10 @@
         "offset": "QS",
         "radius": "QR"
       },
+      "annotation_value_tokens": [
+        "QR=34",
+        "QS=31"
+      ],
       "annotation_values": {
         "QR": 34,
         "QS": 31

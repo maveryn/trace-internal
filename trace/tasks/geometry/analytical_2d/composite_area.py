@@ -30,6 +30,7 @@ from ..shared.analytical_2d_scene import (
     render_analytical_2d_scene,
 )
 from ..shared.analytical_task import required_prompt_text, resolve_answer_bounds, resolve_task_variant
+from ..shared.annotation_values import build_annotation_value_point_map, build_annotation_value_tokens
 from ..shared.background_defaults import load_geometry_background_defaults
 from ..shared.complexity import build_geometry_analytical_complexity
 from ..shared.graph_rendering import graph_paper_grid_from_frame
@@ -639,6 +640,7 @@ class GeometryAnalyticalCompositeArea2DTask:
             for role in case.evidence_roles
             if str(role) in case.role_tokens
         ]
+        evidence_tokens = build_annotation_value_tokens(case.evidence_map)
         evidence_hint_base = str(prompt_required["evidence_hint_measurement_map"]).strip()
         if evidence_hint_base and evidence_hint_base[-1] not in {".", "!", "?", ":", ";"}:
             evidence_hint_base = f"{evidence_hint_base}."
@@ -654,7 +656,7 @@ class GeometryAnalyticalCompositeArea2DTask:
         )
         answer_hint = str(prompt_required["answer_hint_integer"])
         json_example, json_example_answer_only = build_prompt_json_examples(
-            evidence_value=case.evidence_map,
+            evidence_value=evidence_tokens,
             answer_type="integer",
         )
         prompt_selection = render_task_prompt_variants(
@@ -679,7 +681,7 @@ class GeometryAnalyticalCompositeArea2DTask:
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         answer_gt = TypedValue(type="integer", value=int(case.answer_value))
-        evidence_gt = TypedValue(type="measurement_ref_map", value=dict(case.evidence_map))
+        evidence_gt = TypedValue(type="label_set", value=list(evidence_tokens))
         complexity = build_geometry_analytical_complexity(
             task_group_defaults=task_group_defaults if isinstance(task_group_defaults, Mapping) else {},
             task_id=str(self.task_id),
@@ -693,6 +695,10 @@ class GeometryAnalyticalCompositeArea2DTask:
             for label in required_annotations
             if label in case.annotation_centers
         ]
+        evidence_point_map = build_annotation_value_point_map(
+            evidence_map=case.evidence_map,
+            annotation_centers=case.annotation_centers,
+        )
         trace_payload: Dict[str, Any] = {
             "scene_ir": {
                 "scene_kind": "geometry_2d_analytical_composite_area",
@@ -750,6 +756,7 @@ class GeometryAnalyticalCompositeArea2DTask:
                 "evidence_role_values": dict(case.role_values),
                 "evidence_role_tokens": dict(case.role_tokens),
                 "evidence_map": dict(case.evidence_map),
+                "evidence_tokens": list(evidence_tokens),
                 "variant_probabilities": dict(variant_probabilities),
                 "answer_min": int(answer_min),
                 "answer_max": int(answer_max),
@@ -761,11 +768,14 @@ class GeometryAnalyticalCompositeArea2DTask:
                 "annotation_ids": list(required_annotations),
                 "annotation_values": dict(case.evidence_map),
                 "annotation_labels": dict(case.role_tokens),
+                "annotation_value_tokens": list(evidence_tokens),
                 "measurement_ref_map": dict(case.evidence_map),
             },
             "projected_evidence": {
+                "label_set": list(evidence_tokens),
                 "measurement_ref_map": dict(case.evidence_map),
                 "id_set": list(required_annotations),
+                "pixel_point_map": dict(evidence_point_map),
                 "pixel_point_set": list(projected_point_set),
                 "annotation_labels": dict(case.role_tokens),
                 "pixel_annotation_centers": dict(case.annotation_centers),

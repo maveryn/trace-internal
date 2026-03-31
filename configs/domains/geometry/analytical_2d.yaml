@@ -131,11 +131,11 @@ prompt:
     task_family_key: analytical_single_shape
     task_key: analytical_area_query
     object_description: a geometric shape with measurement annotations
-    evidence_hint_measurement_map: set "evidence" to a JSON object that maps each required annotation label to its shown measurement value
+    evidence_hint_measurement_map: set "evidence" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations
     answer_hint_integer: set "answer" to the area value as an integer
     answer_hint_pi: set "answer" to the area value in the form kπ (for example 12π)
-    json_example_integer: '{"evidence":{"AB":8,"CD":6},"answer":24}'
-    json_example_pi: '{"evidence":{"AB":6,"CD":4},"answer":"24π"}'
+    json_example_integer: '{"evidence":["AB=8","CD=6"],"answer":24}'
+    json_example_pi: '{"evidence":["AB=6","CD=4"],"answer":"24π"}'
     json_example_answer_only_integer: '{"answer":24}'
     json_example_answer_only_pi: '{"answer":"24π"}'
   task_overrides:

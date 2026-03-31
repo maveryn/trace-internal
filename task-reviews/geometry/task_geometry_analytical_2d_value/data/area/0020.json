@@ -4,20 +4,20 @@
     "value": 104
   },
   "evidence_gt": {
-    "type": "measurement_ref_map",
-    "value": {
-      "VW": 26,
-      "VX": 8
-    }
+    "type": "label_set",
+    "value": [
+      "VW=26",
+      "VX=8"
+    ]
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_2d_value/images/area/0020.png"
   },
   "instance_seed": 582637442938336,
-  "prompt": "You are given an image showing a geometric shape with measurement annotations. Task: The right triangle has an annotated base and height. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: VW, VX.\nAnswer rule: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"VW\":2,\"VX\":3},\"answer\":8}",
+  "prompt": "You are given an image showing a geometric shape with measurement annotations. Task: The right triangle has an annotated base and height. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: VW, VX.\nAnswer rule: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":[\"VW=2\",\"VX=3\"],\"answer\":8}",
   "prompt_variants": {
-    "answer_and_evidence": "You are given an image showing a geometric shape with measurement annotations. Task: The right triangle has an annotated base and height. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: VW, VX.\nAnswer rule: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"VW\":2,\"VX\":3},\"answer\":8}",
+    "answer_and_evidence": "You are given an image showing a geometric shape with measurement annotations. Task: The right triangle has an annotated base and height. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: VW, VX.\nAnswer rule: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":[\"VW=2\",\"VX=3\"],\"answer\":8}",
     "answer_only": "You are given an image showing a geometric shape with measurement annotations. Task: The right triangle has an annotated base and height. What is its area in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"answer\":8}"
   },
   "task": "task_geometry_analytical_2d_value",
@@ -49,6 +49,10 @@
       "evidence_roles": [
         "b",
         "h"
+      ],
+      "evidence_tokens": [
+        "VW=26",
+        "VX=8"
       ],
       "formula_expression": "A = (b * h) / 2",
       "legacy_query_variant": "triangle_explicit",
@@ -108,6 +112,10 @@
         "VW",
         "VX"
       ],
+      "label_set": [
+        "VW=26",
+        "VX=8"
+      ],
       "measurement_ref_map": {
         "VW": 26,
         "VX": 8
@@ -118,6 +126,16 @@
           388.0
         ],
         "VX": [
+          128.5,
+          456.0
+        ]
+      },
+      "pixel_point_map": {
+        "VW=26": [
+          276.0,
+          388.0
+        ],
+        "VX=8": [
           128.5,
           456.0
         ]
@@ -187,8 +205,8 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the area value as an integer",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: VW, VX",
-          "json_example": "{\"evidence\":{\"VW\":2,\"VX\":3},\"answer\":8}",
+          "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: VW, VX",
+          "json_example": "{\"evidence\":[\"VW=2\",\"VX=3\"],\"answer\":8}",
           "json_example_answer_only": "{\"answer\":8}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -220,8 +238,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the area value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: VW, VX",
-              "json_example": "{\"evidence\":{\"VW\":2,\"VX\":3},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: VW, VX",
+              "json_example": "{\"evidence\":[\"VW=2\",\"VX=3\"],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -243,7 +261,7 @@
               "task_family:analytical_single_shape": 5
             }
           },
-          "prompt": "You are given an image showing a geometric shape with measurement annotations. Task: The right triangle has an annotated base and height. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: VW, VX.\nAnswer rule: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"VW\":2,\"VX\":3},\"answer\":8}"
+          "prompt": "You are given an image showing a geometric shape with measurement annotations. Task: The right triangle has an annotated base and height. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: VW, VX.\nAnswer rule: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":[\"VW=2\",\"VX=3\"],\"answer\":8}"
         },
         "answer_only": {
           "metadata": {
@@ -253,8 +271,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the area value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: VW, VX",
-              "json_example": "{\"evidence\":{\"VW\":2,\"VX\":3},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: VW, VX",
+              "json_example": "{\"evidence\":[\"VW=2\",\"VX=3\"],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -475,6 +493,10 @@
         "b": "VW",
         "h": "VX"
       },
+      "annotation_value_tokens": [
+        "VW=26",
+        "VX=8"
+      ],
       "annotation_values": {
         "VW": 26,
         "VX": 8

@@ -4,22 +4,22 @@
     "value": 920
   },
   "evidence_gt": {
-    "type": "measurement_ref_map",
-    "value": {
-      "AZ": 4,
-      "BZ": 8,
-      "XY": 26,
-      "YZ": 36
-    }
+    "type": "label_set",
+    "value": [
+      "AZ=4",
+      "BZ=8",
+      "XY=26",
+      "YZ=36"
+    ]
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_2d_value/images/composite_area/0017.png"
   },
   "instance_seed": 5140760580499756,
-  "prompt": "Use the image showing a shaded composite geometric region with measurement annotations. Based on the shown values, answer this question: The shaded region is a rectangle with one triangular corner cut out. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: XY, YZ, AZ, BZ.\nAnswer format: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"XY\":2,\"YZ\":3,\"AZ\":4,\"BZ\":5},\"answer\":8}",
+  "prompt": "Use the image showing a shaded composite geometric region with measurement annotations. Based on the shown values, answer this question: The shaded region is a rectangle with one triangular corner cut out. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: XY, YZ, AZ, BZ.\nAnswer format: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":[\"AZ=2\",\"BZ=3\",\"XY=4\",\"YZ=5\"],\"answer\":8}",
   "prompt_variants": {
-    "answer_and_evidence": "Use the image showing a shaded composite geometric region with measurement annotations. Based on the shown values, answer this question: The shaded region is a rectangle with one triangular corner cut out. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: XY, YZ, AZ, BZ.\nAnswer format: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"XY\":2,\"YZ\":3,\"AZ\":4,\"BZ\":5},\"answer\":8}",
+    "answer_and_evidence": "Use the image showing a shaded composite geometric region with measurement annotations. Based on the shown values, answer this question: The shaded region is a rectangle with one triangular corner cut out. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: XY, YZ, AZ, BZ.\nAnswer format: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":[\"AZ=2\",\"BZ=3\",\"XY=4\",\"YZ=5\"],\"answer\":8}",
     "answer_only": "Use the image showing a shaded composite geometric region with measurement annotations. Based on the shown values, answer this question: The shaded region is a rectangle with one triangular corner cut out. What is the area of the shaded region in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"answer\":8}"
   },
   "task": "task_geometry_analytical_2d_value",
@@ -54,6 +54,12 @@
         "outer_height",
         "cut_top",
         "cut_right"
+      ],
+      "evidence_tokens": [
+        "AZ=4",
+        "BZ=8",
+        "XY=26",
+        "YZ=36"
       ],
       "formula_expression": "outer_width * outer_height - (cut_top * cut_right) / 2",
       "legacy_query_variant": "rectangle_triangle_cutout",
@@ -114,6 +120,12 @@
         "AZ",
         "BZ"
       ],
+      "label_set": [
+        "AZ=4",
+        "BZ=8",
+        "XY=26",
+        "YZ=36"
+      ],
       "measurement_ref_map": {
         "AZ": 4,
         "BZ": 8,
@@ -134,6 +146,24 @@
           559.3
         ],
         "YZ": [
+          558.5573141869054,
+          329.99999999999994
+        ]
+      },
+      "pixel_point_map": {
+        "AZ=4": [
+          506.9684252980165,
+          100.79999999999994
+        ],
+        "BZ=8": [
+          548.2906475202387,
+          166.04444444444437
+        ],
+        "XY=26": [
+          378.1462030757942,
+          559.3
+        ],
+        "YZ=36": [
           558.5573141869054,
           329.99999999999994
         ]
@@ -197,8 +227,8 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the area value as an integer",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: XY, YZ, AZ, BZ",
-          "json_example": "{\"evidence\":{\"XY\":2,\"YZ\":3,\"AZ\":4,\"BZ\":5},\"answer\":8}",
+          "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: XY, YZ, AZ, BZ",
+          "json_example": "{\"evidence\":[\"AZ=2\",\"BZ=3\",\"XY=4\",\"YZ=5\"],\"answer\":8}",
           "json_example_answer_only": "{\"answer\":8}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -230,8 +260,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the area value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: XY, YZ, AZ, BZ",
-              "json_example": "{\"evidence\":{\"XY\":2,\"YZ\":3,\"AZ\":4,\"BZ\":5},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: XY, YZ, AZ, BZ",
+              "json_example": "{\"evidence\":[\"AZ=2\",\"BZ=3\",\"XY=4\",\"YZ=5\"],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -253,7 +283,7 @@
               "task_family:analytical_composite_area_scene": 5
             }
           },
-          "prompt": "Use the image showing a shaded composite geometric region with measurement annotations. Based on the shown values, answer this question: The shaded region is a rectangle with one triangular corner cut out. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: XY, YZ, AZ, BZ.\nAnswer format: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"XY\":2,\"YZ\":3,\"AZ\":4,\"BZ\":5},\"answer\":8}"
+          "prompt": "Use the image showing a shaded composite geometric region with measurement annotations. Based on the shown values, answer this question: The shaded region is a rectangle with one triangular corner cut out. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: XY, YZ, AZ, BZ.\nAnswer format: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":[\"AZ=2\",\"BZ=3\",\"XY=4\",\"YZ=5\"],\"answer\":8}"
         },
         "answer_only": {
           "metadata": {
@@ -263,8 +293,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the area value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: XY, YZ, AZ, BZ",
-              "json_example": "{\"evidence\":{\"XY\":2,\"YZ\":3,\"AZ\":4,\"BZ\":5},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: XY, YZ, AZ, BZ",
+              "json_example": "{\"evidence\":[\"AZ=2\",\"BZ=3\",\"XY=4\",\"YZ=5\"],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -503,6 +533,12 @@
         "outer_height": "YZ",
         "outer_width": "XY"
       },
+      "annotation_value_tokens": [
+        "AZ=4",
+        "BZ=8",
+        "XY=26",
+        "YZ=36"
+      ],
       "annotation_values": {
         "AZ": 4,
         "BZ": 8,

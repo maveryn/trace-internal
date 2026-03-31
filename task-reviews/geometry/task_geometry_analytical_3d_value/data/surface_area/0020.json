@@ -4,22 +4,22 @@
     "value": 3000
   },
   "evidence_gt": {
-    "type": "measurement_ref_map",
-    "value": {
-      "ST": 15,
-      "SU": 20,
-      "SV": 45,
-      "TU": 25
-    }
+    "type": "label_set",
+    "value": [
+      "ST=15",
+      "SU=20",
+      "SV=45",
+      "TU=25"
+    ]
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_3d_value/images/surface_area/0020.png"
   },
   "instance_seed": 6565138927499801,
-  "prompt": "Use the image showing an annotated 3D solid. Question: The triangular prism has annotated side lengths for the triangular base and an annotated prism length. What is its total surface area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: ST, SU, TU, SV.\nAnswer rule: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":{\"ST\":2,\"SU\":3,\"TU\":4,\"SV\":5},\"answer\":8}",
+  "prompt": "Use the image showing an annotated 3D solid. Question: The triangular prism has annotated side lengths for the triangular base and an annotated prism length. What is its total surface area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: ST, SU, TU, SV.\nAnswer rule: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":[\"ST=2\",\"SU=3\",\"SV=4\",\"TU=5\"],\"answer\":8}",
   "prompt_variants": {
-    "answer_and_evidence": "Use the image showing an annotated 3D solid. Question: The triangular prism has annotated side lengths for the triangular base and an annotated prism length. What is its total surface area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: ST, SU, TU, SV.\nAnswer rule: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":{\"ST\":2,\"SU\":3,\"TU\":4,\"SV\":5},\"answer\":8}",
+    "answer_and_evidence": "Use the image showing an annotated 3D solid. Question: The triangular prism has annotated side lengths for the triangular base and an annotated prism length. What is its total surface area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: ST, SU, TU, SV.\nAnswer rule: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":[\"ST=2\",\"SU=3\",\"SV=4\",\"TU=5\"],\"answer\":8}",
     "answer_only": "Use the image showing an annotated 3D solid. Question: The triangular prism has annotated side lengths for the triangular base and an annotated prism length. What is its total surface area in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the value as an integer.\nExample JSON:\n{\"answer\":8}"
   },
   "task": "task_geometry_analytical_3d_value",
@@ -54,6 +54,12 @@
         "b",
         "c",
         "L"
+      ],
+      "evidence_tokens": [
+        "ST=15",
+        "SU=20",
+        "SV=45",
+        "TU=25"
       ],
       "formula_expression": "SA = a*b + L*(a + b + c)",
       "legacy_query_variant": "triangular_prism_given_a_b_c_l",
@@ -106,6 +112,12 @@
         "TU",
         "SV"
       ],
+      "label_set": [
+        "ST=15",
+        "SU=20",
+        "SV=45",
+        "TU=25"
+      ],
       "measurement_ref_map": {
         "ST": 15,
         "SU": 20,
@@ -126,6 +138,24 @@
           346.0829129815858
         ],
         "TU": [
+          532.9424440652084,
+          176.8436856263394
+        ]
+      },
+      "pixel_point_map": {
+        "ST=15": [
+          493.62499995411616,
+          316.7823864272614
+        ],
+        "SU=20": [
+          412.25,
+          149.90410177345836
+        ],
+        "SV=45": [
+          224.1249999541161,
+          346.0829129815858
+        ],
+        "TU=25": [
           532.9424440652084,
           176.8436856263394
         ]
@@ -183,8 +213,8 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the value as an integer",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: ST, SU, TU, SV",
-          "json_example": "{\"evidence\":{\"ST\":2,\"SU\":3,\"TU\":4,\"SV\":5},\"answer\":8}",
+          "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: ST, SU, TU, SV",
+          "json_example": "{\"evidence\":[\"ST=2\",\"SU=3\",\"SV=4\",\"TU=5\"],\"answer\":8}",
           "json_example_answer_only": "{\"answer\":8}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -216,8 +246,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: ST, SU, TU, SV",
-              "json_example": "{\"evidence\":{\"ST\":2,\"SU\":3,\"TU\":4,\"SV\":5},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: ST, SU, TU, SV",
+              "json_example": "{\"evidence\":[\"ST=2\",\"SU=3\",\"SV=4\",\"TU=5\"],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -239,7 +269,7 @@
               "task_family:analytical_single_solid": 5
             }
           },
-          "prompt": "Use the image showing an annotated 3D solid. Question: The triangular prism has annotated side lengths for the triangular base and an annotated prism length. What is its total surface area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: ST, SU, TU, SV.\nAnswer rule: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":{\"ST\":2,\"SU\":3,\"TU\":4,\"SV\":5},\"answer\":8}"
+          "prompt": "Use the image showing an annotated 3D solid. Question: The triangular prism has annotated side lengths for the triangular base and an annotated prism length. What is its total surface area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: ST, SU, TU, SV.\nAnswer rule: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":[\"ST=2\",\"SU=3\",\"SV=4\",\"TU=5\"],\"answer\":8}"
         },
         "answer_only": {
           "metadata": {
@@ -249,8 +279,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: ST, SU, TU, SV",
-              "json_example": "{\"evidence\":{\"ST\":2,\"SU\":3,\"TU\":4,\"SV\":5},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: ST, SU, TU, SV",
+              "json_example": "{\"evidence\":[\"ST=2\",\"SU=3\",\"SV=4\",\"TU=5\"],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -506,6 +536,12 @@
         "b": "SU",
         "c": "TU"
       },
+      "annotation_value_tokens": [
+        "ST=15",
+        "SU=20",
+        "SV=45",
+        "TU=25"
+      ],
       "annotation_values": {
         "ST": 15,
         "SU": 20,

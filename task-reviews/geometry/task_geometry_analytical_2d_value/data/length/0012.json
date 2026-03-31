@@ -4,20 +4,20 @@
     "value": 48.8
   },
   "evidence_gt": {
-    "type": "measurement_ref_map",
-    "value": {
-      "AC": 70,
-      "BD": 68
-    }
+    "type": "label_set",
+    "value": [
+      "AC=70",
+      "BD=68"
+    ]
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_2d_value/images/length/0012.png"
   },
   "instance_seed": 6375904938110326,
-  "prompt": "Work from the annotated scene showing a geometric scene with measurement annotations. Task: The rhombus shows both diagonals. What is the length of segment AB?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: AC, BD.\nAnswer requirement: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"AC\":2,\"BD\":3},\"answer\":42.3}",
+  "prompt": "Work from the annotated scene showing a geometric scene with measurement annotations. Task: The rhombus shows both diagonals. What is the length of segment AB?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: AC, BD.\nAnswer requirement: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[\"AC=2\",\"BD=3\"],\"answer\":42.3}",
   "prompt_variants": {
-    "answer_and_evidence": "Work from the annotated scene showing a geometric scene with measurement annotations. Task: The rhombus shows both diagonals. What is the length of segment AB?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: AC, BD.\nAnswer requirement: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"AC\":2,\"BD\":3},\"answer\":42.3}",
+    "answer_and_evidence": "Work from the annotated scene showing a geometric scene with measurement annotations. Task: The rhombus shows both diagonals. What is the length of segment AB?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: AC, BD.\nAnswer requirement: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[\"AC=2\",\"BD=3\"],\"answer\":42.3}",
     "answer_only": "Work from the annotated scene showing a geometric scene with measurement annotations. Task: The rhombus shows both diagonals. What is the length of segment AB?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"answer\":42.3}"
   },
   "task": "task_geometry_analytical_2d_value",
@@ -44,6 +44,10 @@
       "evidence_roles": [
         "diag_x",
         "diag_y"
+      ],
+      "evidence_tokens": [
+        "AC=70",
+        "BD=68"
       ],
       "formula_expression": "sqrt((diag_x/2)^2 + (diag_y/2)^2)",
       "legacy_query_variant": "rhombus_diagonal_side",
@@ -98,6 +102,10 @@
         "AC",
         "BD"
       ],
+      "label_set": [
+        "AC=70",
+        "BD=68"
+      ],
       "measurement_ref_map": {
         "AC": 70,
         "BD": 68
@@ -108,6 +116,16 @@
           313.1353680663473
         ],
         "BD": [
+          369.5333333333333,
+          276.08972997110925
+        ]
+      },
+      "pixel_point_map": {
+        "AC=70": [
+          267.404,
+          313.1353680663473
+        ],
+        "BD=68": [
           369.5333333333333,
           276.08972997110925
         ]
@@ -163,8 +181,8 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the length value rounded to one decimal place",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: AC, BD",
-          "json_example": "{\"evidence\":{\"AC\":2,\"BD\":3},\"answer\":42.3}",
+          "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: AC, BD",
+          "json_example": "{\"evidence\":[\"AC=2\",\"BD=3\"],\"answer\":42.3}",
           "json_example_answer_only": "{\"answer\":42.3}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -196,8 +214,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the length value rounded to one decimal place",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: AC, BD",
-              "json_example": "{\"evidence\":{\"AC\":2,\"BD\":3},\"answer\":42.3}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: AC, BD",
+              "json_example": "{\"evidence\":[\"AC=2\",\"BD=3\"],\"answer\":42.3}",
               "json_example_answer_only": "{\"answer\":42.3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -219,7 +237,7 @@
               "task_family:analytical_length_scene": 5
             }
           },
-          "prompt": "Work from the annotated scene showing a geometric scene with measurement annotations. Task: The rhombus shows both diagonals. What is the length of segment AB?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: AC, BD.\nAnswer requirement: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"AC\":2,\"BD\":3},\"answer\":42.3}"
+          "prompt": "Work from the annotated scene showing a geometric scene with measurement annotations. Task: The rhombus shows both diagonals. What is the length of segment AB?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: AC, BD.\nAnswer requirement: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[\"AC=2\",\"BD=3\"],\"answer\":42.3}"
         },
         "answer_only": {
           "metadata": {
@@ -229,8 +247,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the length value rounded to one decimal place",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: AC, BD",
-              "json_example": "{\"evidence\":{\"AC\":2,\"BD\":3},\"answer\":42.3}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: AC, BD",
+              "json_example": "{\"evidence\":[\"AC=2\",\"BD=3\"],\"answer\":42.3}",
               "json_example_answer_only": "{\"answer\":42.3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -463,6 +481,10 @@
         "diag_x": "AC",
         "diag_y": "BD"
       },
+      "annotation_value_tokens": [
+        "AC=70",
+        "BD=68"
+      ],
       "annotation_values": {
         "AC": 70,
         "BD": 68

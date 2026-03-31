@@ -26,7 +26,7 @@
    - `triangle|rectangle|rhombus|trapezoid|circle` with `length`
    - `triangle|rectangle|rhombus|trapezoid|circle` with `perimeter`
    - `composite_region` with `composite_area`
-4. Evidence stays `measurement_ref_map` across all pairings.
+4. Evidence stays `label_set` across all pairings, with each item formatted as `ANNOTATION=VALUE`.
 5. Answer types remain legacy-variant-dependent (`integer`, `decimal`, or `pi_expression`).
 
 ## 3) Prompt contract
@@ -38,7 +38,7 @@
 2. Consolidated trace metadata records `scene_variant` and `query_variant` while preserving the legacy prompt variant that actually produced the question wording.
 
 ## 4) Evidence + trace contract
-1. `measurement_ref_map` evidence remains the source of truth for all annotated givens.
+1. `label_set` evidence remains the public source of truth for all annotated givens, with one `ANNOTATION=VALUE` token per required annotation.
 2. `execution_trace`, `query_spec.params`, and `scene_ir.relations` record:
    - `scene_variant`
    - `query_variant`

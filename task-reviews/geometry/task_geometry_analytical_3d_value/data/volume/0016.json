@@ -4,19 +4,19 @@
     "value": "7776π"
   },
   "evidence_gt": {
-    "type": "measurement_ref_map",
-    "value": {
-      "HI": 18
-    }
+    "type": "label_set",
+    "value": [
+      "HI=18"
+    ]
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_3d_value/images/volume/0016.png"
   },
   "instance_seed": 2611919943941541,
-  "prompt": "Work from the annotated figure showing an annotated 3D solid. Task: The sphere has an annotated radius. What is its volume? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: HI.\nAnswer field: set \"answer\" to the value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":{\"HI\":2},\"answer\":\"12π\"}",
+  "prompt": "Work from the annotated figure showing an annotated 3D solid. Task: The sphere has an annotated radius. What is its volume? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: HI.\nAnswer field: set \"answer\" to the value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":[\"HI=2\"],\"answer\":\"12π\"}",
   "prompt_variants": {
-    "answer_and_evidence": "Work from the annotated figure showing an annotated 3D solid. Task: The sphere has an annotated radius. What is its volume? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: HI.\nAnswer field: set \"answer\" to the value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":{\"HI\":2},\"answer\":\"12π\"}",
+    "answer_and_evidence": "Work from the annotated figure showing an annotated 3D solid. Task: The sphere has an annotated radius. What is its volume? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: HI.\nAnswer field: set \"answer\" to the value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":[\"HI=2\"],\"answer\":\"12π\"}",
     "answer_only": "Work from the annotated figure showing an annotated 3D solid. Task: The sphere has an annotated radius. What is its volume? Express the result in kπ form.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the value in the form kπ (for example 12π).\nExample JSON:\n{\"answer\":\"12π\"}"
   },
   "task": "task_geometry_analytical_3d_value",
@@ -39,6 +39,9 @@
       },
       "evidence_roles": [
         "r"
+      ],
+      "evidence_tokens": [
+        "HI=18"
       ],
       "formula_expression": "V = (4/3) * π * r^3",
       "legacy_query_variant": "sphere_given_r",
@@ -82,11 +85,20 @@
       "id_set": [
         "HI"
       ],
+      "label_set": [
+        "HI=18"
+      ],
       "measurement_ref_map": {
         "HI": 18
       },
       "pixel_annotation_centers": {
         "HI": [
+          528.75,
+          353.16
+        ]
+      },
+      "pixel_point_map": {
+        "HI=18": [
           528.75,
           353.16
         ]
@@ -132,8 +144,8 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the value in the form kπ (for example 12π)",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: HI",
-          "json_example": "{\"evidence\":{\"HI\":2},\"answer\":\"12π\"}",
+          "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: HI",
+          "json_example": "{\"evidence\":[\"HI=2\"],\"answer\":\"12π\"}",
           "json_example_answer_only": "{\"answer\":\"12π\"}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -165,8 +177,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the value in the form kπ (for example 12π)",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: HI",
-              "json_example": "{\"evidence\":{\"HI\":2},\"answer\":\"12π\"}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: HI",
+              "json_example": "{\"evidence\":[\"HI=2\"],\"answer\":\"12π\"}",
               "json_example_answer_only": "{\"answer\":\"12π\"}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -188,7 +200,7 @@
               "task_family:analytical_single_solid": 5
             }
           },
-          "prompt": "Work from the annotated figure showing an annotated 3D solid. Task: The sphere has an annotated radius. What is its volume? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: HI.\nAnswer field: set \"answer\" to the value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":{\"HI\":2},\"answer\":\"12π\"}"
+          "prompt": "Work from the annotated figure showing an annotated 3D solid. Task: The sphere has an annotated radius. What is its volume? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: HI.\nAnswer field: set \"answer\" to the value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":[\"HI=2\"],\"answer\":\"12π\"}"
         },
         "answer_only": {
           "metadata": {
@@ -198,8 +210,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the value in the form kπ (for example 12π)",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: HI",
-              "json_example": "{\"evidence\":{\"HI\":2},\"answer\":\"12π\"}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: HI",
+              "json_example": "{\"evidence\":[\"HI=2\"],\"answer\":\"12π\"}",
               "json_example_answer_only": "{\"answer\":\"12π\"}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -406,6 +418,9 @@
       "annotation_labels": {
         "r": "HI"
       },
+      "annotation_value_tokens": [
+        "HI=18"
+      ],
       "annotation_values": {
         "HI": 18
       },

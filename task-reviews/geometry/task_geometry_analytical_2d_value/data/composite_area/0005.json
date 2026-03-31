@@ -4,22 +4,22 @@
     "value": 457
   },
   "evidence_gt": {
-    "type": "measurement_ref_map",
-    "value": {
-      "DE": 37,
-      "EF": 13,
-      "GF": 8,
-      "HF": 6
-    }
+    "type": "label_set",
+    "value": [
+      "DE=37",
+      "EF=13",
+      "GF=8",
+      "HF=6"
+    ]
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_2d_value/images/composite_area/0005.png"
   },
   "instance_seed": 8653669201585156,
-  "prompt": "The image shows a shaded composite geometric region with measurement annotations. Task: The shaded region is a rectangle with one triangular corner cut out. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: DE, EF, GF, HF.\nAnswer rule: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"DE\":2,\"EF\":3,\"GF\":4,\"HF\":5},\"answer\":8}",
+  "prompt": "The image shows a shaded composite geometric region with measurement annotations. Task: The shaded region is a rectangle with one triangular corner cut out. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: DE, EF, GF, HF.\nAnswer rule: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":[\"DE=2\",\"EF=3\",\"GF=4\",\"HF=5\"],\"answer\":8}",
   "prompt_variants": {
-    "answer_and_evidence": "The image shows a shaded composite geometric region with measurement annotations. Task: The shaded region is a rectangle with one triangular corner cut out. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: DE, EF, GF, HF.\nAnswer rule: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"DE\":2,\"EF\":3,\"GF\":4,\"HF\":5},\"answer\":8}",
+    "answer_and_evidence": "The image shows a shaded composite geometric region with measurement annotations. Task: The shaded region is a rectangle with one triangular corner cut out. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: DE, EF, GF, HF.\nAnswer rule: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":[\"DE=2\",\"EF=3\",\"GF=4\",\"HF=5\"],\"answer\":8}",
     "answer_only": "The image shows a shaded composite geometric region with measurement annotations. Task: The shaded region is a rectangle with one triangular corner cut out. What is the area of the shaded region in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"answer\":8}"
   },
   "task": "task_geometry_analytical_2d_value",
@@ -54,6 +54,12 @@
         "outer_height",
         "cut_top",
         "cut_right"
+      ],
+      "evidence_tokens": [
+        "DE=37",
+        "EF=13",
+        "GF=8",
+        "HF=6"
       ],
       "formula_expression": "outer_width * outer_height - (cut_top * cut_right) / 2",
       "legacy_query_variant": "rectangle_triangle_cutout",
@@ -114,6 +120,12 @@
         "GF",
         "HF"
       ],
+      "label_set": [
+        "DE=37",
+        "EF=13",
+        "GF=8",
+        "HF=6"
+      ],
       "measurement_ref_map": {
         "DE": 37,
         "EF": 13,
@@ -134,6 +146,24 @@
           224.7428041854005
         ],
         "HF": [
+          601.8733333333333,
+          280.80514652774286
+        ]
+      },
+      "pixel_point_map": {
+        "DE=37": [
+          355.5,
+          422.9573987799951
+        ],
+        "EF=13": [
+          612.14,
+          323.9667681493645
+        ],
+        "GF=8": [
+          534.3124324324324,
+          224.7428041854005
+        ],
+        "HF=6": [
           601.8733333333333,
           280.80514652774286
         ]
@@ -197,8 +227,8 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the area value as an integer",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: DE, EF, GF, HF",
-          "json_example": "{\"evidence\":{\"DE\":2,\"EF\":3,\"GF\":4,\"HF\":5},\"answer\":8}",
+          "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: DE, EF, GF, HF",
+          "json_example": "{\"evidence\":[\"DE=2\",\"EF=3\",\"GF=4\",\"HF=5\"],\"answer\":8}",
           "json_example_answer_only": "{\"answer\":8}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -230,8 +260,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the area value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: DE, EF, GF, HF",
-              "json_example": "{\"evidence\":{\"DE\":2,\"EF\":3,\"GF\":4,\"HF\":5},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: DE, EF, GF, HF",
+              "json_example": "{\"evidence\":[\"DE=2\",\"EF=3\",\"GF=4\",\"HF=5\"],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -253,7 +283,7 @@
               "task_family:analytical_composite_area_scene": 5
             }
           },
-          "prompt": "The image shows a shaded composite geometric region with measurement annotations. Task: The shaded region is a rectangle with one triangular corner cut out. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: DE, EF, GF, HF.\nAnswer rule: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"DE\":2,\"EF\":3,\"GF\":4,\"HF\":5},\"answer\":8}"
+          "prompt": "The image shows a shaded composite geometric region with measurement annotations. Task: The shaded region is a rectangle with one triangular corner cut out. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: DE, EF, GF, HF.\nAnswer rule: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":[\"DE=2\",\"EF=3\",\"GF=4\",\"HF=5\"],\"answer\":8}"
         },
         "answer_only": {
           "metadata": {
@@ -263,8 +293,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the area value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: DE, EF, GF, HF",
-              "json_example": "{\"evidence\":{\"DE\":2,\"EF\":3,\"GF\":4,\"HF\":5},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: DE, EF, GF, HF",
+              "json_example": "{\"evidence\":[\"DE=2\",\"EF=3\",\"GF=4\",\"HF=5\"],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -503,6 +533,12 @@
         "outer_height": "EF",
         "outer_width": "DE"
       },
+      "annotation_value_tokens": [
+        "DE=37",
+        "EF=13",
+        "GF=8",
+        "HF=6"
+      ],
       "annotation_values": {
         "DE": 37,
         "EF": 13,

@@ -4,21 +4,21 @@
     "value": 1725
   },
   "evidence_gt": {
-    "type": "measurement_ref_map",
-    "value": {
-      "FG": 10,
-      "FH": 23,
-      "FI": 15
-    }
+    "type": "label_set",
+    "value": [
+      "FG=10",
+      "FH=23",
+      "FI=15"
+    ]
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_3d_value/images/volume/0013.png"
   },
   "instance_seed": 87139262147013,
-  "prompt": "Work from the annotated figure showing an annotated 3D solid. Read the marked measurements and answer: The triangular prism has an annotated triangle base, triangle height, and prism length. What is its volume in cubic units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: FG, FH, FI.\nAnswer field: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":{\"FG\":2,\"FH\":3,\"FI\":4},\"answer\":8}",
+  "prompt": "Work from the annotated figure showing an annotated 3D solid. Read the marked measurements and answer: The triangular prism has an annotated triangle base, triangle height, and prism length. What is its volume in cubic units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: FG, FH, FI.\nAnswer field: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":[\"FG=2\",\"FH=3\",\"FI=4\"],\"answer\":8}",
   "prompt_variants": {
-    "answer_and_evidence": "Work from the annotated figure showing an annotated 3D solid. Read the marked measurements and answer: The triangular prism has an annotated triangle base, triangle height, and prism length. What is its volume in cubic units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: FG, FH, FI.\nAnswer field: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":{\"FG\":2,\"FH\":3,\"FI\":4},\"answer\":8}",
+    "answer_and_evidence": "Work from the annotated figure showing an annotated 3D solid. Read the marked measurements and answer: The triangular prism has an annotated triangle base, triangle height, and prism length. What is its volume in cubic units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: FG, FH, FI.\nAnswer field: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":[\"FG=2\",\"FH=3\",\"FI=4\"],\"answer\":8}",
     "answer_only": "Work from the annotated figure showing an annotated 3D solid. Read the marked measurements and answer: The triangular prism has an annotated triangle base, triangle height, and prism length. What is its volume in cubic units?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the value as an integer.\nExample JSON:\n{\"answer\":8}"
   },
   "task": "task_geometry_analytical_3d_value",
@@ -49,6 +49,11 @@
         "b",
         "h",
         "L"
+      ],
+      "evidence_tokens": [
+        "FG=10",
+        "FH=23",
+        "FI=15"
       ],
       "formula_expression": "V = (b * h / 2) * L",
       "legacy_query_variant": "triangular_prism_given_b_h_l",
@@ -98,6 +103,11 @@
         "FH",
         "FI"
       ],
+      "label_set": [
+        "FG=10",
+        "FH=23",
+        "FI=15"
+      ],
       "measurement_ref_map": {
         "FG": 10,
         "FH": 23,
@@ -113,6 +123,20 @@
           210.13994429480888
         ],
         "FI": [
+          257.1349461059887,
+          435.5887323393056
+        ]
+      },
+      "pixel_point_map": {
+        "FG=10": [
+          368.94526119355277,
+          425.15011973017744
+        ],
+        "FH=23": [
+          347.29314712848435,
+          210.13994429480888
+        ],
+        "FI=15": [
           257.1349461059887,
           435.5887323393056
         ]
@@ -166,8 +190,8 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the value as an integer",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: FG, FH, FI",
-          "json_example": "{\"evidence\":{\"FG\":2,\"FH\":3,\"FI\":4},\"answer\":8}",
+          "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: FG, FH, FI",
+          "json_example": "{\"evidence\":[\"FG=2\",\"FH=3\",\"FI=4\"],\"answer\":8}",
           "json_example_answer_only": "{\"answer\":8}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -199,8 +223,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: FG, FH, FI",
-              "json_example": "{\"evidence\":{\"FG\":2,\"FH\":3,\"FI\":4},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: FG, FH, FI",
+              "json_example": "{\"evidence\":[\"FG=2\",\"FH=3\",\"FI=4\"],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -222,7 +246,7 @@
               "task_family:analytical_single_solid": 5
             }
           },
-          "prompt": "Work from the annotated figure showing an annotated 3D solid. Read the marked measurements and answer: The triangular prism has an annotated triangle base, triangle height, and prism length. What is its volume in cubic units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: FG, FH, FI.\nAnswer field: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":{\"FG\":2,\"FH\":3,\"FI\":4},\"answer\":8}"
+          "prompt": "Work from the annotated figure showing an annotated 3D solid. Read the marked measurements and answer: The triangular prism has an annotated triangle base, triangle height, and prism length. What is its volume in cubic units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: FG, FH, FI.\nAnswer field: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":[\"FG=2\",\"FH=3\",\"FI=4\"],\"answer\":8}"
         },
         "answer_only": {
           "metadata": {
@@ -232,8 +256,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: FG, FH, FI",
-              "json_example": "{\"evidence\":{\"FG\":2,\"FH\":3,\"FI\":4},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: FG, FH, FI",
+              "json_example": "{\"evidence\":[\"FG=2\",\"FH=3\",\"FI=4\"],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -481,6 +505,11 @@
         "b": "FG",
         "h": "FH"
       },
+      "annotation_value_tokens": [
+        "FG=10",
+        "FH=23",
+        "FI=15"
+      ],
       "annotation_values": {
         "FG": 10,
         "FH": 23,

@@ -4,20 +4,20 @@
     "value": 2430
   },
   "evidence_gt": {
-    "type": "measurement_ref_map",
-    "value": {
-      "EF": 27,
-      "GH": 10
-    }
+    "type": "label_set",
+    "value": [
+      "EF=27",
+      "GH=10"
+    ]
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_3d_value/images/volume/0021.png"
   },
   "instance_seed": 3453265177121059,
-  "prompt": "You are given an image showing an annotated 3D solid. The square pyramid has an annotated base side and vertical height. What is its volume in cubic units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: EF, GH.\nAnswer requirement: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":{\"EF\":2,\"GH\":3},\"answer\":8}",
+  "prompt": "You are given an image showing an annotated 3D solid. The square pyramid has an annotated base side and vertical height. What is its volume in cubic units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: EF, GH.\nAnswer requirement: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":[\"EF=2\",\"GH=3\"],\"answer\":8}",
   "prompt_variants": {
-    "answer_and_evidence": "You are given an image showing an annotated 3D solid. The square pyramid has an annotated base side and vertical height. What is its volume in cubic units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: EF, GH.\nAnswer requirement: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":{\"EF\":2,\"GH\":3},\"answer\":8}",
+    "answer_and_evidence": "You are given an image showing an annotated 3D solid. The square pyramid has an annotated base side and vertical height. What is its volume in cubic units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: EF, GH.\nAnswer requirement: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":[\"EF=2\",\"GH=3\"],\"answer\":8}",
     "answer_only": "You are given an image showing an annotated 3D solid. The square pyramid has an annotated base side and vertical height. What is its volume in cubic units?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the value as an integer.\nExample JSON:\n{\"answer\":8}"
   },
   "task": "task_geometry_analytical_3d_value",
@@ -44,6 +44,10 @@
       "evidence_roles": [
         "s",
         "h"
+      ],
+      "evidence_tokens": [
+        "EF=27",
+        "GH=10"
       ],
       "formula_expression": "V = (s^2 * h) / 3",
       "legacy_query_variant": "square_pyramid_given_base_height",
@@ -90,6 +94,10 @@
         "EF",
         "GH"
       ],
+      "label_set": [
+        "EF=27",
+        "GH=10"
+      ],
       "measurement_ref_map": {
         "EF": 27,
         "GH": 10
@@ -100,6 +108,16 @@
           237.59693308615397
         ],
         "GH": [
+          381.5,
+          285.6078847152794
+        ]
+      },
+      "pixel_point_map": {
+        "EF=27": [
+          526.2500000458839,
+          237.59693308615397
+        ],
+        "GH=10": [
           381.5,
           285.6078847152794
         ]
@@ -149,8 +167,8 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the value as an integer",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: EF, GH",
-          "json_example": "{\"evidence\":{\"EF\":2,\"GH\":3},\"answer\":8}",
+          "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: EF, GH",
+          "json_example": "{\"evidence\":[\"EF=2\",\"GH=3\"],\"answer\":8}",
           "json_example_answer_only": "{\"answer\":8}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -182,8 +200,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: EF, GH",
-              "json_example": "{\"evidence\":{\"EF\":2,\"GH\":3},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: EF, GH",
+              "json_example": "{\"evidence\":[\"EF=2\",\"GH=3\"],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -205,7 +223,7 @@
               "task_family:analytical_single_solid": 5
             }
           },
-          "prompt": "You are given an image showing an annotated 3D solid. The square pyramid has an annotated base side and vertical height. What is its volume in cubic units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: EF, GH.\nAnswer requirement: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":{\"EF\":2,\"GH\":3},\"answer\":8}"
+          "prompt": "You are given an image showing an annotated 3D solid. The square pyramid has an annotated base side and vertical height. What is its volume in cubic units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: EF, GH.\nAnswer requirement: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":[\"EF=2\",\"GH=3\"],\"answer\":8}"
         },
         "answer_only": {
           "metadata": {
@@ -215,8 +233,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: EF, GH",
-              "json_example": "{\"evidence\":{\"EF\":2,\"GH\":3},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: EF, GH",
+              "json_example": "{\"evidence\":[\"EF=2\",\"GH=3\"],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -456,6 +474,10 @@
         "h": "GH",
         "s": "EF"
       },
+      "annotation_value_tokens": [
+        "EF=27",
+        "GH=10"
+      ],
       "annotation_values": {
         "EF": 27,
         "GH": 10

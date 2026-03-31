@@ -4,20 +4,20 @@
     "value": 35.8
   },
   "evidence_gt": {
-    "type": "measurement_ref_map",
-    "value": {
-      "FH": 42,
-      "GH": 22
-    }
+    "type": "label_set",
+    "value": [
+      "FH=42",
+      "GH=22"
+    ]
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_2d_value/images/length/0011.png"
   },
   "instance_seed": 1131549478239065,
-  "prompt": "The image shows a geometric scene with measurement annotations. Question: The rectangle shows one side and its diagonal. What is the length of segment FG?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: GH, FH.\nAnswer: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"GH\":2,\"FH\":3},\"answer\":42.3}",
+  "prompt": "The image shows a geometric scene with measurement annotations. Question: The rectangle shows one side and its diagonal. What is the length of segment FG?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: GH, FH.\nAnswer: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[\"FH=2\",\"GH=3\"],\"answer\":42.3}",
   "prompt_variants": {
-    "answer_and_evidence": "The image shows a geometric scene with measurement annotations. Question: The rectangle shows one side and its diagonal. What is the length of segment FG?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: GH, FH.\nAnswer: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"GH\":2,\"FH\":3},\"answer\":42.3}",
+    "answer_and_evidence": "The image shows a geometric scene with measurement annotations. Question: The rectangle shows one side and its diagonal. What is the length of segment FG?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: GH, FH.\nAnswer: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[\"FH=2\",\"GH=3\"],\"answer\":42.3}",
     "answer_only": "The image shows a geometric scene with measurement annotations. Question: The rectangle shows one side and its diagonal. What is the length of segment FG?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"answer\":42.3}"
   },
   "task": "task_geometry_analytical_2d_value",
@@ -44,6 +44,10 @@
       "evidence_roles": [
         "known_side",
         "diagonal"
+      ],
+      "evidence_tokens": [
+        "FH=42",
+        "GH=22"
       ],
       "formula_expression": "sqrt(diagonal^2 - known_side^2)",
       "legacy_query_variant": "rectangle_diagonal_side",
@@ -98,6 +102,10 @@
         "GH",
         "FH"
       ],
+      "label_set": [
+        "FH=42",
+        "GH=22"
+      ],
       "measurement_ref_map": {
         "FH": 42,
         "GH": 22
@@ -108,6 +116,16 @@
           306.59415917477395
         ],
         "GH": [
+          586.4633333333333,
+          282.0045100507763
+        ]
+      },
+      "pixel_point_map": {
+        "FH=42": [
+          344.6206349206349,
+          306.59415917477395
+        ],
+        "GH=22": [
           586.4633333333333,
           282.0045100507763
         ]
@@ -163,8 +181,8 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the length value rounded to one decimal place",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: GH, FH",
-          "json_example": "{\"evidence\":{\"GH\":2,\"FH\":3},\"answer\":42.3}",
+          "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: GH, FH",
+          "json_example": "{\"evidence\":[\"FH=2\",\"GH=3\"],\"answer\":42.3}",
           "json_example_answer_only": "{\"answer\":42.3}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -196,8 +214,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the length value rounded to one decimal place",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: GH, FH",
-              "json_example": "{\"evidence\":{\"GH\":2,\"FH\":3},\"answer\":42.3}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: GH, FH",
+              "json_example": "{\"evidence\":[\"FH=2\",\"GH=3\"],\"answer\":42.3}",
               "json_example_answer_only": "{\"answer\":42.3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -219,7 +237,7 @@
               "task_family:analytical_length_scene": 5
             }
           },
-          "prompt": "The image shows a geometric scene with measurement annotations. Question: The rectangle shows one side and its diagonal. What is the length of segment FG?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: GH, FH.\nAnswer: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"GH\":2,\"FH\":3},\"answer\":42.3}"
+          "prompt": "The image shows a geometric scene with measurement annotations. Question: The rectangle shows one side and its diagonal. What is the length of segment FG?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: GH, FH.\nAnswer: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[\"FH=2\",\"GH=3\"],\"answer\":42.3}"
         },
         "answer_only": {
           "metadata": {
@@ -229,8 +247,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the length value rounded to one decimal place",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: GH, FH",
-              "json_example": "{\"evidence\":{\"GH\":2,\"FH\":3},\"answer\":42.3}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: GH, FH",
+              "json_example": "{\"evidence\":[\"FH=2\",\"GH=3\"],\"answer\":42.3}",
               "json_example_answer_only": "{\"answer\":42.3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -448,6 +466,10 @@
         "diagonal": "FH",
         "known_side": "GH"
       },
+      "annotation_value_tokens": [
+        "FH=42",
+        "GH=22"
+      ],
       "annotation_values": {
         "FH": 42,
         "GH": 22

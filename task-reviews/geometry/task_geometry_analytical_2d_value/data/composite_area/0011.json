@@ -4,22 +4,22 @@
     "value": 717
   },
   "evidence_gt": {
-    "type": "measurement_ref_map",
-    "value": {
-      "JK": 21,
-      "LK": 9,
-      "NI": 22,
-      "NM": 24
-    }
+    "type": "label_set",
+    "value": [
+      "JK=21",
+      "LK=9",
+      "NI=22",
+      "NM=24"
+    ]
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_2d_value/images/composite_area/0011.png"
   },
   "instance_seed": 729829643639404,
-  "prompt": "Look at the annotated image showing a shaded composite geometric region with measurement annotations. Question: The shaded figure is a step-shaped union of two rectangles. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: NM, NI, LK, JK.\nAnswer requirement: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"NM\":2,\"NI\":3,\"LK\":4,\"JK\":5},\"answer\":8}",
+  "prompt": "Look at the annotated image showing a shaded composite geometric region with measurement annotations. Question: The shaded figure is a step-shaped union of two rectangles. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: NM, NI, LK, JK.\nAnswer requirement: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":[\"JK=2\",\"LK=3\",\"NI=4\",\"NM=5\"],\"answer\":8}",
   "prompt_variants": {
-    "answer_and_evidence": "Look at the annotated image showing a shaded composite geometric region with measurement annotations. Question: The shaded figure is a step-shaped union of two rectangles. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: NM, NI, LK, JK.\nAnswer requirement: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"NM\":2,\"NI\":3,\"LK\":4,\"JK\":5},\"answer\":8}",
+    "answer_and_evidence": "Look at the annotated image showing a shaded composite geometric region with measurement annotations. Question: The shaded figure is a step-shaped union of two rectangles. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: NM, NI, LK, JK.\nAnswer requirement: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":[\"JK=2\",\"LK=3\",\"NI=4\",\"NM=5\"],\"answer\":8}",
     "answer_only": "Look at the annotated image showing a shaded composite geometric region with measurement annotations. Question: The shaded figure is a step-shaped union of two rectangles. What is the area of the shaded region in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"answer\":8}"
   },
   "task": "task_geometry_analytical_2d_value",
@@ -54,6 +54,12 @@
         "left_height",
         "right_width",
         "right_height"
+      ],
+      "evidence_tokens": [
+        "JK=21",
+        "LK=9",
+        "NI=22",
+        "NM=24"
       ],
       "formula_expression": "left_width * left_height + right_width * right_height",
       "legacy_query_variant": "step_rectangles_union",
@@ -114,6 +120,12 @@
         "LK",
         "JK"
       ],
+      "label_set": [
+        "JK=21",
+        "LK=9",
+        "NI=22",
+        "NM=24"
+      ],
       "measurement_ref_map": {
         "JK": 21,
         "LK": 9,
@@ -134,6 +146,24 @@
           344.1562681737896
         ],
         "NM": [
+          260.69818181818187,
+          228.99626817378956
+        ]
+      },
+      "pixel_point_map": {
+        "JK=21": [
+          544.84,
+          350.2453590828805
+        ],
+        "LK=9": [
+          461.63818181818186,
+          241.10778332530472
+        ],
+        "NI=22": [
+          86.39333333333332,
+          344.1562681737896
+        ],
+        "NM=24": [
           260.69818181818187,
           228.99626817378956
         ]
@@ -197,8 +227,8 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the area value as an integer",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: NM, NI, LK, JK",
-          "json_example": "{\"evidence\":{\"NM\":2,\"NI\":3,\"LK\":4,\"JK\":5},\"answer\":8}",
+          "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: NM, NI, LK, JK",
+          "json_example": "{\"evidence\":[\"JK=2\",\"LK=3\",\"NI=4\",\"NM=5\"],\"answer\":8}",
           "json_example_answer_only": "{\"answer\":8}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -230,8 +260,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the area value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: NM, NI, LK, JK",
-              "json_example": "{\"evidence\":{\"NM\":2,\"NI\":3,\"LK\":4,\"JK\":5},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: NM, NI, LK, JK",
+              "json_example": "{\"evidence\":[\"JK=2\",\"LK=3\",\"NI=4\",\"NM=5\"],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -253,7 +283,7 @@
               "task_family:analytical_composite_area_scene": 5
             }
           },
-          "prompt": "Look at the annotated image showing a shaded composite geometric region with measurement annotations. Question: The shaded figure is a step-shaped union of two rectangles. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: NM, NI, LK, JK.\nAnswer requirement: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"NM\":2,\"NI\":3,\"LK\":4,\"JK\":5},\"answer\":8}"
+          "prompt": "Look at the annotated image showing a shaded composite geometric region with measurement annotations. Question: The shaded figure is a step-shaped union of two rectangles. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: NM, NI, LK, JK.\nAnswer requirement: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":[\"JK=2\",\"LK=3\",\"NI=4\",\"NM=5\"],\"answer\":8}"
         },
         "answer_only": {
           "metadata": {
@@ -263,8 +293,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the area value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: NM, NI, LK, JK",
-              "json_example": "{\"evidence\":{\"NM\":2,\"NI\":3,\"LK\":4,\"JK\":5},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: NM, NI, LK, JK",
+              "json_example": "{\"evidence\":[\"JK=2\",\"LK=3\",\"NI=4\",\"NM=5\"],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -490,6 +520,12 @@
         "right_height": "JK",
         "right_width": "LK"
       },
+      "annotation_value_tokens": [
+        "JK=21",
+        "LK=9",
+        "NI=22",
+        "NM=24"
+      ],
       "annotation_values": {
         "JK": 21,
         "LK": 9,

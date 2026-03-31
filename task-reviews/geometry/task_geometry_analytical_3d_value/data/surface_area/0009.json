@@ -4,21 +4,21 @@
     "value": 4498
   },
   "evidence_gt": {
-    "type": "measurement_ref_map",
-    "value": {
-      "GH": 26,
-      "GJ": 49,
-      "HI": 13
-    }
+    "type": "label_set",
+    "value": [
+      "GH=26",
+      "GJ=49",
+      "HI=13"
+    ]
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_3d_value/images/surface_area/0009.png"
   },
   "instance_seed": 8516970128904864,
-  "prompt": "Work from the annotated figure showing an annotated 3D solid. Task: The rectangular prism has annotated length, width, and height. What is its total surface area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: GH, HI, GJ.\nAnswer format: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":{\"GH\":2,\"HI\":3,\"GJ\":4},\"answer\":8}",
+  "prompt": "Work from the annotated figure showing an annotated 3D solid. Task: The rectangular prism has annotated length, width, and height. What is its total surface area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: GH, HI, GJ.\nAnswer format: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":[\"GH=2\",\"GJ=3\",\"HI=4\"],\"answer\":8}",
   "prompt_variants": {
-    "answer_and_evidence": "Work from the annotated figure showing an annotated 3D solid. Task: The rectangular prism has annotated length, width, and height. What is its total surface area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: GH, HI, GJ.\nAnswer format: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":{\"GH\":2,\"HI\":3,\"GJ\":4},\"answer\":8}",
+    "answer_and_evidence": "Work from the annotated figure showing an annotated 3D solid. Task: The rectangular prism has annotated length, width, and height. What is its total surface area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: GH, HI, GJ.\nAnswer format: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":[\"GH=2\",\"GJ=3\",\"HI=4\"],\"answer\":8}",
     "answer_only": "Work from the annotated figure showing an annotated 3D solid. Task: The rectangular prism has annotated length, width, and height. What is its total surface area in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the value as an integer.\nExample JSON:\n{\"answer\":8}"
   },
   "task": "task_geometry_analytical_3d_value",
@@ -49,6 +49,11 @@
         "l",
         "w",
         "h"
+      ],
+      "evidence_tokens": [
+        "GH=26",
+        "GJ=49",
+        "HI=13"
       ],
       "formula_expression": "SA = 2 * (l*w + l*h + w*h)",
       "legacy_query_variant": "rectangular_prism_given_lwh",
@@ -98,6 +103,11 @@
         "HI",
         "GJ"
       ],
+      "label_set": [
+        "GH=26",
+        "GJ=49",
+        "HI=13"
+      ],
       "measurement_ref_map": {
         "GH": 26,
         "GJ": 49,
@@ -113,6 +123,20 @@
           205.8905109489051
         ],
         "HI": [
+          337.5687130198095,
+          464.21479237016183
+        ]
+      },
+      "pixel_point_map": {
+        "GH=26": [
+          336.78306786530203,
+          406.854014644424
+        ],
+        "GJ=49": [
+          262.46564346715326,
+          205.8905109489051
+        ],
+        "HI=13": [
           337.5687130198095,
           464.21479237016183
         ]
@@ -166,8 +190,8 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the value as an integer",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: GH, HI, GJ",
-          "json_example": "{\"evidence\":{\"GH\":2,\"HI\":3,\"GJ\":4},\"answer\":8}",
+          "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: GH, HI, GJ",
+          "json_example": "{\"evidence\":[\"GH=2\",\"GJ=3\",\"HI=4\"],\"answer\":8}",
           "json_example_answer_only": "{\"answer\":8}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -199,8 +223,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: GH, HI, GJ",
-              "json_example": "{\"evidence\":{\"GH\":2,\"HI\":3,\"GJ\":4},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: GH, HI, GJ",
+              "json_example": "{\"evidence\":[\"GH=2\",\"GJ=3\",\"HI=4\"],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -222,7 +246,7 @@
               "task_family:analytical_single_solid": 5
             }
           },
-          "prompt": "Work from the annotated figure showing an annotated 3D solid. Task: The rectangular prism has annotated length, width, and height. What is its total surface area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: GH, HI, GJ.\nAnswer format: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":{\"GH\":2,\"HI\":3,\"GJ\":4},\"answer\":8}"
+          "prompt": "Work from the annotated figure showing an annotated 3D solid. Task: The rectangular prism has annotated length, width, and height. What is its total surface area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: GH, HI, GJ.\nAnswer format: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":[\"GH=2\",\"GJ=3\",\"HI=4\"],\"answer\":8}"
         },
         "answer_only": {
           "metadata": {
@@ -232,8 +256,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: GH, HI, GJ",
-              "json_example": "{\"evidence\":{\"GH\":2,\"HI\":3,\"GJ\":4},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: GH, HI, GJ",
+              "json_example": "{\"evidence\":[\"GH=2\",\"GJ=3\",\"HI=4\"],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -504,6 +528,11 @@
         "l": "GH",
         "w": "HI"
       },
+      "annotation_value_tokens": [
+        "GH=26",
+        "GJ=49",
+        "HI=13"
+      ],
       "annotation_values": {
         "GH": 26,
         "GJ": 49,

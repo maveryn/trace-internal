@@ -68,6 +68,16 @@ def _sequence_of_strings(value: Any) -> Sequence[str] | None:
     return None
 
 
+def _sequence_of_assignment_strings(value: Any) -> Sequence[str] | None:
+    """Return sequence when all items are simple assignment-like strings."""
+    string_seq = _sequence_of_strings(value)
+    if string_seq is None:
+        return None
+    if all("=" in item and item.split("=", 1)[0].strip() for item in string_seq):
+        return list(string_seq)
+    return None
+
+
 def _example_like(value: Any, *, index: int) -> Any:
     """Build one lightweight placeholder that preserves JSON shape."""
     point_map = _mapping_of_point_pairs(value)
@@ -85,6 +95,13 @@ def _example_like(value: Any, *, index: int) -> Any:
             return [list(point) for point in layout]
     string_seq = _sequence_of_strings(value)
     if string_seq is not None:
+        assignment_seq = _sequence_of_assignment_strings(value)
+        if assignment_seq is not None:
+            out: List[str] = []
+            for offset, item in enumerate(assignment_seq):
+                key = str(item).split("=", 1)[0].strip()
+                out.append(f"{key}={int(index + offset + 2)}")
+            return out
         alphabet = list("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
         count = min(len(alphabet), len(string_seq))
         start = 1 if count > 1 else 0

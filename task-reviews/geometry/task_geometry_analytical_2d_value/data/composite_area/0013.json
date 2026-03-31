@@ -4,21 +4,21 @@
     "value": 1024
   },
   "evidence_gt": {
-    "type": "measurement_ref_map",
-    "value": {
-      "QR": 32,
-      "RS": 28,
-      "VU": 8
-    }
+    "type": "label_set",
+    "value": [
+      "QR=32",
+      "RS=28",
+      "VU=8"
+    ]
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_2d_value/images/composite_area/0013.png"
   },
   "instance_seed": 3896049504831117,
-  "prompt": "You are given an image showing a shaded composite geometric region with measurement annotations. Question: The shaded figure is a rectangle with a triangular roof attached. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: QR, RS, VU.\nAnswer requirement: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"QR\":2,\"RS\":3,\"VU\":4},\"answer\":8}",
+  "prompt": "You are given an image showing a shaded composite geometric region with measurement annotations. Question: The shaded figure is a rectangle with a triangular roof attached. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: QR, RS, VU.\nAnswer requirement: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":[\"QR=2\",\"RS=3\",\"VU=4\"],\"answer\":8}",
   "prompt_variants": {
-    "answer_and_evidence": "You are given an image showing a shaded composite geometric region with measurement annotations. Question: The shaded figure is a rectangle with a triangular roof attached. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: QR, RS, VU.\nAnswer requirement: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"QR\":2,\"RS\":3,\"VU\":4},\"answer\":8}",
+    "answer_and_evidence": "You are given an image showing a shaded composite geometric region with measurement annotations. Question: The shaded figure is a rectangle with a triangular roof attached. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: QR, RS, VU.\nAnswer requirement: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":[\"QR=2\",\"RS=3\",\"VU=4\"],\"answer\":8}",
     "answer_only": "You are given an image showing a shaded composite geometric region with measurement annotations. Question: The shaded figure is a rectangle with a triangular roof attached. What is the area of the shaded region in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"answer\":8}"
   },
   "task": "task_geometry_analytical_2d_value",
@@ -49,6 +49,11 @@
         "width",
         "rect_height",
         "roof_height"
+      ],
+      "evidence_tokens": [
+        "QR=32",
+        "RS=28",
+        "VU=8"
       ],
       "formula_expression": "width * rect_height + (width * roof_height) / 2",
       "legacy_query_variant": "rectangle_triangle_union",
@@ -106,6 +111,11 @@
         "RS",
         "VU"
       ],
+      "label_set": [
+        "QR=32",
+        "RS=28",
+        "VU=8"
+      ],
       "measurement_ref_map": {
         "QR": 32,
         "RS": 28,
@@ -121,6 +131,20 @@
           390.08222222222224
         ],
         "VU": [
+          345.14588091568766,
+          171.46222222222227
+        ]
+      },
+      "pixel_point_map": {
+        "QR=32": [
+          325.37921424902095,
+          578.9533333333334
+        ],
+        "RS=28": [
+          548.2081031379098,
+          390.08222222222224
+        ],
+        "VU=8": [
           345.14588091568766,
           171.46222222222227
         ]
@@ -180,8 +204,8 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the area value as an integer",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: QR, RS, VU",
-          "json_example": "{\"evidence\":{\"QR\":2,\"RS\":3,\"VU\":4},\"answer\":8}",
+          "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: QR, RS, VU",
+          "json_example": "{\"evidence\":[\"QR=2\",\"RS=3\",\"VU=4\"],\"answer\":8}",
           "json_example_answer_only": "{\"answer\":8}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -213,8 +237,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the area value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: QR, RS, VU",
-              "json_example": "{\"evidence\":{\"QR\":2,\"RS\":3,\"VU\":4},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: QR, RS, VU",
+              "json_example": "{\"evidence\":[\"QR=2\",\"RS=3\",\"VU=4\"],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -236,7 +260,7 @@
               "task_family:analytical_composite_area_scene": 5
             }
           },
-          "prompt": "You are given an image showing a shaded composite geometric region with measurement annotations. Question: The shaded figure is a rectangle with a triangular roof attached. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: QR, RS, VU.\nAnswer requirement: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"QR\":2,\"RS\":3,\"VU\":4},\"answer\":8}"
+          "prompt": "You are given an image showing a shaded composite geometric region with measurement annotations. Question: The shaded figure is a rectangle with a triangular roof attached. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: QR, RS, VU.\nAnswer requirement: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":[\"QR=2\",\"RS=3\",\"VU=4\"],\"answer\":8}"
         },
         "answer_only": {
           "metadata": {
@@ -246,8 +270,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the area value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: QR, RS, VU",
-              "json_example": "{\"evidence\":{\"QR\":2,\"RS\":3,\"VU\":4},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: QR, RS, VU",
+              "json_example": "{\"evidence\":[\"QR=2\",\"RS=3\",\"VU=4\"],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -501,6 +525,11 @@
         "roof_height": "VU",
         "width": "QR"
       },
+      "annotation_value_tokens": [
+        "QR=32",
+        "RS=28",
+        "VU=8"
+      ],
       "annotation_values": {
         "QR": 32,
         "RS": 28,

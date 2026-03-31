@@ -4,20 +4,20 @@
     "value": 95.8
   },
   "evidence_gt": {
-    "type": "measurement_ref_map",
-    "value": {
-      "AB": 22,
-      "ZB": 34
-    }
+    "type": "label_set",
+    "value": [
+      "AB=22",
+      "ZB=34"
+    ]
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_2d_value/images/perimeter/0006.png"
   },
   "instance_seed": 8516984931904131,
-  "prompt": "Look at the annotated image showing a geometric scene with measurement annotations. Read the marked measurements and answer: The rectangle shows one side and its diagonal. What is the perimeter of the rectangle?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: AB, ZB.\nAnswer rule: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"AB\":2,\"ZB\":3},\"answer\":42.3}",
+  "prompt": "Look at the annotated image showing a geometric scene with measurement annotations. Read the marked measurements and answer: The rectangle shows one side and its diagonal. What is the perimeter of the rectangle?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: AB, ZB.\nAnswer rule: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[\"AB=2\",\"ZB=3\"],\"answer\":42.3}",
   "prompt_variants": {
-    "answer_and_evidence": "Look at the annotated image showing a geometric scene with measurement annotations. Read the marked measurements and answer: The rectangle shows one side and its diagonal. What is the perimeter of the rectangle?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: AB, ZB.\nAnswer rule: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"AB\":2,\"ZB\":3},\"answer\":42.3}",
+    "answer_and_evidence": "Look at the annotated image showing a geometric scene with measurement annotations. Read the marked measurements and answer: The rectangle shows one side and its diagonal. What is the perimeter of the rectangle?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: AB, ZB.\nAnswer rule: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[\"AB=2\",\"ZB=3\"],\"answer\":42.3}",
     "answer_only": "Look at the annotated image showing a geometric scene with measurement annotations. Read the marked measurements and answer: The rectangle shows one side and its diagonal. What is the perimeter of the rectangle?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"answer\":42.3}"
   },
   "task": "task_geometry_analytical_2d_value",
@@ -44,6 +44,10 @@
       "evidence_roles": [
         "known_side",
         "diagonal"
+      ],
+      "evidence_tokens": [
+        "AB=22",
+        "ZB=34"
       ],
       "formula_expression": "2 * (known_side + sqrt(diagonal^2 - known_side^2))",
       "legacy_query_variant": "rectangle_side_diagonal",
@@ -97,6 +101,10 @@
         "AB",
         "ZB"
       ],
+      "label_set": [
+        "AB=22",
+        "ZB=34"
+      ],
       "measurement_ref_map": {
         "AB": 22,
         "ZB": 34
@@ -107,6 +115,16 @@
           284.0321730931181
         ],
         "ZB": [
+          332.678431372549,
+          306.0412767982993
+        ]
+      },
+      "pixel_point_map": {
+        "AB=22": [
+          559.7266666666666,
+          284.0321730931181
+        ],
+        "ZB=34": [
           332.678431372549,
           306.0412767982993
         ]
@@ -162,8 +180,8 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the perimeter value rounded to one decimal place",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: AB, ZB",
-          "json_example": "{\"evidence\":{\"AB\":2,\"ZB\":3},\"answer\":42.3}",
+          "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: AB, ZB",
+          "json_example": "{\"evidence\":[\"AB=2\",\"ZB=3\"],\"answer\":42.3}",
           "json_example_answer_only": "{\"answer\":42.3}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -195,8 +213,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the perimeter value rounded to one decimal place",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: AB, ZB",
-              "json_example": "{\"evidence\":{\"AB\":2,\"ZB\":3},\"answer\":42.3}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: AB, ZB",
+              "json_example": "{\"evidence\":[\"AB=2\",\"ZB=3\"],\"answer\":42.3}",
               "json_example_answer_only": "{\"answer\":42.3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -218,7 +236,7 @@
               "task_family:analytical_perimeter_scene": 5
             }
           },
-          "prompt": "Look at the annotated image showing a geometric scene with measurement annotations. Read the marked measurements and answer: The rectangle shows one side and its diagonal. What is the perimeter of the rectangle?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: AB, ZB.\nAnswer rule: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"AB\":2,\"ZB\":3},\"answer\":42.3}"
+          "prompt": "Look at the annotated image showing a geometric scene with measurement annotations. Read the marked measurements and answer: The rectangle shows one side and its diagonal. What is the perimeter of the rectangle?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: AB, ZB.\nAnswer rule: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[\"AB=2\",\"ZB=3\"],\"answer\":42.3}"
         },
         "answer_only": {
           "metadata": {
@@ -228,8 +246,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the perimeter value rounded to one decimal place",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: AB, ZB",
-              "json_example": "{\"evidence\":{\"AB\":2,\"ZB\":3},\"answer\":42.3}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: AB, ZB",
+              "json_example": "{\"evidence\":[\"AB=2\",\"ZB=3\"],\"answer\":42.3}",
               "json_example_answer_only": "{\"answer\":42.3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -455,6 +473,10 @@
         "diagonal": "ZB",
         "known_side": "AB"
       },
+      "annotation_value_tokens": [
+        "AB=22",
+        "ZB=34"
+      ],
       "annotation_values": {
         "AB": 22,
         "ZB": 34

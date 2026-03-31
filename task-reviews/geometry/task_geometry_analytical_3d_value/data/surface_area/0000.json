@@ -4,20 +4,20 @@
     "value": 3024
   },
   "evidence_gt": {
-    "type": "measurement_ref_map",
-    "value": {
-      "EF": 36,
-      "GH": 24
-    }
+    "type": "label_set",
+    "value": [
+      "EF=36",
+      "GH=24"
+    ]
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_3d_value/images/surface_area/0000.png"
   },
   "instance_seed": 3135267092585094,
-  "prompt": "You are given an image showing an annotated 3D solid. Task: The square pyramid has an annotated base side and slant height. What is its total surface area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: EF, GH.\nAnswer field: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":{\"EF\":2,\"GH\":3},\"answer\":8}",
+  "prompt": "You are given an image showing an annotated 3D solid. Task: The square pyramid has an annotated base side and slant height. What is its total surface area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: EF, GH.\nAnswer field: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":[\"EF=2\",\"GH=3\"],\"answer\":8}",
   "prompt_variants": {
-    "answer_and_evidence": "You are given an image showing an annotated 3D solid. Task: The square pyramid has an annotated base side and slant height. What is its total surface area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: EF, GH.\nAnswer field: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":{\"EF\":2,\"GH\":3},\"answer\":8}",
+    "answer_and_evidence": "You are given an image showing an annotated 3D solid. Task: The square pyramid has an annotated base side and slant height. What is its total surface area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: EF, GH.\nAnswer field: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":[\"EF=2\",\"GH=3\"],\"answer\":8}",
     "answer_only": "You are given an image showing an annotated 3D solid. Task: The square pyramid has an annotated base side and slant height. What is its total surface area in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the value as an integer.\nExample JSON:\n{\"answer\":8}"
   },
   "task": "task_geometry_analytical_3d_value",
@@ -44,6 +44,10 @@
       "evidence_roles": [
         "s",
         "l"
+      ],
+      "evidence_tokens": [
+        "EF=36",
+        "GH=24"
       ],
       "formula_expression": "SA = s^2 + 2*s*l",
       "legacy_query_variant": "square_pyramid_given_base_side_slant_height",
@@ -90,6 +94,10 @@
         "EF",
         "GH"
       ],
+      "label_set": [
+        "EF=36",
+        "GH=24"
+      ],
       "measurement_ref_map": {
         "EF": 36,
         "GH": 24
@@ -100,6 +108,16 @@
           230.12802201264503
         ],
         "GH": [
+          402.95,
+          249.62844551881452
+        ]
+      },
+      "pixel_point_map": {
+        "EF=36": [
+          510.50000004588384,
+          230.12802201264503
+        ],
+        "GH=24": [
           402.95,
           249.62844551881452
         ]
@@ -149,8 +167,8 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the value as an integer",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: EF, GH",
-          "json_example": "{\"evidence\":{\"EF\":2,\"GH\":3},\"answer\":8}",
+          "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: EF, GH",
+          "json_example": "{\"evidence\":[\"EF=2\",\"GH=3\"],\"answer\":8}",
           "json_example_answer_only": "{\"answer\":8}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -182,8 +200,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: EF, GH",
-              "json_example": "{\"evidence\":{\"EF\":2,\"GH\":3},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: EF, GH",
+              "json_example": "{\"evidence\":[\"EF=2\",\"GH=3\"],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -205,7 +223,7 @@
               "task_family:analytical_single_solid": 5
             }
           },
-          "prompt": "You are given an image showing an annotated 3D solid. Task: The square pyramid has an annotated base side and slant height. What is its total surface area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: EF, GH.\nAnswer field: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":{\"EF\":2,\"GH\":3},\"answer\":8}"
+          "prompt": "You are given an image showing an annotated 3D solid. Task: The square pyramid has an annotated base side and slant height. What is its total surface area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: EF, GH.\nAnswer field: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":[\"EF=2\",\"GH=3\"],\"answer\":8}"
         },
         "answer_only": {
           "metadata": {
@@ -215,8 +233,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: EF, GH",
-              "json_example": "{\"evidence\":{\"EF\":2,\"GH\":3},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: EF, GH",
+              "json_example": "{\"evidence\":[\"EF=2\",\"GH=3\"],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -464,6 +482,10 @@
         "l": "GH",
         "s": "EF"
       },
+      "annotation_value_tokens": [
+        "EF=36",
+        "GH=24"
+      ],
       "annotation_values": {
         "EF": 36,
         "GH": 24

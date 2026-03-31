@@ -4,21 +4,21 @@
     "value": 21000
   },
   "evidence_gt": {
-    "type": "measurement_ref_map",
-    "value": {
-      "RS": 25,
-      "RT": 42,
-      "RU": 40
-    }
+    "type": "label_set",
+    "value": [
+      "RS=25",
+      "RT=42",
+      "RU=40"
+    ]
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_3d_value/images/volume/0022.png"
   },
   "instance_seed": 1704617513677448,
-  "prompt": "Use the image showing an annotated 3D solid. The triangular prism has an annotated triangle base, triangle height, and prism length. What is its volume in cubic units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: RS, RT, RU.\nAnswer format: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":{\"RS\":2,\"RT\":3,\"RU\":4},\"answer\":8}",
+  "prompt": "Use the image showing an annotated 3D solid. The triangular prism has an annotated triangle base, triangle height, and prism length. What is its volume in cubic units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: RS, RT, RU.\nAnswer format: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":[\"RS=2\",\"RT=3\",\"RU=4\"],\"answer\":8}",
   "prompt_variants": {
-    "answer_and_evidence": "Use the image showing an annotated 3D solid. The triangular prism has an annotated triangle base, triangle height, and prism length. What is its volume in cubic units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: RS, RT, RU.\nAnswer format: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":{\"RS\":2,\"RT\":3,\"RU\":4},\"answer\":8}",
+    "answer_and_evidence": "Use the image showing an annotated 3D solid. The triangular prism has an annotated triangle base, triangle height, and prism length. What is its volume in cubic units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: RS, RT, RU.\nAnswer format: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":[\"RS=2\",\"RT=3\",\"RU=4\"],\"answer\":8}",
     "answer_only": "Use the image showing an annotated 3D solid. The triangular prism has an annotated triangle base, triangle height, and prism length. What is its volume in cubic units?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the value as an integer.\nExample JSON:\n{\"answer\":8}"
   },
   "task": "task_geometry_analytical_3d_value",
@@ -49,6 +49,11 @@
         "b",
         "h",
         "L"
+      ],
+      "evidence_tokens": [
+        "RS=25",
+        "RT=42",
+        "RU=40"
       ],
       "formula_expression": "V = (b * h / 2) * L",
       "legacy_query_variant": "triangular_prism_given_b_h_l",
@@ -98,6 +103,11 @@
         "RT",
         "RU"
       ],
+      "label_set": [
+        "RS=25",
+        "RT=42",
+        "RU=40"
+      ],
       "measurement_ref_map": {
         "RS": 25,
         "RT": 42,
@@ -113,6 +123,20 @@
           184.82488616076975
         ],
         "RU": [
+          206.35655104026281,
+          353.2307520523752
+        ]
+      },
+      "pixel_point_map": {
+        "RS=25": [
+          383.85007984673365,
+          380.1883085949094
+        ],
+        "RT=42": [
+          352.380173341737,
+          184.82488616076975
+        ],
+        "RU=40": [
           206.35655104026281,
           353.2307520523752
         ]
@@ -166,8 +190,8 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the value as an integer",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: RS, RT, RU",
-          "json_example": "{\"evidence\":{\"RS\":2,\"RT\":3,\"RU\":4},\"answer\":8}",
+          "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: RS, RT, RU",
+          "json_example": "{\"evidence\":[\"RS=2\",\"RT=3\",\"RU=4\"],\"answer\":8}",
           "json_example_answer_only": "{\"answer\":8}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -199,8 +223,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: RS, RT, RU",
-              "json_example": "{\"evidence\":{\"RS\":2,\"RT\":3,\"RU\":4},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: RS, RT, RU",
+              "json_example": "{\"evidence\":[\"RS=2\",\"RT=3\",\"RU=4\"],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -222,7 +246,7 @@
               "task_family:analytical_single_solid": 5
             }
           },
-          "prompt": "Use the image showing an annotated 3D solid. The triangular prism has an annotated triangle base, triangle height, and prism length. What is its volume in cubic units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: RS, RT, RU.\nAnswer format: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":{\"RS\":2,\"RT\":3,\"RU\":4},\"answer\":8}"
+          "prompt": "Use the image showing an annotated 3D solid. The triangular prism has an annotated triangle base, triangle height, and prism length. What is its volume in cubic units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: RS, RT, RU.\nAnswer format: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":[\"RS=2\",\"RT=3\",\"RU=4\"],\"answer\":8}"
         },
         "answer_only": {
           "metadata": {
@@ -232,8 +256,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: RS, RT, RU",
-              "json_example": "{\"evidence\":{\"RS\":2,\"RT\":3,\"RU\":4},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: RS, RT, RU",
+              "json_example": "{\"evidence\":[\"RS=2\",\"RT=3\",\"RU=4\"],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -488,6 +512,11 @@
         "b": "RS",
         "h": "RT"
       },
+      "annotation_value_tokens": [
+        "RS=25",
+        "RT=42",
+        "RU=40"
+      ],
       "annotation_values": {
         "RS": 25,
         "RT": 42,

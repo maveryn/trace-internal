@@ -4,20 +4,20 @@
     "value": "36800π"
   },
   "evidence_gt": {
-    "type": "measurement_ref_map",
-    "value": {
-      "EF": 40,
-      "GH": 23
-    }
+    "type": "label_set",
+    "value": [
+      "EF=40",
+      "GH=23"
+    ]
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_3d_value/images/volume/0019.png"
   },
   "instance_seed": 2897426442381988,
-  "prompt": "Work from the annotated figure showing an annotated 3D solid. Question: The cylinder has an annotated radius and height. What is its volume? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: EF, GH.\nAnswer rule: set \"answer\" to the value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":{\"EF\":2,\"GH\":3},\"answer\":\"12π\"}",
+  "prompt": "Work from the annotated figure showing an annotated 3D solid. Question: The cylinder has an annotated radius and height. What is its volume? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: EF, GH.\nAnswer rule: set \"answer\" to the value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":[\"EF=2\",\"GH=3\"],\"answer\":\"12π\"}",
   "prompt_variants": {
-    "answer_and_evidence": "Work from the annotated figure showing an annotated 3D solid. Question: The cylinder has an annotated radius and height. What is its volume? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: EF, GH.\nAnswer rule: set \"answer\" to the value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":{\"EF\":2,\"GH\":3},\"answer\":\"12π\"}",
+    "answer_and_evidence": "Work from the annotated figure showing an annotated 3D solid. Question: The cylinder has an annotated radius and height. What is its volume? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: EF, GH.\nAnswer rule: set \"answer\" to the value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":[\"EF=2\",\"GH=3\"],\"answer\":\"12π\"}",
     "answer_only": "Work from the annotated figure showing an annotated 3D solid. Question: The cylinder has an annotated radius and height. What is its volume? Express the result in kπ form.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the value in the form kπ (for example 12π).\nExample JSON:\n{\"answer\":\"12π\"}"
   },
   "task": "task_geometry_analytical_3d_value",
@@ -44,6 +44,10 @@
       "evidence_roles": [
         "r",
         "h"
+      ],
+      "evidence_tokens": [
+        "EF=40",
+        "GH=23"
       ],
       "formula_expression": "V = π * r^2 * h",
       "legacy_query_variant": "cylinder_given_r_h",
@@ -90,6 +94,10 @@
         "EF",
         "GH"
       ],
+      "label_set": [
+        "EF=40",
+        "GH=23"
+      ],
       "measurement_ref_map": {
         "EF": 40,
         "GH": 23
@@ -100,6 +108,16 @@
           258.64204545454544
         ],
         "GH": [
+          721.1545454545454,
+          372.5
+        ]
+      },
+      "pixel_point_map": {
+        "EF=40": [
+          521.8181818181818,
+          258.64204545454544
+        ],
+        "GH=23": [
           721.1545454545454,
           372.5
         ]
@@ -149,8 +167,8 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the value in the form kπ (for example 12π)",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: EF, GH",
-          "json_example": "{\"evidence\":{\"EF\":2,\"GH\":3},\"answer\":\"12π\"}",
+          "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: EF, GH",
+          "json_example": "{\"evidence\":[\"EF=2\",\"GH=3\"],\"answer\":\"12π\"}",
           "json_example_answer_only": "{\"answer\":\"12π\"}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -182,8 +200,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the value in the form kπ (for example 12π)",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: EF, GH",
-              "json_example": "{\"evidence\":{\"EF\":2,\"GH\":3},\"answer\":\"12π\"}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: EF, GH",
+              "json_example": "{\"evidence\":[\"EF=2\",\"GH=3\"],\"answer\":\"12π\"}",
               "json_example_answer_only": "{\"answer\":\"12π\"}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -205,7 +223,7 @@
               "task_family:analytical_single_solid": 5
             }
           },
-          "prompt": "Work from the annotated figure showing an annotated 3D solid. Question: The cylinder has an annotated radius and height. What is its volume? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: EF, GH.\nAnswer rule: set \"answer\" to the value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":{\"EF\":2,\"GH\":3},\"answer\":\"12π\"}"
+          "prompt": "Work from the annotated figure showing an annotated 3D solid. Question: The cylinder has an annotated radius and height. What is its volume? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: EF, GH.\nAnswer rule: set \"answer\" to the value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":[\"EF=2\",\"GH=3\"],\"answer\":\"12π\"}"
         },
         "answer_only": {
           "metadata": {
@@ -215,8 +233,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the value in the form kπ (for example 12π)",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: EF, GH",
-              "json_example": "{\"evidence\":{\"EF\":2,\"GH\":3},\"answer\":\"12π\"}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: EF, GH",
+              "json_example": "{\"evidence\":[\"EF=2\",\"GH=3\"],\"answer\":\"12π\"}",
               "json_example_answer_only": "{\"answer\":\"12π\"}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -482,6 +500,10 @@
         "h": "GH",
         "r": "EF"
       },
+      "annotation_value_tokens": [
+        "EF=40",
+        "GH=23"
+      ],
       "annotation_values": {
         "EF": 40,
         "GH": 23

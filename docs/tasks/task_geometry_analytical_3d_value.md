@@ -18,7 +18,7 @@
    - `volume`
    - `surface_area`
 3. Every supported solid scene can pair with both query variants.
-4. Evidence stays `measurement_ref_map`.
+4. Evidence stays `label_set`, with each item formatted as `ANNOTATION=VALUE`.
 5. Answer types remain legacy-variant-dependent (`integer` or `pi_expression`).
 
 ## 3) Prompt contract
@@ -28,11 +28,12 @@
 2. Consolidated trace metadata records `scene_variant` and `query_variant` while preserving the exact legacy solid variant used to phrase the prompt.
 
 ## 4) Evidence + trace contract
-1. `execution_trace`, `query_spec.params`, and `scene_ir.relations` record:
+1. `label_set` evidence is the public source of truth for annotated givens, with one `ANNOTATION=VALUE` token per required annotation.
+2. `execution_trace`, `query_spec.params`, and `scene_ir.relations` record:
    - `scene_variant`
    - `query_variant`
    - `legacy_task_id`
-2. Measurement annotations and projected evidence remain delegated to the legacy analytical 3D generator.
+3. Measurement annotations and projected evidence remain delegated to the legacy analytical 3D generator.
 
 ## 5) Determinism + constraints
 1. Deterministic generation from `instance_seed`.

@@ -4,21 +4,21 @@
     "value": 966
   },
   "evidence_gt": {
-    "type": "measurement_ref_map",
-    "value": {
-      "MN": 57,
-      "OP": 35,
-      "OQ": 21
-    }
+    "type": "label_set",
+    "value": [
+      "MN=57",
+      "OP=35",
+      "OQ=21"
+    ]
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_2d_value/images/area/0005.png"
   },
   "instance_seed": 7363029839221198,
-  "prompt": "Work from the annotated figure showing a geometric shape with measurement annotations. Question: The trapezoid has annotated base lengths and height. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: MN, OP, OQ.\nAnswer format: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"MN\":2,\"OP\":3,\"OQ\":4},\"answer\":8}",
+  "prompt": "Work from the annotated figure showing a geometric shape with measurement annotations. Question: The trapezoid has annotated base lengths and height. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: MN, OP, OQ.\nAnswer format: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":[\"MN=2\",\"OP=3\",\"OQ=4\"],\"answer\":8}",
   "prompt_variants": {
-    "answer_and_evidence": "Work from the annotated figure showing a geometric shape with measurement annotations. Question: The trapezoid has annotated base lengths and height. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: MN, OP, OQ.\nAnswer format: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"MN\":2,\"OP\":3,\"OQ\":4},\"answer\":8}",
+    "answer_and_evidence": "Work from the annotated figure showing a geometric shape with measurement annotations. Question: The trapezoid has annotated base lengths and height. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: MN, OP, OQ.\nAnswer format: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":[\"MN=2\",\"OP=3\",\"OQ=4\"],\"answer\":8}",
     "answer_only": "Work from the annotated figure showing a geometric shape with measurement annotations. Question: The trapezoid has annotated base lengths and height. What is its area in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"answer\":8}"
   },
   "task": "task_geometry_analytical_2d_value",
@@ -55,6 +55,11 @@
         "b1",
         "b2",
         "h"
+      ],
+      "evidence_tokens": [
+        "MN=57",
+        "OP=35",
+        "OQ=21"
       ],
       "formula_expression": "A = ((b1 + b2) * h) / 2",
       "legacy_query_variant": "trapezoid_explicit",
@@ -117,6 +122,11 @@
         "OP",
         "OQ"
       ],
+      "label_set": [
+        "MN=57",
+        "OP=35",
+        "OQ=21"
+      ],
       "measurement_ref_map": {
         "MN": 57,
         "OP": 35,
@@ -132,6 +142,20 @@
           522.0
         ],
         "OQ": [
+          147.68860661799457,
+          379.42343598688126
+        ]
+      },
+      "pixel_point_map": {
+        "MN=57": [
+          349.0,
+          256.0
+        ],
+        "OP=35": [
+          349.0,
+          522.0
+        ],
+        "OQ=21": [
           147.68860661799457,
           379.42343598688126
         ]
@@ -205,8 +229,8 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the area value as an integer",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: MN, OP, OQ",
-          "json_example": "{\"evidence\":{\"MN\":2,\"OP\":3,\"OQ\":4},\"answer\":8}",
+          "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: MN, OP, OQ",
+          "json_example": "{\"evidence\":[\"MN=2\",\"OP=3\",\"OQ=4\"],\"answer\":8}",
           "json_example_answer_only": "{\"answer\":8}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -238,8 +262,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the area value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: MN, OP, OQ",
-              "json_example": "{\"evidence\":{\"MN\":2,\"OP\":3,\"OQ\":4},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: MN, OP, OQ",
+              "json_example": "{\"evidence\":[\"MN=2\",\"OP=3\",\"OQ=4\"],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -261,7 +285,7 @@
               "task_family:analytical_single_shape": 5
             }
           },
-          "prompt": "Work from the annotated figure showing a geometric shape with measurement annotations. Question: The trapezoid has annotated base lengths and height. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: MN, OP, OQ.\nAnswer format: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"MN\":2,\"OP\":3,\"OQ\":4},\"answer\":8}"
+          "prompt": "Work from the annotated figure showing a geometric shape with measurement annotations. Question: The trapezoid has annotated base lengths and height. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: MN, OP, OQ.\nAnswer format: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":[\"MN=2\",\"OP=3\",\"OQ=4\"],\"answer\":8}"
         },
         "answer_only": {
           "metadata": {
@@ -271,8 +295,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the area value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: MN, OP, OQ",
-              "json_example": "{\"evidence\":{\"MN\":2,\"OP\":3,\"OQ\":4},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: MN, OP, OQ",
+              "json_example": "{\"evidence\":[\"MN=2\",\"OP=3\",\"OQ=4\"],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -510,6 +534,11 @@
         "b2": "OP",
         "h": "OQ"
       },
+      "annotation_value_tokens": [
+        "MN=57",
+        "OP=35",
+        "OQ=21"
+      ],
       "annotation_values": {
         "MN": 57,
         "OP": 35,

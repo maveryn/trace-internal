@@ -4,21 +4,21 @@
     "value": 144.8
   },
   "evidence_gt": {
-    "type": "measurement_ref_map",
-    "value": {
-      "HI": 48,
-      "KJ": 10,
-      "KL": 39
-    }
+    "type": "label_set",
+    "value": [
+      "HI=48",
+      "KJ=10",
+      "KL=39"
+    ]
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_2d_value/images/perimeter/0009.png"
   },
   "instance_seed": 7028721391610138,
-  "prompt": "Look at the annotated image showing a geometric scene with measurement annotations. The isosceles trapezoid shows both bases and a height. What is the perimeter of the trapezoid?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: HI, KJ, KL.\nAnswer format: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"HI\":2,\"KJ\":3,\"KL\":4},\"answer\":42.3}",
+  "prompt": "Look at the annotated image showing a geometric scene with measurement annotations. The isosceles trapezoid shows both bases and a height. What is the perimeter of the trapezoid?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: HI, KJ, KL.\nAnswer format: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[\"HI=2\",\"KJ=3\",\"KL=4\"],\"answer\":42.3}",
   "prompt_variants": {
-    "answer_and_evidence": "Look at the annotated image showing a geometric scene with measurement annotations. The isosceles trapezoid shows both bases and a height. What is the perimeter of the trapezoid?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: HI, KJ, KL.\nAnswer format: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"HI\":2,\"KJ\":3,\"KL\":4},\"answer\":42.3}",
+    "answer_and_evidence": "Look at the annotated image showing a geometric scene with measurement annotations. The isosceles trapezoid shows both bases and a height. What is the perimeter of the trapezoid?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: HI, KJ, KL.\nAnswer format: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[\"HI=2\",\"KJ=3\",\"KL=4\"],\"answer\":42.3}",
     "answer_only": "Look at the annotated image showing a geometric scene with measurement annotations. The isosceles trapezoid shows both bases and a height. What is the perimeter of the trapezoid?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"answer\":42.3}"
   },
   "task": "task_geometry_analytical_2d_value",
@@ -49,6 +49,11 @@
         "base_bottom",
         "base_top",
         "height"
+      ],
+      "evidence_tokens": [
+        "HI=48",
+        "KJ=10",
+        "KL=39"
       ],
       "formula_expression": "base_bottom + base_top + 2 * sqrt(height^2 + ((base_bottom - base_top)/2)^2)",
       "legacy_query_variant": "isosceles_trapezoid_bases_height",
@@ -105,6 +110,11 @@
         "KJ",
         "KL"
       ],
+      "label_set": [
+        "HI=48",
+        "KJ=10",
+        "KL=39"
+      ],
       "measurement_ref_map": {
         "HI": 48,
         "KJ": 10,
@@ -120,6 +130,20 @@
           89.63943424249686
         ],
         "KL": [
+          305.62083333333334,
+          291.2515175758302
+        ]
+      },
+      "pixel_point_map": {
+        "HI=48": [
+          323.0,
+          491.93026757583016
+        ],
+        "KJ=10": [
+          323.0,
+          89.63943424249686
+        ],
+        "KL=39": [
           305.62083333333334,
           291.2515175758302
         ]
@@ -179,8 +203,8 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the perimeter value rounded to one decimal place",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: HI, KJ, KL",
-          "json_example": "{\"evidence\":{\"HI\":2,\"KJ\":3,\"KL\":4},\"answer\":42.3}",
+          "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: HI, KJ, KL",
+          "json_example": "{\"evidence\":[\"HI=2\",\"KJ=3\",\"KL=4\"],\"answer\":42.3}",
           "json_example_answer_only": "{\"answer\":42.3}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -212,8 +236,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the perimeter value rounded to one decimal place",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: HI, KJ, KL",
-              "json_example": "{\"evidence\":{\"HI\":2,\"KJ\":3,\"KL\":4},\"answer\":42.3}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: HI, KJ, KL",
+              "json_example": "{\"evidence\":[\"HI=2\",\"KJ=3\",\"KL=4\"],\"answer\":42.3}",
               "json_example_answer_only": "{\"answer\":42.3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -235,7 +259,7 @@
               "task_family:analytical_perimeter_scene": 5
             }
           },
-          "prompt": "Look at the annotated image showing a geometric scene with measurement annotations. The isosceles trapezoid shows both bases and a height. What is the perimeter of the trapezoid?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: HI, KJ, KL.\nAnswer format: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"HI\":2,\"KJ\":3,\"KL\":4},\"answer\":42.3}"
+          "prompt": "Look at the annotated image showing a geometric scene with measurement annotations. The isosceles trapezoid shows both bases and a height. What is the perimeter of the trapezoid?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: HI, KJ, KL.\nAnswer format: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[\"HI=2\",\"KJ=3\",\"KL=4\"],\"answer\":42.3}"
         },
         "answer_only": {
           "metadata": {
@@ -245,8 +269,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the perimeter value rounded to one decimal place",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: HI, KJ, KL",
-              "json_example": "{\"evidence\":{\"HI\":2,\"KJ\":3,\"KL\":4},\"answer\":42.3}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: HI, KJ, KL",
+              "json_example": "{\"evidence\":[\"HI=2\",\"KJ=3\",\"KL=4\"],\"answer\":42.3}",
               "json_example_answer_only": "{\"answer\":42.3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -472,6 +496,11 @@
         "base_top": "KJ",
         "height": "KL"
       },
+      "annotation_value_tokens": [
+        "HI=48",
+        "KJ=10",
+        "KL=39"
+      ],
       "annotation_values": {
         "HI": 48,
         "KJ": 10,

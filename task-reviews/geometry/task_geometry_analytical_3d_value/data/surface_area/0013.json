@@ -4,20 +4,20 @@
     "value": "600π"
   },
   "evidence_gt": {
-    "type": "measurement_ref_map",
-    "value": {
-      "IJ": 6,
-      "KL": 44
-    }
+    "type": "label_set",
+    "value": [
+      "IJ=6",
+      "KL=44"
+    ]
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_3d_value/images/surface_area/0013.png"
   },
   "instance_seed": 834822902431278,
-  "prompt": "The image shows an annotated 3D solid. Based on the shown values, answer this question: The cylinder has an annotated radius and height. What is its total surface area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: IJ, KL.\nAnswer field: set \"answer\" to the value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":{\"IJ\":2,\"KL\":3},\"answer\":\"12π\"}",
+  "prompt": "The image shows an annotated 3D solid. Based on the shown values, answer this question: The cylinder has an annotated radius and height. What is its total surface area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: IJ, KL.\nAnswer field: set \"answer\" to the value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":[\"IJ=2\",\"KL=3\"],\"answer\":\"12π\"}",
   "prompt_variants": {
-    "answer_and_evidence": "The image shows an annotated 3D solid. Based on the shown values, answer this question: The cylinder has an annotated radius and height. What is its total surface area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: IJ, KL.\nAnswer field: set \"answer\" to the value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":{\"IJ\":2,\"KL\":3},\"answer\":\"12π\"}",
+    "answer_and_evidence": "The image shows an annotated 3D solid. Based on the shown values, answer this question: The cylinder has an annotated radius and height. What is its total surface area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: IJ, KL.\nAnswer field: set \"answer\" to the value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":[\"IJ=2\",\"KL=3\"],\"answer\":\"12π\"}",
     "answer_only": "The image shows an annotated 3D solid. Based on the shown values, answer this question: The cylinder has an annotated radius and height. What is its total surface area? Express the result in kπ form.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the value in the form kπ (for example 12π).\nExample JSON:\n{\"answer\":\"12π\"}"
   },
   "task": "task_geometry_analytical_3d_value",
@@ -44,6 +44,10 @@
       "evidence_roles": [
         "r",
         "h"
+      ],
+      "evidence_tokens": [
+        "IJ=6",
+        "KL=44"
       ],
       "formula_expression": "SA = 2 * π * r * (r + h)",
       "legacy_query_variant": "cylinder_given_r_h",
@@ -90,6 +94,10 @@
         "IJ",
         "KL"
       ],
+      "label_set": [
+        "IJ=6",
+        "KL=44"
+      ],
       "measurement_ref_map": {
         "IJ": 6,
         "KL": 44
@@ -100,6 +108,16 @@
           51.42295081967213
         ],
         "KL": [
+          414.49344262295085,
+          304.5
+        ]
+      },
+      "pixel_point_map": {
+        "IJ=6": [
+          336.52868852459017,
+          51.42295081967213
+        ],
+        "KL=44": [
           414.49344262295085,
           304.5
         ]
@@ -149,8 +167,8 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the value in the form kπ (for example 12π)",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: IJ, KL",
-          "json_example": "{\"evidence\":{\"IJ\":2,\"KL\":3},\"answer\":\"12π\"}",
+          "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: IJ, KL",
+          "json_example": "{\"evidence\":[\"IJ=2\",\"KL=3\"],\"answer\":\"12π\"}",
           "json_example_answer_only": "{\"answer\":\"12π\"}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -182,8 +200,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the value in the form kπ (for example 12π)",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: IJ, KL",
-              "json_example": "{\"evidence\":{\"IJ\":2,\"KL\":3},\"answer\":\"12π\"}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: IJ, KL",
+              "json_example": "{\"evidence\":[\"IJ=2\",\"KL=3\"],\"answer\":\"12π\"}",
               "json_example_answer_only": "{\"answer\":\"12π\"}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -205,7 +223,7 @@
               "task_family:analytical_single_solid": 5
             }
           },
-          "prompt": "The image shows an annotated 3D solid. Based on the shown values, answer this question: The cylinder has an annotated radius and height. What is its total surface area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: IJ, KL.\nAnswer field: set \"answer\" to the value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":{\"IJ\":2,\"KL\":3},\"answer\":\"12π\"}"
+          "prompt": "The image shows an annotated 3D solid. Based on the shown values, answer this question: The cylinder has an annotated radius and height. What is its total surface area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: IJ, KL.\nAnswer field: set \"answer\" to the value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":[\"IJ=2\",\"KL=3\"],\"answer\":\"12π\"}"
         },
         "answer_only": {
           "metadata": {
@@ -215,8 +233,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the value in the form kπ (for example 12π)",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: IJ, KL",
-              "json_example": "{\"evidence\":{\"IJ\":2,\"KL\":3},\"answer\":\"12π\"}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: IJ, KL",
+              "json_example": "{\"evidence\":[\"IJ=2\",\"KL=3\"],\"answer\":\"12π\"}",
               "json_example_answer_only": "{\"answer\":\"12π\"}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -482,6 +500,10 @@
         "h": "KL",
         "r": "IJ"
       },
+      "annotation_value_tokens": [
+        "IJ=6",
+        "KL=44"
+      ],
       "annotation_values": {
         "IJ": 6,
         "KL": 44

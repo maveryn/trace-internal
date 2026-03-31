@@ -4,22 +4,22 @@
     "value": 191
   },
   "evidence_gt": {
-    "type": "measurement_ref_map",
-    "value": {
-      "QR": 13,
-      "RS": 15,
-      "TS": 2,
-      "US": 4
-    }
+    "type": "label_set",
+    "value": [
+      "QR=13",
+      "RS=15",
+      "TS=2",
+      "US=4"
+    ]
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_2d_value/images/composite_area/0022.png"
   },
   "instance_seed": 7223038877643336,
-  "prompt": "Look at the annotated image showing a shaded composite geometric region with measurement annotations. Read the marked measurements and answer: The shaded region is a rectangle with one triangular corner cut out. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: QR, RS, TS, US.\nAnswer format: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"QR\":2,\"RS\":3,\"TS\":4,\"US\":5},\"answer\":8}",
+  "prompt": "Look at the annotated image showing a shaded composite geometric region with measurement annotations. Read the marked measurements and answer: The shaded region is a rectangle with one triangular corner cut out. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: QR, RS, TS, US.\nAnswer format: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":[\"QR=2\",\"RS=3\",\"TS=4\",\"US=5\"],\"answer\":8}",
   "prompt_variants": {
-    "answer_and_evidence": "Look at the annotated image showing a shaded composite geometric region with measurement annotations. Read the marked measurements and answer: The shaded region is a rectangle with one triangular corner cut out. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: QR, RS, TS, US.\nAnswer format: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"QR\":2,\"RS\":3,\"TS\":4,\"US\":5},\"answer\":8}",
+    "answer_and_evidence": "Look at the annotated image showing a shaded composite geometric region with measurement annotations. Read the marked measurements and answer: The shaded region is a rectangle with one triangular corner cut out. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: QR, RS, TS, US.\nAnswer format: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":[\"QR=2\",\"RS=3\",\"TS=4\",\"US=5\"],\"answer\":8}",
     "answer_only": "Look at the annotated image showing a shaded composite geometric region with measurement annotations. Read the marked measurements and answer: The shaded region is a rectangle with one triangular corner cut out. What is the area of the shaded region in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"answer\":8}"
   },
   "task": "task_geometry_analytical_2d_value",
@@ -54,6 +54,12 @@
         "outer_height",
         "cut_top",
         "cut_right"
+      ],
+      "evidence_tokens": [
+        "QR=13",
+        "RS=15",
+        "TS=2",
+        "US=4"
       ],
       "formula_expression": "outer_width * outer_height - (cut_top * cut_right) / 2",
       "legacy_query_variant": "rectangle_triangle_cutout",
@@ -114,6 +120,12 @@
         "TS",
         "US"
       ],
+      "label_set": [
+        "QR=13",
+        "RS=15",
+        "TS=2",
+        "US=4"
+      ],
       "measurement_ref_map": {
         "QR": 13,
         "RS": 15,
@@ -134,6 +146,24 @@
           78.24
         ],
         "US": [
+          418.1272988629815,
+          140.0693333333333
+        ]
+      },
+      "pixel_point_map": {
+        "QR=13": [
+          259.08196552964813,
+          440.6933333333333
+        ],
+        "RS=15": [
+          428.0606321963148,
+          259.5
+        ],
+        "TS=2": [
+          378.5126321963148,
+          78.24
+        ],
+        "US=4": [
           418.1272988629815,
           140.0693333333333
         ]
@@ -197,8 +227,8 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the area value as an integer",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: QR, RS, TS, US",
-          "json_example": "{\"evidence\":{\"QR\":2,\"RS\":3,\"TS\":4,\"US\":5},\"answer\":8}",
+          "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: QR, RS, TS, US",
+          "json_example": "{\"evidence\":[\"QR=2\",\"RS=3\",\"TS=4\",\"US=5\"],\"answer\":8}",
           "json_example_answer_only": "{\"answer\":8}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -230,8 +260,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the area value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: QR, RS, TS, US",
-              "json_example": "{\"evidence\":{\"QR\":2,\"RS\":3,\"TS\":4,\"US\":5},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: QR, RS, TS, US",
+              "json_example": "{\"evidence\":[\"QR=2\",\"RS=3\",\"TS=4\",\"US=5\"],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -253,7 +283,7 @@
               "task_family:analytical_composite_area_scene": 5
             }
           },
-          "prompt": "Look at the annotated image showing a shaded composite geometric region with measurement annotations. Read the marked measurements and answer: The shaded region is a rectangle with one triangular corner cut out. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: QR, RS, TS, US.\nAnswer format: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"QR\":2,\"RS\":3,\"TS\":4,\"US\":5},\"answer\":8}"
+          "prompt": "Look at the annotated image showing a shaded composite geometric region with measurement annotations. Read the marked measurements and answer: The shaded region is a rectangle with one triangular corner cut out. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: QR, RS, TS, US.\nAnswer format: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":[\"QR=2\",\"RS=3\",\"TS=4\",\"US=5\"],\"answer\":8}"
         },
         "answer_only": {
           "metadata": {
@@ -263,8 +293,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the area value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: QR, RS, TS, US",
-              "json_example": "{\"evidence\":{\"QR\":2,\"RS\":3,\"TS\":4,\"US\":5},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: QR, RS, TS, US",
+              "json_example": "{\"evidence\":[\"QR=2\",\"RS=3\",\"TS=4\",\"US=5\"],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -503,6 +533,12 @@
         "outer_height": "RS",
         "outer_width": "QR"
       },
+      "annotation_value_tokens": [
+        "QR=13",
+        "RS=15",
+        "TS=2",
+        "US=4"
+      ],
       "annotation_values": {
         "QR": 13,
         "RS": 15,

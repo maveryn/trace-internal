@@ -4,19 +4,19 @@
     "value": "1156π"
   },
   "evidence_gt": {
-    "type": "measurement_ref_map",
-    "value": {
-      "KL": 34
-    }
+    "type": "label_set",
+    "value": [
+      "KL=34"
+    ]
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_2d_value/images/area/0009.png"
   },
   "instance_seed": 4066545676685636,
-  "prompt": "Look at the annotated image showing a geometric shape with measurement annotations. The circle has an annotated radius. What is its area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: KL.\nAnswer rule: set \"answer\" to the area value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":{\"KL\":2},\"answer\":\"12π\"}",
+  "prompt": "Look at the annotated image showing a geometric shape with measurement annotations. The circle has an annotated radius. What is its area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: KL.\nAnswer rule: set \"answer\" to the area value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":[\"KL=2\"],\"answer\":\"12π\"}",
   "prompt_variants": {
-    "answer_and_evidence": "Look at the annotated image showing a geometric shape with measurement annotations. The circle has an annotated radius. What is its area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: KL.\nAnswer rule: set \"answer\" to the area value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":{\"KL\":2},\"answer\":\"12π\"}",
+    "answer_and_evidence": "Look at the annotated image showing a geometric shape with measurement annotations. The circle has an annotated radius. What is its area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: KL.\nAnswer rule: set \"answer\" to the area value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":[\"KL=2\"],\"answer\":\"12π\"}",
     "answer_only": "Look at the annotated image showing a geometric shape with measurement annotations. The circle has an annotated radius. What is its area? Express the result in kπ form.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the area value in the form kπ (for example 12π).\nExample JSON:\n{\"answer\":\"12π\"}"
   },
   "task": "task_geometry_analytical_2d_value",
@@ -43,6 +43,9 @@
       },
       "evidence_roles": [
         "r"
+      ],
+      "evidence_tokens": [
+        "KL=34"
       ],
       "formula_expression": "A = π * r^2",
       "legacy_query_variant": "circle_explicit",
@@ -99,11 +102,20 @@
       "id_set": [
         "KL"
       ],
+      "label_set": [
+        "KL=34"
+      ],
       "measurement_ref_map": {
         "KL": 34
       },
       "pixel_annotation_centers": {
         "KL": [
+          552.0,
+          334.0
+        ]
+      },
+      "pixel_point_map": {
+        "KL=34": [
           552.0,
           334.0
         ]
@@ -169,8 +181,8 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the area value in the form kπ (for example 12π)",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: KL",
-          "json_example": "{\"evidence\":{\"KL\":2},\"answer\":\"12π\"}",
+          "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: KL",
+          "json_example": "{\"evidence\":[\"KL=2\"],\"answer\":\"12π\"}",
           "json_example_answer_only": "{\"answer\":\"12π\"}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -202,8 +214,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the area value in the form kπ (for example 12π)",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: KL",
-              "json_example": "{\"evidence\":{\"KL\":2},\"answer\":\"12π\"}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: KL",
+              "json_example": "{\"evidence\":[\"KL=2\"],\"answer\":\"12π\"}",
               "json_example_answer_only": "{\"answer\":\"12π\"}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -225,7 +237,7 @@
               "task_family:analytical_single_shape": 5
             }
           },
-          "prompt": "Look at the annotated image showing a geometric shape with measurement annotations. The circle has an annotated radius. What is its area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: KL.\nAnswer rule: set \"answer\" to the area value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":{\"KL\":2},\"answer\":\"12π\"}"
+          "prompt": "Look at the annotated image showing a geometric shape with measurement annotations. The circle has an annotated radius. What is its area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: KL.\nAnswer rule: set \"answer\" to the area value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":[\"KL=2\"],\"answer\":\"12π\"}"
         },
         "answer_only": {
           "metadata": {
@@ -235,8 +247,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the area value in the form kπ (for example 12π)",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: KL",
-              "json_example": "{\"evidence\":{\"KL\":2},\"answer\":\"12π\"}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: KL",
+              "json_example": "{\"evidence\":[\"KL=2\"],\"answer\":\"12π\"}",
               "json_example_answer_only": "{\"answer\":\"12π\"}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -427,6 +439,9 @@
       "annotation_labels": {
         "r": "KL"
       },
+      "annotation_value_tokens": [
+        "KL=34"
+      ],
       "annotation_values": {
         "KL": 34
       },

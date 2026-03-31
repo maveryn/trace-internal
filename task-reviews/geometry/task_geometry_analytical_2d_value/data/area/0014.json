@@ -4,21 +4,21 @@
     "value": 120
   },
   "evidence_gt": {
-    "type": "measurement_ref_map",
-    "value": {
-      "JK": 10,
-      "JL": 13,
-      "JM": 5
-    }
+    "type": "label_set",
+    "value": [
+      "JK=10",
+      "JL=13",
+      "JM=5"
+    ]
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_2d_value/images/area/0014.png"
   },
   "instance_seed": 1224530519230415,
-  "prompt": "Look at the annotated image showing a geometric shape with measurement annotations. The parallelogram shows a base, one side length, and the horizontal offset. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: JK, JL, JM.\nAnswer requirement: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"JK\":2,\"JL\":3,\"JM\":4},\"answer\":8}",
+  "prompt": "Look at the annotated image showing a geometric shape with measurement annotations. The parallelogram shows a base, one side length, and the horizontal offset. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: JK, JL, JM.\nAnswer requirement: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":[\"JK=2\",\"JL=3\",\"JM=4\"],\"answer\":8}",
   "prompt_variants": {
-    "answer_and_evidence": "Look at the annotated image showing a geometric shape with measurement annotations. The parallelogram shows a base, one side length, and the horizontal offset. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: JK, JL, JM.\nAnswer requirement: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"JK\":2,\"JL\":3,\"JM\":4},\"answer\":8}",
+    "answer_and_evidence": "Look at the annotated image showing a geometric shape with measurement annotations. The parallelogram shows a base, one side length, and the horizontal offset. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: JK, JL, JM.\nAnswer requirement: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":[\"JK=2\",\"JL=3\",\"JM=4\"],\"answer\":8}",
     "answer_only": "Look at the annotated image showing a geometric shape with measurement annotations. The parallelogram shows a base, one side length, and the horizontal offset. What is its area in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"answer\":8}"
   },
   "task": "task_geometry_analytical_2d_value",
@@ -55,6 +55,11 @@
         "b",
         "s",
         "o"
+      ],
+      "evidence_tokens": [
+        "JK=10",
+        "JL=13",
+        "JM=5"
       ],
       "formula_expression": "A = b * sqrt(s^2 - o^2)",
       "legacy_query_variant": "parallelogram_derived",
@@ -117,6 +122,11 @@
         "JL",
         "JM"
       ],
+      "label_set": [
+        "JK=10",
+        "JL=13",
+        "JM=5"
+      ],
       "measurement_ref_map": {
         "JK": 10,
         "JL": 13,
@@ -132,6 +142,20 @@
           247.76923076923075
         ],
         "JM": [
+          418.9511360730137,
+          158.36429099242545
+        ]
+      },
+      "pixel_point_map": {
+        "JK=10": [
+          457.0,
+          149.0
+        ],
+        "JL=13": [
+          406.1538461538462,
+          247.76923076923075
+        ],
+        "JM=5": [
           418.9511360730137,
           158.36429099242545
         ]
@@ -205,8 +229,8 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the area value as an integer",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: JK, JL, JM",
-          "json_example": "{\"evidence\":{\"JK\":2,\"JL\":3,\"JM\":4},\"answer\":8}",
+          "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: JK, JL, JM",
+          "json_example": "{\"evidence\":[\"JK=2\",\"JL=3\",\"JM=4\"],\"answer\":8}",
           "json_example_answer_only": "{\"answer\":8}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -238,8 +262,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the area value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: JK, JL, JM",
-              "json_example": "{\"evidence\":{\"JK\":2,\"JL\":3,\"JM\":4},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: JK, JL, JM",
+              "json_example": "{\"evidence\":[\"JK=2\",\"JL=3\",\"JM=4\"],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -261,7 +285,7 @@
               "task_family:analytical_single_shape": 5
             }
           },
-          "prompt": "Look at the annotated image showing a geometric shape with measurement annotations. The parallelogram shows a base, one side length, and the horizontal offset. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: JK, JL, JM.\nAnswer requirement: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"JK\":2,\"JL\":3,\"JM\":4},\"answer\":8}"
+          "prompt": "Look at the annotated image showing a geometric shape with measurement annotations. The parallelogram shows a base, one side length, and the horizontal offset. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: JK, JL, JM.\nAnswer requirement: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":[\"JK=2\",\"JL=3\",\"JM=4\"],\"answer\":8}"
         },
         "answer_only": {
           "metadata": {
@@ -271,8 +295,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the area value as an integer",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: JK, JL, JM",
-              "json_example": "{\"evidence\":{\"JK\":2,\"JL\":3,\"JM\":4},\"answer\":8}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: JK, JL, JM",
+              "json_example": "{\"evidence\":[\"JK=2\",\"JL=3\",\"JM=4\"],\"answer\":8}",
               "json_example_answer_only": "{\"answer\":8}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -510,6 +534,11 @@
         "o": "JM",
         "s": "JL"
       },
+      "annotation_value_tokens": [
+        "JK=10",
+        "JL=13",
+        "JM=5"
+      ],
       "annotation_values": {
         "JK": 10,
         "JL": 13,

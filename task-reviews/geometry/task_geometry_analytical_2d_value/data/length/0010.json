@@ -4,20 +4,20 @@
     "value": 30.5
   },
   "evidence_gt": {
-    "type": "measurement_ref_map",
-    "value": {
-      "PQ": 31,
-      "PR": 27
-    }
+    "type": "label_set",
+    "value": [
+      "PQ=31",
+      "PR=27"
+    ]
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_2d_value/images/length/0010.png"
   },
   "instance_seed": 7569233473370488,
-  "prompt": "You are given an image showing a geometric scene with measurement annotations. Question: The circle shows a chord and the perpendicular distance from the center to that chord. What is the length of segment ST?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: PQ, PR.\nAnswer format: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"PQ\":2,\"PR\":3},\"answer\":42.3}",
+  "prompt": "You are given an image showing a geometric scene with measurement annotations. Question: The circle shows a chord and the perpendicular distance from the center to that chord. What is the length of segment ST?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: PQ, PR.\nAnswer format: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[\"PQ=2\",\"PR=3\"],\"answer\":42.3}",
   "prompt_variants": {
-    "answer_and_evidence": "You are given an image showing a geometric scene with measurement annotations. Question: The circle shows a chord and the perpendicular distance from the center to that chord. What is the length of segment ST?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: PQ, PR.\nAnswer format: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"PQ\":2,\"PR\":3},\"answer\":42.3}",
+    "answer_and_evidence": "You are given an image showing a geometric scene with measurement annotations. Question: The circle shows a chord and the perpendicular distance from the center to that chord. What is the length of segment ST?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: PQ, PR.\nAnswer format: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[\"PQ=2\",\"PR=3\"],\"answer\":42.3}",
     "answer_only": "You are given an image showing a geometric scene with measurement annotations. Question: The circle shows a chord and the perpendicular distance from the center to that chord. What is the length of segment ST?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"answer\":42.3}"
   },
   "task": "task_geometry_analytical_2d_value",
@@ -44,6 +44,10 @@
       "evidence_roles": [
         "radius",
         "offset"
+      ],
+      "evidence_tokens": [
+        "PQ=31",
+        "PR=27"
       ],
       "formula_expression": "2 * sqrt(radius^2 - offset^2)",
       "legacy_query_variant": "circle_chord_length",
@@ -98,6 +102,10 @@
         "PQ",
         "PR"
       ],
+      "label_set": [
+        "PQ=31",
+        "PR=27"
+      ],
       "measurement_ref_map": {
         "PQ": 31,
         "PR": 27
@@ -108,6 +116,16 @@
           355.26666666666665
         ],
         "PR": [
+          306.06666666666666,
+          223.6603387096774
+        ]
+      },
+      "pixel_point_map": {
+        "PQ=31": [
+          498.9289999999999,
+          355.26666666666665
+        ],
+        "PR=27": [
           306.06666666666666,
           223.6603387096774
         ]
@@ -163,8 +181,8 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the length value rounded to one decimal place",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: PQ, PR",
-          "json_example": "{\"evidence\":{\"PQ\":2,\"PR\":3},\"answer\":42.3}",
+          "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: PQ, PR",
+          "json_example": "{\"evidence\":[\"PQ=2\",\"PR=3\"],\"answer\":42.3}",
           "json_example_answer_only": "{\"answer\":42.3}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -196,8 +214,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the length value rounded to one decimal place",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: PQ, PR",
-              "json_example": "{\"evidence\":{\"PQ\":2,\"PR\":3},\"answer\":42.3}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: PQ, PR",
+              "json_example": "{\"evidence\":[\"PQ=2\",\"PR=3\"],\"answer\":42.3}",
               "json_example_answer_only": "{\"answer\":42.3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -219,7 +237,7 @@
               "task_family:analytical_length_scene": 5
             }
           },
-          "prompt": "You are given an image showing a geometric scene with measurement annotations. Question: The circle shows a chord and the perpendicular distance from the center to that chord. What is the length of segment ST?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: PQ, PR.\nAnswer format: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"PQ\":2,\"PR\":3},\"answer\":42.3}"
+          "prompt": "You are given an image showing a geometric scene with measurement annotations. Question: The circle shows a chord and the perpendicular distance from the center to that chord. What is the length of segment ST?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: PQ, PR.\nAnswer format: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[\"PQ=2\",\"PR=3\"],\"answer\":42.3}"
         },
         "answer_only": {
           "metadata": {
@@ -229,8 +247,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the length value rounded to one decimal place",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: PQ, PR",
-              "json_example": "{\"evidence\":{\"PQ\":2,\"PR\":3},\"answer\":42.3}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: PQ, PR",
+              "json_example": "{\"evidence\":[\"PQ=2\",\"PR=3\"],\"answer\":42.3}",
               "json_example_answer_only": "{\"answer\":42.3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -465,6 +483,10 @@
         "offset": "PR",
         "radius": "PQ"
       },
+      "annotation_value_tokens": [
+        "PQ=31",
+        "PR=27"
+      ],
       "annotation_values": {
         "PQ": 31,
         "PR": 27

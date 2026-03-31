@@ -4,21 +4,21 @@
     "value": 101.3
   },
   "evidence_gt": {
-    "type": "measurement_ref_map",
-    "value": {
-      "QR": 36,
-      "TS": 8,
-      "TU": 25
-    }
+    "type": "label_set",
+    "value": [
+      "QR=36",
+      "TS=8",
+      "TU=25"
+    ]
   },
   "image": {
     "format": "png",
     "path": "geometry/task_geometry_analytical_2d_value/images/perimeter/0010.png"
   },
   "instance_seed": 5454721927513082,
-  "prompt": "You are given an image showing a geometric scene with measurement annotations. Question: The isosceles trapezoid shows both bases and a height. What is the perimeter of the trapezoid?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: QR, TS, TU.\nAnswer requirement: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"QR\":2,\"TS\":3,\"TU\":4},\"answer\":42.3}",
+  "prompt": "You are given an image showing a geometric scene with measurement annotations. Question: The isosceles trapezoid shows both bases and a height. What is the perimeter of the trapezoid?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: QR, TS, TU.\nAnswer requirement: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[\"QR=2\",\"TS=3\",\"TU=4\"],\"answer\":42.3}",
   "prompt_variants": {
-    "answer_and_evidence": "You are given an image showing a geometric scene with measurement annotations. Question: The isosceles trapezoid shows both bases and a height. What is the perimeter of the trapezoid?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: QR, TS, TU.\nAnswer requirement: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"QR\":2,\"TS\":3,\"TU\":4},\"answer\":42.3}",
+    "answer_and_evidence": "You are given an image showing a geometric scene with measurement annotations. Question: The isosceles trapezoid shows both bases and a height. What is the perimeter of the trapezoid?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: QR, TS, TU.\nAnswer requirement: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[\"QR=2\",\"TS=3\",\"TU=4\"],\"answer\":42.3}",
     "answer_only": "You are given an image showing a geometric scene with measurement annotations. Question: The isosceles trapezoid shows both bases and a height. What is the perimeter of the trapezoid?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"answer\":42.3}"
   },
   "task": "task_geometry_analytical_2d_value",
@@ -49,6 +49,11 @@
         "base_bottom",
         "base_top",
         "height"
+      ],
+      "evidence_tokens": [
+        "QR=36",
+        "TS=8",
+        "TU=25"
       ],
       "formula_expression": "base_bottom + base_top + 2 * sqrt(height^2 + ((base_bottom - base_top)/2)^2)",
       "legacy_query_variant": "isosceles_trapezoid_bases_height",
@@ -105,6 +110,11 @@
         "TS",
         "TU"
       ],
+      "label_set": [
+        "QR=36",
+        "TS=8",
+        "TU=25"
+      ],
       "measurement_ref_map": {
         "QR": 36,
         "TS": 8,
@@ -120,6 +130,20 @@
           192.03765285228948
         ],
         "TU": [
+          333.4222222222222,
+          386.193208407845
+        ]
+      },
+      "pixel_point_map": {
+        "QR=36": [
+          360.0,
+          579.4154306300672
+        ],
+        "TS=8": [
+          360.0,
+          192.03765285228948
+        ],
+        "TU=25": [
           333.4222222222222,
           386.193208407845
         ]
@@ -179,8 +203,8 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the perimeter value rounded to one decimal place",
-          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: QR, TS, TU",
-          "json_example": "{\"evidence\":{\"QR\":2,\"TS\":3,\"TU\":4},\"answer\":42.3}",
+          "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: QR, TS, TU",
+          "json_example": "{\"evidence\":[\"QR=2\",\"TS=3\",\"TU=4\"],\"answer\":42.3}",
           "json_example_answer_only": "{\"answer\":42.3}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -212,8 +236,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the perimeter value rounded to one decimal place",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: QR, TS, TU",
-              "json_example": "{\"evidence\":{\"QR\":2,\"TS\":3,\"TU\":4},\"answer\":42.3}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: QR, TS, TU",
+              "json_example": "{\"evidence\":[\"QR=2\",\"TS=3\",\"TU=4\"],\"answer\":42.3}",
               "json_example_answer_only": "{\"answer\":42.3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -235,7 +259,7 @@
               "task_family:analytical_perimeter_scene": 5
             }
           },
-          "prompt": "You are given an image showing a geometric scene with measurement annotations. Question: The isosceles trapezoid shows both bases and a height. What is the perimeter of the trapezoid?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: QR, TS, TU.\nAnswer requirement: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"QR\":2,\"TS\":3,\"TU\":4},\"answer\":42.3}"
+          "prompt": "You are given an image showing a geometric scene with measurement annotations. Question: The isosceles trapezoid shows both bases and a height. What is the perimeter of the trapezoid?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: QR, TS, TU.\nAnswer requirement: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[\"QR=2\",\"TS=3\",\"TU=4\"],\"answer\":42.3}"
         },
         "answer_only": {
           "metadata": {
@@ -245,8 +269,8 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the perimeter value rounded to one decimal place",
-              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: QR, TS, TU",
-              "json_example": "{\"evidence\":{\"QR\":2,\"TS\":3,\"TU\":4},\"answer\":42.3}",
+              "evidence_hint": "set \"evidence\" to a JSON array of strings, each formatted as ANNOTATION=VALUE, covering the required annotations. Required annotations: QR, TS, TU",
+              "json_example": "{\"evidence\":[\"QR=2\",\"TS=3\",\"TU=4\"],\"answer\":42.3}",
               "json_example_answer_only": "{\"answer\":42.3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -479,6 +503,11 @@
         "base_top": "TS",
         "height": "TU"
       },
+      "annotation_value_tokens": [
+        "QR=36",
+        "TS=8",
+        "TU=25"
+      ],
       "annotation_values": {
         "QR": 36,
         "TS": 8,

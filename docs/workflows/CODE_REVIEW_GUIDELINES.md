@@ -237,6 +237,7 @@ Use this checklist during implementation and refactor reviews.
 214. For reference-based count or comparison prompts, say explicitly whether the highlighted reference itself is excluded; when the answer counts only surrounding items, prefer wording like `other events`, `other cards`, or `other objects` instead of leaving self-inclusion ambiguous.
 215. When adding a task-local wrapper around an imported shared helper, alias the imported helper first instead of redefining the same symbol name locally; otherwise it is easy to create accidental self-recursion that only appears once the wrapped code path is exercised.
 216. When one query variant reuses scene families with meaningfully different feasible answer supports, resolve the answer support at the query level first (or otherwise condition scene choice on the chosen answer) instead of always sampling `scene_variant` first; otherwise per-variant review distributions can skew even when each scene family is individually balanced.
+217. When a merge conflicts on `task-reviews/review_summary.json`, do not resolve it by keeping a one-task side blindly; rebuild or rewrite the summary so it reflects the active touched task surface instead of leaving the repo with a misleading partial review snapshot.
 
 ## 3) Process rule
 When a new reusable issue is discovered:

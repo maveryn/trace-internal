@@ -8,16 +8,184 @@
     "random_count": 100,
     "seed": 0,
     "tasks": [
+      "task_games_dots_and_boxes_capture_count",
+      "task_games_bingo_completed_line_count",
+      "task_games_cards_hand_count",
+      "task_games_dominoes_chain_count",
+      "task_games_reversi_move_count",
+      "task_games_connect_four_move_count",
+      "task_games_checkers_move_count",
+      "task_games_mancala_move_count",
+      "task_games_nine_mens_morris_pieces_in_mill_count",
       "task_games_go_group_liberty_count"
     ],
     "workers": 16
   },
   "summary": {
+    "total_tasks": 10,
     "distribution_tasks_failed": 0,
-    "failed_distribution_task_ids": [],
-    "total_tasks": 1
+    "failed_distribution_task_ids": []
   },
   "tasks": [
+    {
+      "distribution_pass": true,
+      "domain": "games",
+      "inspection_count": 25,
+      "inspection_workbook": "games/task_games_dots_and_boxes_capture_count/task_games_dots_and_boxes_capture_count.xlsx",
+      "inspection_workbook_sheets": {
+        "forced_turn_capture_count": "forced_turn_capture_count"
+      },
+      "reports": {
+        "distribution_review": "games/task_games_dots_and_boxes_capture_count/distribution_review.json",
+        "inspection_manifest": "games/task_games_dots_and_boxes_capture_count/manifest.json",
+        "random_review": "games/task_games_dots_and_boxes_capture_count/random_review_100.json"
+      },
+      "task_group": "dots_and_boxes",
+      "task_id": "task_games_dots_and_boxes_capture_count"
+    },
+    {
+      "distribution_pass": true,
+      "domain": "games",
+      "inspection_count": 75,
+      "inspection_workbook": "games/task_games_bingo_completed_line_count/task_games_bingo_completed_line_count.xlsx",
+      "inspection_workbook_sheets": {
+        "completed_column_count": "completed_column_count",
+        "completed_row_count": "completed_row_count",
+        "completed_straight_line_count": "completed_straight_line_count"
+      },
+      "reports": {
+        "distribution_review": "games/task_games_bingo_completed_line_count/distribution_review.json",
+        "inspection_manifest": "games/task_games_bingo_completed_line_count/manifest.json",
+        "random_review": "games/task_games_bingo_completed_line_count/random_review_100.json"
+      },
+      "task_group": "bingo",
+      "task_id": "task_games_bingo_completed_line_count"
+    },
+    {
+      "distribution_pass": true,
+      "domain": "games",
+      "inspection_count": 100,
+      "inspection_workbook": "games/task_games_cards_hand_count/task_games_cards_hand_count.xlsx",
+      "inspection_workbook_sheets": {
+        "higher_than_reference_count": "higher_than_reference_count",
+        "longest_run_length": "longest_run_length",
+        "pair_count": "pair_count",
+        "same_suit_as_reference_count": "same_suit_as_reference_count"
+      },
+      "reports": {
+        "distribution_review": "games/task_games_cards_hand_count/distribution_review.json",
+        "inspection_manifest": "games/task_games_cards_hand_count/manifest.json",
+        "random_review": "games/task_games_cards_hand_count/random_review_100.json"
+      },
+      "task_group": "cards",
+      "task_id": "task_games_cards_hand_count"
+    },
+    {
+      "distribution_pass": true,
+      "domain": "games",
+      "inspection_count": 100,
+      "inspection_workbook": "games/task_games_dominoes_chain_count/task_games_dominoes_chain_count.xlsx",
+      "inspection_workbook_sheets": {
+        "double_count": "double_count",
+        "higher_sum_than_reference_count": "higher_sum_than_reference_count",
+        "matching_end_count": "matching_end_count",
+        "sum_to_target_count": "sum_to_target_count"
+      },
+      "reports": {
+        "distribution_review": "games/task_games_dominoes_chain_count/distribution_review.json",
+        "inspection_manifest": "games/task_games_dominoes_chain_count/manifest.json",
+        "random_review": "games/task_games_dominoes_chain_count/random_review_100.json"
+      },
+      "task_group": "dominoes",
+      "task_id": "task_games_dominoes_chain_count"
+    },
+    {
+      "distribution_pass": true,
+      "domain": "games",
+      "inspection_count": 75,
+      "inspection_workbook": "games/task_games_reversi_move_count/task_games_reversi_move_count.xlsx",
+      "inspection_workbook_sheets": {
+        "corner_move_count": "corner_move_count",
+        "flip_count_for_marked_move": "flip_count_for_marked_move",
+        "legal_move_count": "legal_move_count"
+      },
+      "reports": {
+        "distribution_review": "games/task_games_reversi_move_count/distribution_review.json",
+        "inspection_manifest": "games/task_games_reversi_move_count/manifest.json",
+        "random_review": "games/task_games_reversi_move_count/random_review_100.json"
+      },
+      "task_group": "reversi",
+      "task_id": "task_games_reversi_move_count"
+    },
+    {
+      "distribution_pass": true,
+      "domain": "games",
+      "inspection_count": 50,
+      "inspection_workbook": "games/task_games_connect_four_move_count/task_games_connect_four_move_count.xlsx",
+      "inspection_workbook_sheets": {
+        "safe_move_count": "safe_move_count",
+        "winning_move_count": "winning_move_count"
+      },
+      "reports": {
+        "distribution_review": "games/task_games_connect_four_move_count/distribution_review.json",
+        "inspection_manifest": "games/task_games_connect_four_move_count/manifest.json",
+        "random_review": "games/task_games_connect_four_move_count/random_review_100.json"
+      },
+      "task_group": "connect_four",
+      "task_id": "task_games_connect_four_move_count"
+    },
+    {
+      "distribution_pass": true,
+      "domain": "games",
+      "inspection_count": 50,
+      "inspection_workbook": "games/task_games_checkers_move_count/task_games_checkers_move_count.xlsx",
+      "inspection_workbook_sheets": {
+        "capture_move_count": "capture_move_count",
+        "legal_move_count": "legal_move_count"
+      },
+      "reports": {
+        "distribution_review": "games/task_games_checkers_move_count/distribution_review.json",
+        "inspection_manifest": "games/task_games_checkers_move_count/manifest.json",
+        "random_review": "games/task_games_checkers_move_count/random_review_100.json"
+      },
+      "task_group": "checkers",
+      "task_id": "task_games_checkers_move_count"
+    },
+    {
+      "distribution_pass": true,
+      "domain": "games",
+      "inspection_count": 50,
+      "inspection_workbook": "games/task_games_mancala_move_count/task_games_mancala_move_count.xlsx",
+      "inspection_workbook_sheets": {
+        "capture_move_count": "capture_move_count",
+        "extra_turn_move_count": "extra_turn_move_count"
+      },
+      "reports": {
+        "distribution_review": "games/task_games_mancala_move_count/distribution_review.json",
+        "inspection_manifest": "games/task_games_mancala_move_count/manifest.json",
+        "random_review": "games/task_games_mancala_move_count/random_review_100.json"
+      },
+      "task_group": "mancala",
+      "task_id": "task_games_mancala_move_count"
+    },
+    {
+      "distribution_pass": true,
+      "domain": "games",
+      "inspection_count": 75,
+      "inspection_workbook": "games/task_games_nine_mens_morris_pieces_in_mill_count/task_games_nine_mens_morris_pieces_in_mill_count.xlsx",
+      "inspection_workbook_sheets": {
+        "all_pieces_in_mill_count": "all_pieces_in_mill_count",
+        "black_pieces_in_mill_count": "black_pieces_in_mill_count",
+        "white_pieces_in_mill_count": "white_pieces_in_mill_count"
+      },
+      "reports": {
+        "distribution_review": "games/task_games_nine_mens_morris_pieces_in_mill_count/distribution_review.json",
+        "inspection_manifest": "games/task_games_nine_mens_morris_pieces_in_mill_count/manifest.json",
+        "random_review": "games/task_games_nine_mens_morris_pieces_in_mill_count/random_review_100.json"
+      },
+      "task_group": "nine_mens_morris",
+      "task_id": "task_games_nine_mens_morris_pieces_in_mill_count"
+    },
     {
       "distribution_pass": true,
       "domain": "games",

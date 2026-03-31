@@ -275,6 +275,10 @@ class RLHFDataset(Dataset):
                 return self.prompt_key, self.answer_key
             if "prompt" in example and "answer_gt" in example:
                 return "prompt", "answer_gt"
+            # External validation packs are answer-only and keep benchmark-native
+            # prompt/ground_truth columns instead of TRACE train-time answer_gt.
+            if "prompt" in example and "ground_truth" in example:
+                return "prompt", "ground_truth"
 
         if self.prompt_key not in example or self.answer_key not in example:
             available = ", ".join(sorted(example.keys()))

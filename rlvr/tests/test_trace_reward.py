@@ -153,6 +153,11 @@ def test_trace_dataset_helpers_support_trace_rows(tmp_path: Path) -> None:
     )
     assert (prompt_key, answer_key) == ("prompt", "answer_gt")
 
+    prompt_key, answer_key = dataset._resolve_prompt_answer_keys(
+        {"prompt": "Solve it", "ground_truth": ["A"]}
+    )
+    assert (prompt_key, answer_key) == ("prompt", "ground_truth")
+
     normalized_images = dataset._normalize_image_entries([{"path": "images/sample.png"}])
     assert normalized_images == [str(image_path)]
 

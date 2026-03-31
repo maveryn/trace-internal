@@ -1,0 +1,155 @@
+\documentclass[11pt]{article}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{geometry}
+\geometry{margin=1in}
+\title{GRPO Training and Reward Flow for Tesserae (RLVR)}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section{Scope}
+This document summarizes how RLVR computes reward and applies GRPO updates when training on the Tesserae dataset. It covers the data pipeline, reward computation, token-level reward tensor, GRPO advantage construction, and the forward/backward flow for multimodal (image + text) inputs. It also explains why the vision tower is updated even though the advantage is applied only to response tokens.
+
+\section{Data and Prompt Pipeline}
+\begin{itemize}
+  \item Dataset loader: \texttt{rlvr/verl/utils/dataset.py} (\texttt{RLHFDataset}).
+  \item Training config: \texttt{rlvr/examples/config.yaml}.
+  \item Prompt formatting: \texttt{rlvr/examples/format_prompt/math.jinja}.
+\end{itemize}
+
+\subsection{Keys and fields}
+The Tesserae training config uses:
+\begin{itemize}
+  \item \texttt{prompt	extunderscore key: problem}
+  \item \texttt{answer	extunderscore key: answer}
+  \item \texttt{image	extunderscore key: images}
+\end{itemize}
+
+\subsection{Prompt formatting}
+\texttt{math.jinja} enforces a response format where the final answer is placed in \texttt{\textbackslash boxed\{\}} and the model optionally emits a \texttt{<think>} block. This allows the reward function to reliably extract the final answer.
+
+\subsection{Multimodal inputs}
+When the example includes images:
+\begin{itemize}
+  \item The prompt string is split by \texttt{<image>} and converted into a chat message list with interleaved \texttt{\{type: image\}} and \texttt{\{type: text\}} items.
+  \item Image paths/bytes are not converted to tensors in the dataset; they are stored in \texttt{multi	extunderscore modal	extunderscore data}.
+  \item The processor later converts images into tensors during the training worker step (see \texttt{rlvr/verl/workers/fsdp	extunderscore workers.py}).
+\end{itemize}
+
+\section{Reward Function: Tesserae}
+\begin{itemize}
+  \item Reward entry point: \texttt{rlvr/examples/reward\_function/reward\_tesserae.py:compute\_score}.
+  \item Reward type: \texttt{batch} (configured in \texttt{rlvr/examples/config.yaml}).
+  \item Reward manager: \texttt{rlvr/verl/workers/reward/function.py}.
+\end{itemize}
+
+\subsection{Format reward}
+A format reward (optional) is computed by checking whether the response matches a regex containing \texttt{\textbackslash boxed\{...\}}. In the example config, \texttt{format\_weight} is set to \texttt{0.0}, so the explicit format reward is not mixed in. However, the accuracy computation is gated on format: if the response does not contain \texttt{\textbackslash boxed\{...\}}, accuracy is forced to \(0\).
+
+\subsection{Grid accuracy for Tesserae}
+The reward function tries to parse the boxed content into a 2D binary grid (0/1). It accepts:
+\begin{itemize}
+  \item A Python-like list string (e.g. \texttt{[[1,0],[0,1]]}).
+  \item A literal list-of-lists.
+  \item A NumPy 2D array.
+\end{itemize}
+If parsing fails or the shape mismatches the ground truth, reward is \(0.0\).
+
+When valid, the grid accuracy score is:
+\begin{equation}
+  r = \frac{\text{matches}}{\text{total}}
+\end{equation}
+This yields a range of \([0, 1]\), where \(0.5\) corresponds to random 50/50 guessing.
+
+\subsection{Fallback for non-grid data}
+If ground truth is not a binary grid, the reward falls back to \texttt{mathruler.grader.grade\_answer} on the boxed content.
+
+\section{Token-level Reward Tensor}
+The reward manager returns a \emph{token-level} tensor, but only the last response token receives the scalar score:
+\begin{itemize}
+  \item Shape: \texttt{(batch, response\_length)}.
+  \item All entries are \(0\) except the last response token.
+\end{itemize}
+
+Example for response length 5 with score \(0.6\):
+\[ [0, 0, 0, 0, 0.6] \]
+
+Sequence-level reward is the sum across tokens, which equals the scalar score.
+
+\section{GRPO Advantage Construction}
+\begin{itemize}
+  \item Advantage estimator: \texttt{grpo} (\texttt{rlvr/verl/trainer/core\_algos.py}).
+  \item Requires \texttt{rollout.n > 1} so each prompt has multiple sampled responses.
+\end{itemize}
+
+Let \(R_i\) be the scalar reward for response \(i\), obtained by summing the token-level reward tensor. Responses are grouped by a shared \texttt{uid} (one uid per prompt). GRPO normalizes within each group:
+\begin{equation}
+  A_i = \frac{R_i - \mu_{g}}{\sigma_{g} + \epsilon}
+\end{equation}
+where \(g\) is the prompt group, and \(\mu_g\), \(\sigma_g\) are the mean and std of rewards in that group.
+
+The normalized scalar is then broadcast to response tokens:
+\begin{equation}
+  \text{returns} = A_i \cdot \text{response\_mask}
+\end{equation}
+Thus, \emph{all response tokens share the same advantage} for a given response, and prompt tokens are masked out.
+
+\section{Forward and Backward Pass (Multimodal)}
+This section describes what happens when a prompt has both text and images.
+
+\subsection{Step 1: Prepare multimodal inputs}
+\begin{itemize}
+  \item In \texttt{fsdp\_workers.py}, \texttt{\_process\_multi\_modal\_inputs} converts images into tensors using the model processor (e.g., Qwen-VL image processor).
+  \item These tensors are stored in \texttt{multi\_modal\_inputs} and passed into the model forward.
+\end{itemize}
+
+\subsection{Step 2: Model forward (logits)}
+\begin{itemize}
+  \item The actor forward call uses \texttt{input\_ids}, \texttt{position\_ids}, and \texttt{multi\_modal\_inputs}.
+  \item The vision tower produces image embeddings, which are fused with the text tokens (via the model architecture).
+  \item Logits are computed for the full sequence, then sliced to response positions.
+\end{itemize}
+
+\subsection{Step 3: Policy loss}
+\begin{itemize}
+  \item PPO/GRPO loss is computed only on response tokens via \texttt{response\_mask}.
+  \item The same scalar advantage for a response is applied to all its response tokens.
+\end{itemize}
+
+\subsection{Step 4: Backpropagation}
+Even though the loss is only on response tokens, gradients flow through the entire computation graph:
+\begin{itemize}
+  \item Response logits depend on prompt context (text + image embeddings).
+  \item Therefore, gradients flow back through the fusion layers into the vision tower.
+  \item If the vision tower is trainable, its parameters receive updates.
+\end{itemize}
+
+\section{Vision Tower Updates}
+\begin{itemize}
+  \item Default: \texttt{freeze\_vision\_tower = false} (in \texttt{rlvr/examples/config.yaml}), so vision parameters are updated.
+  \item If \texttt{freeze\_vision\_tower = true}, FSDP sets \texttt{requires\_grad\_(False)} on the vision module (see \texttt{rlvr/verl/workers/fsdp\_workers.py}).
+\end{itemize}
+
+\section{KL Handling}
+There are two modes:
+\begin{itemize}
+  \item \textbf{use\_kl\_loss = false:} KL penalty is subtracted directly from token-level rewards.
+  \item \textbf{use\_kl\_loss = true:} KL term is added to the policy loss (default in the example config).
+\end{itemize}
+
+\section{End-to-End Summary}
+\begin{enumerate}
+  \item Load example (text + image) and build prompt.
+  \item Generate responses (\texttt{rollout.n} per prompt).
+  \item Compute scalar reward per response using \texttt{reward\_tesserae}.
+  \item Place scalar reward on last response token; sum to get \(R_i\).
+  \item GRPO normalizes rewards within each prompt group to get advantages.
+  \item Forward pass with multimodal inputs; compute response log-probs.
+  \item Compute policy loss on response tokens; backprop through entire model.
+  \item Update all trainable params, including vision tower unless frozen.
+\end{enumerate}
+
+\end{document}

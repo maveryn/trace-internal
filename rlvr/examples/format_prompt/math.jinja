@@ -1,0 +1,2 @@
+{{ content | trim }}
+{% if format_prompt_variant == "legacy_think_boxed" %}You FIRST think about the reasoning process as an internal monologue and then provide the final answer. The reasoning process MUST BE enclosed within <think> </think> tags. The final answer MUST BE put in \boxed{}.{% else %}Put your final answer inside \boxed{...}.{% endif %}

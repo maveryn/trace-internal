@@ -1,0 +1,21 @@
+accelerate
+codetiming
+datasets
+# flash-attn>=2.4.3
+# pip install flash-attn --no-build-isolation
+liger-kernel
+mathruler
+numpy
+omegaconf
+pandas
+peft
+pillow
+pyarrow>=15.0.0
+pylatexenc
+qwen-vl-utils
+ray[default]
+tensordict
+torchdata
+transformers==4.57.5
+vllm==0.13.0
+wandb

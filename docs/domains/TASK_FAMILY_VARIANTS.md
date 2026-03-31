@@ -211,7 +211,7 @@ Define how we split tasks into reusable families so each dataset slice stays com
 
 ## Games direction (current)
 1. Games should start with real game-state artifacts whose visible pieces are sufficient to answer the question; do not hide state or rely on unstated house rules in early tasks.
-2. The active games families are `dots_and_boxes`, `bingo`, `cards`, `dominoes`, `reversi`, `connect_four`, `checkers`, `mancala`, and `nine_mens_morris`.
+2. The active games families are `dots_and_boxes`, `bingo`, `cards`, `dominoes`, `reversi`, `connect_four`, `checkers`, `mancala`, `nine_mens_morris`, and `go`.
 3. `task_games_dots_and_boxes_capture_count`
    - uses scene variant `single_board`
    - uses query variant `forced_turn_capture_count`
@@ -257,7 +257,12 @@ Define how we split tasks into reusable families so each dataset slice stays com
    - uses query variants `white_pieces_in_mill_count|black_pieces_in_mill_count|all_pieces_in_mill_count`
    - keeps integer answers with unordered `bbox_set` evidence over the counted pieces that belong to at least one mill
    - uses one non-semantic `style_variant` axis `classic|soft|outlined` for board and piece chrome only
-12. Dots-and-boxes tasks should keep the highlighted starting move explicit in the image and state the bonus-turn / forced-continuation rule directly in the prompt so the task stays grounded in the visible board state instead of hidden strategy.
+12. `task_games_go_group_liberty_count`
+   - uses scene variants `open_board|crowded_board`
+   - uses query variants `marked_black_group_liberty_count|marked_white_group_liberty_count`
+   - keeps integer answers with unordered `bbox_set` evidence over the empty liberty intersections of the highlighted group
+   - uses one non-semantic `style_variant` axis `classic|soft|outlined` for board and stone chrome only
+13. Dots-and-boxes tasks should keep the highlighted starting move explicit in the image and state the bonus-turn / forced-continuation rule directly in the prompt so the task stays grounded in the visible board state instead of hidden strategy.
 13. Bingo-card tasks should keep the first scaffold to one visible `5 x 5` card and state exactly which line types count; do not imply diagonal or free-center rules unless the prompt says so directly.
 14. Card-hand tasks should keep visible card counts in the `7..14` range, with two-row layouts reserved for larger hands so cards stay readable.
 15. Domino-chain tasks should keep the top chain as reference/context and the loose dominoes below as the counted witness set, with explicit rule text whenever the query depends on open-end matching, pip sums, or doubles.
@@ -266,7 +271,8 @@ Define how we split tasks into reusable families so each dataset slice stays com
 18. Checkers tasks should make forward movement direction explicit in the prompt, avoid king semantics in early versions, and ground evidence on landing squares instead of the moving pieces themselves.
 19. Mancala tasks should teach the sowing rule directly in the prompt, keep the active side fixed and explicit in both the image and prompt, and ground evidence on the starting pits themselves rather than on implied landing locations or stores.
 20. Nine-men's-morris tasks should define a mill explicitly and state that overlapping mill pieces are counted once so the count stays tied to visible piece membership rather than assumed board expertise.
-21. When a card-hand task depends on display order across wrapped rows (for example longest-run questions), keep an explicit continuation cue in the image and state the reading order directly in the prompt.
+21. Go liberty tasks should keep the board fixed to one visible `7 x 7` scaffold, define both `group` and `liberty` directly in the prompt, and ground evidence on the empty liberty intersections instead of on the highlighted group stones.
+22. When a card-hand task depends on display order across wrapped rows (for example longest-run questions), keep an explicit continuation cue in the image and state the reading order directly in the prompt.
 
 ## Geometry direction (current)
 1. Geometry now exposes ten active task ids:

@@ -191,6 +191,25 @@ class NineMensMorrisTheme:
     black_piece_outline_rgb: Tuple[int, int, int]
 
 
+@dataclass(frozen=True)
+class GoTheme:
+    """Resolved Go-board palette for one style variant."""
+
+    board_frame_rgb: Tuple[int, int, int]
+    board_fill_rgb: Tuple[int, int, int]
+    grid_line_rgb: Tuple[int, int, int]
+    point_rgb: Tuple[int, int, int]
+    black_stone_fill_rgb: Tuple[int, int, int]
+    black_stone_outline_rgb: Tuple[int, int, int]
+    black_stone_shine_rgb: Tuple[int, int, int]
+    white_stone_fill_rgb: Tuple[int, int, int]
+    white_stone_outline_rgb: Tuple[int, int, int]
+    white_stone_shine_rgb: Tuple[int, int, int]
+    stone_outline_width_px: int
+    highlight_outline_rgb: Tuple[int, int, int]
+    highlight_fill_rgba: Tuple[int, int, int, int]
+
+
 def build_games_card_theme(*, style_variant: str) -> CardTheme:
     """Return one resolved card-scene theme for the active style variant."""
 
@@ -689,6 +708,59 @@ def build_games_nine_mens_morris_theme(*, style_variant: str) -> NineMensMorrisT
     )
 
 
+def build_games_go_theme(*, style_variant: str) -> GoTheme:
+    """Return one resolved Go-board theme for the active style variant."""
+
+    variant = str(style_variant)
+    if variant == "soft":
+        return GoTheme(
+            board_frame_rgb=(120, 89, 56),
+            board_fill_rgb=(214, 181, 126),
+            grid_line_rgb=(88, 64, 38),
+            point_rgb=(80, 58, 34),
+            black_stone_fill_rgb=(50, 56, 64),
+            black_stone_outline_rgb=(20, 24, 30),
+            black_stone_shine_rgb=(107, 114, 122),
+            white_stone_fill_rgb=(247, 245, 238),
+            white_stone_outline_rgb=(128, 132, 140),
+            white_stone_shine_rgb=(255, 255, 255),
+            stone_outline_width_px=2,
+            highlight_outline_rgb=(67, 132, 223),
+            highlight_fill_rgba=(93, 156, 240, 52),
+        )
+    if variant == "outlined":
+        return GoTheme(
+            board_frame_rgb=(82, 88, 98),
+            board_fill_rgb=(255, 250, 241),
+            grid_line_rgb=(78, 82, 90),
+            point_rgb=(72, 78, 88),
+            black_stone_fill_rgb=(48, 54, 62),
+            black_stone_outline_rgb=(18, 22, 28),
+            black_stone_shine_rgb=(110, 116, 126),
+            white_stone_fill_rgb=(255, 255, 255),
+            white_stone_outline_rgb=(130, 136, 144),
+            white_stone_shine_rgb=(255, 255, 255),
+            stone_outline_width_px=3,
+            highlight_outline_rgb=(52, 116, 222),
+            highlight_fill_rgba=(86, 145, 235, 44),
+        )
+    return GoTheme(
+        board_frame_rgb=(118, 86, 48),
+        board_fill_rgb=(225, 190, 128),
+        grid_line_rgb=(86, 58, 30),
+        point_rgb=(80, 54, 28),
+        black_stone_fill_rgb=(42, 48, 56),
+        black_stone_outline_rgb=(18, 22, 28),
+        black_stone_shine_rgb=(102, 108, 118),
+        white_stone_fill_rgb=(252, 250, 244),
+        white_stone_outline_rgb=(124, 128, 136),
+        white_stone_shine_rgb=(255, 255, 255),
+        stone_outline_width_px=2,
+        highlight_outline_rgb=(46, 113, 228),
+        highlight_fill_rgba=(82, 142, 236, 46),
+    )
+
+
 def suit_color(theme: CardTheme, *, suit_name: str) -> Tuple[int, int, int]:
     """Return the rendered suit/rank color for one suit under the active theme."""
 
@@ -713,6 +785,7 @@ __all__ = [
     "ConnectFourTheme",
     "DominoTheme",
     "DotsAndBoxesTheme",
+    "GoTheme",
     "MancalaTheme",
     "NineMensMorrisTheme",
     "ReversiTheme",
@@ -723,6 +796,7 @@ __all__ = [
     "build_games_connect_four_theme",
     "build_games_domino_theme",
     "build_games_dots_and_boxes_theme",
+    "build_games_go_theme",
     "build_games_mancala_theme",
     "build_games_nine_mens_morris_theme",
     "build_games_reversi_theme",

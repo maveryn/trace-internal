@@ -8,208 +8,32 @@
     "random_count": 100,
     "seed": 0,
     "tasks": [
-      "task_tables_counting_value_count",
-      "task_tables_ranking_label",
-      "task_tables_readout_subset_value",
-      "task_tables_relation_extremum_transfer_value",
-      "task_tables_relation_row_compare_label",
-      "task_tables_statistics_filtered_subset_label",
-      "task_tables_statistics_filtered_subset_value",
-      "task_tables_statistics_summary_label",
-      "task_tables_statistics_summary_value",
-      "task_tables_temporal_value"
+      "task_games_go_group_liberty_count"
     ],
     "workers": 16
   },
   "summary": {
     "distribution_tasks_failed": 0,
     "failed_distribution_task_ids": [],
-    "total_tasks": 10
+    "total_tasks": 1
   },
   "tasks": [
     {
       "distribution_pass": true,
-      "domain": "tables",
-      "inspection_count": 125,
-      "inspection_workbook": "tables/task_tables_counting_value_count/task_tables_counting_value_count.xlsx",
-      "inspection_workbook_sheets": {
-        "above_threshold": "above_threshold",
-        "below_threshold": "below_threshold",
-        "col_a_gt_col_b": "col_a_gt_col_b",
-        "col_a_lt_col_b": "col_a_lt_col_b",
-        "in_interval": "in_interval"
-      },
-      "reports": {
-        "distribution_review": "tables/task_tables_counting_value_count/distribution_review.json",
-        "inspection_manifest": "tables/task_tables_counting_value_count/manifest.json",
-        "random_review": "tables/task_tables_counting_value_count/random_review_100.json"
-      },
-      "task_group": "counting",
-      "task_id": "task_tables_counting_value_count"
-    },
-    {
-      "distribution_pass": true,
-      "domain": "tables",
+      "domain": "games",
       "inspection_count": 50,
-      "inspection_workbook": "tables/task_tables_ranking_label/task_tables_ranking_label.xlsx",
+      "inspection_workbook": "games/task_games_go_group_liberty_count/task_games_go_group_liberty_count.xlsx",
       "inspection_workbook_sheets": {
-        "kth_highest_in_column": "kth_highest_in_column",
-        "kth_lowest_in_column": "kth_lowest_in_column"
+        "marked_black_group_liberty_count": "marked_black_group_liberty_coun",
+        "marked_white_group_liberty_count": "marked_white_group_liberty_coun"
       },
       "reports": {
-        "distribution_review": "tables/task_tables_ranking_label/distribution_review.json",
-        "inspection_manifest": "tables/task_tables_ranking_label/manifest.json",
-        "random_review": "tables/task_tables_ranking_label/random_review_100.json"
+        "distribution_review": "games/task_games_go_group_liberty_count/distribution_review.json",
+        "inspection_manifest": "games/task_games_go_group_liberty_count/manifest.json",
+        "random_review": "games/task_games_go_group_liberty_count/random_review_100.json"
       },
-      "task_group": "ranking",
-      "task_id": "task_tables_ranking_label"
-    },
-    {
-      "distribution_pass": true,
-      "domain": "tables",
-      "inspection_count": 75,
-      "inspection_workbook": "tables/task_tables_readout_subset_value/task_tables_readout_subset_value.xlsx",
-      "inspection_workbook_sheets": {
-        "cell_difference_two_abs": "cell_difference_two_abs",
-        "cell_lookup": "cell_lookup",
-        "cell_sum_two": "cell_sum_two"
-      },
-      "reports": {
-        "distribution_review": "tables/task_tables_readout_subset_value/distribution_review.json",
-        "inspection_manifest": "tables/task_tables_readout_subset_value/manifest.json",
-        "random_review": "tables/task_tables_readout_subset_value/random_review_100.json"
-      },
-      "task_group": "readout",
-      "task_id": "task_tables_readout_subset_value"
-    },
-    {
-      "distribution_pass": true,
-      "domain": "tables",
-      "inspection_count": 50,
-      "inspection_workbook": "tables/task_tables_relation_extremum_transfer_value/task_tables_relation_extremum_transfer_value.xlsx",
-      "inspection_workbook_sheets": {
-        "argmax_transfer": "argmax_transfer",
-        "argmin_transfer": "argmin_transfer"
-      },
-      "reports": {
-        "distribution_review": "tables/task_tables_relation_extremum_transfer_value/distribution_review.json",
-        "inspection_manifest": "tables/task_tables_relation_extremum_transfer_value/manifest.json",
-        "random_review": "tables/task_tables_relation_extremum_transfer_value/random_review_100.json"
-      },
-      "task_group": "relation",
-      "task_id": "task_tables_relation_extremum_transfer_value"
-    },
-    {
-      "distribution_pass": true,
-      "domain": "tables",
-      "inspection_count": 50,
-      "inspection_workbook": "tables/task_tables_relation_row_compare_label/task_tables_relation_row_compare_label.xlsx",
-      "inspection_workbook_sheets": {
-        "higher_of_two_rows": "higher_of_two_rows",
-        "lower_of_two_rows": "lower_of_two_rows"
-      },
-      "reports": {
-        "distribution_review": "tables/task_tables_relation_row_compare_label/distribution_review.json",
-        "inspection_manifest": "tables/task_tables_relation_row_compare_label/manifest.json",
-        "random_review": "tables/task_tables_relation_row_compare_label/random_review_100.json"
-      },
-      "task_group": "relation",
-      "task_id": "task_tables_relation_row_compare_label"
-    },
-    {
-      "distribution_pass": true,
-      "domain": "tables",
-      "inspection_count": 50,
-      "inspection_workbook": "tables/task_tables_statistics_filtered_subset_label/task_tables_statistics_filtered_subset_label.xlsx",
-      "inspection_workbook_sheets": {
-        "filtered_argmax": "filtered_argmax",
-        "filtered_argmin": "filtered_argmin"
-      },
-      "reports": {
-        "distribution_review": "tables/task_tables_statistics_filtered_subset_label/distribution_review.json",
-        "inspection_manifest": "tables/task_tables_statistics_filtered_subset_label/manifest.json",
-        "random_review": "tables/task_tables_statistics_filtered_subset_label/random_review_100.json"
-      },
-      "task_group": "statistics",
-      "task_id": "task_tables_statistics_filtered_subset_label"
-    },
-    {
-      "distribution_pass": true,
-      "domain": "tables",
-      "inspection_count": 50,
-      "inspection_workbook": "tables/task_tables_statistics_filtered_subset_value/task_tables_statistics_filtered_subset_value.xlsx",
-      "inspection_workbook_sheets": {
-        "filtered_column_mean": "filtered_column_mean",
-        "filtered_column_sum": "filtered_column_sum"
-      },
-      "reports": {
-        "distribution_review": "tables/task_tables_statistics_filtered_subset_value/distribution_review.json",
-        "inspection_manifest": "tables/task_tables_statistics_filtered_subset_value/manifest.json",
-        "random_review": "tables/task_tables_statistics_filtered_subset_value/random_review_100.json"
-      },
-      "task_group": "statistics",
-      "task_id": "task_tables_statistics_filtered_subset_value"
-    },
-    {
-      "distribution_pass": true,
-      "domain": "tables",
-      "inspection_count": 100,
-      "inspection_workbook": "tables/task_tables_statistics_summary_label/task_tables_statistics_summary_label.xlsx",
-      "inspection_workbook_sheets": {
-        "argmax": "argmax",
-        "argmin": "argmin",
-        "row_sum_argmax": "row_sum_argmax",
-        "row_sum_argmin": "row_sum_argmin"
-      },
-      "reports": {
-        "distribution_review": "tables/task_tables_statistics_summary_label/distribution_review.json",
-        "inspection_manifest": "tables/task_tables_statistics_summary_label/manifest.json",
-        "random_review": "tables/task_tables_statistics_summary_label/random_review_100.json"
-      },
-      "task_group": "statistics",
-      "task_id": "task_tables_statistics_summary_label"
-    },
-    {
-      "distribution_pass": true,
-      "domain": "tables",
-      "inspection_count": 175,
-      "inspection_workbook": "tables/task_tables_statistics_summary_value/task_tables_statistics_summary_value.xlsx",
-      "inspection_workbook_sheets": {
-        "column_mean": "column_mean",
-        "column_median": "column_median",
-        "column_sum": "column_sum",
-        "row_mean": "row_mean",
-        "row_sum": "row_sum",
-        "table_mean": "table_mean",
-        "table_sum": "table_sum"
-      },
-      "reports": {
-        "distribution_review": "tables/task_tables_statistics_summary_value/distribution_review.json",
-        "inspection_manifest": "tables/task_tables_statistics_summary_value/manifest.json",
-        "random_review": "tables/task_tables_statistics_summary_value/random_review_100.json"
-      },
-      "task_group": "statistics",
-      "task_id": "task_tables_statistics_summary_value"
-    },
-    {
-      "distribution_pass": true,
-      "domain": "tables",
-      "inspection_count": 125,
-      "inspection_workbook": "tables/task_tables_temporal_value/task_tables_temporal_value.xlsx",
-      "inspection_workbook_sheets": {
-        "absolute_difference_between_years": "absolute_difference_between_yea",
-        "delta_between_years": "delta_between_years",
-        "mean_over_year_interval": "mean_over_year_interval",
-        "sum_over_year_interval": "sum_over_year_interval",
-        "value_at_year": "value_at_year"
-      },
-      "reports": {
-        "distribution_review": "tables/task_tables_temporal_value/distribution_review.json",
-        "inspection_manifest": "tables/task_tables_temporal_value/manifest.json",
-        "random_review": "tables/task_tables_temporal_value/random_review_100.json"
-      },
-      "task_group": "temporal",
-      "task_id": "task_tables_temporal_value"
+      "task_group": "go",
+      "task_id": "task_games_go_group_liberty_count"
     }
   ]
 }

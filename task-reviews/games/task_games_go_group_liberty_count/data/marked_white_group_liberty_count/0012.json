@@ -1,0 +1,2108 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 1
+  },
+  "evidence_gt": {
+    "type": "bbox_set",
+    "value": [
+      [
+        135.2,
+        618.533,
+        204.8,
+        688.133
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "games/task_games_go_group_liberty_count/images/marked_white_group_liberty_count/0012.png"
+  },
+  "instance_seed": 6711635160522683,
+  "prompt": "Look at the visible Go board in the image. It shows one visible 7 by 7 Go board with a highlighted connected stone group and many surrounding black and white stones. Work from the shown Go position to answer the question. The blue outlined white stones are the marked group. Stones of the same color that touch edge to edge form one group. A liberty is an empty intersection directly above, below, left, or right of any stone in the group, and diagonal intersections do not count. Count the liberties of the marked white group. Answer with an integer.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every empty intersection that is a liberty of the marked white group.\nAnswer format: set \"answer\" to the number of liberties of the marked white group.\nExample JSON:\n{\"evidence\": [[312, 284, 374, 346], [386, 358, 448, 420]], \"answer\": 4}",
+  "prompt_variants": {
+    "answer_and_evidence": "Look at the visible Go board in the image. It shows one visible 7 by 7 Go board with a highlighted connected stone group and many surrounding black and white stones. Work from the shown Go position to answer the question. The blue outlined white stones are the marked group. Stones of the same color that touch edge to edge form one group. A liberty is an empty intersection directly above, below, left, or right of any stone in the group, and diagonal intersections do not count. Count the liberties of the marked white group. Answer with an integer.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every empty intersection that is a liberty of the marked white group.\nAnswer format: set \"answer\" to the number of liberties of the marked white group.\nExample JSON:\n{\"evidence\": [[312, 284, 374, 346], [386, 358, 448, 420]], \"answer\": 4}",
+    "answer_only": "Look at the visible Go board in the image. It shows one visible 7 by 7 Go board with a highlighted connected stone group and many surrounding black and white stones. Work from the shown Go position to answer the question. The blue outlined white stones are the marked group. Stones of the same color that touch edge to edge form one group. A liberty is an empty intersection directly above, below, left, or right of any stone in the group, and diagonal intersections do not count. Count the liberties of the marked white group. Answer with an integer.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the number of liberties of the marked white group.\nExample JSON:\n{\"answer\": 4}"
+  },
+  "task": "task_games_go_group_liberty_count",
+  "task_variant": "marked_white_group_liberty_count",
+  "trace_payload": {
+    "background": {
+      "available_styles": [
+        "felt_green"
+      ],
+      "enabled": true,
+      "selected_style": "felt_green",
+      "style_spec": {
+        "color": [
+          42,
+          92,
+          74
+        ],
+        "kind": "solid"
+      }
+    },
+    "execution_trace": {
+      "board_size": 7,
+      "evidence_entity_ids": [
+        "point_r5_c0"
+      ],
+      "liberty_coords": [
+        [
+          5,
+          0
+        ]
+      ],
+      "marked_group_color": "white",
+      "marked_group_coords": [
+        [
+          6,
+          0
+        ]
+      ],
+      "marked_group_point_ids": [
+        "point_r6_c0"
+      ],
+      "query_variant": "marked_white_group_liberty_count",
+      "scene_variant": "crowded_board",
+      "stone_specs": [
+        {
+          "col": 6,
+          "color": "white",
+          "is_marked_group": false,
+          "point_id": "point_r1_c6",
+          "row": 1,
+          "stone_id": "stone_r1_c6"
+        },
+        {
+          "col": 0,
+          "color": "white",
+          "is_marked_group": false,
+          "point_id": "point_r2_c0",
+          "row": 2,
+          "stone_id": "stone_r2_c0"
+        },
+        {
+          "col": 5,
+          "color": "black",
+          "is_marked_group": false,
+          "point_id": "point_r2_c5",
+          "row": 2,
+          "stone_id": "stone_r2_c5"
+        },
+        {
+          "col": 2,
+          "color": "black",
+          "is_marked_group": false,
+          "point_id": "point_r3_c2",
+          "row": 3,
+          "stone_id": "stone_r3_c2"
+        },
+        {
+          "col": 3,
+          "color": "white",
+          "is_marked_group": false,
+          "point_id": "point_r3_c3",
+          "row": 3,
+          "stone_id": "stone_r3_c3"
+        },
+        {
+          "col": 4,
+          "color": "white",
+          "is_marked_group": false,
+          "point_id": "point_r3_c4",
+          "row": 3,
+          "stone_id": "stone_r3_c4"
+        },
+        {
+          "col": 6,
+          "color": "black",
+          "is_marked_group": false,
+          "point_id": "point_r4_c6",
+          "row": 4,
+          "stone_id": "stone_r4_c6"
+        },
+        {
+          "col": 2,
+          "color": "white",
+          "is_marked_group": false,
+          "point_id": "point_r5_c2",
+          "row": 5,
+          "stone_id": "stone_r5_c2"
+        },
+        {
+          "col": 4,
+          "color": "white",
+          "is_marked_group": false,
+          "point_id": "point_r5_c4",
+          "row": 5,
+          "stone_id": "stone_r5_c4"
+        },
+        {
+          "col": 0,
+          "color": "white",
+          "is_marked_group": true,
+          "point_id": "point_r6_c0",
+          "row": 6,
+          "stone_id": "stone_r6_c0"
+        },
+        {
+          "col": 1,
+          "color": "black",
+          "is_marked_group": false,
+          "point_id": "point_r6_c1",
+          "row": 6,
+          "stone_id": "stone_r6_c1"
+        },
+        {
+          "col": 3,
+          "color": "white",
+          "is_marked_group": false,
+          "point_id": "point_r6_c3",
+          "row": 6,
+          "stone_id": "stone_r6_c3"
+        },
+        {
+          "col": 5,
+          "color": "black",
+          "is_marked_group": false,
+          "point_id": "point_r6_c5",
+          "row": 6,
+          "stone_id": "stone_r6_c5"
+        },
+        {
+          "col": 6,
+          "color": "black",
+          "is_marked_group": false,
+          "point_id": "point_r6_c6",
+          "row": 6,
+          "stone_id": "stone_r6_c6"
+        }
+      ],
+      "style_variant": "classic",
+      "target_answer": 1,
+      "target_answer_support": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "task_variant": "marked_white_group_liberty_count"
+    },
+    "post_image_noise": {
+      "applied": false,
+      "apply_prob": 0.0,
+      "edit_count_range": [
+        1,
+        2
+      ],
+      "edit_types": [
+        "blur",
+        "downsample",
+        "jpeg",
+        "noise"
+      ],
+      "edits": [],
+      "enabled": false
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          135.2,
+          618.533,
+          204.8,
+          688.133
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "board_size": 7,
+        "query_variant": "marked_white_group_liberty_count",
+        "query_variant_probabilities": {
+          "marked_black_group_liberty_count": 0.0,
+          "marked_white_group_liberty_count": 1.0
+        },
+        "scene_variant": "crowded_board",
+        "scene_variant_probabilities": {
+          "crowded_board": 0.5,
+          "open_board": 0.5
+        },
+        "style_variant": "classic",
+        "style_variant_probabilities": {
+          "classic": 0.3333333333333333,
+          "outlined": 0.3333333333333333,
+          "soft": 0.3333333333333333
+        },
+        "target_answer": 1,
+        "target_answer_probabilities": {
+          "1": 0.125,
+          "2": 0.125,
+          "3": 0.125,
+          "4": 0.125,
+          "5": 0.125,
+          "6": 0.125,
+          "7": 0.125,
+          "8": 0.125
+        },
+        "target_answer_support": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "task_variant": "marked_white_group_liberty_count",
+        "task_variant_probabilities": {
+          "marked_black_group_liberty_count": 0.0,
+          "marked_white_group_liberty_count": 1.0
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 1,
+        "prompt_bundle_id": "games_go_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the number of liberties of the marked white group",
+          "evidence_hint": "set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every empty intersection that is a liberty of the marked white group",
+          "group_rule_text": "Stones of the same color that touch edge to edge form one group.",
+          "json_example": "{\"evidence\": [[312, 284, 374, 346], [386, 358, 448, 420]], \"answer\": 4}",
+          "json_example_answer_only": "{\"answer\": 4}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "liberty_rule_text": "A liberty is an empty intersection directly above, below, left, or right of any stone in the group, and diagonal intersections do not count.",
+          "marked_group_rule_text": "The blue outlined white stones are the marked group.",
+          "object_description": "one visible 7 by 7 Go board with a highlighted connected stone group and many surrounding black and white stones"
+        },
+        "task_family_key": "visible_go_board",
+        "task_family_variant_index": 1,
+        "task_key": "go_group_liberty_query",
+        "task_variant_index": 2,
+        "task_variant_key": "marked_white_group_liberty_count",
+        "task_variant_template_index": 1,
+        "template_paths": [
+          "games/go/games_go_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:go_group_liberty_query": 5,
+          "task_family:visible_go_board": 5,
+          "task_variant:marked_white_group_liberty_count": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 1,
+            "prompt_bundle_id": "games_go_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the number of liberties of the marked white group",
+              "evidence_hint": "set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every empty intersection that is a liberty of the marked white group",
+              "group_rule_text": "Stones of the same color that touch edge to edge form one group.",
+              "json_example": "{\"evidence\": [[312, 284, 374, 346], [386, 358, 448, 420]], \"answer\": 4}",
+              "json_example_answer_only": "{\"answer\": 4}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "liberty_rule_text": "A liberty is an empty intersection directly above, below, left, or right of any stone in the group, and diagonal intersections do not count.",
+              "marked_group_rule_text": "The blue outlined white stones are the marked group.",
+              "object_description": "one visible 7 by 7 Go board with a highlighted connected stone group and many surrounding black and white stones"
+            },
+            "task_family_key": "visible_go_board",
+            "task_family_variant_index": 1,
+            "task_key": "go_group_liberty_query",
+            "task_variant_index": 2,
+            "task_variant_key": "marked_white_group_liberty_count",
+            "task_variant_template_index": 1,
+            "template_paths": [
+              "games/go/games_go_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:go_group_liberty_query": 5,
+              "task_family:visible_go_board": 5,
+              "task_variant:marked_white_group_liberty_count": 5
+            }
+          },
+          "prompt": "Look at the visible Go board in the image. It shows one visible 7 by 7 Go board with a highlighted connected stone group and many surrounding black and white stones. Work from the shown Go position to answer the question. The blue outlined white stones are the marked group. Stones of the same color that touch edge to edge form one group. A liberty is an empty intersection directly above, below, left, or right of any stone in the group, and diagonal intersections do not count. Count the liberties of the marked white group. Answer with an integer.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every empty intersection that is a liberty of the marked white group.\nAnswer format: set \"answer\" to the number of liberties of the marked white group.\nExample JSON:\n{\"evidence\": [[312, 284, 374, 346], [386, 358, 448, 420]], \"answer\": 4}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "games_go_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the number of liberties of the marked white group",
+              "evidence_hint": "set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every empty intersection that is a liberty of the marked white group",
+              "group_rule_text": "Stones of the same color that touch edge to edge form one group.",
+              "json_example": "{\"evidence\": [[312, 284, 374, 346], [386, 358, 448, 420]], \"answer\": 4}",
+              "json_example_answer_only": "{\"answer\": 4}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "liberty_rule_text": "A liberty is an empty intersection directly above, below, left, or right of any stone in the group, and diagonal intersections do not count.",
+              "marked_group_rule_text": "The blue outlined white stones are the marked group.",
+              "object_description": "one visible 7 by 7 Go board with a highlighted connected stone group and many surrounding black and white stones"
+            },
+            "task_family_key": "visible_go_board",
+            "task_family_variant_index": 1,
+            "task_key": "go_group_liberty_query",
+            "task_variant_index": 2,
+            "task_variant_key": "marked_white_group_liberty_count",
+            "task_variant_template_index": 1,
+            "template_paths": [
+              "games/go/games_go_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:go_group_liberty_query": 5,
+              "task_family:visible_go_board": 5,
+              "task_variant:marked_white_group_liberty_count": 5
+            }
+          },
+          "prompt": "Look at the visible Go board in the image. It shows one visible 7 by 7 Go board with a highlighted connected stone group and many surrounding black and white stones. Work from the shown Go position to answer the question. The blue outlined white stones are the marked group. Stones of the same color that touch edge to edge form one group. A liberty is an empty intersection directly above, below, left, or right of any stone in the group, and diagonal intersections do not count. Count the liberties of the marked white group. Answer with an integer.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the number of liberties of the marked white group.\nExample JSON:\n{\"answer\": 4}"
+        }
+      },
+      "task_variant": "marked_white_group_liberty_count",
+      "template_id": "games_go_v1"
+    },
+    "render_map": {
+      "board_bbox_px": [
+        80.0,
+        80.0,
+        840.0,
+        840.0
+      ],
+      "inner_board_bbox_px": [
+        92.0,
+        92.0,
+        828.0,
+        828.0
+      ],
+      "point_bboxes_px": {
+        "point_r0_c0": [
+          135.2,
+          135.2,
+          204.8,
+          204.8
+        ],
+        "point_r0_c1": [
+          231.867,
+          135.2,
+          301.467,
+          204.8
+        ],
+        "point_r0_c2": [
+          328.533,
+          135.2,
+          398.133,
+          204.8
+        ],
+        "point_r0_c3": [
+          425.2,
+          135.2,
+          494.8,
+          204.8
+        ],
+        "point_r0_c4": [
+          521.867,
+          135.2,
+          591.467,
+          204.8
+        ],
+        "point_r0_c5": [
+          618.533,
+          135.2,
+          688.133,
+          204.8
+        ],
+        "point_r0_c6": [
+          715.2,
+          135.2,
+          784.8,
+          204.8
+        ],
+        "point_r1_c0": [
+          135.2,
+          231.867,
+          204.8,
+          301.467
+        ],
+        "point_r1_c1": [
+          231.867,
+          231.867,
+          301.467,
+          301.467
+        ],
+        "point_r1_c2": [
+          328.533,
+          231.867,
+          398.133,
+          301.467
+        ],
+        "point_r1_c3": [
+          425.2,
+          231.867,
+          494.8,
+          301.467
+        ],
+        "point_r1_c4": [
+          521.867,
+          231.867,
+          591.467,
+          301.467
+        ],
+        "point_r1_c5": [
+          618.533,
+          231.867,
+          688.133,
+          301.467
+        ],
+        "point_r1_c6": [
+          715.2,
+          231.867,
+          784.8,
+          301.467
+        ],
+        "point_r2_c0": [
+          135.2,
+          328.533,
+          204.8,
+          398.133
+        ],
+        "point_r2_c1": [
+          231.867,
+          328.533,
+          301.467,
+          398.133
+        ],
+        "point_r2_c2": [
+          328.533,
+          328.533,
+          398.133,
+          398.133
+        ],
+        "point_r2_c3": [
+          425.2,
+          328.533,
+          494.8,
+          398.133
+        ],
+        "point_r2_c4": [
+          521.867,
+          328.533,
+          591.467,
+          398.133
+        ],
+        "point_r2_c5": [
+          618.533,
+          328.533,
+          688.133,
+          398.133
+        ],
+        "point_r2_c6": [
+          715.2,
+          328.533,
+          784.8,
+          398.133
+        ],
+        "point_r3_c0": [
+          135.2,
+          425.2,
+          204.8,
+          494.8
+        ],
+        "point_r3_c1": [
+          231.867,
+          425.2,
+          301.467,
+          494.8
+        ],
+        "point_r3_c2": [
+          328.533,
+          425.2,
+          398.133,
+          494.8
+        ],
+        "point_r3_c3": [
+          425.2,
+          425.2,
+          494.8,
+          494.8
+        ],
+        "point_r3_c4": [
+          521.867,
+          425.2,
+          591.467,
+          494.8
+        ],
+        "point_r3_c5": [
+          618.533,
+          425.2,
+          688.133,
+          494.8
+        ],
+        "point_r3_c6": [
+          715.2,
+          425.2,
+          784.8,
+          494.8
+        ],
+        "point_r4_c0": [
+          135.2,
+          521.867,
+          204.8,
+          591.467
+        ],
+        "point_r4_c1": [
+          231.867,
+          521.867,
+          301.467,
+          591.467
+        ],
+        "point_r4_c2": [
+          328.533,
+          521.867,
+          398.133,
+          591.467
+        ],
+        "point_r4_c3": [
+          425.2,
+          521.867,
+          494.8,
+          591.467
+        ],
+        "point_r4_c4": [
+          521.867,
+          521.867,
+          591.467,
+          591.467
+        ],
+        "point_r4_c5": [
+          618.533,
+          521.867,
+          688.133,
+          591.467
+        ],
+        "point_r4_c6": [
+          715.2,
+          521.867,
+          784.8,
+          591.467
+        ],
+        "point_r5_c0": [
+          135.2,
+          618.533,
+          204.8,
+          688.133
+        ],
+        "point_r5_c1": [
+          231.867,
+          618.533,
+          301.467,
+          688.133
+        ],
+        "point_r5_c2": [
+          328.533,
+          618.533,
+          398.133,
+          688.133
+        ],
+        "point_r5_c3": [
+          425.2,
+          618.533,
+          494.8,
+          688.133
+        ],
+        "point_r5_c4": [
+          521.867,
+          618.533,
+          591.467,
+          688.133
+        ],
+        "point_r5_c5": [
+          618.533,
+          618.533,
+          688.133,
+          688.133
+        ],
+        "point_r5_c6": [
+          715.2,
+          618.533,
+          784.8,
+          688.133
+        ],
+        "point_r6_c0": [
+          135.2,
+          715.2,
+          204.8,
+          784.8
+        ],
+        "point_r6_c1": [
+          231.867,
+          715.2,
+          301.467,
+          784.8
+        ],
+        "point_r6_c2": [
+          328.533,
+          715.2,
+          398.133,
+          784.8
+        ],
+        "point_r6_c3": [
+          425.2,
+          715.2,
+          494.8,
+          784.8
+        ],
+        "point_r6_c4": [
+          521.867,
+          715.2,
+          591.467,
+          784.8
+        ],
+        "point_r6_c5": [
+          618.533,
+          715.2,
+          688.133,
+          784.8
+        ],
+        "point_r6_c6": [
+          715.2,
+          715.2,
+          784.8,
+          784.8
+        ]
+      },
+      "point_centers_px": {
+        "point_r0_c0": [
+          170.0,
+          170.0
+        ],
+        "point_r0_c1": [
+          266.667,
+          170.0
+        ],
+        "point_r0_c2": [
+          363.333,
+          170.0
+        ],
+        "point_r0_c3": [
+          460.0,
+          170.0
+        ],
+        "point_r0_c4": [
+          556.667,
+          170.0
+        ],
+        "point_r0_c5": [
+          653.333,
+          170.0
+        ],
+        "point_r0_c6": [
+          750.0,
+          170.0
+        ],
+        "point_r1_c0": [
+          170.0,
+          266.667
+        ],
+        "point_r1_c1": [
+          266.667,
+          266.667
+        ],
+        "point_r1_c2": [
+          363.333,
+          266.667
+        ],
+        "point_r1_c3": [
+          460.0,
+          266.667
+        ],
+        "point_r1_c4": [
+          556.667,
+          266.667
+        ],
+        "point_r1_c5": [
+          653.333,
+          266.667
+        ],
+        "point_r1_c6": [
+          750.0,
+          266.667
+        ],
+        "point_r2_c0": [
+          170.0,
+          363.333
+        ],
+        "point_r2_c1": [
+          266.667,
+          363.333
+        ],
+        "point_r2_c2": [
+          363.333,
+          363.333
+        ],
+        "point_r2_c3": [
+          460.0,
+          363.333
+        ],
+        "point_r2_c4": [
+          556.667,
+          363.333
+        ],
+        "point_r2_c5": [
+          653.333,
+          363.333
+        ],
+        "point_r2_c6": [
+          750.0,
+          363.333
+        ],
+        "point_r3_c0": [
+          170.0,
+          460.0
+        ],
+        "point_r3_c1": [
+          266.667,
+          460.0
+        ],
+        "point_r3_c2": [
+          363.333,
+          460.0
+        ],
+        "point_r3_c3": [
+          460.0,
+          460.0
+        ],
+        "point_r3_c4": [
+          556.667,
+          460.0
+        ],
+        "point_r3_c5": [
+          653.333,
+          460.0
+        ],
+        "point_r3_c6": [
+          750.0,
+          460.0
+        ],
+        "point_r4_c0": [
+          170.0,
+          556.667
+        ],
+        "point_r4_c1": [
+          266.667,
+          556.667
+        ],
+        "point_r4_c2": [
+          363.333,
+          556.667
+        ],
+        "point_r4_c3": [
+          460.0,
+          556.667
+        ],
+        "point_r4_c4": [
+          556.667,
+          556.667
+        ],
+        "point_r4_c5": [
+          653.333,
+          556.667
+        ],
+        "point_r4_c6": [
+          750.0,
+          556.667
+        ],
+        "point_r5_c0": [
+          170.0,
+          653.333
+        ],
+        "point_r5_c1": [
+          266.667,
+          653.333
+        ],
+        "point_r5_c2": [
+          363.333,
+          653.333
+        ],
+        "point_r5_c3": [
+          460.0,
+          653.333
+        ],
+        "point_r5_c4": [
+          556.667,
+          653.333
+        ],
+        "point_r5_c5": [
+          653.333,
+          653.333
+        ],
+        "point_r5_c6": [
+          750.0,
+          653.333
+        ],
+        "point_r6_c0": [
+          170.0,
+          750.0
+        ],
+        "point_r6_c1": [
+          266.667,
+          750.0
+        ],
+        "point_r6_c2": [
+          363.333,
+          750.0
+        ],
+        "point_r6_c3": [
+          460.0,
+          750.0
+        ],
+        "point_r6_c4": [
+          556.667,
+          750.0
+        ],
+        "point_r6_c5": [
+          653.333,
+          750.0
+        ],
+        "point_r6_c6": [
+          750.0,
+          750.0
+        ]
+      },
+      "stone_bboxes_px": {
+        "stone_r1_c6": [
+          717.133,
+          233.8,
+          782.867,
+          299.533
+        ],
+        "stone_r2_c0": [
+          137.133,
+          330.467,
+          202.867,
+          396.2
+        ],
+        "stone_r2_c5": [
+          620.467,
+          330.467,
+          686.2,
+          396.2
+        ],
+        "stone_r3_c2": [
+          330.467,
+          427.133,
+          396.2,
+          492.867
+        ],
+        "stone_r3_c3": [
+          427.133,
+          427.133,
+          492.867,
+          492.867
+        ],
+        "stone_r3_c4": [
+          523.8,
+          427.133,
+          589.533,
+          492.867
+        ],
+        "stone_r4_c6": [
+          717.133,
+          523.8,
+          782.867,
+          589.533
+        ],
+        "stone_r5_c2": [
+          330.467,
+          620.467,
+          396.2,
+          686.2
+        ],
+        "stone_r5_c4": [
+          523.8,
+          620.467,
+          589.533,
+          686.2
+        ],
+        "stone_r6_c0": [
+          137.133,
+          717.133,
+          202.867,
+          782.867
+        ],
+        "stone_r6_c1": [
+          233.8,
+          717.133,
+          299.533,
+          782.867
+        ],
+        "stone_r6_c3": [
+          427.133,
+          717.133,
+          492.867,
+          782.867
+        ],
+        "stone_r6_c5": [
+          620.467,
+          717.133,
+          686.2,
+          782.867
+        ],
+        "stone_r6_c6": [
+          717.133,
+          717.133,
+          782.867,
+          782.867
+        ]
+      }
+    },
+    "render_spec": {
+      "board_size": 7,
+      "canvas_height": 920,
+      "canvas_width": 920,
+      "scene_variant": "crowded_board",
+      "style_variant": "classic"
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "bbox_px": [
+            135.2,
+            135.2,
+            204.8,
+            204.8
+          ],
+          "center_px": [
+            170.0,
+            170.0
+          ],
+          "col": 0,
+          "entity_id": "point_r0_c0",
+          "entity_type": "go_intersection",
+          "is_liberty": false,
+          "is_marked_group": false,
+          "occupant": "empty",
+          "row": 0,
+          "stone_bbox_px": null,
+          "stone_id": null
+        },
+        {
+          "bbox_px": [
+            231.867,
+            135.2,
+            301.467,
+            204.8
+          ],
+          "center_px": [
+            266.667,
+            170.0
+          ],
+          "col": 1,
+          "entity_id": "point_r0_c1",
+          "entity_type": "go_intersection",
+          "is_liberty": false,
+          "is_marked_group": false,
+          "occupant": "empty",
+          "row": 0,
+          "stone_bbox_px": null,
+          "stone_id": null
+        },
+        {
+          "bbox_px": [
+            328.533,
+            135.2,
+            398.133,
+            204.8
+          ],
+          "center_px": [
+            363.333,
+            170.0
+          ],
+          "col": 2,
+          "entity_id": "point_r0_c2",
+          "entity_type": "go_intersection",
+          "is_liberty": false,
+          "is_marked_group": false,
+          "occupant": "empty",
+          "row": 0,
+          "stone_bbox_px": null,
+          "stone_id": null
+        },
+        {
+          "bbox_px": [
+            425.2,
+            135.2,
+            494.8,
+            204.8
+          ],
+          "center_px": [
+            460.0,
+            170.0
+          ],
+          "col": 3,
+          "entity_id": "point_r0_c3",
+          "entity_type": "go_intersection",
+          "is_liberty": false,
+          "is_marked_group": false,
+          "occupant": "empty",
+          "row": 0,
+          "stone_bbox_px": null,
+          "stone_id": null
+        },
+        {
+          "bbox_px": [
+            521.867,
+            135.2,
+            591.467,
+            204.8
+          ],
+          "center_px": [
+            556.667,
+            170.0
+          ],
+          "col": 4,
+          "entity_id": "point_r0_c4",
+          "entity_type": "go_intersection",
+          "is_liberty": false,
+          "is_marked_group": false,
+          "occupant": "empty",
+          "row": 0,
+          "stone_bbox_px": null,
+          "stone_id": null
+        },
+        {
+          "bbox_px": [
+            618.533,
+            135.2,
+            688.133,
+            204.8
+          ],
+          "center_px": [
+            653.333,
+            170.0
+          ],
+          "col": 5,
+          "entity_id": "point_r0_c5",
+          "entity_type": "go_intersection",
+          "is_liberty": false,
+          "is_marked_group": false,
+          "occupant": "empty",
+          "row": 0,
+          "stone_bbox_px": null,
+          "stone_id": null
+        },
+        {
+          "bbox_px": [
+            715.2,
+            135.2,
+            784.8,
+            204.8
+          ],
+          "center_px": [
+            750.0,
+            170.0
+          ],
+          "col": 6,
+          "entity_id": "point_r0_c6",
+          "entity_type": "go_intersection",
+          "is_liberty": false,
+          "is_marked_group": false,
+          "occupant": "empty",
+          "row": 0,
+          "stone_bbox_px": null,
+          "stone_id": null
+        },
+        {
+          "bbox_px": [
+            135.2,
+            231.867,
+            204.8,
+            301.467
+          ],
+          "center_px": [
+            170.0,
+            266.667
+          ],
+          "col": 0,
+          "entity_id": "point_r1_c0",
+          "entity_type": "go_intersection",
+          "is_liberty": false,
+          "is_marked_group": false,
+          "occupant": "empty",
+          "row": 1,
+          "stone_bbox_px": null,
+          "stone_id": null
+        },
+        {
+          "bbox_px": [
+            231.867,
+            231.867,
+            301.467,
+            301.467
+          ],
+          "center_px": [
+            266.667,
+            266.667
+          ],
+          "col": 1,
+          "entity_id": "point_r1_c1",
+          "entity_type": "go_intersection",
+          "is_liberty": false,
+          "is_marked_group": false,
+          "occupant": "empty",
+          "row": 1,
+          "stone_bbox_px": null,
+          "stone_id": null
+        },
+        {
+          "bbox_px": [
+            328.533,
+            231.867,
+            398.133,
+            301.467
+          ],
+          "center_px": [
+            363.333,
+            266.667
+          ],
+          "col": 2,
+          "entity_id": "point_r1_c2",
+          "entity_type": "go_intersection",
+          "is_liberty": false,
+          "is_marked_group": false,
+          "occupant": "empty",
+          "row": 1,
+          "stone_bbox_px": null,
+          "stone_id": null
+        },
+        {
+          "bbox_px": [
+            425.2,
+            231.867,
+            494.8,
+            301.467
+          ],
+          "center_px": [
+            460.0,
+            266.667
+          ],
+          "col": 3,
+          "entity_id": "point_r1_c3",
+          "entity_type": "go_intersection",
+          "is_liberty": false,
+          "is_marked_group": false,
+          "occupant": "empty",
+          "row": 1,
+          "stone_bbox_px": null,
+          "stone_id": null
+        },
+        {
+          "bbox_px": [
+            521.867,
+            231.867,
+            591.467,
+            301.467
+          ],
+          "center_px": [
+            556.667,
+            266.667
+          ],
+          "col": 4,
+          "entity_id": "point_r1_c4",
+          "entity_type": "go_intersection",
+          "is_liberty": false,
+          "is_marked_group": false,
+          "occupant": "empty",
+          "row": 1,
+          "stone_bbox_px": null,
+          "stone_id": null
+        },
+        {
+          "bbox_px": [
+            618.533,
+            231.867,
+            688.133,
+            301.467
+          ],
+          "center_px": [
+            653.333,
+            266.667
+          ],
+          "col": 5,
+          "entity_id": "point_r1_c5",
+          "entity_type": "go_intersection",
+          "is_liberty": false,
+          "is_marked_group": false,
+          "occupant": "empty",
+          "row": 1,
+          "stone_bbox_px": null,
+          "stone_id": null
+        },
+        {
+          "bbox_px": [
+            715.2,
+            231.867,
+            784.8,
+            301.467
+          ],
+          "center_px": [
+            750.0,
+            266.667
+          ],
+          "col": 6,
+          "entity_id": "point_r1_c6",
+          "entity_type": "go_intersection",
+          "is_liberty": false,
+          "is_marked_group": false,
+          "occupant": "white",
+          "row": 1,
+          "stone_bbox_px": [
+            717.133,
+            233.8,
+            782.867,
+            299.533
+          ],
+          "stone_id": "stone_r1_c6"
+        },
+        {
+          "bbox_px": [
+            135.2,
+            328.533,
+            204.8,
+            398.133
+          ],
+          "center_px": [
+            170.0,
+            363.333
+          ],
+          "col": 0,
+          "entity_id": "point_r2_c0",
+          "entity_type": "go_intersection",
+          "is_liberty": false,
+          "is_marked_group": false,
+          "occupant": "white",
+          "row": 2,
+          "stone_bbox_px": [
+            137.133,
+            330.467,
+            202.867,
+            396.2
+          ],
+          "stone_id": "stone_r2_c0"
+        },
+        {
+          "bbox_px": [
+            231.867,
+            328.533,
+            301.467,
+            398.133
+          ],
+          "center_px": [
+            266.667,
+            363.333
+          ],
+          "col": 1,
+          "entity_id": "point_r2_c1",
+          "entity_type": "go_intersection",
+          "is_liberty": false,
+          "is_marked_group": false,
+          "occupant": "empty",
+          "row": 2,
+          "stone_bbox_px": null,
+          "stone_id": null
+        },
+        {
+          "bbox_px": [
+            328.533,
+            328.533,
+            398.133,
+            398.133
+          ],
+          "center_px": [
+            363.333,
+            363.333
+          ],
+          "col": 2,
+          "entity_id": "point_r2_c2",
+          "entity_type": "go_intersection",
+          "is_liberty": false,
+          "is_marked_group": false,
+          "occupant": "empty",
+          "row": 2,
+          "stone_bbox_px": null,
+          "stone_id": null
+        },
+        {
+          "bbox_px": [
+            425.2,
+            328.533,
+            494.8,
+            398.133
+          ],
+          "center_px": [
+            460.0,
+            363.333
+          ],
+          "col": 3,
+          "entity_id": "point_r2_c3",
+          "entity_type": "go_intersection",
+          "is_liberty": false,
+          "is_marked_group": false,
+          "occupant": "empty",
+          "row": 2,
+          "stone_bbox_px": null,
+          "stone_id": null
+        },
+        {
+          "bbox_px": [
+            521.867,
+            328.533,
+            591.467,
+            398.133
+          ],
+          "center_px": [
+            556.667,
+            363.333
+          ],
+          "col": 4,
+          "entity_id": "point_r2_c4",
+          "entity_type": "go_intersection",
+          "is_liberty": false,
+          "is_marked_group": false,
+          "occupant": "empty",
+          "row": 2,
+          "stone_bbox_px": null,
+          "stone_id": null
+        },
+        {
+          "bbox_px": [
+            618.533,
+            328.533,
+            688.133,
+            398.133
+          ],
+          "center_px": [
+            653.333,
+            363.333
+          ],
+          "col": 5,
+          "entity_id": "point_r2_c5",
+          "entity_type": "go_intersection",
+          "is_liberty": false,
+          "is_marked_group": false,
+          "occupant": "black",
+          "row": 2,
+          "stone_bbox_px": [
+            620.467,
+            330.467,
+            686.2,
+            396.2
+          ],
+          "stone_id": "stone_r2_c5"
+        },
+        {
+          "bbox_px": [
+            715.2,
+            328.533,
+            784.8,
+            398.133
+          ],
+          "center_px": [
+            750.0,
+            363.333
+          ],
+          "col": 6,
+          "entity_id": "point_r2_c6",
+          "entity_type": "go_intersection",
+          "is_liberty": false,
+          "is_marked_group": false,
+          "occupant": "empty",
+          "row": 2,
+          "stone_bbox_px": null,
+          "stone_id": null
+        },
+        {
+          "bbox_px": [
+            135.2,
+            425.2,
+            204.8,
+            494.8
+          ],
+          "center_px": [
+            170.0,
+            460.0
+          ],
+          "col": 0,
+          "entity_id": "point_r3_c0",
+          "entity_type": "go_intersection",
+          "is_liberty": false,
+          "is_marked_group": false,
+          "occupant": "empty",
+          "row": 3,
+          "stone_bbox_px": null,
+          "stone_id": null
+        },
+        {
+          "bbox_px": [
+            231.867,
+            425.2,
+            301.467,
+            494.8
+          ],
+          "center_px": [
+            266.667,
+            460.0
+          ],
+          "col": 1,
+          "entity_id": "point_r3_c1",
+          "entity_type": "go_intersection",
+          "is_liberty": false,
+          "is_marked_group": false,
+          "occupant": "empty",
+          "row": 3,
+          "stone_bbox_px": null,
+          "stone_id": null
+        },
+        {
+          "bbox_px": [
+            328.533,
+            425.2,
+            398.133,
+            494.8
+          ],
+          "center_px": [
+            363.333,
+            460.0
+          ],
+          "col": 2,
+          "entity_id": "point_r3_c2",
+          "entity_type": "go_intersection",
+          "is_liberty": false,
+          "is_marked_group": false,
+          "occupant": "black",
+          "row": 3,
+          "stone_bbox_px": [
+            330.467,
+            427.133,
+            396.2,
+            492.867
+          ],
+          "stone_id": "stone_r3_c2"
+        },
+        {
+          "bbox_px": [
+            425.2,
+            425.2,
+            494.8,
+            494.8
+          ],
+          "center_px": [
+            460.0,
+            460.0
+          ],
+          "col": 3,
+          "entity_id": "point_r3_c3",
+          "entity_type": "go_intersection",
+          "is_liberty": false,
+          "is_marked_group": false,
+          "occupant": "white",
+          "row": 3,
+          "stone_bbox_px": [
+            427.133,
+            427.133,
+            492.867,
+            492.867
+          ],
+          "stone_id": "stone_r3_c3"
+        },
+        {
+          "bbox_px": [
+            521.867,
+            425.2,
+            591.467,
+            494.8
+          ],
+          "center_px": [
+            556.667,
+            460.0
+          ],
+          "col": 4,
+          "entity_id": "point_r3_c4",
+          "entity_type": "go_intersection",
+          "is_liberty": false,
+          "is_marked_group": false,
+          "occupant": "white",
+          "row": 3,
+          "stone_bbox_px": [
+            523.8,
+            427.133,
+            589.533,
+            492.867
+          ],
+          "stone_id": "stone_r3_c4"
+        },
+        {
+          "bbox_px": [
+            618.533,
+            425.2,
+            688.133,
+            494.8
+          ],
+          "center_px": [
+            653.333,
+            460.0
+          ],
+          "col": 5,
+          "entity_id": "point_r3_c5",
+          "entity_type": "go_intersection",
+          "is_liberty": false,
+          "is_marked_group": false,
+          "occupant": "empty",
+          "row": 3,
+          "stone_bbox_px": null,
+          "stone_id": null
+        },
+        {
+          "bbox_px": [
+            715.2,
+            425.2,
+            784.8,
+            494.8
+          ],
+          "center_px": [
+            750.0,
+            460.0
+          ],
+          "col": 6,
+          "entity_id": "point_r3_c6",
+          "entity_type": "go_intersection",
+          "is_liberty": false,
+          "is_marked_group": false,
+          "occupant": "empty",
+          "row": 3,
+          "stone_bbox_px": null,
+          "stone_id": null
+        },
+        {
+          "bbox_px": [
+            135.2,
+            521.867,
+            204.8,
+            591.467
+          ],
+          "center_px": [
+            170.0,
+            556.667
+          ],
+          "col": 0,
+          "entity_id": "point_r4_c0",
+          "entity_type": "go_intersection",
+          "is_liberty": false,
+          "is_marked_group": false,
+          "occupant": "empty",
+          "row": 4,
+          "stone_bbox_px": null,
+          "stone_id": null
+        },
+        {
+          "bbox_px": [
+            231.867,
+            521.867,
+            301.467,
+            591.467
+          ],
+          "center_px": [
+            266.667,
+            556.667
+          ],
+          "col": 1,
+          "entity_id": "point_r4_c1",
+          "entity_type": "go_intersection",
+          "is_liberty": false,
+          "is_marked_group": false,
+          "occupant": "empty",
+          "row": 4,
+          "stone_bbox_px": null,
+          "stone_id": null
+        },
+        {
+          "bbox_px": [
+            328.533,
+            521.867,
+            398.133,
+            591.467
+          ],
+          "center_px": [
+            363.333,
+            556.667
+          ],
+          "col": 2,
+          "entity_id": "point_r4_c2",
+          "entity_type": "go_intersection",
+          "is_liberty": false,
+          "is_marked_group": false,
+          "occupant": "empty",
+          "row": 4,
+          "stone_bbox_px": null,
+          "stone_id": null
+        },
+        {
+          "bbox_px": [
+            425.2,
+            521.867,
+            494.8,
+            591.467
+          ],
+          "center_px": [
+            460.0,
+            556.667
+          ],
+          "col": 3,
+          "entity_id": "point_r4_c3",
+          "entity_type": "go_intersection",
+          "is_liberty": false,
+          "is_marked_group": false,
+          "occupant": "empty",
+          "row": 4,
+          "stone_bbox_px": null,
+          "stone_id": null
+        },
+        {
+          "bbox_px": [
+            521.867,
+            521.867,
+            591.467,
+            591.467
+          ],
+          "center_px": [
+            556.667,
+            556.667
+          ],
+          "col": 4,
+          "entity_id": "point_r4_c4",
+          "entity_type": "go_intersection",
+          "is_liberty": false,
+          "is_marked_group": false,
+          "occupant": "empty",
+          "row": 4,
+          "stone_bbox_px": null,
+          "stone_id": null
+        },
+        {
+          "bbox_px": [
+            618.533,
+            521.867,
+            688.133,
+            591.467
+          ],
+          "center_px": [
+            653.333,
+            556.667
+          ],
+          "col": 5,
+          "entity_id": "point_r4_c5",
+          "entity_type": "go_intersection",
+          "is_liberty": false,
+          "is_marked_group": false,
+          "occupant": "empty",
+          "row": 4,
+          "stone_bbox_px": null,
+          "stone_id": null
+        },
+        {
+          "bbox_px": [
+            715.2,
+            521.867,
+            784.8,
+            591.467
+          ],
+          "center_px": [
+            750.0,
+            556.667
+          ],
+          "col": 6,
+          "entity_id": "point_r4_c6",
+          "entity_type": "go_intersection",
+          "is_liberty": false,
+          "is_marked_group": false,
+          "occupant": "black",
+          "row": 4,
+          "stone_bbox_px": [
+            717.133,
+            523.8,
+            782.867,
+            589.533
+          ],
+          "stone_id": "stone_r4_c6"
+        },
+        {
+          "bbox_px": [
+            135.2,
+            618.533,
+            204.8,
+            688.133
+          ],
+          "center_px": [
+            170.0,
+            653.333
+          ],
+          "col": 0,
+          "entity_id": "point_r5_c0",
+          "entity_type": "go_intersection",
+          "is_liberty": true,
+          "is_marked_group": false,
+          "occupant": "empty",
+          "row": 5,
+          "stone_bbox_px": null,
+          "stone_id": null
+        },
+        {
+          "bbox_px": [
+            231.867,
+            618.533,
+            301.467,
+            688.133
+          ],
+          "center_px": [
+            266.667,
+            653.333
+          ],
+          "col": 1,
+          "entity_id": "point_r5_c1",
+          "entity_type": "go_intersection",
+          "is_liberty": false,
+          "is_marked_group": false,
+          "occupant": "empty",
+          "row": 5,
+          "stone_bbox_px": null,
+          "stone_id": null
+        },
+        {
+          "bbox_px": [
+            328.533,
+            618.533,
+            398.133,
+            688.133
+          ],
+          "center_px": [
+            363.333,
+            653.333
+          ],
+          "col": 2,
+          "entity_id": "point_r5_c2",
+          "entity_type": "go_intersection",
+          "is_liberty": false,
+          "is_marked_group": false,
+          "occupant": "white",
+          "row": 5,
+          "stone_bbox_px": [
+            330.467,
+            620.467,
+            396.2,
+            686.2
+          ],
+          "stone_id": "stone_r5_c2"
+        },
+        {
+          "bbox_px": [
+            425.2,
+            618.533,
+            494.8,
+            688.133
+          ],
+          "center_px": [
+            460.0,
+            653.333
+          ],
+          "col": 3,
+          "entity_id": "point_r5_c3",
+          "entity_type": "go_intersection",
+          "is_liberty": false,
+          "is_marked_group": false,
+          "occupant": "empty",
+          "row": 5,
+          "stone_bbox_px": null,
+          "stone_id": null
+        },
+        {
+          "bbox_px": [
+            521.867,
+            618.533,
+            591.467,
+            688.133
+          ],
+          "center_px": [
+            556.667,
+            653.333
+          ],
+          "col": 4,
+          "entity_id": "point_r5_c4",
+          "entity_type": "go_intersection",
+          "is_liberty": false,
+          "is_marked_group": false,
+          "occupant": "white",
+          "row": 5,
+          "stone_bbox_px": [
+            523.8,
+            620.467,
+            589.533,
+            686.2
+          ],
+          "stone_id": "stone_r5_c4"
+        },
+        {
+          "bbox_px": [
+            618.533,
+            618.533,
+            688.133,
+            688.133
+          ],
+          "center_px": [
+            653.333,
+            653.333
+          ],
+          "col": 5,
+          "entity_id": "point_r5_c5",
+          "entity_type": "go_intersection",
+          "is_liberty": false,
+          "is_marked_group": false,
+          "occupant": "empty",
+          "row": 5,
+          "stone_bbox_px": null,
+          "stone_id": null
+        },
+        {
+          "bbox_px": [
+            715.2,
+            618.533,
+            784.8,
+            688.133
+          ],
+          "center_px": [
+            750.0,
+            653.333
+          ],
+          "col": 6,
+          "entity_id": "point_r5_c6",
+          "entity_type": "go_intersection",
+          "is_liberty": false,
+          "is_marked_group": false,
+          "occupant": "empty",
+          "row": 5,
+          "stone_bbox_px": null,
+          "stone_id": null
+        },
+        {
+          "bbox_px": [
+            135.2,
+            715.2,
+            204.8,
+            784.8
+          ],
+          "center_px": [
+            170.0,
+            750.0
+          ],
+          "col": 0,
+          "entity_id": "point_r6_c0",
+          "entity_type": "go_intersection",
+          "is_liberty": false,
+          "is_marked_group": true,
+          "occupant": "white",
+          "row": 6,
+          "stone_bbox_px": [
+            137.133,
+            717.133,
+            202.867,
+            782.867
+          ],
+          "stone_id": "stone_r6_c0"
+        },
+        {
+          "bbox_px": [
+            231.867,
+            715.2,
+            301.467,
+            784.8
+          ],
+          "center_px": [
+            266.667,
+            750.0
+          ],
+          "col": 1,
+          "entity_id": "point_r6_c1",
+          "entity_type": "go_intersection",
+          "is_liberty": false,
+          "is_marked_group": false,
+          "occupant": "black",
+          "row": 6,
+          "stone_bbox_px": [
+            233.8,
+            717.133,
+            299.533,
+            782.867
+          ],
+          "stone_id": "stone_r6_c1"
+        },
+        {
+          "bbox_px": [
+            328.533,
+            715.2,
+            398.133,
+            784.8
+          ],
+          "center_px": [
+            363.333,
+            750.0
+          ],
+          "col": 2,
+          "entity_id": "point_r6_c2",
+          "entity_type": "go_intersection",
+          "is_liberty": false,
+          "is_marked_group": false,
+          "occupant": "empty",
+          "row": 6,
+          "stone_bbox_px": null,
+          "stone_id": null
+        },
+        {
+          "bbox_px": [
+            425.2,
+            715.2,
+            494.8,
+            784.8
+          ],
+          "center_px": [
+            460.0,
+            750.0
+          ],
+          "col": 3,
+          "entity_id": "point_r6_c3",
+          "entity_type": "go_intersection",
+          "is_liberty": false,
+          "is_marked_group": false,
+          "occupant": "white",
+          "row": 6,
+          "stone_bbox_px": [
+            427.133,
+            717.133,
+            492.867,
+            782.867
+          ],
+          "stone_id": "stone_r6_c3"
+        },
+        {
+          "bbox_px": [
+            521.867,
+            715.2,
+            591.467,
+            784.8
+          ],
+          "center_px": [
+            556.667,
+            750.0
+          ],
+          "col": 4,
+          "entity_id": "point_r6_c4",
+          "entity_type": "go_intersection",
+          "is_liberty": false,
+          "is_marked_group": false,
+          "occupant": "empty",
+          "row": 6,
+          "stone_bbox_px": null,
+          "stone_id": null
+        },
+        {
+          "bbox_px": [
+            618.533,
+            715.2,
+            688.133,
+            784.8
+          ],
+          "center_px": [
+            653.333,
+            750.0
+          ],
+          "col": 5,
+          "entity_id": "point_r6_c5",
+          "entity_type": "go_intersection",
+          "is_liberty": false,
+          "is_marked_group": false,
+          "occupant": "black",
+          "row": 6,
+          "stone_bbox_px": [
+            620.467,
+            717.133,
+            686.2,
+            782.867
+          ],
+          "stone_id": "stone_r6_c5"
+        },
+        {
+          "bbox_px": [
+            715.2,
+            715.2,
+            784.8,
+            784.8
+          ],
+          "center_px": [
+            750.0,
+            750.0
+          ],
+          "col": 6,
+          "entity_id": "point_r6_c6",
+          "entity_type": "go_intersection",
+          "is_liberty": false,
+          "is_marked_group": false,
+          "occupant": "black",
+          "row": 6,
+          "stone_bbox_px": [
+            717.133,
+            717.133,
+            782.867,
+            782.867
+          ],
+          "stone_id": "stone_r6_c6"
+        }
+      ],
+      "relations": {
+        "evidence_entity_ids": [
+          "point_r5_c0"
+        ],
+        "query_variant": "marked_white_group_liberty_count",
+        "scene_variant": "crowded_board",
+        "style_variant": "classic",
+        "target_answer": 1,
+        "task_variant": "marked_white_group_liberty_count"
+      },
+      "scene_kind": "games_go_single_board"
+    },
+    "witness_symbolic": {
+      "ids": [
+        "point_r5_c0"
+      ],
+      "type": "id_set"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

@@ -1,0 +1,80 @@
+{
+  "bundle_id": "games_go_v1",
+  "schema_version": "v1",
+  "task_family_templates": {
+    "visible_go_board": [
+      "The image shows {object_description}.",
+      "Look at the visible Go board in the image. It shows {object_description}.",
+      "You are given a Go board image with {object_description}.",
+      "Work from the Go position shown in the image: {object_description}.",
+      "Use the visible Go board state in the image. It shows {object_description}."
+    ]
+  },
+  "task_templates": {
+    "go_group_liberty_query": [
+      "Answer the question using the visible board state.",
+      "Read the Go board and determine the requested value.",
+      "Work from the shown Go position to answer the question.",
+      "Use the displayed Go state to determine the requested count.",
+      "Determine the requested liberty count from the visible board."
+    ]
+  },
+  "task_variant_templates": {
+    "marked_black_group_liberty_count": [
+      "{marked_group_rule_text} {group_rule_text} {liberty_rule_text} How many liberties does the marked black group have? Answer with an integer.",
+      "{marked_group_rule_text} {group_rule_text} {liberty_rule_text} Count the liberties of the marked black group. Answer with an integer.",
+      "{marked_group_rule_text} {group_rule_text} {liberty_rule_text} What is the number of liberties for the marked black group? Answer with an integer.",
+      "{marked_group_rule_text} {group_rule_text} {liberty_rule_text} How many empty neighboring intersections belong to the marked black group as liberties? Answer with an integer.",
+      "{marked_group_rule_text} {group_rule_text} {liberty_rule_text} Determine the liberty count of the marked black group. Answer with an integer."
+    ],
+    "marked_white_group_liberty_count": [
+      "{marked_group_rule_text} {group_rule_text} {liberty_rule_text} How many liberties does the marked white group have? Answer with an integer.",
+      "{marked_group_rule_text} {group_rule_text} {liberty_rule_text} Count the liberties of the marked white group. Answer with an integer.",
+      "{marked_group_rule_text} {group_rule_text} {liberty_rule_text} What is the number of liberties for the marked white group? Answer with an integer.",
+      "{marked_group_rule_text} {group_rule_text} {liberty_rule_text} How many empty neighboring intersections belong to the marked white group as liberties? Answer with an integer.",
+      "{marked_group_rule_text} {group_rule_text} {liberty_rule_text} Determine the liberty count of the marked white group. Answer with an integer."
+    ]
+  },
+  "required_slots_by_key": {
+    "task_family:visible_go_board": [
+      "object_description"
+    ],
+    "task_variant:marked_black_group_liberty_count": [
+      "marked_group_rule_text",
+      "group_rule_text",
+      "liberty_rule_text"
+    ],
+    "task_variant:marked_white_group_liberty_count": [
+      "marked_group_rule_text",
+      "group_rule_text",
+      "liberty_rule_text"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence: {evidence_hint}.\nAnswer: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence requirement: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence field: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence rule: {evidence_hint}.\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  }
+}

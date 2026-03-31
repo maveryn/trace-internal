@@ -1,6 +1,6 @@
 ---
 name: domain-games
-description: Use when designing, implementing, or reviewing TRACE games-domain tasks, especially visible dots-and-boxes, bingo, card, domino, Reversi, Connect Four, Checkers, Mancala, and Morris state tasks with local piece-level evidence.
+description: Use when designing, implementing, or reviewing TRACE games-domain tasks, especially visible dots-and-boxes, bingo, card, domino, Reversi, Connect Four, Checkers, Mancala, Morris, and Go state tasks with local piece-level evidence.
 ---
 
 # Games Domain
@@ -40,6 +40,8 @@ Use this whenever the task lives under `domain=games`.
   - `task_games_mancala_move_count`
 - `nine_mens_morris`
   - `task_games_nine_mens_morris_pieces_in_mill_count`
+- `go`
+  - `task_games_go_group_liberty_count`
 
 ## Shared helpers to prefer
 - `trace/tasks/shared/support_sampling.py`
@@ -53,6 +55,8 @@ Use this whenever the task lives under `domain=games`.
 - `trace/tasks/games/shared/domino_scene.py`
 - `trace/tasks/games/shared/morris_common.py`
 - `trace/tasks/games/shared/morris_scene.py`
+- `trace/tasks/games/shared/go_common.py`
+- `trace/tasks/games/shared/go_scene.py`
 - `trace/tasks/games/shared/connect_four_common.py`
 - `trace/tasks/games/shared/connect_four_scene.py`
 - `trace/tasks/games/shared/checkers_common.py`

@@ -165,6 +165,7 @@ Implementation map for the contracts in `docs/core/BLUEPRINT.md`.
    - `trace/tasks/games/connect_four/move_count.py`
    - `trace/tasks/games/dominoes/chain_count.py`
    - `trace/tasks/games/dots_and_boxes/capture_count.py`
+   - `trace/tasks/games/go/group_liberty_count.py`
    - `trace/tasks/games/mancala/move_count.py`
    - `trace/tasks/games/nine_mens_morris/pieces_in_mill_count.py`
    - `trace/tasks/games/reversi/move_count.py`

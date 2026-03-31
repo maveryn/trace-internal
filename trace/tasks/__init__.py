@@ -57,6 +57,7 @@ from .games.checkers import move_count as _task_games_checkers_move_count
 from .games.connect_four import move_count as _task_games_connect_four_move_count
 from .games.dominoes import chain_count as _task_games_dominoes_chain_count
 from .games.dots_and_boxes import capture_count as _task_games_dots_and_boxes_capture_count
+from .games.go import group_liberty_count as _task_games_go_group_liberty_count
 from .games.mancala import move_count as _task_games_mancala_move_count
 from .games.nine_mens_morris import pieces_in_mill_count as _task_games_nine_mens_morris_pieces_in_mill_count
 from .games.reversi import move_count as _task_games_reversi_move_count

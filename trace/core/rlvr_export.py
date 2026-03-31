@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import os
+import math
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterable, Literal, Mapping
@@ -180,6 +181,70 @@ def _build_exported_images(
     ]
 
 
+def _extract_complexity_score(train_record: Mapping[str, Any]) -> float:
+    task_complexity = train_record.get("task_complexity")
+    instance_id = str(train_record.get("instance_id", "")).strip() or "<missing-instance-id>"
+    if not isinstance(task_complexity, Mapping):
+        raise ValueError(f"TRACE RLVR export requires task_complexity on {instance_id}")
+    raw_score = task_complexity.get("complexity_score")
+    try:
+        score = float(raw_score)
+    except (TypeError, ValueError) as exc:
+        raise ValueError(f"TRACE RLVR export requires numeric task_complexity.complexity_score on {instance_id}") from exc
+    if not math.isfinite(score):
+        raise ValueError(f"TRACE RLVR export requires finite task_complexity.complexity_score on {instance_id}")
+    return score
+
+
+def _build_curriculum_assignments(records: list[Mapping[str, Any]]) -> dict[str, dict[str, Any]]:
+    """Assign task-local curriculum bins using 3-way quantiles with sensible fallback.
+
+    Policy:
+    - Work within each task only; TRACE complexity is not cross-task comparable.
+    - Target 3 bins per task (`q0`, `q1`, `q2`) by default.
+    - Fall back to fewer bins when a task has too few rows or too few distinct scores.
+    - Keep identical complexity scores together when assigning bins.
+    """
+
+    task_rows: dict[str, list[tuple[str, float]]] = {}
+    for record in records:
+        instance_id = str(record.get("instance_id", "")).strip()
+        if not instance_id:
+            raise ValueError("TRACE RLVR export requires instance_id")
+        task = str(record.get("task", "")).strip()
+        if not task:
+            raise ValueError(f"TRACE RLVR export requires task on {instance_id}")
+        score = _extract_complexity_score(record)
+        task_rows.setdefault(task, []).append((instance_id, score))
+
+    assignments: dict[str, dict[str, Any]] = {}
+    for task, rows in task_rows.items():
+        rows_sorted = sorted(rows, key=lambda item: (item[1], item[0]))
+        unique_scores = sorted({score for _, score in rows_sorted})
+        bucket_count = max(1, min(3, len(rows_sorted), len(unique_scores)))
+        total_rows = len(rows_sorted)
+
+        score_groups: dict[float, list[str]] = {}
+        for instance_id, score in rows_sorted:
+            score_groups.setdefault(score, []).append(instance_id)
+
+        rows_before_group = 0
+        for score in unique_scores:
+            grouped_instance_ids = score_groups[score]
+            group_size = len(grouped_instance_ids)
+            group_midpoint = rows_before_group + (0.5 * group_size)
+            difficulty_bin = min(bucket_count - 1, int((group_midpoint * bucket_count) / total_rows))
+            bucket_id = f"{task}::q{difficulty_bin}"
+            for instance_id in grouped_instance_ids:
+                assignments[instance_id] = {
+                    "complexity_score": score,
+                    "difficulty_bin": difficulty_bin,
+                    "bucket_id_str": bucket_id,
+                }
+            rows_before_group += group_size
+    return assignments
+
+
 def build_rlvr_row(
     train_record: Mapping[str, Any],
     *,
@@ -210,6 +275,7 @@ def build_rlvr_row(
         "domain": str(train_record.get("domain", "")),
         "task_group": str(train_record.get("task_group", "")),
         "task": str(train_record.get("task", "")),
+        "complexity_score": _extract_complexity_score(train_record),
         "prompt": _select_prompt(train_record, prompt_variant),
         "prompt_mode": prompt_variant,
         "images": _build_exported_images(
@@ -264,14 +330,18 @@ def export_trace_dataset_to_rlvr(
     output_parent = final_output_path.parent.resolve()
 
     records = _read_jsonl_records(train_instances_path)
+    curriculum_assignments = _build_curriculum_assignments(records)
     rows = [
-        build_rlvr_row(
-            record,
-            dataset_root=dataset_root,
-            output_parent=output_parent,
-            prompt_variant=prompt_variant,
-            image_path_mode=image_path_mode,
-        )
+        {
+            **build_rlvr_row(
+                record,
+                dataset_root=dataset_root,
+                output_parent=output_parent,
+                prompt_variant=prompt_variant,
+                image_path_mode=image_path_mode,
+            ),
+            **curriculum_assignments[str(record.get("instance_id", "")).strip()],
+        }
         for record in records
     ]
 

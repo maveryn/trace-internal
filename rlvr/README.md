@@ -41,6 +41,14 @@ Recommended TRACE settings:
 
 The exporter defaults to TRACE `answer_and_evidence` prompts so evidence reward remains trainable.
 
+TRACE exports also include:
+
+- `complexity_score`
+- `difficulty_bin`
+- `bucket_id_str`
+
+These are generated automatically from task-local complexity buckets so `data.curriculum_mode=self_paced_ema` can run without a separate bucketing pass.
+
 ## Custom Rewards
 
 Implemented in `examples/reward_function/reward_tesserae.py`.

@@ -1,6 +1,7 @@
 data:
   train_files: rlvr/mydata/trace_train.parquet
   prism_mode: trace
+  # TRACE exports already include task-local bucket_id_str metadata for self_paced_ema.
   curriculum_mode: none
   curriculum_backend: prebuilt
   curriculum_bucket_order_path: null

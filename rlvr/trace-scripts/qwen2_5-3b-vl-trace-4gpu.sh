@@ -14,6 +14,8 @@ cd "${RLVR_ROOT}"
 MODEL_PATH="${MODEL_PATH:-Qwen/Qwen2.5-VL-3B-Instruct}"
 TRAIN_FILE="${TRAIN_FILE:-mydata/trace_train_128k_multivariant_hf.parquet}"
 PROMPT_KEY="${PROMPT_KEY:-prompt}"
+HF_TRAIN_REPO="${HF_TRAIN_REPO:-xashru/trace-rlvr-train-128k}"
+HF_TRAIN_SPLIT="${HF_TRAIN_SPLIT:-train}"
 NUM_GPUS="${NUM_GPUS:-4}"
 MAX_STEPS="${MAX_STEPS:-10}"
 ROLLOUT_TP="${ROLLOUT_TP:-1}"
@@ -33,41 +35,136 @@ CURRICULUM_EPS_FLOOR="${CURRICULUM_EPS_FLOOR:-}"
 CURRICULUM_BETA="${CURRICULUM_BETA:-2.0}"
 CURRICULUM_LOG_INTERVAL="${CURRICULUM_LOG_INTERVAL:-10}"
 
+TRAIN_SOURCE="${TRAIN_FILE}"
+if [[ "${TRAIN_FILE}" == *.parquet || "${TRAIN_FILE}" == /* || "${TRAIN_FILE}" == ./* || "${TRAIN_FILE}" == ../* ]]; then
+  if [[ -f "${TRAIN_FILE}" ]]; then
+    TRAIN_SOURCE="${TRAIN_FILE}"
+  else
+    if [[ -z "${HF_TRAIN_REPO}" ]]; then
+      echo "TRACE parquet not found locally and HF_TRAIN_REPO is empty: ${TRAIN_FILE}" >&2
+      exit 1
+    fi
+    TRAIN_SOURCE="${HF_TRAIN_REPO}@${HF_TRAIN_SPLIT}"
+    echo "TRACE local parquet missing; falling back to Hugging Face dataset ${TRAIN_SOURCE}" >&2
+  fi
+fi
+
 # Fail fast if the exported parquet is malformed or points at missing image paths.
-python3 - "${TRAIN_FILE}" "${PROMPT_KEY}" "${IMAGE_CHECK_LIMIT}" "${VAL_FILES_JSON}" <<'PY'
+python3 - "${TRAIN_SOURCE}" "${PROMPT_KEY}" "${IMAGE_CHECK_LIMIT}" "${VAL_FILES_JSON}" <<'PY'
 import json
 import sys
 from pathlib import Path
 
 import pyarrow.parquet as pq
+from datasets import load_dataset
 
-parquet_path = Path(sys.argv[1]).resolve()
+
+def _resolve_source(raw_source: str) -> tuple[str, str, str]:
+    if raw_source.endswith(".parquet") or raw_source.startswith(("/", "./", "../")):
+        return "local_parquet", str(Path(raw_source).resolve()), "train"
+    if "@" in raw_source:
+        data_path, data_split = raw_source.split("@", 1)
+        return "remote_hf", data_path, data_split or "train"
+    return "remote_hf", raw_source, "train"
+
+
+def _validate_images(images, row_idx: int, *, source_path: Path | None) -> None:
+    if not images:
+        raise SystemExit(f"No images at sampled row {row_idx}")
+
+    for image_idx, image_record in enumerate(images):
+        if hasattr(image_record, "size"):
+            continue
+
+        if isinstance(image_record, str):
+            resolved = (
+                (source_path.parent / image_record).resolve()
+                if source_path is not None and not Path(image_record).is_absolute()
+                else Path(image_record)
+            )
+            if not resolved.exists():
+                raise SystemExit(
+                    f"Missing image file at sampled row {row_idx}, image {image_idx}: {resolved}"
+                )
+            continue
+
+        if not isinstance(image_record, dict):
+            raise SystemExit(
+                f"Unsupported image record at sampled row {row_idx}, image {image_idx}: {type(image_record)!r}"
+            )
+
+        image_bytes = image_record.get("bytes")
+        if image_bytes is not None:
+            if not image_bytes:
+                raise SystemExit(f"Empty image bytes at sampled row {row_idx}, image {image_idx}")
+            continue
+
+        image_path = image_record.get("path")
+        if not image_path:
+            raise SystemExit(f"Missing image bytes/path at sampled row {row_idx}, image {image_idx}")
+        resolved = (
+            (source_path.parent / image_path).resolve()
+            if source_path is not None and not Path(image_path).is_absolute()
+            else Path(image_path)
+        )
+        if not resolved.exists():
+            raise SystemExit(
+                f"Missing image file at sampled row {row_idx}, image {image_idx}: {resolved}"
+            )
+
+raw_source = str(sys.argv[1])
 prompt_key = str(sys.argv[2])
 image_check_limit = int(sys.argv[3])
 val_files = json.loads(sys.argv[4])
+source_kind, source_path_or_repo, data_split = _resolve_source(raw_source)
+source_path = Path(source_path_or_repo).resolve() if source_kind == "local_parquet" else None
 
-if not parquet_path.exists():
-    raise SystemExit(f"TRACE parquet not found: {parquet_path}")
 if not isinstance(val_files, list):
     raise SystemExit(f"VAL_FILES_JSON must decode to a list, got: {type(val_files)!r}")
 
 required_columns = (prompt_key, "images", "answer_gt", "evidence_gt", "reward_contract")
-parquet_file = pq.ParquetFile(parquet_path)
-available_columns = set(parquet_file.schema_arrow.names)
-missing_columns = [name for name in required_columns if name not in available_columns]
-if missing_columns:
-    raise SystemExit(
-        "TRACE parquet is missing required columns: "
-        + ", ".join(missing_columns)
-        + f". Available columns: {sorted(available_columns)}"
-    )
+if source_kind == "local_parquet":
+    if not source_path.exists():
+        raise SystemExit(f"TRACE parquet not found: {source_path}")
+    parquet_file = pq.ParquetFile(source_path)
+    total_rows = parquet_file.metadata.num_rows
+    available_columns = set(parquet_file.schema_arrow.names)
+    missing_columns = [name for name in required_columns if name not in available_columns]
+    if missing_columns:
+        raise SystemExit(
+            "TRACE parquet is missing required columns: "
+            + ", ".join(missing_columns)
+            + f". Available columns: {sorted(available_columns)}"
+        )
 
-sample_rows = min(parquet_file.metadata.num_rows, max(1, image_check_limit))
-sampled_rows = []
-for batch in parquet_file.iter_batches(batch_size=sample_rows, columns=list(required_columns)):
-    sampled_rows.extend(batch.to_pylist())
-    if len(sampled_rows) >= sample_rows:
-        break
+    sample_rows = min(total_rows, max(1, image_check_limit))
+    sampled_rows = []
+    for batch in parquet_file.iter_batches(batch_size=sample_rows, columns=list(required_columns)):
+        sampled_rows.extend(batch.to_pylist())
+        if len(sampled_rows) >= sample_rows:
+            break
+else:
+    try:
+        remote_dataset = load_dataset(source_path_or_repo, split=data_split)
+        total_rows = len(remote_dataset)
+        sample_rows = min(total_rows, max(1, image_check_limit))
+        sampled_dataset = load_dataset(source_path_or_repo, split=f"{data_split}[:{sample_rows}]")
+    except Exception as exc:
+        raise SystemExit(
+            "Failed to load TRACE training dataset from Hugging Face fallback "
+            f"{source_path_or_repo}@{data_split}. "
+            "If this repo is private, export HF_TOKEN or HUGGINGFACE_TOKEN first. "
+            f"Original error: {exc}"
+        ) from exc
+    available_columns = set(sampled_dataset.column_names)
+    missing_columns = [name for name in required_columns if name not in available_columns]
+    if missing_columns:
+        raise SystemExit(
+            "TRACE HF dataset is missing required columns: "
+            + ", ".join(missing_columns)
+            + f". Available columns: {sorted(available_columns)}"
+        )
+    sampled_rows = [sampled_dataset[index] for index in range(min(sample_rows, len(sampled_dataset)))]
 
 for row_idx, row in enumerate(sampled_rows[:sample_rows]):
     if not row[prompt_key]:
@@ -82,25 +179,7 @@ for row_idx, row in enumerate(sampled_rows[:sample_rows]):
         except json.JSONDecodeError as exc:
             raise SystemExit(f"Invalid JSON in {key} at sampled row {row_idx}: {exc}") from exc
 
-    images = row["images"] or []
-    if not images:
-        raise SystemExit(f"No images at sampled row {row_idx}")
-
-    for image_idx, image_record in enumerate(images):
-        image_bytes = image_record.get("bytes")
-        if image_bytes is not None:
-            if not image_bytes:
-                raise SystemExit(f"Empty image bytes at sampled row {row_idx}, image {image_idx}")
-            continue
-
-        image_path = image_record.get("path")
-        if not image_path:
-            raise SystemExit(f"Missing image bytes/path at sampled row {row_idx}, image {image_idx}")
-        resolved = (parquet_path.parent / image_path).resolve() if not Path(image_path).is_absolute() else Path(image_path)
-        if not resolved.exists():
-            raise SystemExit(
-                f"Missing image file at sampled row {row_idx}, image {image_idx}: {resolved}"
-            )
+    _validate_images(row["images"] or [], row_idx, source_path=source_path)
 
 for val_idx, raw_path in enumerate(val_files):
     if not isinstance(raw_path, str) or not raw_path.strip():
@@ -111,10 +190,12 @@ for val_idx, raw_path in enumerate(val_files):
 
 print(
     "TRACE preflight passed:",
-    f"rows={parquet_file.metadata.num_rows}",
+    f"rows={total_rows}",
     f"sampled_rows={sample_rows}",
     f"prompt_key={prompt_key}",
-    f"path={parquet_path}",
+    f"source={raw_source}",
+    f"resolved={source_path_or_repo}",
+    f"kind={source_kind}",
     f"val_files={len(val_files)}",
 )
 PY
@@ -125,8 +206,8 @@ fi
 
 ARGS=(
   python3 -m verl.trainer.main
-  config=examples/config_trace.yaml
-  data.train_files="${TRAIN_FILE}"
+  config=trace-scripts/config_trace.yaml
+  data.train_files="${TRAIN_SOURCE}"
   data.prompt_key="${PROMPT_KEY}"
   data.val_files="${VAL_FILES_JSON}"
   data.curriculum_mode="${CURRICULUM_MODE}"

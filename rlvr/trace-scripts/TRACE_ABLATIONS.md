@@ -7,6 +7,7 @@ This directory contains the 4 TRACE RLVR ablation launchers for the `Qwen/Qwen2.
 All 4 launchers are expected to train from the same built TRACE 128k dataset, exported into one self-contained RLVR parquet:
 
 1. `rlvr/mydata/trace_train_128k_multivariant_hf.parquet`
+2. fallback HF repo: `xashru/trace-rlvr-train-128k@train`
 
 This parquet keeps:
 
@@ -17,6 +18,8 @@ This parquet keeps:
 5. `prompt_answer_only`
 6. `prompt_answer_and_evidence`
 7. embedded image bytes under `images`
+
+If the local parquet is missing, the shared launcher automatically falls back to the HF dataset repo above. For a private HF repo, `HF_TOKEN` or `HUGGINGFACE_TOKEN` must be set in the environment.
 
 ## Validation Pack
 
@@ -64,7 +67,7 @@ The ablation wrappers keep these fixed by default:
 3. `max_steps=500`
 4. `val_freq=20`
 5. `save_freq=20`
-6. same rollout/data/optimizer settings via `examples/config_trace.yaml`
+6. same rollout/data/optimizer settings via `trace-scripts/config_trace.yaml`
 
 Only these vary across the 4 scripts:
 

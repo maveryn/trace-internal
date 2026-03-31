@@ -134,7 +134,7 @@ That mirrors the prior Prism/Tesserae parquet workflow, where images were embedd
 
 ## 6) RLVR usage
 Pair the export with:
-- `rlvr/examples/config_trace.yaml`
+- `rlvr/trace-scripts/config_trace.yaml`
 
 Key RLVR settings for TRACE:
 1. `data.prism_mode=trace`

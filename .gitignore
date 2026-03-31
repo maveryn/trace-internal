@@ -208,6 +208,10 @@ __marimo__/
 
 # TRACE generated previews/summaries
 tmp/
+out_*/
+
+# RLVR generated parquet artifacts
+rlvr/mydata/*.parquet
 
 # Task review generated artifacts
 task-reviews/task_*/data/

@@ -32,7 +32,7 @@ PYTHONPATH=. python scripts/export_trace_to_rlvr.py \
   --format parquet
 ```
 
-Use `rlvr/examples/config_trace.yaml` as the starter config for exported TRACE data.
+Use `rlvr/trace-scripts/config_trace.yaml` as the starter config for exported TRACE data.
 
 Recommended TRACE settings:
 

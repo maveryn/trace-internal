@@ -80,6 +80,32 @@ def test_trace_reward_supports_all_active_evidence_contracts() -> None:
         assert score["evidence_reward"] == 1.0
 
 
+def test_trace_reward_gates_evidence_by_answer_correctness() -> None:
+    reward_contract = _reward_contract("symbolic_set_exact_v1", "label_set")
+
+    wrong_answer_score = score_trace_response(
+        response='{"answer":1,"evidence":["B","D"]}',
+        answer_gt={"type": "integer", "value": 2},
+        evidence_gt={"type": "label_set", "value": ["D", "B"]},
+        reward_contract=reward_contract,
+    )
+    assert wrong_answer_score["answer_reward"] == 0.0
+    assert wrong_answer_score["evidence_reward"] == 1.0
+    assert wrong_answer_score["accuracy"] == 0.0
+    assert wrong_answer_score["overall"] == 0.0
+
+    wrong_evidence_score = score_trace_response(
+        response='{"answer":2,"evidence":["B"]}',
+        answer_gt={"type": "integer", "value": 2},
+        evidence_gt={"type": "label_set", "value": ["D", "B"]},
+        reward_contract=reward_contract,
+    )
+    assert wrong_evidence_score["answer_reward"] == 1.0
+    assert wrong_evidence_score["evidence_reward"] == 0.0
+    assert wrong_evidence_score["accuracy"] == 1.0
+    assert wrong_evidence_score["overall"] == 0.5
+
+
 def test_trace_dataset_helpers_support_trace_rows(tmp_path: Path) -> None:
     image_path = tmp_path / "images" / "sample.png"
     image_path.parent.mkdir(parents=True, exist_ok=True)

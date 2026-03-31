@@ -69,9 +69,17 @@ the reward path dispatches on the public TRACE reward contract and currently sup
 - `sequence_exact_v1`
 - `point_set_match_v1`
 
-The current TRACE v1 aggregate is:
+The current TRACE v1 aggregate is answer-gated:
 
-- `overall = 0.5 * answer_reward + 0.5 * evidence_reward`
+- `overall = answer_reward * (0.5 + 0.5 * evidence_reward)`
+
+So:
+
+- wrong answer -> `overall = 0`, even if evidence matches
+- right answer + wrong evidence -> `overall = 0.5`
+- right answer + right evidence -> `overall = 1.0`
+
+For validation, TRACE `hit` / `accuracy` tracks answer correctness, while `overall` remains the training reward.
 
 ### Integer mode
 

@@ -448,11 +448,16 @@ def score_trace_response(
             reward_contract,
             bbox_iou_threshold=bbox_iou_threshold,
         )
-    overall = float((answer_weight * answer_score) + (evidence_weight * evidence_score))
+    total_weight = float(answer_weight + evidence_weight)
+    if total_weight <= 0.0:
+        raise ValueError("TRACE reward weights must sum to a positive value")
+    normalized_answer_weight = float(answer_weight / total_weight)
+    normalized_evidence_weight = float(evidence_weight / total_weight)
+    overall = float(answer_score * (normalized_answer_weight + (normalized_evidence_weight * evidence_score)))
     result = {
         "overall": overall,
         "format": 1.0 if json_found else 0.0,
-        "accuracy": overall,
+        "accuracy": float(answer_score),
         "answer_reward": float(answer_score),
         "evidence_reward": float(evidence_score),
         "answer_parse_ok": 1.0 if answer_parse_ok else 0.0,

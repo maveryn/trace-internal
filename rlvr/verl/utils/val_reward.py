@@ -576,9 +576,10 @@ def compute_val_reward(
             )
             overall = float(trace_score["overall"])
             format_score = float(trace_score.get("format", 0.0))
-            hit = 1.0 if overall >= 0.999999 else 0.0
+            answer_reward = float(trace_score.get("answer_reward", 0.0))
+            hit = 1.0 if answer_reward >= 0.999999 else 0.0
             extracted = bool(trace_score.get("answer_parse_ok", 0.0) or trace_score.get("evidence_parse_ok", 0.0))
-            reward_metrics["answer_reward"].append(float(trace_score.get("answer_reward", 0.0)))
+            reward_metrics["answer_reward"].append(answer_reward)
             reward_metrics["evidence_reward"].append(float(trace_score.get("evidence_reward", 0.0)))
         else:
             accuracy, extracted, _, _ = strict_score_response(response=response_str, ground_truth=ground_truth)

@@ -58,6 +58,8 @@ class DataConfig:
     val_batch_size: int = -1
     format_prompt: Optional[str] = None
     format_prompt_variant: str = "boxed_only"
+    val_format_prompt: Optional[str] = None
+    val_format_prompt_variant: Optional[str] = None
     override_chat_template: Optional[str] = None
     shuffle: bool = True
     seed: int = 1
@@ -94,12 +96,20 @@ class DataConfig:
             raise ValueError("data.curriculum_beta must be > 0")
         self.image_dir = get_abs_path(self.image_dir, prompt="Image directory")
         self.format_prompt = get_abs_path(self.format_prompt, prompt="Format prompt file")
+        self.val_format_prompt = get_abs_path(self.val_format_prompt, prompt="Validation format prompt file")
         self.format_prompt_variant = (self.format_prompt_variant or "boxed_only").lower()
         if self.format_prompt_variant not in {"boxed_only", "legacy_think_boxed"}:
             raise ValueError(
                 "data.format_prompt_variant must be one of {'boxed_only', 'legacy_think_boxed'}, "
                 f"got {self.format_prompt_variant}"
             )
+        if self.val_format_prompt_variant is not None:
+            self.val_format_prompt_variant = self.val_format_prompt_variant.lower()
+            if self.val_format_prompt_variant not in {"boxed_only", "legacy_think_boxed"}:
+                raise ValueError(
+                    "data.val_format_prompt_variant must be one of {'boxed_only', 'legacy_think_boxed'}, "
+                    f"got {self.val_format_prompt_variant}"
+                )
         self.override_chat_template = get_abs_path(self.override_chat_template, prompt="Chat template file")
         self.curriculum_bucket_order_path = get_abs_path(
             self.curriculum_bucket_order_path, prompt="Curriculum bucket order file"

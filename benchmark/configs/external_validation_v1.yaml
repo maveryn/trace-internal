@@ -6,7 +6,6 @@ defaults:
   output_format: parquet
   image_storage_mode: embedded_bytes
   image_path_mode: relative
-  prompt_suffix_style: boxed_final_answer
 
 benchmarks:
   - benchmark_id: mathvista
@@ -49,7 +48,6 @@ benchmarks:
     config_name: vqa
     split: test
     parser_family: exact_or_choice
-    prompt_suffix_style: boxed_option_letter
 
   - benchmark_id: vgcure
     adapter: vgcure
@@ -68,4 +66,3 @@ benchmarks:
     repo_id: declare-lab/PuzzleVQA
     split: train
     parser_family: exact_or_choice
-    prompt_suffix_style: boxed_option_letter

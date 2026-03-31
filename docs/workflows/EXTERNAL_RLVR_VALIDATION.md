@@ -13,7 +13,7 @@ It is intentionally separate from TRACE training export:
 ## 2) Design goals
 Use this path when we want recurring benchmark validation with:
 - one flat RLVR-ready parquet or JSONL per benchmark,
-- one shared answer-format instruction,
+- benchmark-faithful prompt text stored in the export,
 - deterministic `512`-sample subsets,
 - stable answer-only parsing via the existing RLVR validation stack,
 - and a one-shot build directly from official benchmark sources.
@@ -32,13 +32,14 @@ Current policy:
 5. allow benchmark-specific custom readers when the official repo packaging is not directly loadable.
 
 ## 4) Prompt policy
-We keep the benchmark prompt intact and append only a minimal boxed-answer instruction.
+We keep the benchmark prompt intact in the exported validation parquet.
 
-Supported suffix styles today:
+If boxed-answer formatting is desired, apply it at validation runtime through RLVR prompt formatting
+for example `rlvr/examples/format_prompt/math.jinja`) rather than baking the suffix into the parquet.
+
+Optional export-time suffix styles remain supported for one-off builds:
 1. `boxed_final_answer`
 2. `boxed_option_letter`
-
-This matches the existing RLVR answer extraction path, which already uses boxed-answer parsing plus MathRuler-backed normalization when needed.
 
 ## 5) Frozen shortlist manifest
 The current recurring validation shortlist lives in:
@@ -89,6 +90,7 @@ Notes:
 1. These rows are answer-only on purpose.
 2. They use the existing non-TRACE RLVR validation path in `rlvr/verl/utils/val_reward.py`.
 3. `parser_family` is exported for bookkeeping today; the current RLVR validator still relies mainly on `ground_truth` shape and MathRuler-backed parsing.
+4. The default `external_validation_v1` manifest does not append boxed-answer text inside the parquet; TRACE RLVR runs add the shared validation formatting at runtime.
 
 ## 8) What this workflow does not do
 This workflow does not yet:

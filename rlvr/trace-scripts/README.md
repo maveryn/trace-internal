@@ -19,6 +19,11 @@ Use `qwen2_5-3b-vl-trace-4gpu.sh` to train against the exported TRACE parquet wi
 - `GPU_MEMORY_UTILIZATION=0.8`
 - `WANDB_MODE=online`
 
+TRACE train prompts stay dataset-native (`data.format_prompt=null`), while validation uses a separate runtime format prompt:
+
+- `data.val_format_prompt=./examples/format_prompt/math.jinja`
+- `data.val_format_prompt_variant=boxed_only`
+
 The script runs a preflight check before launching training. It verifies:
 
 - the local parquet exists, or the HF fallback repo can be loaded

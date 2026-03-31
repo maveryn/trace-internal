@@ -141,14 +141,20 @@ def _normalize_ground_truth(raw_ground_truth: Any) -> list[str]:
     return [text] if text else []
 
 
-def _build_prompt(prompt: str, *, choices: list[tuple[str, str]] | None, prompt_suffix_style: str) -> str:
-    suffix = _PROMPT_SUFFIXES.get(prompt_suffix_style)
-    if suffix is None:
-        raise ValueError(f"unsupported prompt suffix style: {prompt_suffix_style}")
-
+def _build_prompt(
+    prompt: str,
+    *,
+    choices: list[tuple[str, str]] | None,
+    prompt_suffix_style: str | None,
+) -> str:
     prompt_text = prompt.strip()
     if choices:
         prompt_text = f"{prompt_text}\n\n" + "\n".join(f"{label}. {text}" for label, text in choices)
+    if prompt_suffix_style is None:
+        return prompt_text.rstrip()
+    suffix = _PROMPT_SUFFIXES.get(str(prompt_suffix_style))
+    if suffix is None:
+        raise ValueError(f"unsupported prompt suffix style: {prompt_suffix_style}")
     return f"{prompt_text.rstrip()}\n\n{suffix}"
 
 
@@ -592,7 +598,11 @@ def export_external_validation_to_rlvr(
             output_root=resolved_output_root,
             image_path_mode=final_image_path_mode,
             image_storage_mode=final_image_storage_mode,
-            prompt_suffix_style=str(merged_spec.get("prompt_suffix_style", "boxed_final_answer")),
+            prompt_suffix_style=(
+                str(merged_spec.get("prompt_suffix_style"))
+                if merged_spec.get("prompt_suffix_style") is not None
+                else None
+            ),
             parser_family=str(merged_spec.get("parser_family", "generic")),
         )
 

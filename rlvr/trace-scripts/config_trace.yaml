@@ -21,7 +21,7 @@ data:
   max_response_length: 1024
   rollout_batch_size: 128
   mini_rollout_batch_size: null
-  val_batch_size: 256
+  val_batch_size: 512
   format_prompt: null
   format_prompt_variant: boxed_only
   override_chat_template: null

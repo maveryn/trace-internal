@@ -228,6 +228,39 @@ def _parse_gt_index_list_text(text: str) -> list[int] | None:
     return None
 
 
+def _parse_json_list(text: str) -> list[Any] | None:
+    if not text:
+        return None
+    s = text.strip()
+    if not (s.startswith("[") and s.endswith("]")):
+        return None
+    try:
+        parsed = json.loads(s)
+    except Exception:
+        return None
+    return parsed if isinstance(parsed, list) else None
+
+
+def _parse_choice_list(items: list[Any]) -> list[str] | None:
+    letters: list[str] = []
+    for item in items:
+        s = str(item).strip().upper()
+        if len(s) != 1 or s not in CHOICE_LETTERS:
+            return None
+        letters.append(s)
+    return letters if letters else None
+
+
+def _parse_numeric_list(items: list[Any]) -> list[float] | None:
+    values: list[float] = []
+    for item in items:
+        val = _parse_numeric_value(str(item))
+        if val is None:
+            return None
+        values.append(val)
+    return values if values else None
+
+
 def _index_list_similarity(pred_list: list[int], gt_list: list[int], mode: str = "exact") -> float:
     pred_set = set(int(v) for v in pred_list)
     gt_set = set(int(v) for v in gt_list)
@@ -479,25 +512,75 @@ def strict_score_response(
             return (1.0 if correct else 0.0), True, cand, method
         return 0.0, False, None, "none"
 
-    gt_list = _normalize_index_list(ground_truth)
-    if gt_list is None and isinstance(ground_truth, str):
-        gt_list = _parse_gt_index_list_text(ground_truth)
-    if gt_list is not None:
-        best_score = 0.0
-        extracted = False
-        best_answer = None
-        best_method = "none"
-        for method, cand in candidates:
-            pred_list = _parse_index_list_text(cand)
-            if pred_list is None:
-                continue
-            extracted = True
-            score = _index_list_similarity(pred_list, gt_list, mode=list_reward_mode)
-            if score >= best_score:
-                best_score = score
-                best_answer = cand
-                best_method = method
-        return float(best_score), extracted, best_answer, best_method
+    gt_items: list[Any] | None = None
+    if isinstance(ground_truth, (list, tuple)):
+        gt_items = list(ground_truth)
+    elif isinstance(ground_truth, str):
+        gt_items = _parse_json_list(ground_truth)
+
+    if gt_items is not None:
+        gt_index_list = _normalize_index_list(gt_items)
+        if gt_index_list is not None:
+            best_score = 0.0
+            extracted = False
+            best_answer = None
+            best_method = "none"
+            for method, cand in candidates:
+                pred_list = _parse_index_list_text(cand)
+                if pred_list is None:
+                    continue
+                extracted = True
+                score = _index_list_similarity(pred_list, gt_index_list, mode=list_reward_mode)
+                if score >= best_score:
+                    best_score = score
+                    best_answer = cand
+                    best_method = method
+            return float(best_score), extracted, best_answer, best_method
+
+        choice_letters = _parse_choice_list(gt_items)
+        if choice_letters is not None:
+            extracted_letter = None
+            method = "none"
+            for m, cand in candidates:
+                letter = _extract_mcq_letter(cand)
+                if letter is not None:
+                    extracted_letter = letter
+                    method = m
+                    break
+            if extracted_letter is None:
+                return 0.0, False, None, "none"
+            expected = sorted(set(choice_letters))
+            if len(expected) == 1:
+                return (1.0 if extracted_letter == expected[0] else 0.0), True, extracted_letter, method
+            return (1.0 if sorted(set([extracted_letter])) == expected else 0.0), True, extracted_letter, method
+
+        numeric_list = _parse_numeric_list(gt_items)
+        if numeric_list is not None and len(numeric_list) > 1:
+            for method, cand in candidates:
+                values = _extract_numeric_values(cand)
+                if len(values) < len(numeric_list):
+                    continue
+                tail = values[-len(numeric_list) :]
+                ok = len(tail) == len(numeric_list) and all(abs(a - b) < 1e-6 for a, b in zip(tail, numeric_list))
+                return (1.0 if ok else 0.0), True, cand, method
+            return 0.0, False, None, "none"
+
+        any_extracted = False
+        extracted_answer = None
+        extracted_method = "none"
+        for item in gt_items:
+            score, extracted, answer, method = strict_score_response(
+                response=response,
+                ground_truth=item,
+                list_reward_mode=list_reward_mode,
+            )
+            if score > 0.5:
+                return score, extracted, answer, method
+            if extracted and not any_extracted:
+                any_extracted = True
+                extracted_answer = answer
+                extracted_method = method
+        return 0.0, any_extracted, extracted_answer, extracted_method
 
     scalar_gt = _to_scalar_int(ground_truth)
     if scalar_gt is not None:

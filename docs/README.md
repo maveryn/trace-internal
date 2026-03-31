@@ -32,10 +32,11 @@ Repo-local skills live under `skills/`, but skills are operational overlays. Can
 18. `docs/workflows/SHARED_UTILITIES.md` — helper placement and reuse rules.
 19. `docs/workflows/BUILD_VALIDATION.md` + `docs/workflows/VALIDATION_ERROR_CODES.md` — pre-finalize checks and error taxonomy.
 20. `docs/workflows/RLVR_EXPORT.md` — TRACE-to-RLVR export workflow and row contract.
-21. `docs/workflows/DOMAIN_AUDIT_REVIEW.md` — domain-by-domain sanitation and audit workflow.
-22. `docs/workflows/CODE_DOCUMENTATION.md` + `docs/workflows/CODE_REVIEW_GUIDELINES.md` — quality/process guidance.
-23. `docs/project/STATUS.md` + `docs/project/TODO.md` — current snapshot and backlog.
-24. `../task-reviews/README.md` — task-by-task review workflow and artifacts.
+21. `docs/workflows/EXTERNAL_RLVR_VALIDATION.md` — external benchmark normalization and RLVR validation-pack export workflow.
+22. `docs/workflows/DOMAIN_AUDIT_REVIEW.md` — domain-by-domain sanitation and audit workflow.
+23. `docs/workflows/CODE_DOCUMENTATION.md` + `docs/workflows/CODE_REVIEW_GUIDELINES.md` — quality/process guidance.
+24. `docs/project/STATUS.md` + `docs/project/TODO.md` — current snapshot and backlog.
+25. `../task-reviews/README.md` — task-by-task review workflow and artifacts.
 
 ## Task docs
 - Rules: `docs/tasks/README.md`

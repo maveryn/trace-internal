@@ -1,0 +1,71 @@
+version: 1
+
+defaults:
+  sample_count: 512
+  sample_seed: 20260331
+  output_format: parquet
+  image_storage_mode: embedded_bytes
+  image_path_mode: relative
+  prompt_suffix_style: boxed_final_answer
+
+benchmarks:
+  - benchmark_id: mathvista
+    adapter: mathvista
+    repo_id: AI4Math/MathVista
+    config_name: default
+    split: testmini
+    parser_family: math_or_exact
+
+  - benchmark_id: mathvision
+    adapter: mathvision
+    repo_id: MathLLMs/MathVision
+    config_name: default
+    split: test
+    parser_family: math_or_exact
+
+  - benchmark_id: charxiv
+    adapter: charxiv
+    repo_id: princeton-nlp/CharXiv
+    config_name: default
+    split: validation
+    parser_family: math_or_exact
+
+  - benchmark_id: ocrbench_v2
+    adapter: ocrbenchv2
+    repo_id: morpheushoc/OCRBenchv2
+    split: test
+    parser_family: exact_or_list
+
+  - benchmark_id: seephys
+    adapter: seephys
+    repo_id: SeePhys/SeePhys
+    config_name: default
+    split: train
+    parser_family: math_or_exact
+
+  - benchmark_id: spatialeval
+    adapter: spatialeval
+    repo_id: MilaWang/SpatialEval
+    config_name: vqa
+    split: test
+    parser_family: exact_or_choice
+    prompt_suffix_style: boxed_option_letter
+
+  - benchmark_id: vgcure
+    adapter: vgcure
+    repo_id: AAAndyZ/VGCure
+    split: test
+    subset: understanding
+    allowed_task_names:
+      - node_number_query
+      - edge_number_query
+      - directed_check
+      - degree_query
+    parser_family: exact_or_yesno_numeric
+
+  - benchmark_id: puzzlevqa
+    adapter: puzzlevqa
+    repo_id: declare-lab/PuzzleVQA
+    split: train
+    parser_family: exact_or_choice
+    prompt_suffix_style: boxed_option_letter

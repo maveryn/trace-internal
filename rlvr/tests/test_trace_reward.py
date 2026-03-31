@@ -136,6 +136,21 @@ def test_trace_reward_answer_only_mode_ignores_evidence_in_overall() -> None:
     assert score["trace_reward_mode_answer_and_evidence"] == 0.0
 
 
+def test_trace_reward_accepts_python_set_literal_for_symbolic_evidence() -> None:
+    reward_contract = _reward_contract("symbolic_set_exact_v1", "label_set")
+
+    score = score_trace_response(
+        response="{'answer': 2, 'evidence': {'B', 'D'}}",
+        answer_gt={"type": "integer", "value": 2},
+        evidence_gt={"type": "label_set", "value": ["D", "B"]},
+        reward_contract=reward_contract,
+    )
+
+    assert score["answer_reward"] == 1.0
+    assert score["evidence_reward"] == 1.0
+    assert score["overall"] == 1.0
+
+
 def test_trace_dataset_helpers_support_trace_rows(tmp_path: Path) -> None:
     image_path = tmp_path / "images" / "sample.png"
     image_path.parent.mkdir(parents=True, exist_ok=True)

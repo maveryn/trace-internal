@@ -135,6 +135,29 @@ def _normalize_numeric_evidence(value: Any) -> list[float | int] | None:
     return out
 
 
+def _canonical_jsonable(value: Any) -> Any:
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, (Integral, Real)) and not isinstance(value, bool):
+        return _normalize_scalar_number(value)
+    if isinstance(value, str):
+        return value.strip()
+    if isinstance(value, dict):
+        items: list[tuple[str, Any]] = []
+        for key, item_value in value.items():
+            items.append((_canonical_scalar_symbol(key), _canonical_jsonable(item_value)))
+        return {key: item_value for key, item_value in sorted(items, key=lambda kv: kv[0])}
+    if isinstance(value, (set, frozenset)):
+        normalized_items = [_canonical_jsonable(item) for item in value]
+        return sorted(
+            normalized_items,
+            key=lambda item: json.dumps(item, ensure_ascii=False, sort_keys=True, separators=(",", ":")),
+        )
+    if _is_non_string_sequence(value):
+        return [_canonical_jsonable(item) for item in list(value)]
+    return value
+
+
 def _canonical_scalar_symbol(value: Any) -> str:
     if isinstance(value, bool):
         return str(value).lower()
@@ -143,14 +166,16 @@ def _canonical_scalar_symbol(value: Any) -> str:
         return str(normalized)
     if isinstance(value, str):
         return value.strip()
-    return json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    return json.dumps(_canonical_jsonable(value), ensure_ascii=False, sort_keys=True, separators=(",", ":"))
 
 
 def _normalize_symbolic_set(value: Any, *, evidence_type: str) -> set[Any] | None:
     parsed = _parse_json_like(value)
     if parsed is None:
         return None
-    if not _is_non_string_sequence(parsed):
+    if isinstance(parsed, (set, frozenset)):
+        parsed = list(parsed)
+    elif not _is_non_string_sequence(parsed):
         parsed = [parsed]
 
     normalized: set[Any] = set()

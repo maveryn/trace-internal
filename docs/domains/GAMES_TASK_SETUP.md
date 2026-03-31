@@ -131,6 +131,20 @@ Use this document for the active `games` domain contract.
    - state that overlapping mill pieces are counted once,
    - keep the first version to one visible board scaffold with no move-generation wording.
 
+### `go`
+1. Active tasks:
+   - `task_games_go_group_liberty_count`
+2. `task_games_go_group_liberty_count` scene/query surface:
+   - `scene_variant`: `open_board|crowded_board`
+   - `query_variant`: `marked_black_group_liberty_count|marked_white_group_liberty_count`
+3. `task_games_go_group_liberty_count` evidence contract:
+   - unordered empty-intersection `bbox_set` evidence over the liberties of the highlighted group
+4. `task_games_go_group_liberty_count` prompt policy:
+   - keep the board fixed to one visible `7 x 7` Go board,
+   - define both `group` and `liberty` directly in the prompt,
+   - highlight the queried group without pre-highlighting the liberties,
+   - keep evidence on the liberty intersections themselves rather than on the group stones.
+
 ## 3) V1 games-domain policy
 1. Prefer one stable visible game scaffold per task id; widen question diversity through `task_variant` before splitting into more task ids.
 2. Keep early tasks fully face-up and fully observable; do not require hidden cards or unstated game conventions.
@@ -156,6 +170,8 @@ Use this document for the active `games` domain contract.
    - `task_games_mancala_move_count`
 9. `nine_mens_morris`
    - `task_games_nine_mens_morris_pieces_in_mill_count`
+10. `go`
+   - `task_games_go_group_liberty_count`
 
 ## 5) Shared helper placement
 1. Cross-domain integer-support balancing now lives in `trace/tasks/shared/support_sampling.py`.
@@ -179,4 +195,6 @@ Use this document for the active `games` domain contract.
 19. Games-domain Mancala board rendering helpers belong in `trace/tasks/games/shared/mancala_scene.py`.
 20. Games-domain Morris rules helpers belong in `trace/tasks/games/shared/morris_common.py`.
 21. Games-domain Morris board rendering helpers belong in `trace/tasks/games/shared/morris_scene.py`.
-22. Games-domain normalized complexity helpers belong in `trace/tasks/games/shared/complexity.py`.
+22. Games-domain Go rules helpers belong in `trace/tasks/games/shared/go_common.py`.
+23. Games-domain Go board rendering helpers belong in `trace/tasks/games/shared/go_scene.py`.
+24. Games-domain normalized complexity helpers belong in `trace/tasks/games/shared/complexity.py`.

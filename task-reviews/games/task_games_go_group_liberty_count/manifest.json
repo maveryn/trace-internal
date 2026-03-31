@@ -1,0 +1,13 @@
+{
+  "inspection_count": 50,
+  "task_id": "task_games_go_group_liberty_count",
+  "variants": {
+    "marked_black_group_liberty_count": 25,
+    "marked_white_group_liberty_count": 25
+  },
+  "workbook": "games/task_games_go_group_liberty_count/task_games_go_group_liberty_count.xlsx",
+  "workbook_sheets": {
+    "marked_black_group_liberty_count": "marked_black_group_liberty_coun",
+    "marked_white_group_liberty_count": "marked_white_group_liberty_coun"
+  }
+}

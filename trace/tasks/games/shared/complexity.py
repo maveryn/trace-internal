@@ -427,6 +427,46 @@ def build_games_mancala_move_complexity(
     )
 
 
+def build_games_go_group_liberty_complexity(
+    *,
+    task_group_defaults: Mapping[str, Any],
+    task_id: str,
+    scene_variant: str,
+    query_variant: str,
+    occupied_count: int,
+    marked_group_size: int,
+    target_answer: int,
+    evidence_count: int,
+) -> TaskComplexity:
+    """Build normalized complexity for visible Go group-liberty counting scenes."""
+
+    weights = resolve_games_complexity_weights(task_group_defaults, task_id=task_id)
+    visual_scan = clamp_unit_interval(
+        (0.42 * normalize_linear(float(occupied_count), min_value=8.0, max_value=28.0))
+        + (0.10 if str(scene_variant) == "crowded_board" else 0.0)
+    )
+    board_reasoning = clamp_unit_interval(
+        (0.38 if str(query_variant) == "marked_black_group_liberty_count" else 0.42)
+        + (0.18 * normalize_linear(float(marked_group_size), min_value=1.0, max_value=5.0))
+        + (0.18 * normalize_linear(float(target_answer), min_value=1.0, max_value=8.0))
+    )
+    ambiguity = clamp_unit_interval(
+        (0.16 * normalize_linear(float(evidence_count), min_value=1.0, max_value=8.0))
+        + (0.08 if str(scene_variant) == "crowded_board" else 0.0)
+        + (0.06 if int(marked_group_size) >= 3 else 0.0)
+    )
+    output_burden = normalize_linear(float(evidence_count), min_value=1.0, max_value=8.0)
+    return build_games_complexity(
+        weights=weights,
+        components={
+            "visual_scan": float(visual_scan),
+            "state_reasoning": float(board_reasoning),
+            "ambiguity": float(ambiguity),
+            "output_burden": float(output_burden),
+        },
+    )
+
+
 __all__ = [
     "build_games_bingo_completed_line_complexity",
     "build_games_cards_hand_complexity",
@@ -434,6 +474,7 @@ __all__ = [
     "build_games_connect_four_move_complexity",
     "build_games_dominoes_chain_complexity",
     "build_games_dots_and_boxes_capture_complexity",
+    "build_games_go_group_liberty_complexity",
     "build_games_mancala_move_complexity",
     "build_games_nine_mens_morris_pieces_in_mill_complexity",
     "build_games_reversi_move_complexity",

@@ -107,3 +107,4 @@ Current task docs:
 97. [task_games_checkers_move_count.md](task_games_checkers_move_count.md)
 98. [task_games_mancala_move_count.md](task_games_mancala_move_count.md)
 99. [task_games_nine_mens_morris_pieces_in_mill_count.md](task_games_nine_mens_morris_pieces_in_mill_count.md)
+100. [task_games_go_group_liberty_count.md](task_games_go_group_liberty_count.md)

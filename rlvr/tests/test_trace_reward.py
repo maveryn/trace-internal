@@ -151,6 +151,22 @@ def test_trace_reward_accepts_python_set_literal_for_symbolic_evidence() -> None
     assert score["overall"] == 1.0
 
 
+def test_trace_reward_treats_python_ellipsis_answer_as_invalid_instead_of_crashing() -> None:
+    reward_contract = _reward_contract("symbolic_set_exact_v1", "label_set")
+
+    score = score_trace_response(
+        response="{'answer': ..., 'evidence': {'B', 'D'}}",
+        answer_gt={"type": "integer", "value": 2},
+        evidence_gt={"type": "label_set", "value": ["D", "B"]},
+        reward_contract=reward_contract,
+    )
+
+    assert score["answer_reward"] == 0.0
+    assert score["evidence_reward"] == 1.0
+    assert score["overall"] == 0.0
+    assert score["answer_parse_ok"] == 0.0
+
+
 def test_trace_dataset_helpers_support_trace_rows(tmp_path: Path) -> None:
     image_path = tmp_path / "images" / "sample.png"
     image_path.parent.mkdir(parents=True, exist_ok=True)

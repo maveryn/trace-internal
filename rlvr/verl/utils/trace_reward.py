@@ -101,7 +101,17 @@ def _collect_json_candidates(response: str) -> list[str]:
 def _serialize_candidate(value: Any) -> str:
     if isinstance(value, str):
         return value
-    return json.dumps(value, ensure_ascii=False, allow_nan=False, separators=(",", ":"))
+    if value is Ellipsis:
+        return "..."
+    try:
+        return json.dumps(
+            _canonical_jsonable(value),
+            ensure_ascii=False,
+            allow_nan=False,
+            separators=(",", ":"),
+        )
+    except (TypeError, ValueError):
+        return str(value)
 
 
 def _normalize_scalar_number(value: Any) -> float | int | None:
@@ -136,8 +146,14 @@ def _normalize_numeric_evidence(value: Any) -> list[float | int] | None:
 
 
 def _canonical_jsonable(value: Any) -> Any:
+    if value is Ellipsis:
+        return "..."
     if isinstance(value, bool):
         return value
+    if isinstance(value, np.generic):
+        return _canonical_jsonable(value.item())
+    if isinstance(value, np.ndarray):
+        return _canonical_jsonable(value.tolist())
     if isinstance(value, (Integral, Real)) and not isinstance(value, bool):
         return _normalize_scalar_number(value)
     if isinstance(value, str):
@@ -166,7 +182,12 @@ def _canonical_scalar_symbol(value: Any) -> str:
         return str(normalized)
     if isinstance(value, str):
         return value.strip()
-    return json.dumps(_canonical_jsonable(value), ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    if value is Ellipsis:
+        return "..."
+    try:
+        return json.dumps(_canonical_jsonable(value), ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    except (TypeError, ValueError):
+        return str(value)
 
 
 def _normalize_symbolic_set(value: Any, *, evidence_type: str) -> set[Any] | None:

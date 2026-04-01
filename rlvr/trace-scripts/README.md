@@ -52,3 +52,25 @@ Preflight only:
 cd /home/jovyan/work/trace/rlvr
 TRACE_PREFLIGHT_ONLY=1 bash trace-scripts/qwen2_5-3b-vl-trace-4gpu.sh
 ```
+
+## Qwen3-VL 4B evidence+curriculum on 8 GPUs
+
+Use `trace_qwen3_vl_4b_answer_evidence_curriculum_8gpu.sh` for the 8-GPU TRACE run with:
+
+- `MODEL_PATH=Qwen/Qwen3-VL-4B-Instruct`
+- `PROMPT_KEY=prompt_answer_and_evidence`
+- `TRACE_REWARD_MODE=answer_and_evidence`
+- `CURRICULUM_MODE=self_paced_ema`
+- `NUM_GPUS=8`
+- `MAX_STEPS=250`
+- `VAL_FREQ=20`
+- `SAVE_FREQ=20`
+
+It defaults `CUDA_VISIBLE_DEVICES` to `0,1,2,3,4,5,6,7` if you do not set it yourself.
+
+Example:
+
+```bash
+cd /home/jovyan/work/trace/rlvr
+bash trace-scripts/trace_qwen3_vl_4b_answer_evidence_curriculum_8gpu.sh
+```

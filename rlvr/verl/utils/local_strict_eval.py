@@ -21,10 +21,11 @@ SENTENCEY_RE = re.compile(r"(?i)\b(?:therefore|because|since|hence|thus|we have|
 YES_NO_RE = re.compile(r"(?i)\b(yes|no|true|false)\b")
 INT_RE = re.compile(r"[-+]?\d+")
 NUMBER_OR_FRAC_RE = re.compile(r"[-+]?\d+\s*/\s*\d+|[-+]?(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?")
+OPTION_LINE_RE = re.compile(r"(?mi)^\s*([A-G])\s*[\).:]\s*(.+?)\s*$")
 
 
 def _is_non_string_sequence(value: Any) -> bool:
-    return isinstance(value, (list, tuple)) and not isinstance(value, (str, bytes))
+    return isinstance(value, (list, tuple, np.ndarray)) and not isinstance(value, (str, bytes))
 
 
 def _normalize_binary_grid(sequence_value: Any) -> list[list[int]] | None:
@@ -117,6 +118,25 @@ def strip_wrappers(text: str) -> str:
             break
         s = s2
     return s.strip()
+
+
+def _normalize_option_text(text: str) -> str:
+    s = strip_wrappers(text).strip()
+    s = re.sub(r"[ \t\r\n]+", " ", s)
+    s = re.sub(r"^[\-\.:;,]+", "", s)
+    s = re.sub(r"[\-\.:;,]+$", "", s)
+    return s.strip().lower()
+
+
+def _extract_prompt_choice_map(prompt_text: str | None) -> dict[str, str]:
+    if not prompt_text:
+        return {}
+    mapping: dict[str, str] = {}
+    for letter, option_text in OPTION_LINE_RE.findall(prompt_text):
+        normalized = _normalize_option_text(option_text)
+        if normalized:
+            mapping[letter.upper()] = normalized
+    return mapping
 
 
 def _normalize_yes_no(text: str) -> str | None:
@@ -495,10 +515,12 @@ def strict_score_response(
     response: str,
     ground_truth: Any,
     list_reward_mode: str = "exact",
+    prompt_text: str | None = None,
 ) -> tuple[float, bool, str | None, str]:
     candidates = collect_candidates(response)
     if not candidates:
         return 0.0, False, None, "none"
+    prompt_choice_map = _extract_prompt_choice_map(prompt_text)
 
     gt_grid = _to_numpy_grid(ground_truth)
     if gt_grid is not None:
@@ -513,7 +535,7 @@ def strict_score_response(
         return 0.0, False, None, "none"
 
     gt_items: list[Any] | None = None
-    if isinstance(ground_truth, (list, tuple)):
+    if _is_non_string_sequence(ground_truth):
         gt_items = list(ground_truth)
     elif isinstance(ground_truth, str):
         gt_items = _parse_json_list(ground_truth)
@@ -548,6 +570,16 @@ def strict_score_response(
                     method = m
                     break
             if extracted_letter is None:
+                expected_option_texts = {
+                    prompt_choice_map[letter]
+                    for letter in sorted(set(choice_letters))
+                    if letter in prompt_choice_map
+                }
+                if expected_option_texts:
+                    for m, cand in candidates:
+                        normalized_cand = _normalize_option_text(cand)
+                        if normalized_cand and normalized_cand in expected_option_texts:
+                            return 1.0, True, cand, m
                 return 0.0, False, None, "none"
             expected = sorted(set(choice_letters))
             if len(expected) == 1:
@@ -610,6 +642,16 @@ def strict_score_response(
                 method = m
                 break
         if extracted_letter is None:
+            expected_option_texts = {
+                prompt_choice_map[letter]
+                for letter in sorted(set(choice_letters))
+                if letter in prompt_choice_map
+            }
+            if expected_option_texts:
+                for m, cand in candidates:
+                    normalized_cand = _normalize_option_text(cand)
+                    if normalized_cand and normalized_cand in expected_option_texts:
+                        return 1.0, True, cand, m
             return 0.0, False, None, "none"
         expected = sorted(set(choice_letters))
         if len(expected) == 1:

@@ -557,6 +557,7 @@ def compute_val_reward(
         cur_length = int(response_length[i].item())
         valid_response_ids = response_ids[i][:cur_length]
         response_str = tokenizer.decode(valid_response_ids, skip_special_tokens=skip_special_tokens)
+        prompt_str = tokenizer.decode(data.batch["prompts"][i], skip_special_tokens=skip_special_tokens)
 
         ground_truth = data.non_tensor_batch["ground_truth"][i]
         reward_input = {
@@ -582,7 +583,11 @@ def compute_val_reward(
             reward_metrics["answer_reward"].append(answer_reward)
             reward_metrics["evidence_reward"].append(float(trace_score.get("evidence_reward", 0.0)))
         else:
-            accuracy, extracted, _, _ = strict_score_response(response=response_str, ground_truth=ground_truth)
+            accuracy, extracted, _, _ = strict_score_response(
+                response=response_str,
+                ground_truth=ground_truth,
+                prompt_text=prompt_str,
+            )
             hit = 1.0 if accuracy > 0.5 else 0.0
             format_score = _format_reward(response_str)
             overall = accuracy

@@ -698,6 +698,8 @@ class RayPPOTrainer:
             return {}
         metrics: dict[str, Any] = {}
         reward_scores = []
+        total_accuracy_scores = []
+        extraction_rate_scores = []
 
         for name, dataloader in self.val_dataloaders.items():
             print(name)
@@ -768,14 +770,21 @@ class RayPPOTrainer:
 
             hits = reward_metrics_lst.get("hit", [])
             extracted_flags = reward_metrics_lst.get("extracted", [])
+            total_count = float(len(hits))
             extracted_count = float(np.sum(extracted_flags)) if extracted_flags else 0.0
             hit_count = float(np.sum(hits)) if hits else 0.0
             acc_on_extracted = (hit_count / extracted_count) if extracted_count > 0 else 0.0
+            acc_on_total = (hit_count / total_count) if total_count > 0 else 0.0
+            extraction_rate = (extracted_count / total_count) if total_count > 0 else 0.0
 
             # Use extracted-only accuracy as the canonical validation accuracy.
             metrics[f"val/{name}/accuracy_reward"] = acc_on_extracted
+            metrics[f"val/{name}/accuracy_on_total"] = acc_on_total
+            metrics[f"val/{name}/extraction_rate"] = extraction_rate
 
             reward_scores.append(acc_on_extracted)
+            total_accuracy_scores.append(acc_on_total)
+            extraction_rate_scores.append(extraction_rate)
 
             reduced_length = reduce_metrics(length_metrics_lst)
             if "response_length/mean" in reduced_length:
@@ -785,6 +794,10 @@ class RayPPOTrainer:
         if reward_scores:
             self.val_reward_score = float(np.mean(reward_scores))
             metrics["val/accuracy_reward"] = self.val_reward_score
+            if total_accuracy_scores:
+                metrics["val/accuracy_on_total"] = float(np.mean(total_accuracy_scores))
+            if extraction_rate_scores:
+                metrics["val/extraction_rate"] = float(np.mean(extraction_rate_scores))
         else:
             self.val_reward_score = 0.0
         return metrics

@@ -212,6 +212,7 @@ out_*/
 
 # RLVR generated parquet artifacts
 rlvr/mydata/*.parquet
+rlvr/val_dataloaders.txt
 
 # Task review generated artifacts
 task-reviews/task_*/data/

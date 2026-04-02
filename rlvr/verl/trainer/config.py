@@ -56,6 +56,8 @@ class DataConfig:
     rollout_batch_size: int = 512
     mini_rollout_batch_size: Optional[int] = None
     val_batch_size: int = -1
+    train_dataloader_num_workers: int = 8
+    val_dataloader_num_workers: int = 8
     format_prompt: Optional[str] = None
     format_prompt_variant: str = "boxed_only"
     val_format_prompt: Optional[str] = None
@@ -94,6 +96,10 @@ class DataConfig:
             raise ValueError("data.curriculum_eps_floor must be >= 0 when provided")
         if self.curriculum_beta <= 0.0:
             raise ValueError("data.curriculum_beta must be > 0")
+        if self.train_dataloader_num_workers < 0:
+            raise ValueError("data.train_dataloader_num_workers must be >= 0")
+        if self.val_dataloader_num_workers < 0:
+            raise ValueError("data.val_dataloader_num_workers must be >= 0")
         self.image_dir = get_abs_path(self.image_dir, prompt="Image directory")
         self.format_prompt = get_abs_path(self.format_prompt, prompt="Format prompt file")
         self.val_format_prompt = get_abs_path(self.val_format_prompt, prompt="Validation format prompt file")

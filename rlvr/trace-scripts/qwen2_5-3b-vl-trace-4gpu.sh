@@ -19,6 +19,7 @@ HF_TRAIN_SPLIT="${HF_TRAIN_SPLIT:-train}"
 NUM_GPUS="${NUM_GPUS:-4}"
 MAX_STEPS="${MAX_STEPS:-10}"
 ROLLOUT_TP="${ROLLOUT_TP:-1}"
+ROLLOUT_N="${ROLLOUT_N:-8}"
 FREEZE_VISION_TOWER="${FREEZE_VISION_TOWER:-false}"
 GPU_MEMORY_UTILIZATION="${GPU_MEMORY_UTILIZATION:-0.8}"
 IMAGE_CHECK_LIMIT="${IMAGE_CHECK_LIMIT:-256}"
@@ -34,6 +35,14 @@ CURRICULUM_ALPHA0="${CURRICULUM_ALPHA0:-0.995}"
 CURRICULUM_EPS_FLOOR="${CURRICULUM_EPS_FLOOR:-}"
 CURRICULUM_BETA="${CURRICULUM_BETA:-2.0}"
 CURRICULUM_LOG_INTERVAL="${CURRICULUM_LOG_INTERVAL:-10}"
+ROLLOUT_BATCH_SIZE="${ROLLOUT_BATCH_SIZE:-128}"
+ACTOR_GLOBAL_BATCH_SIZE="${ACTOR_GLOBAL_BATCH_SIZE:-128}"
+ACTOR_MICRO_BATCH_SIZE_UPDATE="${ACTOR_MICRO_BATCH_SIZE_UPDATE:-16}"
+ACTOR_MICRO_BATCH_SIZE_EXPERIENCE="${ACTOR_MICRO_BATCH_SIZE_EXPERIENCE:-32}"
+TRAIN_DATALOADER_NUM_WORKERS="${TRAIN_DATALOADER_NUM_WORKERS:-8}"
+VAL_DATALOADER_NUM_WORKERS="${VAL_DATALOADER_NUM_WORKERS:-8}"
+PADDING_FREE="${PADDING_FREE:-true}"
+USE_TORCH_COMPILE="${USE_TORCH_COMPILE:-true}"
 
 TRAIN_SOURCE="${TRAIN_FILE}"
 if [[ "${TRAIN_FILE}" == *.parquet || "${TRAIN_FILE}" == /* || "${TRAIN_FILE}" == ./* || "${TRAIN_FILE}" == ../* ]]; then
@@ -50,7 +59,7 @@ if [[ "${TRAIN_FILE}" == *.parquet || "${TRAIN_FILE}" == /* || "${TRAIN_FILE}" =
 fi
 
 # Fail fast if the exported parquet is malformed or points at missing image paths.
-python3 - "${TRAIN_SOURCE}" "${PROMPT_KEY}" "${IMAGE_CHECK_LIMIT}" "${VAL_FILES_JSON}" <<'PY'
+python3 - "${TRAIN_SOURCE}" "${PROMPT_KEY}" "${IMAGE_CHECK_LIMIT}" "${VAL_FILES_JSON}" "${CURRICULUM_MODE}" <<'PY'
 import json
 import sys
 from pathlib import Path
@@ -116,13 +125,16 @@ raw_source = str(sys.argv[1])
 prompt_key = str(sys.argv[2])
 image_check_limit = int(sys.argv[3])
 val_files = json.loads(sys.argv[4])
+curriculum_mode = str(sys.argv[5])
 source_kind, source_path_or_repo, data_split = _resolve_source(raw_source)
 source_path = Path(source_path_or_repo).resolve() if source_kind == "local_parquet" else None
 
 if not isinstance(val_files, list):
     raise SystemExit(f"VAL_FILES_JSON must decode to a list, got: {type(val_files)!r}")
 
-required_columns = (prompt_key, "images", "answer_gt", "evidence_gt", "reward_contract")
+required_columns = [prompt_key, "images", "answer_gt", "evidence_gt", "reward_contract"]
+if curriculum_mode != "none":
+    required_columns.append("bucket_id_str")
 if source_kind == "local_parquet":
     if not source_path.exists():
         raise SystemExit(f"TRACE parquet not found: {source_path}")
@@ -214,8 +226,17 @@ ARGS=(
   data.curriculum_alpha0="${CURRICULUM_ALPHA0}"
   data.curriculum_beta="${CURRICULUM_BETA}"
   data.curriculum_log_interval="${CURRICULUM_LOG_INTERVAL}"
+  data.rollout_batch_size="${ROLLOUT_BATCH_SIZE}"
+  data.train_dataloader_num_workers="${TRAIN_DATALOADER_NUM_WORKERS}"
+  data.val_dataloader_num_workers="${VAL_DATALOADER_NUM_WORKERS}"
+  worker.actor.global_batch_size="${ACTOR_GLOBAL_BATCH_SIZE}"
+  worker.actor.micro_batch_size_per_device_for_update="${ACTOR_MICRO_BATCH_SIZE_UPDATE}"
+  worker.actor.micro_batch_size_per_device_for_experience="${ACTOR_MICRO_BATCH_SIZE_EXPERIENCE}"
+  worker.actor.padding_free="${PADDING_FREE}"
+  worker.actor.use_torch_compile="${USE_TORCH_COMPILE}"
   worker.actor.model.model_path="${MODEL_PATH}"
   worker.actor.model.freeze_vision_tower="${FREEZE_VISION_TOWER}"
+  worker.rollout.n="${ROLLOUT_N}"
   worker.rollout.tensor_parallel_size="${ROLLOUT_TP}"
   worker.rollout.gpu_memory_utilization="${GPU_MEMORY_UTILIZATION}"
   worker.reward.reward_function_kwargs.trace_reward_mode="${TRACE_REWARD_MODE}"

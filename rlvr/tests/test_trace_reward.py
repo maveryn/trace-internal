@@ -5,6 +5,7 @@ import sys
 import types
 
 from PIL import Image
+import torch
 
 if "codetiming" not in sys.modules:
     sys.modules["codetiming"] = types.SimpleNamespace(Timer=object)
@@ -32,7 +33,8 @@ except ImportError:
         ProcessorMixin=object,
     )
 
-from verl.utils.dataset import RLHFDataset, process_image
+from verl.models.transformers.qwen3_5 import get_rope_index as get_qwen3_5_rope_index
+from verl.utils.dataset import RLHFDataset, process_image, resolve_qwen_vl_get_rope_index
 from verl.utils.trace_reward import score_trace_response
 from examples.reward_function.reward_tesserae import compute_score
 
@@ -269,3 +271,71 @@ def test_reward_tesserae_supports_trace_answer_only_mode() -> None:
     assert scores[0]["overall"] == 1.0
     assert scores[0]["answer_reward"] == 1.0
     assert scores[0]["evidence_reward"] == 0.0
+
+
+def test_resolve_qwen_vl_get_rope_index_prefers_qwen3_5_when_model_type_is_available() -> None:
+    qwen3_vl_processor_cls = type("Qwen3VLProcessor", (), {})
+    qwen2_vl_image_processor_cls = type("Qwen2VLImageProcessorFast", (), {})
+
+    processor = qwen3_vl_processor_cls()
+    processor.image_processor = qwen2_vl_image_processor_cls()
+
+    rope_fn = resolve_qwen_vl_get_rope_index(processor, model_type="qwen3_5")
+    assert rope_fn is get_qwen3_5_rope_index
+
+
+def test_qwen3_5_get_rope_index_builds_expected_positions_for_single_image() -> None:
+    qwen2_vl_image_processor_cls = type("Qwen2VLImageProcessorFast", (), {"merge_size": 2})
+    processor = types.SimpleNamespace(image_processor=qwen2_vl_image_processor_cls())
+
+    position_ids = get_qwen3_5_rope_index(
+        processor,
+        input_ids=torch.tensor([11, 12, 101, 102, 103, 104, 13], dtype=torch.long),
+        mm_token_type_ids=torch.tensor([0, 0, 1, 1, 1, 1, 0], dtype=torch.int),
+        image_grid_thw=torch.tensor([[1, 4, 4]], dtype=torch.long),
+        attention_mask=torch.tensor([1, 1, 1, 1, 1, 1, 1], dtype=torch.long),
+    )
+
+    assert position_ids.shape == (3, 7)
+    assert torch.equal(
+        position_ids,
+        torch.tensor(
+            [
+                [0, 1, 2, 2, 2, 2, 4],
+                [0, 1, 2, 2, 3, 3, 4],
+                [0, 1, 2, 3, 2, 3, 4],
+            ],
+            dtype=torch.long,
+        ),
+    )
+
+
+def test_qwen3_5_get_rope_index_requires_mm_token_type_ids() -> None:
+    qwen2_vl_image_processor_cls = type("Qwen2VLImageProcessorFast", (), {"merge_size": 2})
+    processor = types.SimpleNamespace(image_processor=qwen2_vl_image_processor_cls())
+
+    try:
+        get_qwen3_5_rope_index(
+            processor,
+            input_ids=torch.tensor([11, 12, 13], dtype=torch.long),
+            mm_token_type_ids=None,
+            image_grid_thw=torch.tensor([[1, 4, 4]], dtype=torch.long),
+        )
+    except ValueError as exc:
+        assert "mm_token_type_ids" in str(exc)
+    else:
+        raise AssertionError("Expected Qwen3.5 RoPE helper to require mm_token_type_ids")
+
+
+def test_qwen3_5_get_rope_index_accepts_batched_mm_token_type_ids() -> None:
+    processor = types.SimpleNamespace(image_processor=types.SimpleNamespace(merge_size=1))
+
+    position_ids = get_qwen3_5_rope_index(
+        processor=processor,
+        input_ids=torch.tensor([[10, 11, 12, 13, 14, 15, 16]], dtype=torch.long),
+        mm_token_type_ids=torch.tensor([[0, 0, 1, 1, 1, 1, 0]], dtype=torch.int),
+        image_grid_thw=torch.tensor([[1, 2, 2]], dtype=torch.long),
+        attention_mask=torch.tensor([[1, 1, 1, 1, 1, 1, 1]], dtype=torch.long),
+    )
+
+    assert position_ids.shape == (3, 7)

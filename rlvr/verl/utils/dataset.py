@@ -124,6 +124,36 @@ def process_video(
     return fetch_video(vision_info, return_video_sample_fps=return_fps)
 
 
+def resolve_qwen_vl_get_rope_index(
+    processor: Optional[ProcessorMixin], model_type: Optional[str] = None
+):
+    """Resolve the multimodal RoPE helper for supported Qwen VLM families."""
+
+    if processor is None:
+        return None
+
+    image_processor = getattr(processor, "image_processor", None)
+    image_processor_name = image_processor.__class__.__name__ if image_processor is not None else ""
+    if "Qwen2VLImageProcessor" not in image_processor_name:
+        return None
+
+    normalized_model_type = str(model_type or "").strip().lower()
+    if normalized_model_type.startswith("qwen3_5"):
+        from ..models.transformers.qwen3_5 import get_rope_index
+
+        return get_rope_index
+
+    processor_name = processor.__class__.__name__
+    if "Qwen3VLProcessor" in processor_name:
+        from ..models.transformers.qwen3_vl import get_rope_index
+
+        return get_rope_index
+
+    from ..models.transformers.qwen2_vl import get_rope_index
+
+    return get_rope_index
+
+
 class RLHFDataset(Dataset):
     """
     We assume the dataset contains a column that contains prompts and other information
@@ -134,6 +164,7 @@ class RLHFDataset(Dataset):
         data_path: str,
         tokenizer: PreTrainedTokenizer,
         processor: Optional[ProcessorMixin],
+        model_type: Optional[str] = None,
         prism_mode: str = "none",
         prompt_key: str = "prompt",
         answer_key: str = "answer",
@@ -153,6 +184,7 @@ class RLHFDataset(Dataset):
     ):
         self.tokenizer = tokenizer
         self.processor = processor
+        self.model_type = str(model_type or "").strip().lower() or None
         self.prism_mode = (prism_mode or "none").lower()
         self.prompt_key = prompt_key
         self.answer_key = answer_key
@@ -346,11 +378,16 @@ class RLHFDataset(Dataset):
         else:
             return [{"role": "user", "content": prompt_str}]
 
+    def _apply_chat_template(self, messages: list[dict[str, Any]]) -> str:
+        if self.processor is not None and getattr(self.processor, "chat_template", None):
+            return self.processor.apply_chat_template(messages, add_generation_prompt=True, tokenize=False)
+        return self.tokenizer.apply_chat_template(messages, add_generation_prompt=True, tokenize=False)
+
     def _filter_overlong_prompts(self, example: dict[str, Any]) -> bool:
         prompt_key, _ = self._resolve_prompt_answer_keys(example)
         messages = self._build_messages(example, prompt_key=prompt_key)
         if self.image_key in example:
-            prompt = self.processor.apply_chat_template(messages, add_generation_prompt=True, tokenize=False)
+            prompt = self._apply_chat_template(messages)
             images = self._normalize_image_entries(list(example[self.image_key]))
 
             processed_images = [] if len(images) != 0 else None  # text-only data
@@ -360,7 +397,7 @@ class RLHFDataset(Dataset):
             model_inputs = self.processor(processed_images, [prompt], add_special_tokens=False, return_tensors="pt")
             return model_inputs["input_ids"].size(-1) <= self.max_prompt_length
         elif self.video_key in example:
-            prompt = self.processor.apply_chat_template(messages, add_generation_prompt=True, tokenize=False)
+            prompt = self._apply_chat_template(messages)
             videos = example[self.video_key]
             if self.image_dir is not None and len(videos) != 0 and isinstance(videos[0], str):  # video paths
                 videos = [os.path.join(self.image_dir, video) for video in videos]
@@ -387,7 +424,7 @@ class RLHFDataset(Dataset):
         example.pop(prompt_key, None)
 
         if self.image_key in example:
-            prompt = self.processor.apply_chat_template(messages, add_generation_prompt=True, tokenize=False)
+            prompt = self._apply_chat_template(messages)
             images = example.pop(self.image_key)
             images = self._normalize_image_entries(list(images))
 
@@ -400,7 +437,7 @@ class RLHFDataset(Dataset):
             attention_mask = model_inputs.pop("attention_mask")[0]
             example["multi_modal_data"] = {"images": images}
         elif self.video_key in example:
-            prompt = self.processor.apply_chat_template(messages, add_generation_prompt=True, tokenize=False)
+            prompt = self._apply_chat_template(messages)
             videos = example.pop(self.video_key)
             if self.image_dir is not None and len(videos) != 0 and isinstance(videos[0], str):  # video paths
                 videos = [os.path.join(self.image_dir, video) for video in videos]
@@ -429,20 +466,21 @@ class RLHFDataset(Dataset):
             input_ids = model_inputs.pop("input_ids")[0]
             attention_mask = model_inputs.pop("attention_mask")[0]
 
-        if self.processor is not None and "Qwen2VLImageProcessor" in self.processor.image_processor.__class__.__name__:
+        qwen_vl_get_rope_index = resolve_qwen_vl_get_rope_index(self.processor, self.model_type)
+        if qwen_vl_get_rope_index is not None:
             # qwen-vl mrope
-            if "Qwen3VLProcessor" in self.processor.__class__.__name__:
-                from ..models.transformers.qwen3_vl import get_rope_index
-            else:
-                from ..models.transformers.qwen2_vl import get_rope_index
-
-            vision_position_ids = get_rope_index(
+            rope_kwargs = {
+                "input_ids": input_ids,
+                "image_grid_thw": model_inputs.get("image_grid_thw", None),
+                "video_grid_thw": model_inputs.get("video_grid_thw", None),
+                "second_per_grid_ts": model_inputs.get("second_per_grid_ts", None),
+                "attention_mask": attention_mask,
+            }
+            if self.model_type is not None and self.model_type.startswith("qwen3_5"):
+                rope_kwargs["mm_token_type_ids"] = model_inputs.get("mm_token_type_ids", None)
+            vision_position_ids = qwen_vl_get_rope_index(
                 self.processor,
-                input_ids=input_ids,
-                image_grid_thw=model_inputs.get("image_grid_thw", None),
-                video_grid_thw=model_inputs.get("video_grid_thw", None),
-                second_per_grid_ts=model_inputs.get("second_per_grid_ts", None),
-                attention_mask=attention_mask,
+                **rope_kwargs,
             )  # (3, seq_length)
             text_position_ids = torch.arange(len(input_ids)).unsqueeze(0)  # (1, seq_length)
             position_ids = torch.cat((text_position_ids, vision_position_ids), dim=0)  # (4, seq_length)

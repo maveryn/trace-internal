@@ -16,6 +16,7 @@ import json
 
 import ray
 from omegaconf import OmegaConf
+from transformers import AutoConfig
 
 from ..single_controller.ray import RayWorkerGroup
 from ..utils.tokenizer import get_processor, get_tokenizer
@@ -48,6 +49,21 @@ class Runner:
             trust_remote_code=config.worker.actor.model.trust_remote_code,
             use_fast=True,
         )
+        try:
+            model_type = str(
+                AutoConfig.from_pretrained(
+                    config.worker.actor.model.model_path,
+                    trust_remote_code=config.worker.actor.model.trust_remote_code,
+                ).model_type
+            ).strip()
+        except Exception as exc:
+            model_type = None
+            print(
+                "[dataset] unable to resolve model_type from model config; "
+                f"falling back to processor-only multimodal handling. error={type(exc).__name__}: {exc}"
+            )
+        else:
+            print(f"[dataset] resolved model_type={model_type}")
 
         # define worker classes
         ray_worker_group_cls = RayWorkerGroup
@@ -69,7 +85,12 @@ class Runner:
         reward_fn = RemoteRewardManager.remote(config.worker.reward, tokenizer)
         val_reward_fn = RemoteRewardManager.remote(config.worker.reward, tokenizer)
 
-        train_dataloader, val_dataloaders = create_dataloader(config.data, tokenizer, processor)
+        train_dataloader, val_dataloaders = create_dataloader(
+            config.data,
+            tokenizer,
+            processor,
+            model_type=model_type,
+        )
 
         trainer = RayPPOTrainer(
             config=config,

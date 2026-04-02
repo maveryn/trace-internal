@@ -155,6 +155,14 @@ class vLLMRollout(BaseRollout):
         if kwargs:
             for key, value in kwargs.items():
                 if hasattr(self.sampling_params, key):
+                    if key == "eos_token_id":
+                        old_sampling_params_args["_eos_token_id"] = self.sampling_params.eos_token_id
+                        old_sampling_params_args["_all_stop_token_ids"] = set(self.sampling_params.all_stop_token_ids)
+                        self.sampling_params._eos_token_id = value
+                        if value is not None:
+                            self.sampling_params._all_stop_token_ids.add(value)
+                        continue
+
                     old_value = getattr(self.sampling_params, key)
                     old_sampling_params_args[key] = old_value
                     setattr(self.sampling_params, key, value)

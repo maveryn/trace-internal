@@ -58,11 +58,18 @@ def _val_name_from_source(src: str) -> str:
     return stem or "val"
 
 
-def create_dataloader(config: DataConfig, tokenizer: PreTrainedTokenizer, processor: Optional[ProcessorMixin]) -> None:
+def create_dataloader(
+    config: DataConfig,
+    tokenizer: PreTrainedTokenizer,
+    processor: Optional[ProcessorMixin],
+    *,
+    model_type: Optional[str] = None,
+) -> None:
     train_dataset = RLHFDataset(
         data_path=config.train_files,
         tokenizer=tokenizer,
         processor=processor,
+        model_type=model_type,
         prism_mode=config.prism_mode,
         prompt_key=config.prompt_key,
         answer_key=config.answer_key,
@@ -157,7 +164,7 @@ def create_dataloader(config: DataConfig, tokenizer: PreTrainedTokenizer, proces
         dataset=train_dataset,
         batch_size=train_batch_size,
         sampler=sampler,
-        num_workers=8,
+        num_workers=config.train_dataloader_num_workers,
         collate_fn=collate_fn,
         pin_memory=False,
         drop_last=True,
@@ -214,6 +221,7 @@ def create_dataloader(config: DataConfig, tokenizer: PreTrainedTokenizer, proces
             data_path=val_file,
             tokenizer=tokenizer,
             processor=processor,
+            model_type=model_type,
             prism_mode=config.prism_mode,
             prompt_key=config.prompt_key,
             answer_key=config.answer_key,
@@ -239,7 +247,7 @@ def create_dataloader(config: DataConfig, tokenizer: PreTrainedTokenizer, proces
             dataset=val_dataset,
             batch_size=val_batch_size,
             shuffle=False,
-            num_workers=8,
+            num_workers=config.val_dataloader_num_workers,
             collate_fn=collate_fn,
             pin_memory=False,
             drop_last=False,

@@ -1,0 +1,17 @@
+# Install this overlay after the base RLVR requirements when you want to use
+# Qwen3.5 from the existing host environment.
+#
+# Example:
+#   pip install -r requirements.txt
+#   pip install -r requirements-qwen3_5_overlay.txt
+#   pip install --no-deps --extra-index-url https://wheels.vllm.ai/nightly vllm
+#
+# Why the extra vLLM step?
+# - Qwen3.5 requires a Transformers build with `model_type=qwen3_5`
+# - current vLLM wheels still declare `transformers<5`
+# - the RLVR repo ships `sitecustomize.py` to smooth over the current
+#   torch-2.8 + vLLM-nightly import mismatch once both are installed
+# - full vLLM engine startup still needs a torch / torchvision / torchaudio
+#   stack that matches the selected vLLM nightly build
+
+transformers[serving] @ git+https://github.com/huggingface/transformers.git@main

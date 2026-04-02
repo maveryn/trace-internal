@@ -58,6 +58,62 @@ cd /home/jovyan/work/trace/rlvr
 bash trace-scripts/qwen2_5-3b-vl-trace-4gpu.sh
 ```
 
+### Qwen3.5-0.8B-Base
+
+Initial TRACE support for `Qwen/Qwen3.5-0.8B-Base` is available through:
+
+```bash
+cd /home/jovyan/work/trace/rlvr
+bash trace-scripts/trace_qwen3_5_0p8b_base_answer_evidence.sh
+```
+
+The launcher defaults to a conservative setup for the first integration pass:
+
+- `prompt_key=prompt_answer_and_evidence`
+- `trace_reward_mode=answer_and_evidence`
+- `padding_free=false`
+- `use_torch_compile=false`
+- 1 GPU / smaller batch sizes than the Qwen2.5-VL launchers
+
+If your environment cannot load `model_type=qwen3_5`, install the overlay in:
+
+- `requirements-qwen3_5_overlay.txt`
+
+then install a nightly `vllm` wheel:
+
+```bash
+pip install --no-deps --extra-index-url https://wheels.vllm.ai/nightly vllm
+```
+
+The repo also ships [`sitecustomize.py`](/home/jovyan/work/trace/rlvr/sitecustomize.py) so RLVR launchers can work around the current `torch 2.8` + `vllm` nightly import breakage automatically when `rlvr/` is on `PYTHONPATH`.
+
+That import shim is only enough for preflight and dataset/runtime checks. Full `vllm.LLM(...)` engine startup still needs a torch stack that matches the selected nightly wheel. The dedicated Qwen3.5 Docker runtime now pins the current vLLM-nightly-aligned triplet:
+
+- `torch==2.10.0`
+- `torchvision==0.25.0`
+- `torchaudio==2.10.0`
+
+For a dedicated containerized runtime that leaves the default RLVR image untouched, use:
+
+```bash
+cd /home/jovyan/work/trace/rlvr
+chmod +x setup_qwen3_5.sh
+bash setup_qwen3_5.sh
+```
+
+That path builds from:
+
+- `Dockerfile.qwen3_5`
+- `requirements-qwen3_5_runtime.txt`
+
+and includes a smoke check inside the container:
+
+```bash
+python scripts/check_qwen3_5_runtime.py
+```
+
+The dedicated runtime keeps the repo-default RLVR setup stable while moving Qwen3.5 onto a newer Transformers stack. `flash-attn` is left opt-in there because its wheel must match the torch version selected for the vLLM nightly runtime.
+
 TRACE exports also include:
 
 - `complexity_score`

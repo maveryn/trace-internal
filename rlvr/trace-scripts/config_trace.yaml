@@ -22,6 +22,8 @@ data:
   rollout_batch_size: 128
   mini_rollout_batch_size: null
   val_batch_size: 512
+  train_dataloader_num_workers: 8
+  val_dataloader_num_workers: 8
   format_prompt: null
   format_prompt_variant: boxed_only
   val_format_prompt: ./examples/format_prompt/math.jinja

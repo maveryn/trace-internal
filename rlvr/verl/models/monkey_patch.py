@@ -31,6 +31,10 @@ SUPPORTED_MODEL_TYPE = (
     "qwen2_5_vl",
     "qwen3_vl",
     "qwen3_vl_moe",
+    "qwen3_5",
+    "qwen3_5_text",
+    "qwen3_5_moe",
+    "qwen3_5_moe_text",
 )
 
 QWEN2_VL_MODELS = ("qwen2_vl", "qwen2_5_vl")

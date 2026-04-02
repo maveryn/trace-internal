@@ -45,21 +45,18 @@ Optional export-time suffix styles remain supported for one-off builds:
 The current recurring validation shortlist lives in:
 - `benchmark/configs/external_validation_v1.yaml`
 
-It freezes the current `8 x 512` plan:
+It freezes the current `6 x 512` plan:
 1. `mathvista`
 2. `mathvision`
 3. `charxiv`
 4. `ocrbench_v2`
-5. `seephys`
-6. `spatialeval`
-7. `vgcure`
-8. `puzzlevqa`
+5. `spatialeval`
+6. `puzzlevqa`
 
 Split choices in the current manifest:
 1. `MathVista` uses `testmini` because the public `test` split is unlabeled.
 2. `CharXiv` uses `validation` because the public `test` split is unlabeled.
-3. `SeePhys` and `PuzzleVQA` use `train` because they do not expose `test` or `dev`.
-4. `VGCure` uses a custom reader over the official Hugging Face `test` files.
+3. `PuzzleVQA` uses `train` because it does not expose `test` or `dev`.
 
 ## 6) Export command
 Run:

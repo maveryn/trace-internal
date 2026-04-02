@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import hashlib
 import math
 import os
 import json
@@ -64,6 +65,10 @@ def _has_any_dataset_cache(repo_id: str) -> tuple[bool, list[str]]:
         if path.exists():
             found.append(str(path))
     return len(found) > 0, found
+
+
+def _stable_hash(payload: dict[str, Any]) -> str:
+    return hashlib.sha256(json.dumps(payload, sort_keys=True, ensure_ascii=True, default=str).encode("utf-8")).hexdigest()
 
 
 def collate_fn(features: list[dict[str, Any]]) -> dict[str, Any]:
@@ -252,9 +257,23 @@ class RLHFDataset(Dataset):
 
         if filter_overlong_prompts:
             total_before = len(self.dataset)
+            cache_file_name = self._overlong_filter_cache_file_name(
+                original_data_path=original_data_path,
+                data_path=data_path,
+                data_split=data_split,
+            )
+            if self.log_dataset_download_status:
+                cache_path = Path(cache_file_name)
+                cache_shards = list(cache_path.parent.glob(f"{cache_path.stem}*.arrow"))
+                cache_status = "HIT" if cache_shards else "MISS"
+                print(f"[dataset] overlong_filter_cache={cache_status} path={cache_path}")
             self.dataset = self.dataset.filter(
-                self._filter_overlong_prompts,
+                self._filter_overlong_prompts_batch,
+                batched=True,
+                batch_size=32,
                 desc="Filtering overlong prompts",
+                cache_file_name=cache_file_name,
+                load_from_cache_file=True,
                 num_proc=filter_overlong_prompts_workers,
             )
             total_after = len(self.dataset)
@@ -383,7 +402,103 @@ class RLHFDataset(Dataset):
             return self.processor.apply_chat_template(messages, add_generation_prompt=True, tokenize=False)
         return self.tokenizer.apply_chat_template(messages, add_generation_prompt=True, tokenize=False)
 
+    def _get_image_hw(self, image: Any) -> Optional[tuple[int, int]]:
+        if hasattr(image, "size"):
+            width, height = image.size
+            return int(height), int(width)
+        if isinstance(image, str):
+            with Image.open(image) as img:
+                width, height = img.size
+                return int(height), int(width)
+        if isinstance(image, dict):
+            if "bytes" in image and image["bytes"] is not None:
+                with Image.open(BytesIO(image["bytes"])) as img:
+                    width, height = img.size
+                    return int(height), int(width)
+            if "path" in image:
+                with Image.open(str(image["path"])) as img:
+                    width, height = img.size
+                    return int(height), int(width)
+        return None
+
+    def _get_num_image_tokens(self, image: Any) -> Optional[int]:
+        if self.processor is None:
+            return None
+        image_processor = getattr(self.processor, "image_processor", None)
+        if image_processor is None or not hasattr(image_processor, "get_number_of_image_patches"):
+            return None
+        image_hw = self._get_image_hw(image)
+        if image_hw is None:
+            return None
+        height, width = image_hw
+        num_patches = image_processor.get_number_of_image_patches(
+            height,
+            width,
+            {
+                "min_pixels": self.min_pixels,
+                "max_pixels": self.max_pixels,
+            },
+        )
+        merge_size = getattr(image_processor, "merge_size", 1)
+        return int(num_patches // (merge_size**2))
+
+    def _expand_prompt_for_length_only(self, example: dict[str, Any]) -> Optional[str]:
+        prompt_key, _ = self._resolve_prompt_answer_keys(example)
+        messages = self._build_messages(example, prompt_key=prompt_key)
+        prompt = self._apply_chat_template(messages)
+
+        if self.video_key in example:
+            return None
+        if self.image_key not in example:
+            return prompt
+
+        image_token = getattr(self.processor, "image_token", None) if self.processor is not None else None
+        if image_token is None:
+            return None
+
+        expanded_prompt = prompt
+        for image in self._normalize_image_entries(list(example[self.image_key])):
+            num_image_tokens = self._get_num_image_tokens(image)
+            if num_image_tokens is None:
+                return None
+            expanded_prompt = expanded_prompt.replace(image_token, "<|placeholder|>" * num_image_tokens, 1)
+        return expanded_prompt.replace("<|placeholder|>", image_token)
+
+    def _overlong_filter_cache_file_name(self, *, original_data_path: str, data_path: str, data_split: str) -> str:
+        cache_dir = _datasets_cache_dir() / "verl_overlong_prompt_filter"
+        cache_dir.mkdir(parents=True, exist_ok=True)
+        format_prompt_hash = (
+            hashlib.sha256(self.format_prompt.encode("utf-8")).hexdigest() if self.format_prompt is not None else None
+        )
+        payload = {
+            "dataset_fingerprint": getattr(self.dataset, "_fingerprint", None),
+            "original_data_path": original_data_path,
+            "data_path": data_path,
+            "data_split": data_split,
+            "tokenizer_name_or_path": getattr(self.tokenizer, "name_or_path", None),
+            "processor_name_or_path": getattr(self.processor, "name_or_path", None),
+            "processor_class": self.processor.__class__.__name__ if self.processor is not None else None,
+            "model_type": self.model_type,
+            "prism_mode": self.prism_mode,
+            "prompt_key": self.prompt_key,
+            "answer_key": self.answer_key,
+            "image_key": self.image_key,
+            "video_key": self.video_key,
+            "max_prompt_length": self.max_prompt_length,
+            "min_pixels": self.min_pixels,
+            "max_pixels": self.max_pixels,
+            "video_fps": self.video_fps,
+            "format_prompt_hash": format_prompt_hash,
+            "format_prompt_variant": self.format_prompt_variant,
+        }
+        return str(cache_dir / f"{_stable_hash(payload)}.arrow")
+
     def _filter_overlong_prompts(self, example: dict[str, Any]) -> bool:
+        expanded_prompt = self._expand_prompt_for_length_only(example)
+        if expanded_prompt is not None:
+            input_ids = self.tokenizer(expanded_prompt, add_special_tokens=False)["input_ids"]
+            return len(input_ids) <= self.max_prompt_length
+
         prompt_key, _ = self._resolve_prompt_answer_keys(example)
         messages = self._build_messages(example, prompt_key=prompt_key)
         if self.image_key in example:
@@ -413,6 +528,30 @@ class RLHFDataset(Dataset):
         else:
             input_ids = self.tokenizer.apply_chat_template(messages, add_generation_prompt=True)
             return len(input_ids) <= self.max_prompt_length
+
+    def _filter_overlong_prompts_batch(self, batch: dict[str, list[Any]]) -> list[bool]:
+        """Fast path for image-backed datasets: cheap token-length estimation plus batched tokenization."""
+        row_count = len(next(iter(batch.values()))) if batch else 0
+        keep_mask = [False] * row_count
+        batched_prompt_indices: list[int] = []
+        batched_prompts: list[str] = []
+
+        for row_idx in range(row_count):
+            example = {key: values[row_idx] for key, values in batch.items()}
+            expanded_prompt = self._expand_prompt_for_length_only(example)
+            if expanded_prompt is None:
+                keep_mask[row_idx] = self._filter_overlong_prompts(example)
+                continue
+            batched_prompt_indices.append(row_idx)
+            batched_prompts.append(expanded_prompt)
+
+        if batched_prompt_indices:
+            tokenized = self.tokenizer(batched_prompts, add_special_tokens=False)
+            lengths = [len(input_ids) for input_ids in tokenized["input_ids"]]
+            for row_idx, prompt_length in zip(batched_prompt_indices, lengths):
+                keep_mask[row_idx] = int(prompt_length) <= self.max_prompt_length
+
+        return keep_mask
 
     def __len__(self):
         return len(self.dataset)

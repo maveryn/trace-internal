@@ -29,10 +29,8 @@ All 4 launchers use the external validation pack under:
 2. `benchmark/data/external_validation_v1/mathvision.parquet`
 3. `benchmark/data/external_validation_v1/charxiv.parquet`
 4. `benchmark/data/external_validation_v1/ocrbench_v2.parquet`
-5. `benchmark/data/external_validation_v1/seephys.parquet`
-6. `benchmark/data/external_validation_v1/spatialeval.parquet`
-7. `benchmark/data/external_validation_v1/vgcure.parquet`
-8. `benchmark/data/external_validation_v1/puzzlevqa.parquet`
+5. `benchmark/data/external_validation_v1/spatialeval.parquet`
+6. `benchmark/data/external_validation_v1/puzzlevqa.parquet`
 
 Validation frequency is fixed to every `20` training steps in the ablation wrappers.
 

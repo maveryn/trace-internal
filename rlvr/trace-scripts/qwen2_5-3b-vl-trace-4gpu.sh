@@ -8,8 +8,18 @@ export WANDB_MODE="${WANDB_MODE:-online}"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 RLVR_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+VALIDATION_ROOT="${REPO_ROOT}/benchmark/data/external_validation_v1"
 export PYTHONPATH="${RLVR_ROOT}${PYTHONPATH:+:${PYTHONPATH}}"
 cd "${RLVR_ROOT}"
+
+DEFAULT_VAL_FILES_JSON="$(printf '[\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\"]' \
+  "${VALIDATION_ROOT}/mathvista.parquet" \
+  "${VALIDATION_ROOT}/mathvision.parquet" \
+  "${VALIDATION_ROOT}/charxiv.parquet" \
+  "${VALIDATION_ROOT}/ocrbench_v2.parquet" \
+  "${VALIDATION_ROOT}/spatialeval.parquet" \
+  "${VALIDATION_ROOT}/puzzlevqa.parquet")"
 
 MODEL_PATH="${MODEL_PATH:-Qwen/Qwen2.5-VL-3B-Instruct}"
 TRAIN_FILE="${TRAIN_FILE:-mydata/trace_train_128k_multivariant_hf.parquet}"
@@ -28,7 +38,7 @@ SAVE_FREQ="${SAVE_FREQ:-10}"
 VAL_FREQ="${VAL_FREQ:-10}"
 FIND_LAST_CHECKPOINT="${FIND_LAST_CHECKPOINT:-true}"
 EXPERIMENT_NAME="${EXPERIMENT_NAME:-qwen2_5_vl_3b_trace_128k_4gpu_10steps}"
-VAL_FILES_JSON="${VAL_FILES_JSON:-[]}"
+VAL_FILES_JSON="${VAL_FILES_JSON:-${DEFAULT_VAL_FILES_JSON}}"
 TRACE_REWARD_MODE="${TRACE_REWARD_MODE:-answer_and_evidence}"
 CURRICULUM_MODE="${CURRICULUM_MODE:-none}"
 CURRICULUM_ALPHA0="${CURRICULUM_ALPHA0:-0.995}"
@@ -41,6 +51,8 @@ ACTOR_MICRO_BATCH_SIZE_UPDATE="${ACTOR_MICRO_BATCH_SIZE_UPDATE:-16}"
 ACTOR_MICRO_BATCH_SIZE_EXPERIENCE="${ACTOR_MICRO_BATCH_SIZE_EXPERIENCE:-32}"
 TRAIN_DATALOADER_NUM_WORKERS="${TRAIN_DATALOADER_NUM_WORKERS:-8}"
 VAL_DATALOADER_NUM_WORKERS="${VAL_DATALOADER_NUM_WORKERS:-8}"
+FILTER_OVERLONG_PROMPTS="${FILTER_OVERLONG_PROMPTS:-true}"
+FILTER_OVERLONG_PROMPTS_WORKERS="${FILTER_OVERLONG_PROMPTS_WORKERS:-16}"
 PADDING_FREE="${PADDING_FREE:-true}"
 USE_TORCH_COMPILE="${USE_TORCH_COMPILE:-true}"
 
@@ -229,6 +241,8 @@ ARGS=(
   data.rollout_batch_size="${ROLLOUT_BATCH_SIZE}"
   data.train_dataloader_num_workers="${TRAIN_DATALOADER_NUM_WORKERS}"
   data.val_dataloader_num_workers="${VAL_DATALOADER_NUM_WORKERS}"
+  data.filter_overlong_prompts="${FILTER_OVERLONG_PROMPTS}"
+  data.filter_overlong_prompts_workers="${FILTER_OVERLONG_PROMPTS_WORKERS}"
   worker.actor.global_batch_size="${ACTOR_GLOBAL_BATCH_SIZE}"
   worker.actor.micro_batch_size_per_device_for_update="${ACTOR_MICRO_BATCH_SIZE_UPDATE}"
   worker.actor.micro_batch_size_per_device_for_experience="${ACTOR_MICRO_BATCH_SIZE_EXPERIENCE}"

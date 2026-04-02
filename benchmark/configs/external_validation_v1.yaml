@@ -35,31 +35,12 @@ benchmarks:
     split: test
     parser_family: exact_or_list
 
-  - benchmark_id: seephys
-    adapter: seephys
-    repo_id: SeePhys/SeePhys
-    config_name: default
-    split: train
-    parser_family: math_or_exact
-
   - benchmark_id: spatialeval
     adapter: spatialeval
     repo_id: MilaWang/SpatialEval
     config_name: vqa
     split: test
     parser_family: exact_or_choice
-
-  - benchmark_id: vgcure
-    adapter: vgcure
-    repo_id: AAAndyZ/VGCure
-    split: test
-    subset: understanding
-    allowed_task_names:
-      - node_number_query
-      - edge_number_query
-      - directed_check
-      - degree_query
-    parser_family: exact_or_yesno_numeric
 
   - benchmark_id: puzzlevqa
     adapter: puzzlevqa

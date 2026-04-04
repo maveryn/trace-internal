@@ -75,6 +75,32 @@ cd /home/jovyan/work/trace/rlvr
 bash trace-scripts/trace_qwen3_vl_4b_answer_evidence_curriculum_8gpu.sh
 ```
 
+## Qwen3-VL 2B Instruct evidence on 8 GPUs
+
+Use `trace_qwen3_vl_2b_instruct_answer_evidence_8gpu.sh` for an 8-GPU TRACE run with:
+
+- `MODEL_PATH=Qwen/Qwen3-VL-2B-Instruct`
+- `PROMPT_KEY=prompt_answer_and_evidence`
+- `TRACE_REWARD_MODE=answer_and_evidence`
+- `NUM_GPUS=8`
+- `GPU_MEMORY_UTILIZATION=0.8`
+- `ROLLOUT_N=8`
+- `MAX_RESPONSE_LENGTH=1024`
+- `ACTOR_GLOBAL_BATCH_SIZE=128`
+- `ACTOR_MICRO_BATCH_SIZE_UPDATE=4`
+- `ACTOR_MICRO_BATCH_SIZE_EXPERIENCE=4`
+- `PADDING_FREE=false`
+- `USE_TORCH_COMPILE=false`
+
+It defaults `CUDA_VISIBLE_DEVICES` to `0,1,2,3,4,5,6,7` if you do not set it yourself.
+
+Example:
+
+```bash
+cd /home/jovyan/work/trace/rlvr
+bash trace-scripts/trace_qwen3_vl_2b_instruct_answer_evidence_8gpu.sh
+```
+
 ## Qwen3.5-2B-Base evidence on 8 GPUs
 
 Use `trace_qwen3_5_2b_base_answer_evidence_8gpu.sh` for an 8-GPU TRACE run with:
@@ -85,6 +111,8 @@ Use `trace_qwen3_5_2b_base_answer_evidence_8gpu.sh` for an 8-GPU TRACE run with:
 - `NUM_GPUS=8`
 - `GPU_MEMORY_UTILIZATION=0.8`
 - `ROLLOUT_N=8`
+- `MAX_RESPONSE_LENGTH=1536`
+- `VAL_MAX_TOKENS=2048`
 - `PADDING_FREE=false`
 - `USE_TORCH_COMPILE=false`
 
@@ -95,4 +123,31 @@ Example:
 ```bash
 cd /home/jovyan/work/trace/rlvr
 bash trace-scripts/trace_qwen3_5_2b_base_answer_evidence_8gpu.sh
+```
+
+## Qwen3.5-0.8B-Base evidence on 8 GPUs
+
+Use `trace_qwen3_5_0p8b_base_answer_evidence_8gpu.sh` for an 8-GPU TRACE run with:
+
+- `MODEL_PATH=Qwen/Qwen3.5-0.8B-Base`
+- `PROMPT_KEY=prompt_answer_and_evidence`
+- `TRACE_REWARD_MODE=answer_and_evidence`
+- `NUM_GPUS=8`
+- `GPU_MEMORY_UTILIZATION=0.8`
+- `ROLLOUT_N=8`
+- `MAX_RESPONSE_LENGTH=1536`
+- `VAL_MAX_TOKENS=2048`
+- `ACTOR_GLOBAL_BATCH_SIZE=128`
+- `ACTOR_MICRO_BATCH_SIZE_UPDATE=4`
+- `ACTOR_MICRO_BATCH_SIZE_EXPERIENCE=4`
+- `PADDING_FREE=false`
+- `USE_TORCH_COMPILE=false`
+
+It defaults `CUDA_VISIBLE_DEVICES` to `0,1,2,3,4,5,6,7` if you do not set it yourself.
+
+Example:
+
+```bash
+cd /home/jovyan/work/trace/rlvr
+bash trace-scripts/trace_qwen3_5_0p8b_base_answer_evidence_8gpu.sh
 ```

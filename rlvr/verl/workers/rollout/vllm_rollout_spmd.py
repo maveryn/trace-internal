@@ -71,6 +71,14 @@ def _process_multi_modal_data(
     return None
 
 
+def _iter_stop_token_ids(value: Any) -> list[int]:
+    if value is None:
+        return []
+    if isinstance(value, (list, tuple, set)):
+        return [int(token_id) for token_id in value]
+    return [int(value)]
+
+
 class vLLMRollout(BaseRollout):
     def __init__(
         self,
@@ -159,8 +167,8 @@ class vLLMRollout(BaseRollout):
                         old_sampling_params_args["_eos_token_id"] = self.sampling_params.eos_token_id
                         old_sampling_params_args["_all_stop_token_ids"] = set(self.sampling_params.all_stop_token_ids)
                         self.sampling_params._eos_token_id = value
-                        if value is not None:
-                            self.sampling_params._all_stop_token_ids.add(value)
+                        for token_id in _iter_stop_token_ids(value):
+                            self.sampling_params._all_stop_token_ids.add(token_id)
                         continue
 
                     old_value = getattr(self.sampling_params, key)
@@ -206,12 +214,13 @@ class vLLMRollout(BaseRollout):
 
         # users can customize different sampling_params at different run
         with self.update_sampling_params(**prompts.meta_info):
+            response_pad_length = int(getattr(self.sampling_params, "max_tokens", self.config.response_length))
             completions: list[RequestOutput] = self.inference_engine.generate(
                 prompts=vllm_inputs, sampling_params=self.sampling_params, use_tqdm=self.use_tqdm
             )
             response_ids = [output.token_ids for completion in completions for output in completion.outputs]
             response_ids = VF.pad_2d_list_to_length(
-                response_ids, self.pad_token_id, max_length=self.config.response_length
+                response_ids, self.pad_token_id, max_length=response_pad_length
             ).to(input_ids.device)
 
             if self.sampling_params.n > 1:

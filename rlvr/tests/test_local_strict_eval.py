@@ -96,3 +96,28 @@ def test_strict_score_response_accepts_numpy_object_array_open_gt() -> None:
     assert extracted is True
     assert answer == "small"
     assert method == "boxed"
+
+
+def test_strict_score_response_accepts_mixed_text_numeric_label_against_list_ground_truth() -> None:
+    score, extracted, answer, method = strict_score_response(
+        response=(
+            "The largest difference is $0.0049$, which occurs for the "
+            r"\boxed{2-layer (64 neurons)}"
+        ),
+        ground_truth=["2-layer (64 neurons)"],
+    )
+    assert score == 1.0
+    assert extracted is True
+    assert answer == "2-layer (64 neurons)"
+    assert method == "boxed"
+
+
+def test_strict_score_response_accepts_markdown_emphasis_around_boxed_label() -> None:
+    score, extracted, answer, method = strict_score_response(
+        response=r"\boxed{**2-layer (64 neurons)**}",
+        ground_truth=["2-layer (64 neurons)"],
+    )
+    assert score == 1.0
+    assert extracted is True
+    assert answer == "**2-layer (64 neurons)**"
+    assert method == "boxed"

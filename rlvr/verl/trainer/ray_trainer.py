@@ -725,8 +725,11 @@ class RayPPOTrainer:
                     batch_keys=["input_ids", "attention_mask", "position_ids"],
                     non_tensor_batch_keys=["raw_prompt_ids", "multi_modal_data"],
                 )
-                repeat_times = self.config.worker.rollout.val_override_config.get("n", 1)
-                test_gen_batch.meta_info = self.config.worker.rollout.val_override_config
+                val_override_config = dict(self.config.worker.rollout.val_override_config)
+                if "max_tokens" in val_override_config and val_override_config["max_tokens"] is not None:
+                    val_override_config["max_tokens"] = int(val_override_config["max_tokens"])
+                repeat_times = val_override_config.get("n", 1)
+                test_gen_batch.meta_info = val_override_config
                 test_gen_batch.meta_info["min_pixels"] = self.config.data.min_pixels
                 test_gen_batch.meta_info["max_pixels"] = self.config.data.max_pixels
                 test_gen_batch.meta_info["video_fps"] = self.config.data.video_fps

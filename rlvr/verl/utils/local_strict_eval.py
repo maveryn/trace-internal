@@ -128,6 +128,23 @@ def _normalize_option_text(text: str) -> str:
     return s.strip().lower()
 
 
+def _normalize_exact_answer_text(text: str) -> str:
+    s = strip_wrappers(text).strip()
+    if not s:
+        return ""
+    for _ in range(3):
+        s2 = s
+        s2 = re.sub(r"^\*{1,3}(.+?)\*{1,3}$", r"\1", s2)
+        s2 = re.sub(r"^_{1,3}(.+?)_{1,3}$", r"\1", s2)
+        s2 = re.sub(r"^~{1,2}(.+?)~{1,2}$", r"\1", s2)
+        s2 = re.sub(r"^`(.+?)`$", r"\1", s2)
+        s2 = s2.strip()
+        if s2 == s:
+            break
+        s = s2
+    return _normalize_text(s).casefold()
+
+
 def _extract_prompt_choice_map(prompt_text: str | None) -> dict[str, str]:
     if not prompt_text:
         return {}
@@ -688,6 +705,12 @@ def strict_score_response(
                 ok = any(abs(v - gt_val) < 1e-6 for v in values)
                 return (1.0 if ok else 0.0), True, cand, method
         return 0.0, False, None, "none"
+
+    normalized_gt = _normalize_exact_answer_text(gt_str)
+    if normalized_gt:
+        for method, cand in candidates:
+            if _normalize_exact_answer_text(cand) == normalized_gt:
+                return 1.0, True, cand, method
 
     for method, cand in candidates:
         if not _looks_like_open_answer(cand, gt_str):

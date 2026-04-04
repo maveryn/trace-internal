@@ -53,6 +53,8 @@ TRAIN_DATALOADER_NUM_WORKERS="${TRAIN_DATALOADER_NUM_WORKERS:-8}"
 VAL_DATALOADER_NUM_WORKERS="${VAL_DATALOADER_NUM_WORKERS:-8}"
 FILTER_OVERLONG_PROMPTS="${FILTER_OVERLONG_PROMPTS:-true}"
 FILTER_OVERLONG_PROMPTS_WORKERS="${FILTER_OVERLONG_PROMPTS_WORKERS:-16}"
+MAX_RESPONSE_LENGTH="${MAX_RESPONSE_LENGTH:-}"
+VAL_MAX_TOKENS="${VAL_MAX_TOKENS:-}"
 PADDING_FREE="${PADDING_FREE:-true}"
 USE_TORCH_COMPILE="${USE_TORCH_COMPILE:-true}"
 
@@ -263,6 +265,14 @@ ARGS=(
   trainer.val_freq="${VAL_FREQ}"
   trainer.find_last_checkpoint="${FIND_LAST_CHECKPOINT}"
 )
+
+if [[ -n "${VAL_MAX_TOKENS}" ]]; then
+  ARGS+=(worker.rollout.val_override_config.max_tokens=${VAL_MAX_TOKENS})
+fi
+
+if [[ -n "${MAX_RESPONSE_LENGTH}" ]]; then
+  ARGS+=(data.max_response_length="${MAX_RESPONSE_LENGTH}")
+fi
 
 if [[ -n "${CURRICULUM_EPS_FLOOR}" ]]; then
   ARGS+=(data.curriculum_eps_floor="${CURRICULUM_EPS_FLOOR}")

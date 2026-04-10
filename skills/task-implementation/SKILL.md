@@ -13,7 +13,7 @@ Use this when turning a TRACE task design into code.
 3. `docs/workflows/SHARED_UTILITIES.md`
 4. `docs/workflows/CODE_DOCUMENTATION.md`
 
-If the task is tile or geometry specific, also open the matching domain skill.
+If the task is domain-specific, also open the matching domain setup doc and `skills/domain-<domain>/SKILL.md`.
 
 ## Implementation workflow
 1. Choose module placement before writing code.

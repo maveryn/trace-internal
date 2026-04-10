@@ -4,6 +4,10 @@
 This document defines the concrete v1 setup for TRACE tile tasks ported or re-implemented from Tesserae.
 It is the source of truth for board geometry, coordinate grounding, and evidence conventions used by future tile-domain tasks.
 
+This is the active tile-domain contract. For cross-domain coverage rollups, use
+`docs/project/STATUS.md` and `docs/domains/TASK_FAMILY_VARIANTS.md` instead of
+repeating those inventories in tile-specific notes or skills.
+
 ## Scope
 1. Applies to new TRACE tile tasks that render one board and ask questions about that board.
 2. Focuses on coordinate-grounded rectangular tilings.

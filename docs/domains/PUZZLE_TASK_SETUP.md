@@ -3,6 +3,8 @@
 ## Purpose
 Capture the active v1 contract for the `puzzles` domain.
 
+This is the active puzzles-domain contract. For cross-domain coverage rollups, use `docs/project/STATUS.md` and `docs/domains/TASK_FAMILY_VARIANTS.md` instead of repeating those inventories elsewhere.
+
 ## Active families
 1. Current active `task_group` values:
    - `arithmetic`

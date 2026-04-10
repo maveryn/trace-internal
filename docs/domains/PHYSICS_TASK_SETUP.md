@@ -2,12 +2,14 @@
 
 Use this document for the active `physics` domain contract.
 
+For cross-domain coverage rollups, use `docs/project/STATUS.md` and `docs/domains/TASK_FAMILY_VARIANTS.md` instead of repeating those inventories here.
+
 ## 1) Domain scope
 1. `physics` should stay diagram-first: the image must contain the operative quantities and spatial grounding needed to solve the task.
 2. Early physics tasks should use light arithmetic (`+`, `-`, small products) rather than formula-heavy derivations.
 3. Prompt-facing evidence should stay on the visible witness objects in the diagram (for example force arrows, weights, resistors, or ray targets), not on decorative scene chrome.
 
-## 2) Active family
+## 2) Active families
 ### `mechanics`
 1. Active tasks:
    - `task_physics_mechanics_force_diagram`
@@ -85,17 +87,7 @@ Use this document for the active `physics` domain contract.
 3. Early mechanics tasks should keep vectors axis-aligned unless the task is explicitly about angled-force decomposition.
 4. Prefer integer-valued constructions so answer verification stays exact and prompt-facing evidence remains local.
 
-## 4) Active coverage snapshot
-1. `mechanics`
-   - `task_physics_mechanics_force_diagram`
-   - `task_physics_mechanics_lever_balance`
-   - `task_physics_mechanics_spring_extension`
-2. `circuits`
-   - `task_physics_circuits_equivalent_resistance`
-3. `optics`
-   - `task_physics_optics_ray_trace`
-
-## 5) Shared helper placement
+## 4) Shared helper placement
 1. Cross-domain scene/query compatibility sampling now lives in `trace/tasks/shared/variant_sampling.py`.
 2. Physics-domain visual defaults belong in `trace/tasks/physics/shared/visual_defaults.py`.
 3. Physics-domain normalized complexity helpers belong in `trace/tasks/physics/shared/complexity.py`.

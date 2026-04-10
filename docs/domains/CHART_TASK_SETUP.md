@@ -5,6 +5,8 @@ Define the concrete v1 setup for the first chart-domain task families.
 
 This is the chart-domain counterpart to `docs/domains/TILE_TASK_SETUP.md`: a source-of-truth note for the first implementation wave, not just a long-term idea list.
 
+For the broader long-term chart-type universe and future family direction, use `docs/domains/CHART_DOMAIN_PLAN.md`.
+
 ## V1 scope
 1. `domain = charts`
 2. First active `task_group`s:

@@ -13,30 +13,16 @@ Use this whenever the task lives under `domain=tile`.
 3. `docs/workflows/TASK_AUTHORING.md`
 4. `docs/workflows/SHARED_UTILITIES.md`
 
-## Tile-domain rules
-- Concrete tile tasks stay flat under `trace/tasks/tile/<task_group>_<task_name>.py`.
-- Tile-shared helpers live under `trace/tasks/tile/shared/`.
-- Public tile coordinates are zero-based `(row, col)` with top-left origin.
-- Pixel coordinates are top-left, zero-based.
-- The board is the only grid-like scaffold unless the task contract explicitly requires another one.
-- Default tile board range is `3..7` unless the task has a documented reason to narrow or fix it.
-- Rectangular boards are standard; movement/path tasks should use square cells so each step has equal visual cost.
-- Named color prompts should use the shared `name [#RRGGBB]` formatter.
+## Active-contract reminders
+- Treat `docs/domains/TILE_TASK_SETUP.md` as the active board-geometry, coordinate, and evidence contract.
+- Keep concrete tile task modules flat under `trace/tasks/tile/<task_group>_<task_name>.py`.
+- Keep public tile coordinates zero-based `(row, col)` with top-left origin; pixel geometry is derived evidence only.
+- Prefer `grid_point_set` and `grid_point_path` as prompt-facing evidence for rectangular tile tasks.
+- Use square cells for movement/path tasks when rectangular cells would make equal-cost steps visually misleading.
 
-## Design heuristics
-- Prefer `grid_point_set` or `grid_point_path` evidence over pixel-primary evidence.
-- When board size strongly constrains answer support, use target-first sampling or exact constructive realization.
-- Keep prompt-facing evidence minimal and store richer partitions/groups in trace.
-- Reuse tile-shared render/background/noise helpers instead of creating per-task wrappers.
-
-## Coverage reference
-For current tile coverage and active task families, use:
-- `docs/project/STATUS.md`
-- `docs/domains/TASK_FAMILY_VARIANTS.md`
-
-## Pair with
-- `skills/domain-audit/SKILL.md`
-- `skills/task-design/SKILL.md`
-- `skills/task-complexity/SKILL.md`
-- `skills/task-implementation/SKILL.md`
-- `skills/verification-review/SKILL.md`
+## Practical review checklist
+- Make the board coordinate system discoverable with row/column gutters when prompts or evidence use coordinates.
+- Keep the board as the only grid-like scaffold unless the task contract explicitly requires another one.
+- Use target-first sampling or exact constructive realization when board size strongly constrains answer support.
+- Keep prompt-facing evidence minimal and store richer components, regions, paths, or partitions in trace metadata.
+- Reuse tile-shared helpers under `trace/tasks/tile/shared/` before adding task-local render, graph, color, or noise utilities.

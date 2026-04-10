@@ -2,6 +2,8 @@
 
 This document captures the concrete reusable setup for the active early `diagrams` task families.
 
+This is the active diagrams-domain contract. For cross-domain coverage rollups, use `docs/project/STATUS.md` and `docs/domains/TASK_FAMILY_VARIANTS.md` instead of repeating those inventories here.
+
 ## 1) Domain scope
 1. `domain=diagrams` is for schematic visual reasoning over process diagrams, swimlanes, hierarchies, cycles, set-overlap diagrams, and annotated schematics.
 2. The first active families focus on:
@@ -33,7 +35,7 @@ This document captures the concrete reusable setup for the active early `diagram
 8. The set-diagram scene adds one numeric `3`-set overlap layout, but it should not change the meaning of the explicit set-sum semantics named in the prompt.
 9. The schematic scene adds one annotated part-and-callout layout, but it should not change the meaning of the target-part-to-callout mapping named in the prompt.
 
-## 3) Active family
+## 3) Active families
 1. `task_group=flow`
 2. Active flow task:
    - `task_diagrams_flow_next_step_label`

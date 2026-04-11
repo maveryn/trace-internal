@@ -23,14 +23,20 @@ If the local parquet is missing, the shared launcher automatically falls back to
 
 ## Validation Pack
 
-All 4 launchers use the external validation pack under:
+All 4 launchers use the shared external validation pack defined in:
 
-1. `benchmark/data/external_validation_v1/mathvista.parquet`
-2. `benchmark/data/external_validation_v1/mathvision.parquet`
-3. `benchmark/data/external_validation_v1/charxiv.parquet`
-4. `benchmark/data/external_validation_v1/ocrbench_v2.parquet`
-5. `benchmark/data/external_validation_v1/spatialeval.parquet`
-6. `benchmark/data/external_validation_v1/puzzlevqa.parquet`
+1. `rlvr/trace-scripts/validation_pack_qwen3_vl_2b_selected512.sh`
+
+That pack points at:
+
+1. `rlvr/dataset/validation/mathverse_mini.parquet`
+2. `rlvr/dataset/validation/mathvista_mini.parquet`
+3. `rlvr/dataset/validation/mmstar.parquet`
+4. `rlvr/dataset/validation/charxiv_dq.parquet`
+5. `rlvr/dataset/validation/charxiv_rq.parquet`
+6. `rlvr/dataset/validation/embspatialbench.parquet`
+7. `rlvr/dataset/validation/blink.parquet`
+8. `rlvr/dataset/validation/countqa.parquet`
 
 Validation frequency is fixed to every `20` training steps in the ablation wrappers.
 

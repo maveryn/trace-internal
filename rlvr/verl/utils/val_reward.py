@@ -546,9 +546,14 @@ def compute_val_reward(
     tokenizer: PreTrainedTokenizer,
     dataset_name: str,
     skip_special_tokens: bool = True,
-) -> tuple[torch.Tensor, dict[str, list[float]]]:
+    return_details: bool = False,
+) -> (
+    tuple[torch.Tensor, dict[str, list[float]]]
+    | tuple[torch.Tensor, dict[str, list[float]], list[dict[str, Any]]]
+):
     reward_tensor = torch.zeros_like(data.batch["responses"], dtype=torch.float32)
     reward_metrics: dict[str, list[float]] = defaultdict(list)
+    reward_details: list[dict[str, Any]] = []
 
     response_ids = data.batch["responses"]
     response_length = torch.sum(data.batch["response_mask"], dim=-1)
@@ -560,6 +565,8 @@ def compute_val_reward(
         prompt_str = tokenizer.decode(data.batch["prompts"][i], skip_special_tokens=skip_special_tokens)
 
         ground_truth = data.non_tensor_batch["ground_truth"][i]
+        parser_family = data.non_tensor_batch["parser_family"][i] if "parser_family" in data.non_tensor_batch else None
+        metadata = data.non_tensor_batch["metadata"][i] if "metadata" in data.non_tensor_batch else None
         reward_input = {
             "ground_truth": ground_truth,
             **{
@@ -582,11 +589,15 @@ def compute_val_reward(
             extracted = bool(trace_score.get("answer_parse_ok", 0.0) or trace_score.get("evidence_parse_ok", 0.0))
             reward_metrics["answer_reward"].append(answer_reward)
             reward_metrics["evidence_reward"].append(float(trace_score.get("evidence_reward", 0.0)))
+            extracted_answer = trace_score.get("answer")
+            parser_output = trace_score
         else:
-            accuracy, extracted, _, _ = strict_score_response(
+            accuracy, extracted, extracted_answer, parser_output = strict_score_response(
                 response=response_str,
                 ground_truth=ground_truth,
                 prompt_text=prompt_str,
+                parser_family=parser_family,
+                metadata=metadata,
             )
             hit = 1.0 if accuracy > 0.5 else 0.0
             format_score = _format_reward(response_str)
@@ -602,4 +613,22 @@ def compute_val_reward(
             # extracted-only accuracy (hit / extracted)
             reward_metrics["accuracy"].append(hit)
 
+        if return_details:
+            reward_details.append(
+                {
+                    "dataset_name": dataset_name,
+                    "overall": float(overall),
+                    "format": float(format_score),
+                    "hit": float(hit),
+                    "extracted": bool(extracted),
+                    "extracted_answer": extracted_answer,
+                    "parser_output": parser_output,
+                    "parser_family": parser_family,
+                    "metadata": metadata,
+                    "generated_tokens": cur_length,
+                }
+            )
+
+    if return_details:
+        return reward_tensor, reward_metrics, reward_details
     return reward_tensor, reward_metrics

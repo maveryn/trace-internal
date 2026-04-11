@@ -4,7 +4,7 @@ import ast
 import json
 import re
 from numbers import Integral
-from typing import Any
+from typing import Any, Mapping
 
 import numpy as np
 from mathruler.grader import extract_boxed_content, grade_answer
@@ -22,6 +22,7 @@ YES_NO_RE = re.compile(r"(?i)\b(yes|no|true|false)\b")
 INT_RE = re.compile(r"[-+]?\d+")
 NUMBER_OR_FRAC_RE = re.compile(r"[-+]?\d+\s*/\s*\d+|[-+]?(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?")
 OPTION_LINE_RE = re.compile(r"(?mi)^\s*([A-G])\s*[\).:]\s*(.+?)\s*$")
+POINT_TOKEN_RE = re.compile(r"-?\d+(?:\.\d+)?%?")
 
 
 def _is_non_string_sequence(value: Any) -> bool:
@@ -341,6 +342,126 @@ def _parse_numeric_value(value: str) -> float | None:
         return None
 
 
+def _token_to_float(token: str) -> float | None:
+    token = str(token).strip()
+    if not token:
+        return None
+    try:
+        if token.endswith("%"):
+            return float(token[:-1]) / 100.0
+        return float(token)
+    except ValueError:
+        return None
+
+
+def _parse_normalized_bbox(value: Any) -> list[float] | None:
+    parsed: Any = value
+    if isinstance(value, str):
+        s = strip_wrappers(value)
+        if not s:
+            return None
+        try:
+            parsed = json.loads(s)
+        except Exception:
+            try:
+                parsed = ast.literal_eval(s)
+            except Exception:
+                numbers = [_token_to_float(tok) for tok in POINT_TOKEN_RE.findall(s)]
+                if len(numbers) >= 4 and all(v is not None for v in numbers[:4]):
+                    parsed = [float(v) for v in numbers[:4]]
+                else:
+                    return None
+
+    if isinstance(parsed, np.ndarray):
+        parsed = parsed.tolist()
+    if not isinstance(parsed, (list, tuple)) or len(parsed) != 4:
+        return None
+
+    try:
+        bbox = [float(x) for x in parsed]
+    except Exception:
+        return None
+
+    x1, y1, x2, y2 = bbox
+    if x2 < x1 or y2 < y1:
+        return None
+    if any(v < 0.0 or v > 1.0 for v in bbox):
+        return None
+    return bbox
+
+
+def _parse_img_size(value: Any) -> tuple[float, float] | None:
+    parsed: Any = value
+    if isinstance(value, str):
+        s = strip_wrappers(value)
+        if not s:
+            return None
+        try:
+            parsed = json.loads(s)
+        except Exception:
+            try:
+                parsed = ast.literal_eval(s)
+            except Exception:
+                numbers = [_token_to_float(tok) for tok in POINT_TOKEN_RE.findall(s)]
+                if len(numbers) >= 2 and all(v is not None for v in numbers[:2]):
+                    parsed = [float(v) for v in numbers[:2]]
+                else:
+                    return None
+
+    if isinstance(parsed, np.ndarray):
+        parsed = parsed.tolist()
+    if not isinstance(parsed, (list, tuple)) or len(parsed) != 2:
+        return None
+    try:
+        width, height = float(parsed[0]), float(parsed[1])
+    except Exception:
+        return None
+    if width <= 0 or height <= 0:
+        return None
+    return width, height
+
+
+def _parse_normalized_point_text(text: str) -> tuple[float, float] | None:
+    if not text:
+        return None
+    s = str(text).strip()
+
+    bbox_tag_match = re.search(r"<\s*bbox[^>]*>(.*?)<\s*/\s*bbox\s*>", s, flags=re.IGNORECASE | re.DOTALL)
+    if bbox_tag_match:
+        bbox_tokens = [_token_to_float(v) for v in POINT_TOKEN_RE.findall(bbox_tag_match.group(1))]
+        if len(bbox_tokens) >= 4 and all(v is not None for v in bbox_tokens[:4]):
+            x1, y1, x2, y2 = [float(v) for v in bbox_tokens[:4]]
+            return (x1 + x2) / 2.0, (y1 + y2) / 2.0
+
+    point_match = re.search(r"[\[\(]\s*(-?\d+(?:\.\d+)?%?)\s*(?:,|\s)\s*(-?\d+(?:\.\d+)?%?)\s*[\]\)]", s)
+    if point_match:
+        x = _token_to_float(point_match.group(1))
+        y = _token_to_float(point_match.group(2))
+        if x is not None and y is not None:
+            return float(x), float(y)
+
+    xy_match = re.search(
+        r"['\"]?x['\"]?\s*[:=]\s*(-?\d+(?:\.\d+)?%?).*?['\"]?y['\"]?\s*[:=]\s*(-?\d+(?:\.\d+)?%?)",
+        s,
+        flags=re.IGNORECASE | re.DOTALL,
+    )
+    if xy_match:
+        x = _token_to_float(xy_match.group(1))
+        y = _token_to_float(xy_match.group(2))
+        if x is not None and y is not None:
+            return float(x), float(y)
+
+    numbers = [_token_to_float(tok) for tok in POINT_TOKEN_RE.findall(s)]
+    numbers = [float(v) for v in numbers if v is not None]
+    if len(numbers) >= 2:
+        lower_s = s.lower()
+        if len(numbers) >= 4 and any(keyword in lower_s for keyword in ["bbox", "box", "rect", "rectangle"]):
+            x1, y1, x2, y2 = numbers[:4]
+            return (x1 + x2) / 2.0, (y1 + y2) / 2.0
+        return numbers[0], numbers[1]
+    return None
+
+
 def _extract_numeric_values(text: str) -> list[float]:
     s = strip_wrappers(text)
     if not s:
@@ -533,8 +654,49 @@ def strict_score_response(
     ground_truth: Any,
     list_reward_mode: str = "exact",
     prompt_text: str | None = None,
+    parser_family: str | None = None,
+    metadata: Any | None = None,
 ) -> tuple[float, bool, str | None, str]:
     candidates = collect_candidates(response)
+    if parser_family == "normalized_point_in_bbox":
+        gt_bbox = _parse_normalized_bbox(ground_truth)
+        if gt_bbox is None:
+            return 0.0, False, None, "none"
+        img_size: tuple[float, float] | None = None
+        if isinstance(metadata, Mapping):
+            img_size = _parse_img_size(metadata.get("img_size"))
+
+        point_candidates = list(candidates)
+        normalized_response = _normalize_text(str(response))
+        if normalized_response:
+            point_candidates.append(("response", normalized_response))
+
+        seen: set[tuple[str, str]] = set()
+        extracted_any = False
+        extracted_answer: str | None = None
+        extracted_method = "none"
+        for method, cand in point_candidates:
+            key = (method, cand)
+            if key in seen:
+                continue
+            seen.add(key)
+            point = _parse_normalized_point_text(cand)
+            if point is None:
+                continue
+            extracted_any = True
+            if extracted_answer is None:
+                extracted_answer = f"[{point[0]}, {point[1]}]"
+                extracted_method = method
+            x, y = point
+            if (x > 1.0 or y > 1.0) and img_size is not None:
+                width, height = img_size
+                x = x / width
+                y = y / height
+            match = gt_bbox[0] <= x <= gt_bbox[2] and gt_bbox[1] <= y <= gt_bbox[3]
+            if match:
+                return 1.0, True, f"[{x}, {y}]", method
+        return 0.0, extracted_any, extracted_answer, extracted_method
+
     if not candidates:
         return 0.0, False, None, "none"
     prompt_choice_map = _extract_prompt_choice_map(prompt_text)
@@ -622,6 +784,8 @@ def strict_score_response(
                 response=response,
                 ground_truth=item,
                 list_reward_mode=list_reward_mode,
+                parser_family=parser_family,
+                metadata=metadata,
             )
             if score > 0.5:
                 return score, extracted, answer, method

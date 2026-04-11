@@ -121,3 +121,40 @@ def test_strict_score_response_accepts_markdown_emphasis_around_boxed_label() ->
     assert extracted is True
     assert answer == "**2-layer (64 neurons)**"
     assert method == "boxed"
+
+
+def test_strict_score_response_accepts_normalized_point_in_bbox_list_format() -> None:
+    score, extracted, answer, method = strict_score_response(
+        response="[0.25, 0.25]",
+        ground_truth="[0.2, 0.2, 0.3, 0.3]",
+        parser_family="normalized_point_in_bbox",
+    )
+    assert score == 1.0
+    assert extracted is True
+    assert answer == "[0.25, 0.25]"
+    assert method == "last_line"
+
+
+def test_strict_score_response_accepts_normalized_point_in_bbox_pyautogui_format() -> None:
+    score, extracted, answer, method = strict_score_response(
+        response="pyautogui.click(x=0.6, y=0.6)",
+        ground_truth="[0.2, 0.2, 0.3, 0.3]",
+        parser_family="normalized_point_in_bbox",
+    )
+    assert score == 0.0
+    assert extracted is True
+    assert answer == "[0.6, 0.6]"
+    assert method == "last_line"
+
+
+def test_strict_score_response_normalizes_absolute_point_with_metadata_img_size() -> None:
+    score, extracted, answer, method = strict_score_response(
+        response="[250, 250]",
+        ground_truth="[0.2, 0.2, 0.3, 0.3]",
+        parser_family="normalized_point_in_bbox",
+        metadata={"img_size": [1000, 1000]},
+    )
+    assert score == 1.0
+    assert extracted is True
+    assert answer == "[0.25, 0.25]"
+    assert method == "last_line"

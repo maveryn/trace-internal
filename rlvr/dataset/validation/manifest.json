@@ -1,0 +1,217 @@
+{
+  "name": "external_validation_selected512",
+  "created_at": "2026-04-10T08:58:56.919825+00:00",
+  "description": "Feasible validation subsets, up to 512 questions each, selected from 2048-token Qwen3-VL-2B source-pool evaluations to match reported benchmark accuracy while avoiding capped responses. Some datasets are rebuilt from the exact RLVR trainer validation path.",
+  "selection_model": "Qwen/Qwen3-VL-2B-Instruct",
+  "selection_max_tokens": 2048,
+  "rows_per_dataset": 512,
+  "allow_smaller_when_source_benchmark_has_fewer_rows": true,
+  "datasets": [
+    {
+      "benchmark_id": "mathverse_mini",
+      "file": "mathverse_mini.parquet",
+      "row_count": 512,
+      "source_parquet": "runs/benchmark_exact_rlvr/mathverse_mini_pool_qwen3_vl_2b/selected512/mathverse_mini_selected512.parquet",
+      "selection_manifest": "runs/benchmark_exact_rlvr/mathverse_mini_pool_qwen3_vl_2b/selected512/mathverse_mini_selected512.json",
+      "reported_qwen3_vl_2b_accuracy": 0.521,
+      "selected_accuracy": 0.521484375,
+      "selected_extraction_rate": 1.0,
+      "selected_cap_rate": 0.0,
+      "strict_candidates": 1116,
+      "parser_family": [
+        "math_or_exact"
+      ],
+      "prompt_mode": [
+        "answer_only"
+      ],
+      "selected_avg_generated_tokens": 213.220703125,
+      "selected_max_generated_tokens": 347
+    },
+    {
+      "benchmark_id": "mathvista_mini",
+      "file": "mathvista_mini.parquet",
+      "row_count": 512,
+      "source_parquet": "runs/benchmark_exact_rlvr/mathvista_mini_pool_qwen3_vl_2b/selected512/mathvista_mini_selected512.parquet",
+      "selection_manifest": "runs/benchmark_exact_rlvr/mathvista_mini_pool_qwen3_vl_2b/selected512/mathvista_mini_selected512.json",
+      "reported_qwen3_vl_2b_accuracy": 0.613,
+      "selected_accuracy": 0.61328125,
+      "selected_extraction_rate": 1.0,
+      "selected_cap_rate": 0.0,
+      "strict_candidates": 796,
+      "parser_family": [
+        "math_or_exact"
+      ],
+      "prompt_mode": [
+        "answer_only"
+      ],
+      "selected_avg_generated_tokens": 175.412109375,
+      "selected_max_generated_tokens": 564
+    },
+    {
+      "benchmark_id": "mmstar",
+      "file": "mmstar.parquet",
+      "row_count": 512,
+      "source_parquet": "runs/benchmark_exact_rlvr/mmstar_pool_qwen3_vl_2b/selected512/mmstar_selected512.parquet",
+      "selection_manifest": "runs/benchmark_exact_rlvr/mmstar_pool_qwen3_vl_2b/selected512/mmstar_selected512.json",
+      "reported_qwen3_vl_2b_accuracy": 0.583,
+      "selected_accuracy": 0.58203125,
+      "selected_extraction_rate": 1.0,
+      "selected_cap_rate": 0.0,
+      "selected_avg_generated_tokens": 80.900390625,
+      "selected_max_generated_tokens": 173,
+      "strict_candidates": 1230,
+      "parser_family": [
+        "exact_or_choice"
+      ],
+      "prompt_mode": [
+        "single_choice"
+      ]
+    },
+    {
+      "benchmark_id": "charxiv_dq",
+      "file": "charxiv_dq.parquet",
+      "row_count": 512,
+      "source_parquet": "runs/benchmark_exact_rlvr/charxiv_dq_pool_qwen3_vl_2b/selected512/charxiv_dq_selected512.parquet",
+      "selection_manifest": "runs/benchmark_exact_rlvr/charxiv_dq_pool_qwen3_vl_2b/selected512/charxiv_dq_selected512.json",
+      "reported_qwen3_vl_2b_accuracy": 0.623,
+      "selected_accuracy": 0.623046875,
+      "selected_extraction_rate": 1.0,
+      "selected_cap_rate": 0.0,
+      "selected_avg_generated_tokens": 28.677734375,
+      "selected_max_generated_tokens": 84,
+      "strict_candidates": 1841,
+      "parser_family": [
+        "math_or_exact"
+      ],
+      "prompt_mode": [
+        "answer_only"
+      ]
+    },
+    {
+      "benchmark_id": "charxiv_rq",
+      "file": "charxiv_rq.parquet",
+      "row_count": 512,
+      "source_parquet": "runs/benchmark_exact_rlvr/charxiv_rq_pool_qwen3_vl_2b/selected512/charxiv_rq_selected512.parquet",
+      "selection_manifest": "runs/benchmark_exact_rlvr/charxiv_rq_pool_qwen3_vl_2b/selected512/charxiv_rq_selected512.json",
+      "reported_qwen3_vl_2b_accuracy": 0.268,
+      "selected_accuracy": 0.267578125,
+      "selected_extraction_rate": 1.0,
+      "selected_cap_rate": 0.0,
+      "selected_avg_generated_tokens": 155.623046875,
+      "selected_max_generated_tokens": 419,
+      "strict_candidates": 729,
+      "parser_family": [
+        "math_or_exact"
+      ],
+      "prompt_mode": [
+        "answer_only"
+      ]
+    },
+    {
+      "benchmark_id": "embspatialbench",
+      "file": "embspatialbench.parquet",
+      "row_count": 512,
+      "source_parquet": "runs/benchmark_exact_rlvr/embspatialbench_pool_qwen3_vl_2b/selected512/embspatialbench_selected512.parquet",
+      "selection_manifest": "runs/benchmark_exact_rlvr/embspatialbench_pool_qwen3_vl_2b/selected512/embspatialbench_selected512.json",
+      "reported_qwen3_vl_2b_accuracy": 0.692,
+      "selected_accuracy": 0.69140625,
+      "selected_extraction_rate": 1.0,
+      "selected_cap_rate": 0.0,
+      "selected_avg_generated_tokens": 3.66796875,
+      "selected_max_generated_tokens": 5,
+      "strict_candidates": 2048,
+      "parser_family": [
+        "mcq_letter"
+      ],
+      "prompt_mode": [
+        "vlmevalkit_embspatialbench_boxed"
+      ],
+      "group_selection": {
+        "ai2thor": {
+          "selected": 168,
+          "correct": 115,
+          "accuracy": 0.6845238095238095,
+          "source_total": 674
+        },
+        "mp3d": {
+          "selected": 175,
+          "correct": 123,
+          "accuracy": 0.7028571428571428,
+          "source_total": 698
+        },
+        "scannet": {
+          "selected": 169,
+          "correct": 116,
+          "accuracy": 0.6863905325443787,
+          "source_total": 676
+        }
+      }
+    },
+    {
+      "benchmark_id": "blink",
+      "file": "blink.parquet",
+      "row_count": 512,
+      "source_parquet": "runs/benchmark_exact_rlvr/blink_pool_answer_only_qwen3_vl_2b/selected512/blink_selected512.parquet",
+      "selection_manifest": "runs/benchmark_exact_rlvr/blink_pool_answer_only_qwen3_vl_2b/selected512/blink_selected512.json",
+      "reported_qwen3_vl_2b_accuracy": 0.538,
+      "selected_accuracy": 0.5390625,
+      "selected_extraction_rate": 1.0,
+      "selected_cap_rate": 0.0,
+      "selected_avg_generated_tokens": 5.12109375,
+      "selected_max_generated_tokens": 52,
+      "strict_candidates": 1710,
+      "short_token_candidates": 840,
+      "parser_family": [
+        "mcq_letter"
+      ],
+      "prompt_mode": [
+        "vlmevalkit_image_mcq_answer_only"
+      ],
+      "selection_note": "Retained the stable answer-only BLINK subset after verifying it with the exact RLVR trainer validation path; it remains 100% extractable and lands close to the reported Qwen3-VL-2B accuracy.",
+      "source_dataset": "BLINK",
+      "group_selection": {
+        "Multi-view_Reasoning": 84,
+        "Relative_Depth": 70,
+        "Spatial_Relation": 86,
+        "Relative_Reflectance": 89,
+        "Counting": 71,
+        "Object_Localization": 77,
+        "Forensic_Detection": 33,
+        "Visual_Correspondence": 1,
+        "Visual_Similarity": 1
+      }
+    },
+    {
+      "benchmark_id": "countqa",
+      "file": "countqa.parquet",
+      "row_count": 512,
+      "source_row_count": 1528,
+      "source_parquet": "runs/benchmark_exact_rlvr/countqa_pool_qwen3_vl_2b/selected512/countqa_selected512.parquet",
+      "selection_manifest": "runs/benchmark_exact_rlvr/countqa_pool_qwen3_vl_2b/selected512/countqa_selected512.json",
+      "reported_qwen3_vl_2b_accuracy": null,
+      "reference_full_extracted_accuracy": 0.25535561268209084,
+      "selected_accuracy": 0.255859375,
+      "selected_extraction_rate": 1.0,
+      "selected_cap_rate": 0.0,
+      "selected_avg_generated_tokens": 98.671875,
+      "selected_max_generated_tokens": 138,
+      "strict_candidates": 1063,
+      "parser_family": [
+        "math_or_exact"
+      ],
+      "prompt_mode": [
+        "answer_only"
+      ],
+      "selection_note": "No published Qwen3-VL-2B CountQA reference score was used. This exact-RLVR subset is selected from stop+extracted rows to land in the requested 25-26% range while keeping 100% extraction and 0% cap rate.",
+      "source_full_metrics": {
+        "accuracy_on_total": 0.1950261780104712,
+        "accuracy_on_extracted": 0.25535561268209084,
+        "extraction_rate": 0.7637434554973822,
+        "cap_rate": 0.3030104712041885,
+        "avg_generated_tokens": 725.6662801106771,
+        "max_generated_tokens": 2048
+      }
+    }
+  ],
+  "updated_at": "2026-04-11T22:45:00Z"
+}

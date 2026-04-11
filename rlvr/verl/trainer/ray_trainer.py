@@ -693,6 +693,37 @@ class RayPPOTrainer:
         samples = samples[: self.config.trainer.val_generations_to_log]
         self.logger.log_generation(samples, self.global_step)
 
+    @staticmethod
+    def _to_jsonable(value: Any) -> Any:
+        if isinstance(value, np.generic):
+            return value.item()
+        if isinstance(value, torch.Tensor):
+            return value.detach().cpu().tolist()
+        if isinstance(value, np.ndarray):
+            return value.tolist()
+        if isinstance(value, dict):
+            return {str(k): RayPPOTrainer._to_jsonable(v) for k, v in value.items()}
+        if isinstance(value, (list, tuple)):
+            return [RayPPOTrainer._to_jsonable(v) for v in value]
+        return value
+
+    def _maybe_dump_val_predictions(self, name: str, rows: list[dict[str, Any]], metrics: dict[str, Any]) -> None:
+        dump_root = self.config.trainer.val_predictions_dump_dir
+        if not dump_root:
+            return
+
+        dataset_dir = os.path.join(dump_root, f"global_step_{self.global_step}", name)
+        os.makedirs(dataset_dir, exist_ok=True)
+
+        predictions_path = os.path.join(dataset_dir, "predictions.jsonl")
+        with open(predictions_path, "w", encoding="utf-8") as f:
+            for row in rows:
+                f.write(json.dumps(self._to_jsonable(row), ensure_ascii=False) + "\n")
+
+        metrics_path = os.path.join(dataset_dir, "metrics.json")
+        with open(metrics_path, "w", encoding="utf-8") as f:
+            json.dump(self._to_jsonable(metrics), f, ensure_ascii=False, indent=2)
+
     def _validate(self) -> dict[str, Any]:
         if len(self.val_dataloaders) == 0:
             return {}
@@ -715,6 +746,7 @@ class RayPPOTrainer:
         for name, dataloader in self.val_dataloaders.items():
             reward_tensor_lst = []
             sample_inputs, sample_outputs, sample_labels, sample_scores = [], [], [], []
+            sample_rows: list[dict[str, Any]] = []
             reward_metrics_lst = defaultdict(list)
             length_metrics_lst = defaultdict(list)
             print(f"Start validation on {name}...")
@@ -743,12 +775,18 @@ class RayPPOTrainer:
                 test_batch = test_batch.repeat(repeat_times=repeat_times, interleave=True)
                 test_batch = test_batch.union(test_output_gen_batch)
 
-                reward_tensor, reward_metrics = compute_val_reward(
+                reward_result = compute_val_reward(
                     test_batch,
                     tokenizer=self.tokenizer,
                     dataset_name=name,
                     skip_special_tokens=self.config.worker.reward.skip_special_tokens,
+                    return_details=bool(self.config.trainer.val_predictions_dump_dir),
                 )
+                if self.config.trainer.val_predictions_dump_dir:
+                    reward_tensor, reward_metrics, reward_details = reward_result
+                else:
+                    reward_tensor, reward_metrics = reward_result
+                    reward_details = None
 
                 input_ids = test_batch.batch["prompts"]
                 input_texts = [self.tokenizer.decode(ids, skip_special_tokens=True) for ids in input_ids]
@@ -759,6 +797,30 @@ class RayPPOTrainer:
                 sample_outputs.extend(output_texts)
                 sample_labels.extend(test_batch.non_tensor_batch["ground_truth"].tolist())
                 sample_scores.extend(scores)
+                if reward_details is not None:
+                    uids = test_batch.non_tensor_batch.get("uid")
+                    finish_reasons = test_batch.non_tensor_batch.get("finish_reason")
+                    stop_reasons = test_batch.non_tensor_batch.get("stop_reason")
+                    for idx, detail in enumerate(reward_details):
+                        sample_rows.append(
+                            {
+                                "uid": None if uids is None else uids[idx],
+                                "prompt": input_texts[idx],
+                                "response": output_texts[idx],
+                                "ground_truth": test_batch.non_tensor_batch["ground_truth"][idx],
+                                "score": detail["overall"],
+                                "format_score": detail["format"],
+                                "hit": detail["hit"],
+                                "extracted": detail["extracted"],
+                                "extracted_answer": detail["extracted_answer"],
+                                "parser_output": detail["parser_output"],
+                                "parser_family": detail["parser_family"],
+                                "metadata": detail["metadata"],
+                                "generated_tokens": detail["generated_tokens"],
+                                "finish_reason": None if finish_reasons is None else finish_reasons[idx],
+                                "stop_reason": None if stop_reasons is None else stop_reasons[idx],
+                            }
+                        )
 
                 reward_tensor_lst.append(reward_tensor)
                 for key, value in reward_metrics.items():
@@ -781,7 +843,7 @@ class RayPPOTrainer:
             extraction_rate = (extracted_count / total_count) if total_count > 0 else 0.0
 
             # Use extracted-only accuracy as the canonical validation accuracy.
-            metrics[f"val/{name}/accuracy_reward"] = acc_on_extracted
+            metrics[f"val/{name}/accuracy_on_extracted"] = acc_on_extracted
             metrics[f"val/{name}/accuracy_on_total"] = acc_on_total
             metrics[f"val/{name}/extraction_rate"] = extraction_rate
 
@@ -792,11 +854,31 @@ class RayPPOTrainer:
             reduced_length = reduce_metrics(length_metrics_lst)
             if "response_length/mean" in reduced_length:
                 metrics[f"val/{name}_response_length/mean"] = reduced_length["response_length/mean"]
+            finish_reason_counts = Counter()
+            for row in sample_rows:
+                finish_reason_counts[str(row.get("finish_reason"))] += 1
+            if sample_rows:
+                total_rows = float(len(sample_rows))
+                for reason, count in finish_reason_counts.items():
+                    metrics[f"val/{name}/finish_reason/{reason}"] = float(count)
+                    metrics[f"val/{name}/finish_reason_rate/{reason}"] = float(count) / total_rows
+                self._maybe_dump_val_predictions(
+                    name=name,
+                    rows=sample_rows,
+                    metrics={
+                        "accuracy_on_extracted": acc_on_extracted,
+                        "accuracy_on_total": acc_on_total,
+                        "extraction_rate": extraction_rate,
+                        "response_length_mean": reduced_length.get("response_length/mean"),
+                        "finish_reason_counts": dict(finish_reason_counts),
+                        "num_rows": len(sample_rows),
+                    },
+                )
             print(f"Finish validation on {name}.")
 
         if reward_scores:
             self.val_reward_score = float(np.mean(reward_scores))
-            metrics["val/accuracy_reward"] = self.val_reward_score
+            metrics["val/accuracy_on_extracted"] = self.val_reward_score
             if total_accuracy_scores:
                 metrics["val/accuracy_on_total"] = float(np.mean(total_accuracy_scores))
             if extraction_rate_scores:

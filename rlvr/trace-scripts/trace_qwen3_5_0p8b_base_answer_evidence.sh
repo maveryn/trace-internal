@@ -5,17 +5,9 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 RLVR_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
-VALIDATION_ROOT="${REPO_ROOT}/benchmark/data/external_validation_v1"
+source "${SCRIPT_DIR}/validation_pack_qwen3_vl_2b_selected512.sh"
 
 export PYTHONPATH="${RLVR_ROOT}${PYTHONPATH:+:${PYTHONPATH}}"
-
-DEFAULT_VAL_FILES_JSON="$(printf '[\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\"]' \
-  "${VALIDATION_ROOT}/mathvista.parquet" \
-  "${VALIDATION_ROOT}/mathvision.parquet" \
-  "${VALIDATION_ROOT}/charxiv.parquet" \
-  "${VALIDATION_ROOT}/ocrbench_v2.parquet" \
-  "${VALIDATION_ROOT}/spatialeval.parquet" \
-  "${VALIDATION_ROOT}/puzzlevqa.parquet")"
 
 export CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES:-0}"
 export MODEL_PATH="${MODEL_PATH:-Qwen/Qwen3.5-0.8B-Base}"
@@ -40,7 +32,7 @@ export MAX_RESPONSE_LENGTH="${MAX_RESPONSE_LENGTH:-1536}"
 export VAL_MAX_TOKENS="${VAL_MAX_TOKENS:-2048}"
 export PADDING_FREE="${PADDING_FREE:-false}"
 export USE_TORCH_COMPILE="${USE_TORCH_COMPILE:-false}"
-export EXPERIMENT_NAME="${EXPERIMENT_NAME:-qwen3_5_0p8b_base_trace_answer_evidence_val6}"
+export EXPERIMENT_NAME="${EXPERIMENT_NAME:-qwen3_5_0p8b_base_trace_answer_evidence_val8}"
 
 python3 - "${MODEL_PATH}" <<'PY'
 import sys

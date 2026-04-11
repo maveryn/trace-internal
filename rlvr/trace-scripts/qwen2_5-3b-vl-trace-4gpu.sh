@@ -9,17 +9,10 @@ export WANDB_MODE="${WANDB_MODE:-online}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 RLVR_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
-VALIDATION_ROOT="${REPO_ROOT}/benchmark/data/external_validation_v1"
+source "${SCRIPT_DIR}/validation_pack_qwen3_vl_2b_selected512.sh"
+
 export PYTHONPATH="${RLVR_ROOT}${PYTHONPATH:+:${PYTHONPATH}}"
 cd "${RLVR_ROOT}"
-
-DEFAULT_VAL_FILES_JSON="$(printf '[\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\"]' \
-  "${VALIDATION_ROOT}/mathvista.parquet" \
-  "${VALIDATION_ROOT}/mathvision.parquet" \
-  "${VALIDATION_ROOT}/charxiv.parquet" \
-  "${VALIDATION_ROOT}/ocrbench_v2.parquet" \
-  "${VALIDATION_ROOT}/spatialeval.parquet" \
-  "${VALIDATION_ROOT}/puzzlevqa.parquet")"
 
 MODEL_PATH="${MODEL_PATH:-Qwen/Qwen2.5-VL-3B-Instruct}"
 TRAIN_FILE="${TRAIN_FILE:-mydata/trace_train_128k_multivariant_hf.parquet}"

@@ -218,6 +218,9 @@ class vLLMRollout(BaseRollout):
             completions: list[RequestOutput] = self.inference_engine.generate(
                 prompts=vllm_inputs, sampling_params=self.sampling_params, use_tqdm=self.use_tqdm
             )
+            flat_outputs = [output for completion in completions for output in completion.outputs]
+            finish_reasons = [getattr(output, "finish_reason", None) for output in flat_outputs]
+            stop_reasons = [getattr(output, "stop_reason", None) for output in flat_outputs]
             response_ids = [output.token_ids for completion in completions for output in completion.outputs]
             response_ids = VF.pad_2d_list_to_length(
                 response_ids, self.pad_token_id, max_length=response_pad_length
@@ -230,6 +233,8 @@ class vLLMRollout(BaseRollout):
                 position_ids = _repeat_interleave(position_ids, self.sampling_params.n)
                 if batch_multi_modal_data is not None:
                     batch_multi_modal_data = _repeat_interleave(batch_multi_modal_data, self.sampling_params.n)
+                finish_reasons = list(finish_reasons)
+                stop_reasons = list(stop_reasons)
 
         sequence_ids = torch.cat([input_ids, response_ids], dim=-1)
         response_length = response_ids.size(1)
@@ -264,5 +269,7 @@ class vLLMRollout(BaseRollout):
             non_tensor_batch = {"multi_modal_data": batch_multi_modal_data}
         else:
             non_tensor_batch = {}
+        non_tensor_batch["finish_reason"] = np.array(finish_reasons, dtype=object)
+        non_tensor_batch["stop_reason"] = np.array(stop_reasons, dtype=object)
 
         return DataProto(batch=batch, non_tensor_batch=non_tensor_batch, meta_info=prompts.meta_info)

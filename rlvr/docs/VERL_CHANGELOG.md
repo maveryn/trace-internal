@@ -11,6 +11,18 @@ This document summarizes recent code changes and the rationale.
 - Updated `rlvr/verl/trainer/ray_trainer.py`.
   - Validation now calls `compute_val_reward(...)` instead of the training reward function.
   - Training reward is unchanged; only validation scoring path is different.
+  - Validation can now optionally dump full per-sample predictions/scores from the trainer path via `trainer.val_predictions_dump_dir`.
+  - Validation metrics now log extracted-only accuracy under `accuracy_on_extracted` instead of `accuracy_reward`, both per dataset and in the overall validation summary.
+
+- Updated `rlvr/verl/utils/val_reward.py`.
+  - Validation now passes benchmark-native `parser_family` and `metadata` into `strict_score_response(...)` when those fields are present in the dataloader row.
+  - This keeps benchmark screening aligned with the exact trainer validation path instead of a separate external scorer wrapper.
+
+- Updated `rlvr/verl/workers/rollout/vllm_rollout_spmd.py`.
+  - Validation rollout now keeps `finish_reason` / `stop_reason` in `non_tensor_batch`, so cap-rate analysis can come from the same RLVR path used during training.
+
+- Updated `rlvr/verl/utils/dataset.py`.
+  - Image normalization now preserves embedded image bytes when parquet rows also carry `path=None`, instead of incorrectly resolving those rows to a filesystem path ending in `None` during prompt-length filtering.
 
 ## vLLM compatibility fixes
 - Updated `rlvr/verl/workers/rollout/vllm_rollout_spmd.py`.

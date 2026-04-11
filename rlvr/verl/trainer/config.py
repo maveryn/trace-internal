@@ -199,6 +199,8 @@ class TrainerConfig:
     """validate only, skip training"""
     val_generations_to_log: int = 0
     """number of generations to log for validation"""
+    val_predictions_dump_dir: Optional[str] = None
+    """optional directory to dump full per-sample validation predictions and scores"""
     save_freq: int = -1
     """save frequency, -1 means no saving"""
     save_limit: int = -1
@@ -220,6 +222,8 @@ class TrainerConfig:
 
         self.save_checkpoint_path = os.path.abspath(self.save_checkpoint_path)  # may be not exist
         self.load_checkpoint_path = get_abs_path(self.load_checkpoint_path, prompt="Model checkpoint")
+        if self.val_predictions_dump_dir is not None:
+            self.val_predictions_dump_dir = os.path.abspath(self.val_predictions_dump_dir)
 
 
 @dataclass

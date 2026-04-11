@@ -306,10 +306,15 @@ class RLHFDataset(Dataset):
             return images
         normalized: list[Any] = []
         for image in images:
-            if isinstance(image, dict) and "path" in image:
-                normalized.append(self._resolve_media_path(str(image["path"])))
-            else:
-                normalized.append(image)
+            if isinstance(image, dict):
+                if image.get("bytes") is not None:
+                    normalized.append(image)
+                    continue
+                path = image.get("path")
+                if path not in (None, ""):
+                    normalized.append(self._resolve_media_path(str(path)))
+                    continue
+            normalized.append(image)
         return normalized
 
     def _resolve_prompt_answer_keys(self, example: dict[str, Any]) -> tuple[str, str]:

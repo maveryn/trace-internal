@@ -21,25 +21,25 @@
   },
   "task_variant_templates": {
     "completed_row_count": [
-      "{completed_row_rule_text} How many completed rows are there? Answer with an integer.",
-      "How many rows are completed on the bingo card? {completed_row_rule_text} Answer with an integer.",
-      "Count the completed rows on the visible bingo card. {completed_row_rule_text} Answer with an integer.",
-      "{completed_row_rule_text} What is the number of completed rows? Answer with an integer.",
-      "Looking at the marked cells only, how many rows are fully marked? {completed_row_rule_text} Answer with an integer."
+      "{completed_row_rule_text} How many completed rows are there?",
+      "How many rows are completed on the bingo card? {completed_row_rule_text}",
+      "Count the completed rows on the visible bingo card. {completed_row_rule_text}",
+      "{completed_row_rule_text} What is the number of completed rows?",
+      "Looking at the marked cells only, how many rows are fully marked? {completed_row_rule_text}"
     ],
     "completed_column_count": [
-      "{completed_column_rule_text} How many completed columns are there? Answer with an integer.",
-      "How many columns are completed on the bingo card? {completed_column_rule_text} Answer with an integer.",
-      "Count the completed columns on the visible bingo card. {completed_column_rule_text} Answer with an integer.",
-      "{completed_column_rule_text} What is the number of completed columns? Answer with an integer.",
-      "Looking at the marked cells only, how many columns are fully marked? {completed_column_rule_text} Answer with an integer."
+      "{completed_column_rule_text} How many completed columns are there?",
+      "How many columns are completed on the bingo card? {completed_column_rule_text}",
+      "Count the completed columns on the visible bingo card. {completed_column_rule_text}",
+      "{completed_column_rule_text} What is the number of completed columns?",
+      "Looking at the marked cells only, how many columns are fully marked? {completed_column_rule_text}"
     ],
     "completed_straight_line_count": [
-      "{completed_straight_line_rule_text} How many completed straight lines are there? Answer with an integer.",
-      "Count the completed rows or columns on the bingo card. {completed_straight_line_rule_text} Answer with an integer.",
-      "{completed_straight_line_rule_text} What is the number of completed rows or columns? Answer with an integer.",
-      "How many completed straight lines, counting rows and columns only, are visible on the bingo card? Answer with an integer.",
-      "Using the marked cells on the bingo card, how many rows or columns are fully marked? {completed_straight_line_rule_text} Answer with an integer."
+      "{completed_straight_line_rule_text} How many completed straight lines are there?",
+      "Count the completed rows or columns on the bingo card. {completed_straight_line_rule_text}",
+      "{completed_straight_line_rule_text} What is the number of completed rows or columns?",
+      "How many completed straight lines, counting rows and columns only, are visible on the bingo card?",
+      "Using the marked cells on the bingo card, how many rows or columns are fully marked? {completed_straight_line_rule_text}"
     ]
   },
   "required_slots_by_key": {
@@ -69,18 +69,18 @@
   },
   "answer_or_evidence_templates": {
     "answer_only": [
-      "{json_output_contract_answer_only}\nAnswer: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
-      "{json_output_contract_answer_only}\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
-      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
-      "{json_output_contract_answer_only}\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nUse this answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
     ],
     "answer_and_evidence": [
-      "{json_output_contract}\nEvidence: {evidence_hint}.\nAnswer: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence requirement: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence field: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence rule: {evidence_hint}.\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example}"
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nUse this evidence format: {evidence_hint}.\nUse this answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFormat for the \"evidence\" field: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
     ]
   }
 }

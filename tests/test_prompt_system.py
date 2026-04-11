@@ -4,12 +4,24 @@ from __future__ import annotations
 
 import json
 import re
+from pathlib import Path
 
 import pytest
 
+from trace.core.seed import hash64
 from trace.core.prompts import load_prompt_bundle, render_prompt, render_prompt_variants
 from trace.core.prompts.schema import REQUIRED_PROMPT_VARIANTS
+from trace.tasks import TASK_REGISTRY, create_task
 from trace.tasks.shared.prompt_json_example import build_prompt_json_examples
+
+ANSWER_AND_EVIDENCE_CONTRACT = (
+    'Use a valid JSON object with keys "evidence" and "answer" in that order for the final answer.'
+)
+ANSWER_ONLY_CONTRACT = 'Use a valid JSON object with key "answer" for the final answer.'
+ANSWER_FORMAT_TEXT = re.compile(r"(Answer format:|Required answer format:|Final answer format:|Use this answer format:|Format for the \"answer\" field:)")
+EVIDENCE_FORMAT_TEXT = re.compile(
+    r"(Evidence format:|Required evidence format:|Use this evidence format:|Format for the \"evidence\" field:)"
+)
 
 
 def test_render_prompt_is_deterministic() -> None:
@@ -22,8 +34,8 @@ def test_render_prompt_is_deterministic() -> None:
         slots={
             "object_description": "a labeled angle",
             "question_text": "What is the measure of angle ABC in degrees?",
-            "json_output_contract": 'Return a valid JSON object with keys "evidence" and "answer" in that order.',
-            "json_output_contract_answer_only": 'Return a valid JSON object with key "answer".',
+            "json_output_contract": ANSWER_AND_EVIDENCE_CONTRACT,
+            "json_output_contract_answer_only": ANSWER_ONLY_CONTRACT,
             "evidence_hint": 'set "evidence" to an array of exactly three graph-paper points for the queried angle: the vertex and the two ray endpoints',
             "answer_hint": 'set "answer" to the angle measure as an integer value',
             "json_example": '{"evidence":[[0,2],[0,0],[3,0]],"answer":90}',
@@ -40,8 +52,8 @@ def test_render_prompt_is_deterministic() -> None:
         slots={
             "object_description": "a labeled angle",
             "question_text": "What is the measure of angle ABC in degrees?",
-            "json_output_contract": 'Return a valid JSON object with keys "evidence" and "answer" in that order.',
-            "json_output_contract_answer_only": 'Return a valid JSON object with key "answer".',
+            "json_output_contract": ANSWER_AND_EVIDENCE_CONTRACT,
+            "json_output_contract_answer_only": ANSWER_ONLY_CONTRACT,
             "evidence_hint": 'set "evidence" to an array of exactly three graph-paper points for the queried angle: the vertex and the two ray endpoints',
             "answer_hint": 'set "answer" to the angle measure as an integer value',
             "json_example": '{"evidence":[[0,2],[0,0],[3,0]],"answer":90}',
@@ -86,8 +98,8 @@ def test_render_prompt_variants_contains_answer_only_and_answer_and_evidence() -
         slots={
             "object_description": "a polygon",
             "question_text": "What is the area of the polygon in square units?",
-            "json_output_contract": 'Return a valid JSON object with keys "evidence" and "answer" in that order.',
-            "json_output_contract_answer_only": 'Return a valid JSON object with key "answer".',
+            "json_output_contract": ANSWER_AND_EVIDENCE_CONTRACT,
+            "json_output_contract_answer_only": ANSWER_ONLY_CONTRACT,
             "evidence_hint": 'set "evidence" to a JSON object mapping required labels to graph-unit coordinates [x, y]',
             "answer_hint": 'set "answer" to the polygon area as an integer value',
             "json_example": '{"evidence":{"A":[0,0],"B":[4,0],"C":[4,2],"D":[0,2]},"answer":8}',
@@ -119,11 +131,14 @@ def test_geometry_measurement_bundles_answer_templates_use_contract_and_avoid_on
         assert len(evidence_templates) == REQUIRED_PROMPT_VARIANTS
         assert all(str(template).strip() for template in answer_only_templates)
         assert all("{json_output_contract_answer_only}" in str(template) for template in answer_only_templates)
+        assert all(ANSWER_FORMAT_TEXT.search(str(template)) is not None for template in answer_only_templates)
         assert all("{answer_hint}" in str(template) for template in answer_only_templates)
         assert all("{json_example_answer_only}" in str(template) for template in answer_only_templates)
         assert all(banned.search(str(template)) is None for template in answer_only_templates)
         assert all(banned.search(str(template)) is None for template in evidence_templates)
         assert all("{json_output_contract}" in str(template) for template in evidence_templates)
+        assert all(ANSWER_FORMAT_TEXT.search(str(template)) is not None for template in evidence_templates)
+        assert all(EVIDENCE_FORMAT_TEXT.search(str(template)) is not None for template in evidence_templates)
         assert all("{evidence_hint}" in str(template) for template in evidence_templates)
         assert all("{answer_hint}" in str(template) for template in evidence_templates)
         assert all("{json_example}" in str(template) for template in evidence_templates)
@@ -224,6 +239,100 @@ def test_active_task_bundles_use_json_output_contracts_for_both_modes() -> None:
             "answer_hint",
             "json_example",
         }.issubset(set(bundle.required_slots_by_key.get("answer_or_evidence:answer_and_evidence", ())))
+
+
+def test_prompt_bundles_use_format_language_in_output_and_variant_templates() -> None:
+    banned_variant_patterns = (
+        re.compile(r"\bAnswer with\b", flags=re.IGNORECASE),
+        re.compile(r"\bRespond with\b", flags=re.IGNORECASE),
+        re.compile(r"\bReturn only\b", flags=re.IGNORECASE),
+        re.compile(r"\bReturn the\b", flags=re.IGNORECASE),
+        re.compile(r"\bGive the final\b", flags=re.IGNORECASE),
+        re.compile(r"\bAnswer using the exact\b", flags=re.IGNORECASE),
+        re.compile(r"\bAnswer using the integer sum\b", flags=re.IGNORECASE),
+        re.compile(r"\bGive the count\b", flags=re.IGNORECASE),
+    )
+
+    for path in sorted(Path("prompts").rglob("*.json")):
+        bundle = json.loads(path.read_text())
+
+        for template in bundle.get("answer_or_evidence_templates", {}).get("answer_only", ()):
+            assert "Return a valid JSON object" not in str(template), path
+            assert ANSWER_FORMAT_TEXT.search(str(template)) is not None, path
+        for template in bundle.get("answer_or_evidence_templates", {}).get("answer_and_evidence", ()):
+            assert "Return a valid JSON object" not in str(template), path
+            assert ANSWER_FORMAT_TEXT.search(str(template)) is not None, path
+            assert EVIDENCE_FORMAT_TEXT.search(str(template)) is not None, path
+
+        for templates in bundle.get("task_variant_templates", {}).values():
+            for template in templates:
+                lowered = str(template)
+                assert all(pattern.search(lowered) is None for pattern in banned_variant_patterns), path
+
+    for path in sorted(Path("configs").rglob("*.yaml")):
+        text = path.read_text()
+        assert 'Return a valid JSON object with key "answer".' not in text, path
+        assert 'Return a valid JSON object with keys "evidence" and "answer" in that order.' not in text, path
+        assert ANSWER_ONLY_CONTRACT in text or ANSWER_AND_EVIDENCE_CONTRACT in text or "json_output_contract" not in text, path
+
+
+def _example_answer_matches_type(answer_type: str, value: object) -> bool:
+    """Return true when one prompt JSON example matches the declared answer type."""
+    if answer_type == "integer":
+        return isinstance(value, int) and not isinstance(value, bool)
+    if answer_type == "number":
+        return isinstance(value, (int, float)) and not isinstance(value, bool)
+    if answer_type == "string":
+        return isinstance(value, str)
+    if answer_type == "option_letter":
+        return isinstance(value, str) and len(value) == 1 and value.isalpha() and value.upper() == value
+    if answer_type == "pi_expression":
+        return isinstance(value, str)
+    return True
+
+
+def test_active_tasks_answer_only_prompts_stay_answer_only() -> None:
+    banned_evidence_word = re.compile(r"\bevidence\b", flags=re.IGNORECASE)
+    banned_bbox_word = re.compile(r"\bbbox\b|bounding box", flags=re.IGNORECASE)
+
+    for task_id in sorted(TASK_REGISTRY):
+        task = create_task(task_id)
+        out = None
+        last_error: Exception | None = None
+        for sample_idx in range(8):
+            try:
+                out = task.generate(
+                    hash64(20260411, f"{task_id}:answer_only_prompt_audit", sample_idx),
+                    params={"_sampling_index": sample_idx},
+                    max_attempts=128,
+                )
+                break
+            except Exception as exc:  # pragma: no cover - exercised only on unlucky audit seeds
+                last_error = exc
+                continue
+        if out is None:
+            raise AssertionError(f"{task_id} failed answer-only audit generation across 8 deterministic seeds") from last_error
+        prompt = str(out.prompt_variants.get("answer_only", ""))
+        assert prompt, task_id
+        assert "Example JSON:" in prompt, task_id
+        assert '"evidence"' not in prompt, task_id
+        assert banned_evidence_word.search(prompt) is None, task_id
+        assert banned_bbox_word.search(prompt) is None, task_id
+
+        query_spec = out.trace_payload.get("query_spec", {})
+        prompt_variants = query_spec.get("prompt_variants", {})
+        answer_only_variant = prompt_variants.get("answer_only", {})
+        metadata = answer_only_variant.get("metadata", {})
+        slot_values = metadata.get("slot_values", {})
+
+        answer_hint = str(slot_values.get("answer_hint", ""))
+        assert answer_hint, task_id
+        assert banned_evidence_word.search(answer_hint) is None, task_id
+        assert banned_bbox_word.search(answer_hint) is None, task_id
+
+        example = json.loads(str(slot_values.get("json_example_answer_only", "")))
+        assert list(example.keys()) == ["answer"], task_id
+        assert _example_answer_matches_type(str(out.answer_gt.type), example["answer"]), task_id
 
 
 def test_tile_count_bundle_supports_both_count_and_component_queries() -> None:
@@ -719,8 +828,8 @@ def test_analytical_area_bundle_renders_deterministically() -> None:
     slots = {
         "object_description": "an annotated geometric shape",
         "question_text": "The rectangle has two annotated side lengths. What is its area in square units?",
-        "json_output_contract": 'Return a valid JSON object with keys "evidence" and "answer" in that order.',
-        "json_output_contract_answer_only": 'Return a valid JSON object with key "answer".',
+        "json_output_contract": ANSWER_AND_EVIDENCE_CONTRACT,
+        "json_output_contract_answer_only": ANSWER_ONLY_CONTRACT,
         "evidence_hint": 'set "evidence" to a JSON object that maps each required annotation label to its shown measurement value',
         "answer_hint": 'set "answer" to the area value as an integer',
         "json_example": '{"evidence":{"AB":6,"CD":4},"answer":24}',

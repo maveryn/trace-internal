@@ -60,8 +60,8 @@ prompt:
     bundle_id: charts_multiseries_v1
     task_family_key: multiseries_chart_comparison
     task_key: pairwise_comparison_count_query
-    json_output_contract: Return a valid JSON object with keys "evidence" and "answer" in that order.
-    json_output_contract_answer_only: Return a valid JSON object with key "answer".
+    json_output_contract: Use a valid JSON object with keys "evidence" and "answer" in that order for the final answer.
+    json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
     answer_hint: set "answer" to the number of category labels satisfying the requested series comparison as an integer
     object_description_grouped_bar: a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category
     object_description_grouped_horizontal_bar: a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category

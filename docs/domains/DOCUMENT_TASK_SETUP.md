@@ -2,6 +2,8 @@
 
 This document captures the concrete reusable setup for the active `documents` task families.
 
+This is the active documents-domain contract. For cross-domain coverage rollups, use `docs/project/STATUS.md` and `docs/domains/TASK_FAMILY_VARIANTS.md` instead of repeating those inventories here.
+
 ## 1) Domain scope
 1. `domain=documents` is for visually structured page-like artifacts such as forms, invoices, receipts, tickets, and other field-heavy layouts.
 2. V1 document tasks should stay layout-first and OCR-light:

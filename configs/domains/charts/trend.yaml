@@ -60,8 +60,8 @@ prompt:
     bundle_id: charts_trend_v1
     task_family_key: ordered_chart_trend
     task_key: structure_value_query
-    json_output_contract: Return a valid JSON object with keys "evidence" and "answer" in that order.
-    json_output_contract_answer_only: Return a valid JSON object with key "answer".
+    json_output_contract: Use a valid JSON object with keys "evidence" and "answer" in that order for the final answer.
+    json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
     answer_hint: set "answer" to the requested count or streak length as an integer
     object_description_area: an ordered labeled area chart with visible point markers from left to right. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis
     object_description_bar: an ordered labeled bar chart with bars arranged from left to right. Each bar's numeric height can be read from the vertical axis

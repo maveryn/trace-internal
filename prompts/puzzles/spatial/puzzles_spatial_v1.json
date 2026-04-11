@@ -63,39 +63,39 @@
   },
   "task_variant_templates": {
     "can_be_built": [
-      "Answer with the option letter.",
-      "Select the correct option and answer with the option letter.",
-      "Choose the correct labeled silhouette and answer with the option letter.",
-      "Return the option letter of the buildable target shape.",
-      "Respond with the option letter of the shape that can be built."
+      "Identify the correct option.",
+      "Select the option that can be built from all pieces.",
+      "Choose the labeled silhouette that can be formed.",
+      "Identify the buildable target shape.",
+      "Identify the shape that can be built."
     ],
     "overlay_union_same_grid": [
-      "Answer with the option letter.",
-      "Select the correct option and answer with the option letter.",
-      "Choose the labeled result that matches the combined pattern and answer with the option letter.",
-      "Return the option letter of the correctly combined pattern.",
-      "Respond with the option letter of the correct overlay result."
+      "Identify the correct option.",
+      "Select the option matching the combined pattern.",
+      "Choose the labeled result that matches the combined pattern.",
+      "Identify the correctly combined pattern.",
+      "Identify the correct overlay result."
     ],
     "vertical_fold_result": [
-      "Which option shows the paper after it is folded? Answer with the option letter.",
-      "Select the labeled option that matches the folded paper. Answer with the option letter.",
-      "Which labeled option is the correct folded result? Answer with the option letter.",
-      "Choose the option that shows the paper after the indicated fold. Answer with the option letter.",
-      "Which option gives the correct folded-paper result? Answer with the option letter."
+      "Which option shows the paper after it is folded?",
+      "Select the labeled option that matches the folded paper.",
+      "Which labeled option is the correct folded result?",
+      "Choose the option that shows the paper after the indicated fold.",
+      "Which option gives the correct folded-paper result?"
     ],
     "horizontal_fold_result": [
-      "Which option shows the paper after it is folded? Answer with the option letter.",
-      "Select the labeled option that matches the folded paper. Answer with the option letter.",
-      "Which labeled option is the correct folded result? Answer with the option letter.",
-      "Choose the option that shows the paper after the indicated fold. Answer with the option letter.",
-      "Which option gives the correct folded-paper result? Answer with the option letter."
+      "Which option shows the paper after it is folded?",
+      "Select the labeled option that matches the folded paper.",
+      "Which labeled option is the correct folded result?",
+      "Choose the option that shows the paper after the indicated fold.",
+      "Which option gives the correct folded-paper result?"
     ],
     "cube_removal_count": [
-      "Answer with the removed cube count as an integer.",
-      "Return the number of cubes removed as an integer.",
-      "Give the exact removed cube count as an integer.",
-      "Provide the number of cubes taken away as an integer.",
-      "Respond with the removed cube count as an integer."
+      "Determine how many cubes were removed.",
+      "Compare the two block structures and count the removed cubes.",
+      "Compute the number of cubes taken away.",
+      "Count the cubes taken away from the original block.",
+      "Determine the cube-removal count."
     ]
   },
   "required_slots_by_key": {
@@ -125,18 +125,18 @@
   },
   "answer_or_evidence_templates": {
     "answer_only": [
-      "{json_output_contract_answer_only}\nAnswer: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
-      "{json_output_contract_answer_only}\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
-      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
-      "{json_output_contract_answer_only}\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nUse this answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
     ],
     "answer_and_evidence": [
-      "{json_output_contract}\nEvidence: {evidence_hint}.\nAnswer: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence requirement: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence field: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence rule: {evidence_hint}.\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example}"
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nUse this evidence format: {evidence_hint}.\nUse this answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFormat for the \"evidence\" field: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
     ]
   }
 }

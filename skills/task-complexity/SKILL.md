@@ -35,15 +35,8 @@ Use this whenever a change touches `complexity_score`, `complexity_components`, 
 
 ## Read as needed
 - General policy and config shape: `references/policy.md`
-- Graph: `references/graph.md`
-- Documents: `references/documents.md`
-- Temporal: `references/temporal.md`
-- Geometry: `references/geometry.md`
-- Icons: `references/icons.md`
-- Tile: `references/tile.md`
-- Charts: `references/charts.md`
-- Tables: `references/tables.md`
-- Puzzles: `references/puzzles.md`
+- Domain-specific guidance: open `references/<domain>.md` when present.
+- If no domain reference exists, inspect the domain's shared complexity helpers and add a reference only when the change introduces reusable policy.
 
 ## Update discipline
 - When adding a new domain or task family, add or update the corresponding domain reference in this skill in the same change.

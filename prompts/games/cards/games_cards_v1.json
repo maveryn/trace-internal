@@ -21,32 +21,32 @@
   },
   "task_variant_templates": {
     "same_suit_as_reference_count": [
-      "One card is marked `REF`. How many other cards share the same suit as the reference card? Answer with an integer.",
-      "How many non-reference cards have the same suit as the card marked `REF`? Answer with an integer.",
-      "Count the other cards whose suit matches the `REF` card. Answer with an integer.",
-      "Using the card marked `REF`, how many other cards match its suit? Answer with an integer.",
-      "What is the number of other visible cards that share the reference card's suit? Answer with an integer."
+      "One card is marked `REF`. How many other cards share the same suit as the reference card?",
+      "How many non-reference cards have the same suit as the card marked `REF`?",
+      "Count the other cards whose suit matches the `REF` card.",
+      "Using the card marked `REF`, how many other cards match its suit?",
+      "What is the number of other visible cards that share the reference card's suit?"
     ],
     "higher_than_reference_count": [
-      "{rank_order_text} One card is marked `REF`. How many other cards are ranked higher than the reference card? Answer with an integer.",
-      "{rank_order_text} Count the non-reference cards that outrank the card marked `REF`. Answer with an integer.",
-      "{rank_order_text} How many other visible cards have a higher rank than the `REF` card? Answer with an integer.",
-      "{rank_order_text} Using the card marked `REF`, how many other cards are ranked above it? Answer with an integer.",
-      "{rank_order_text} What is the number of non-reference cards with rank greater than the `REF` card? Answer with an integer."
+      "{rank_order_text} One card is marked `REF`. How many other cards are ranked higher than the reference card?",
+      "{rank_order_text} Count the non-reference cards that outrank the card marked `REF`.",
+      "{rank_order_text} How many other visible cards have a higher rank than the `REF` card?",
+      "{rank_order_text} Using the card marked `REF`, how many other cards are ranked above it?",
+      "{rank_order_text} What is the number of non-reference cards with rank greater than the `REF` card?"
     ],
     "pair_count": [
-      "How many ranks appear exactly twice in this hand? Answer with an integer.",
-      "Count the exact pairs in the hand, where a pair means two cards of the same rank. Answer with an integer.",
-      "What is the number of ranks that occur exactly two times among the visible cards? Answer with an integer.",
-      "Looking only at rank matches, how many exact pairs are present in this hand? Answer with an integer.",
-      "How many distinct ranks form exact two-card pairs in the displayed hand? Answer with an integer."
+      "How many ranks appear exactly twice in this hand?",
+      "Count the exact pairs in the hand, where a pair means two cards of the same rank.",
+      "What is the number of ranks that occur exactly two times among the visible cards?",
+      "Looking only at rank matches, how many exact pairs are present in this hand?",
+      "How many distinct ranks form exact two-card pairs in the displayed hand?"
     ],
     "longest_run_length": [
-      "{rank_order_text} Ignore suits. {continuation_rule_text} What is the length of the longest run of consecutive ranks in display order? Answer with an integer.",
-      "{rank_order_text} Ignore suits. {continuation_rule_text} Count the cards in the longest consecutive run of ranks as the hand is read in display order. Answer with an integer.",
-      "{rank_order_text} Ignore suits. {continuation_rule_text} What is the length of the unique longest consecutive rank run visible in the hand? Answer with an integer.",
-      "{rank_order_text} Ignore suits. {continuation_rule_text} Determine the size of the longest consecutive run when the cards are read in display order. Answer with an integer.",
-      "{rank_order_text} Ignore suits. {continuation_rule_text} How many cards are in the longest consecutive rank run shown by the hand's display order? Answer with an integer."
+      "{rank_order_text} Ignore suits. {continuation_rule_text} What is the length of the longest run of consecutive ranks in display order?",
+      "{rank_order_text} Ignore suits. {continuation_rule_text} Count the cards in the longest consecutive run of ranks as the hand is read in display order.",
+      "{rank_order_text} Ignore suits. {continuation_rule_text} What is the length of the unique longest consecutive rank run visible in the hand?",
+      "{rank_order_text} Ignore suits. {continuation_rule_text} Determine the size of the longest consecutive run when the cards are read in display order.",
+      "{rank_order_text} Ignore suits. {continuation_rule_text} How many cards are in the longest consecutive rank run shown by the hand's display order?"
     ]
   },
   "required_slots_by_key": {
@@ -74,18 +74,18 @@
   },
   "answer_or_evidence_templates": {
     "answer_only": [
-      "{json_output_contract_answer_only}\nAnswer: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
-      "{json_output_contract_answer_only}\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
-      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
-      "{json_output_contract_answer_only}\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nUse this answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
     ],
     "answer_and_evidence": [
-      "{json_output_contract}\nEvidence: {evidence_hint}.\nAnswer: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence requirement: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence field: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence rule: {evidence_hint}.\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example}"
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nUse this evidence format: {evidence_hint}.\nUse this answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFormat for the \"evidence\" field: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
     ]
   }
 }

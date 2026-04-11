@@ -21,32 +21,32 @@
   },
   "task_variant_templates": {
     "earliest_date_in_section": [
-      "Answer with the exact date text shown.",
-      "Return the exact date as written in the document.",
-      "Respond with the exact winning date text from that section.",
-      "Give the exact date shown for the winning value.",
-      "Answer using the exact date value."
+      "Identify the exact date text shown.",
+      "Identify the exact date as written in the document.",
+      "Identify the exact winning date text from that section.",
+      "Identify the exact date shown for the winning value.",
+      "Identify the exact date value."
     ],
     "latest_date_in_section": [
-      "Answer with the exact date text shown.",
-      "Return the exact date as written in the document.",
-      "Respond with the exact winning date text from that section.",
-      "Give the exact date shown for the winning value.",
-      "Answer using the exact date value."
+      "Identify the exact date text shown.",
+      "Identify the exact date as written in the document.",
+      "Identify the exact winning date text from that section.",
+      "Identify the exact date shown for the winning value.",
+      "Identify the exact date value."
     ],
     "largest_amount_in_section": [
-      "Answer with the exact amount text shown.",
-      "Return the exact amount as written in the document.",
-      "Respond with the exact winning amount text from that section.",
-      "Give the exact amount shown for the winning value.",
-      "Answer using the exact amount value."
+      "Identify the exact amount text shown.",
+      "Identify the exact amount as written in the document.",
+      "Identify the exact winning amount text from that section.",
+      "Identify the exact amount shown for the winning value.",
+      "Identify the exact amount value."
     ],
     "smallest_amount_in_section": [
-      "Answer with the exact amount text shown.",
-      "Return the exact amount as written in the document.",
-      "Respond with the exact winning amount text from that section.",
-      "Give the exact amount shown for the winning value.",
-      "Answer using the exact amount value."
+      "Identify the exact amount text shown.",
+      "Identify the exact amount as written in the document.",
+      "Identify the exact winning amount text from that section.",
+      "Identify the exact amount shown for the winning value.",
+      "Identify the exact amount value."
     ]
   },
   "required_slots_by_key": {
@@ -70,18 +70,18 @@
   },
   "answer_or_evidence_templates": {
     "answer_only": [
-      "{json_output_contract_answer_only}\nAnswer: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
-      "{json_output_contract_answer_only}\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
-      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
-      "{json_output_contract_answer_only}\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nUse this answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
     ],
     "answer_and_evidence": [
-      "{json_output_contract}\nEvidence: {evidence_hint}.\nAnswer: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence requirement: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence field: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence rule: {evidence_hint}.\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example}"
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nUse this evidence format: {evidence_hint}.\nUse this answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFormat for the \"evidence\" field: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
     ]
   }
 }

@@ -2,6 +2,10 @@
 
 This document defines the concrete v1 tables-domain contract.
 
+This is the active tables-domain contract. For cross-domain coverage rollups, use
+`docs/project/STATUS.md` and `docs/domains/TASK_FAMILY_VARIANTS.md` instead of
+repeating those inventories in table-specific notes or skills.
+
 ## 1) Domain shape
 1. `domain = tables`
 2. The active task groups are `statistics`, `counting`, `readout`, `relation`, `ranking`, and `temporal`.

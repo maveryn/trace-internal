@@ -8,62 +8,26 @@ description: Use when designing, implementing, or reviewing TRACE documents-doma
 Use this whenever the task lives under `domain=documents`.
 
 ## Read first
-1. `docs/project/STATUS.md`
-2. `docs/project/TODO.md`
+1. `docs/domains/DOCUMENT_TASK_SETUP.md`
+2. `docs/project/STATUS.md`
 3. `docs/workflows/TASK_AUTHORING.md`
 4. `docs/workflows/SHARED_UTILITIES.md`
-5. `docs/workflows/CODE_REVIEW_GUIDELINES.md`
-6. `docs/domains/DOCUMENT_TASK_SETUP.md`
 
-## Documents-domain rules
+## Active-contract reminders
 - Treat `documents` as structured page reasoning, not generic OCR over arbitrary prose.
 - Prefer broad families such as `readout`, `arithmetic`, `layout`, `relation`, `selection`, `forms`, and later `line_items` over one-off page templates.
 - Keep one reusable page grammar whenever multiple tasks share the same document scaffold.
 - Keep prompts explicit about the requested field so correctness does not depend on hidden assumptions about layout conventions.
+- `docs/domains/DOCUMENT_TASK_SETUP.md` owns the active documents contract.
 
-## Boundary rules
+## Boundary reminders
 - If the scene is really just a table on paper, it probably belongs in `tables` unless the surrounding document layout materially changes the task.
 - If the task depends mostly on long paragraphs or free-form OCR, it is not a good v1 documents task.
 - If the task can stay local to one or two typed fields with clear visible boxes, it is a strong early `documents` fit.
 
-## Early-family guidance
-- `readout`: one queried field, one exact visible value.
-- `arithmetic`: one named section, several visible typed values inside that section, one derived amount answer, and evidence on the operand value boxes only.
-- `layout`: one queried field cue, one containing named section, and evidence on the matching section header.
-- `relation`: one named section, several comparable values inside that section, and one exact winning visible value.
-- `selection`: one named checkbox section, a local count over checked or unchecked boxes, and evidence on the counted checkbox squares only.
-- Early scene variants can range from boxed forms to invoice sheets and receipt rows, as long as they reuse the same label/value field semantics.
-- Section-local relation tasks should make the relevant block visually explicit with section headers or grouped section chrome so the query depends on document layout, not just a global scan.
-- Keep text generation typed and controlled:
-  - identifiers,
-  - names,
-  - dates,
-  - contact fields,
-  - amounts.
-
-## Evidence rules
-- Field lookup tasks should usually ground prompt-facing evidence on the queried field label bbox plus the queried field value bbox, in that order.
-- Section-local arithmetic tasks should usually ground prompt-facing evidence on the operand value bboxes only, in the same order as the expression in the prompt.
-- Section-membership layout tasks should usually ground prompt-facing evidence on the matching section header bbox.
-- Section-local extremum tasks should usually ground prompt-facing evidence on the single winning value bbox.
-- Checkbox-count tasks should usually ground prompt-facing evidence on the counted checkbox squares in reading order, with an empty `bbox_set` allowed when the count is zero.
-- Keep page-level boxes and section chrome in trace for review, but do not widen simple field-readout or section-local value evidence to the entire document.
-
-## Text policy
-- Use realistic upstream text sources only through typed wrappers.
-- Prefer normalization + resampling over blind truncation.
-- Visible field values should be unique inside one document when the answer is one exact text string.
-
-## First-family lessons
-- A few strong layout grammars beat unconstrained page randomness.
-- Structured-random documents should vary through reusable blocks, spacing, and field selection rather than arbitrary paragraph noise.
-- Typed field generators make later document tasks much easier to verify than raw free-form text.
-- Section-aware document chrome is worth centralizing early because later checkbox, key-value, and line-item tasks will need the same block structure.
-- When two or more document families reuse the same grouped page grammar, promote the shared section templates and typed scene-value builders into a neutral shared helper instead of leaving them in one task-group-specific module.
-
-## Pair with
-- `skills/domain-audit/SKILL.md`
-- `skills/task-design/SKILL.md`
-- `skills/task-complexity/SKILL.md`
-- `skills/task-implementation/SKILL.md`
-- `skills/verification-review/SKILL.md`
+## Practical review checklist
+- Keep prompts explicit about the queried field or section; do not rely on layout conventions alone.
+- Keep text typed and controlled; prefer normalization + resampling over blind truncation.
+- Keep prompt-facing evidence local to the decisive field, section header, value, or checkbox witness.
+- Reuse one page grammar across families before adding a new document scaffold.
+- Preserve the layout-first, OCR-light boundary; avoid drifting into long-form paragraph OCR or generic table-on-paper tasks.

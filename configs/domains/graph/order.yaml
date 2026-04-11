@@ -76,8 +76,8 @@ prompt:
     bundle_id: graph_order_v1
     task_family_key: single_graph_order
     task_key: topological_position_query
-    json_output_contract: Return a valid JSON object with keys "evidence" and "answer" in that order.
-    json_output_contract_answer_only: Return a valid JSON object with key "answer".
+    json_output_contract: Use a valid JSON object with keys "evidence" and "answer" in that order for the final answer.
+    json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
     object_description: a labeled directed acyclic graph with a unique topological order
     question_text_topological_position: What is the position of node {query_label} in the unique topological order, counting from 1?
     evidence_hint: set "evidence" to an ordered array containing all node labels in the unique topological order from first to last

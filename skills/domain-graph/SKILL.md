@@ -9,12 +9,12 @@ Use this whenever the task lives under `domain=graph`.
 
 ## Read first
 1. `docs/domains/GRAPH_TASK_SETUP.md`
-2. `docs/domains/TASK_FAMILY_VARIANTS.md`
-3. `docs/project/STATUS.md`
-4. `docs/workflows/TASK_AUTHORING.md`
-5. `docs/workflows/SHARED_UTILITIES.md`
+2. `docs/project/STATUS.md`
+3. `docs/workflows/TASK_AUTHORING.md`
+4. `docs/workflows/SHARED_UTILITIES.md`
 
-## V1 graph-domain policy
+## Active-contract reminders
+- `docs/domains/GRAPH_TASK_SETUP.md` owns the active graph scene/task/evidence contract.
 - Keep graphs simple and unweighted by default; if a task needs weights, make them explicit, keep them visually readable (for example small integers such as `1..9`), and ensure they are semantically essential rather than decorative.
 - Node labels are the canonical prompt-facing identities for this domain.
 - Layout is visual variation, not semantics.
@@ -24,64 +24,12 @@ Use this whenever the task lives under `domain=graph`.
 - If a graph task mixes undirected and directed variants, make the prompt wording, trace metadata, and rendered edge treatment explicit (`degree` vs `in-degree` vs `out-degree`, arrowheads for directed edges, and a recorded `graph_directionality` field).
 - For directed path tasks, follow arrow direction semantically and verify witness uniqueness with successor adjacency plus reverse-distance checks from the goal.
 
-## Evidence heuristics
-- Use `label_set` for unordered node witness sets.
-- Use `edge_set` for unordered edge witness sets.
-- Use `label_path` for ordered node-path witnesses.
-- Use `label_sequence` for ordered node witnesses that are not graph paths.
+## Practical review checklist
+- Use the evidence contracts in `docs/domains/GRAPH_TASK_SETUP.md`: `label_set`, `edge_set`, `label_path`, or `label_sequence` according to witness semantics.
 - Treat `label_set` as unordered semantically; canonicalize it internally for determinism, but do not present ordering as part of the task unless the task truly depends on order.
 - Treat `edge_set` as an unordered semantic set of unordered endpoint pairs; canonicalize each pair and the outer set internally only for determinism.
-- Treat `label_path` as ordered semantically; preserve source-to-goal order and include endpoints whenever the path contract names them explicitly.
-- Treat `label_sequence` as ordered semantically; keep the same ordered-label-list JSON shape, but verify it against the task’s ordering rule rather than edge adjacency between consecutive labels.
-- Use one label answer or ordered label path only when the semantics truly require it.
+- Preserve `label_path` source-to-goal order and distinguish it from `label_sequence`, which is ordered but not necessarily path-adjacent.
 - Keep node/edge pixel geometry in trace for reviews and overlays, but do not force bbox evidence when labels already provide the natural witness contract.
 - When unordered graph evidence uses numeric labels, canonicalize it in ascending numeric label order rather than raw lexicographic string order; do not reorder `label_path` or `label_sequence` witnesses, because their task semantics depend on the emitted order.
-
-## Variation heuristics
 - Separate topology variation from layout variation.
-- Use topology families such as:
-  - balanced
-  - low_degree
-  - hub_heavy
-- Use layout families such as:
-  - circular
-  - shell
-  - spring
-- Add safe whole-image style axes such as:
-  - label format (`letters|numbers`)
-  - node glyph (`circle|rounded_square|hexagon`)
-  - named node color
-  - global layout transform
-- Make sure layout choice does not leak the answer or change the node labels.
-
-## Current graph coverage
-- `comparison`
-  - `task_graph_comparison_largest_component_size`
-- `counting`
-  - `task_graph_counting_degree_count`
-  - `task_graph_counting_articulation_point_count`
-  - `task_graph_counting_bridge_count`
-- `path`
-  - `task_graph_path_shortest_path_length`
-- `optimization`
-  - `task_graph_optimization_minimum_spanning_tree_weight`
-- `order`
-  - `task_graph_order_topological_position`
-- `relation`
-  - `task_graph_relation_reachable_count`
-  - `task_graph_relation_same_component_count`
-  - `task_graph_relation_unique_cycle_size`
-
-## Shared helpers to prefer
-- `trace/tasks/graph/shared/graph_sampling.py`
-- `trace/tasks/graph/shared/graph_scene.py`
-- `trace/tasks/graph/shared/task_support.py`
-- `trace/tasks/graph/shared/visual_defaults.py`
-- `trace/tasks/graph/shared/complexity.py`
-
-## Pair with
-- `skills/domain-audit/SKILL.md`
-- `skills/task-design/SKILL.md`
-- `skills/task-complexity/SKILL.md`
-- `skills/task-implementation/SKILL.md`
-- `skills/verification-review/SKILL.md`
+- Prefer shared graph helpers under `trace/tasks/graph/shared/` before adding task-local sampling/rendering logic.

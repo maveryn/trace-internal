@@ -3,17 +3,22 @@
 ## Purpose
 Define how we split tasks into reusable families so each dataset slice stays comparable and avoids hidden weighting bias.
 
+This file owns cross-domain family/variant boundary guidance. Detailed active
+contracts stay in the relevant `*_TASK_SETUP.md` doc when one exists, and should
+not be copied into skills or planning notes.
+
 ## Core rule
 1. **Family = reasoning mode** (for example `measurement`, `comparison`).
 2. **Variant = visual/semantic subtype inside a family** (for example polygon `n`-gon subtype, query subtype).
 3. Keep family boundaries stable; add variants before adding new families unless reasoning mode changes.
 
-## Geometry direction (current)
+## Geometry family-boundary rules
 1. `measurement` should use **one primary object per image**.
 2. Multi-object value-query geometry tasks belong under `comparison` (separate from single-object `measurement`).
 3. Multi-object geometry class-membership tasks belong under `counting`; scenes should label whole objects and count how many match one requested class.
 4. `analytical_2d` should use one primary annotated scene where area/length/perimeter must be inferred from symbolic/numeric relationships (not direct readout); auxiliary constructions or coupled shapes are acceptable when they are part of the derivation.
 5. `comparison` should enforce exactly one winner by construction and use one reusable winner-gap policy (`gap_norm >= 0.20` plus optional task-level absolute floors) so scenes stay readable without hand-tuned per-instance ambiguity checks.
+6. Keep active geometry task inventory and scene/query/evidence details in the `Geometry active surface` section of this file rather than restating them in skills or planning notes.
 
 ## Icons direction (current)
 1. `counting` should use a reference panel plus a scene panel rather than raw icon-name prompts.
@@ -21,6 +26,7 @@ Define how we split tasks into reusable families so each dataset slice stays com
 3. Orientation-sensitive icon tasks should use the curated asymmetric Prism subset (`non_symmetry.txt`) so rotated matches remain visually meaningful.
 4. Prism-style icon counting should sample `target_count` and `distractor_count` from explicit supports, derive `object_count` from the pair, place icons randomly under an explicit overlap cap, and keep per-icon noise on the individual icon instances rather than as a full-image post-process.
 5. Icons relation tasks should keep one visibly marked `Anchor` icon in the Scene panel, use a smaller spatial count range than global counting, and ground matches with scene-only `bbox_set` evidence.
+6. Keep active icon task inventory, scene/query/evidence details, and asset-manifest policy in `ICON_TASK_SETUP.md` rather than restating them in skills or cross-domain notes.
 
 ## Planned tile direction
 1. Tile tasks should use one board per image and keep prompts grounded in board coordinates rather than raw pixel positions.
@@ -263,18 +269,18 @@ Define how we split tasks into reusable families so each dataset slice stays com
    - keeps integer answers with unordered `bbox_set` evidence over the empty liberty intersections of the highlighted group
    - uses one non-semantic `style_variant` axis `classic|soft|outlined` for board and stone chrome only
 13. Dots-and-boxes tasks should keep the highlighted starting move explicit in the image and state the bonus-turn / forced-continuation rule directly in the prompt so the task stays grounded in the visible board state instead of hidden strategy.
-13. Bingo-card tasks should keep the first scaffold to one visible `5 x 5` card and state exactly which line types count; do not imply diagonal or free-center rules unless the prompt says so directly.
-14. Card-hand tasks should keep visible card counts in the `7..14` range, with two-row layouts reserved for larger hands so cards stay readable.
-15. Domino-chain tasks should keep the top chain as reference/context and the loose dominoes below as the counted witness set, with explicit rule text whenever the query depends on open-end matching, pip sums, or doubles.
-16. Reversi tasks should keep the current player explicit in both the image and the prompt, and should ground evidence on board squares rather than on decorative board chrome.
-17. Connect Four tasks should keep gravity semantics explicit in the prompt, show the current player on the board badge, define “safe” directly when a query depends on next-turn threats, and ground evidence on landing cells instead of whole columns.
-18. Checkers tasks should make forward movement direction explicit in the prompt, avoid king semantics in early versions, and ground evidence on landing squares instead of the moving pieces themselves.
-19. Mancala tasks should teach the sowing rule directly in the prompt, keep the active side fixed and explicit in both the image and prompt, and ground evidence on the starting pits themselves rather than on implied landing locations or stores.
-20. Nine-men's-morris tasks should define a mill explicitly and state that overlapping mill pieces are counted once so the count stays tied to visible piece membership rather than assumed board expertise.
-21. Go liberty tasks should keep the board fixed to one visible `7 x 7` scaffold, define both `group` and `liberty` directly in the prompt, and ground evidence on the empty liberty intersections instead of on the highlighted group stones.
-22. When a card-hand task depends on display order across wrapped rows (for example longest-run questions), keep an explicit continuation cue in the image and state the reading order directly in the prompt.
+14. Bingo-card tasks should keep the first scaffold to one visible `5 x 5` card and state exactly which line types count; do not imply diagonal or free-center rules unless the prompt says so directly.
+15. Card-hand tasks should keep visible card counts in the `7..14` range, with two-row layouts reserved for larger hands so cards stay readable.
+16. Domino-chain tasks should keep the top chain as reference/context and the loose dominoes below as the counted witness set, with explicit rule text whenever the query depends on open-end matching, pip sums, or doubles.
+17. Reversi tasks should keep the current player explicit in both the image and the prompt, and should ground evidence on board squares rather than on decorative board chrome.
+18. Connect Four tasks should keep gravity semantics explicit in the prompt, show the current player on the board badge, define “safe” directly when a query depends on next-turn threats, and ground evidence on landing cells instead of whole columns.
+19. Checkers tasks should make forward movement direction explicit in the prompt, avoid king semantics in early versions, and ground evidence on landing squares instead of the moving pieces themselves.
+20. Mancala tasks should teach the sowing rule directly in the prompt, keep the active side fixed and explicit in both the image and prompt, and ground evidence on the starting pits themselves rather than on implied landing locations or stores.
+21. Nine-men's-morris tasks should define a mill explicitly and state that overlapping mill pieces are counted once so the count stays tied to visible piece membership rather than assumed board expertise.
+22. Go liberty tasks should keep the board fixed to one visible `7 x 7` scaffold, define both `group` and `liberty` directly in the prompt, and ground evidence on the empty liberty intersections instead of on the highlighted group stones.
+23. When a card-hand task depends on display order across wrapped rows (for example longest-run questions), keep an explicit continuation cue in the image and state the reading order directly in the prompt.
 
-## Geometry direction (current)
+## Geometry active surface (current)
 1. Geometry now exposes ten active task ids:
    - `task_geometry_measurement_value`
    - `task_geometry_comparison_value`
@@ -336,147 +342,6 @@ Define how we split tasks into reusable families so each dataset slice stays com
    - uses a two-panel cube-stack + blank query-grid scaffold rather than graph paper
    - keeps integer answers with prompt-facing `bbox_set` evidence on the query-grid cells that should be filled in the requested orthographic view
 14. For the five consolidated value tasks, `execution_trace`, `query_spec.params`, and `scene_ir.relations` should expose the consolidated `scene_variant` / `query_variant` pair, while preserving `legacy_task_id` and other `legacy_*` trace slots for auditability.
-16. **Icons counting reference match (`task_icons_counting_reference_match_count`)**
-   - One two-panel image with a `Reference` icon and a `Scene` panel of icons.
-   - Query variants: `match_type|match_color|match_orientation|match_attribute_binding`.
-   - Count support: `target_count` in `0..10`, `distractor_count` in `1..10`, total scene icons in `1..20`.
-   - Answer type: integer count.
-   - Evidence: scene-only `bbox_set` in final image coordinates.
-   - The wrapper preserves the legacy type/color/orientation/attribute-binding generators underneath while exposing one consolidated task surface.
-17. **Icons counting size relation (`task_icons_counting_size_relation`)**
-   - One two-panel image with a `Reference` icon and a `Scene` panel of icons.
-   - Query variants: count scene icons that are `smaller` or `larger` than the reference icon.
-   - Scene keeps the same icon type as the reference while randomizing tint and rotation; size is the only matching predicate.
-   - Count support: `target_count` in `0..8`, `distractor_count` in `1..8`, total scene icons in `1..16`.
-   - Size distinction rule: reference nominal size is sampled from `64..96` px, scene nominal sizes from `40..120` px, and every scene icon must satisfy `|scene_size-reference_size| >= 12` px so there are no same-size near misses.
-   - Answer type: integer count.
-   - Evidence: scene-only `bbox_set` in final image coordinates.
-18. **Icons transformation pair count (`task_icons_transformation_pair_count`)**
-   - One two-panel image with a `Reference` pair and a labeled `Scene` grid of icon pairs.
-   - Query: how many Scene cells apply the same transformation as the Reference pair.
-   - Transform vocabulary: `rot90`, `rot180`, `rot270`, `flip_h`, `flip_v`, `flip_diag_main`, `flip_diag_anti`.
-   - Count support: `target_count` in `0..6`, `distractor_count` in `1..6`, total Scene cells in `2..12`.
-   - Answer type: integer count.
-   - Evidence: sorted `label_set` of the matching Scene cell labels.
-   - Visual distinction rule: candidate icons are accepted only when the sampled transform and at least one distractor transform remain visually distinct from identity and from the reference transform.
-19. **Icons relation relative-position type (`task_icons_relation_relative_position_type`)**
-   - One two-panel image with a `Reference` icon on the left and a `Scene` panel of icons on the right; exactly one Scene icon is visibly marked as the `Anchor`.
-   - Query variants: `left_of_anchor`, `right_of_anchor`, `above_anchor`, `below_anchor`.
-   - Count support: `target_count` in `0..5`, `distractor_count` in `max(1, target_count + 1)..10`, with the Anchor excluded from the counted candidate set.
-   - Answer type: integer count.
-   - Evidence: scene-only `bbox_set` in final image coordinates.
-   - Spatial distinction rule: evaluate left/right/above/below strictly from rendered bboxes, mix distractors across same-type wrong-side and different-type queried-side cases so the scene cannot be solved from one-sided occupancy alone, and require same-type wrong-side distractors to sit mostly outside the queried region (Prism-style relaxed margin rule).
-20. **Icons relation between two anchors count (`task_icons_relation_between_two_anchors_count`)**
-   - One single-panel image with free-placed Scene icons and two visibly marked anchors `A` and `B`.
-   - Query variants: `inside_vertical_strip`, `inside_horizontal_strip`.
-   - Count support: `target_count` in `0..5`, `distractor_count` in `1..10`, with the anchors excluded from the counted candidate set.
-   - Answer type: integer count.
-   - Evidence: scene-only `bbox_set` in final image coordinates.
-   - Spatial distinction rule: anchors share the same icon type/tint/rotation and are exactly aligned on the non-varying axis, all candidates use a different icon type from the anchors, and strip membership is evaluated from icon centers with a fixed `14` px boundary margin so no candidate center sits near the strip edge.
-21. **Icons relation mirror symmetry (`task_icons_relation_mirror_symmetry`)**
-   - One two-panel image with a `Reference` cell on the left and a labeled `Scene` grid of icon-arrangement cells on the right.
-   - Query variants: `mirror_vertical`, `mirror_horizontal`, `mirror_diagonal_main`, `mirror_diagonal_anti`, `mirror_both_axes`.
-   - Count support: fixed `6` Scene cells, `target_count` in `0..4`, `distractor_count = 6 - target_count`.
-   - Answer type: integer count.
-   - Evidence: sorted `label_set` of the matching Scene cell labels.
-   - Exactness rule: matching cells must satisfy exactly the same supported symmetry signature as the Reference cell (vertical, horizontal, main-diagonal, anti-diagonal, or vertical+horizontal only); distractors are a mix of exact-other-signature cells and cells with none of the supported symmetries, and the task uses the curated asymmetric icon subset so icon-level symmetry does not blur those signatures.
-22. **Icons relation occlusion order (`task_icons_relation_occlusion_order`)**
-   - One two-panel image with a `Reference` cell on the left and a labeled `Scene` grid of overlapping icon pairs on the right.
-   - Query: how many labeled Scene cells show the same front-to-back order as the Reference cell.
-   - Count support: `target_count` in `0..6`, `distractor_count` in `1..6`, total Scene cells in `2..12`.
-   - Answer type: integer count.
-   - Evidence: sorted `label_set` of the matching Scene cell labels.
-26. **Graph counting degree count (`task_graph_counting_degree_count`)**
-   - One single-panel labeled node-link graph.
-   - Query variants: `How many nodes have degree k?`, `How many nodes have in-degree k?`, and `How many nodes have out-degree k?`
-   - Graph contract: simple unweighted graph with `5..10` nodes for undirected degree queries and `5..9` nodes for directed in-/out-degree queries, labeled from `A..J` or `1..10`; the directed variants render arrowheads and reject reciprocal edge pairs for readability.
-   - Variation axes: `topology_profile` (`balanced|low_degree|hub_heavy`) and `scene_variant` (`circular|shell|spring`).
-   - Answer type: integer count.
-   - Evidence: `label_set` of the node labels whose asked degree measure equals `k`.
-27. **Graph relation same-component count (`task_graph_relation_same_component_count`)**
-   - One single-panel labeled undirected node-link graph.
-   - Query: `How many nodes, including node X itself, are in the same connected component as X?`
-   - Graph contract: simple disconnected unweighted graph with `5..10` nodes, `2..4` connected components, and a queried component size in `1..6`.
-   - Variation axes: `topology_profile` (`balanced|low_degree|hub_heavy`) and `scene_variant` (`circular|shell|spring`), plus non-semantic label/shape/color/layout-transform diversity shared with the graph domain.
-   - Answer type: integer count.
-   - Evidence: `label_set` of all node labels in the connected component containing the queried node, including the queried node itself.
-28. **Graph comparison largest-component size (`task_graph_comparison_largest_component_size`)**
-   - One single-panel labeled undirected node-link graph.
-   - Query: `How many nodes are in the largest connected component?`
-   - Graph contract: simple disconnected unweighted graph with `5..10` nodes, `2..4` connected components, and a unique-largest-component size in `2..6`.
-   - Variation axes: `topology_profile` (`balanced|low_degree|hub_heavy`) and `scene_variant` (`circular|shell|spring`), plus non-semantic label/shape/color/layout-transform diversity shared with the graph domain.
-   - Answer type: integer count.
-   - Evidence: `label_set` of all node labels in the unique largest connected component.
-29. **Graph counting articulation-point count (`task_graph_counting_articulation_point_count`)**
-   - One single-panel labeled undirected node-link graph.
-   - Query: `How many nodes are articulation points?`
-   - Graph contract: simple undirected graph with `5..10` nodes and articulation-point-count support `0..8`.
-   - Variation axes: `topology_profile` (`balanced|low_degree|hub_heavy`) and `scene_variant` (`circular|shell|spring`), plus non-semantic label/shape/color/layout-transform diversity shared with the graph domain.
-   - Answer type: integer count.
-   - Evidence: `label_set` of all articulation-point nodes.
-30. **Graph counting bridge count (`task_graph_counting_bridge_count`)**
-   - One single-panel labeled undirected node-link graph.
-   - Query: `How many edges are bridges?`
-   - Graph contract: simple connected undirected graph with `5..10` nodes and bridge-count support `0..8`.
-   - Variation axes: `topology_profile` (`balanced|low_degree|hub_heavy`) and `scene_variant` (`circular|shell|spring`), plus non-semantic label/shape/color/layout-transform diversity shared with the graph domain.
-   - Answer type: integer count.
-   - Evidence: `edge_set` of all bridge edges, represented as unordered endpoint-label pairs.
-31. **Graph relation unique-cycle size (`task_graph_relation_unique_cycle_size`)**
-   - One single-panel labeled undirected node-link graph.
-   - Query: `The graph contains exactly one cycle. How many nodes are in that cycle?`
-   - Graph contract: connected unicyclic graph with `5..10` nodes, unique-cycle-size support `3..7`, and at least one node outside the cycle.
-   - Variation axes: `topology_profile` (`balanced|low_degree|hub_heavy`) and `scene_variant` (`circular|shell|spring`), plus non-semantic label/shape/color/layout-transform diversity shared with the graph domain.
-   - Answer type: integer count.
-   - Evidence: `label_set` of all node labels in the unique cycle.
-32. **Graph path shortest-path length (`task_graph_path_shortest_path_length`)**
-   - One single-panel labeled node-link graph.
-   - Query: `The graph has a unique shortest path from node X to node Y. How many edges are in that path?` or `The directed graph has a unique shortest path from node X to node Y, following the direction of the arrows. How many edges are in that path?`
-   - Graph contract: connected simple graph, shortest-path-length support `1..5`, at least one node outside the witness path, undirected node counts in `5..10`, directed node counts in `5..9`, and exactly one shortest witness path between the queried endpoints.
-   - Variation axes: `topology_profile` (`balanced|low_degree|hub_heavy`) and `scene_variant` (`circular|shell|spring`), plus non-semantic label/shape/color/layout-transform diversity shared with the graph domain.
-   - Answer type: integer count.
-   - Evidence: ordered `label_path` of all node labels on the unique shortest path from the queried source node to the queried goal node, including both endpoints.
-33. **Graph relation reachable count (`task_graph_relation_reachable_count`)**
-   - One single-panel labeled directed node-link graph.
-   - Query: `How many nodes, including node X itself, are reachable from X by following the direction of the arrows?`
-   - Graph contract: simple directed graph with `5..9` nodes, reachable-count support `1..7`, at least one unreachable node, and traversal semantics defined only by directed successor adjacency.
-   - Variation axes: `topology_profile` (`balanced|low_degree|hub_heavy`) and `scene_variant` (`circular|shell|spring`), plus non-semantic label/shape/color/layout-transform diversity shared with the graph domain.
-   - Answer type: integer count.
-   - Evidence: unordered `label_set` of all node labels reachable from the queried source node, including the queried node itself.
-34. **Graph optimization minimum-spanning-tree weight (`task_graph_optimization_minimum_spanning_tree_weight`)**
-   - One single-panel labeled connected weighted node-link graph.
-   - Query: `The weighted graph has a unique minimum spanning tree. What is its total weight?`
-   - Graph contract: simple undirected graph with `5..8` nodes, `1..2` extra non-tree edges, distinct integer edge weights in `1..9`, and a unique MST by construction.
-   - Variation axes: `topology_profile` (`balanced|low_degree|hub_heavy`) and `scene_variant` (`circular|shell|spring`), plus non-semantic label/shape/color/layout-transform diversity shared with the graph domain.
-   - Answer type: integer total weight.
-   - Evidence: `edge_set` of all MST edges, represented as unordered endpoint-label pairs.
-35. **Graph order topological position (`task_graph_order_topological_position`)**
-   - One single-panel labeled directed acyclic graph.
-   - Query: `What is the position of node X in the unique topological order, counting from 1?`
-   - Graph contract: simple DAG with `5..7` nodes, a unique topological order by construction, and target-position support `1..7`.
-   - Variation axes: `topology_profile` (`balanced|low_degree|hub_heavy`) and `scene_variant` (`circular|shell|spring`), plus non-semantic label/shape/color/layout-transform diversity shared with the graph domain.
-   - Answer type: integer position.
-   - Evidence: ordered `label_sequence` of all node labels in the unique topological order from first to last.
-31. **Icons sequence missing count (`task_icons_sequence_missing_count`)**
-   - One single-panel image with a horizontal row of `4..6` Scene boxes.
-   - Query: how many icons should appear in the missing Scene box to continue the sequence.
-   - Sequence rule: visible box counts follow one arithmetic progression with hidden answer support `0..10` and integer step `±1..±3`.
-   - Visual rule: all visible Scene icons keep one shared icon type and tint, may vary by rotation, use the smaller `24..40` px size band, stay within `20%` pairwise overlap inside each box, and each instance samples one row box width/height with the final canvas fit to that row geometry.
-   - Answer type: integer count.
-   - Evidence: one-box `bbox_set` for the missing Scene box in final image coordinates.
-32. **Icons pattern structured violation (`task_icons_pattern_structured_violation`)**
-   - One single-panel image with either a numbered sequence row or a numbered `3 x 3` grid of Scene boxes.
-   - Query: which numbered box breaks the visible pattern.
-   - Pattern variants: `row_rotation_violation|grid_rotation_violation|grid_size_violation`.
-   - Answer type: integer box index.
-   - Evidence: one-box `bbox_set` for the violating numbered box in final image coordinates.
-   - The wrapper preserves the legacy row/grid generators underneath while exposing one broader active task surface with `scene_variant` and `task_variant`.
-33. **Icons counting singleton type (`task_icons_counting_singleton_type`)**
-   - One single-panel image with `6..15` randomly placed Scene icons.
-   - Query: how many icons have a type that appears exactly once in the image.
-   - Frequency rule: counting is over icon type only; colors and rotations may vary per icon, but repeated `icon_id` values define the repeated groups and singleton `icon_id` values define the counted witnesses.
-   - Sampling rule: `target_count` in `0..5`; the remaining icons are partitioned into `1..4` repeated types with multiplicity `2..4` each, so at least one repeated type always remains in the scene.
-   - Answer type: integer count.
-   - Evidence: sorted `bbox_set` of the singleton-type icons in final image coordinates.
 
 ## Future polygon variants (deferred)
 1. Polygon diameter measurement.

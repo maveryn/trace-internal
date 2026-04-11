@@ -13,65 +13,16 @@ Use this whenever the task lives under `domain=tables`.
 3. `docs/workflows/TASK_AUTHORING.md`
 4. `docs/workflows/SHARED_UTILITIES.md`
 
-## Table-domain rules
+## Active-contract reminders
+- Treat `docs/domains/TABLE_TASK_SETUP.md` as the active table contract; do not duplicate its task/evidence inventory here.
 - Keep `task_group` aligned to reasoning family, not table style.
-- Keep `scene_variant` for visual table styling and keep the table semantics separate from the style layer.
-- Styled table scenes currently live under `trace/tasks/tables/shared/table_scene.py`.
-- Table construction/config helpers currently live under `trace/tasks/tables/shared/table_common.py`.
-- Table-domain background/noise defaults currently live under `trace/tasks/tables/shared/visual_defaults.py`.
-- Reuse the shared short-name manifest through `trace/tasks/shared/name_assets.py` whenever visible person-style row labels are needed.
-- If a table task needs time-series semantics, keep the same table renderer and introduce chronological year headers in `trace/tasks/tables/shared/table_common.py` rather than creating a new visual table style.
+- Use `scene_variant` for visual table styling only; `spreadsheet`, `zebra`, `ledger`, and `card_table` must not change table semantics.
+- Keep table evidence prompt-facing as `bbox_set`, with ordering and minimal supporting regions defined by the setup doc.
+- Reuse `trace/tasks/shared/name_assets.py` for visible person-style row labels.
 
-## Evidence rules
-- Tables should use one stable prompt-facing evidence type: `bbox_set`.
-- Table evidence boxes should mark the minimal supporting table region(s).
-- Use one cell bbox when a single numeric cell is decisive.
-- Use one row-region bbox when the witness is a whole row of numeric cells.
-- Use one column-region bbox when the witness is a whole numeric column.
-- For column-filter counting tasks, use one bbox per matching queried-column value cell in deterministic top-to-bottom row order.
-- If a task has multiple disjoint decisive regions, use multiple boxes in deterministic order rather than inventing a new evidence type.
-- For table readout tasks that query multiple cells, keep bbox evidence in the same order the cells are named in the prompt and record that ordered query-cell metadata in trace.
-- For pairwise table comparison tasks, keep evidence as the ordered pair of compared value-cell bboxes rather than only the winning cell so the comparison witness remains explicit.
-- For counting tasks that compare two columns row-by-row, keep evidence row-major and preserve prompt column order within each matching row's bbox pair.
-- For filtered table aggregation tasks, keep evidence as ordered `[filter cell, target cell]` bbox pairs for each selected row instead of inventing a special filter witness type.
-- For extremum-transfer tasks, keep evidence as exactly two boxes ordered `[source extremum cell, transferred target cell]`.
-- For table ranking tasks beyond plain argmax/argmin, use the queried-column region bbox when the witness is the column-wide ordering, not a single decisive cell.
-
-## Design heuristics
-- Treat table style as presentation only. `spreadsheet`, `zebra`, `ledger`, and `card_table` should not change the reasoning contract.
-- Keep one leftmost row-label column unless a task has a documented reason to change the schema.
-- Prefer short visible row labels and short metric headers so the table stays readable at moderate row/column counts.
-- Keep early table tasks column-centric where possible: column summary, column filtering, and direct row+column cell readout all reuse the same clear table schema well.
-- When row/column/table summary mirrors still share the same answer shape and `bbox_set` evidence contract, prefer widening `task_variant` inside the existing statistics task instead of splitting out near-duplicate sibling task ids.
-- Split row/column table reasoning into separate task ids only when the prompt contract or the evidence contract materially diverges.
-- If a table readout task broadens from one exact cell to one-or-more queried cells with simple arithmetic, rename the task/module to the broader subset concept instead of keeping a stale `cell_value` name.
-- Keep prompts explicit about what evidence region should be boxed.
-- When row/column summary mirrors share the same answer shape and the same `bbox_set` evidence contract, prefer widening `task_variant` inside the existing statistics task instead of adding a near-duplicate sibling task id.
-- When a whole-table numeric summary uses the same integer answer shape and one region-level `bbox_set` witness, prefer adding it as another `task_tables_statistics_summary_value` variant instead of creating a separate global-summary task id.
-- When a table counting variant still returns one integer row count and uses deterministic `bbox_set` witnesses over the matching rows, prefer widening `task_tables_counting_value_count` rather than creating a sibling counting task id just because the predicate changes from one-column filtering to row-wise two-column comparison.
-- When a table task combines selection and aggregation, keep one semantic axis in `task_variant` and let simpler internal subtypes (for example filter condition flavor) vary inside the task if that avoids exploding the task count without changing the evidence contract.
-
-## Schema lessons learned
-- Row-name answers can be real visible strings; they do not need to be forced into `option_letter`.
-- The evidence contract is cleaner if the answer is the row label and the evidence is the decisive supporting cell/region bbox.
-- For row-comparison tasks, a row-label answer plus the ordered pair of compared cells is cleaner than trying to invent a new pairwise evidence type.
-- The prompt should always name the queried column or row explicitly so the evidence region is obvious.
-- Table tasks are a strong fit for `scene_variant` expansion because table styling can vary widely while the cell geometry contract stays stable.
-
-## Readability rules
-- Prefer moderate row/column counts and readable cell padding over squeezing in more schema complexity.
-- Use style variation through shading, borders, and frame treatment before changing the semantic table layout.
-- Keep header text and row labels short enough that cells do not rely on clipping or tiny fonts.
-- If a new style makes cell text hard to read, adjust canvas size, font size, or padding before reducing the task contract.
-
-## Coverage reference
-For current table coverage and active task families, use:
-- `docs/project/STATUS.md`
-- `docs/domains/TASK_FAMILY_VARIANTS.md`
-
-## Pair with
-- `skills/domain-audit/SKILL.md`
-- `skills/task-design/SKILL.md`
-- `skills/task-complexity/SKILL.md`
-- `skills/task-implementation/SKILL.md`
-- `skills/verification-review/SKILL.md`
+## Review checklist
+- Confirm prompts name queried rows, columns, cells, years, filters, ranks, or intervals explicitly enough that the supporting bbox evidence is unambiguous.
+- Preserve deterministic bbox ordering whenever prompt order or row order matters.
+- Keep table helper reuse under `trace/tasks/tables/shared/` unless the helper is cross-domain enough for `trace/tasks/shared/`.
+- Add a `task_variant` when answer/evidence contracts stay the same; split the task only when the prompt or evidence contract materially changes.
+- Prefer readable tables over schema complexity: short labels, moderate row/column counts, and style variation through borders, shading, and framing.

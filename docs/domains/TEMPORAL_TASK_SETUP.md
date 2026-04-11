@@ -3,6 +3,10 @@
 ## Purpose
 Capture the active v1 contract for the `temporal` domain.
 
+This is the active temporal-domain contract. For cross-domain coverage rollups,
+use `docs/project/STATUS.md` and `docs/domains/TASK_FAMILY_VARIANTS.md` instead
+of repeating those inventories in temporal-specific notes or skills.
+
 ## Active families
 1. Current active `task_group` values:
    - `clock`
@@ -67,19 +71,19 @@ Capture the active v1 contract for the `temporal` domain.
 4. `task_temporal_calendar_month_view` uses `task_family_key=month_calendar` and `task_key=calendar_month_query`.
 5. `task_temporal_schedule_day_planner` uses `task_family_key=day_schedule` and `task_key=schedule_day_query`.
 6. `task_temporal_timeline_milestones` uses `task_family_key=milestone_timeline` and `task_key=timeline_milestone_query`.
-6. `task_variant_key` values stay task-specific:
+7. `task_variant_key` values stay task-specific:
    - `shown_time|minutes_after|minutes_before` for readout
    - `earliest_time|latest_time` for compare
    - `date_of_weekday_occurrence|count_marked_weekend_days|days_between_marked_dates` for calendar
    - `overlap_count|longer_than_reference_count|maximum_non_overlapping_count` for schedule
    - `before_reference_count|between_reference_events_count|position_of_reference` for timeline
-7. Required slots:
+8. Required slots:
    - task-family: `object_description`
    - task-variant: `delta_minutes` for the readout offset variants only
    - task-variant: `ordinal`, `weekday_name` for `date_of_weekday_occurrence`
    - answer-only mode: `json_output_contract_answer_only`, `answer_hint`, `json_example_answer_only`
    - answer+evidence mode: `json_output_contract`, `evidence_hint`, `answer_hint`, `json_example`
-8. Prompt-facing examples must match the active query semantics; for readout offset variants, do not reuse the shown-time example answer unchanged.
+9. Prompt-facing examples must match the active query semantics; for readout offset variants, do not reuse the shown-time example answer unchanged.
 
 ## Visual policy
 1. Temporal tasks use the same light solid background baseline as the other clean synthetic domains.

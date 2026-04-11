@@ -2,6 +2,9 @@
 
 Review artifacts live under `task-reviews/<domain>/<task_id>/`.
 
+Task-unit audit notes live separately under:
+- `task-reviews/task-unit-audit/`
+
 Each reviewed task directory may contain:
 - `random_review_100.json`
 - `distribution_review.json`

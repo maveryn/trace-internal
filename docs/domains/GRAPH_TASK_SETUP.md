@@ -3,6 +3,8 @@
 ## Purpose
 Define the concrete v1 setup for the current graph-domain task families.
 
+This is the active graph-domain contract. For cross-domain coverage rollups, use `docs/project/STATUS.md` and `docs/domains/TASK_FAMILY_VARIANTS.md` instead of repeating those inventories elsewhere.
+
 ## V1 scope
 1. `domain = graph`
 2. Active `task_group`s:

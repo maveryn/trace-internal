@@ -13,11 +13,7 @@ Use this before writing code for a new task or before changing a task's contract
 3. `docs/domains/TASK_FAMILY_VARIANTS.md`
 4. `docs/project/STATUS.md`
 
-If the task is domain-specific, also open:
-- `skills/domain-charts/SKILL.md`
-- `skills/domain-tables/SKILL.md`
-- `skills/domain-tile/SKILL.md`
-- `skills/domain-geometry/SKILL.md`
+If the task is domain-specific, also open the matching `docs/domains/*_TASK_SETUP.md` file and `skills/domain-<domain>/SKILL.md`.
 
 If the task needs a new or revised difficulty policy, also open:
 - `skills/task-complexity/SKILL.md`

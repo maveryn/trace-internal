@@ -2,6 +2,8 @@
 
 Use this document for the active `games` domain contract.
 
+For cross-domain coverage rollups, use `docs/project/STATUS.md` and `docs/domains/TASK_FAMILY_VARIANTS.md` instead of repeating those inventories here.
+
 ## 1) Domain scope
 1. `games` should stay state-first: the image should depict a recognizable game artifact whose visible pieces are enough to solve the query.
 2. Early games tasks should prefer low-convention counting/comparison questions over deep game-strategy or hidden-information rules.
@@ -151,49 +153,9 @@ Use this document for the active `games` domain contract.
 3. When a query asks about an ordered sequence across wrapped rows, make the reading order explicit in both the image and the prompt.
 4. Keep evidence local to the actual pieces that satisfy the queried predicate.
 
-## 4) Active coverage snapshot
-1. `dots_and_boxes`
-   - `task_games_dots_and_boxes_capture_count`
-2. `bingo`
-   - `task_games_bingo_completed_line_count`
-3. `cards`
-   - `task_games_cards_hand_count`
-4. `dominoes`
-   - `task_games_dominoes_chain_count`
-5. `reversi`
-   - `task_games_reversi_move_count`
-6. `connect_four`
-   - `task_games_connect_four_move_count`
-7. `checkers`
-   - `task_games_checkers_move_count`
-8. `mancala`
-   - `task_games_mancala_move_count`
-9. `nine_mens_morris`
-   - `task_games_nine_mens_morris_pieces_in_mill_count`
-10. `go`
-   - `task_games_go_group_liberty_count`
-
-## 5) Shared helper placement
+## 4) Shared helper placement
 1. Cross-domain integer-support balancing now lives in `trace/tasks/shared/support_sampling.py`.
-2. Games-domain visual defaults belong in `trace/tasks/games/shared/visual_defaults.py`.
-3. Games-domain shared axis-sampling helpers belong in `trace/tasks/games/shared/sampling.py`.
-4. Games-domain card / domino / bingo / dots-and-boxes / Reversi / Connect Four / Checkers / Mancala / Morris theming belongs in `trace/tasks/games/shared/style.py`.
-5. Games-domain dots-and-boxes rules helpers belong in `trace/tasks/games/shared/dots_boxes_common.py`.
-6. Games-domain dots-and-boxes board rendering helpers belong in `trace/tasks/games/shared/dots_boxes_scene.py`.
-7. Games-domain bingo-card construction helpers belong in `trace/tasks/games/shared/bingo_common.py`.
-8. Games-domain bingo-card rendering helpers belong in `trace/tasks/games/shared/bingo_scene.py`.
-9. Games-domain card-hand rendering helpers belong in `trace/tasks/games/shared/card_scene.py`.
-10. Games-domain domino-chain rendering helpers belong in `trace/tasks/games/shared/domino_scene.py`.
-11. Games-domain Reversi rules helpers belong in `trace/tasks/games/shared/reversi_common.py`.
-12. Games-domain Reversi board rendering helpers belong in `trace/tasks/games/shared/reversi_scene.py`.
-13. Games-domain Connect Four rules helpers belong in `trace/tasks/games/shared/connect_four_common.py`.
-14. Games-domain Connect Four board rendering helpers belong in `trace/tasks/games/shared/connect_four_scene.py`.
-15. Games-domain Checkers rules helpers belong in `trace/tasks/games/shared/checkers_common.py`.
-16. Games-domain Checkers board rendering helpers belong in `trace/tasks/games/shared/checkers_scene.py`.
-17. Games-domain Mancala rules helpers belong in `trace/tasks/games/shared/mancala_common.py`.
-18. Games-domain Mancala board rendering helpers belong in `trace/tasks/games/shared/mancala_scene.py`.
-19. Games-domain Morris rules helpers belong in `trace/tasks/games/shared/morris_common.py`.
-20. Games-domain Morris board rendering helpers belong in `trace/tasks/games/shared/morris_scene.py`.
-21. Games-domain Go rules helpers belong in `trace/tasks/games/shared/go_common.py`.
-22. Games-domain Go board rendering helpers belong in `trace/tasks/games/shared/go_scene.py`.
-23. Games-domain normalized complexity helpers belong in `trace/tasks/games/shared/complexity.py`.
+2. Games-domain visual defaults, style/theme handling, axis sampling, and normalized complexity helpers belong under `trace/tasks/games/shared/visual_defaults.py`, `trace/tasks/games/shared/style.py`, `trace/tasks/games/shared/sampling.py`, and `trace/tasks/games/shared/complexity.py`.
+3. Game-specific rules/data helpers belong under the narrow reusable `trace/tasks/games/shared/*_common.py` module for that game when one exists.
+4. Game-specific renderers belong under the corresponding `trace/tasks/games/shared/*_scene.py` module.
+5. Do not duplicate game rules or renderer utilities inside one task module if another active game task can reuse them.

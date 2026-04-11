@@ -28,32 +28,32 @@
   },
   "task_variant_templates": {
     "king_non_touch": [
-      "Identical symbols may not touch edge-to-edge or corner-to-corner. Which option correctly completes the question-mark cell? Answer with the option letter.",
-      "Use the rule that matching symbols cannot touch, even diagonally. Which labeled option fits the question-mark cell? Answer with the option letter.",
-      "Complete the puzzle so that no two identical symbols touch horizontally, vertically, or diagonally. Which option is correct? Answer with the option letter.",
-      "Every identical-symbol pair must stay separated by at least one cell in every direction. Which option belongs in the missing cell? Answer with the option letter.",
-      "Which option correctly fills the question-mark cell if identical symbols are forbidden from touching by edge or by corner? Answer with the option letter."
+      "Identical symbols may not touch edge-to-edge or corner-to-corner. Which option correctly completes the question-mark cell?",
+      "Use the rule that matching symbols cannot touch, even diagonally. Which labeled option fits the question-mark cell?",
+      "Complete the puzzle so that no two identical symbols touch horizontally, vertically, or diagonally. Which option is correct?",
+      "Every identical-symbol pair must stay separated by at least one cell in every direction. Which option belongs in the missing cell?",
+      "Which option correctly fills the question-mark cell if identical symbols are forbidden from touching by edge or by corner?"
     ],
     "row_uniqueness": [
-      "Each row should contain each visible symbol exactly once. Which option correctly completes the question-mark cell? Answer with the option letter.",
-      "Use the rule that every row contains one of each symbol. Which labeled option fits the question-mark cell? Answer with the option letter.",
-      "Every row should use each symbol once. Which option belongs in the missing cell? Answer with the option letter.",
-      "Complete the puzzle so that each row contains each symbol exactly once. Which labeled option is correct? Answer with the option letter.",
-      "Which option correctly fills the question-mark cell if each row must contain one of each symbol? Answer with the option letter."
+      "Each row should contain each visible symbol exactly once. Which option correctly completes the question-mark cell?",
+      "Use the rule that every row contains one of each symbol. Which labeled option fits the question-mark cell?",
+      "Every row should use each symbol once. Which option belongs in the missing cell?",
+      "Complete the puzzle so that each row contains each symbol exactly once. Which labeled option is correct?",
+      "Which option correctly fills the question-mark cell if each row must contain one of each symbol?"
     ],
     "column_uniqueness": [
-      "Each column should contain each visible symbol exactly once. Which option correctly completes the question-mark cell? Answer with the option letter.",
-      "Use the rule that every column contains one of each symbol. Which labeled option fits the question-mark cell? Answer with the option letter.",
-      "Every column should use each symbol once. Which option belongs in the missing cell? Answer with the option letter.",
-      "Complete the puzzle so that each column contains each symbol exactly once. Which labeled option is correct? Answer with the option letter.",
-      "Which option correctly fills the question-mark cell if each column must contain one of each symbol? Answer with the option letter."
+      "Each column should contain each visible symbol exactly once. Which option correctly completes the question-mark cell?",
+      "Use the rule that every column contains one of each symbol. Which labeled option fits the question-mark cell?",
+      "Every column should use each symbol once. Which option belongs in the missing cell?",
+      "Complete the puzzle so that each column contains each symbol exactly once. Which labeled option is correct?",
+      "Which option correctly fills the question-mark cell if each column must contain one of each symbol?"
     ],
     "row_and_column_uniqueness": [
-      "Each row and each column should contain each visible symbol exactly once. Which option correctly completes the question-mark cell? Answer with the option letter.",
-      "Use the rule that every row and every column contains one of each symbol. Which labeled option fits the question-mark cell? Answer with the option letter.",
-      "Every row and column should use each symbol once. Which option belongs in the missing cell? Answer with the option letter.",
-      "Complete the puzzle so that each row and each column contains each symbol exactly once. Which labeled option is correct? Answer with the option letter.",
-      "Which option correctly fills the question-mark cell if both the rows and columns must contain one of each symbol? Answer with the option letter."
+      "Each row and each column should contain each visible symbol exactly once. Which option correctly completes the question-mark cell?",
+      "Use the rule that every row and every column contains one of each symbol. Which labeled option fits the question-mark cell?",
+      "Every row and column should use each symbol once. Which option belongs in the missing cell?",
+      "Complete the puzzle so that each row and each column contains each symbol exactly once. Which labeled option is correct?",
+      "Which option correctly fills the question-mark cell if both the rows and columns must contain one of each symbol?"
     ]
   },
   "required_slots_by_key": {
@@ -74,18 +74,18 @@
   },
   "answer_or_evidence_templates": {
     "answer_only": [
-      "{json_output_contract_answer_only}\nAnswer: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
-      "{json_output_contract_answer_only}\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
-      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
-      "{json_output_contract_answer_only}\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nUse this answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
     ],
     "answer_and_evidence": [
-      "{json_output_contract}\nEvidence: {evidence_hint}.\nAnswer: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence requirement: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence field: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence rule: {evidence_hint}.\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example}"
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nUse this evidence format: {evidence_hint}.\nUse this answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFormat for the \"evidence\" field: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
     ]
   }
 }

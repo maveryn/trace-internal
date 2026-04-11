@@ -21,25 +21,25 @@
   },
   "task_variant_templates": {
     "color_cycle_count": [
-      "Use the bead colors to determine which option loops are valid, then answer with the count as an integer.",
-      "Compare the colored bead order around each loop and return the valid-option count as an integer.",
-      "Count the options whose colored bead cycle matches the reference up to rotation, then answer as an integer.",
-      "Use the colored bead order around the loops and give the number of valid options as an integer.",
-      "Return the count of option loops with the same cyclic color order as an integer."
+      "Use the bead colors to determine which option loops are valid.",
+      "Compare the colored bead order around each loop to find the valid options.",
+      "Count the options whose colored bead cycle matches the reference up to rotation.",
+      "Use the colored bead order around the loops to determine the valid-option count.",
+      "Count the option loops with the same cyclic color order."
     ],
     "shape_cycle_count": [
-      "Use the bead shapes to determine which option loops are valid, then answer with the count as an integer.",
-      "Compare the shaped bead order around each loop and return the valid-option count as an integer.",
-      "Count the options whose shaped bead cycle matches the reference up to rotation, then answer as an integer.",
-      "Use the bead-shape order around the loops and give the number of valid options as an integer.",
-      "Return the count of option loops with the same cyclic shape order as an integer."
+      "Use the bead shapes to determine which option loops are valid.",
+      "Compare the shaped bead order around each loop to find the valid options.",
+      "Count the options whose shaped bead cycle matches the reference up to rotation.",
+      "Use the bead-shape order around the loops to determine the valid-option count.",
+      "Count the option loops with the same cyclic shape order."
     ],
     "mixed_cycle_count": [
-      "Use the colored shapes on the beads to determine which option loops are valid, then answer with the count as an integer.",
-      "Compare the full colored-shape bead order around each loop and return the valid-option count as an integer.",
-      "Count the options whose colored-shape bead cycle matches the reference up to rotation, then answer as an integer.",
-      "Use both bead shape and bead color order around the loops and give the number of valid options as an integer.",
-      "Return the count of option loops with the same cyclic bead pattern, including color and shape, as an integer."
+      "Use the colored shapes on the beads to determine which option loops are valid.",
+      "Compare the full colored-shape bead order around each loop to find the valid options.",
+      "Count the options whose colored-shape bead cycle matches the reference up to rotation.",
+      "Use both bead shape and bead color order around the loops to determine the valid-option count.",
+      "Count the option loops with the same cyclic bead pattern, including color and shape."
     ]
   },
   "required_slots_by_key": {
@@ -60,18 +60,18 @@
   },
   "answer_or_evidence_templates": {
     "answer_only": [
-      "{json_output_contract_answer_only}\nAnswer: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
-      "{json_output_contract_answer_only}\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
-      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
-      "{json_output_contract_answer_only}\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nUse this answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
     ],
     "answer_and_evidence": [
-      "{json_output_contract}\nEvidence: {evidence_hint}.\nAnswer: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence requirement: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence field: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence rule: {evidence_hint}.\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example}"
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nUse this evidence format: {evidence_hint}.\nUse this answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFormat for the \"evidence\" field: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
     ]
   }
 }

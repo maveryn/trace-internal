@@ -39,8 +39,8 @@ rendering:
 
 prompt:
   shared:
-    json_output_contract: Return a valid JSON object with keys "evidence" and "answer" in that order.
-    json_output_contract_answer_only: Return a valid JSON object with key "answer".
+    json_output_contract: Use a valid JSON object with keys "evidence" and "answer" in that order for the final answer.
+    json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
     object_description_spreadsheet: a spreadsheet-style table with one Name column, several numeric columns, full grid lines, and a shaded header row
     object_description_zebra: a zebra-striped table with one Name column, several numeric columns, alternating row shading, and a shaded header row
     object_description_ledger: a ledger-style table with one Name column, several numeric columns, strong horizontal rules, and minimal vertical separators

@@ -9,70 +9,21 @@ Use this whenever the task lives under `domain=games`.
 
 ## Read first
 1. `docs/domains/GAMES_TASK_SETUP.md`
-2. `docs/domains/TASK_FAMILY_VARIANTS.md`
-3. `docs/project/STATUS.md`
-4. `docs/workflows/TASK_AUTHORING.md`
-5. `docs/workflows/SHARED_UTILITIES.md`
+2. `docs/project/STATUS.md`
+3. `docs/workflows/TASK_AUTHORING.md`
+4. `docs/workflows/SHARED_UTILITIES.md`
 
-## V1 games-domain policy
+## Active-contract reminders
 - Keep the domain state-first: the visible game pieces should contain the operative information needed to answer the prompt.
-- Prefer low-convention counting/comparison questions over strategy-heavy or hidden-information rules in the first games tasks.
+- Prefer fully observable, low-convention questions unless a strategic task keeps rules explicit and answer/evidence support broad enough.
 - Keep prompt-facing evidence on the visible witness pieces themselves.
 - When a wrapped multi-row display has ordered semantics, make the row continuation explicit in both the image and the prompt.
 - When a task varies layout scaffold and query type independently, use the chart-style `scene_variant` / `query_variant` split rather than one task id per question stem.
+- `docs/domains/GAMES_TASK_SETUP.md` owns the active games contract.
 
-## Current coverage
-- `dots_and_boxes`
-  - `task_games_dots_and_boxes_capture_count`
-- `bingo`
-  - `task_games_bingo_completed_line_count`
-- `cards`
-  - `task_games_cards_hand_count`
-- `dominoes`
-  - `task_games_dominoes_chain_count`
-- `reversi`
-  - `task_games_reversi_move_count`
-- `connect_four`
-  - `task_games_connect_four_move_count`
-- `checkers`
-  - `task_games_checkers_move_count`
-- `mancala`
-  - `task_games_mancala_move_count`
-- `nine_mens_morris`
-  - `task_games_nine_mens_morris_pieces_in_mill_count`
-- `go`
-  - `task_games_go_group_liberty_count`
-
-## Shared helpers to prefer
-- `trace/tasks/shared/support_sampling.py`
-- `trace/tasks/shared/variant_sampling.py`
-- `trace/tasks/shared/text_rendering.py`
-- `trace/tasks/games/shared/dots_boxes_common.py`
-- `trace/tasks/games/shared/dots_boxes_scene.py`
-- `trace/tasks/games/shared/bingo_common.py`
-- `trace/tasks/games/shared/bingo_scene.py`
-- `trace/tasks/games/shared/card_scene.py`
-- `trace/tasks/games/shared/domino_scene.py`
-- `trace/tasks/games/shared/morris_common.py`
-- `trace/tasks/games/shared/morris_scene.py`
-- `trace/tasks/games/shared/go_common.py`
-- `trace/tasks/games/shared/go_scene.py`
-- `trace/tasks/games/shared/connect_four_common.py`
-- `trace/tasks/games/shared/connect_four_scene.py`
-- `trace/tasks/games/shared/checkers_common.py`
-- `trace/tasks/games/shared/checkers_scene.py`
-- `trace/tasks/games/shared/mancala_common.py`
-- `trace/tasks/games/shared/mancala_scene.py`
-- `trace/tasks/games/shared/reversi_common.py`
-- `trace/tasks/games/shared/reversi_scene.py`
-- `trace/tasks/games/shared/sampling.py`
-- `trace/tasks/games/shared/style.py`
-- `trace/tasks/games/shared/visual_defaults.py`
-- `trace/tasks/games/shared/complexity.py`
-
-## Pair with
-- `skills/domain-audit/SKILL.md`
-- `skills/task-design/SKILL.md`
-- `skills/task-complexity/SKILL.md`
-- `skills/task-implementation/SKILL.md`
-- `skills/verification-review/SKILL.md`
+## Practical review checklist
+- Check active family/query/evidence details in `docs/domains/GAMES_TASK_SETUP.md` instead of duplicating coverage in the skill.
+- Prefer shared game rules helpers in `trace/tasks/games/shared/*_common.py` and renderers in `trace/tasks/games/shared/*_scene.py`.
+- Keep game prompts explicit about all non-universal rules such as capture, liberty, sowing, drop, mill, and bracketing rules.
+- Add new game-query variants inside an existing task when the visible scaffold and witness semantics stay the same.
+- Split only when a new game query changes the perceptual contract enough to be a healthy standalone task.

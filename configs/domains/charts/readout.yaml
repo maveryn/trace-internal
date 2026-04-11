@@ -64,8 +64,8 @@ prompt:
     bundle_id: charts_readout_v1
     task_family_key: labeled_chart_readout
     task_key: subset_value_query
-    json_output_contract: Return a valid JSON object with keys "evidence" and "answer" in that order.
-    json_output_contract_answer_only: Return a valid JSON object with key "answer".
+    json_output_contract: Use a valid JSON object with keys "evidence" and "answer" in that order for the final answer.
+    json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
     evidence_hint: set "evidence" to an array [v1, v2] containing the two queried values in the same label order as the question
     answer_hint: set "answer" to the requested integer value
     object_description_area: a labeled area chart with visible point markers. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis

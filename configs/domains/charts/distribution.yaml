@@ -83,8 +83,8 @@ prompt:
     bundle_id: charts_distribution_v1
     task_family_key: distribution_chart
     task_key: histogram_count_query
-    json_output_contract: Return a valid JSON object with keys "evidence" and "answer" in that order.
-    json_output_contract_answer_only: Return a valid JSON object with key "answer".
+    json_output_contract: Use a valid JSON object with keys "evidence" and "answer" in that order for the final answer.
+    json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
     answer_hint: set "answer" to the requested count as an integer
     object_description_histogram: a histogram with contiguous numeric interval bins on the horizontal axis. Each bar height gives the count for that interval
     object_description_boxplot: a set of labeled boxplots. Each box spans the interquartile range, the line inside the box marks the median, and the whiskers show the minimum and maximum shown

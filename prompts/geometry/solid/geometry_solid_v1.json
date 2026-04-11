@@ -29,14 +29,14 @@
     ],
     "front_view_visible_count": [
       "How many unit squares should be filled in the Front view grid? Here, Front view means looking straight at the left vertical face of the drawn stack.",
-      "If you look from the front — straight at the left vertical face of the stack as drawn — how many query-grid cells should be filled?",
+      "If you look from the front \u2014 straight at the left vertical face of the stack as drawn \u2014 how many query-grid cells should be filled?",
       "Count the occupied unit squares that belong in the Front view grid. Front view here means the left vertical face of the drawn stack.",
       "Using the cube stack, how many cells should be filled in the Front view panel? Treat Front view as looking straight at the left vertical face.",
       "How many unit cells would be occupied in the Front view grid, where Front view means the left vertical face of the drawn stack?"
     ],
     "right_view_visible_count": [
       "How many unit squares should be filled in the Right view grid? Here, Right view means looking straight at the right vertical face of the drawn stack.",
-      "If you look from the right side — straight at the right vertical face of the stack as drawn — how many query-grid cells should be filled?",
+      "If you look from the right side \u2014 straight at the right vertical face of the stack as drawn \u2014 how many query-grid cells should be filled?",
       "Count the occupied unit squares that belong in the Right view grid. Right view here means the right vertical face of the drawn stack.",
       "Using the cube stack, how many cells should be filled in the Right view panel? Treat Right view as looking straight at the right vertical face.",
       "How many unit cells would be occupied in the Right view grid, where Right view means the right vertical face of the drawn stack?"
@@ -60,18 +60,18 @@
   },
   "answer_or_evidence_templates": {
     "answer_only": [
-      "{json_output_contract_answer_only}\nAnswer: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
-      "{json_output_contract_answer_only}\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
-      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
-      "{json_output_contract_answer_only}\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nUse this answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
     ],
     "answer_and_evidence": [
-      "{json_output_contract}\nEvidence: {evidence_hint}.\nAnswer: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence requirement: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence field: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence rule: {evidence_hint}.\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example}"
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nUse this evidence format: {evidence_hint}.\nUse this answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFormat for the \"evidence\" field: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
     ]
   }
 }

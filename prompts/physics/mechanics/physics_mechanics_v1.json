@@ -49,74 +49,74 @@
   },
   "task_variant_templates": {
     "net_horizontal_force": [
-      "What is the magnitude of the net horizontal force on the object? Answer with an integer number of newtons.",
-      "Using only the leftward and rightward forces shown, what is the net horizontal force magnitude on the object? Answer with an integer number of newtons.",
-      "Determine the object's net horizontal force magnitude from the diagram. Answer with an integer number of newtons.",
-      "What net horizontal force magnitude is implied by the shown forces? Answer with an integer number of newtons.",
-      "Read the horizontal force arrows. What is the resulting net horizontal force magnitude? Answer with an integer number of newtons."
+      "What is the magnitude of the net horizontal force on the object?",
+      "Using only the leftward and rightward forces shown, what is the net horizontal force magnitude on the object?",
+      "Determine the object's net horizontal force magnitude from the diagram.",
+      "What net horizontal force magnitude is implied by the shown forces?",
+      "Read the horizontal force arrows. What is the resulting net horizontal force magnitude?"
     ],
     "net_vertical_force": [
-      "What is the magnitude of the net vertical force on the object? Answer with an integer number of newtons.",
-      "Using only the upward and downward forces shown, what is the net vertical force magnitude on the object? Answer with an integer number of newtons.",
-      "Determine the object's net vertical force magnitude from the diagram. Answer with an integer number of newtons.",
-      "What net vertical force magnitude is implied by the shown forces? Answer with an integer number of newtons.",
-      "Read the vertical force arrows. What is the resulting net vertical force magnitude? Answer with an integer number of newtons."
+      "What is the magnitude of the net vertical force on the object?",
+      "Using only the upward and downward forces shown, what is the net vertical force magnitude on the object?",
+      "Determine the object's net vertical force magnitude from the diagram.",
+      "What net vertical force magnitude is implied by the shown forces?",
+      "Read the vertical force arrows. What is the resulting net vertical force magnitude?"
     ],
     "balancing_force_horizontal": [
-      "What force magnitude in the marked {marked_direction_label} direction is needed to make the net horizontal force zero? Answer with an integer number of newtons.",
-      "A missing horizontal force is marked in the {marked_direction_label} direction. What magnitude would balance the horizontal forces? Answer with an integer number of newtons.",
-      "How large must the marked {marked_direction_label} horizontal force be so the horizontal net force becomes zero? Answer with an integer number of newtons.",
-      "Use the shown horizontal forces and the marked {marked_direction_label} direction. What force magnitude would balance them? Answer with an integer number of newtons.",
-      "What magnitude is required for the marked {marked_direction_label} horizontal force so the object has zero net horizontal force? Answer with an integer number of newtons."
+      "What force magnitude in the marked {marked_direction_label} direction is needed to make the net horizontal force zero?",
+      "A missing horizontal force is marked in the {marked_direction_label} direction. What magnitude would balance the horizontal forces?",
+      "How large must the marked {marked_direction_label} horizontal force be so the horizontal net force becomes zero?",
+      "Use the shown horizontal forces and the marked {marked_direction_label} direction. What force magnitude would balance them?",
+      "What magnitude is required for the marked {marked_direction_label} horizontal force so the object has zero net horizontal force?"
     ],
     "balancing_force_vertical": [
-      "What force magnitude in the marked {marked_direction_label} direction is needed to make the net vertical force zero? Answer with an integer number of newtons.",
-      "A missing vertical force is marked in the {marked_direction_label} direction. What magnitude would balance the vertical forces? Answer with an integer number of newtons.",
-      "How large must the marked {marked_direction_label} vertical force be so the vertical net force becomes zero? Answer with an integer number of newtons.",
-      "Use the shown vertical forces and the marked {marked_direction_label} direction. What force magnitude would balance them? Answer with an integer number of newtons.",
-      "What magnitude is required for the marked {marked_direction_label} vertical force so the object has zero net vertical force? Answer with an integer number of newtons."
+      "What force magnitude in the marked {marked_direction_label} direction is needed to make the net vertical force zero?",
+      "A missing vertical force is marked in the {marked_direction_label} direction. What magnitude would balance the vertical forces?",
+      "How large must the marked {marked_direction_label} vertical force be so the vertical net force becomes zero?",
+      "Use the shown vertical forces and the marked {marked_direction_label} direction. What force magnitude would balance them?",
+      "What magnitude is required for the marked {marked_direction_label} vertical force so the object has zero net vertical force?"
     ],
     "left_torque": [
-      "What is the total torque from the weights on the left side of the fulcrum? Answer with an integer.",
-      "Using the shown left-side weights and their distances from the fulcrum, what left-side torque is produced? Answer with an integer.",
-      "Determine the torque contributed by the weights on the left side of the lever. Answer with an integer.",
-      "What total left-side torque is implied by the lever diagram? Answer with an integer.",
-      "Read the left-side weights and distance marks. What torque do they produce about the fulcrum? Answer with an integer."
+      "What is the total torque from the weights on the left side of the fulcrum?",
+      "Using the shown left-side weights and their distances from the fulcrum, what left-side torque is produced?",
+      "Determine the torque contributed by the weights on the left side of the lever.",
+      "What total left-side torque is implied by the lever diagram?",
+      "Read the left-side weights and distance marks. What torque do they produce about the fulcrum?"
     ],
     "right_torque": [
-      "What is the total torque from the weights on the right side of the fulcrum? Answer with an integer.",
-      "Using the shown right-side weights and their distances from the fulcrum, what right-side torque is produced? Answer with an integer.",
-      "Determine the torque contributed by the weights on the right side of the lever. Answer with an integer.",
-      "What total right-side torque is implied by the lever diagram? Answer with an integer.",
-      "Read the right-side weights and distance marks. What torque do they produce about the fulcrum? Answer with an integer."
+      "What is the total torque from the weights on the right side of the fulcrum?",
+      "Using the shown right-side weights and their distances from the fulcrum, what right-side torque is produced?",
+      "Determine the torque contributed by the weights on the right side of the lever.",
+      "What total right-side torque is implied by the lever diagram?",
+      "Read the right-side weights and distance marks. What torque do they produce about the fulcrum?"
     ],
     "missing_weight_to_balance": [
-      "What weight should replace the marked `?` block so the lever balances? Answer with an integer.",
-      "A missing weight is marked with `?`. What value would balance the lever? Answer with an integer.",
-      "How large should the marked `?` weight be so the torques on both sides match? Answer with an integer.",
-      "Use the shown weights and distances. What value must the marked `?` weight have for the lever to balance? Answer with an integer.",
+      "What weight should replace the marked `?` block so the lever balances?",
+      "A missing weight is marked with `?`. What value would balance the lever?",
+      "How large should the marked `?` weight be so the torques on both sides match?",
+      "Use the shown weights and distances. What value must the marked `?` weight have for the lever to balance?",
       "What integer weight is required in the marked `?` block so the beam is balanced about the fulcrum?"
     ],
     "missing_weight_for_extension": [
-      "What weight should replace the marked red `?` block on the right spring so the shown extension is correct? Answer with an integer.",
+      "What weight should replace the marked red `?` block on the right spring so the shown extension is correct?",
       "The two springs are identical. What integer weight belongs in the marked red `?` block on the right spring?",
-      "Use the reference spring and the shown right-side extension. What weight should the red `?` block have? Answer with an integer.",
+      "Use the reference spring and the shown right-side extension. What weight should the red `?` block have?",
       "The right spring shows its extension but not its weight. What integer weight would produce that extension on an identical spring?",
-      "Determine the missing right-side weight from the identical-spring diagram. Answer with an integer."
+      "Determine the missing right-side weight from the identical-spring diagram."
     ],
     "missing_extension_for_weight": [
-      "The red `?` tag marks the unknown extension on the right spring. What extension should the shown right-side weight produce? Answer with an integer.",
+      "The red `?` tag marks the unknown extension on the right spring. What extension should the shown right-side weight produce?",
       "The two springs are identical. What integer extension belongs at the marked red `?` tag on the right ruler?",
-      "Use the reference spring and the shown right-side weight. What extension should the right spring have? Answer with an integer.",
+      "Use the reference spring and the shown right-side weight. What extension should the right spring have?",
       "The right spring's extension is missing. What integer extension would the shown right-side weight produce on an identical spring?",
-      "Determine the missing right-side extension from the identical-spring diagram. Answer with an integer."
+      "Determine the missing right-side extension from the identical-spring diagram."
     ],
     "extension_difference": [
-      "What is the absolute difference between the two shown spring extensions? Answer with an integer.",
+      "What is the absolute difference between the two shown spring extensions?",
       "Using the two ruler markers, what integer difference in extension do the springs show?",
-      "How many extension units apart are the two shown spring markers? Answer with an integer.",
-      "Read the two spring-extension markers. What is their absolute difference? Answer with an integer.",
-      "Determine the difference in extension between the two identical springs. Answer with an integer."
+      "How many extension units apart are the two shown spring markers?",
+      "Read the two spring-extension markers. What is their absolute difference?",
+      "Determine the difference in extension between the two identical springs."
     ]
   },
   "required_slots_by_key": {
@@ -146,18 +146,18 @@
   },
   "answer_or_evidence_templates": {
     "answer_only": [
-      "{json_output_contract_answer_only}\nAnswer: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
-      "{json_output_contract_answer_only}\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
-      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
-      "{json_output_contract_answer_only}\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nUse this answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
     ],
     "answer_and_evidence": [
-      "{json_output_contract}\nEvidence: {evidence_hint}.\nAnswer: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence requirement: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence field: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence rule: {evidence_hint}.\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example}"
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nUse this evidence format: {evidence_hint}.\nUse this answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFormat for the \"evidence\" field: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
     ]
   }
 }

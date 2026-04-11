@@ -21,18 +21,18 @@
   },
   "task_variant_templates": {
     "legal_move_count": [
-      "It is {current_player_name}'s turn. {movement_rule_text} {capture_rule_text} {single_jump_rule_text} {legal_move_rule_text} How many legal moves does {current_player_name} have? Answer with an integer.",
-      "It is {current_player_name}'s turn. {movement_rule_text} {capture_rule_text} {single_jump_rule_text} {legal_move_rule_text} Count the legal moves available to {current_player_name}. Answer with an integer.",
-      "It is {current_player_name}'s turn. {movement_rule_text} {capture_rule_text} {single_jump_rule_text} {legal_move_rule_text} What is the number of legal landing squares for {current_player_name}? Answer with an integer.",
-      "It is {current_player_name}'s turn. {movement_rule_text} {capture_rule_text} {single_jump_rule_text} {legal_move_rule_text} How many single-move options does {current_player_name} have? Answer with an integer.",
-      "It is {current_player_name}'s turn. {movement_rule_text} {capture_rule_text} {single_jump_rule_text} {legal_move_rule_text} Determine the number of legal moves for {current_player_name}. Answer with an integer."
+      "It is {current_player_name}'s turn. {movement_rule_text} {capture_rule_text} {single_jump_rule_text} {legal_move_rule_text} How many legal moves does {current_player_name} have?",
+      "It is {current_player_name}'s turn. {movement_rule_text} {capture_rule_text} {single_jump_rule_text} {legal_move_rule_text} Count the legal moves available to {current_player_name}.",
+      "It is {current_player_name}'s turn. {movement_rule_text} {capture_rule_text} {single_jump_rule_text} {legal_move_rule_text} What is the number of legal landing squares for {current_player_name}?",
+      "It is {current_player_name}'s turn. {movement_rule_text} {capture_rule_text} {single_jump_rule_text} {legal_move_rule_text} How many single-move options does {current_player_name} have?",
+      "It is {current_player_name}'s turn. {movement_rule_text} {capture_rule_text} {single_jump_rule_text} {legal_move_rule_text} Determine the number of legal moves for {current_player_name}."
     ],
     "capture_move_count": [
-      "It is {current_player_name}'s turn. {movement_rule_text} {capture_rule_text} {single_jump_rule_text} How many legal capturing moves does {current_player_name} have? Answer with an integer.",
-      "It is {current_player_name}'s turn. {movement_rule_text} {capture_rule_text} {single_jump_rule_text} Count the legal captures available to {current_player_name}. Answer with an integer.",
-      "It is {current_player_name}'s turn. {movement_rule_text} {capture_rule_text} {single_jump_rule_text} What is the number of landing squares for legal capturing moves by {current_player_name}? Answer with an integer.",
-      "It is {current_player_name}'s turn. {movement_rule_text} {capture_rule_text} {single_jump_rule_text} How many single jumps can {current_player_name} make right now? Answer with an integer.",
-      "It is {current_player_name}'s turn. {movement_rule_text} {capture_rule_text} {single_jump_rule_text} Determine the number of legal capturing moves for {current_player_name}. Answer with an integer."
+      "It is {current_player_name}'s turn. {movement_rule_text} {capture_rule_text} {single_jump_rule_text} How many legal capturing moves does {current_player_name} have?",
+      "It is {current_player_name}'s turn. {movement_rule_text} {capture_rule_text} {single_jump_rule_text} Count the legal captures available to {current_player_name}.",
+      "It is {current_player_name}'s turn. {movement_rule_text} {capture_rule_text} {single_jump_rule_text} What is the number of landing squares for legal capturing moves by {current_player_name}?",
+      "It is {current_player_name}'s turn. {movement_rule_text} {capture_rule_text} {single_jump_rule_text} How many single jumps can {current_player_name} make right now?",
+      "It is {current_player_name}'s turn. {movement_rule_text} {capture_rule_text} {single_jump_rule_text} Determine the number of legal capturing moves for {current_player_name}."
     ]
   },
   "required_slots_by_key": {
@@ -66,18 +66,18 @@
   },
   "answer_or_evidence_templates": {
     "answer_only": [
-      "{json_output_contract_answer_only}\nAnswer: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
-      "{json_output_contract_answer_only}\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
-      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
-      "{json_output_contract_answer_only}\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nUse this answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
     ],
     "answer_and_evidence": [
-      "{json_output_contract}\nEvidence: {evidence_hint}.\nAnswer: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence requirement: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence field: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence rule: {evidence_hint}.\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example}"
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nUse this evidence format: {evidence_hint}.\nUse this answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFormat for the \"evidence\" field: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
     ]
   }
 }

@@ -15,6 +15,7 @@ Prompt text is externalized and deterministic.
 6. All active tasks must provide explicit JSON-format instructions in both output modes:
    - `answer_only` uses `{"answer": ...}`
    - `answer_and_evidence` uses `{"evidence": ..., "answer": ...}`
+   - output-mode instructions should describe the final structured answer format, not tell the model to respond with only that field/object or suppress intermediate reasoning
 7. Prefer slot-based composition for reusable format rules (for example shared `json_output_contract*` in domain/task-group config, with task-level `evidence_hint`/`answer_hint`/example overrides).
 8. For mixed-shape tasks, keep one bundle and switch shape-specific wording via slots (`object_description_*`, `question_text_*`, evidence/answer hint families).
 9. When a prompt asks about a named color, include the canonical hex code in the prompt-facing color label using the format `<color_name> [#RRGGBB]`.
@@ -54,6 +55,7 @@ Train records should store:
 1. Prefer 5 strong variants over larger padded lists.
 2. Keep stems natural and image-focused; avoid awkward scaffolding such as “single/exactly one object” unless the distinction is semantically necessary.
 3. Keep output-mode variants concise and structurally consistent so format requirements stay easy to parse.
+4. Keep task/task-variant wording focused on the semantic query; format instructions belong in the output-mode layer.
 
 ## 5) Active bundles/tasks
 Active bundles:

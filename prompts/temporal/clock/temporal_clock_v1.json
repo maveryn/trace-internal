@@ -56,18 +56,18 @@
       "Subtract {delta_minutes} minutes from the shown time. What is the result? Answer in HH:MM 12-hour format with leading zeros."
     ],
     "earliest_time": [
-      "Which labeled clock shows the earliest time? Answer with the single clock label.",
-      "Identify the labeled clock with the earliest shown time. Answer with the single clock label.",
-      "Among the labeled clocks, which one shows the earliest time? Answer with the single clock label.",
-      "Find the clock showing the earliest time. Answer with the single clock label.",
-      "Which labeled clock shows the earliest time among the clocks shown? Answer with the single clock label."
+      "Which labeled clock shows the earliest time?",
+      "Identify the labeled clock with the earliest shown time.",
+      "Among the labeled clocks, which one shows the earliest time?",
+      "Find the clock showing the earliest time.",
+      "Which labeled clock shows the earliest time among the clocks shown?"
     ],
     "latest_time": [
-      "Which labeled clock shows the latest time? Answer with the single clock label.",
-      "Identify the labeled clock with the latest shown time. Answer with the single clock label.",
-      "Among the labeled clocks, which one shows the latest time? Answer with the single clock label.",
-      "Find the clock showing the latest time. Answer with the single clock label.",
-      "Which labeled clock shows the latest time among the clocks shown? Answer with the single clock label."
+      "Which labeled clock shows the latest time?",
+      "Identify the labeled clock with the latest shown time.",
+      "Among the labeled clocks, which one shows the latest time?",
+      "Find the clock showing the latest time.",
+      "Which labeled clock shows the latest time among the clocks shown?"
     ]
   },
   "required_slots_by_key": {
@@ -97,18 +97,18 @@
   },
   "answer_or_evidence_templates": {
     "answer_only": [
-      "{json_output_contract_answer_only}\nAnswer: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
-      "{json_output_contract_answer_only}\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
-      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
-      "{json_output_contract_answer_only}\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nUse this answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
     ],
     "answer_and_evidence": [
-      "{json_output_contract}\nEvidence: {evidence_hint}.\nAnswer: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence requirement: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence field: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence rule: {evidence_hint}.\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example}"
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nUse this evidence format: {evidence_hint}.\nUse this answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFormat for the \"evidence\" field: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
     ]
   }
 }

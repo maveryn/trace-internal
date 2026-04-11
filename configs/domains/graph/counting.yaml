@@ -99,8 +99,8 @@ prompt:
     bundle_id: graph_counting_v1
     task_family_key: single_graph_counting
     task_key: degree_count_query
-    json_output_contract: Return a valid JSON object with keys "evidence" and "answer" in that order.
-    json_output_contract_answer_only: Return a valid JSON object with key "answer".
+    json_output_contract: Use a valid JSON object with keys "evidence" and "answer" in that order for the final answer.
+    json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
     object_description_undirected: a labeled undirected graph
     object_description_directed: a labeled directed graph
     question_text_degree_count: How many nodes have degree {query_degree}?

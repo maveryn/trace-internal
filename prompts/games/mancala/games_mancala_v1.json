@@ -21,18 +21,18 @@
   },
   "task_variant_templates": {
     "extra_turn_move_count": [
-      "{turn_rule_text} {extra_turn_rule_text} How many bottom-row pits would give Blue another turn? Answer with an integer.",
-      "{turn_rule_text} {extra_turn_rule_text} Count the bottom-row pits that would give Blue an extra turn. Answer with an integer.",
-      "{turn_rule_text} {extra_turn_rule_text} What is the number of Blue pits that end in Blue's store? Answer with an integer.",
-      "{turn_rule_text} {extra_turn_rule_text} How many possible starting pits on Blue's row would end with another turn for Blue? Answer with an integer.",
-      "{turn_rule_text} {extra_turn_rule_text} Determine how many bottom-row pits would let Blue move again immediately. Answer with an integer."
+      "{turn_rule_text} {extra_turn_rule_text} How many bottom-row pits would give Blue another turn?",
+      "{turn_rule_text} {extra_turn_rule_text} Count the bottom-row pits that would give Blue an extra turn.",
+      "{turn_rule_text} {extra_turn_rule_text} What is the number of Blue pits that end in Blue's store?",
+      "{turn_rule_text} {extra_turn_rule_text} How many possible starting pits on Blue's row would end with another turn for Blue?",
+      "{turn_rule_text} {extra_turn_rule_text} Determine how many bottom-row pits would let Blue move again immediately."
     ],
     "capture_move_count": [
-      "{turn_rule_text} {capture_rule_text} How many bottom-row pits would cause a capture? Answer with an integer.",
-      "{turn_rule_text} {capture_rule_text} Count the bottom-row pits that would make Blue capture stones on this move. Answer with an integer.",
-      "{turn_rule_text} {capture_rule_text} What is the number of Blue pits that would trigger a capture? Answer with an integer.",
-      "{turn_rule_text} {capture_rule_text} How many possible starting pits on Blue's row would capture the opposite stones? Answer with an integer.",
-      "{turn_rule_text} {capture_rule_text} Determine how many bottom-row pits would cause Blue to capture stones immediately. Answer with an integer."
+      "{turn_rule_text} {capture_rule_text} How many bottom-row pits would cause a capture?",
+      "{turn_rule_text} {capture_rule_text} Count the bottom-row pits that would make Blue capture stones on this move.",
+      "{turn_rule_text} {capture_rule_text} What is the number of Blue pits that would trigger a capture?",
+      "{turn_rule_text} {capture_rule_text} How many possible starting pits on Blue's row would capture the opposite stones?",
+      "{turn_rule_text} {capture_rule_text} Determine how many bottom-row pits would cause Blue to capture stones immediately."
     ]
   },
   "required_slots_by_key": {
@@ -61,18 +61,18 @@
   },
   "answer_or_evidence_templates": {
     "answer_only": [
-      "{json_output_contract_answer_only}\nAnswer: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
-      "{json_output_contract_answer_only}\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
-      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
-      "{json_output_contract_answer_only}\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nUse this answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
     ],
     "answer_and_evidence": [
-      "{json_output_contract}\nEvidence: {evidence_hint}.\nAnswer: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence requirement: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence field: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence rule: {evidence_hint}.\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example}"
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nUse this evidence format: {evidence_hint}.\nUse this answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFormat for the \"evidence\" field: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
     ]
   }
 }

@@ -21,25 +21,25 @@
   },
   "task_variant_templates": {
     "section_of_field_label": [
-      "Answer with the exact section title shown.",
-      "Return the exact section heading as written.",
-      "Respond with the exact section title from the document.",
-      "Give the exact section title shown for the matching block.",
-      "Answer using the exact section heading."
+      "Identify the exact section title shown.",
+      "Identify the exact section heading as written.",
+      "Identify the exact section title from the document.",
+      "Identify the exact section title shown for the matching block.",
+      "Identify the exact section heading."
     ],
     "section_of_field_value": [
-      "Answer with the exact section title shown.",
-      "Return the exact section heading as written.",
-      "Respond with the exact section title from the document.",
-      "Give the exact section title shown for the matching block.",
-      "Answer using the exact section heading."
+      "Identify the exact section title shown.",
+      "Identify the exact section heading as written.",
+      "Identify the exact section title from the document.",
+      "Identify the exact section title shown for the matching block.",
+      "Identify the exact section heading."
     ],
     "section_of_label_value_pair": [
-      "Answer with the exact section title shown.",
-      "Return the exact section heading as written.",
-      "Respond with the exact section title from the document.",
-      "Give the exact section title shown for the matching block.",
-      "Answer using the exact section heading."
+      "Identify the exact section title shown.",
+      "Identify the exact section heading as written.",
+      "Identify the exact section title from the document.",
+      "Identify the exact section title shown for the matching block.",
+      "Identify the exact section heading."
     ]
   },
   "required_slots_by_key": {
@@ -63,18 +63,18 @@
   },
   "answer_or_evidence_templates": {
     "answer_only": [
-      "{json_output_contract_answer_only}\nAnswer: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
-      "{json_output_contract_answer_only}\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
-      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
-      "{json_output_contract_answer_only}\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nUse this answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
     ],
     "answer_and_evidence": [
-      "{json_output_contract}\nEvidence: {evidence_hint}.\nAnswer: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence requirement: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence field: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence rule: {evidence_hint}.\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example}"
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nUse this evidence format: {evidence_hint}.\nUse this answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFormat for the \"evidence\" field: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
     ]
   }
 }

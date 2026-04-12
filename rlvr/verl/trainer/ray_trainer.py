@@ -731,110 +731,123 @@ class RayPPOTrainer:
         reward_scores = []
         total_accuracy_scores = []
         extraction_rate_scores = []
+        sample_inputs, sample_outputs, sample_labels, sample_scores = [], [], [], []
+        per_dataset_hits: dict[str, list[float]] = defaultdict(list)
+        per_dataset_extracted: dict[str, list[float]] = defaultdict(list)
+        per_dataset_response_lengths: dict[str, list[float]] = defaultdict(list)
+        per_dataset_finish_reasons: dict[str, Counter] = defaultdict(Counter)
+        per_dataset_rows: dict[str, list[dict[str, Any]]] = defaultdict(list)
+        dataset_order: list[str] = []
 
-        for name, dataloader in self.val_dataloaders.items():
-            print(name)
+        def _register_dataset(dataset_name: str) -> None:
+            if dataset_name not in per_dataset_hits:
+                dataset_order.append(dataset_name)
 
-        # assuming self.val_dataloaders is a dict-like object
-        names = list(self.val_dataloaders.keys())
-
-        # write to txt file, one per line
-        with open("val_dataloaders.txt", "w") as f:
-            for name in names:
-                f.write(f"{name}\n")
-
-        for name, dataloader in self.val_dataloaders.items():
-            reward_tensor_lst = []
-            sample_inputs, sample_outputs, sample_labels, sample_scores = [], [], [], []
-            sample_rows: list[dict[str, Any]] = []
-            reward_metrics_lst = defaultdict(list)
-            length_metrics_lst = defaultdict(list)
-            print(f"Start validation on {name}...")
+        for loader_name, dataloader in self.val_dataloaders.items():
+            print(f"Start validation on {loader_name}...")
             self.actor_rollout_ref_wg.prepare_rollout_engine()
-            for batch_dict in dataloader:
-                test_batch = DataProto.from_single_dict(batch_dict)
-                test_gen_batch = test_batch.pop(
-                    batch_keys=["input_ids", "attention_mask", "position_ids"],
-                    non_tensor_batch_keys=["raw_prompt_ids", "multi_modal_data"],
-                )
-                val_override_config = dict(self.config.worker.rollout.val_override_config)
-                if "max_tokens" in val_override_config and val_override_config["max_tokens"] is not None:
-                    val_override_config["max_tokens"] = int(val_override_config["max_tokens"])
-                repeat_times = val_override_config.get("n", 1)
-                test_gen_batch.meta_info = val_override_config
-                test_gen_batch.meta_info["min_pixels"] = self.config.data.min_pixels
-                test_gen_batch.meta_info["max_pixels"] = self.config.data.max_pixels
-                test_gen_batch.meta_info["video_fps"] = self.config.data.video_fps
+            try:
+                for batch_dict in dataloader:
+                    test_batch = DataProto.from_single_dict(batch_dict)
+                    test_gen_batch = test_batch.pop(
+                        batch_keys=["input_ids", "attention_mask", "position_ids"],
+                        non_tensor_batch_keys=["raw_prompt_ids", "multi_modal_data"],
+                    )
+                    val_override_config = dict(self.config.worker.rollout.val_override_config)
+                    if "max_tokens" in val_override_config and val_override_config["max_tokens"] is not None:
+                        val_override_config["max_tokens"] = int(val_override_config["max_tokens"])
+                    repeat_times = val_override_config.get("n", 1)
+                    test_gen_batch.meta_info = val_override_config
+                    test_gen_batch.meta_info["min_pixels"] = self.config.data.min_pixels
+                    test_gen_batch.meta_info["max_pixels"] = self.config.data.max_pixels
+                    test_gen_batch.meta_info["video_fps"] = self.config.data.video_fps
 
-                test_gen_batch, pad_size = pad_dataproto_to_divisor(
-                    test_gen_batch, self.actor_rollout_ref_wg.world_size
-                )
-                test_output_gen_batch = self.actor_rollout_ref_wg.generate_sequences(test_gen_batch)
-                test_output_gen_batch = unpad_dataproto(test_output_gen_batch, pad_size=pad_size * repeat_times)
+                    test_gen_batch, pad_size = pad_dataproto_to_divisor(
+                        test_gen_batch, self.actor_rollout_ref_wg.world_size
+                    )
+                    test_output_gen_batch = self.actor_rollout_ref_wg.generate_sequences(test_gen_batch)
+                    test_output_gen_batch = unpad_dataproto(test_output_gen_batch, pad_size=pad_size * repeat_times)
 
-                test_batch = test_batch.repeat(repeat_times=repeat_times, interleave=True)
-                test_batch = test_batch.union(test_output_gen_batch)
+                    test_batch = test_batch.repeat(repeat_times=repeat_times, interleave=True)
+                    test_batch = test_batch.union(test_output_gen_batch)
 
-                reward_result = compute_val_reward(
-                    test_batch,
-                    tokenizer=self.tokenizer,
-                    dataset_name=name,
-                    skip_special_tokens=self.config.worker.reward.skip_special_tokens,
-                    return_details=bool(self.config.trainer.val_predictions_dump_dir),
-                )
-                if self.config.trainer.val_predictions_dump_dir:
-                    reward_tensor, reward_metrics, reward_details = reward_result
-                else:
-                    reward_tensor, reward_metrics = reward_result
-                    reward_details = None
+                    reward_result = compute_val_reward(
+                        test_batch,
+                        tokenizer=self.tokenizer,
+                        dataset_name=loader_name,
+                        skip_special_tokens=self.config.worker.reward.skip_special_tokens,
+                        return_details=bool(self.config.trainer.val_predictions_dump_dir),
+                    )
+                    if self.config.trainer.val_predictions_dump_dir:
+                        reward_tensor, reward_metrics, reward_details = reward_result
+                    else:
+                        reward_tensor, reward_metrics = reward_result
+                        reward_details = None
 
-                input_ids = test_batch.batch["prompts"]
-                input_texts = [self.tokenizer.decode(ids, skip_special_tokens=True) for ids in input_ids]
-                output_ids = test_batch.batch["responses"]
-                output_texts = [self.tokenizer.decode(ids, skip_special_tokens=True) for ids in output_ids]
-                scores = reward_tensor.sum(-1).cpu().tolist()
-                sample_inputs.extend(input_texts)
-                sample_outputs.extend(output_texts)
-                sample_labels.extend(test_batch.non_tensor_batch["ground_truth"].tolist())
-                sample_scores.extend(scores)
-                if reward_details is not None:
-                    uids = test_batch.non_tensor_batch.get("uid")
+                    input_ids = test_batch.batch["prompts"]
+                    input_texts = [self.tokenizer.decode(ids, skip_special_tokens=True) for ids in input_ids]
+                    output_ids = test_batch.batch["responses"]
+                    output_texts = [self.tokenizer.decode(ids, skip_special_tokens=True) for ids in output_ids]
+                    scores = reward_tensor.sum(-1).cpu().tolist()
+                    response_lengths = torch.sum(test_batch.batch["response_mask"], dim=-1).cpu().tolist()
+                    benchmark_ids = test_batch.non_tensor_batch.get("benchmark_id")
+                    if benchmark_ids is None:
+                        benchmark_ids = np.asarray([loader_name] * len(scores), dtype=object)
+
+                    ground_truths = test_batch.non_tensor_batch["ground_truth"].tolist()
                     finish_reasons = test_batch.non_tensor_batch.get("finish_reason")
                     stop_reasons = test_batch.non_tensor_batch.get("stop_reason")
-                    for idx, detail in enumerate(reward_details):
-                        sample_rows.append(
-                            {
-                                "uid": None if uids is None else uids[idx],
-                                "prompt": input_texts[idx],
-                                "response": output_texts[idx],
-                                "ground_truth": test_batch.non_tensor_batch["ground_truth"][idx],
-                                "score": detail["overall"],
-                                "format_score": detail["format"],
-                                "hit": detail["hit"],
-                                "extracted": detail["extracted"],
-                                "extracted_answer": detail["extracted_answer"],
-                                "parser_output": detail["parser_output"],
-                                "parser_family": detail["parser_family"],
-                                "metadata": detail["metadata"],
-                                "generated_tokens": detail["generated_tokens"],
-                                "finish_reason": None if finish_reasons is None else finish_reasons[idx],
-                                "stop_reason": None if stop_reasons is None else stop_reasons[idx],
-                            }
-                        )
+                    uids = test_batch.non_tensor_batch.get("uid")
 
-                reward_tensor_lst.append(reward_tensor)
-                for key, value in reward_metrics.items():
-                    reward_metrics_lst[key].extend(value)
+                    sample_inputs.extend(input_texts)
+                    sample_outputs.extend(output_texts)
+                    sample_labels.extend(ground_truths)
+                    sample_scores.extend(scores)
 
-                length_metrics = compute_length_metrics(test_batch)
-                length_metrics_lst["response_length/mean"].append(length_metrics["response_length/mean"])
+                    hits = reward_metrics.get("hit", [])
+                    extracted_flags = reward_metrics.get("extracted", [])
+                    for idx, raw_dataset_name in enumerate(benchmark_ids.tolist()):
+                        dataset_name = str(raw_dataset_name) if raw_dataset_name is not None else loader_name
+                        _register_dataset(dataset_name)
+                        if idx < len(hits):
+                            per_dataset_hits[dataset_name].append(float(hits[idx]))
+                        if idx < len(extracted_flags):
+                            per_dataset_extracted[dataset_name].append(float(extracted_flags[idx]))
+                        per_dataset_response_lengths[dataset_name].append(float(response_lengths[idx]))
+                        if finish_reasons is not None:
+                            per_dataset_finish_reasons[dataset_name][str(finish_reasons[idx])] += 1
 
-            self.actor_rollout_ref_wg.release_rollout_engine()
-            self._maybe_log_val_generations(sample_inputs, sample_outputs, sample_labels, sample_scores)
-            reduced_metrics = reduce_metrics(reward_metrics_lst)
+                        if reward_details is not None:
+                            detail = reward_details[idx]
+                            per_dataset_rows[dataset_name].append(
+                                {
+                                    "uid": None if uids is None else uids[idx],
+                                    "benchmark_id": dataset_name,
+                                    "prompt": input_texts[idx],
+                                    "response": output_texts[idx],
+                                    "ground_truth": ground_truths[idx],
+                                    "score": detail["overall"],
+                                    "format_score": detail["format"],
+                                    "hit": detail["hit"],
+                                    "extracted": detail["extracted"],
+                                    "extracted_answer": detail["extracted_answer"],
+                                    "parser_output": detail["parser_output"],
+                                    "parser_family": detail["parser_family"],
+                                    "metadata": detail["metadata"],
+                                    "generated_tokens": detail["generated_tokens"],
+                                    "finish_reason": None if finish_reasons is None else finish_reasons[idx],
+                                    "stop_reason": None if stop_reasons is None else stop_reasons[idx],
+                                }
+                            )
+                print(f"Finish validation on {loader_name}.")
+            finally:
+                self.actor_rollout_ref_wg.release_rollout_engine()
 
-            hits = reward_metrics_lst.get("hit", [])
-            extracted_flags = reward_metrics_lst.get("extracted", [])
+        self._maybe_log_val_generations(sample_inputs, sample_outputs, sample_labels, sample_scores)
+
+        for name in dataset_order:
+            hits = per_dataset_hits.get(name, [])
+            extracted_flags = per_dataset_extracted.get(name, [])
             total_count = float(len(hits))
             extracted_count = float(np.sum(extracted_flags)) if extracted_flags else 0.0
             hit_count = float(np.sum(hits)) if hits else 0.0
@@ -842,7 +855,6 @@ class RayPPOTrainer:
             acc_on_total = (hit_count / total_count) if total_count > 0 else 0.0
             extraction_rate = (extracted_count / total_count) if total_count > 0 else 0.0
 
-            # Use extracted-only accuracy as the canonical validation accuracy.
             metrics[f"val/{name}/accuracy_on_extracted"] = acc_on_extracted
             metrics[f"val/{name}/accuracy_on_total"] = acc_on_total
             metrics[f"val/{name}/extraction_rate"] = extraction_rate
@@ -851,17 +863,18 @@ class RayPPOTrainer:
             total_accuracy_scores.append(acc_on_total)
             extraction_rate_scores.append(extraction_rate)
 
-            reduced_length = reduce_metrics(length_metrics_lst)
-            if "response_length/mean" in reduced_length:
-                metrics[f"val/{name}_response_length/mean"] = reduced_length["response_length/mean"]
-            finish_reason_counts = Counter()
-            for row in sample_rows:
-                finish_reason_counts[str(row.get("finish_reason"))] += 1
-            if sample_rows:
-                total_rows = float(len(sample_rows))
+            response_lengths = per_dataset_response_lengths.get(name, [])
+            if response_lengths:
+                metrics[f"val/{name}_response_length/mean"] = float(np.mean(response_lengths))
+
+            finish_reason_counts = per_dataset_finish_reasons.get(name, Counter())
+            if total_count > 0:
                 for reason, count in finish_reason_counts.items():
                     metrics[f"val/{name}/finish_reason/{reason}"] = float(count)
-                    metrics[f"val/{name}/finish_reason_rate/{reason}"] = float(count) / total_rows
+                    metrics[f"val/{name}/finish_reason_rate/{reason}"] = float(count) / total_count
+
+            sample_rows = per_dataset_rows.get(name, [])
+            if sample_rows:
                 self._maybe_dump_val_predictions(
                     name=name,
                     rows=sample_rows,
@@ -869,12 +882,11 @@ class RayPPOTrainer:
                         "accuracy_on_extracted": acc_on_extracted,
                         "accuracy_on_total": acc_on_total,
                         "extraction_rate": extraction_rate,
-                        "response_length_mean": reduced_length.get("response_length/mean"),
+                        "response_length_mean": float(np.mean(response_lengths)) if response_lengths else None,
                         "finish_reason_counts": dict(finish_reason_counts),
                         "num_rows": len(sample_rows),
                     },
                 )
-            print(f"Finish validation on {name}.")
 
         if reward_scores:
             self.val_reward_score = float(np.mean(reward_scores))

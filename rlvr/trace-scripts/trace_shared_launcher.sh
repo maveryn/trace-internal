@@ -5,6 +5,10 @@ set -x
 
 export PYTHONUNBUFFERED=1
 export WANDB_MODE="${WANDB_MODE:-online}"
+# vLLM 0.11 + FlashInfer sampling JIT requires CUDA dev headers (for curand.h),
+# which are not present on this machine. Default to the native sampler unless
+# explicitly overridden by the caller.
+export VLLM_USE_FLASHINFER_SAMPLER="${VLLM_USE_FLASHINFER_SAMPLER:-0}"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 RLVR_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
@@ -70,6 +74,7 @@ ROLLOUT_BATCH_SIZE="${ROLLOUT_BATCH_SIZE:-128}"
 ACTOR_GLOBAL_BATCH_SIZE="${ACTOR_GLOBAL_BATCH_SIZE:-128}"
 ACTOR_MICRO_BATCH_SIZE_UPDATE="${ACTOR_MICRO_BATCH_SIZE_UPDATE:-16}"
 ACTOR_MICRO_BATCH_SIZE_EXPERIENCE="${ACTOR_MICRO_BATCH_SIZE_EXPERIENCE:-32}"
+ACTOR_OPTIM_STRATEGY="${ACTOR_OPTIM_STRATEGY:-}"
 TRAIN_DATALOADER_NUM_WORKERS="${TRAIN_DATALOADER_NUM_WORKERS:-8}"
 VAL_DATALOADER_NUM_WORKERS="${VAL_DATALOADER_NUM_WORKERS:-8}"
 FILTER_OVERLONG_PROMPTS="${FILTER_OVERLONG_PROMPTS:-true}"
@@ -264,6 +269,7 @@ ARGS=(
   data.rollout_batch_size="${ROLLOUT_BATCH_SIZE}"
   data.train_dataloader_num_workers="${TRAIN_DATALOADER_NUM_WORKERS}"
   data.val_dataloader_num_workers="${VAL_DATALOADER_NUM_WORKERS}"
+  data.val_batch_size="${VAL_BATCH_SIZE}"
   data.filter_overlong_prompts="${FILTER_OVERLONG_PROMPTS}"
   data.filter_overlong_prompts_workers="${FILTER_OVERLONG_PROMPTS_WORKERS}"
   worker.actor.global_batch_size="${ACTOR_GLOBAL_BATCH_SIZE}"
@@ -272,7 +278,10 @@ ARGS=(
   worker.actor.padding_free="${PADDING_FREE}"
   worker.actor.use_torch_compile="${USE_TORCH_COMPILE}"
   worker.actor.model.model_path="${MODEL_PATH}"
+  worker.actor.model.enable_gradient_checkpointing="${ENABLE_GRADIENT_CHECKPOINTING}"
   worker.actor.model.freeze_vision_tower="${FREEZE_VISION_TOWER}"
+  worker.actor.fsdp.enable_full_shard="${ACTOR_ENABLE_FULL_SHARD}"
+  worker.ref.fsdp.enable_full_shard="${REF_ENABLE_FULL_SHARD}"
   worker.rollout.n="${ROLLOUT_N}"
   worker.rollout.tensor_parallel_size="${ROLLOUT_TP}"
   worker.rollout.gpu_memory_utilization="${GPU_MEMORY_UTILIZATION}"
@@ -284,6 +293,8 @@ ARGS=(
   trainer.total_epochs=1
   trainer.save_freq="${SAVE_FREQ}"
   trainer.val_freq="${VAL_FREQ}"
+  trainer.val_before_train="${VAL_BEFORE_TRAIN}"
+  trainer.val_only="${VAL_ONLY}"
   trainer.find_last_checkpoint="${FIND_LAST_CHECKPOINT}"
 )
 
@@ -293,6 +304,14 @@ fi
 
 if [[ -n "${MAX_RESPONSE_LENGTH}" ]]; then
   ARGS+=(data.max_response_length="${MAX_RESPONSE_LENGTH}")
+fi
+
+if [[ -n "${MAX_PROMPT_LENGTH}" ]]; then
+  ARGS+=(data.max_prompt_length="${MAX_PROMPT_LENGTH}")
+fi
+
+if [[ -n "${ACTOR_OPTIM_STRATEGY}" ]]; then
+  ARGS+=(worker.actor.optim.strategy="${ACTOR_OPTIM_STRATEGY}")
 fi
 
 if [[ -n "${CURRICULUM_EPS_FLOOR}" ]]; then

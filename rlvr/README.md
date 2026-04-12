@@ -9,6 +9,7 @@ RLVR-specific documentation lives under:
 
 - `examples/config.yaml`: main trainer/data/model config.
 - `examples/qwen2_5-7b-vl-*.sh`: launch scripts for integer/bbox training variants.
+- `trace-scripts/trace_qwen2_5_3b_*`: active TRACE launchers for `Qwen/Qwen2.5-VL-3B-Instruct`.
 - `trace-scripts/trace_qwen3_2b_*`: active TRACE launchers for `Qwen/Qwen3-VL-2B-Instruct`.
 - `examples/reward_function/reward_trace.py`: integer/bbox + TRACE custom reward entry point.
 - `verl/trainer/data_loader.py`: integer/bbox/TRACE dataset loading and prompt/answer column selection.
@@ -57,8 +58,29 @@ For the local 128k training parquet built in this repo, the quickest start is:
 
 ```bash
 cd /home/jovyan/work/trace/rlvr
+bash trace-scripts/trace_qwen2_5_3b_evidence.sh
+```
+
+For faster smoke tests, build a smaller local train parquet from the full train
+parquet with:
+
+- `scripts/build_trace_train_subset.py`
+
+The Qwen3-VL-2B launchers remain available with the same TRACE dataset and
+validation pack:
+
+```bash
+cd /home/jovyan/work/trace/rlvr
 bash trace-scripts/trace_qwen3_2b_evidence.sh
 ```
+
+The active TRACE launchers validate from the 8 per-benchmark parquets under:
+
+- `rlvr/dataset/validation/`
+
+This matches the `symrl` validation flow: one validation dataloader per
+benchmark, `val_batch_size=512`, and per-benchmark metrics logged directly from
+that loop. `combined.parquet` remains an offline convenience artifact only.
 
 Other active Qwen3-VL-2B variants:
 

@@ -1,0 +1,22 @@
+# Minimal rollback set for the older RLVR/Qwen2.5-VL performance stack.
+#
+# Source:
+# - saved environment snapshot: rlvr/requirements_versions.txt
+# - narrowed to packages that materially affect rollout / actor hot paths
+#
+# Install this first before touching lower-priority packages.
+# If the resolver fights you, install the torch trio first, then install the rest.
+
+torch==2.8.0
+torchvision==0.23.0
+torchaudio==2.8.0
+
+vllm==0.11.0
+transformers==4.57.0
+# flash-attn==2.8.3
+
+ray==2.49.2
+datasets==4.1.1
+huggingface-hub==0.35.3
+tokenizers==0.22.1
+pyarrow==21.0.0

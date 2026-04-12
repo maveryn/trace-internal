@@ -350,7 +350,7 @@ class RLHFDataset(Dataset):
             return example
 
         normalized = dict(example)
-        for key in ("answer_gt", "evidence_gt", "reward_contract", "trace_ref"):
+        for key in ("answer_gt", "evidence_gt", "reward_contract", "trace_ref", "metadata"):
             value = normalized.get(key)
             if not isinstance(value, str):
                 continue

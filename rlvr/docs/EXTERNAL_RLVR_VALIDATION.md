@@ -26,6 +26,7 @@ It contains the current `8 x 512` shortlist:
 
 Files in that folder:
 1. one RLVR-ready parquet per benchmark,
+2. `combined.parquet` with all `4096` selected rows as an offline convenience artifact,
 2. `manifest.json` with selected-set metrics and references,
 3. `README.md` summarizing the pack.
 
@@ -47,12 +48,22 @@ Notes:
 2. They use the RLVR validation path in `rlvr/verl/utils/val_reward.py`.
 3. The pack does not bake boxed-answer text into the parquet; RLVR applies shared validation formatting at runtime.
 4. Images are embedded directly into the parquet rows.
+5. `combined.parquet` normalizes `ground_truth` and `metadata` to strings so all 8 benchmarks can share one physical parquet; the TRACE loader decodes JSON metadata back to Python objects at runtime.
 
 ## 4) Training-script default
 The RLVR trace launchers share the default validation list from:
 - `rlvr/trace-scripts/validation_pack_qwen3_vl_2b_selected512.sh`
 
-That shell fragment defines `DEFAULT_VAL_FILES_JSON` for the 8 selected validation parquets.
+That shell fragment now defines `DEFAULT_VAL_FILES_JSON` as the 8 individual
+benchmark parquets under `rlvr/dataset/validation/`.
+
+This matches the `symrl` validation flow:
+1. one validation dataloader per benchmark,
+2. `val_batch_size=512`,
+3. rollout engine prepare/generate/release inside the per-benchmark loop.
+
+Per-dataset metrics are therefore logged directly from the benchmark-specific
+validation loop. `combined.parquet` is not the default training path.
 
 ## 5) Maintenance policy
 This repo no longer keeps the old benchmark export builder pipeline.

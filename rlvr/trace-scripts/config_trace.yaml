@@ -17,13 +17,13 @@ data:
   video_key: videos
   image_dir: null
   video_fps: 2.0
-  max_prompt_length: 1024
+  max_prompt_length: 2048
   max_response_length: 1024
   rollout_batch_size: 128
   mini_rollout_batch_size: null
   val_batch_size: 512
   train_dataloader_num_workers: 8
-  val_dataloader_num_workers: 8
+  val_dataloader_num_workers: 16
   format_prompt: null
   format_prompt_variant: boxed_only
   val_format_prompt: ./examples/format_prompt/math.jinja

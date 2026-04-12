@@ -2,6 +2,19 @@
 
 This folder contains feasible validation subsets, up to 512 questions each, selected from 2048-token Qwen/Qwen3-VL-2B-Instruct source-pool evaluations. Some subsets were rebuilt from the exact RLVR trainer validation path.
 
+Active RLVR training uses the 8 tracked per-benchmark parquets in this folder.
+
+`combined.parquet` is kept as an offline convenience artifact only. It contains
+all `4096` rows across the 8 selected datasets, with per-row `benchmark_id`.
+The active training path follows the `symrl` validation flow instead: one
+validation dataloader per benchmark with `data.val_batch_size=512`.
+
+`combined.parquet` uses a normalized cross-benchmark schema:
+
+- `ground_truth` is stored as a string, with list-valued answers JSON-encoded
+- `metadata` is stored as a JSON string and decoded by the TRACE loader at runtime
+- `images` are stored as embedded `{bytes, format}` records
+
 | dataset | file | rows | selected acc | reported acc | extraction | cap | avg tokens | max tokens |
 |---|---|---:|---:|---:|---:|---:|---:|---:|
 | mathverse_mini | mathverse_mini.parquet | 512 | 52.15% | 52.10% | 100.00% | 0.00% | 213.22 | 347 |
@@ -13,7 +26,7 @@ This folder contains feasible validation subsets, up to 512 questions each, sele
 | blink | blink.parquet | 512 | 53.91% | 53.80% | 100.00% | 0.00% | 5.12 | 52 |
 | countqa | countqa.parquet | 512 | 25.59% | 25.54%* | 100.00% | 0.00% | 98.67 | 138 |
 
-Parquet schema: `uid`, `instance_id`, `benchmark_id`, `source_id`, `prompt`, `prompt_mode`, `images`, `ground_truth`, `parser_family`, `metadata`.
+Per-benchmark parquets use the native benchmark schema under the common top-level columns `uid`, `instance_id`, `benchmark_id`, `source_id`, `prompt`, `prompt_mode`, `images`, `ground_truth`, `parser_family`, `metadata`.
 Selection diagnostics and exact source-pool runs remain under `runs/benchmark_exact_rlvr/`.
 
 ## Reproducing the metrics

@@ -8,8 +8,8 @@ RLVR_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 export PYTHONPATH="${RLVR_ROOT}${PYTHONPATH:+:${PYTHONPATH}}"
 cd "${RLVR_ROOT}"
 
-CURRICULUM_ORDER="${CURRICULUM_ORDER:-mydata/prism_curriculum/bucket_order.json}"
-CURRICULUM_STATS="${CURRICULUM_STATS:-mydata/prism_curriculum/bucket_stats.json}"
+CURRICULUM_ORDER="${CURRICULUM_ORDER:-mydata/curriculum/bucket_order.json}"
+CURRICULUM_STATS="${CURRICULUM_STATS:-mydata/curriculum/bucket_stats.json}"
 CURRICULUM_ALPHA0="${CURRICULUM_ALPHA0:-0.995}"
 CURRICULUM_EPS_FLOOR="${CURRICULUM_EPS_FLOOR:-}"
 CURRICULUM_BETA="${CURRICULUM_BETA:-2.0}"
@@ -24,7 +24,7 @@ ARGS=(
   worker.rollout.tensor_parallel_size=1
   trainer.experiment_name="qwen2_5-3b-vl-integer-curriculum-ema-frozen-beta${BETA_TAG}"
   trainer.n_gpus_per_node=8
-  data.prism_mode=integer
+  data.dataset_mode=integer
   data.curriculum_mode=self_paced_ema
   data.curriculum_backend=prebuilt
   data.curriculum_bucket_order_path="${CURRICULUM_ORDER}"
@@ -32,7 +32,7 @@ ARGS=(
   data.curriculum_alpha0="${CURRICULUM_ALPHA0}"
   data.curriculum_beta="${CURRICULUM_BETA}"
   data.curriculum_log_interval=10
-  worker.reward.reward_function_kwargs.prism_mode=integer
+  worker.reward.reward_function_kwargs.dataset_mode=integer
   worker.reward.reward_function_kwargs.list_reward_mode="${LIST_REWARD_MODE}"
 )
 

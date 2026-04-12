@@ -7,8 +7,12 @@ Repo-local workflow skills under `skills/` are operational overlays. The canonic
 ## Authoring
 - `TASK_AUTHORING.md` — task creation checklist and contract guidance.
 - `SHARED_UTILITIES.md` — helper placement and anti-duplication rules.
-- `RLVR_EXPORT.md` — TRACE dataset export workflow for the local RLVR stack.
-- `EXTERNAL_RLVR_VALIDATION.md` — fixed external validation-pack layout and RLVR validation usage.
+
+## RLVR-specific workflows
+RLVR training/export/validation docs live under:
+- `../../rlvr/docs/README.md`
+- `../../rlvr/docs/RLVR_EXPORT.md`
+- `../../rlvr/docs/EXTERNAL_RLVR_VALIDATION.md`
 
 ## Review
 - `BUILD_VALIDATION.md` — build/test/review workflow.

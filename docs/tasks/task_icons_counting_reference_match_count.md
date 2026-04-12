@@ -14,7 +14,7 @@
 5. Evidence type: `evidence_gt.type = bbox_set` (Scene-only boxes in final image coordinates, sorted top-to-bottom then left-to-right).
 6. Count policy: `target_count` is sampled independently from `0..10`, `distractor_count` from `1..10`, and `object_count = target_count + distractor_count` therefore ranges from `1..20`.
 7. Asset policy:
-   - `match_type|match_color` use the curated Prism `all_icons.txt` pool.
+   - `match_type|match_color` use the curated `all_icons.txt` icon pool.
    - `match_orientation|match_attribute_binding` use the asymmetric `non_symmetry.txt` pool so rotation stays meaningful.
 8. Match policy:
    - `match_type`: Scene icons match only on `icon_id`.
@@ -22,7 +22,7 @@
    - `match_orientation`: Scene icons share one icon type and match only on `rotation_degrees`.
    - `match_attribute_binding`: Scene icons match jointly on `icon_id + tint_rgb + rotation_degrees`, with distractors biased toward structured partial matches.
 9. Placement policy: Scene icons are placed randomly in the Scene panel, and any pairwise overlap is capped at `10%` of the smaller icon box area.
-10. Noise policy: every icon instance may receive `0..2` subtle Prism-style edits (`blur`, `downsample`, `jpeg`, `noise`) before compositing; those edits stay recorded per instance in trace metadata.
+10. Noise policy: every icon instance may receive `0..2` subtle per-icon edits (`blur`, `downsample`, `jpeg`, `noise`) before compositing; those edits stay recorded per instance in trace metadata.
 
 ## 3) Prompt contract
 1. `prompt_bundle_id`: `icons_counting_v1`

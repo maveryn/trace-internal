@@ -25,7 +25,7 @@ class BucketAgg:
 def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description=(
-            "Aggregate Prism integer eval predictions into per-bucket accuracy stats "
+            "Aggregate integer eval predictions into per-bucket accuracy stats "
             "and a hard-to-easy bucket ranking order."
         )
     )

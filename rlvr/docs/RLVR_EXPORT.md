@@ -28,7 +28,7 @@ Examples:
 ```bash
 PYTHONPATH=. python scripts/export_trace_to_rlvr.py \
   --source builds/my_trace_dataset \
-  --output rlvr/mydata/my_trace_train.parquet \
+  --output rlvr/dataset/train/my_trace_train.parquet \
   --format parquet \
   --parquet-cpu-count 0
 ```
@@ -36,7 +36,7 @@ PYTHONPATH=. python scripts/export_trace_to_rlvr.py \
 ```bash
 PYTHONPATH=. python scripts/export_trace_to_rlvr.py \
   --source builds/my_trace_dataset \
-  --output rlvr/mydata/my_trace_jsonl \
+  --output rlvr/dataset/train/my_trace_jsonl \
   --format jsonl
 ```
 
@@ -57,6 +57,7 @@ PYTHONPATH=. python scripts/prepare_trace_rlvr_train.py \
   --output-root ./out \
   --dataset-name trace_rlvr_train_128k_all_tasks \
   --num-instances 128000 \
+  --reset \
   --workers 0 \
   --parquet-cpu-count 0
 ```
@@ -66,6 +67,15 @@ This helper:
 2. requires an exact equal split across tasks,
 3. builds the TRACE dataset with `workers=0` meaning all visible CPUs,
 4. exports RLVR parquet in one step.
+
+Use `--reset` when you want a clean rebuild for the same dataset name. It removes only:
+- `out/tmp/<dataset_id>`
+- `out/tmp/<dataset_id>__strict_repro`
+- `out/datasets/<dataset_id>`
+- `out/failed_builds/<dataset_id>`
+- the target RLVR parquet output
+
+It does not delete unrelated datasets under the same `output-root`.
 
 ## 3) Exported row contract
 Each exported RLVR row currently includes:
@@ -130,14 +140,14 @@ For Hugging Face parquet distribution, prefer:
 1. `--format parquet`
 2. `--image-storage-mode embedded_bytes`
 
-That mirrors the prior Prism/Tesserae parquet workflow, where images were embedded directly into parquet rows instead of relying on checkout-local filesystem paths.
+That mirrors the prior integer/bbox parquet workflow, where images were embedded directly into parquet rows instead of relying on checkout-local filesystem paths.
 
 ## 6) RLVR usage
 Pair the export with:
 - `rlvr/trace-scripts/config_trace.yaml`
 
 Key RLVR settings for TRACE:
-1. `data.prism_mode=trace`
+1. `data.dataset_mode=trace`
 2. `data.format_prompt=null` (TRACE prompts already carry the JSON output contract, and export injects the RLVR `<image>` placeholders when needed)
 3. `data.train_files=<exported jsonl/parquet path>`
 

@@ -12,11 +12,11 @@
 3. Answer type: `answer_gt.type = integer`.
 4. Evidence type: `evidence_gt.type = label_set` (sorted labels of the matching Scene cells).
 5. Count policy: Scene cell count is fixed at `6` (`2 x 3` grid); `target_count` is sampled independently from `0..4`, `distractor_count = 6 - target_count`, so there are always at least `2` non-matching Scene cells.
-6. Asset policy: cells use the curated asymmetric Prism subset from `assets/icons/non_symmetry.txt`; icon identity is not part of the query, only the mirror-symmetry type of each cell arrangement.
+6. Asset policy: cells use the curated asymmetric icon subset from `assets/icons/non_symmetry.txt`; icon identity is not part of the query, only the mirror-symmetry type of each cell arrangement.
 7. Symmetry policy: the Reference cell is sampled as one exact symmetry type from vertical, horizontal, main-diagonal, anti-diagonal, or both vertical+horizontal axes; matching Scene cells must satisfy that same exact symmetry signature, while distractors are a mix of exact-other-symmetry cells and cells with no supported mirror symmetry.
 8. Exactness rule: matching cells must satisfy only the requested symmetry signature under rendered-image checks. In particular, single-axis or single-diagonal matches may not accidentally satisfy any other supported axis, `mirror_both_axes` must satisfy vertical+horizontal but not either diagonal, and distractor cells marked `none` must satisfy none of the supported axes.
 9. Cell styling: the Reference cell and Scene cells use square cell boxes/content regions so diagonal symmetry is well-defined. Symmetric single-axis/diagonal cells use even icon counts from `2`, `4`, or `6`; both-axes cells use one `4`-icon orbit; non-symmetric cells also keep even icon counts (`2`, `4`, or `6`) so odd-count cues never give the answer away.
-10. Noise policy: each seed icon may receive `0..2` subtle Prism-style edits (`blur`, `downsample`, `jpeg`, `noise`) before compositing; the mirrored counterpart is derived from the edited seed sprite, so noise does not break the exact symmetry contract.
+10. Noise policy: each seed icon may receive `0..2` subtle per-icon edits (`blur`, `downsample`, `jpeg`, `noise`) before compositing; the mirrored counterpart is derived from the edited seed sprite, so noise does not break the exact symmetry contract.
 
 ## 3) Prompt contract
 1. `prompt_bundle_id`: `icons_relation_v1`

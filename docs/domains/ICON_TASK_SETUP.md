@@ -5,7 +5,7 @@ This document captures the active `icons` domain contract.
 For cross-domain coverage rollups, use `docs/project/STATUS.md` and `docs/domains/TASK_FAMILY_VARIANTS.md` instead of repeating those inventories elsewhere.
 
 ## 1) Domain scope
-1. `domain=icons` is for synthetic icon-scene reasoning over curated Prism icons.
+1. `domain=icons` is for synthetic icon-scene reasoning over the curated icon bundle under `assets/icons/`.
 2. Icon tasks should test grounded visual comparison, spatial relation, sequence, pattern, transformation, or frequency reasoning over visible icon instances.
 3. Prompt-facing evidence should stay on the semantic visual unit:
    - icon instances use `bbox_set`,
@@ -13,7 +13,7 @@ For cross-domain coverage rollups, use `docs/project/STATUS.md` and `docs/domain
    - missing or violating slots use one local `bbox_set`.
 
 ## 2) Asset policy
-1. TRACE uses the curated Prism icon bundle under `assets/icons/`.
+1. TRACE uses the curated icon bundle under `assets/icons/`.
 2. Resolve manifests only through `trace/tasks/icons/shared/icon_assets.py`.
 3. Current manifests:
    - `all_icons.txt`: full icon pool,

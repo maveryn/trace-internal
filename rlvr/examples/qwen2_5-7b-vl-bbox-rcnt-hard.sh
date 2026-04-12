@@ -17,8 +17,8 @@ python3 -m verl.trainer.main \
   worker.rollout.tensor_parallel_size=1 \
   trainer.experiment_name="qwen2_5-7b-vl-bbox-rcnt-hard-lam${LAMBDA_TAG}" \
   trainer.n_gpus_per_node=8 \
-  data.prism_mode=bbox \
-  worker.reward.reward_function_kwargs.prism_mode=auto \
+  data.dataset_mode=bbox \
+  worker.reward.reward_function_kwargs.dataset_mode=auto \
   worker.reward.reward_function_kwargs.bbox_iou_threshold=0.5 \
   worker.reward.reward_function_kwargs.bbox_set_mode=soft_iou_mass \
   worker.reward.reward_function_kwargs.bbox_gate_set_lambda="${BBOX_GATE_SET_LAMBDA}" \

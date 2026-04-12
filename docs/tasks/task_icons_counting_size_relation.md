@@ -12,12 +12,12 @@
 3. Answer type: `answer_gt.type = integer`.
 4. Evidence type: `evidence_gt.type = bbox_set` (scene-only boxes in final image pixel coordinates, sorted top-to-bottom then left-to-right).
 5. Count policy: `target_count` is sampled independently from `0..8`, `distractor_count` is sampled independently from `1..8`, and `object_count = target_count + distractor_count` therefore ranges from `1..16`.
-6. Asset policy: the reference icon is drawn from the curated Prism `assets/icons/all_icons.txt` pool copied into TRACE, and the scene keeps that same icon type throughout so the task isolates size relation instead of identity.
+6. Asset policy: the reference icon is drawn from the curated `assets/icons/all_icons.txt` icon pool, and the scene keeps that same icon type throughout so the task isolates size relation instead of identity.
 7. Size policy: the reference icon nominal size is sampled from `64..96` px, scene icon nominal sizes are sampled from `40..120` px, and every scene icon is forced to satisfy `|scene_size - reference_size| >= 12` px so there are no borderline same-size cases.
 8. Match policy: `size_smaller` counts scene icons whose nominal size is at least `12` px smaller than the reference; `size_larger` counts scene icons whose nominal size is at least `12` px larger than the reference. Same-type distractors are forced into the opposite relation band.
 9. Visual variation: scene icons keep the same icon type as the reference but randomize tint and rotation independently from the same per-instance palette/rotation support.
 10. Placement policy: scene icons are placed randomly in the scene panel, and any pairwise overlap is capped at `10%` of the smaller icon box area.
-11. Noise policy: each icon instance (reference + scene) may receive `0..2` subtle Prism-style edits (`blur`, `downsample`, `jpeg`, `noise`) before compositing; edits are recorded per instance in trace metadata.
+11. Noise policy: each icon instance (reference + scene) may receive `0..2` subtle per-icon edits (`blur`, `downsample`, `jpeg`, `noise`) before compositing; edits are recorded per instance in trace metadata.
 
 ## 3) Prompt contract
 1. `prompt_bundle_id`: `icons_counting_v1`

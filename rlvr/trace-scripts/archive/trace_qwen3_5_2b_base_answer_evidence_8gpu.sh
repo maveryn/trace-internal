@@ -11,7 +11,7 @@ export PYTHONPATH="${RLVR_ROOT}${PYTHONPATH:+:${PYTHONPATH}}"
 
 export CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES:-0,1,2,3,4,5,6,7}"
 export MODEL_PATH="${MODEL_PATH:-Qwen/Qwen3.5-2B-Base}"
-export TRAIN_FILE="${TRAIN_FILE:-mydata/trace_train_128k_multivariant_hf.parquet}"
+export TRAIN_FILE="${TRAIN_FILE:-dataset/train/trace_rlvr_train_128k_all_tasks.parquet}"
 export PROMPT_KEY="${PROMPT_KEY:-prompt_answer_and_evidence}"
 export TRACE_REWARD_MODE="${TRACE_REWARD_MODE:-answer_and_evidence}"
 export VAL_FILES_JSON="${VAL_FILES_JSON:-${DEFAULT_VAL_FILES_JSON}}"
@@ -83,4 +83,4 @@ print(
 )
 PY
 
-exec bash "${SCRIPT_DIR}/qwen2_5-3b-vl-trace-4gpu.sh"
+exec bash "${SCRIPT_DIR}/../trace_shared_launcher.sh"

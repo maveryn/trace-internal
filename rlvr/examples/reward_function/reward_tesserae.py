@@ -684,10 +684,10 @@ def _bbox_accuracy_reward(
     }
 
 
-def _resolve_prism_mode(prism_mode: str, ground_truth: Any) -> str:
-    mode = (prism_mode or "auto").lower()
+def _resolve_dataset_mode(dataset_mode: str, ground_truth: Any) -> str:
+    mode = (dataset_mode or "auto").lower()
     if mode not in {"auto", "integer", "bbox"}:
-        raise ValueError(f"Unsupported prism_mode: {prism_mode}")
+        raise ValueError(f"Unsupported dataset_mode: {dataset_mode}")
 
     if mode != "auto":
         return mode
@@ -700,7 +700,7 @@ def compute_score(
     reward_inputs: list[dict[str, Any]],
     format_weight: float = 0.0,
     list_reward_mode: str = "exact",
-    prism_mode: str = "auto",
+    dataset_mode: str = "auto",
     trace_reward_mode: str = "answer_and_evidence",
     bbox_iou_threshold: float = 0.5,
     bbox_r_cnt_mode: str = "soft",
@@ -708,7 +708,7 @@ def compute_score(
     bbox_gate_set_lambda: float = 0.2,
     bbox_consistency_factor: float = 0.0,
     bbox_debug_log_enabled: bool = True,
-    bbox_debug_log_path: str = "logs/prism_bbox_debug.jsonl",
+    bbox_debug_log_path: str = "logs/bbox_debug.jsonl",
     bbox_debug_log_max_examples: int = 3,
     bbox_set_weight: float = 0.9,  # kept only for backward-compatible kwargs
     bbox_consistency_penalty_weight: float | None = None,  # legacy alias
@@ -777,7 +777,7 @@ def compute_score(
             scores.append(trace_score)
             continue
 
-        sample_mode = _resolve_prism_mode(prism_mode, ground_truth)
+        sample_mode = _resolve_dataset_mode(dataset_mode, ground_truth)
 
         if sample_mode == "bbox":
             ground_truth_payload = _parse_bbox_payload(ground_truth, require_count=True)

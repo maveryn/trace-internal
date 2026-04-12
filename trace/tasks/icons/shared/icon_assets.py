@@ -1,4 +1,4 @@
-"""Shared curated Prism icon asset helpers for TRACE icons tasks."""
+"""Shared curated icon asset helpers for TRACE icon tasks."""
 
 from __future__ import annotations
 
@@ -118,7 +118,7 @@ def render_icon_rgba(
 ) -> Image.Image:
     """Render one cropped/tinted/rotated icon as RGBA.
 
-    The curated Prism tasks use icons as silhouettes. We preserve that here by
+    TRACE icon tasks use icons as silhouettes. We preserve that here by
     using the rendered alpha channel and filling it with one deterministic tint.
     """
 

@@ -175,7 +175,7 @@ def test_trace_dataset_helpers_support_trace_rows(tmp_path: Path) -> None:
     Image.new("RGB", (12, 12), (255, 255, 255)).save(image_path)
 
     dataset = RLHFDataset.__new__(RLHFDataset)
-    dataset.prism_mode = "trace"
+    dataset.dataset_mode = "trace"
     dataset.prompt_key = "prompt"
     dataset.answer_key = "answer"
     dataset.image_dir = None

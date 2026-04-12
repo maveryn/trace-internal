@@ -36,7 +36,7 @@ def recursive_post_init(dataclass_obj):
 class DataConfig:
     train_files: str = ""
     val_files: list[str] = field(default_factory=list)
-    prism_mode: str = "none"
+    dataset_mode: str = "none"
     curriculum_mode: str = "none"
     curriculum_backend: str = "prebuilt"
     curriculum_bucket_order_path: Optional[str] = None
@@ -76,9 +76,9 @@ class DataConfig:
     def post_init(self):
         if isinstance(self.val_files, str):
             self.val_files = [self.val_files]
-        self.prism_mode = (self.prism_mode or "none").lower()
-        if self.prism_mode not in {"none", "integer", "bbox", "trace"}:
-            raise ValueError(f"Unsupported data.prism_mode: {self.prism_mode}")
+        self.dataset_mode = (self.dataset_mode or "none").lower()
+        if self.dataset_mode not in {"none", "integer", "bbox", "trace"}:
+            raise ValueError(f"Unsupported data.dataset_mode: {self.dataset_mode}")
         self.curriculum_mode = (self.curriculum_mode or "none").lower()
         # Backward-compatible alias kept for previous docs/configs.
         if self.curriculum_mode == "offline_online_hybrid":
@@ -242,9 +242,9 @@ class PPOConfig:
         self.worker.actor.kl_penalty = self.algorithm.kl_penalty
         self.worker.actor.kl_coef = self.algorithm.kl_coef
 
-        prism_mode = (self.data.prism_mode or "none").lower()
-        if prism_mode in {"integer", "bbox"}:
-            self.worker.reward.reward_function_kwargs.setdefault("prism_mode", prism_mode)
+        dataset_mode = (self.data.dataset_mode or "none").lower()
+        if dataset_mode in {"integer", "bbox"}:
+            self.worker.reward.reward_function_kwargs.setdefault("dataset_mode", dataset_mode)
 
     def deep_post_init(self):
         recursive_post_init(self)

@@ -20,8 +20,8 @@
    - `grid_size_violation`: a numbered `3 x 3` grid follows one symbolic size-level rule `level[row, col] = base + row * row_step + col * col_step` over levels `{1,2,3,4,5}` and steps `{-1,0,1}` with the all-zero pair disallowed.
 7. Violation policy: exactly one box is corrupted, and generation rejects any instance where another supported rule hypothesis would make a different violating index plausible.
 8. Asset policy:
-   - `row_rotation_violation|grid_rotation_violation` use the asymmetric Prism subset so orientation stays meaningful.
-   - `grid_size_violation` uses the full Prism pool because only size changes across the rule.
+   - `row_rotation_violation|grid_rotation_violation` use the asymmetric icon subset so orientation stays meaningful.
+   - `grid_size_violation` uses the full curated icon pool because only size changes across the rule.
 9. Visual policy:
    - rotation variants keep one shared icon type and tint within the instance;
    - size variant keeps one shared icon type, tint, and rotation, and changes only symbolic size levels.

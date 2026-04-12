@@ -23,8 +23,8 @@ not be copied into skills or planning notes.
 ## Icons direction (current)
 1. `counting` should use a reference panel plus a scene panel rather than raw icon-name prompts.
 2. Reference-scene icon counting tasks should answer with an integer count and use scene-only `bbox_set` evidence in final image coordinates.
-3. Orientation-sensitive icon tasks should use the curated asymmetric Prism subset (`non_symmetry.txt`) so rotated matches remain visually meaningful.
-4. Prism-style icon counting should sample `target_count` and `distractor_count` from explicit supports, derive `object_count` from the pair, place icons randomly under an explicit overlap cap, and keep per-icon noise on the individual icon instances rather than as a full-image post-process.
+3. Orientation-sensitive icon tasks should use the curated asymmetric icon subset (`non_symmetry.txt`) so rotated matches remain visually meaningful.
+4. Reference-scene icon counting should sample `target_count` and `distractor_count` from explicit supports, derive `object_count` from the pair, place icons randomly under an explicit overlap cap, and keep per-icon noise on the individual icon instances rather than as a full-image post-process.
 5. Icons relation tasks should keep one visibly marked `Anchor` icon in the Scene panel, use a smaller spatial count range than global counting, and ground matches with scene-only `bbox_set` evidence.
 6. Keep active icon task inventory, scene/query/evidence details, and asset-manifest policy in `ICON_TASK_SETUP.md` rather than restating them in skills or cross-domain notes.
 

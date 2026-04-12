@@ -12,10 +12,10 @@
 3. Answer type: `answer_gt.type = integer`.
 4. Evidence type: `evidence_gt.type = label_set` (sorted labels of the matching Scene cells).
 5. Count policy: `target_count` is sampled independently from `0..6`, `distractor_count` is sampled independently from `1..6`, and `object_count = target_count + distractor_count` therefore ranges from `2..12`.
-6. Asset policy: the Reference and all Scene cells reuse one sampled pair of curated Prism icons from `assets/icons/all_icons.txt`; only the front-to-back order changes between matches and distractors.
+6. Asset policy: the Reference and all Scene cells reuse one sampled pair of curated icons from `assets/icons/all_icons.txt`; only the front-to-back order changes between matches and distractors.
 7. Occlusion policy: the Reference order is either `a_over_b` or `b_over_a`; matching cells use the same order id, while distractor cells use the opposite order id.
 8. Styling policy: per cell, the two overlapping icons get distinct sampled tints from one background-safe palette and each visible pair must be Lab-separated by at least `80`; overlap ratios are sampled in the configured range (`0.40..0.60`), so the task depends on order rather than on one fixed color/offset template.
-9. Noise policy: each icon instance (both icons in the Reference cell and both icons in every Scene cell) may receive `0..2` subtle Prism-style edits (`blur`, `downsample`, `jpeg`, `noise`) before compositing; edits are recorded per icon in trace metadata.
+9. Noise policy: each icon instance (both icons in the Reference cell and both icons in every Scene cell) may receive `0..2` subtle per-icon edits (`blur`, `downsample`, `jpeg`, `noise`) before compositing; edits are recorded per icon in trace metadata.
 
 ## 3) Prompt contract
 1. `prompt_bundle_id`: `icons_relation_v1`

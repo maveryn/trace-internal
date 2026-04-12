@@ -9,12 +9,21 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterable, Literal, Mapping
 
+from tqdm.auto import tqdm
+
 
 PromptVariantMode = Literal["active", "answer_only", "answer_and_evidence"]
 ImagePathMode = Literal["relative", "absolute", "dataset_relative"]
 ImageStorageMode = Literal["path_dict", "embedded_bytes"]
 OutputFormat = Literal["jsonl", "parquet"]
 _PARQUET_JSON_COLUMNS = ("answer_gt", "evidence_gt", "reward_contract", "trace_ref")
+_PARQUET_WRITE_CHUNK_SIZE = 4096
+_PROGRESS_DISABLED_VALUES = {"0", "false", "no", "off"}
+_EXPORT_PROGRESS_ENABLED = (
+    os.environ.get("TRACE_EXPORT_PROGRESS")
+    or os.environ.get("TRACE_BUILD_PROGRESS")
+    or "1"
+).strip().lower() not in _PROGRESS_DISABLED_VALUES
 
 
 @dataclass(frozen=True)
@@ -28,6 +37,12 @@ class RLVRExportResult:
     prompt_variant: PromptVariantMode
     image_path_mode: ImagePathMode
     row_count: int
+
+def _iter_chunks(rows: list[dict[str, Any]], chunk_size: int) -> Iterable[list[dict[str, Any]]]:
+    """Yield fixed-size row chunks in order."""
+
+    for start in range(0, len(rows), chunk_size):
+        yield rows[start : start + chunk_size]
 
 
 def _resolve_parquet_cpu_count(parquet_cpu_count: int | None) -> int | None:
@@ -102,9 +117,22 @@ def resolve_export_output_path(
 
 
 def _read_jsonl_records(path: Path) -> list[dict[str, Any]]:
+    progress_enabled = _EXPORT_PROGRESS_ENABLED
     records: list[dict[str, Any]] = []
-    with path.open("r", encoding="utf-8") as handle:
+    total_bytes = path.stat().st_size
+    with (
+        path.open("r", encoding="utf-8") as handle,
+        tqdm(
+            total=total_bytes,
+            desc="Read TRACE JSONL",
+            unit="B",
+            unit_scale=True,
+            dynamic_ncols=True,
+            disable=not progress_enabled,
+        ) as progress_bar,
+    ):
         for line_number, raw_line in enumerate(handle, start=1):
+            progress_bar.update(len(raw_line.encode("utf-8")))
             line = raw_line.strip()
             if not line:
                 continue
@@ -360,10 +388,20 @@ def build_rlvr_row(
 
 def _write_jsonl_rows(path: Path, rows: list[dict[str, Any]]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("w", encoding="utf-8") as handle:
+    with (
+        path.open("w", encoding="utf-8") as handle,
+        tqdm(
+            total=len(rows),
+            desc="Write RLVR JSONL",
+            unit="row",
+            dynamic_ncols=True,
+            disable=not _EXPORT_PROGRESS_ENABLED,
+        ) as progress_bar,
+    ):
         for row in rows:
             handle.write(json.dumps(row, ensure_ascii=False, allow_nan=False, sort_keys=True))
             handle.write("\n")
+            progress_bar.update(1)
 
 
 def _write_parquet_rows(
@@ -376,13 +414,27 @@ def _write_parquet_rows(
     import pyarrow as pa
 
     path.parent.mkdir(parents=True, exist_ok=True)
+    progress_enabled = _EXPORT_PROGRESS_ENABLED
     parquet_rows = []
-    for row in rows:
-        parquet_row = dict(row)
-        for key in _PARQUET_JSON_COLUMNS:
-            if key in parquet_row:
-                parquet_row[key] = json.dumps(parquet_row[key], ensure_ascii=False, allow_nan=False, sort_keys=True)
-        parquet_rows.append(parquet_row)
+    with tqdm(
+        total=len(rows),
+        desc="Prepare parquet rows",
+        unit="row",
+        dynamic_ncols=True,
+        disable=not progress_enabled,
+    ) as progress_bar:
+        for row in rows:
+            parquet_row = dict(row)
+            for key in _PARQUET_JSON_COLUMNS:
+                if key in parquet_row:
+                    parquet_row[key] = json.dumps(
+                        parquet_row[key],
+                        ensure_ascii=False,
+                        allow_nan=False,
+                        sort_keys=True,
+                    )
+            parquet_rows.append(parquet_row)
+            progress_bar.update(1)
     requested_cpu_count = _resolve_parquet_cpu_count(parquet_cpu_count)
     prior_cpu_count = pa.cpu_count()
     prior_io_thread_count = pa.io_thread_count()
@@ -395,6 +447,8 @@ def _write_parquet_rows(
             from datasets import Dataset, Sequence
             from datasets import Image as HFImage
 
+            if progress_enabled:
+                tqdm.write("Writing parquet via datasets backend")
             dataset = Dataset.from_list(parquet_rows)
             dataset = dataset.cast_column("images", Sequence(HFImage()))
             dataset.to_parquet(str(path))
@@ -405,8 +459,25 @@ def _write_parquet_rows(
 
         import pyarrow.parquet as pq
 
-        table = pa.Table.from_pylist(parquet_rows)
-        pq.write_table(table, path)
+        writer = None
+        chunk_count = max(1, math.ceil(len(parquet_rows) / _PARQUET_WRITE_CHUNK_SIZE))
+        try:
+            with tqdm(
+                total=chunk_count,
+                desc="Write parquet",
+                unit="chunk",
+                dynamic_ncols=True,
+                disable=not progress_enabled,
+            ) as progress_bar:
+                for chunk_rows in _iter_chunks(parquet_rows, _PARQUET_WRITE_CHUNK_SIZE):
+                    table = pa.Table.from_pylist(chunk_rows)
+                    if writer is None:
+                        writer = pq.ParquetWriter(path, table.schema, compression="snappy")
+                    writer.write_table(table, row_group_size=len(chunk_rows))
+                    progress_bar.update(1)
+        finally:
+            if writer is not None:
+                writer.close()
     finally:
         pa.set_cpu_count(int(prior_cpu_count))
         pa.set_io_thread_count(int(prior_io_thread_count))
@@ -438,21 +509,32 @@ def export_trace_dataset_to_rlvr(
     output_parent = final_output_path.parent.resolve()
 
     records = _read_jsonl_records(train_instances_path)
+    if _EXPORT_PROGRESS_ENABLED:
+        tqdm.write(f"Assign curriculum bins for {len(records)} rows")
     curriculum_assignments = _build_curriculum_assignments(records)
-    rows = [
-        {
-            **build_rlvr_row(
-                record,
-                dataset_root=dataset_root,
-                output_parent=output_parent,
-                prompt_variant=prompt_variant,
-                image_path_mode=image_path_mode,
-                image_storage_mode=image_storage_mode,
-            ),
-            **curriculum_assignments[str(record.get("instance_id", "")).strip()],
-        }
-        for record in records
-    ]
+    rows = []
+    with tqdm(
+        total=len(records),
+        desc="Build RLVR rows",
+        unit="row",
+        dynamic_ncols=True,
+        disable=not _EXPORT_PROGRESS_ENABLED,
+    ) as progress_bar:
+        for record in records:
+            rows.append(
+                {
+                    **build_rlvr_row(
+                        record,
+                        dataset_root=dataset_root,
+                        output_parent=output_parent,
+                        prompt_variant=prompt_variant,
+                        image_path_mode=image_path_mode,
+                        image_storage_mode=image_storage_mode,
+                    ),
+                    **curriculum_assignments[str(record.get("instance_id", "")).strip()],
+                }
+            )
+            progress_bar.update(1)
 
     if final_format == "parquet":
         _write_parquet_rows(

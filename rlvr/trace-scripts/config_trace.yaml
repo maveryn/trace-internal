@@ -1,6 +1,6 @@
 data:
-  train_files: rlvr/mydata/trace_train.parquet
-  prism_mode: trace
+  train_files: dataset/train/trace_rlvr_train_128k_all_tasks.parquet
+  dataset_mode: trace
   # TRACE exports already include task-local bucket_id_str metadata for self_paced_ema.
   curriculum_mode: none
   curriculum_backend: prebuilt

@@ -170,7 +170,7 @@ class RLHFDataset(Dataset):
         tokenizer: PreTrainedTokenizer,
         processor: Optional[ProcessorMixin],
         model_type: Optional[str] = None,
-        prism_mode: str = "none",
+        dataset_mode: str = "none",
         prompt_key: str = "prompt",
         answer_key: str = "answer",
         image_key: str = "images",
@@ -190,7 +190,7 @@ class RLHFDataset(Dataset):
         self.tokenizer = tokenizer
         self.processor = processor
         self.model_type = str(model_type or "").strip().lower() or None
-        self.prism_mode = (prism_mode or "none").lower()
+        self.dataset_mode = (dataset_mode or "none").lower()
         self.prompt_key = prompt_key
         self.answer_key = answer_key
         self.image_key = image_key
@@ -203,8 +203,8 @@ class RLHFDataset(Dataset):
         self.min_pixels = min_pixels
         self.max_pixels = max_pixels
         self.log_dataset_download_status = bool(log_dataset_download_status)
-        if self.prism_mode not in {"none", "integer", "bbox", "trace"}:
-            raise ValueError(f"Unsupported prism_mode: {self.prism_mode}")
+        if self.dataset_mode not in {"none", "integer", "bbox", "trace"}:
+            raise ValueError(f"Unsupported dataset_mode: {self.dataset_mode}")
 
         original_data_path = data_path
         if "@" in data_path:
@@ -318,15 +318,15 @@ class RLHFDataset(Dataset):
         return normalized
 
     def _resolve_prompt_answer_keys(self, example: dict[str, Any]) -> tuple[str, str]:
-        if self.prism_mode == "integer":
-            prism_prompt_key, prism_answer_key = "problem_integer", "answer_integer"
-            if prism_prompt_key in example and prism_answer_key in example:
-                return prism_prompt_key, prism_answer_key
-        elif self.prism_mode == "bbox":
-            prism_prompt_key, prism_answer_key = "problem_bbox", "answer_bbox"
-            if prism_prompt_key in example and prism_answer_key in example:
-                return prism_prompt_key, prism_answer_key
-        elif self.prism_mode == "trace":
+        if self.dataset_mode == "integer":
+            dataset_prompt_key, dataset_answer_key = "problem_integer", "answer_integer"
+            if dataset_prompt_key in example and dataset_answer_key in example:
+                return dataset_prompt_key, dataset_answer_key
+        elif self.dataset_mode == "bbox":
+            dataset_prompt_key, dataset_answer_key = "problem_bbox", "answer_bbox"
+            if dataset_prompt_key in example and dataset_answer_key in example:
+                return dataset_prompt_key, dataset_answer_key
+        elif self.dataset_mode == "trace":
             if self.prompt_key in example and self.answer_key in example:
                 return self.prompt_key, self.answer_key
             if "prompt" in example and "answer_gt" in example:
@@ -340,13 +340,13 @@ class RLHFDataset(Dataset):
             available = ", ".join(sorted(example.keys()))
             raise KeyError(
                 "Prompt/answer columns are missing from dataset row. "
-                f"Expected ({self.prompt_key}, {self.answer_key}) for prism_mode={self.prism_mode}. "
+                f"Expected ({self.prompt_key}, {self.answer_key}) for dataset_mode={self.dataset_mode}. "
                 f"Available keys: {available}"
             )
         return self.prompt_key, self.answer_key
 
     def _normalize_trace_metadata_fields(self, example: dict[str, Any]) -> dict[str, Any]:
-        if self.prism_mode != "trace":
+        if self.dataset_mode != "trace":
             return example
 
         normalized = dict(example)
@@ -484,7 +484,7 @@ class RLHFDataset(Dataset):
             "processor_name_or_path": getattr(self.processor, "name_or_path", None),
             "processor_class": self.processor.__class__.__name__ if self.processor is not None else None,
             "model_type": self.model_type,
-            "prism_mode": self.prism_mode,
+            "dataset_mode": self.dataset_mode,
             "prompt_key": self.prompt_key,
             "answer_key": self.answer_key,
             "image_key": self.image_key,

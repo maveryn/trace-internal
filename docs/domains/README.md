@@ -9,7 +9,6 @@ Use the matching `skills/domain-<domain>/` entry only as an operational overlay;
 ## Cross-Domain
 - `TASK_FAMILY_VARIANTS.md` — domain/task-family variant map; currently also contains the active geometry surface.
 - `CHART_DOMAIN_PLAN.md` — long-term chart-type universe and future expansion direction for `domain=charts`.
-- `TESSERAE_TASKS.md` — Tesserae task inventory and porting reference.
 
 ## Active Setup Docs
 - `CHART_TASK_SETUP.md` — active chart-domain contract and supported v1 chart families.

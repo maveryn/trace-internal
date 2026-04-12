@@ -14,10 +14,10 @@
 5. Count policy: `target_count` is the number of singleton-type icons and is sampled from `0..5`; `object_count` is sampled from `6..15` subject to leaving at least one repeated type in the image.
 6. Frequency policy: singleton icons are counted by icon type only. Colors and rotations may vary per icon, but two icons with the same `icon_id` still belong to the same type-frequency group.
 7. Repeated-type policy: the non-singleton portion of the scene is partitioned into `1..4` repeated icon types, each with multiplicity `2..4`, and the exact multiplicities are recorded in trace metadata.
-8. Asset policy: scene icons are drawn from the curated Prism `assets/icons/all_icons.txt` pool copied into TRACE.
-9. Color/orientation policy: scene icons are tinted from one per-instance Prism-style palette sampled with anchor-aware Lab-distance separation from the panel/background chrome, and per-icon rotations are sampled from `{0, 90, 180, 270}`.
+8. Asset policy: scene icons are drawn from the curated `assets/icons/all_icons.txt` icon pool.
+9. Color/orientation policy: scene icons are tinted from one per-instance palette sampled with anchor-aware Lab-distance separation from the panel/background chrome, and per-icon rotations are sampled from `{0, 90, 180, 270}`.
 10. Placement policy: scene icons are placed randomly in the single scene panel, and any pairwise overlap is capped at `10%` of the smaller icon box area.
-11. Noise policy: each scene icon may receive `0..2` subtle Prism-style edits (`blur`, `downsample`, `jpeg`, `noise`) before compositing; edits are recorded per instance in trace metadata.
+11. Noise policy: each scene icon may receive `0..2` subtle per-icon edits (`blur`, `downsample`, `jpeg`, `noise`) before compositing; edits are recorded per instance in trace metadata.
 
 ## 3) Prompt contract
 1. `prompt_bundle_id`: `icons_counting_v1`

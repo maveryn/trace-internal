@@ -1,25 +1,27 @@
-# RLVR (Prism + TRACE)
+# RLVR (TRACE + Integer/BBox)
 
-This directory contains the RL training stack used for Prism experiments (EasyR1/veRL-based), including training configs, reward functions, evaluation scripts, and checkpoint utilities.
+This directory contains the RL training stack used for TRACE and related integer/bbox experiments (EasyR1/veRL-based), including training configs, reward functions, evaluation scripts, and checkpoint utilities.
+
+RLVR-specific documentation lives under:
+- `docs/README.md`
 
 ## Repo Summary
 
 - `examples/config.yaml`: main trainer/data/model config.
-- `examples/qwen2_5-7b-vl-*.sh`: launch scripts for Prism training variants.
-- `trace-scripts/qwen2_5-3b-vl-trace-4gpu.sh`: TRACE-specific 4-GPU launcher for `Qwen/Qwen2.5-VL-3B-Instruct`.
-- `examples/reward_function/reward_tesserae.py`: Prism + TRACE custom reward entry point.
-- `verl/trainer/data_loader.py`: Prism/TRACE dataset loading and prompt/answer column selection.
+- `examples/qwen2_5-7b-vl-*.sh`: launch scripts for integer/bbox training variants.
+- `trace-scripts/trace_qwen3_2b_*`: active TRACE launchers for `Qwen/Qwen3-VL-2B-Instruct`.
+- `examples/reward_function/reward_tesserae.py`: integer/bbox + TRACE custom reward entry point.
+- `verl/trainer/data_loader.py`: integer/bbox/TRACE dataset loading and prompt/answer column selection.
 - `scripts/model_merger.py`: merge sharded actor checkpoints into Hugging Face format.
-- `scripts/eval_prism_integer_vllm.py`: vLLM evaluation over Prism parquet/HF dataset.
 
 ## Dataset Modes
 
-Set `data.prism_mode` to choose dataset-column behavior:
+Set `data.dataset_mode` to choose dataset-column behavior:
 
 - `integer`: uses `problem_integer` + `answer_integer`
 - `bbox`: uses `problem_bbox` + `answer_bbox`
 - `trace`: uses TRACE `prompt` + `answer_gt`, preserves `evidence_gt` and `reward_contract`, and resolves exported TRACE image records from `images[*].path`
-- `none`: non-Prism behavior
+- `none`: generic/non-specialized behavior
 
 ### Exporting TRACE builds for RLVR
 
@@ -28,7 +30,7 @@ TRACE build roots are not used directly as RLVR training directories. From the r
 ```bash
 PYTHONPATH=. python scripts/export_trace_to_rlvr.py \
   --source builds/<trace_dataset> \
-  --output rlvr/mydata/<trace_dataset>.parquet \
+  --output rlvr/dataset/train/<trace_dataset>.parquet \
   --format parquet
 ```
 
@@ -36,7 +38,7 @@ Use `rlvr/trace-scripts/config_trace.yaml` as the starter config for exported TR
 
 Recommended TRACE settings:
 
-- `data.prism_mode=trace`
+- `data.dataset_mode=trace`
 - `data.format_prompt=null`
 - `data.train_files=<exported jsonl/parquet path>`
 - use a multimodal checkpoint such as `Qwen/Qwen2.5-VL-3B-Instruct` or `Qwen/Qwen2.5-VL-7B-Instruct`
@@ -55,8 +57,14 @@ For the local 128k training parquet built in this repo, the quickest start is:
 
 ```bash
 cd /home/jovyan/work/trace/rlvr
-bash trace-scripts/qwen2_5-3b-vl-trace-4gpu.sh
+bash trace-scripts/trace_qwen3_2b_evidence.sh
 ```
+
+Other active Qwen3-VL-2B variants:
+
+- `trace-scripts/trace_qwen3_2b_answer.sh`
+- `trace-scripts/trace_qwen3_2b_answer_curriculum.sh`
+- `trace-scripts/trace_qwen3_2b_evidence_curriculum.sh`
 
 ### Qwen3.5-0.8B-Base
 
@@ -64,7 +72,7 @@ Initial TRACE support for `Qwen/Qwen3.5-0.8B-Base` is available through:
 
 ```bash
 cd /home/jovyan/work/trace/rlvr
-bash trace-scripts/trace_qwen3_5_0p8b_base_answer_evidence.sh
+bash trace-scripts/archive/trace_qwen3_5_0p8b_base_answer_evidence.sh
 ```
 
 The launcher defaults to a conservative setup for the first integration pass:
@@ -224,5 +232,5 @@ This writes merged weights to:
 Optional upload:
 
 ```bash
-python3 scripts/model_merger.py --local_dir checkpoints/<experiment>/global_step_<step>/actor --hf_upload_path xashru/prism-v0
+python3 scripts/model_merger.py --local_dir checkpoints/<experiment>/global_step_<step>/actor --hf_upload_path xashru/rlvr-v0
 ```

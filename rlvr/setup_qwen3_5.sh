@@ -33,7 +33,7 @@ echo "    HF cache: ${HF_CACHE} -> /root/.cache/huggingface"
 echo "    Suggested first checks inside the container:"
 echo "      cd /workspace/trace/rlvr"
 echo "      python scripts/check_qwen3_5_runtime.py"
-echo "      bash trace-scripts/trace_qwen3_5_0p8b_base_answer_evidence.sh"
+echo "      bash trace-scripts/archive/trace_qwen3_5_0p8b_base_answer_evidence.sh"
 
 docker run --gpus all -it --rm \
   --ipc=host \

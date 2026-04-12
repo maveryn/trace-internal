@@ -4,11 +4,23 @@
 from __future__ import annotations
 
 import argparse
+import shutil
 from pathlib import Path
 
 from trace.core.build_presets import build_equal_split_all_tasks_config
-from trace.core.builder import BuildError, build_dataset
-from trace.core.rlvr_export import export_trace_dataset_to_rlvr
+from trace.core.builder import BuildError, build_dataset, resolve_build_paths
+from trace.core.rlvr_export import export_trace_dataset_to_rlvr, resolve_export_output_path
+
+
+def _remove_path(path: Path) -> None:
+    """Remove one file or directory if it exists."""
+
+    if not path.exists():
+        return
+    if path.is_dir():
+        shutil.rmtree(path)
+        return
+    path.unlink()
 
 
 def main() -> int:
@@ -52,7 +64,7 @@ def main() -> int:
     parser.add_argument(
         "--rlvr-output",
         default=None,
-        help="RLVR parquet output path (default: rlvr/mydata/<dataset_name>.parquet)",
+        help="RLVR parquet output path (default: rlvr/dataset/train/<dataset_name>.parquet)",
     )
     parser.add_argument(
         "--prompt-variant",
@@ -77,6 +89,11 @@ def main() -> int:
         action="store_true",
         help="Build the TRACE dataset but skip RLVR parquet export",
     )
+    parser.add_argument(
+        "--reset",
+        action="store_true",
+        help="Delete existing artifacts for this dataset/output before rebuilding",
+    )
     args = parser.parse_args()
 
     config = build_equal_split_all_tasks_config(
@@ -98,6 +115,28 @@ def main() -> int:
         f"workers={args.workers} max_in_flight={args.max_in_flight}"
     )
 
+    rlvr_output = (
+        Path(args.rlvr_output)
+        if args.rlvr_output
+        else Path("rlvr") / "dataset" / "train" / f"{args.dataset_name}.parquet"
+    )
+    final_rlvr_output, _ = resolve_export_output_path(rlvr_output, output_format="parquet")
+
+    if args.reset:
+        build_paths = resolve_build_paths(config)
+        reset_targets = [
+            build_paths.temp_root,
+            build_paths.repro_root,
+            build_paths.final_root,
+            build_paths.failure_root,
+            final_rlvr_output,
+        ]
+        print("Reset artifacts:")
+        for target in reset_targets:
+            if target.exists():
+                print(f"  removing {target}")
+            _remove_path(target)
+
     try:
         final_path = build_dataset(config, code_hash=str(args.code_hash))
     except BuildError as exc:
@@ -107,10 +146,9 @@ def main() -> int:
     if args.build_only:
         return 0
 
-    rlvr_output = Path(args.rlvr_output) if args.rlvr_output else Path("rlvr") / "mydata" / f"{args.dataset_name}.parquet"
     export_result = export_trace_dataset_to_rlvr(
         final_path,
-        rlvr_output,
+        final_rlvr_output,
         output_format="parquet",
         prompt_variant=args.prompt_variant,
         image_path_mode=args.image_path_mode,

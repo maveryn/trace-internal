@@ -1,6 +1,6 @@
 data:
-  train_files: xashru/prism@train
-  prism_mode: integer  # integer | bbox | trace | none
+  train_files: mydata/train.parquet
+  dataset_mode: integer  # integer | bbox | trace | none
   curriculum_mode: none
   curriculum_backend: prebuilt
   curriculum_bucket_order_path: null

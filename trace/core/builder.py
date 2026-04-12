@@ -10,9 +10,10 @@ import shutil
 from concurrent.futures import FIRST_COMPLETED, ProcessPoolExecutor, wait
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Mapping
+from typing import Any, Callable, Dict, List, Mapping
 
 from PIL import Image
+from tqdm.auto import tqdm
 
 from ..tasks import create_task
 from ..tasks.base import TaskOutput
@@ -55,6 +56,18 @@ class _BuildStageResult:
 
 
 @dataclass(frozen=True)
+class BuildPaths:
+    """Filesystem locations derived from a build config."""
+
+    dataset_id: str
+    output_root: Path
+    temp_root: Path
+    repro_root: Path
+    final_root: Path
+    failure_root: Path
+
+
+@dataclass(frozen=True)
 class _TaskAttemptSpec:
     """Deterministic generation request for one task attempt."""
 
@@ -84,6 +97,8 @@ _REQUIRED_TRACE_PAYLOAD_KEYS = (
     "witness_symbolic",
     "projected_evidence",
 )
+_PROGRESS_DISABLED_VALUES = {"0", "false", "no", "off"}
+_BUILD_PROGRESS_ENABLED = os.environ.get("TRACE_BUILD_PROGRESS", "1").strip().lower() not in _PROGRESS_DISABLED_VALUES
 
 
 def _to_jsonl(path: Path, records: List[Dict[str, Any]]) -> None:
@@ -436,6 +451,7 @@ def _build_task_serial(
     code_hash: str,
     type_registry: TypeRegistry,
     trace_writer: TraceShardWriter,
+    progress_callback: Callable[[int, int, int], None] | None = None,
 ) -> tuple[list[Dict[str, Any]], list[Dict[str, Any]], int, int, Dict[str, int], str | None]:
     """Generate all accepted instances for one task in-process."""
 
@@ -461,6 +477,8 @@ def _build_task_serial(
             rejected += 1
             reason = type(exc).__name__
             rejection_reasons[reason] = rejection_reasons.get(reason, 0) + 1
+            if progress_callback is not None:
+                progress_callback(accepted, rejected, accepted + rejected)
             continue
 
         train_record, curriculum_record, evidence_type = _finalize_generated_output(
@@ -477,6 +495,8 @@ def _build_task_serial(
         train_records.append(train_record)
         curriculum_records.append(curriculum_record)
         accepted += 1
+        if progress_callback is not None:
+            progress_callback(accepted, rejected, accepted + rejected)
 
     return (
         train_records,
@@ -498,6 +518,7 @@ def _build_task_parallel(
     code_hash: str,
     type_registry: TypeRegistry,
     trace_writer: TraceShardWriter,
+    progress_callback: Callable[[int, int, int], None] | None = None,
 ) -> tuple[list[Dict[str, Any]], list[Dict[str, Any]], int, int, Dict[str, int], str | None]:
     """Generate all accepted instances for one task with a deterministic worker pool."""
 
@@ -512,6 +533,7 @@ def _build_task_parallel(
             code_hash=code_hash,
             type_registry=type_registry,
             trace_writer=trace_writer,
+            progress_callback=progress_callback,
         )
 
     accepted = 0
@@ -577,6 +599,8 @@ def _build_task_parallel(
                     train_records.append(train_record)
                     curriculum_records.append(curriculum_record)
                     accepted += 1
+                if progress_callback is not None:
+                    progress_callback(accepted, rejected, accepted + rejected)
                 next_finalize += 1
 
             if accepted >= task_target:
@@ -617,42 +641,101 @@ def _build_staging(
     rejected_by_task: Dict[str, int] = {}
     rejected_reason_by_task: Dict[str, Dict[str, int]] = {}
     evidence_format_map: Dict[str, str] = {}
+    progress_enabled = _BUILD_PROGRESS_ENABLED
+    total_target = sum(target_counts_by_task.values())
+    overall_bar = tqdm(
+        total=total_target,
+        desc="TRACE build",
+        unit="inst",
+        dynamic_ncols=True,
+        disable=not progress_enabled,
+    )
 
-    with TraceShardWriter(stage_root) as trace_writer:
-        for task_cfg in config.tasks:
-            task = create_task(task_cfg.task_id)
-            task_target = int(target_counts_by_task.get(task_cfg.task_id, 0))
-            (
-                task_instances,
-                task_curriculum,
-                accepted,
-                rejected,
-                rejection_reasons,
-                evidence_type,
-            ) = _build_task_parallel(
-                task_cfg=task_cfg,
-                task=task,
-                task_target=task_target,
-                config=config,
-                stage_root=stage_root,
-                code_hash=code_hash,
-                type_registry=type_registry,
-                trace_writer=trace_writer,
-            )
-
-            instances.extend(task_instances)
-            curriculum.extend(task_curriculum)
-            if evidence_type is not None:
-                evidence_format_map[task.task_id] = evidence_type
-
-            accepted_by_task[task_cfg.task_id] = accepted
-            rejected_by_task[task_cfg.task_id] = rejected
-            rejected_reason_by_task[task_cfg.task_id] = dict(rejection_reasons)
-
-            if accepted < task_target:
-                warning_messages.append(
-                    f"task {task_cfg.task_id} shortfall: expected {task_target}, accepted {accepted}"
+    try:
+        with TraceShardWriter(stage_root) as trace_writer:
+            for task_index, task_cfg in enumerate(config.tasks, start=1):
+                task = create_task(task_cfg.task_id)
+                task_target = int(target_counts_by_task.get(task_cfg.task_id, 0))
+                current_task_id = str(task_cfg.task_id)
+                task_bar = tqdm(
+                    total=task_target,
+                    desc=f"[{task_index}/{len(config.tasks)}] {current_task_id}",
+                    unit="inst",
+                    dynamic_ncols=True,
+                    leave=False,
+                    disable=not progress_enabled,
                 )
+                progress_state = {"accepted": 0, "rejected": 0, "finalized": 0}
+
+                def _on_task_progress(
+                    accepted: int,
+                    rejected: int,
+                    finalized: int,
+                    *,
+                    _task_id: str = current_task_id,
+                ) -> None:
+                    accepted_delta = accepted - int(progress_state["accepted"])
+                    if accepted_delta > 0:
+                        task_bar.update(accepted_delta)
+                        overall_bar.update(accepted_delta)
+                    progress_state["accepted"] = int(accepted)
+                    progress_state["rejected"] = int(rejected)
+                    progress_state["finalized"] = int(finalized)
+
+                    if not progress_enabled:
+                        return
+                    if (
+                        accepted_delta > 0
+                        or rejected == 0
+                        or rejected % 25 == 0
+                        or accepted >= task_target
+                    ):
+                        task_bar.set_postfix(rejected=rejected, attempts=finalized, refresh=accepted_delta == 0)
+                        overall_bar.set_postfix(task=_task_id, refresh=False)
+
+                try:
+                    (
+                        task_instances,
+                        task_curriculum,
+                        accepted,
+                        rejected,
+                        rejection_reasons,
+                        evidence_type,
+                    ) = _build_task_parallel(
+                        task_cfg=task_cfg,
+                        task=task,
+                        task_target=task_target,
+                        config=config,
+                        stage_root=stage_root,
+                        code_hash=code_hash,
+                        type_registry=type_registry,
+                        trace_writer=trace_writer,
+                        progress_callback=_on_task_progress,
+                    )
+                finally:
+                    if progress_enabled:
+                        task_bar.set_postfix(
+                            rejected=int(progress_state["rejected"]),
+                            attempts=int(progress_state["finalized"]),
+                            refresh=False,
+                        )
+                    task_bar.close()
+
+                instances.extend(task_instances)
+                curriculum.extend(task_curriculum)
+                if evidence_type is not None:
+                    evidence_format_map[task.task_id] = evidence_type
+
+                accepted_by_task[task_cfg.task_id] = accepted
+                rejected_by_task[task_cfg.task_id] = rejected
+                rejected_reason_by_task[task_cfg.task_id] = dict(rejection_reasons)
+
+                if accepted < task_target:
+                    warning_messages.append(
+                        f"task {task_cfg.task_id} shortfall: expected {task_target}, accepted {accepted}"
+                    )
+    finally:
+        overall_bar.close()
 
     _to_jsonl(stage_root / "train_instances.jsonl", instances)
     _to_jsonl(stage_root / "curriculum_index.jsonl", curriculum)
@@ -673,21 +756,39 @@ def _build_staging(
     )
 
 
+def resolve_build_paths(config: BuildConfig) -> BuildPaths:
+    """Resolve dataset-id-scoped build artifact paths for one config."""
+
+    output_root = Path(config.output_root)
+    type_registry_path = DEFAULT_REGISTRY_PATH
+    type_registry = load_type_registry(type_registry_path)
+    type_registry_hash = blake3_file(type_registry_path)
+    dataset_id = _dataset_id_from_config(config, type_registry, type_registry_hash)
+    return BuildPaths(
+        dataset_id=dataset_id,
+        output_root=output_root,
+        temp_root=output_root / "tmp" / dataset_id,
+        repro_root=output_root / "tmp" / f"{dataset_id}__strict_repro",
+        final_root=output_root / "datasets" / dataset_id,
+        failure_root=output_root / "failed_builds" / dataset_id,
+    )
+
+
 def build_dataset(config: BuildConfig, *, code_hash: str = "local") -> Path:
     """Build a dataset into output_root and return finalized dataset path."""
-    output_root = Path(config.output_root)
+    build_paths = resolve_build_paths(config)
+    output_root = build_paths.output_root
     output_root.mkdir(parents=True, exist_ok=True)
 
     type_registry_path = DEFAULT_REGISTRY_PATH
     type_registry = load_type_registry(type_registry_path)
     type_registry_hash = blake3_file(type_registry_path)
 
-    dataset_id = _dataset_id_from_config(config, type_registry, type_registry_hash)
-
-    temp_root = output_root / "tmp" / dataset_id
-    repro_root = output_root / "tmp" / f"{dataset_id}__strict_repro"
-    final_root = output_root / "datasets" / dataset_id
-    failure_root = output_root / "failed_builds" / dataset_id
+    dataset_id = build_paths.dataset_id
+    temp_root = build_paths.temp_root
+    repro_root = build_paths.repro_root
+    final_root = build_paths.final_root
+    failure_root = build_paths.failure_root
 
     if final_root.exists():
         raise BuildError(f"final dataset path already exists: {final_root}")

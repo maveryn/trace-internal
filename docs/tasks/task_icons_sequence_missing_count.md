@@ -13,12 +13,12 @@
 4. Evidence type: `evidence_gt.type = bbox_set` (exactly one box: the missing Scene box in final image pixel coordinates).
 5. Sequence policy: the hidden counts follow one arithmetic progression with integer step `±1..±3`; the missing answer is sampled from `0..10`, and every visible count stays in `0..10`.
 6. Missing-position policy: the missing box may appear at any sequence position, including either end.
-7. Asset policy: the shared sequence icon is drawn from the curated Prism `assets/icons/all_icons.txt` pool copied into TRACE, and every visible Scene icon keeps that same icon type.
+7. Asset policy: the shared sequence icon is drawn from the curated `assets/icons/all_icons.txt` icon pool, and every visible Scene icon keeps that same icon type.
 8. Visual variation: all visible Scene icons keep the same tint within one instance, while icon rotation may vary independently across instances.
 9. Size policy: visible Scene icons are rendered at nominal sizes in `24..40` px.
 10. Cell geometry policy: each instance samples one row box width in `112..160` px and one row box height in `96..144` px; the final canvas size is derived from that sampled row geometry instead of stretching boxes into a fixed global canvas.
 11. Placement policy: icons are placed randomly within their own Scene cell, and any pairwise overlap inside one cell is capped at `20%` of the smaller icon box area.
-12. Noise policy: each rendered visible Scene icon may receive `0..2` subtle Prism-style edits (`blur`, `downsample`, `jpeg`, `noise`) before compositing; edits are recorded per instance in trace metadata.
+12. Noise policy: each rendered visible Scene icon may receive `0..2` subtle per-icon edits (`blur`, `downsample`, `jpeg`, `noise`) before compositing; edits are recorded per instance in trace metadata.
 
 ## 3) Prompt contract
 1. `prompt_bundle_id`: `icons_sequence_v1`

@@ -138,7 +138,7 @@ def load_bucket_accuracy_map(path: str) -> dict[str, float]:
 
 class RankUnlockBucketSampler(Sampler[int]):
     """
-    Bucket-aware sampler for Prism offline-fixed curriculum.
+    Bucket-aware sampler for offline-fixed curriculum.
 
     Sampling policy:
     1) sample one bucket uniformly from currently unlocked prefix,

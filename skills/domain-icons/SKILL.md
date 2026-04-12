@@ -1,6 +1,6 @@
 ---
 name: domain-icons
-description: Use when designing, implementing, or reviewing TRACE icon-domain tasks, especially curated Prism icon pool selection, reference-vs-scene layout choices, evidence typing, and icon-specific ambiguity checks.
+description: Use when designing, implementing, or reviewing TRACE icon-domain tasks, especially curated icon-pool selection, reference-vs-scene layout choices, evidence typing, and icon-specific ambiguity checks.
 ---
 
 # Icons Domain
@@ -15,7 +15,7 @@ Use this whenever the task lives under `domain=icons`.
 
 ## Active-contract reminders
 - `docs/domains/ICON_TASK_SETUP.md` owns the active icons contract, asset policy, and evidence policy.
-- Use Prism icon manifests only through `trace/tasks/icons/shared/icon_assets.py`.
+- Use icon manifests only through `trace/tasks/icons/shared/icon_assets.py`.
 - Use asymmetric icons when orientation, mirror symmetry, transformation identity, or attribute binding can collapse under icon symmetry.
 - Keep prompt-facing evidence on the semantic visual unit: icon-instance `bbox_set`, scene-cell `label_set`, or one local bbox for missing/violating slots.
 

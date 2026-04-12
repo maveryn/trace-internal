@@ -127,7 +127,7 @@ def main():
 
     acc_extracted = 100.0 * hits / extracted if extracted else 0.0
     acc_total = 100.0 * hits / len(rows) if rows else 0.0
-    out_dir = Path('mydata/prism_eval')
+    out_dir = Path('mydata/integer_eval')
     out_dir.mkdir(parents=True, exist_ok=True)
     out_tsv = out_dir / 'mathvision500_qwen25vl3b_boxed_reward.tsv'
     pd.DataFrame(rows).to_csv(out_tsv, sep='\t', index=False)

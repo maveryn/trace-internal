@@ -12,11 +12,11 @@
 3. Answer type: `answer_gt.type = integer`.
 4. Evidence type: `evidence_gt.type = label_set` (sorted labels of the matching Scene cells).
 5. Count policy: `target_count` is sampled independently from `0..6`, `distractor_count` is sampled independently from `1..6`, and `object_count = target_count + distractor_count` therefore ranges from `2..12`.
-6. Asset policy: reference + scene pairs use the curated Prism `assets/icons/non_symmetry.txt` pool copied into TRACE.
+6. Asset policy: reference + scene pairs use the curated asymmetric `assets/icons/non_symmetry.txt` icon pool.
 7. Transform policy: the reference transform is sampled from the 7 non-identity canonical square-symmetry transforms (`rot90`, `rot180`, `rot270`, `flip_h`, `flip_v`, `flip_diag_main`, `flip_diag_anti`); candidate scene icons are accepted only when the chosen transform and at least one distractor transform remain visually distinct from identity and from each other.
 8. Color policy: all icons in one instance share one sampled tint that is kept Lab-separated from the panel/background chrome.
 9. Layout policy: the Scene panel renders a labeled grid of pair cells; each cell shows `icon -> transformed icon`, and the matching set is determined from the cell labels rather than pixel boxes.
-10. Noise policy: each icon instance (both halves of every pair, including the Reference pair) may receive `0..2` subtle Prism-style edits (`blur`, `downsample`, `jpeg`, `noise`) before compositing; edits are recorded per icon in trace metadata.
+10. Noise policy: each icon instance (both halves of every pair, including the Reference pair) may receive `0..2` subtle per-icon edits (`blur`, `downsample`, `jpeg`, `noise`) before compositing; edits are recorded per icon in trace metadata.
 
 ## 3) Prompt contract
 1. `prompt_bundle_id`: `icons_transformation_v1`

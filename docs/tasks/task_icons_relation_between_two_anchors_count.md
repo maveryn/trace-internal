@@ -17,7 +17,7 @@
 8. Match policy: candidate membership is computed from icon-center coordinates only. `inside_vertical_strip` counts candidate centers whose `x` lies between the anchor centers; `inside_horizontal_strip` counts candidate centers whose `y` lies between the anchor centers.
 9. Boundary-margin rule: every candidate center must stay at least `strip_boundary_margin_px = 14` away from the strip boundary, so positives and negatives never become near-threshold ambiguous cases.
 10. Placement policy: Scene icons are placed randomly under a `0.08` smaller-area overlap cap, with both anchor highlight boxes treated as occupied regions during placement.
-11. Noise/color policy: each icon instance (both anchors and every Scene icon) may receive `0..2` subtle Prism-style edits (`blur`, `downsample`, `jpeg`, `noise`) before compositing; colors come from one background-safe Lab-separated palette.
+11. Noise/color policy: each icon instance (both anchors and every Scene icon) may receive `0..2` subtle per-icon edits (`blur`, `downsample`, `jpeg`, `noise`) before compositing; colors come from one background-safe Lab-separated palette.
 
 ## 3) Prompt contract
 1. `prompt_bundle_id`: `icons_relation_v1`

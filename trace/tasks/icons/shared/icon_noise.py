@@ -1,8 +1,8 @@
 """Per-icon noise helpers for TRACE icon tasks.
 
-These helpers mirror the useful part of Prism's icon perturbation policy:
-sample subtle edits per icon instance, apply them before compositing, and keep
-the icon alpha channel stable so bbox evidence stays semantically grounded.
+These helpers sample subtle edits per icon instance, apply them before
+compositing, and keep the icon alpha channel stable so bbox evidence stays
+semantically grounded.
 """
 
 from __future__ import annotations

@@ -344,9 +344,9 @@ def resolve_counting_target_first_cardinality_triplet(
 ) -> Tuple[int, Dict[str, float], int, Dict[str, float], int, Dict[str, float]]:
     """Resolve `(object_count, target_count, distractor_count)` via target-first sampling.
 
-    This mirrors the Prism-style policy used by reference-scene icon counting:
-    sample the answer count first, then sample the total scene cardinality from the
-    feasible support, and derive distractors as the remaining icons.
+    This matches the target-first policy used by reference-scene icon counting:
+    sample the answer count first, then sample the total scene cardinality from
+    the feasible support, and derive distractors as the remaining icons.
     """
 
     min_object = int(params.get("object_count_min", gen_defaults.get("object_count_min", int(fallback_object_min))))

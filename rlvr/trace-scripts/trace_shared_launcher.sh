@@ -15,7 +15,7 @@ export PYTHONPATH="${RLVR_ROOT}${PYTHONPATH:+:${PYTHONPATH}}"
 cd "${RLVR_ROOT}"
 
 MODEL_PATH="${MODEL_PATH:-Qwen/Qwen2.5-VL-3B-Instruct}"
-TRAIN_FILE="${TRAIN_FILE:-mydata/trace_train_128k_multivariant_hf.parquet}"
+TRAIN_FILE="${TRAIN_FILE:-dataset/train/trace_rlvr_train_128k_all_tasks.parquet}"
 PROMPT_KEY="${PROMPT_KEY:-prompt}"
 HF_TRAIN_REPO="${HF_TRAIN_REPO:-xashru/trace-rlvr-train-128k}"
 HF_TRAIN_SPLIT="${HF_TRAIN_SPLIT:-train}"

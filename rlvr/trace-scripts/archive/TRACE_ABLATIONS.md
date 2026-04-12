@@ -6,7 +6,7 @@ This directory contains the 4 TRACE RLVR ablation launchers for the `Qwen/Qwen2.
 
 All 4 launchers are expected to train from the same built TRACE 128k dataset, exported into one self-contained RLVR parquet:
 
-1. `rlvr/mydata/trace_train_128k_multivariant_hf.parquet`
+1. `rlvr/dataset/train/trace_rlvr_train_128k_all_tasks.parquet`
 2. fallback HF repo: `xashru/trace-rlvr-train-128k@train`
 
 This parquet keeps:

@@ -94,9 +94,10 @@ TRACE_PREFLIGHT_ONLY=1 bash trace-scripts/trace_qwen2_5_3b_evidence.sh
 
 ## Active Qwen3-VL-2B runs
 
-Default training parquet:
+Default training source:
 
-- `TRAIN_FILE=dataset/train/trace_rlvr_train_128k_all_tasks.parquet`
+- `TRAIN_FILE=xashru/trace_rlvr_train_128k_all_tasks.parquet@train`
+- Optional local override: `TRAIN_FILE=dataset/train/trace_rlvr_train_128k_all_tasks.parquet`
 - Optional smaller smoke-test parquet: build one locally with `scripts/build_trace_train_subset.py`
 
 Default validation pack:

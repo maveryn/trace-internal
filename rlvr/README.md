@@ -54,7 +54,13 @@ TRACE parquet exports now also include:
 
 That lets one parquet drive multiple ablations by switching `data.prompt_key`.
 
-For the local 128k training parquet built in this repo, the quickest start is:
+The active TRACE launchers now default to the Hugging Face dataset repo:
+
+- `xashru/trace_rlvr_train_128k_all_tasks.parquet@train`
+
+You can still override `TRAIN_FILE` to use a local parquet path.
+
+With the default remote train source, the quickest start is:
 
 ```bash
 cd /home/jovyan/work/trace/rlvr

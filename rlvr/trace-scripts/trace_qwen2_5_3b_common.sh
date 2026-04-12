@@ -11,7 +11,7 @@ export PYTHONPATH="${RLVR_ROOT}${PYTHONPATH:+:${PYTHONPATH}}"
 
 export CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES:-0,1,2,3,4,5,6,7}"
 export MODEL_PATH="${MODEL_PATH:-Qwen/Qwen2.5-VL-3B-Instruct}"
-export TRAIN_FILE="${TRAIN_FILE:-dataset/train/trace_rlvr_train_128k_all_tasks.parquet}"
+export TRAIN_FILE="${TRAIN_FILE:-xashru/trace_rlvr_train_128k_all_tasks.parquet@train}"
 export PROMPT_KEY="${PROMPT_KEY:-prompt_answer_and_evidence}"
 export TRACE_REWARD_MODE="${TRACE_REWARD_MODE:-answer_and_evidence}"
 export CURRICULUM_MODE="${CURRICULUM_MODE:-none}"

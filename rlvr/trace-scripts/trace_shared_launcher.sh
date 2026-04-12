@@ -47,9 +47,9 @@ print("FlashAttention 2 preflight passed")
 PY
 
 MODEL_PATH="${MODEL_PATH:-Qwen/Qwen2.5-VL-3B-Instruct}"
-TRAIN_FILE="${TRAIN_FILE:-dataset/train/trace_rlvr_train_128k_all_tasks.parquet}"
+TRAIN_FILE="${TRAIN_FILE:-xashru/trace_rlvr_train_128k_all_tasks.parquet@train}"
 PROMPT_KEY="${PROMPT_KEY:-prompt}"
-HF_TRAIN_REPO="${HF_TRAIN_REPO:-xashru/trace-rlvr-train-128k}"
+HF_TRAIN_REPO="${HF_TRAIN_REPO:-xashru/trace_rlvr_train_128k_all_tasks.parquet}"
 HF_TRAIN_SPLIT="${HF_TRAIN_SPLIT:-train}"
 NUM_GPUS="${NUM_GPUS:-4}"
 MAX_STEPS="${MAX_STEPS:-10}"

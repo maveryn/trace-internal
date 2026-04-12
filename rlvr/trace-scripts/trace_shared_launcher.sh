@@ -14,6 +14,34 @@ source "${SCRIPT_DIR}/validation_pack_qwen3_vl_2b_selected512.sh"
 export PYTHONPATH="${RLVR_ROOT}${PYTHONPATH:+:${PYTHONPATH}}"
 cd "${RLVR_ROOT}"
 
+python3 - <<'PY'
+try:
+    from transformers.utils import is_flash_attn_2_available
+except Exception as exc:
+    raise SystemExit(
+        "Failed to import transformers.utils while checking FlashAttention 2 availability. "
+        f"Original error: {type(exc).__name__}: {exc}"
+    ) from exc
+
+if not is_flash_attn_2_available():
+    raise SystemExit(
+        "FlashAttention 2 is required for TRACE training launchers on this machine, "
+        "but transformers reports it as unavailable. Install a working flash-attn build "
+        "for the current torch/cuda environment before launching training."
+    )
+
+try:
+    import flash_attn  # noqa: F401
+except Exception as exc:
+    raise SystemExit(
+        "FlashAttention 2 availability check passed but importing flash_attn failed. "
+        "Your flash-attn install is not usable in the current environment. "
+        f"Original error: {type(exc).__name__}: {exc}"
+    ) from exc
+
+print("FlashAttention 2 preflight passed")
+PY
+
 MODEL_PATH="${MODEL_PATH:-Qwen/Qwen2.5-VL-3B-Instruct}"
 TRAIN_FILE="${TRAIN_FILE:-dataset/train/trace_rlvr_train_128k_all_tasks.parquet}"
 PROMPT_KEY="${PROMPT_KEY:-prompt}"

@@ -331,7 +331,7 @@ def _build_examples_text(dataset_to_parquet: dict[str, Path], out_file: Path) ->
 def main() -> int:
     parser = argparse.ArgumentParser(
         description=(
-            "Build Tesserae parquet subsets for SpatialEval/VisNumBench/VStarBench/"
+            "Build RLVR parquet subsets for SpatialEval/VisNumBench/VStarBench/"
             "MMStar/MathVision/LogicVista, and emit examples + metrics report."
         )
     )

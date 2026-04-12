@@ -65,7 +65,7 @@ def _normalize_answer(value: Any) -> str:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Convert VStarBench TSV to Tesserae parquet format.")
+    parser = argparse.ArgumentParser(description="Convert VStarBench TSV to RLVR parquet format.")
     parser.add_argument("--src", type=str, default=str(DEFAULT_SRC), help="Input VStarBench.tsv path")
     parser.add_argument("--out-dir", type=str, default="", help="Output directory (default: rlvr/mydata)")
     parser.add_argument("--filename", type=str, default=DEFAULT_OUT, help="Output parquet filename")

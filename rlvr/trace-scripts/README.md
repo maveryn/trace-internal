@@ -37,11 +37,16 @@ Default validation pack:
 Shared launcher settings:
 
 - `MODEL_PATH=Qwen/Qwen3-VL-2B-Instruct`
-- `NUM_GPUS=8`
-- `GPU_MEMORY_UTILIZATION=0.8`
+- `CUDA_VISIBLE_DEVICES=0,1`
+- `NUM_GPUS=2`
+- `flash-attn` / FlashAttention 2 is required; the launcher exits before training if it is unavailable
+- `MAX_STEPS=500`
+- `GPU_MEMORY_UTILIZATION=0.9`
 - `ROLLOUT_N=8`
-- `MAX_RESPONSE_LENGTH=1024`
-- `ACTOR_GLOBAL_BATCH_SIZE=128`
+- `MAX_RESPONSE_LENGTH=1024` for training rollouts
+- `VAL_MAX_TOKENS=2048` for validation rollouts
+- `ROLLOUT_BATCH_SIZE=32`
+- `ACTOR_GLOBAL_BATCH_SIZE=32`
 - `ACTOR_MICRO_BATCH_SIZE_UPDATE=4`
 - `ACTOR_MICRO_BATCH_SIZE_EXPERIENCE=4`
 - `PADDING_FREE=false`

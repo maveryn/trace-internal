@@ -7,7 +7,7 @@ set -euo pipefail
 IMAGE="hiyouga/verl:ngc-th2.8.0-cu12.9-vllm0.11.0"
 HOST_HOME="/home/shadeform"          # your home dir on the VM
 WORKSPACE="${HOST_HOME}"             # what we mount into /workspace in the container
-CODE_DIR="${WORKSPACE}/tesserae"       # your tesserae repo
+CODE_DIR="${WORKSPACE}/trace"       # your trace repo
 HF_CACHE="${HOST_HOME}/.cache/huggingface"
 
 ###############################################
@@ -26,7 +26,7 @@ nvidia-smi || {
 
 if [ ! -d "${CODE_DIR}" ]; then
   echo "[!] CODE_DIR does not exist: ${CODE_DIR}"
-  echo "    Make sure your tesserae repo is at that path or edit CODE_DIR in this script."
+  echo "    Make sure your trace repo is at that path or edit CODE_DIR in this script."
   exit 1
 fi
 
@@ -87,10 +87,10 @@ docker pull "${IMAGE}"
 echo "[*] Launching verl container with:"
 echo "    Image: ${IMAGE}"
 echo "    Host mount: ${WORKSPACE} -> /workspace"
-echo "    Working dir: /workspace/tesserae"
+echo "    Working dir: /workspace/trace"
 echo
 echo "When the container starts, you can run:"
-echo "    cd /workspace/tesserae"
+echo "    cd /workspace/trace"
 echo "    bash examples/qwen3_4b_math_grpo.sh"
 echo
 
@@ -99,6 +99,6 @@ docker run --gpus all -it --rm \
   --shm-size=16g \
   -v "${WORKSPACE}":/workspace \
   -v "${HF_CACHE}":/root/.cache/huggingface \
-  -w /workspace/tesserae \
+  -w /workspace/trace \
   "${IMAGE}" \
   bash

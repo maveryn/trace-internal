@@ -1,7 +1,7 @@
 # Tile Task Setup
 
 ## Purpose
-This document defines the concrete v1 setup for TRACE tile tasks ported or re-implemented from Tesserae.
+This document defines the concrete v1 setup for TRACE tile tasks ported or re-implemented from earlier task code.
 It is the source of truth for board geometry, coordinate grounding, and evidence conventions used by future tile-domain tasks.
 
 This is the active tile-domain contract. For cross-domain coverage rollups, use

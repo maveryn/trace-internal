@@ -101,14 +101,14 @@ worker:
 
   reward:
     reward_type: batch
-    reward_function: ./examples/reward_function/reward_tesserae.py:compute_score
+    reward_function: ./examples/reward_function/reward_trace.py:compute_score
     reward_function_kwargs:
       list_reward_mode: exact
 
 trainer:
   total_epochs: 10
   max_steps: 500
-  project_name: tesserae
+  project_name: trace_rlvr
   experiment_name: qwen3-4b
   logger: ["console", "wandb"]
   nnodes: 1

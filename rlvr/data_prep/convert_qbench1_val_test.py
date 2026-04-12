@@ -330,7 +330,7 @@ def _build_rows(df: pd.DataFrame) -> list[dict[str, Any]]:
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Convert Q-Bench1_VAL to Tesserae parquet with configurable subset selection."
+        description="Convert Q-Bench1_VAL to RLVR parquet with configurable subset selection."
     )
     parser.add_argument("--src", type=str, default=str(DEFAULT_SRC), help="Input Q-Bench1_VAL TSV path")
     parser.add_argument("--out", type=str, default="", help="Output directory (default: rlvr/mydata)")

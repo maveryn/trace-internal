@@ -89,6 +89,7 @@ worker:
       temperature: 0.0
       top_p: 1.0
       n: 1
+      max_tokens: 2048
 
   ref:
     fsdp:
@@ -100,7 +101,7 @@ worker:
 
   reward:
     reward_type: batch
-    reward_function: ./examples/reward_function/reward_tesserae.py:compute_score
+    reward_function: ./examples/reward_function/reward_trace.py:compute_score
     reward_function_kwargs:
       list_reward_mode: exact
 

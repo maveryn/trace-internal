@@ -79,6 +79,12 @@ def main() -> int:
         help="How to rewrite image paths in the RLVR export",
     )
     parser.add_argument(
+        "--image-storage-mode",
+        choices=("path_dict", "embedded_bytes"),
+        default="embedded_bytes",
+        help="How to store exported images in parquet rows (default: embedded_bytes for training exports)",
+    )
+    parser.add_argument(
         "--parquet-cpu-count",
         type=int,
         default=0,
@@ -152,6 +158,7 @@ def main() -> int:
         output_format="parquet",
         prompt_variant=args.prompt_variant,
         image_path_mode=args.image_path_mode,
+        image_storage_mode=args.image_storage_mode,
         parquet_cpu_count=args.parquet_cpu_count,
     )
     print(

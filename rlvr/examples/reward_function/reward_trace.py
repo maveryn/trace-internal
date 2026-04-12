@@ -33,7 +33,7 @@ except Exception:  # pragma: no cover - scipy is expected, keep a fallback.
     linear_sum_assignment = None
 
 
-REWARD_NAME = "reward_tesserae"
+REWARD_NAME = "reward_trace"
 REWARD_TYPE = "batch"
 
 _INT_RE = re.compile(r"[-+]?\d+")

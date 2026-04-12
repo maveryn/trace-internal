@@ -11,6 +11,6 @@ export CURRICULUM_MODE="${CURRICULUM_MODE:-self_paced_ema}"
 export CURRICULUM_ALPHA0="${CURRICULUM_ALPHA0:-0.995}"
 export CURRICULUM_BETA="${CURRICULUM_BETA:-2.0}"
 export CURRICULUM_EPS_FLOOR="${CURRICULUM_EPS_FLOOR:-}"
-export EXPERIMENT_NAME="${EXPERIMENT_NAME:-qwen3_2b_instruct_trace_answer_curriculum_8gpu_val8}"
+export EXPERIMENT_NAME="${EXPERIMENT_NAME:-trace_qwen3_2b_answer_curriculum}"
 
 exec bash "${SCRIPT_DIR}/trace_qwen3_2b_common.sh"

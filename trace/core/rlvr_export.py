@@ -164,7 +164,7 @@ def _normalize_multimodal_prompt(prompt: str, *, image_count: int) -> str:
 
     vLLM's multimodal replacement expects prompt tokens to contain one `<image>` marker
     per image item. TRACE prompts intentionally avoid transport-specific placeholders, so
-    RLVR export normalizes them into the Tesserae-style convention.
+    RLVR export normalizes them into the local RLVR multimodal convention.
     """
 
     if image_count <= 0:

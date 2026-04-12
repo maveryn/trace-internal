@@ -68,6 +68,11 @@ This helper:
 3. builds the TRACE dataset with `workers=0` meaning all visible CPUs,
 4. exports RLVR parquet in one step.
 
+By default, this helper now exports training parquet with:
+- `--image-storage-mode embedded_bytes`
+
+Use `--image-storage-mode path_dict` only when you explicitly want filesystem-path rows instead of self-contained parquet rows.
+
 Use `--reset` when you want a clean rebuild for the same dataset name. It removes only:
 - `out/tmp/<dataset_id>`
 - `out/tmp/<dataset_id>__strict_repro`
@@ -101,7 +106,7 @@ Each exported RLVR row currently includes:
 Notes:
 1. `uid` is set to `instance_id` so repeated generations stay grouped by prompt in RLVR logging/statistics.
 2. `prompt_active`, `prompt_answer_only`, and `prompt_answer_and_evidence` are all exported so one parquet can drive multiple ablations by switching `data.prompt_key`.
-3. When a row has images, the exporter rewrites each prompt column into the Tesserae multimodal convention by stripping any existing `<image>` markers and prefixing exactly one `<image>` token per exported image. This keeps TRACE prompts compatible with the RLVR/vLLM multimodal path without changing TRACE build artifacts.
+3. When a row has images, the exporter rewrites each prompt column into the local RLVR multimodal convention by stripping any existing `<image>` markers and prefixing exactly one `<image>` token per exported image. This keeps TRACE prompts compatible with the RLVR/vLLM multimodal path without changing TRACE build artifacts.
 4. `images` can be exported either as relative/absolute path dicts (`{"path": ...}`) or, for parquet, as embedded byte dicts (`{"bytes": ..., "format": ...}`) for self-contained Hugging Face upload.
 5. `answer_gt`, `evidence_gt`, and `reward_contract` stay in TRACE ABI form so RLVR can dispatch the public reward contract directly.
 6. `complexity_score` is copied from TRACE `task_complexity.complexity_score` for logging/debugging only.

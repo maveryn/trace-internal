@@ -149,7 +149,7 @@ def fit_font_to_box(
     """Return the largest cached font that fits one target box.
 
     This follows the same deterministic, downward-search pattern used in
-    Tesserae's rendering utilities so compact in-figure labels stay readable
+    the repo's earlier rendering utilities so compact in-figure labels stay readable
     even when label length or glyph shape varies (for example graph labels `A`
     vs `10`).
     """

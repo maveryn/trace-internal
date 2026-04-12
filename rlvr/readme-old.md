@@ -96,7 +96,7 @@ bash examples/qwen2_5_vl_7b_geo3k_grpo.sh
 ### Merge Checkpoint in Hugging Face Format
 
 ```bash
-python3 scripts/model_merger.py --local_dir checkpoints/tesserae/qwen2_5-7b-vl/global_step_300/actor/ --hf_upload_path xashru/tess_300
+python3 scripts/model_merger.py --local_dir checkpoints/trace_rlvr/qwen2_5-7b-vl/global_step_300/actor/ --hf_upload_path xashru/trace_300
 ```
 
 > [!TIP]

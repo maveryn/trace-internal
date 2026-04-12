@@ -290,7 +290,7 @@ def _append_examples(parquet_path: Path, examples_path: Path) -> None:
 def main() -> int:
     parser = argparse.ArgumentParser(
         description=(
-            "Convert WeMath_COT to Tesserae parquet with 500-subset selection that preserves full-set "
+            "Convert WeMath_COT to RLVR parquet with 500-subset selection that preserves full-set "
             "GPT-evaluated accuracies for Qwen/Sphinx within tolerance."
         )
     )
@@ -507,7 +507,7 @@ def main() -> int:
         )
     )
     print(
-        "tesserae subset strict | "
+        "rlvr subset strict | "
         f"{MODEL_QWEN}: extracted={int(q_strict_sub['extracted'])}/{int(q_strict_sub['total'])} "
         f"({q_strict_sub['extraction_rate_pct']:.2f}%), "
         f"acc_on_extracted={q_strict_sub['acc_on_extracted_pct']:.2f}% | "

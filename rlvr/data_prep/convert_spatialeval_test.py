@@ -248,7 +248,7 @@ def _build_rows(df: pd.DataFrame, image_root: Path) -> list[dict[str, Any]]:
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Convert SpatialEval to Tesserae parquet and select subset by matching GPT full-set accuracies."
+        description="Convert SpatialEval to RLVR parquet and select subset by matching GPT full-set accuracies."
     )
     parser.add_argument("--src", type=str, default=str(DEFAULT_SRC), help="Input SpatialEval TSV path")
     parser.add_argument(

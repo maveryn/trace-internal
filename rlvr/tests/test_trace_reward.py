@@ -36,7 +36,7 @@ except ImportError:
 from verl.models.transformers.qwen3_5 import get_rope_index as get_qwen3_5_rope_index
 from verl.utils.dataset import RLHFDataset, process_image, resolve_qwen_vl_get_rope_index
 from verl.utils.trace_reward import score_trace_response
-from examples.reward_function.reward_tesserae import compute_score
+from examples.reward_function.reward_trace import compute_score
 
 
 def _reward_contract(evidence_id: str, evidence_type: str, answer_type: str = "integer") -> dict[str, object]:
@@ -233,7 +233,7 @@ def test_trace_dataset_helpers_support_trace_rows(tmp_path: Path) -> None:
     assert loaded.size == (12, 12)
 
 
-def test_reward_tesserae_dispatches_trace_reward_contract() -> None:
+def test_reward_trace_dispatches_trace_reward_contract() -> None:
     scores = compute_score(
         [
             {
@@ -253,7 +253,7 @@ def test_reward_tesserae_dispatches_trace_reward_contract() -> None:
     assert scores[0]["evidence_reward"] == 1.0
 
 
-def test_reward_tesserae_supports_trace_answer_only_mode() -> None:
+def test_reward_trace_supports_trace_answer_only_mode() -> None:
     scores = compute_score(
         [
             {

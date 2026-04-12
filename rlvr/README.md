@@ -10,7 +10,7 @@ RLVR-specific documentation lives under:
 - `examples/config.yaml`: main trainer/data/model config.
 - `examples/qwen2_5-7b-vl-*.sh`: launch scripts for integer/bbox training variants.
 - `trace-scripts/trace_qwen3_2b_*`: active TRACE launchers for `Qwen/Qwen3-VL-2B-Instruct`.
-- `examples/reward_function/reward_tesserae.py`: integer/bbox + TRACE custom reward entry point.
+- `examples/reward_function/reward_trace.py`: integer/bbox + TRACE custom reward entry point.
 - `verl/trainer/data_loader.py`: integer/bbox/TRACE dataset loading and prompt/answer column selection.
 - `scripts/model_merger.py`: merge sharded actor checkpoints into Hugging Face format.
 
@@ -20,7 +20,7 @@ Set `data.dataset_mode` to choose dataset-column behavior:
 
 - `integer`: uses `problem_integer` + `answer_integer`
 - `bbox`: uses `problem_bbox` + `answer_bbox`
-- `trace`: uses TRACE `prompt` + `answer_gt`, preserves `evidence_gt` and `reward_contract`, and resolves exported TRACE image records from `images[*].path`
+- `trace`: uses TRACE `prompt` + `answer_gt`, preserves `evidence_gt` and `reward_contract`, and resolves exported TRACE image records from either `images[*].path` or embedded `images[*].bytes`
 - `none`: generic/non-specialized behavior
 
 ### Exporting TRACE builds for RLVR
@@ -43,7 +43,7 @@ Recommended TRACE settings:
 - `data.train_files=<exported jsonl/parquet path>`
 - use a multimodal checkpoint such as `Qwen/Qwen2.5-VL-3B-Instruct` or `Qwen/Qwen2.5-VL-7B-Instruct`
 
-The exporter defaults to TRACE `answer_and_evidence` prompts so evidence reward remains trainable, prefixes one `<image>` marker per exported image so the RLVR/vLLM multimodal path matches Tesserae's dataset convention, and can optionally embed image bytes directly into parquet rows for Hugging Face-friendly distribution.
+The exporter defaults to TRACE `answer_and_evidence` prompts so evidence reward remains trainable, prefixes one `<image>` marker per exported image so the RLVR/vLLM multimodal path matches the local RLVR multimodal dataset convention, and can optionally embed image bytes directly into parquet rows for Hugging Face-friendly distribution.
 
 TRACE parquet exports now also include:
 
@@ -132,7 +132,7 @@ These are generated automatically from task-local complexity buckets so `data.cu
 
 ## Custom Rewards
 
-Implemented in `examples/reward_function/reward_tesserae.py`.
+Implemented in `examples/reward_function/reward_trace.py`.
 
 ### TRACE mode
 

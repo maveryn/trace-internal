@@ -228,7 +228,7 @@ def _build_rows(df: pd.DataFrame) -> list[dict[str, Any]]:
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Convert MMStar to Tesserae parquet and select subset by matching GPT full-set accuracies."
+        description="Convert MMStar to RLVR parquet and select subset by matching GPT full-set accuracies."
     )
     parser.add_argument("--src", type=str, default=str(DEFAULT_SRC), help="Input MMStar TSV path")
     parser.add_argument("--out", type=str, default="", help="Output directory (default: rlvr/mydata)")

@@ -123,6 +123,66 @@ class ResourcePoolManager:
             raise ValueError(f"Total available GPUs {gpus_available} is less than total desired GPUs {gpus_required}.")
 
 
+def build_rollout_group_uids(non_tensor_batch: dict[str, np.ndarray], batch_size: int) -> np.ndarray:
+    """Choose the stable prompt-group id used to tie repeated rollouts together.
+
+    Prefer exported dataset ids when present so per-sample bookkeeping remains stable
+    across steps and matches the TRACE RLVR export contract. Fall back to ephemeral UUIDs
+    only for datasets that do not expose a stable prompt identifier.
+    """
+
+    for key in ("uid", "instance_id"):
+        values = non_tensor_batch.get(key)
+        if values is None:
+            continue
+        normalized = np.asarray(values, dtype=object)
+        if normalized.shape[0] != batch_size:
+            raise ValueError(
+                f"Expected {key} to have batch size {batch_size}, got {normalized.shape[0]}."
+            )
+        return normalized
+
+    return np.array([str(uuid.uuid4()) for _ in range(batch_size)], dtype=object)
+
+
+def compute_uid_group_reward_metrics(
+    uid_list: list[object],
+    seq_scores: np.ndarray,
+    *,
+    zero_solve_threshold: float,
+    perfect_solve_threshold: float = 1.0,
+    eps: float = 1e-8,
+) -> dict[str, float]:
+    """Aggregate per-rollout sequence scores into per-uid group reward metrics.
+
+    Each uid corresponds to one prompt with repeated rollouts. We track the best score
+    within that uid-group, then report:
+    - zero_solve_*: prompts where no rollout exceeded the zero-solve threshold
+    - perfect_solve_*: prompts where at least one rollout reached full reward
+    """
+
+    if len(uid_list) != len(seq_scores):
+        raise ValueError("UID count does not match number of sequence scores.")
+
+    uid_max: dict[object, float] = {}
+    for uid, score in zip(uid_list, seq_scores):
+        score_value = float(score)
+        current = uid_max.get(uid)
+        if current is None or score_value > current:
+            uid_max[uid] = score_value
+
+    num_groups = len(uid_max)
+    zero_count = sum(1 for score in uid_max.values() if score <= (zero_solve_threshold + eps))
+    perfect_count = sum(1 for score in uid_max.values() if score >= (perfect_solve_threshold - eps))
+
+    return {
+        "rlvr_stats/zero_solve_rate": float(zero_count / max(1, num_groups)),
+        "rlvr_stats/zero_solve_count": float(zero_count),
+        "rlvr_stats/perfect_solve_rate": float(perfect_count / max(1, num_groups)),
+        "rlvr_stats/perfect_solve_count": float(perfect_count),
+    }
+
+
 def apply_kl_penalty(data: DataProto, kl_ctrl: KLController, kl_penalty="kl"):
     """Apply KL penalty to the token-level rewards."""
     token_level_scores = data.batch["token_level_scores"]
@@ -899,8 +959,8 @@ class RayPPOTrainer:
             self.val_reward_score = 0.0
         return metrics
 
-    def _compute_zero_solve_metrics(self, batch: DataProto, token_level_scores: torch.Tensor) -> dict[str, float]:
-        """Compute zero-solve rate/count based on max reward per uid."""
+    def _compute_group_reward_metrics(self, batch: DataProto, token_level_scores: torch.Tensor) -> dict[str, float]:
+        """Compute per-uid grouped reward stats based on the best rollout per prompt."""
         if token_level_scores.dim() == 2:
             seq_scores = token_level_scores.sum(-1)
         elif token_level_scores.dim() == 1:
@@ -913,27 +973,12 @@ class RayPPOTrainer:
             return {}
 
         uid_list = np.asarray(uids, dtype=object).tolist()
-        if len(uid_list) != seq_scores.shape[0]:
-            raise ValueError("UID count does not match number of token-level scores.")
-
-        threshold = float(self.config.algorithm.zero_solve_threshold)
-        eps = 1e-8
         seq_scores_np = seq_scores.detach().cpu().numpy()
-        uid_max: dict[object, float] = {}
-        for uid, score in zip(uid_list, seq_scores_np):
-            current = uid_max.get(uid)
-            if current is None or score > current:
-                uid_max[uid] = float(score)
-
-        num_groups = len(uid_max)
-        # Treat exact-zero (within epsilon) as unsolved by default.
-        # Users can still raise `zero_solve_threshold` for stricter criteria.
-        zero_count = sum(1 for score in uid_max.values() if score <= (threshold + eps))
-
-        return {
-            "rlvr_stats/zero_solve_rate": float(zero_count / max(1, num_groups)),
-            "rlvr_stats/zero_solve_count": float(zero_count),
-        }
+        return compute_uid_group_reward_metrics(
+            uid_list,
+            seq_scores_np,
+            zero_solve_threshold=float(self.config.algorithm.zero_solve_threshold),
+        )
 
     def _balance_batch(self, batch: DataProto, metrics: dict[str, Any], logging_prefix: str = "global_seqlen") -> None:
         """Reorder the data on single controller such that each dp rank gets similar total tokens"""
@@ -971,8 +1016,9 @@ class RayPPOTrainer:
                 "video_fps": self.config.data.video_fps,
             }
             new_batch: DataProto = DataProto.from_single_dict(batch_dict, meta_info=meta_info)
-            new_batch.non_tensor_batch["uid"] = np.array(
-                [str(uuid.uuid4()) for _ in range(len(new_batch.batch))], dtype=object
+            new_batch.non_tensor_batch["uid"] = build_rollout_group_uids(
+                new_batch.non_tensor_batch,
+                len(new_batch.batch),
             )
 
             # pop those keys for generation
@@ -1201,7 +1247,7 @@ class RayPPOTrainer:
             metrics.update(compute_throughout_metrics(batch=batch, timing_raw=timing_raw, num_gpus=num_gpus))
             token_level_scores = batch.batch.get("token_level_scores")
             if token_level_scores is not None:
-                metrics.update(self._compute_zero_solve_metrics(batch, token_level_scores))
+                metrics.update(self._compute_group_reward_metrics(batch, token_level_scores))
                 metrics.update(self._update_curriculum_sampler(batch, token_level_scores))
             if self.curriculum_sampler is not None:
                 metrics.update(self._compute_curriculum_metrics(batch))

@@ -10,6 +10,7 @@ This directory keeps the active TRACE RLVR launcher surface intentionally small.
 - `trace_qwen2_5_3b_evidence_curriculum.sh` — Qwen2.5-VL-3B answer+evidence training with self-paced curriculum.
 - `trace_qwen2_5_3b_common.sh` — shared internal Qwen2.5-VL-3B preflight launcher.
 - `trace_qwen3_2b_answer.sh` — Qwen3-VL-2B answer-only training.
+- `trace_qwen3_2b_answer_detached.sh` — detached Qwen3-VL-2B answer-only training for fragile terminal sessions.
 - `trace_qwen3_2b_answer_curriculum.sh` — Qwen3-VL-2B answer-only training with self-paced curriculum.
 - `trace_qwen3_2b_evidence.sh` — Qwen3-VL-2B answer+evidence training.
 - `trace_qwen3_2b_evidence_curriculum.sh` — Qwen3-VL-2B answer+evidence training with self-paced curriculum.
@@ -39,7 +40,7 @@ Shared launcher settings:
 - `VAL_ONLY=false`
 - `GPU_MEMORY_UTILIZATION=0.85`
 - `ROLLOUT_N=8`
-- `MAX_PROMPT_LENGTH=2048`
+- `MAX_PROMPT_LENGTH=1536`
 - `MAX_RESPONSE_LENGTH=1024` for training rollouts
 - `VAL_MAX_TOKENS=2048` for validation rollouts
 - `ROLLOUT_BATCH_SIZE=128`
@@ -118,28 +119,29 @@ training path uses one validation dataloader per benchmark, matching the
 Shared launcher settings:
 
 - `MODEL_PATH=Qwen/Qwen3-VL-2B-Instruct`
-- `CUDA_VISIBLE_DEVICES=0,1,2,3`
-- `NUM_GPUS=4`
+- `CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7`
+- `NUM_GPUS=8`
 - `flash-attn` / FlashAttention 2 is required; the launcher exits before training if it is unavailable
 - `VLLM_USE_FLASHINFER_SAMPLER=0` by default to avoid FlashInfer JIT sampler builds on machines without CUDA dev headers; override to `1` only if that stack is known-good
 - `MAX_STEPS=500`
 - `VAL_BEFORE_TRAIN=true`
 - `VAL_ONLY=false`
-- `GPU_MEMORY_UTILIZATION=0.9`
+- `GPU_MEMORY_UTILIZATION=0.7`
+- `MAX_NUM_BATCHED_TOKENS=6144` to reduce multimodal rollout OOM risk
 - `ROLLOUT_N=8`
-- `MAX_PROMPT_LENGTH=2048`
+- `MAX_PROMPT_LENGTH=1536`
 - `MAX_RESPONSE_LENGTH=1024` for training rollouts
 - `VAL_MAX_TOKENS=2048` for validation rollouts
 - `ROLLOUT_BATCH_SIZE=128`
 - `ACTOR_GLOBAL_BATCH_SIZE=128`
-- `ACTOR_MICRO_BATCH_SIZE_UPDATE=16`
-- `ACTOR_MICRO_BATCH_SIZE_EXPERIENCE=32`
+- `ACTOR_MICRO_BATCH_SIZE_UPDATE=4`
+- `ACTOR_MICRO_BATCH_SIZE_EXPERIENCE=4`
 - `VAL_BATCH_SIZE=512`
 - `TRAIN_DATALOADER_NUM_WORKERS=8`
 - `VAL_DATALOADER_NUM_WORKERS=16`
-- `ENABLE_GRADIENT_CHECKPOINTING=false`
-- `ACTOR_ENABLE_FULL_SHARD=false`
-- `REF_ENABLE_FULL_SHARD=false`
+- `ENABLE_GRADIENT_CHECKPOINTING=true`
+- `ACTOR_ENABLE_FULL_SHARD=true`
+- `REF_ENABLE_FULL_SHARD=true`
 - `PADDING_FREE=true`
 - `USE_TORCH_COMPILE=true`
 
@@ -167,10 +169,24 @@ Run one of:
 ```bash
 cd /home/jovyan/work/trace/rlvr
 bash trace-scripts/trace_qwen3_2b_answer.sh
+bash trace-scripts/trace_qwen3_2b_answer_detached.sh
 bash trace-scripts/trace_qwen3_2b_answer_curriculum.sh
 bash trace-scripts/trace_qwen3_2b_evidence.sh
 bash trace-scripts/trace_qwen3_2b_evidence_curriculum.sh
 ```
+
+Detached launcher notes:
+
+- `trace_qwen3_2b_answer_detached.sh` starts the answer-only Qwen3 run via `setsid` + `nohup`
+- defaults: `FIND_LAST_CHECKPOINT=false` and `VAL_BEFORE_TRAIN=false`
+- override them at launch time if needed, for example:
+
+```bash
+cd /home/jovyan/work/trace/rlvr
+VAL_BEFORE_TRAIN=true bash trace-scripts/trace_qwen3_2b_answer_detached.sh
+```
+
+- the script prints the background `pid`, the log file path, and the `.pid` file path
 
 Preflight only:
 

@@ -160,15 +160,21 @@ def create_dataloader(
     else:
         train_batch_size = config.rollout_batch_size
 
-    train_dataloader = StatefulDataLoader(
-        dataset=train_dataset,
-        batch_size=train_batch_size,
-        sampler=sampler,
-        num_workers=config.train_dataloader_num_workers,
-        collate_fn=collate_fn,
-        pin_memory=False,
-        drop_last=True,
-    )
+    train_dataloader_kwargs = {
+        "dataset": train_dataset,
+        "batch_size": train_batch_size,
+        "sampler": sampler,
+        "num_workers": config.train_dataloader_num_workers,
+        "collate_fn": collate_fn,
+        # Training batches are copied to GPU in the worker hot path; keep them pinned
+        # so the worker-side transfer can use non-blocking DMA instead of synchronous copies.
+        "pin_memory": True,
+        "drop_last": True,
+    }
+    if config.train_dataloader_num_workers > 0:
+        train_dataloader_kwargs["persistent_workers"] = True
+
+    train_dataloader = StatefulDataLoader(**train_dataloader_kwargs)
     if curriculum_sampler is not None:
         # Expose sampler to trainer for per-step unlock updates and curriculum logging.
         setattr(train_dataloader, "curriculum_sampler", curriculum_sampler)
@@ -243,15 +249,19 @@ def create_dataloader(
         else:
             val_batch_size = config.val_batch_size
 
-        val_dataloader = StatefulDataLoader(
-            dataset=val_dataset,
-            batch_size=val_batch_size,
-            shuffle=False,
-            num_workers=config.val_dataloader_num_workers,
-            collate_fn=collate_fn,
-            pin_memory=False,
-            drop_last=False,
-        )
+        val_dataloader_kwargs = {
+            "dataset": val_dataset,
+            "batch_size": val_batch_size,
+            "shuffle": False,
+            "num_workers": config.val_dataloader_num_workers,
+            "collate_fn": collate_fn,
+            "pin_memory": True,
+            "drop_last": False,
+        }
+        if config.val_dataloader_num_workers > 0:
+            val_dataloader_kwargs["persistent_workers"] = True
+
+        val_dataloader = StatefulDataLoader(**val_dataloader_kwargs)
 
         assert len(val_dataloader) >= 1
         name = _get_name(val_file)

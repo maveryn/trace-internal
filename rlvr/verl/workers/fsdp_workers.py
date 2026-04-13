@@ -518,7 +518,7 @@ class FSDPWorker(Worker):
         assert self._has_actor
 
         self._process_multi_modal_inputs(data)
-        data = data.to(torch.cuda.current_device())
+        data = data.to(torch.cuda.current_device(), non_blocking=True)
 
         if self._use_param_offload:
             load_fsdp_model(self.fsdp_module)
@@ -600,7 +600,7 @@ class FSDPWorker(Worker):
         assert self._has_actor
 
         self._process_multi_modal_inputs(data)
-        data = data.to(torch.cuda.current_device())
+        data = data.to(torch.cuda.current_device(), non_blocking=True)
 
         if self._use_param_offload:
             load_fsdp_model(self.fsdp_module)
@@ -632,7 +632,7 @@ class FSDPWorker(Worker):
         assert self._has_ref
 
         self._process_multi_modal_inputs(data)
-        data = data.to(torch.cuda.current_device())
+        data = data.to(torch.cuda.current_device(), non_blocking=True)
 
         if self._use_ref_param_offload:
             load_fsdp_model(self.ref_fsdp_module)
@@ -660,7 +660,7 @@ class FSDPWorker(Worker):
         assert self._has_critic
 
         self._process_multi_modal_inputs(data)
-        data = data.to(torch.cuda.current_device())
+        data = data.to(torch.cuda.current_device(), non_blocking=True)
 
         if self._use_param_offload:
             load_fsdp_model(self.fsdp_module)
@@ -682,7 +682,7 @@ class FSDPWorker(Worker):
         assert self._has_critic
 
         self._process_multi_modal_inputs(data)
-        data = data.to(torch.cuda.current_device())
+        data = data.to(torch.cuda.current_device(), non_blocking=True)
 
         if self._use_param_offload:
             load_fsdp_model(self.fsdp_module)

@@ -51,7 +51,7 @@ TRAIN_FILE="${TRAIN_FILE:-xashru/trace_rlvr_train_128k_all_tasks.parquet@train}"
 PROMPT_KEY="${PROMPT_KEY:-prompt}"
 HF_TRAIN_REPO="${HF_TRAIN_REPO:-xashru/trace_rlvr_train_128k_all_tasks.parquet}"
 HF_TRAIN_SPLIT="${HF_TRAIN_SPLIT:-train}"
-NUM_GPUS="${NUM_GPUS:-4}"
+NUM_GPUS="${NUM_GPUS:-8}"
 MAX_STEPS="${MAX_STEPS:-10}"
 ROLLOUT_TP="${ROLLOUT_TP:-1}"
 ROLLOUT_N="${ROLLOUT_N:-8}"
@@ -62,7 +62,7 @@ TRACE_PREFLIGHT_ONLY="${TRACE_PREFLIGHT_ONLY:-0}"
 SAVE_FREQ="${SAVE_FREQ:-10}"
 VAL_FREQ="${VAL_FREQ:-10}"
 FIND_LAST_CHECKPOINT="${FIND_LAST_CHECKPOINT:-true}"
-EXPERIMENT_NAME="${EXPERIMENT_NAME:-qwen2_5_vl_3b_trace_128k_4gpu_10steps}"
+EXPERIMENT_NAME="${EXPERIMENT_NAME:-trace_shared_launcher}"
 VAL_FILES_JSON="${VAL_FILES_JSON:-${DEFAULT_VAL_FILES_JSON}}"
 TRACE_REWARD_MODE="${TRACE_REWARD_MODE:-answer_and_evidence}"
 CURRICULUM_MODE="${CURRICULUM_MODE:-none}"
@@ -300,6 +300,10 @@ ARGS=(
 
 if [[ -n "${VAL_MAX_TOKENS}" ]]; then
   ARGS+=(worker.rollout.val_override_config.max_tokens=${VAL_MAX_TOKENS})
+fi
+
+if [[ -n "${MAX_NUM_BATCHED_TOKENS:-}" ]]; then
+  ARGS+=(worker.rollout.max_num_batched_tokens="${MAX_NUM_BATCHED_TOKENS}")
 fi
 
 if [[ -n "${MAX_RESPONSE_LENGTH}" ]]; then

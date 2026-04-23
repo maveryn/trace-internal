@@ -1,0 +1,3 @@
+include: mathvision_test_qwen3_thinking_zs.yaml
+task: "mathvision_testmini_qwen3_thinking_zs"
+test_split: testmini

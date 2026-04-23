@@ -1,0 +1,3 @@
+include: chartqa_pro_reasoning_samplingq3.yaml
+task: "chartqa_pro_reasoning_samplingq3_judge"
+process_results: !function utils.chartqa_pro_cot_process_results

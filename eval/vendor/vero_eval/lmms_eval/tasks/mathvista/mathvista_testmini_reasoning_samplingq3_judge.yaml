@@ -1,0 +1,7 @@
+include: mathvista_testmini_reasoning_samplingq3.yaml
+task: "mathvista_testmini_reasoning_samplingq3_judge"
+process_results: !function utils.mathvista_process_results_judge
+metric_list:
+  - metric: submission
+    aggregation: !function utils.mathvista_aggregate_results
+    higher_is_better: true

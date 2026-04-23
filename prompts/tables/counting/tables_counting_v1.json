@@ -3,23 +3,23 @@
   "schema_version": "v1",
   "task_family_templates": {
     "styled_table_counting": [
-      "The image shows {object_description}.",
-      "Use the table in the image. It shows {object_description}.",
-      "Work from the styled table shown in the image: {object_description}.",
-      "Look at the table in the image. It shows {object_description}.",
-      "You are given a table: {object_description}."
+      "The image contains {object_description}.",
+      "Shown is {object_description}.",
+      "Displayed is {object_description}.",
+      "Use this table: {object_description}.",
+      "Read this table: {object_description}."
     ]
   },
   "task_templates": {
     "value_count_query": [
-      "Answer this question.",
+      "Count matching rows.",
       "Determine how many table rows satisfy the requested value condition.",
       "Use the table values to count the rows that match the filter.",
       "Find the number of rows whose queried values satisfy the condition.",
       "Read the table and count the matching rows."
     ],
     "column_pair_count_query": [
-      "Answer this question.",
+      "Count rows matching the column comparison.",
       "Determine how many table rows satisfy the requested comparison between two columns.",
       "Use the table values to count rows where the first named column relation holds against the second.",
       "Find the number of rows whose two queried column values satisfy the comparison.",

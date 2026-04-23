@@ -556,7 +556,13 @@ def compute_val_reward(
     reward_details: list[dict[str, Any]] = []
 
     response_ids = data.batch["responses"]
-    response_length = torch.sum(data.batch["response_mask"], dim=-1)
+    if "response_mask" in data.batch.keys():
+        response_mask = data.batch["response_mask"]
+    elif "attention_mask" in data.batch.keys():
+        response_mask = data.batch["attention_mask"][:, -response_ids.size(1) :]
+    else:
+        response_mask = torch.ones_like(response_ids, dtype=torch.long)
+    response_length = torch.sum(response_mask, dim=-1)
 
     for i in range(len(data)):
         cur_length = int(response_length[i].item())
@@ -612,6 +618,10 @@ def compute_val_reward(
         if extracted:
             # extracted-only accuracy (hit / extracted)
             reward_metrics["accuracy"].append(hit)
+        else:
+            # Keep validation metric vectors sample-aligned; the aggregation code
+            # ignores None values for extracted-only metrics.
+            reward_metrics["accuracy"].append(None)
 
         if return_details:
             reward_details.append(

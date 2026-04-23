@@ -62,10 +62,10 @@ prompt:
     json_output_contract: Use a valid JSON object with keys "evidence" and "answer" in that order for the final answer.
     json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
     answer_hint: set "answer" to the requested integer value
-    object_description_stacked_bar: a stacked bar chart. Each category has one bar divided into differently colored segments, a legend on the right maps segment colors to segment labels, and the integer segment values are printed inside the segments
-    object_description_stacked_horizontal_bar: a stacked horizontal bar chart. Each category has one horizontal bar divided into differently colored segments, a legend on the right maps segment colors to segment labels, and the integer segment values are printed inside the segments
-    object_description_pie: a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices
-    object_description_donut: a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices
+    object_description_stacked_bar: a stacked bar chart with category stacks, a color legend, and printed segment values
+    object_description_stacked_horizontal_bar: a stacked horizontal bar chart with category stacks, a color legend, and printed segment values
+    object_description_pie: a pie chart with colored slices, a legend, and printed slice percentages
+    object_description_donut: a donut chart with colored slices, a legend, and printed slice percentages
     evidence_hint_stack_total_at_label: set "evidence" to an array [v1, v2, ...] listing the segment values in legend order for the queried stack
     evidence_hint_stack_segment_value: set "evidence" to an array [v1, v2, ...] listing the segment values in legend order for the queried stack
     evidence_hint_combined_share_subset: set "evidence" to an array [v1, v2, ...] listing the slice percentages in legend order for the whole chart

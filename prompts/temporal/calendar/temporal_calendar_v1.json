@@ -3,20 +3,20 @@
   "schema_version": "v1",
   "task_family_templates": {
     "month_calendar": [
-      "The image shows {object_description}.",
-      "Look at the month-view calendar in the image. It shows {object_description}.",
-      "You are given an image with {object_description}.",
-      "Work from the month-view calendar shown in the image: {object_description}.",
-      "Use the calendar in the image. It shows {object_description}."
+      "The image contains {object_description}.",
+      "Read this month-view calendar: {object_description}.",
+      "You are given {object_description}.",
+      "Work from this month-view calendar: {object_description}.",
+      "Use this calendar: {object_description}."
     ]
   },
   "task_templates": {
     "calendar_month_query": [
-      "Answer the question using the calendar.",
-      "Use the month-view calendar to answer the question.",
-      "Read the calendar carefully and answer the question.",
-      "Work from the full calendar grid to answer the question.",
-      "Determine the answer from the shown calendar."
+      "Use the calendar.",
+      "Use the month-view calendar.",
+      "Read the calendar carefully.",
+      "Work from the full calendar grid.",
+      "Determine the requested value from the shown calendar."
     ]
   },
   "task_variant_templates": {

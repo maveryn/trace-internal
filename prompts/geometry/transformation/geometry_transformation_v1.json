@@ -3,20 +3,20 @@
   "schema_version": "v1",
   "task_family_templates": {
     "transformation_graph_scene": [
-      "The graph-paper image shows {object_description}.",
-      "Look at the graph-paper diagram. It shows {object_description}.",
-      "Use the graph-paper image showing {object_description}.",
-      "Work from the graph-paper diagram showing {object_description}.",
-      "You are given a graph-paper image with {object_description}."
+      "The image contains {object_description}.",
+      "Shown is {object_description}.",
+      "Displayed is {object_description}.",
+      "Use this graph-paper scene: {object_description}.",
+      "Read this graph-paper scene: {object_description}."
     ]
   },
   "task_templates": {
     "transformation_query": [
-      "Answer the question using the graph-paper diagram.",
-      "Use the full graph-paper scene to answer the question.",
-      "Read the Reference polygon, cue, and labeled candidates carefully, then answer the question.",
-      "Work from the full transformation scene to answer the question.",
-      "Determine the answer from the graph-paper transformation diagram."
+      "Use the full graph-paper scene.",
+      "Use the Reference, cue, and labeled candidates.",
+      "Read the Reference polygon, cue, and labeled candidates carefully.",
+      "Work from the full transformation scene.",
+      "Determine the matching transformed polygon."
     ]
   },
   "task_variant_templates": {

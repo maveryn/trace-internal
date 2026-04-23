@@ -3,11 +3,11 @@
   "schema_version": "v1",
   "task_family_templates": {
     "topology_bead_equivalence_puzzle": [
-      "The image shows {object_description}.",
-      "Look at the bead-loop puzzle in the image: {object_description}.",
+      "The image contains {object_description}.",
+      "Read this bead-loop puzzle: {object_description}.",
       "You are given {object_description}.",
-      "Work from the reference loop and the labeled option loops in the image: {object_description}.",
-      "Use the reference bead loop and the option loops shown in the image: {object_description}."
+      "Work from the reference loop and labeled option loops: {object_description}.",
+      "Use the reference bead loop and option loops: {object_description}."
     ]
   },
   "task_templates": {

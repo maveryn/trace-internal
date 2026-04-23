@@ -3,57 +3,57 @@
   "schema_version": "v1",
   "task_family_templates": {
     "logic_option_completion_puzzle": [
-      "The image shows {object_description}.",
-      "Look at the logic puzzle in the image: {object_description}.",
-      "You are given {object_description}.",
-      "Work from the shape-logic puzzle shown in the image: {object_description}.",
-      "Use the puzzle grid and labeled image options in the image: {object_description}."
+      "The image contains {object_description}.",
+      "Shown is {object_description}.",
+      "Displayed is {object_description}.",
+      "Use this logic puzzle: {object_description}.",
+      "Read this puzzle grid: {object_description}."
     ]
   },
   "task_templates": {
     "adjacency_completion_query": [
       "Choose the option that correctly completes the puzzle grid under the stated touch rule.",
-      "Determine which labeled option belongs in the question-mark cell while obeying the no-touch rule.",
+      "Determine which labeled option belongs in the marked cell while obeying the no-touch rule.",
       "Use the adjacency rule to identify the correct image option.",
-      "Find the labeled option that should replace the question mark without breaking the touch rule.",
+      "Find the labeled option that should replace the marked cell without breaking the touch rule.",
       "Work from the puzzle grid and choose the option that satisfies the no-touch rule."
     ],
     "grid_completion_query": [
       "Choose the option that correctly completes the puzzle grid.",
-      "Determine which labeled option belongs in the question-mark cell.",
+      "Determine which labeled option belongs in the marked cell.",
       "Use the puzzle rules to identify the correct image option.",
-      "Find the labeled option that should replace the question mark.",
+      "Find the labeled option that should replace the marked cell.",
       "Work from the puzzle grid and choose the correct option."
     ]
   },
   "task_variant_templates": {
     "king_non_touch": [
-      "Identical symbols may not touch edge-to-edge or corner-to-corner. Which option correctly completes the question-mark cell?",
-      "Use the rule that matching symbols cannot touch, even diagonally. Which labeled option fits the question-mark cell?",
+      "Identical symbols may not touch edge-to-edge or corner-to-corner. Which option correctly completes the marked cell?",
+      "Use the rule that matching symbols cannot touch, even diagonally. Which labeled option fits the marked cell?",
       "Complete the puzzle so that no two identical symbols touch horizontally, vertically, or diagonally. Which option is correct?",
       "Every identical-symbol pair must stay separated by at least one cell in every direction. Which option belongs in the missing cell?",
-      "Which option correctly fills the question-mark cell if identical symbols are forbidden from touching by edge or by corner?"
+      "Which option correctly fills the marked cell if identical symbols are forbidden from touching by edge or by corner?"
     ],
     "row_uniqueness": [
-      "Each row should contain each visible symbol exactly once. Which option correctly completes the question-mark cell?",
-      "Use the rule that every row contains one of each symbol. Which labeled option fits the question-mark cell?",
+      "Each row should contain each visible symbol exactly once. Which option correctly completes the marked cell?",
+      "Use the rule that every row contains one of each symbol. Which labeled option fits the marked cell?",
       "Every row should use each symbol once. Which option belongs in the missing cell?",
       "Complete the puzzle so that each row contains each symbol exactly once. Which labeled option is correct?",
-      "Which option correctly fills the question-mark cell if each row must contain one of each symbol?"
+      "Which option correctly fills the marked cell if each row must contain one of each symbol?"
     ],
     "column_uniqueness": [
-      "Each column should contain each visible symbol exactly once. Which option correctly completes the question-mark cell?",
-      "Use the rule that every column contains one of each symbol. Which labeled option fits the question-mark cell?",
+      "Each column should contain each visible symbol exactly once. Which option correctly completes the marked cell?",
+      "Use the rule that every column contains one of each symbol. Which labeled option fits the marked cell?",
       "Every column should use each symbol once. Which option belongs in the missing cell?",
       "Complete the puzzle so that each column contains each symbol exactly once. Which labeled option is correct?",
-      "Which option correctly fills the question-mark cell if each column must contain one of each symbol?"
+      "Which option correctly fills the marked cell if each column must contain one of each symbol?"
     ],
     "row_and_column_uniqueness": [
-      "Each row and each column should contain each visible symbol exactly once. Which option correctly completes the question-mark cell?",
-      "Use the rule that every row and every column contains one of each symbol. Which labeled option fits the question-mark cell?",
+      "Each row and each column should contain each visible symbol exactly once. Which option correctly completes the marked cell?",
+      "Use the rule that every row and every column contains one of each symbol. Which labeled option fits the marked cell?",
       "Every row and column should use each symbol once. Which option belongs in the missing cell?",
       "Complete the puzzle so that each row and each column contains each symbol exactly once. Which labeled option is correct?",
-      "Which option correctly fills the question-mark cell if both the rows and columns must contain one of each symbol?"
+      "Which option correctly fills the marked cell if both the rows and columns must contain one of each symbol?"
     ]
   },
   "required_slots_by_key": {

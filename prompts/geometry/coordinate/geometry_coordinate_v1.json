@@ -3,20 +3,20 @@
   "schema_version": "v1",
   "task_family_templates": {
     "coordinate_graph_scene": [
-      "The graph-paper image shows {object_description}.",
-      "Look at the graph-paper coordinate diagram. It shows {object_description}.",
-      "Use the graph-paper coordinate image showing {object_description}.",
-      "Work from the graph-paper coordinate diagram showing {object_description}.",
-      "You are given a graph-paper coordinate image with {object_description}."
+      "The graph-paper image contains {object_description}.",
+      "The coordinate diagram contains {object_description}.",
+      "Shown is {object_description}.",
+      "Use the displayed coordinate diagram: {object_description}.",
+      "Read the displayed graph-paper scene: {object_description}."
     ]
   },
   "task_templates": {
     "coordinate_query": [
-      "Answer the question using the full coordinate-plane diagram.",
-      "Use the complete graph-paper coordinate scene to answer the question.",
-      "Read the coordinate-plane diagram carefully, then answer the question.",
-      "Work from the full coordinate graph to answer the question.",
-      "Determine the answer from the graph-paper coordinate relation diagram."
+      "Use the full coordinate diagram.",
+      "Use the displayed segments and points.",
+      "Read the coordinate diagram carefully.",
+      "Work from the full coordinate graph.",
+      "Use the graph-paper relations shown."
     ]
   },
   "task_variant_templates": {

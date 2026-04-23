@@ -3,11 +3,11 @@
   "schema_version": "v1",
   "task_family_templates": {
     "measurement_single_object": [
-      "You are given a graph-paper image showing {object_description}.",
-      "The graph-paper image shows {object_description}.",
-      "Look at the graph-paper image showing {object_description}.",
-      "Use the graph-paper diagram showing {object_description}.",
-      "Work from the graph-paper image showing {object_description}."
+      "You are given a graph-paper diagram with {object_description}.",
+      "The graph-paper diagram contains {object_description}.",
+      "Use this graph-paper diagram: {object_description}.",
+      "Use the graph-paper diagram with {object_description}.",
+      "Work from this graph-paper diagram: {object_description}."
     ]
   },
   "task_templates": {

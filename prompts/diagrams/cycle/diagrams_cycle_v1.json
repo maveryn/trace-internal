@@ -3,20 +3,20 @@
   "schema_version": "v1",
   "task_family_templates": {
     "cycle_diagram": [
-      "The image shows {object_description}.",
-      "Look at the cycle diagram in the image: {object_description}.",
+      "The image contains {object_description}.",
+      "Read this cycle diagram: {object_description}.",
       "You are given {object_description}.",
-      "Use the directed cycle diagram in the image: {object_description}.",
+      "Use this directed cycle diagram: {object_description}.",
       "Work from the labeled clockwise cycle: {object_description}."
     ]
   },
   "task_templates": {
     "offset_stage_query": [
       "{question_text}",
-      "Use the cycle to answer: {question_text}",
-      "Read the directed cycle diagram and answer: {question_text}",
-      "Follow the cycle order and answer: {question_text}",
-      "Determine the requested stage from the cycle: {question_text}"
+      "Use the cycle. {question_text}",
+      "Read the directed cycle diagram. {question_text}",
+      "Follow the cycle order. {question_text}",
+      "Determine the requested stage from the cycle. {question_text}"
     ]
   },
   "task_variant_templates": {

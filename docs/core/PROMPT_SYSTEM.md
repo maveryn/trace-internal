@@ -12,11 +12,12 @@ Prompt text is externalized and deterministic.
    - output mode (`answer_only`, `answer_and_evidence`).
 4. Selection is deterministic from seed namespaces.
 5. Each required template list must contain exactly 5 high-quality variants.
-6. All active tasks must provide explicit JSON-format instructions in both output modes:
+6. All active tasks must provide task-specific JSON-format guidance in both output modes:
    - `answer_only` uses `{"answer": ...}`
    - `answer_and_evidence` uses `{"evidence": ..., "answer": ...}`
-   - output-mode instructions should describe the final structured answer format, not tell the model to respond with only that field/object or suppress intermediate reasoning
-7. Prefer slot-based composition for reusable format rules (for example shared `json_output_contract*` in domain/task-group config, with task-level `evidence_hint`/`answer_hint`/example overrides).
+   - the generic schema sentence is supplied by RLVR system prompts and stripped from rendered user prompts
+   - rendered output-mode instructions should keep task-specific `evidence_hint` / `answer_hint` lines and JSON examples, not tell the model to respond with only that object or suppress intermediate reasoning
+7. Prefer slot-based composition for reusable format rules (for example shared `json_output_contract*` in domain/task-group config for compatibility, with task-level `evidence_hint`/`answer_hint`/example overrides).
 8. For mixed-shape tasks, keep one bundle and switch shape-specific wording via slots (`object_description_*`, `question_text_*`, evidence/answer hint families).
 9. When a prompt asks about a named color, include the canonical hex code in the prompt-facing color label using the format `<color_name> [#RRGGBB]`.
 10. For reference-panel tasks, keep the task-family layer responsible for establishing the panel layout so task-layer wording can focus on the matching rule itself.
@@ -56,6 +57,13 @@ Train records should store:
 2. Keep stems natural and image-focused; avoid awkward scaffolding such as “single/exactly one object” unless the distinction is semantically necessary.
 3. Keep output-mode variants concise and structurally consistent so format requirements stay easy to parse.
 4. Keep task/task-variant wording focused on the semantic query; format instructions belong in the output-mode layer.
+5. Keep layer responsibilities non-overlapping:
+   - family layer: scene context only,
+   - task layer: operation hint only when needed,
+   - task-variant layer or `question_text`: the actual question,
+   - output-mode layer: field hints and JSON examples only.
+6. Avoid repeating broad nouns such as image, chart, table, diagram, board, question, or answer across adjacent prompt layers.
+7. Use `scripts/audit_prompt_concision.py` to inspect rendered prompts for length and repeated scaffolding before and after broad prompt edits. For full-registry reviews, run it with `--variant-coverage --samples-per-variant 1 --include-all-prompts` so observed task variants are sampled and written to `samples/prompt_concision_audit_all.md`.
 
 ## 5) Active bundles/tasks
 Active bundles:

@@ -89,10 +89,10 @@ prompt:
     bundle_id: geometry_coordinate_v1
     task_family_key: coordinate_graph_scene
     task_key: coordinate_query
-    object_description_segment_set: a coordinate-plane diagram with target segment AB and six other unlabeled segments
-    object_description_line_points: a coordinate-plane diagram with labeled points A and B plus unlabeled dot points
-    object_description_quadrant_points: a coordinate-plane diagram with one X-marked reference point and unlabeled dot points
-    object_description_polygon_lattice: a coordinate-plane diagram with one polygon drawn on graph paper
+    object_description_segment_set: target segment AB and six other unlabeled segments
+    object_description_line_points: labeled points A and B plus unlabeled dot points
+    object_description_quadrant_points: one X-marked reference point and unlabeled dot points
+    object_description_polygon_lattice: one polygon drawn on graph paper
     evidence_hint_segment_endpoints: 'set "evidence" to an array of every graph-paper point coordinate [x, y] that is an endpoint of a segment satisfying the question'
     evidence_hint_collinear_graph_point_set: 'set "evidence" to an array of every graph-paper point coordinate [x, y] for the dot points that lie on the same line as A and B'
     evidence_hint_quadrant_graph_point_set: 'set "evidence" to an array of every graph-paper point coordinate [x, y] that lies in the same quadrant as the marked point'

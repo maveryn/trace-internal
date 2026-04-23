@@ -115,11 +115,11 @@ def test_chart_readout_supports_additional_scene_variants() -> None:
     assert "y-values" in prompts["dot_plot"]
     assert "y-values" in prompts["lollipop"]
     assert "percentages" in prompts["pie"]
-    assert "legend on the right" in prompts["pie"]
+    assert "legend" in prompts["pie"]
     assert "percentages" in prompts["donut"]
-    assert "legend on the right" in prompts["donut"]
-    assert "spoke per label" in prompts["radar"]
-    assert "printed values near those points" in prompts["radar"]
+    assert "legend" in prompts["donut"]
+    assert "radar" in prompts["radar"]
+    assert "printed values near the radar points" in prompts["radar"]
 
 
 def test_chart_readout_prompt_examples_match_selected_variant() -> None:

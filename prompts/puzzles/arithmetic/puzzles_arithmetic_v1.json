@@ -3,21 +3,21 @@
   "schema_version": "v1",
   "task_family_templates": {
     "arithmetic_unknown_slot_puzzle": [
-      "The image shows {object_description}.",
+      "The image contains {object_description}.",
       "Look at the arithmetic puzzle in the image: {object_description}.",
       "You are given {object_description}.",
       "Work from the arithmetic puzzle shown in the image: {object_description}.",
       "Use the boxed-number arithmetic puzzle in the image: {object_description}."
     ],
     "arithmetic_balance_query_puzzle": [
-      "The image shows {object_description}.",
+      "The image contains {object_description}.",
       "Look at the equality puzzle in the image: {object_description}.",
       "You are given {object_description}.",
       "Work from the equality-style arithmetic puzzle shown in the image: {object_description}.",
       "Use the stacked equality panels and query row in the image: {object_description}."
     ],
     "arithmetic_grid_unknown_puzzle": [
-      "The image shows {object_description}.",
+      "The image contains {object_description}.",
       "Look at the arithmetic grid puzzle in the image: {object_description}.",
       "You are given {object_description}.",
       "Work from the arithmetic number grid shown in the image: {object_description}.",
@@ -29,21 +29,21 @@
       "Use standard arithmetic to determine the missing number.",
       "Solve the one-row arithmetic puzzle and report the missing integer.",
       "Read the boxed expression and infer the missing value.",
-      "Use the boxed numbers and operators to solve for the question-mark slot.",
+      "Use the boxed numbers and operators to solve for the marked slot.",
       "Work from the shown arithmetic expression to find the missing number."
     ],
     "balance_value_query": [
-      "Use the equality panels to determine what number replaces the question mark in the query row.",
-      "Solve the equality puzzle and report the integer value that belongs in the question-mark query box.",
-      "Infer the missing number in the final query row.",
-      "Work from the shown equalities to find the number that fills the question-mark box.",
-      "Read the equality puzzle and determine the number that completes the query row."
+      "Use the equality panels and final query row.",
+      "Read the equality puzzle.",
+      "Use the final query row.",
+      "Work from the shown equalities.",
+      "Read the equality panels."
     ],
     "grid_value_query": [
       "Use the repeated row rule to determine the missing number.",
       "Solve the arithmetic grid puzzle and report the missing integer.",
-      "Read the number grid and infer the value of the question-mark cell.",
-      "Use the visible rows to solve for the question-mark grid cell.",
+      "Read the number grid and infer the marked missing value.",
+      "Use the visible rows to solve for the marked grid cell.",
       "Work from the arithmetic rule repeated across rows to find the missing number."
     ]
   },
@@ -51,58 +51,58 @@
     "result_unknown": [
       "What number should replace the question mark?",
       "Find the missing result in the boxed equation.",
-      "Determine the value that belongs in the question-mark result box.",
+      "Determine the value that belongs in the marked result box.",
       "Solve the arithmetic puzzle. What is the missing result?",
       "What integer completes the equation on the right side?"
     ],
     "operand_unknown": [
       "What number should replace the question mark?",
       "Find the missing left-side value in the boxed equation.",
-      "Determine the operand that belongs in the question-mark box.",
+      "Determine the operand that belongs in the marked box.",
       "Solve the equation and report the missing operand.",
-      "What integer completes the left side of the equation when placed in the question-mark box?"
+      "What integer completes the left side of the equation when placed in the marked box?"
     ],
     "sum_pair_unknown": [
       "What number should replace the question mark?",
-      "Determine the integer that belongs in the question-mark query box.",
+      "Determine the integer for the marked query box.",
       "Which number completes the final query row?",
-      "Use the shown equalities to solve the question-mark box.",
-      "What integer belongs in the question-mark query box?"
+      "Use the shown equalities to solve the marked box.",
+      "What integer belongs in the final query box?"
     ],
     "two_panel_chain_unknown": [
       "What number should replace the question mark?",
-      "Use the two equality panels to determine the question-mark query value.",
+      "Use the two equality panels to determine the marked query value.",
       "Determine the integer that completes the final query row.",
-      "Solve the equality chain and report the missing question-mark value.",
-      "What number belongs in the question-mark query box?"
+      "Solve the equality chain and report the missing value.",
+      "What number belongs in the final query box?"
     ],
     "three_panel_chain_unknown": [
       "What number should replace the question mark?",
-      "Use all three equality panels to determine the question-mark query value.",
+      "Use all three equality panels to determine the marked query value.",
       "Determine the integer that completes the final query row.",
-      "Solve the full equality chain and report the missing question-mark value.",
-      "What number belongs in the question-mark query box?"
+      "Solve the full equality chain and report the missing value.",
+      "What number belongs in the final query box?"
     ],
     "sum_rule_missing": [
       "What number should replace the question mark?",
       "Find the missing number in the arithmetic grid.",
-      "Determine the value that belongs in the question-mark cell.",
+      "Determine the value that belongs in the marked cell.",
       "Solve the repeated row rule and report the missing integer.",
-      "What integer completes the question-mark grid cell?"
+      "What integer completes the marked grid cell?"
     ],
     "difference_rule_missing": [
       "What number should replace the question mark?",
       "Find the missing number in the arithmetic grid.",
-      "Determine the value that belongs in the question-mark cell.",
+      "Determine the value that belongs in the marked cell.",
       "Solve the repeated row rule and report the missing integer.",
-      "What integer completes the question-mark grid cell?"
+      "What integer completes the marked grid cell?"
     ],
     "product_rule_missing": [
       "What number should replace the question mark?",
       "Find the missing number in the arithmetic grid.",
-      "Determine the value that belongs in the question-mark cell.",
+      "Determine the value that belongs in the marked cell.",
       "Solve the repeated row rule and report the missing integer.",
-      "What integer completes the question-mark grid cell?"
+      "What integer completes the marked grid cell?"
     ]
   },
   "required_slots_by_key": {

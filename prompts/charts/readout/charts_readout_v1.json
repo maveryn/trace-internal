@@ -3,20 +3,20 @@
   "schema_version": "v1",
   "task_family_templates": {
     "labeled_chart_readout": [
-      "The image shows {object_description}.",
-      "Use the labeled chart in the image. It shows {object_description}.",
-      "Work from the labeled chart shown in the image: {object_description}.",
-      "Look at the chart in the image. It shows {object_description}.",
-      "You are given a labeled chart: {object_description}."
+      "The image contains {object_description}.",
+      "Shown is {object_description}.",
+      "Displayed is {object_description}.",
+      "Use this visual: {object_description}.",
+      "Read this visual: {object_description}."
     ]
   },
   "task_templates": {
     "subset_value_query": [
-      "Read the requested values directly from the chart and answer the question.",
-      "Use the chart values for the specified labels and answer the question.",
-      "Read the values of the requested labels from the chart and compute the answer.",
-      "Use the labeled chart values for the named labels to answer the question.",
-      "Determine the requested value from the two specified chart labels."
+      "Use the named label values.",
+      "Read the requested label values.",
+      "Compute from the specified labels.",
+      "Use only the displayed values.",
+      "Use the two specified values."
     ]
   },
   "task_variant_templates": {

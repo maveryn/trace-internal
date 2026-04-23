@@ -98,18 +98,18 @@ prompt:
     task_puzzles_logic_adjacency_completion_label:
       task_family_key: logic_option_completion_puzzle
       task_key: adjacency_completion_query
-      object_description_logic_strip: a shape-logic puzzle grid with one question-mark cell and six labeled image options underneath
-      object_description_logic_card: a card-style shape-logic puzzle grid with one question-mark cell and six labeled image options underneath
-      object_description_logic_outline: an outline-style shape-logic puzzle grid with one question-mark cell and six labeled image options underneath
+      object_description_logic_strip: a shape-logic puzzle grid with one marked cell and six labeled image options underneath
+      object_description_logic_card: a card-style shape-logic puzzle grid with one marked cell and six labeled image options underneath
+      object_description_logic_outline: an outline-style shape-logic puzzle grid with one marked cell and six labeled image options underneath
       evidence_hint_king_non_touch: set "evidence" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct option panel
       json_example_king_non_touch: '{"evidence":[[118,621,262,793]],"answer":"A"}'
       json_example_answer_only_king_non_touch: '{"answer":"A"}'
     task_puzzles_logic_grid_completion_label:
       task_family_key: logic_option_completion_puzzle
       task_key: grid_completion_query
-      object_description_logic_strip: a shape-logic puzzle grid with one question-mark cell and six labeled image options underneath
-      object_description_logic_card: a card-style shape-logic puzzle grid with one question-mark cell and six labeled image options underneath
-      object_description_logic_outline: an outline-style shape-logic puzzle grid with one question-mark cell and six labeled image options underneath
+      object_description_logic_strip: a shape-logic puzzle grid with one marked cell and six labeled image options underneath
+      object_description_logic_card: a card-style shape-logic puzzle grid with one marked cell and six labeled image options underneath
+      object_description_logic_outline: an outline-style shape-logic puzzle grid with one marked cell and six labeled image options underneath
       evidence_hint_row_uniqueness: set "evidence" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct option panel
       evidence_hint_column_uniqueness: set "evidence" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct option panel
       evidence_hint_row_and_column_uniqueness: set "evidence" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct option panel

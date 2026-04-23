@@ -3,44 +3,44 @@
   "schema_version": "v1",
   "task_family_templates": {
     "axis_aligned_force_diagram": [
-      "The image shows {object_description}.",
-      "Look at the mechanics diagram in the image. It shows {object_description}.",
-      "You are given an image with {object_description}.",
-      "Work from the force diagram shown in the image: {object_description}.",
-      "Use the mechanics force diagram in the image. It shows {object_description}."
+      "The image contains {object_description}.",
+      "Shown is {object_description}.",
+      "Use this force diagram: {object_description}.",
+      "Read this mechanics diagram: {object_description}.",
+      "Work from {object_description}."
     ],
     "lever_balance_diagram": [
-      "The image shows {object_description}.",
-      "Look at the mechanics lever diagram in the image. It shows {object_description}.",
-      "You are given an image with {object_description}.",
-      "Work from the lever-balance diagram shown in the image: {object_description}.",
-      "Use the mechanics lever diagram in the image. It shows {object_description}."
+      "The image contains {object_description}.",
+      "Shown is {object_description}.",
+      "Use this lever diagram: {object_description}.",
+      "Read this lever-balance diagram: {object_description}.",
+      "Work from {object_description}."
     ],
     "paired_spring_diagram": [
-      "The image shows {object_description}.",
-      "Look at the mechanics spring diagram in the image. It shows {object_description}.",
-      "You are given an image with {object_description}.",
-      "Work from the spring-extension diagram shown in the image: {object_description}.",
-      "Use the mechanics spring diagram in the image. It shows {object_description}."
+      "The image contains {object_description}.",
+      "Shown is {object_description}.",
+      "Use this spring-extension diagram: {object_description}.",
+      "Read this spring setup: {object_description}.",
+      "Work from {object_description}."
     ]
   },
   "task_templates": {
     "force_diagram_query": [
-      "Use the shown force arrows to answer the question.",
+      "Use the shown force arrows.",
       "Read the force arrows and determine the requested value.",
-      "Work from the labeled force arrows to answer the question.",
+      "Work from the labeled force arrows.",
       "Answer using only the forces shown in the diagram.",
       "Determine the requested force value from the diagram."
     ],
     "lever_balance_query": [
-      "Use the shown weights and distances to answer the question.",
+      "Use the shown weights and distances.",
       "Read the lever diagram and determine the requested value.",
-      "Work from the beam, fulcrum, weights, and distance marks to answer the question.",
+      "Work from the beam, fulcrum, weights, and distance marks.",
       "Answer using only the information shown in the lever diagram.",
       "Determine the requested lever-balance value from the diagram."
     ],
     "spring_extension_query": [
-      "The two springs are identical. Use the shown weights and ruler marks to answer the question.",
+      "The two springs are identical. Use the shown weights and ruler marks.",
       "Read the spring diagram and determine the requested value.",
       "Work from the shown weight-extension relationship between the identical springs.",
       "Answer using only the weights, rulers, and spring markers shown in the diagram.",

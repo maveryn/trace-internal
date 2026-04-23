@@ -28,9 +28,12 @@ def main() -> int:
     )
     parser.add_argument(
         "--prompt-variant",
-        choices=("active", "answer_only", "answer_and_evidence"),
+        choices=("active", "answer", "answer_only", "evidence", "answer_and_evidence"),
         default="answer_and_evidence",
-        help="Which TRACE prompt variant to export into the RLVR prompt column.",
+        help=(
+            "Which TRACE prompt variant to export into the RLVR prompt column "
+            "(answer=answer_only, evidence=answer_and_evidence)."
+        ),
     )
     parser.add_argument(
         "--image-path-mode",

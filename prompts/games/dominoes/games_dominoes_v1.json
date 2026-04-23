@@ -3,18 +3,18 @@
   "schema_version": "v1",
   "task_family_templates": {
     "visible_domino_chain": [
-      "The image shows {object_description}.",
-      "Look at the domino scene in the image. It shows {object_description}.",
-      "You are given an image with {object_description}.",
-      "Work from the domino scene shown in the image: {object_description}.",
-      "Use the face-up domino layout in the image. It shows {object_description}."
+      "The image contains {object_description}.",
+      "Shown is {object_description}.",
+      "Use this domino layout: {object_description}.",
+      "Read these face-up dominoes: {object_description}.",
+      "Work from {object_description}."
     ]
   },
   "task_templates": {
     "domino_chain_query": [
-      "Answer the question using only the loose dominoes below the top chain unless the prompt says to compare with `REF`.",
+      "Use only the loose dominoes below the top chain unless the prompt says to compare with `REF`.",
       "Read the loose dominoes below the top chain and determine the requested count.",
-      "Work from the visible loose dominoes below the chain to answer the question.",
+      "Work from the visible loose dominoes below the chain.",
       "Use the displayed dominoes to determine the requested count.",
       "Determine the requested domino-count value from the visible scene."
     ]

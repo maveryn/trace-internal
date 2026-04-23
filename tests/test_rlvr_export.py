@@ -22,8 +22,21 @@ def _write_trace_dataset(tmp_path: Path) -> tuple[Path, dict[str, object]]:
         "task": "task_geometry_coordinate_relation",
         "prompt": "active prompt",
         "prompt_variants": {
-            "answer_only": "answer only prompt",
-            "answer_and_evidence": "answer and evidence prompt",
+            "answer_only": (
+                "Count the marked dots.\n"
+                'Use a valid JSON object with key "answer" for the final answer.\n'
+                'Required answer format: set "answer" to the requested integer value.\n'
+                "Example JSON:\n"
+                '{"answer":3}'
+            ),
+            "answer_and_evidence": (
+                "Count the marked dots and cite the supporting positions.\n"
+                'Use a valid JSON object with keys "evidence" and "answer" in that order for the final answer.\n'
+                'Required evidence format: set "evidence" to the supporting point list.\n'
+                'Required answer format: set "answer" to the requested integer value.\n'
+                "Example JSON:\n"
+                '{"evidence":[[1,2]],"answer":3}'
+            ),
         },
         "images": [
             {
@@ -67,9 +80,25 @@ def test_build_rlvr_row_uses_requested_prompt_variant_and_relative_image_paths(t
 
     assert row["uid"] == "inst-001"
     assert row["instance_id"] == "inst-001"
-    assert row["prompt"] == "<image>answer only prompt"
-    assert row["prompt_answer_only"] == "<image>answer only prompt"
-    assert row["prompt_answer_and_evidence"] == "<image>answer and evidence prompt"
+    assert row["prompt"] == (
+        "<image>Count the marked dots.\n"
+        'Required answer format: set "answer" to the requested integer value.\n'
+        "Example JSON:\n"
+        '{"answer":3}'
+    )
+    assert row["prompt_answer_only"] == (
+        "<image>Count the marked dots.\n"
+        'Required answer format: set "answer" to the requested integer value.\n'
+        "Example JSON:\n"
+        '{"answer":3}'
+    )
+    assert row["prompt_answer_and_evidence"] == (
+        "<image>Count the marked dots and cite the supporting positions.\n"
+        'Required evidence format: set "evidence" to the supporting point list.\n'
+        'Required answer format: set "answer" to the requested integer value.\n'
+        "Example JSON:\n"
+        '{"evidence":[[1,2]],"answer":3}'
+    )
     assert row["prompt_active"] == "<image>active prompt"
     assert row["prompt_mode"] == "answer_only"
     assert row["complexity_score"] == 0.6
@@ -83,7 +112,14 @@ def test_build_rlvr_row_uses_requested_prompt_variant_and_relative_image_paths(t
 
 def test_build_rlvr_row_normalizes_existing_image_placeholders(tmp_path: Path) -> None:
     dataset_root, train_record = _write_trace_dataset(tmp_path)
-    train_record["prompt_variants"]["answer_and_evidence"] = "<image>   answer and evidence prompt"
+    train_record["prompt_variants"]["answer_and_evidence"] = (
+        "<image>   Count the marked dots and cite the supporting positions.\n"
+        'Use a valid JSON object with keys "evidence" and "answer" in that order for the final answer.\n'
+        'Required evidence format: set "evidence" to the supporting point list.\n'
+        'Required answer format: set "answer" to the requested integer value.\n'
+        "Example JSON:\n"
+        '{"evidence":[[1,2]],"answer":3}'
+    )
     export_parent = tmp_path / "exports" / "jsonl"
     export_parent.mkdir(parents=True, exist_ok=True)
 
@@ -95,7 +131,30 @@ def test_build_rlvr_row_normalizes_existing_image_placeholders(tmp_path: Path) -
         image_path_mode="relative",
     )
 
-    assert row["prompt"] == "<image>answer and evidence prompt"
+    assert row["prompt"] == (
+        "<image>Count the marked dots and cite the supporting positions.\n"
+        'Required evidence format: set "evidence" to the supporting point list.\n'
+        'Required answer format: set "answer" to the requested integer value.\n'
+        "Example JSON:\n"
+        '{"evidence":[[1,2]],"answer":3}'
+    )
+
+
+def test_build_rlvr_row_accepts_evidence_prompt_alias(tmp_path: Path) -> None:
+    dataset_root, train_record = _write_trace_dataset(tmp_path)
+    export_parent = tmp_path / "exports" / "jsonl"
+    export_parent.mkdir(parents=True, exist_ok=True)
+
+    row = build_rlvr_row(
+        train_record,
+        dataset_root=dataset_root,
+        output_parent=export_parent,
+        prompt_variant="evidence",
+        image_path_mode="relative",
+    )
+
+    assert row["prompt_mode"] == "answer_and_evidence"
+    assert row["prompt"] == row["prompt_answer_and_evidence"]
 
 
 def test_export_trace_dataset_to_rlvr_jsonl_and_parquet(tmp_path: Path) -> None:
@@ -115,9 +174,26 @@ def test_export_trace_dataset_to_rlvr_jsonl_and_parquet(tmp_path: Path) -> None:
         if line.strip()
     ]
     assert len(jsonl_rows) == 1
-    assert jsonl_rows[0]["prompt"] == "<image>answer and evidence prompt"
-    assert jsonl_rows[0]["prompt_answer_only"] == "<image>answer only prompt"
-    assert jsonl_rows[0]["prompt_answer_and_evidence"] == "<image>answer and evidence prompt"
+    assert jsonl_rows[0]["prompt"] == (
+        "<image>Count the marked dots and cite the supporting positions.\n"
+        'Required evidence format: set "evidence" to the supporting point list.\n'
+        'Required answer format: set "answer" to the requested integer value.\n'
+        "Example JSON:\n"
+        '{"evidence":[[1,2]],"answer":3}'
+    )
+    assert jsonl_rows[0]["prompt_answer_only"] == (
+        "<image>Count the marked dots.\n"
+        'Required answer format: set "answer" to the requested integer value.\n'
+        "Example JSON:\n"
+        '{"answer":3}'
+    )
+    assert jsonl_rows[0]["prompt_answer_and_evidence"] == (
+        "<image>Count the marked dots and cite the supporting positions.\n"
+        'Required evidence format: set "evidence" to the supporting point list.\n'
+        'Required answer format: set "answer" to the requested integer value.\n'
+        "Example JSON:\n"
+        '{"evidence":[[1,2]],"answer":3}'
+    )
     assert jsonl_rows[0]["complexity_score"] == 0.6
     assert jsonl_rows[0]["difficulty_bin"] == 0
     assert jsonl_rows[0]["bucket_id_str"] == "task_geometry_coordinate_relation::q0"
@@ -139,8 +215,19 @@ def test_export_trace_dataset_to_rlvr_jsonl_and_parquet(tmp_path: Path) -> None:
     parquet_rows = table.to_pylist()
     assert len(parquet_rows) == 1
     assert parquet_rows[0]["prompt"] == "<image>active prompt"
-    assert parquet_rows[0]["prompt_answer_only"] == "<image>answer only prompt"
-    assert parquet_rows[0]["prompt_answer_and_evidence"] == "<image>answer and evidence prompt"
+    assert parquet_rows[0]["prompt_answer_only"] == (
+        "<image>Count the marked dots.\n"
+        'Required answer format: set "answer" to the requested integer value.\n'
+        "Example JSON:\n"
+        '{"answer":3}'
+    )
+    assert parquet_rows[0]["prompt_answer_and_evidence"] == (
+        "<image>Count the marked dots and cite the supporting positions.\n"
+        'Required evidence format: set "evidence" to the supporting point list.\n'
+        'Required answer format: set "answer" to the requested integer value.\n'
+        "Example JSON:\n"
+        '{"evidence":[[1,2]],"answer":3}'
+    )
     assert parquet_rows[0]["complexity_score"] == 0.6
     assert parquet_rows[0]["difficulty_bin"] == 0
     assert parquet_rows[0]["bucket_id_str"] == "task_geometry_coordinate_relation::q0"
@@ -200,7 +287,12 @@ def test_export_trace_dataset_to_rlvr_parquet_supports_embedded_images(tmp_path:
 
     loaded = load_dataset("parquet", data_files=str(result.output_path), split="train")
     loaded_row = loaded[0]
-    assert loaded_row["prompt_answer_only"] == "<image>answer only prompt"
+    assert loaded_row["prompt_answer_only"] == (
+        "<image>Count the marked dots.\n"
+        'Required answer format: set "answer" to the requested integer value.\n'
+        "Example JSON:\n"
+        '{"answer":3}'
+    )
     assert isinstance(loaded_row["images"][0], Image.Image)
 
 

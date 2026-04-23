@@ -3,20 +3,20 @@
   "schema_version": "v1",
   "task_family_templates": {
     "solid_view_scene": [
-      "The picture shows {object_description}.",
-      "Look at the solid-view scene showing {object_description}.",
-      "Use the solid-view scene with {object_description}.",
-      "Work from the solid-view picture showing {object_description}.",
-      "You are given a solid-view scene with {object_description}."
+      "The image contains {object_description}.",
+      "Shown is {object_description}.",
+      "Displayed is {object_description}.",
+      "Use this solid-view scene: {object_description}.",
+      "Read this solid-view scene: {object_description}."
     ]
   },
   "task_templates": {
     "solid_view_query": [
-      "Answer the question using the full solid-view scene.",
-      "Use the cube stack and the query grid to answer the question.",
-      "Read the cube stack carefully, then answer the question.",
-      "Work from the full cube-stack scene to answer the question.",
-      "Determine the answer from the solid-view scene."
+      "Use the full solid-view scene.",
+      "Use the cube stack and query grid.",
+      "Read the cube stack carefully.",
+      "Work from the full cube-stack scene.",
+      "Determine the requested view count."
     ]
   },
   "task_variant_templates": {

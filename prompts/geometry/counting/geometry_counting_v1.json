@@ -3,20 +3,20 @@
   "schema_version": "v1",
   "task_family_templates": {
     "counting_scene": [
-      "You are given an image showing {object_description}.",
-      "The image shows {object_description}.",
-      "Look at the image showing {object_description}.",
-      "Use the diagram showing {object_description}.",
-      "Work from the image showing {object_description}."
+      "The image contains {object_description}.",
+      "Shown is {object_description}.",
+      "Displayed is {object_description}.",
+      "Use this geometry scene: {object_description}.",
+      "Read this geometry scene: {object_description}."
     ]
   },
   "task_templates": {
     "counting_query": [
       "{question_text}",
-      "Question: {question_text}",
-      "Task: {question_text}",
-      "Answer this question: {question_text}",
-      "Determine the answer: {question_text}"
+      "Use the shown shapes. {question_text}",
+      "Read the geometry scene. {question_text}",
+      "Work from the visual. {question_text}",
+      "Determine the requested count: {question_text}"
     ]
   },
   "required_slots_by_key": {

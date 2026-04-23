@@ -51,7 +51,7 @@ prompt:
     task_games_nine_mens_morris_pieces_in_mill_count:
       task_family_key: visible_nine_mens_morris_board
       task_key: pieces_in_mill_query
-      object_description_single_board: one visible nine men's morris board with light and dark pieces placed on the board intersections
+      object_description_single_board: a nine men's morris board with light and dark pieces placed on intersections
       mill_rule_text: A mill is 3 same-color pieces on one straight board line. Count each piece only once even if it belongs to more than one mill.
       evidence_hint_white_pieces_in_mill_count: set "evidence" to an array of bounding boxes [x1, y1, x2, y2] for every white piece that belongs to at least one mill
       evidence_hint_black_pieces_in_mill_count: set "evidence" to an array of bounding boxes [x1, y1, x2, y2] for every black piece that belongs to at least one mill

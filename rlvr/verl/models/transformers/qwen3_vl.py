@@ -1,7 +1,4 @@
-# Copyright 2024 The Qwen team, Alibaba Group and the HuggingFace Inc. team
 # Copyright 2024 Bytedance Ltd. and/or its affiliates
-# Based on:
-# https://github.com/huggingface/transformers/blob/v4.49.0/src/transformers/models/qwen2_vl/modeling_qwen2_vl.py
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,20 +12,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import logging
+import os
+from dataclasses import dataclass
 from typing import Optional
 
 import torch
 from transformers.models.qwen3_vl.modeling_qwen3_vl import (
     Qwen3VLCausalLMOutputWithPast,
     Qwen3VLForConditionalGeneration,
-    Qwen3VLModel,
-    Qwen3VLModelOutputWithPast,
 )
-from transformers.models.qwen3_vl.processing_qwen3_vl import Qwen3VLProcessor
+
+logger = logging.getLogger(__file__)
+logger.setLevel(os.getenv("VERL_LOGGING_LEVEL", "WARN"))
 
 
 def get_rope_index(
-    processor: "Qwen3VLProcessor",
+    processor,
     input_ids: torch.Tensor,
     image_grid_thw: Optional[torch.Tensor] = None,
     video_grid_thw: Optional[torch.Tensor] = None,
@@ -107,7 +107,8 @@ def get_rope_index(
             st_idx = llm_pos_ids_list[-1].max() + 1 if len(llm_pos_ids_list) > 0 else 0
             llm_pos_ids_list.append(torch.arange(text_len).view(1, -1).expand(3, -1) + st_idx)
 
-            # t_index is always 0 because llm_grid_t is always 1 (we use timestamps to encode the temporal information for videos)
+            # t_index is always 0 because llm_grid_t is always 1
+            # (we use timestamps to encode the temporal information for videos)
             t_index = torch.arange(llm_grid_t).view(-1, 1).expand(-1, llm_grid_h * llm_grid_w).flatten()
             h_index = torch.arange(llm_grid_h).view(1, -1, 1).expand(llm_grid_t, -1, llm_grid_w).flatten()
             w_index = torch.arange(llm_grid_w).view(1, 1, -1).expand(llm_grid_t, llm_grid_h, -1).flatten()
@@ -133,7 +134,7 @@ def get_rope_index(
 
 
 def _get_input_embeds(
-    model: "Qwen3VLModel",
+    model: "Qwen3VLForConditionalGeneration",
     input_ids: torch.LongTensor,
     attention_mask: Optional[torch.Tensor] = None,
     pixel_values: Optional[torch.FloatTensor] = None,
@@ -145,7 +146,12 @@ def _get_input_embeds(
     image_mask, video_mask = None, None
     if pixel_values is not None:
         pixel_values = pixel_values.type(model.visual.dtype)
-        image_embeds, deepstack_image_embeds = model.visual(pixel_values, grid_thw=image_grid_thw)
+        visual_output = model.visual(pixel_values, grid_thw=image_grid_thw)
+        if isinstance(visual_output, tuple):
+            image_embeds, deepstack_image_embeds = visual_output
+        else:
+            image_embeds = visual_output.pooler_output
+            deepstack_image_embeds = getattr(visual_output, "deepstack_features", None)
         n_image_tokens = (input_ids == model.config.image_token_id).sum().item()
         n_image_features = image_embeds.shape[0]
         if n_image_tokens != n_image_features:
@@ -163,7 +169,12 @@ def _get_input_embeds(
 
     if pixel_values_videos is not None:
         pixel_values_videos = pixel_values_videos.type(model.visual.dtype)
-        video_embeds, deepstack_video_embeds = model.visual(pixel_values_videos, grid_thw=video_grid_thw)
+        visual_output = model.visual(pixel_values_videos, grid_thw=video_grid_thw)
+        if isinstance(visual_output, tuple):
+            video_embeds, deepstack_video_embeds = visual_output
+        else:
+            video_embeds = visual_output.pooler_output
+            deepstack_video_embeds = getattr(visual_output, "deepstack_features", None)
         n_video_tokens = (input_ids == model.config.video_token_id).sum().item()
         n_video_features = video_embeds.shape[0]
         if n_video_tokens != n_video_features:
@@ -189,7 +200,7 @@ def _get_input_embeds(
         deepstack_visual_embeds = []
         image_mask_joint = image_mask[visual_pos_masks]
         video_mask_joint = video_mask[visual_pos_masks]
-        for img_embed, vid_embed in zip(deepstack_image_embeds, deepstack_video_embeds):
+        for img_embed, vid_embed in zip(deepstack_image_embeds, deepstack_video_embeds, strict=False):
             embed_joint = img_embed.new_zeros(visual_pos_masks.sum(), img_embed.shape[-1]).to(img_embed.device)
             embed_joint[image_mask_joint, :] = img_embed
             embed_joint[video_mask_joint, :] = vid_embed
@@ -208,10 +219,9 @@ def _get_input_embeds(
         patch_dim = config.in_channels * config.temporal_patch_size * config.patch_size**2
         pixel_values = torch.zeros((16, patch_dim), dtype=inputs_embeds.dtype, device=inputs_embeds.device)
         image_grid_thw = torch.tensor([[1, 4, 4]], dtype=torch.long, device=inputs_embeds.device)
-        image_embeds, dummy_deepstack_image_embeds = model.visual(pixel_values, grid_thw=image_grid_thw)
+        visual_output = model.visual(pixel_values, grid_thw=image_grid_thw)
+        image_embeds = visual_output[0] if isinstance(visual_output, tuple) else visual_output.pooler_output
         inputs_embeds += 0.0 * image_embeds.mean()
-        for emb in dummy_deepstack_image_embeds or []:
-            inputs_embeds += 0.0 * emb.mean()
 
     if attention_mask is not None:
         attention_mask = attention_mask.to(inputs_embeds.device)
@@ -224,8 +234,14 @@ def _get_input_embeds(
     }
 
 
+@dataclass
+class Qwen3VLCausalLMOutputForPPO(Qwen3VLCausalLMOutputWithPast):
+    log_probs: Optional[torch.FloatTensor] = None
+    entropy: Optional[torch.FloatTensor] = None
+
+
 def qwen3_vl_base_forward(
-    self: "Qwen3VLModel",
+    self: "Qwen3VLForConditionalGeneration",
     input_ids: torch.LongTensor,
     attention_mask: Optional[torch.Tensor] = None,
     pixel_values: Optional[torch.FloatTensor] = None,
@@ -234,28 +250,96 @@ def qwen3_vl_base_forward(
     video_grid_thw: Optional[torch.LongTensor] = None,
     **kwargs,
 ):
-    position_ids = kwargs.get("position_ids")
-    if isinstance(position_ids, torch.Tensor) and (position_ids.ndim != 3 or position_ids.size(0) != 4):
-        # we concat the text position ids with the 3D vision position ids by default
-        # see https://github.com/huggingface/transformers/pull/39447
-        raise ValueError("position_ids should be a 3D tensor of shape (4, batch_size, seq_length).")
-
     input_kwargs = _get_input_embeds(
         self, input_ids, attention_mask, pixel_values, pixel_values_videos, image_grid_thw, video_grid_thw
+    )  # avoid lora module having multiple keyword arguments
+    kwargs.update(input_kwargs)
+    return self.language_model(
+        input_ids=None,
+        **kwargs,
     )
-    kwargs.update(input_kwargs)  # avoid lora module to have multiple keyword arguments
-    outputs = self.language_model(input_ids=None, **kwargs)
-    return Qwen3VLModelOutputWithPast(last_hidden_state=outputs.last_hidden_state)
 
 
-def qwen3_vl_model_forward(
+def forward_with_normal_backend(
     self: "Qwen3VLForConditionalGeneration",
-    input_ids: torch.LongTensor,
+    input_ids: torch.LongTensor = None,
     labels: Optional[torch.LongTensor] = None,
+    temperature: float = 1.0,
     **kwargs,
-) -> "Qwen3VLCausalLMOutputWithPast":
-    outputs = self.model(input_ids=input_ids, **kwargs)
+) -> "Qwen3VLCausalLMOutputForPPO":
+    outputs = self.model(input_ids, **kwargs)
     hidden_states = outputs[0]
     logits = self.lm_head(hidden_states)
 
-    return Qwen3VLCausalLMOutputWithPast(logits=logits)
+    return Qwen3VLCausalLMOutputForPPO(
+        logits=logits,
+        hidden_states=outputs.hidden_states,
+    )
+
+
+def forward_with_torch_backend(
+    self: "Qwen3VLForConditionalGeneration",
+    input_ids: torch.LongTensor = None,
+    labels: Optional[torch.LongTensor] = None,
+    temperature: float = 1.0,
+    **kwargs,
+) -> "Qwen3VLCausalLMOutputForPPO":
+    from verl.utils.experimental.torch_functional import FusedLinearForPPO
+
+    outputs = self.model(input_ids, **kwargs)
+    hidden_states = outputs[0]
+
+    # Loss calculations
+    if labels is not None:
+        rolled_labels = torch.roll(labels, shifts=-1, dims=-1)
+    elif input_ids is not None:
+        rolled_labels = torch.roll(input_ids, shifts=-1, dims=-1)
+    else:
+        raise RuntimeError("To use forward_with_torch_backend, either labels or input_ids must be provided.")
+
+    fused_linear_for_ppo = FusedLinearForPPO()
+    log_probs, entropy = fused_linear_for_ppo.forward(
+        hidden_states=hidden_states,
+        vocab_weights=self.lm_head.weight,
+        input_ids=rolled_labels,
+        temperature=temperature,
+    )
+    return Qwen3VLCausalLMOutputForPPO(
+        log_probs=log_probs,
+        entropy=entropy,
+        hidden_states=outputs.hidden_states,
+    )
+
+
+def forward_with_triton_backend(
+    self: "Qwen3VLForConditionalGeneration",
+    input_ids: torch.LongTensor = None,
+    labels: Optional[torch.LongTensor] = None,
+    temperature: float = 1.0,
+    **kwargs,
+) -> "Qwen3VLCausalLMOutputForPPO":
+    from verl.utils.kernel.linear_cross_entropy import linear_cross_entropy
+
+    outputs = self.model(input_ids, **kwargs)
+    hidden_states = outputs[0]
+
+    # Loss calculations
+    if labels is not None:
+        rolled_labels = torch.roll(labels, shifts=-1, dims=-1)
+    elif input_ids is not None:
+        rolled_labels = torch.roll(input_ids, shifts=-1, dims=-1)
+    else:
+        raise RuntimeError("To use forward_with_triton_backend, either labels or input_ids must be provided.")
+
+    log_probs, entropy = linear_cross_entropy(
+        hidden_states,
+        self.lm_head.weight,
+        rolled_labels,
+        temperature,
+        "none",
+    )
+    return Qwen3VLCausalLMOutputForPPO(
+        log_probs=log_probs,
+        entropy=entropy,
+        hidden_states=outputs.hidden_states,
+    )

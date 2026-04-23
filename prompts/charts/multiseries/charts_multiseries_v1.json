@@ -3,17 +3,17 @@
   "schema_version": "v1",
   "task_family_templates": {
     "multiseries_chart_comparison": [
-      "The image shows {object_description}.",
-      "Use the chart in the image. It shows {object_description}.",
-      "Work from the multiseries chart shown in the image: {object_description}.",
-      "Look at the multiseries chart in the image. It shows {object_description}.",
-      "You are given a multiseries chart: {object_description}."
+      "The image contains {object_description}.",
+      "Shown is {object_description}.",
+      "Displayed is {object_description}.",
+      "Use this multiseries visual: {object_description}.",
+      "Read this visual: {object_description}."
     ]
   },
   "task_templates": {
     "pairwise_comparison_count_query": [
       "Compare the two queried series category by category.",
-      "Use the chart to compare the queried pair of series across the category labels.",
+      "Compare the queried pair of series across category labels.",
       "Determine how many category labels satisfy the requested pairwise series comparison.",
       "Read the chart values and count the categories where the stated series relation holds.",
       "Work category by category and count the labels where the requested series comparison is true."

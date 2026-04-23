@@ -3,29 +3,29 @@
   "schema_version": "v1",
   "task_family_templates": {
     "spatial_assembly_puzzle": [
-      "The image shows {object_description}.",
-      "Look at the shape-assembly puzzle in the image: {object_description}.",
+      "The image contains {object_description}.",
+      "Read this shape-assembly puzzle: {object_description}.",
       "You are given {object_description}.",
       "Work from the shown pieces and labeled silhouette options: {object_description}.",
       "Use the pieces above and the labeled target-shape options below: {object_description}."
     ],
     "spatial_overlay_puzzle": [
-      "The image shows {object_description}.",
-      "Look at the transparent-sheet overlay puzzle in the image: {object_description}.",
+      "The image contains {object_description}.",
+      "Read this transparent-sheet overlay puzzle: {object_description}.",
       "You are given {object_description}.",
       "Work from the two aligned source sheets and the labeled result options: {object_description}.",
       "Use the two transparent sheets above and the labeled result options below: {object_description}."
     ],
     "spatial_fold_result_puzzle": [
-      "The image shows {object_description}.",
-      "Look at the paper-fold puzzle in the image: {object_description}.",
+      "The image contains {object_description}.",
+      "Read this paper-fold puzzle: {object_description}.",
       "You are given {object_description}.",
       "Work from the paper-fold diagram shown in the image: {object_description}.",
       "Use the marked paper and labeled options in the image: {object_description}."
     ],
     "spatial_cube_removal_puzzle": [
-      "The image shows {object_description}.",
-      "Look at the block-comparison puzzle in the image: {object_description}.",
+      "The image contains {object_description}.",
+      "Read this block-comparison puzzle: {object_description}.",
       "You are given {object_description}.",
       "Work from the two shown block structures in the image: {object_description}.",
       "Use the original block on the left and the remaining block on the right: {object_description}."

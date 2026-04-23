@@ -6,8 +6,9 @@ from dataclasses import dataclass
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from ....core.seed import spawn_rng
-from ...shared.config_defaults import resolve_required_int_bounds
+from ...shared.config_defaults import group_default, resolve_required_int_bounds
 from ...shared.deterministic_sampling import resolve_selection_index
+from ...shared.variant_sampling import has_non_null_param, is_uniform_probability_map, resolve_variant
 from ..shared.common import resolve_diagrams_axis_variant, resolve_diagrams_int_param, resolve_diagrams_rgb_triple
 
 
@@ -57,6 +58,10 @@ _PROCESS_OBJECTS: Tuple[str, ...] = (
     "File",
     "Booking",
     "Approval",
+)
+FLOW_PROCESS_LABEL_LENGTH_BOUNDS: Tuple[int, int] = (
+    min(len(f"{verb} {obj}") for verb in _PROCESS_VERBS for obj in _PROCESS_OBJECTS),
+    max(len(f"{verb} {obj}") for verb in _PROCESS_VERBS for obj in _PROCESS_OBJECTS),
 )
 _DECISION_LABELS: Tuple[str, ...] = (
     "Approved?",
@@ -132,6 +137,69 @@ class FlowRenderParams:
     branch_label_border_rgb: Tuple[int, int, int]
     branch_label_text_rgb: Tuple[int, int, int]
 
+
+def _explicit_flow_cycle_index(*, params: Mapping[str, Any], support_size: int, stride: int) -> int | None:
+    """Return one task-local balanced review/export index for finite support."""
+
+    explicit_sampling_index = params.get("_sampling_index")
+    if explicit_sampling_index is None:
+        return None
+    if int(support_size) <= 0:
+        raise ValueError("support_size must be positive for explicit flow cycling")
+    return int((abs(int(explicit_sampling_index)) // int(stride)) % int(support_size))
+
+
+def _resolve_flow_axis_variant(
+    *,
+    params: Mapping[str, Any],
+    gen_defaults: Mapping[str, Any],
+    instance_seed: int,
+    supported_variants: Sequence[str],
+    task_id: str,
+    explicit_key: str,
+    weights_key: str,
+    balance_flag_key: str,
+    axis_namespace: str,
+    review_cycle_stride: int,
+) -> Tuple[str, Dict[str, float]]:
+    """Resolve one flow axis, using a mixed-radix cycle under `_sampling_index`."""
+
+    explicit_sampling_index = params.get("_sampling_index")
+    if explicit_sampling_index is not None:
+        rng = spawn_rng(int(instance_seed), f"{task_id}.{axis_namespace}")
+        supported = [str(item) for item in supported_variants]
+        selected_variant, probabilities = resolve_variant(
+            rng,
+            params=params,
+            gen_defaults=gen_defaults,
+            supported_variants=supported,
+            explicit_key=str(explicit_key),
+            weights_key=str(weights_key),
+        )
+        enabled = bool(params.get(str(balance_flag_key), group_default(gen_defaults, str(balance_flag_key), True)))
+        overridden = any(has_non_null_param(params, key) for key in (str(explicit_key), str(weights_key)))
+        if bool(enabled) and (not overridden) and is_uniform_probability_map(probabilities):
+            cycle_index = _explicit_flow_cycle_index(
+                params=params,
+                support_size=int(len(supported)),
+                stride=int(review_cycle_stride),
+            )
+            if cycle_index is not None:
+                return str(supported[int(cycle_index)]), {str(key): float(value) for key, value in probabilities.items()}
+        return str(selected_variant), {str(key): float(value) for key, value in probabilities.items()}
+
+    return resolve_diagrams_axis_variant(
+        params=params,
+        gen_defaults=gen_defaults,
+        instance_seed=int(instance_seed),
+        supported_variants=supported_variants,
+        task_id=str(task_id),
+        explicit_key=str(explicit_key),
+        weights_key=str(weights_key),
+        balance_flag_key=str(balance_flag_key),
+        axis_namespace=str(axis_namespace),
+    )
+
 def resolve_flow_scene_variant(
     params: Mapping[str, Any],
     *,
@@ -141,7 +209,7 @@ def resolve_flow_scene_variant(
 ) -> Tuple[str, Dict[str, float]]:
     """Resolve the active flow scene variant."""
 
-    return resolve_diagrams_axis_variant(
+    return _resolve_flow_axis_variant(
         params=params,
         gen_defaults=gen_defaults,
         instance_seed=int(instance_seed),
@@ -151,6 +219,7 @@ def resolve_flow_scene_variant(
         weights_key="scene_variant_weights",
         balance_flag_key="balanced_scene_variant_sampling",
         axis_namespace="scene_variant",
+        review_cycle_stride=2,
     )
 
 
@@ -163,7 +232,7 @@ def resolve_flow_task_variant(
 ) -> Tuple[str, Dict[str, float]]:
     """Resolve the active semantic flow task variant."""
 
-    return resolve_diagrams_axis_variant(
+    return _resolve_flow_axis_variant(
         params=params,
         gen_defaults=gen_defaults,
         instance_seed=int(instance_seed),
@@ -173,6 +242,7 @@ def resolve_flow_task_variant(
         weights_key="task_variant_weights",
         balance_flag_key="balanced_task_variant_sampling",
         axis_namespace="task_variant",
+        review_cycle_stride=1,
     )
 
 
@@ -277,17 +347,21 @@ def _direct_topology(
         fallback_max=int(defaults.direct_node_count_max),
         context=f"{task_id} direct node count",
     )
-    node_count = int(
-        node_count_min
-        + (
-            resolve_selection_index(
-                params=params,
-                instance_seed=int(instance_seed),
-                namespace=f"{task_id}.direct_node_count",
-            )
-            % (int(node_count_max) - int(node_count_min) + 1)
-        )
+    node_count_support = int(node_count_max) - int(node_count_min) + 1
+    node_count_cycle_index = _explicit_flow_cycle_index(
+        params=params,
+        support_size=int(node_count_support),
+        stride=4,
     )
+    if node_count_cycle_index is not None:
+        node_count_index = int(node_count_cycle_index)
+    else:
+        node_count_index = resolve_selection_index(
+            params=params,
+            instance_seed=int(instance_seed),
+            namespace=f"{task_id}.direct_node_count",
+        )
+    node_count = int(node_count_min + (int(node_count_index) % int(node_count_support)))
     labels = _sample_process_labels(count=int(node_count), rng=rng)
     lane_specs = _lane_specs(rng=rng) if str(scene_variant) == "swimlane" else []
 
@@ -350,14 +424,23 @@ def _direct_topology(
             }
         )
 
-    query_index = int(
-        resolve_selection_index(
-            params=params,
-            instance_seed=int(instance_seed),
-            namespace=f"{task_id}.query_node",
-        )
-        % (int(node_count) - 1)
+    query_support = int(node_count) - 1
+    query_cycle_index = _explicit_flow_cycle_index(
+        params=params,
+        support_size=int(query_support),
+        stride=8,
     )
+    if query_cycle_index is not None:
+        query_index = int(query_cycle_index)
+    else:
+        query_index = int(
+            resolve_selection_index(
+                params=params,
+                instance_seed=int(instance_seed),
+                namespace=f"{task_id}.query_node",
+            )
+            % int(query_support)
+        )
     answer_index = int(query_index + 1)
     question_text = f"What is the next step after {labels[query_index]}? Return the exact step label shown."
     return {
@@ -373,6 +456,7 @@ def _direct_topology(
         "answer_node_bbox_id": f"node_bbox_{answer_index}",
         "question_text": str(question_text),
         "topology_node_count": int(node_count),
+        "topology_edge_count": len(edge_specs),
         "lane_count": len(lane_specs),
         "question_format": "flow_next_step_label",
         "view_family": "process_flow_diagram",
@@ -382,6 +466,7 @@ def _direct_topology(
 def _branch_topology(
     *,
     scene_variant: str,
+    params: Mapping[str, Any],
     rng,
 ) -> Dict[str, Any]:
     """Build one decision-branch next-step flow instance."""
@@ -425,7 +510,12 @@ def _branch_topology(
             {"edge_id": "edge_5", "source_node_id": "node_4", "target_node_id": "node_5", "edge_label": None, "edge_label_bbox_id": None, "waypoints_rel": [[0.90, 0.60]]},
         ]
 
-    branch_label = "Yes" if bool(rng.randrange(2)) else "No"
+    branch_cycle_index = _explicit_flow_cycle_index(params=params, support_size=2, stride=16)
+    if branch_cycle_index is not None:
+        branch_index = int(branch_cycle_index)
+        branch_label = "Yes" if int(branch_index) == 0 else "No"
+    else:
+        branch_label = "Yes" if bool(rng.randrange(2)) else "No"
     answer_node_id = "node_3" if str(branch_label) == "Yes" else "node_4"
     answer_node_label = labels[2] if str(branch_label) == "Yes" else labels[3]
     question_text = (
@@ -445,6 +535,7 @@ def _branch_topology(
         "answer_node_bbox_id": f"{answer_node_id.replace('node', 'node_bbox')}",
         "question_text": str(question_text),
         "topology_node_count": 6,
+        "topology_edge_count": len(edge_specs),
         "lane_count": len(lane_specs),
         "question_format": "flow_next_step_label",
         "view_family": "process_flow_diagram",
@@ -476,9 +567,14 @@ def build_flow_next_step_dataset(
             task_id=str(task_id),
         )
     elif variant == "branch_next_step":
-        dataset = _branch_topology(scene_variant=str(scene_variant), rng=rng)
+        dataset = _branch_topology(
+            scene_variant=str(scene_variant),
+            params=params,
+            rng=rng,
+        )
     else:
         raise ValueError(f"unsupported flow task variant: {task_variant}")
+    answer_label = str(dataset["answer_node_label"])
     return {
         "scene_title": str(dataset["scene_title"]),
         "task_variant": str(task_variant),
@@ -487,12 +583,14 @@ def build_flow_next_step_dataset(
         "question_format": str(dataset["question_format"]),
         "view_family": str(dataset["view_family"]),
         "topology_node_count": int(dataset["topology_node_count"]),
+        "topology_edge_count": int(dataset["topology_edge_count"]),
         "lane_count": int(dataset["lane_count"]),
         "query_node_id": str(dataset["query_node_id"]),
         "query_node_label": str(dataset["query_node_label"]),
         "query_branch_label": dataset["query_branch_label"],
         "answer_node_id": str(dataset["answer_node_id"]),
-        "answer_node_label": str(dataset["answer_node_label"]),
+        "answer_node_label": str(answer_label),
+        "answer_label_length": int(len(answer_label)),
         "answer_node_bbox_id": str(dataset["answer_node_bbox_id"]),
         "lane_specs": [dict(spec) for spec in dataset["lane_specs"]],
         "node_specs": [dict(spec) for spec in dataset["node_specs"]],
@@ -503,6 +601,7 @@ def build_flow_next_step_dataset(
 __all__ = [
     "FlowDefaults",
     "FlowRenderParams",
+    "FLOW_PROCESS_LABEL_LENGTH_BOUNDS",
     "SUPPORTED_DIAGRAM_FLOW_SCENE_VARIANTS",
     "SUPPORTED_DIAGRAM_FLOW_TASK_VARIANTS",
     "build_flow_next_step_dataset",

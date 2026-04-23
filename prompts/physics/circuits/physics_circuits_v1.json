@@ -3,16 +3,16 @@
   "schema_version": "v1",
   "task_family_templates": {
     "resistor_network_diagram": [
-      "The image shows {object_description}.",
-      "Look at the resistor-network diagram in the image. It shows {object_description}.",
-      "You are given an image with {object_description}.",
-      "Work from the resistor-network diagram shown in the image: {object_description}.",
-      "Use the circuit diagram in the image. It shows {object_description}."
+      "The image contains {object_description}.",
+      "Shown is {object_description}.",
+      "Use this resistor network: {object_description}.",
+      "Read this circuit diagram: {object_description}.",
+      "Work from {object_description}."
     ]
   },
   "task_templates": {
     "equivalent_resistance_query": [
-      "Use the resistor values shown in the boxes to answer the question.",
+      "Use the resistor values shown in the boxes.",
       "Read the resistor values and determine the requested equivalent resistance.",
       "Work from the labeled resistor boxes between terminals A and B.",
       "Answer using only the resistor values shown in the network.",

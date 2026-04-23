@@ -3,23 +3,23 @@
   "schema_version": "v1",
   "task_family_templates": {
     "styled_table_relation": [
-      "The image shows {object_description}.",
-      "Use the table in the image. It shows {object_description}.",
-      "Work from the styled table shown in the image: {object_description}.",
-      "Look at the table in the image. It shows {object_description}.",
-      "You are given a table: {object_description}."
+      "The image contains {object_description}.",
+      "Shown is {object_description}.",
+      "Displayed is {object_description}.",
+      "Use this table: {object_description}.",
+      "Read this table: {object_description}."
     ]
   },
   "task_templates": {
     "row_compare_label_query": [
-      "Answer this question.",
+      "Compare the named rows.",
       "Compare the two named rows in the requested numeric column.",
       "Use the table values to decide which named row wins the comparison.",
       "Find which of the two specified rows has the requested value relation in the named column.",
       "Read the table and report which named row satisfies the requested comparison."
     ],
     "extremum_transfer_value_query": [
-      "Answer this question.",
+      "Find the extremum row, then read the target value.",
       "Find the row that wins the requested source-column extremum, then read the requested target-column value from that same row.",
       "Use the source column to identify the winning row and transfer to the named target column.",
       "Determine the source-column extremum row and report its value in the requested target column.",

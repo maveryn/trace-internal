@@ -3,20 +3,20 @@
   "schema_version": "v1",
   "task_family_templates": {
     "mirror_ray_diagram": [
-      "The image shows {object_description}.",
-      "Look at the optics diagram in the image. It shows {object_description}.",
-      "You are given an image with {object_description}.",
-      "Work from the optics diagram shown in the image: {object_description}.",
-      "Use the graph-paper optics diagram in the image. It shows {object_description}."
+      "The image contains {object_description}.",
+      "Shown is {object_description}.",
+      "Use this optics diagram: {object_description}.",
+      "Read this graph-paper ray setup: {object_description}.",
+      "Work from {object_description}."
     ]
   },
   "task_templates": {
     "ray_trace_query": [
       "Use the shown initial ray direction and the mirrors to infer the full ray path.",
-      "Work out the hidden ray path from the initial direction and the mirrors to answer the question.",
+      "Work out the hidden ray path from the initial direction and mirrors.",
       "Trace the implied ray path through the mirrors to determine the requested count.",
       "Answer by inferring how the ray travels after the shown initial direction.",
-      "Determine the requested count by following the implied ray path in the diagram."
+      "Determine the requested count by following the implied ray path."
     ]
   },
   "task_variant_templates": {

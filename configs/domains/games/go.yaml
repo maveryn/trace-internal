@@ -51,8 +51,8 @@ prompt:
     task_games_go_group_liberty_count:
       task_family_key: visible_go_board
       task_key: go_group_liberty_query
-      object_description_open_board: one visible 7 by 7 Go board with a highlighted connected stone group and many open intersections
-      object_description_crowded_board: one visible 7 by 7 Go board with a highlighted connected stone group and many surrounding black and white stones
+      object_description_open_board: a 7 by 7 Go board with a highlighted connected stone group and many open intersections
+      object_description_crowded_board: a 7 by 7 Go board with a highlighted connected stone group and many surrounding black and white stones
       group_rule_text: Stones of the same color that touch edge to edge form one group.
       liberty_rule_text: A liberty is an empty intersection directly above, below, left, or right of any stone in the group, and diagonal intersections do not count.
       marked_group_rule_text_marked_black_group_liberty_count: The blue outlined black stones are the marked group.

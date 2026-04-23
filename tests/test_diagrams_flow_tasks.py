@@ -47,6 +47,8 @@ def test_diagrams_flow_next_step_label_contract_matches_answer_node_bbox() -> No
             assert len(evidence_bboxes) == 1
             assert trace["projected_evidence"]["bbox_set"] == evidence_bboxes
             assert str(out.answer_gt.value) == str(execution["answer_node_label"])
+            assert int(execution["answer_label_length"]) == len(str(execution["answer_node_label"]))
+            assert int(execution["topology_edge_count"]) == len(execution["edge_specs"])
 
             expected_bbox = [
                 float(value)
@@ -69,9 +71,11 @@ def test_diagrams_flow_next_step_label_contract_matches_answer_node_bbox() -> No
             if str(task_variant) == "direct_next_step":
                 assert execution["query_branch_label"] is None
                 assert 5 <= int(execution["topology_node_count"]) <= 6
+                assert int(execution["topology_edge_count"]) == int(execution["topology_node_count"]) - 1
             else:
                 assert str(execution["query_branch_label"]) in {"Yes", "No"}
                 assert int(execution["topology_node_count"]) == 6
+                assert int(execution["topology_edge_count"]) == 6
                 assert "Following the" in str(execution["question_text"])
 
 
@@ -114,15 +118,39 @@ def test_diagrams_flow_balanced_sampling_defaults_cover_variants() -> None:
     task = DiagramsFlowNextStepLabelTask()
     task_variants: Counter[str] = Counter()
     scene_variants: Counter[str] = Counter()
+    realized_combos: Counter[tuple[str, str, int]] = Counter()
 
     for index in range(16):
         out = task.generate(hash64(50240, "diagrams_flow", index), params={"_sampling_index": index}, max_attempts=10)
         execution = out.trace_payload["execution_trace"]
         task_variants[str(execution["task_variant"])] += 1
         scene_variants[str(execution["scene_variant"])] += 1
+        realized_combos[
+            (
+                str(execution["task_variant"]),
+                str(execution["scene_variant"]),
+                int(execution["topology_node_count"]),
+            )
+        ] += 1
 
     assert set(task_variants.keys()) == {"direct_next_step", "branch_next_step"}
     assert set(scene_variants.keys()) == {"flowchart", "swimlane"}
+    assert len(realized_combos) >= 4
+
+
+def test_diagrams_flow_review_sampling_realizes_multiple_complexity_levels() -> None:
+    task = DiagramsFlowNextStepLabelTask()
+    complexity_scores: set[float] = set()
+    answer_lengths: set[int] = set()
+
+    for index in range(24):
+        out = task.generate(hash64(50280, "diagrams_flow_complexity", index), params={"_sampling_index": index}, max_attempts=10)
+        execution = out.trace_payload["execution_trace"]
+        complexity_scores.add(round(float(out.complexity.complexity_score), 6))
+        answer_lengths.add(int(execution["answer_label_length"]))
+
+    assert len(complexity_scores) >= 6
+    assert len(answer_lengths) >= 3
 
 
 def test_diagrams_flow_same_band_nodes_keep_clear_horizontal_gaps() -> None:

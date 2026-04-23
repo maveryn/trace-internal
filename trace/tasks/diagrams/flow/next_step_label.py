@@ -27,6 +27,7 @@ from ..shared.complexity import (
 )
 from ..shared.flow_common import (
     FlowDefaults,
+    FLOW_PROCESS_LABEL_LENGTH_BOUNDS,
     SUPPORTED_DIAGRAM_FLOW_SCENE_VARIANTS,
     SUPPORTED_DIAGRAM_FLOW_TASK_VARIANTS,
     build_flow_next_step_dataset,
@@ -57,6 +58,16 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_p
     task_id=TASK_ID,
 )
 _COMPLEXITY_WEIGHTS = resolve_diagrams_complexity_weights(_TASK_GROUP_DEFAULTS, task_id=TASK_ID)
+_COMPONENT_COUNT_BOUNDS = (
+    min(
+        (2 * int(_DEFAULTS.direct_node_count_min)) - 1,
+        12,
+    ),
+    max(
+        (2 * int(_DEFAULTS.direct_node_count_max)) - 1 + int(_DEFAULTS.lane_count),
+        12 + int(_DEFAULTS.lane_count),
+    ),
+)
 POST_IMAGE_BACKGROUND_DEFAULTS = load_diagrams_background_defaults(task_group="flow")
 POST_IMAGE_NOISE_DEFAULTS = load_diagrams_noise_defaults(task_group="flow", apply_prob=0.0)
 
@@ -174,17 +185,25 @@ class DiagramsFlowNextStepLabelTask:
         answer_gt = TypedValue(type="string", value=str(answer_value))
         evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
 
-        node_scan = normalize_int_with_bounds(int(dataset["topology_node_count"]), [5, 6])
+        component_scan = normalize_int_with_bounds(
+            int(dataset["topology_node_count"]) + int(dataset["topology_edge_count"]) + int(dataset["lane_count"]),
+            _COMPONENT_COUNT_BOUNDS,
+        )
         lane_scan = normalize_int_with_bounds(int(dataset["lane_count"]), [0, 3])
+        output_burden = normalize_int_with_bounds(int(dataset["answer_label_length"]), FLOW_PROCESS_LABEL_LENGTH_BOUNDS)
         reasoning_load = clamp_unit_interval(
-            float(_REASONING_LOAD_BASE_BY_VARIANT[str(task_variant)]) + (0.12 * float(node_scan)) + (0.10 * float(lane_scan))
+            float(_REASONING_LOAD_BASE_BY_VARIANT[str(task_variant)])
+            + (0.12 * float(component_scan))
+            + (0.08 * float(lane_scan))
+            + (0.06 * float(output_burden))
         )
         complexity = build_diagrams_complexity(
             weights=_COMPLEXITY_WEIGHTS,
             components={
-                "visual_scan": max(float(node_scan), float(lane_scan)),
+                "visual_scan": clamp_unit_interval((0.78 * float(component_scan)) + (0.22 * float(lane_scan))),
                 "reasoning_load": float(reasoning_load),
                 "scene_variant_load": float(_SCENE_LOAD_BY_VARIANT[str(scene_variant)]),
+                "output_burden": float(output_burden),
             },
         )
 
@@ -212,7 +231,9 @@ class DiagramsFlowNextStepLabelTask:
                     "task_variant_probabilities": dict(task_variant_probabilities),
                     "scene_variant_probabilities": dict(scene_variant_probabilities),
                     "topology_node_count": int(dataset["topology_node_count"]),
+                    "topology_edge_count": int(dataset["topology_edge_count"]),
                     "lane_count": int(dataset["lane_count"]),
+                    "answer_label_length": int(dataset["answer_label_length"]),
                     "query_branch_label": dataset["query_branch_label"],
                 },
             },
@@ -244,6 +265,7 @@ class DiagramsFlowNextStepLabelTask:
                 "scene_title": str(dataset["scene_title"]),
                 "question_text": str(dataset["question_text"]),
                 "topology_node_count": int(dataset["topology_node_count"]),
+                "topology_edge_count": int(dataset["topology_edge_count"]),
                 "lane_count": int(dataset["lane_count"]),
                 "lane_specs": [dict(spec) for spec in dataset["lane_specs"]],
                 "node_specs": [dict(spec) for spec in dataset["node_specs"]],
@@ -253,6 +275,7 @@ class DiagramsFlowNextStepLabelTask:
                 "query_branch_label": dataset["query_branch_label"],
                 "answer_node_id": str(dataset["answer_node_id"]),
                 "answer_node_label": str(answer_value),
+                "answer_label_length": int(dataset["answer_label_length"]),
                 "answer_node_bbox_id": str(answer_node_bbox_id),
                 "supporting_node_bbox_ids": [str(answer_node_bbox_id)],
             },

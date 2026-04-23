@@ -3,20 +3,20 @@
   "schema_version": "v1",
   "task_family_templates": {
     "structured_document": [
-      "The image shows {object_description}.",
-      "Look at the document in the image: {object_description}.",
+      "The image contains {object_description}.",
+      "Read this document: {object_description}.",
       "You are given {object_description}.",
-      "Use the structured document in the image: {object_description}.",
-      "Read the labeled fields in this document: {object_description}."
+      "Use this structured document: {object_description}.",
+      "Use the labeled fields in this document: {object_description}."
     ]
   },
   "task_templates": {
     "field_lookup_query": [
       "{question_text}",
-      "Read the document and answer this question: {question_text}",
+      "Read the document. {question_text}",
       "Find the requested field in the document: {question_text}",
-      "Use the labeled fields to answer: {question_text}",
-      "Locate the field and then answer: {question_text}"
+      "Use the labeled fields. {question_text}",
+      "Locate the field. {question_text}"
     ]
   },
   "task_variant_templates": {

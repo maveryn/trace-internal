@@ -3,20 +3,20 @@
   "schema_version": "v1",
   "task_family_templates": {
     "day_schedule": [
-      "The image shows {object_description}.",
-      "Look at the single-day schedule in the image. It shows {object_description}.",
-      "You are given an image with {object_description}.",
-      "Work from the day planner shown in the image: {object_description}.",
-      "Use the schedule in the image. It shows {object_description}."
+      "The image contains {object_description}.",
+      "Read this single-day schedule: {object_description}.",
+      "You are given {object_description}.",
+      "Work from this day planner: {object_description}.",
+      "Use this schedule: {object_description}."
     ]
   },
   "task_templates": {
     "schedule_day_query": [
-      "Answer the question using the schedule.",
-      "Use the day planner to answer the question.",
-      "Read the schedule carefully and answer the question.",
-      "Work from the full schedule view to answer the question.",
-      "Determine the answer from the shown schedule."
+      "Use the schedule.",
+      "Use the day planner.",
+      "Read the schedule carefully.",
+      "Work from the full schedule view.",
+      "Determine the requested value from the shown schedule."
     ]
   },
   "task_variant_templates": {

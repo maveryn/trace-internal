@@ -37,6 +37,7 @@ _FIELD_LABELS: Dict[str, str] = {
     "image_path": "image_path",
     "data_path": "data_path",
     "prompt": "prompt",
+    "prompt_answer": "prompt_answer",
     "prompt_answer_only": "prompt_answer_only",
     "answer": "answer",
     "answer_type": "answer_type",
@@ -49,6 +50,7 @@ _TASK_SHEET_FIELDS: List[str] = [
     "task",
     "task_variant",
     "prompt",
+    "prompt_answer",
     "prompt_answer_only",
     "answer",
     "answer_evidence",
@@ -72,6 +74,7 @@ _COLUMN_WIDTHS_BY_FIELD: Dict[str, float] = {
     "image_path": 22,
     "data_path": 38,
     "prompt": 34,
+    "prompt_answer": 34,
     "prompt_answer_only": 34,
     "answer": 20,
     "answer_type": 14,
@@ -88,6 +91,7 @@ _WRAP_FIELDS = {
     "image_path",
     "data_path",
     "prompt",
+    "prompt_answer",
     "prompt_answer_only",
     "answer",
     "answer_value",
@@ -806,7 +810,7 @@ def _generate_samples_for_task(
         rel_data_path = data_path.relative_to(out_root).as_posix()
 
         prompt_variants = dict(getattr(output, "prompt_variants", {}) or {})
-        prompt_answer_only = str(prompt_variants.get("answer_only", output.prompt))
+        prompt_answer = str(prompt_variants.get("answer_only", output.prompt))
         prompt_answer_and_evidence = str(prompt_variants.get("answer_and_evidence", output.prompt))
 
         payload = {
@@ -852,7 +856,8 @@ def _generate_samples_for_task(
                 "image_path": rel_image_path,
                 "data_path": rel_data_path,
                 "prompt": prompt_answer_and_evidence,
-                "prompt_answer_only": prompt_answer_only,
+                "prompt_answer": prompt_answer,
+                "prompt_answer_only": prompt_answer,
                 "answer": canonical_answer,
                 "answer_type": output.answer_gt.type,
                 "answer_value": output.answer_gt.value,

@@ -9,16 +9,19 @@ from typing import Any
 
 import numpy as np
 
-from .local_strict_eval import strict_score_response
-
 try:
     from scipy.optimize import linear_sum_assignment
 except Exception:  # pragma: no cover
     linear_sum_assignment = None
 
+from .local_strict_eval import strict_score_response
+from .trace_mode import resolve_trace_reward_mode
+
 
 _CODE_BLOCK_RE = re.compile(r"```(?:json)?\s*(.*?)```", re.DOTALL | re.IGNORECASE)
 _ANSWER_TAG_RE = re.compile(r"<answer>(.*?)</answer>", re.DOTALL | re.IGNORECASE)
+
+_TRACE_ANSWER_SCORING_MODES = {"exact_json", "legacy_strict"}
 
 
 def _is_non_string_sequence(value: Any) -> bool:
@@ -98,20 +101,98 @@ def _collect_json_candidates(response: str) -> list[str]:
     return deduped
 
 
-def _serialize_candidate(value: Any) -> str:
-    if isinstance(value, str):
-        return value
-    if value is Ellipsis:
-        return "..."
-    try:
-        return json.dumps(
-            _canonical_jsonable(value),
-            ensure_ascii=False,
-            allow_nan=False,
-            separators=(",", ":"),
+def _normalize_trace_reward_mode(trace_reward_mode: str | None, *, trace_output_mode: str | None = None) -> str:
+    return resolve_trace_reward_mode(trace_reward_mode, trace_output_mode=trace_output_mode)
+
+
+def _normalize_trace_answer_scoring(trace_answer_scoring: str | None) -> str:
+    normalized = str(trace_answer_scoring or "exact_json").strip().lower()
+    aliases = {
+        "exact": "exact_json",
+        "exact_json": "exact_json",
+        "legacy": "legacy_strict",
+        "legacy_strict": "legacy_strict",
+        "strict": "legacy_strict",
+    }
+    resolved = aliases.get(normalized)
+    if resolved is None:
+        raise ValueError(
+            f"TRACE answer scoring must be one of {sorted(_TRACE_ANSWER_SCORING_MODES)!r}; "
+            f"aliases {sorted(aliases)!r} are accepted. got {trace_answer_scoring!r}"
         )
-    except (TypeError, ValueError):
-        return str(value)
+    return resolved
+
+
+def _required_trace_answer_keys(trace_reward_mode: str) -> set[str]:
+    if trace_reward_mode == "answer":
+        return {"answer"}
+    return {"answer", "evidence"}
+
+
+def _extract_trace_sections(response: str) -> tuple[str | None, str | None, bool]:
+    if len(_ANSWER_TAG_RE.findall(response)) != 1:
+        return None, None, False
+
+    answer_block = _ANSWER_TAG_RE.search(response)
+    if answer_block is None:
+        return None, None, False
+    answer_text = answer_block.group(1).strip()
+    if not answer_text:
+        return None, None, False
+    return None, answer_text, True
+
+
+def _parse_trace_answer_payload(answer_block: str) -> dict[str, Any] | None:
+    parsed = _parse_json_like(answer_block)
+    if isinstance(parsed, dict):
+        return parsed
+    for candidate in _collect_json_candidates(answer_block):
+        parsed = _parse_json_like(candidate)
+        if isinstance(parsed, dict):
+            return parsed
+    return None
+
+
+def evaluate_trace_response_format(
+    response: str,
+    *,
+    trace_reward_mode: str = "answer_and_evidence",
+) -> dict[str, Any]:
+    normalized_mode = _normalize_trace_reward_mode(trace_reward_mode)
+    think_text, answer_block, structure_ok = _extract_trace_sections(response)
+    if not structure_ok:
+        return {
+            "format": 0.0,
+            "structure_ok": False,
+            "json_ok": False,
+            "schema_ok": False,
+            "think_text": None,
+            "answer_block": None,
+            "payload": None,
+        }
+
+    payload = _parse_json_like(answer_block or "")
+    if not isinstance(payload, dict):
+        return {
+            "format": 0.0,
+            "structure_ok": True,
+            "json_ok": False,
+            "schema_ok": False,
+            "think_text": think_text,
+            "answer_block": answer_block,
+            "payload": None,
+        }
+
+    schema_ok = set(payload.keys()) == _required_trace_answer_keys(normalized_mode)
+    return {
+        "format": 1.0 if schema_ok else 0.5,
+        "structure_ok": True,
+        "json_ok": True,
+        "schema_ok": schema_ok,
+        "think_text": think_text,
+        "answer_block": answer_block,
+        "payload": payload,
+    }
 
 
 def _normalize_scalar_number(value: Any) -> float | int | None:
@@ -145,6 +226,22 @@ def _normalize_numeric_evidence(value: Any) -> list[float | int] | None:
     return out
 
 
+def _canonical_scalar_symbol(value: Any) -> str:
+    if isinstance(value, bool):
+        return str(value).lower()
+    if isinstance(value, (Integral, Real)) and not isinstance(value, bool):
+        normalized = _normalize_scalar_number(value)
+        return str(normalized)
+    if isinstance(value, str):
+        return value.strip().lower()
+    if value is Ellipsis:
+        return "..."
+    try:
+        return json.dumps(_canonical_jsonable(value), ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    except (TypeError, ValueError):
+        return str(value)
+
+
 def _canonical_jsonable(value: Any) -> Any:
     if value is Ellipsis:
         return "..."
@@ -157,7 +254,7 @@ def _canonical_jsonable(value: Any) -> Any:
     if isinstance(value, (Integral, Real)) and not isinstance(value, bool):
         return _normalize_scalar_number(value)
     if isinstance(value, str):
-        return value.strip()
+        return value.strip().lower()
     if isinstance(value, dict):
         items: list[tuple[str, Any]] = []
         for key, item_value in value.items():
@@ -174,18 +271,18 @@ def _canonical_jsonable(value: Any) -> Any:
     return value
 
 
-def _canonical_scalar_symbol(value: Any) -> str:
-    if isinstance(value, bool):
-        return str(value).lower()
-    if isinstance(value, (Integral, Real)) and not isinstance(value, bool):
-        normalized = _normalize_scalar_number(value)
-        return str(normalized)
+def _serialize_candidate(value: Any) -> str:
     if isinstance(value, str):
-        return value.strip()
+        return value
     if value is Ellipsis:
         return "..."
     try:
-        return json.dumps(_canonical_jsonable(value), ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+        return json.dumps(
+            _canonical_jsonable(value),
+            ensure_ascii=False,
+            allow_nan=False,
+            separators=(",", ":"),
+        )
     except (TypeError, ValueError):
         return str(value)
 
@@ -383,12 +480,23 @@ def _score_bbox_set_iou(
     return score, len(matched_ious), mean_iou
 
 
-def _score_trace_answer(answer_value: Any, answer_gt: dict[str, Any]) -> tuple[float, bool]:
+def _score_trace_answer(
+    answer_value: Any,
+    answer_gt: dict[str, Any],
+    *,
+    trace_answer_scoring: str = "exact_json",
+) -> tuple[float, bool]:
     if not isinstance(answer_gt, dict) or "value" not in answer_gt:
         return 0.0, False
-    answer_text = _serialize_candidate(answer_value)
-    score, extracted, _, _ = strict_score_response(response=answer_text, ground_truth=answer_gt.get("value"))
-    return float(score), bool(extracted)
+    normalized_scoring = _normalize_trace_answer_scoring(trace_answer_scoring)
+    if normalized_scoring == "legacy_strict":
+        answer_text = _serialize_candidate(answer_value)
+        score, extracted, _, _ = strict_score_response(response=answer_text, ground_truth=answer_gt.get("value"))
+        return float(score), bool(extracted)
+
+    normalized_pred = _canonical_jsonable(_parse_json_like(answer_value))
+    normalized_gt = _canonical_jsonable(answer_gt.get("value"))
+    return (1.0 if normalized_pred == normalized_gt else 0.0), True
 
 
 def _score_trace_evidence(
@@ -453,6 +561,11 @@ def _score_trace_evidence(
 
 
 def extract_trace_prediction(response: str) -> tuple[Any | None, Any | None, bool]:
+    _, answer_block, structure_ok = _extract_trace_sections(response)
+    if structure_ok and answer_block is not None:
+        payload = _parse_trace_answer_payload(answer_block)
+        if isinstance(payload, dict) and ("answer" in payload or "evidence" in payload):
+            return payload.get("answer"), payload.get("evidence"), True
     for candidate in reversed(_collect_json_candidates(response)):
         parsed = _parse_json_like(candidate)
         if not isinstance(parsed, dict):
@@ -460,6 +573,13 @@ def extract_trace_prediction(response: str) -> tuple[Any | None, Any | None, boo
         if "answer" in parsed or "evidence" in parsed:
             return parsed.get("answer"), parsed.get("evidence"), True
     return None, None, False
+
+
+def extract_trace_answer_for_scoring(response: str) -> str | None:
+    answer_value, _, json_found = extract_trace_prediction(response)
+    if not json_found or answer_value is None:
+        return None
+    return _serialize_candidate(answer_value)
 
 
 def is_trace_reward_input(reward_input: dict[str, Any]) -> bool:
@@ -476,15 +596,32 @@ def score_trace_response(
     answer_weight: float = 0.5,
     evidence_weight: float = 0.5,
     trace_reward_mode: str = "answer_and_evidence",
+    trace_answer_scoring: str = "exact_json",
+    format_weight: float = 0.1,
 ) -> dict[str, float]:
-    answer_value, evidence_value, json_found = extract_trace_prediction(response)
-    answer_extracted = answer_value is not None or json_found
-    evidence_extracted = evidence_value is not None
+    if format_weight < 0.0 or format_weight > 1.0:
+        raise ValueError(f"TRACE format_weight must be in [0, 1], got {format_weight}")
+
+    normalized_mode = _normalize_trace_reward_mode(trace_reward_mode)
+    normalized_answer_scoring = _normalize_trace_answer_scoring(trace_answer_scoring)
+    format_details = evaluate_trace_response_format(response, trace_reward_mode=normalized_mode)
+    payload = format_details.get("payload") if isinstance(format_details.get("payload"), dict) else None
+
+    if payload is not None and ("answer" in payload or "evidence" in payload):
+        answer_value = payload.get("answer")
+        evidence_value = payload.get("evidence")
+        json_found = True
+    else:
+        answer_value, evidence_value, json_found = extract_trace_prediction(response)
 
     if answer_value is None:
         answer_value = response
 
-    answer_score, answer_parse_ok = _score_trace_answer(answer_value, answer_gt)
+    answer_score, answer_parse_ok = _score_trace_answer(
+        answer_value,
+        answer_gt,
+        trace_answer_scoring=normalized_answer_scoring,
+    )
     evidence_score = 0.0
     evidence_parse_ok = False
     evidence_details: dict[str, Any] = {}
@@ -495,33 +632,46 @@ def score_trace_response(
             reward_contract,
             bbox_iou_threshold=bbox_iou_threshold,
         )
+
     total_weight = float(answer_weight + evidence_weight)
     if total_weight <= 0.0:
         raise ValueError("TRACE reward weights must sum to a positive value")
     normalized_answer_weight = float(answer_weight / total_weight)
     normalized_evidence_weight = float(evidence_weight / total_weight)
-    normalized_mode = (trace_reward_mode or "answer_and_evidence").strip().lower()
-    if normalized_mode not in {"answer_only", "answer_and_evidence"}:
-        raise ValueError(
-            "TRACE reward mode must be one of {'answer_only', 'answer_and_evidence'}, "
-            f"got {trace_reward_mode!r}"
-        )
-    if normalized_mode == "answer_only":
-        overall = float(answer_score)
+    if normalized_mode == "answer":
+        raw_task_reward = float(answer_score)
     else:
-        overall = float(answer_score * (normalized_answer_weight + (normalized_evidence_weight * evidence_score)))
+        raw_task_reward = float(answer_score * (normalized_answer_weight + (normalized_evidence_weight * evidence_score)))
+
+    # Match Vero-style reward composition: correctness and format are additive
+    # components. Do not hard-gate correctness on format, because early policy
+    # outputs often contain a recoverable answer before they learn the wrapper.
+    effective_task_reward = raw_task_reward
+    overall = float(((1.0 - format_weight) * effective_task_reward) + (format_weight * float(format_details["format"])))
     result = {
         "overall": overall,
-        "format": 1.0 if json_found else 0.0,
+        "format": float(format_details["format"]),
         "accuracy": float(answer_score),
         "answer_reward": float(answer_score),
         "evidence_reward": float(evidence_score),
-        "trace_reward_mode_answer_only": 1.0 if normalized_mode == "answer_only" else 0.0,
+        "task_reward_raw": float(raw_task_reward),
+        "task_reward_gated": float(effective_task_reward),
+        "format_weight": float(format_weight),
+        "trace_reward_mode_answer": 1.0 if normalized_mode == "answer" else 0.0,
+        "trace_reward_mode_answer_only": 1.0 if normalized_mode == "answer" else 0.0,
         "trace_reward_mode_answer_and_evidence": 1.0 if normalized_mode == "answer_and_evidence" else 0.0,
+        "trace_answer_scoring_exact_json": 1.0 if normalized_answer_scoring == "exact_json" else 0.0,
+        "trace_answer_scoring_legacy_strict": 1.0 if normalized_answer_scoring == "legacy_strict" else 0.0,
+        "format_structure_ok": 1.0 if format_details["structure_ok"] else 0.0,
+        "format_json_ok": 1.0 if format_details["json_ok"] else 0.0,
+        "format_schema_ok": 1.0 if format_details["schema_ok"] else 0.0,
         "answer_parse_ok": 1.0 if answer_parse_ok else 0.0,
         "evidence_parse_ok": 1.0 if evidence_parse_ok else 0.0,
         "json_found": 1.0 if json_found else 0.0,
-        "zero_reward": 1.0 if overall <= 0.0 else 0.0,
+        # Keep zero_reward aligned with task correctness semantics. With
+        # additive format reward, overall can be positive even when the answer
+        # is wrong, so overall <= 0 no longer means "zero task reward".
+        "zero_reward": 1.0 if effective_task_reward <= 0.0 else 0.0,
         "trace_reward": 1.0,
     }
     for key, value in evidence_details.items():
@@ -531,6 +681,8 @@ def score_trace_response(
 
 
 __all__ = [
+    "evaluate_trace_response_format",
+    "extract_trace_answer_for_scoring",
     "extract_trace_prediction",
     "is_trace_reward_input",
     "score_trace_response",

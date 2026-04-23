@@ -3,20 +3,20 @@
   "schema_version": "v1",
   "task_family_templates": {
     "process_flow_diagram": [
-      "The image shows {object_description}.",
-      "Look at the process diagram in the image: {object_description}.",
+      "The image contains {object_description}.",
+      "Read this process diagram: {object_description}.",
       "You are given {object_description}.",
       "Work from the labeled steps and arrows: {object_description}.",
-      "Use the process diagram in the image: {object_description}."
+      "Use this process diagram: {object_description}."
     ]
   },
   "task_templates": {
     "next_step_query": [
       "{question_text}",
-      "Follow the arrows and answer this question: {question_text}",
-      "Use the diagram structure to answer: {question_text}",
+      "Follow the arrows. {question_text}",
+      "Use the diagram structure. {question_text}",
       "Determine the correct next step from the diagram: {question_text}",
-      "Read the labeled process steps and then answer: {question_text}"
+      "Read the labeled process steps. {question_text}"
     ]
   },
   "task_variant_templates": {

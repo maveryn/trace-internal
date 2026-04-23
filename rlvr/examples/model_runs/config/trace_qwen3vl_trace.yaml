@@ -1,0 +1,154 @@
+defaults:
+  - ppo_trainer
+  - _self_
+
+hydra:
+  searchpath:
+    - file://${oc.env:REPO_ROOT}/verl/trainer/config
+
+algorithm:
+  adv_estimator: grpo
+  use_kl_in_reward: false
+  kl_ctrl:
+    kl_coef: 0
+
+data:
+  train_files: "${oc.env:TRAIN_FILES,xashru/trace_rlvr_train_128k_all_tasks.parquet@train}"
+  val_files:
+    - "${oc.env:REPO_ROOT}/dataset/validation/mathvista_mini.parquet"
+    - "${oc.env:REPO_ROOT}/dataset/validation/mmstar.parquet"
+    - "${oc.env:REPO_ROOT}/dataset/validation/charxiv_dq.parquet"
+    - "${oc.env:REPO_ROOT}/dataset/validation/charxiv_rq.parquet"
+    - "${oc.env:REPO_ROOT}/dataset/validation/embspatialbench.parquet"
+    - "${oc.env:REPO_ROOT}/dataset/validation/blink.parquet"
+  dataset_mode: trace
+  trace_output_mode: "${oc.env:TRACE_OUTPUT_MODE,answer}"
+  validation_style: trace_benchmark
+  trace_validation_exclude_benchmarks: ["mathverse_mini", "countqa"]
+  image_root: null
+  system_prompt: "${oc.env:TRACE_SYSTEM_PROMPT,auto}"
+  prompt_key: "${oc.env:PROMPT_KEY,auto}"
+  val_prompt_key: prompt
+  val_answer_key: ground_truth
+  val_disable_system_prompt: true
+  val_format_prompt: "${oc.env:REPO_ROOT}/examples/format_prompt/math.jinja"
+  val_format_prompt_variant: boxed_only
+  shuffle: true
+  train_batch_size: 128
+  val_batch_size: 512
+  max_prompt_length: 1536
+  max_response_length: ${oc.decode:${oc.env:MAX_RESPONSE_LENGTH,1024}}
+  max_pixels: 4194304
+  filter_overlong_prompts: true
+  filter_overlong_prompts_workers: 16
+  truncation: error
+  image_key: images
+  validation_shuffle: false
+  dataloader_num_workers: 8
+  val_dataloader_num_workers: 8
+
+actor_rollout_ref:
+  model:
+    path: "${oc.env:MODEL_PATH,Qwen/Qwen3-VL-2B-Instruct}"
+    use_remove_padding: true
+    enable_gradient_checkpointing: true
+
+  actor:
+    strategy: fsdp2
+    dtype: bfloat16
+    use_dynamic_bsz: true
+    ppo_mini_batch_size: 128
+    ppo_max_token_len_per_gpu: 12288
+    loss_agg_mode: seq-mean-token-mean
+    policy_loss:
+      loss_mode: gspo
+    use_kl_loss: false
+    kl_loss_coef: 0.0
+    kl_loss_type: low_var_kl
+    clip_ratio_low: 0.0003
+    clip_ratio_high: 0.0004
+    clip_ratio_c: 10.0
+    entropy_coeff: 0
+    freeze_vision_tower: false
+    fsdp_config:
+      param_offload: false
+      optimizer_offload: false
+    ulysses_sequence_parallel_size: 1
+    optim:
+      lr: 1e-6
+      lr_warmup_steps: 40
+
+  rollout:
+    name: vllm
+    tensor_model_parallel_size: 1
+    dtype: bfloat16
+    gpu_memory_utilization: 0.7
+    enable_prefix_caching: true
+    max_num_batched_tokens: 6144
+    max_num_seqs: 1024
+    engine_kwargs:
+      vllm:
+        mm_processor_cache_gb: 0
+    enable_chunked_prefill: true
+    enforce_eager: false
+    free_cache_engine: true
+    temperature: 1.0
+    top_p: 1.0
+    top_k: -1
+    n: 8
+    limit_images: 4
+    val_kwargs:
+      temperature: 0.0
+      top_p: 1.0
+      top_k: -1
+      do_sample: false
+      n: 1
+    log_prob_use_dynamic_bsz: true
+    log_prob_max_token_len_per_gpu: 12288
+
+  ref:
+    log_prob_use_dynamic_bsz: true
+    log_prob_max_token_len_per_gpu: 12288
+    fsdp_config:
+      param_offload: false
+    ulysses_sequence_parallel_size: 1
+
+reward_model:
+  enable: false
+  reward_manager: naive
+
+critic:
+  use_dynamic_bsz: true
+  ppo_max_token_len_per_gpu: 12288
+  forward_max_token_len_per_gpu: 12288
+  forward_micro_batch_size_per_gpu: 16
+  ulysses_sequence_parallel_size: 1
+
+trainer:
+  project_name: trace_rlvr
+  experiment_name: "${oc.env:TRAINER_EXPERIMENT_NAME,trace_qwen3_2b_answer}"
+  n_gpus_per_node: 8
+  default_local_dir: "${oc.env:ROOT_PATH,/home/jovyan/work/trace}/checkpoints/trace_rlvr/${trainer.experiment_name}"
+  validation_data_dir: "${trainer.default_local_dir}/validation_data"
+  critic_warmup: 0
+  logger: ["console", "wandb"]
+  save_freq: 20
+  test_freq: 20
+  max_actor_ckpt_to_keep: 1
+  max_critic_ckpt_to_keep: 1
+  nnodes: 1
+  total_epochs: 10
+  total_training_steps: 500
+  log_val_generations: 0
+  val_before_train: true
+  val_only: false
+  esi_redundant_time: 1500
+
+custom_reward_function:
+  path: "${oc.env:REPO_ROOT}/examples/reward_function/reward_trace.py"
+  name: compute_score
+  reward_kwargs:
+    trace_output_mode: "${oc.env:TRACE_OUTPUT_MODE,answer}"
+    trace_reward_mode: "${oc.env:TRACE_REWARD_MODE,auto}"
+    trace_answer_scoring: "${oc.env:TRACE_ANSWER_SCORING,exact_json}"
+    trace_format_weight: 0.1

@@ -3,20 +3,20 @@
   "schema_version": "v1",
   "task_family_templates": {
     "annotated_schematic_diagram": [
-      "The image shows {object_description}.",
-      "Look at the annotated schematic in the image: {object_description}.",
+      "The image contains {object_description}.",
+      "Read this annotated schematic: {object_description}.",
       "You are given {object_description}.",
-      "Use the labeled schematic in the image: {object_description}.",
+      "Use this labeled schematic: {object_description}.",
       "Work from the schematic callouts and leader lines: {object_description}."
     ]
   },
   "task_templates": {
     "callout_target_query": [
       "{question_text}",
-      "Use the schematic to answer: {question_text}",
-      "Read the callouts and answer: {question_text}",
-      "Follow the leader lines and answer: {question_text}",
-      "Determine the correct callout from the annotated schematic: {question_text}"
+      "Use the schematic. {question_text}",
+      "Read the callouts. {question_text}",
+      "Follow the leader lines. {question_text}",
+      "Determine the correct callout from the annotated schematic. {question_text}"
     ]
   },
   "task_variant_templates": {

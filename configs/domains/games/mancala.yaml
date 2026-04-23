@@ -55,8 +55,8 @@ prompt:
     task_games_mancala_move_count:
       task_family_key: visible_mancala_board
       task_key: mancala_move_query
-      object_description_midgame_board: one visible Mancala board with six pits per side and two side stores
-      object_description_crowded_board: one crowded visible Mancala board with six pits per side and two side stores
+      object_description_midgame_board: a Mancala board with six pits per side and two side stores
+      object_description_crowded_board: a crowded Mancala board with six pits per side and two side stores
       turn_rule_text: Blue controls the bottom row and the right store. On a move, choose one non-empty pit on Blue's row, pick up all stones from that pit, and place them one by one into the following pits moving counterclockwise, including Blue's store but skipping Orange's store.
       extra_turn_rule_text: A move gives Blue another turn if the last stone lands in Blue's store.
       capture_rule_text: A move causes a capture if the last stone lands in an empty pit on Blue's row and the opposite Orange pit contains one or more stones; then Blue moves both that last stone and all stones from the opposite pit into Blue's store.

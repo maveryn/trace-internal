@@ -3,20 +3,20 @@
   "schema_version": "v1",
   "task_family_templates": {
     "composition_chart_value": [
-      "The image shows {object_description}.",
-      "Use the composition chart in the image. It shows {object_description}.",
-      "Work from the chart shown in the image: {object_description}.",
-      "Look at the chart in the image. It shows {object_description}.",
-      "You are given a composition chart: {object_description}."
+      "The image contains {object_description}.",
+      "Shown is {object_description}.",
+      "Displayed is {object_description}.",
+      "Use this visual: {object_description}.",
+      "Read this visual: {object_description}."
     ]
   },
   "task_templates": {
     "subset_value_query": [
-      "Use the printed segment or slice values to answer the composition question.",
-      "Read the composition values shown in the chart and answer the question.",
-      "Use the chart's printed segment or slice values to compute the answer.",
-      "Read the relevant composition values directly from the chart and answer the question.",
-      "Answer the question using the printed values shown in the composition chart."
+      "Use the printed values.",
+      "Read the relevant printed values.",
+      "Compute from the displayed numbers.",
+      "Use only the printed values.",
+      "Use the listed labels and values."
     ]
   },
   "task_variant_templates": {

@@ -188,9 +188,9 @@ prompt:
     task_physics_mechanics_lever_balance:
       task_family_key: lever_balance_diagram
       task_key: lever_balance_query
-      object_description_center_fulcrum: one lever-balance diagram with a horizontal beam, a central fulcrum, numbered distance marks, and weight blocks on both sides
-      object_description_offset_fulcrum: one lever-balance diagram with a horizontal beam, an offset fulcrum, numbered distance marks, and weight blocks on both sides
-      object_description_textured_beam: one lever-balance diagram with a textured beam, a fulcrum, numbered distance marks, and weight blocks on both sides
+      object_description_center_fulcrum: a horizontal lever beam with a central fulcrum, numbered distance marks, and weight blocks on both sides
+      object_description_offset_fulcrum: a horizontal lever beam with an offset fulcrum, numbered distance marks, and weight blocks on both sides
+      object_description_textured_beam: a textured lever beam with a fulcrum, numbered distance marks, and weight blocks on both sides
       evidence_hint_torque: set "evidence" to an array of bounding boxes [x1, y1, x2, y2] for all weight blocks on the queried side of the fulcrum
       evidence_hint_missing_weight: set "evidence" to an array containing the bounding box [x1, y1, x2, y2] of the marked `?` weight block
       answer_hint: set "answer" to the requested integer torque or missing weight value

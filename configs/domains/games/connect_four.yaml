@@ -55,8 +55,8 @@ prompt:
     task_games_connect_four_move_count:
       task_family_key: visible_connect_four_board
       task_key: connect_four_move_query
-      object_description_midgame_board: one visible Connect Four board in a midgame position with red and yellow discs
-      object_description_crowded_board: one visible Connect Four board in a crowded late-game position with red and yellow discs
+      object_description_midgame_board: a Connect Four board in a midgame position with red and yellow discs
+      object_description_crowded_board: a Connect Four board in a crowded late-game position with red and yellow discs
       legal_drop_rule_text: A move drops one disc into a non-full column, and the disc falls to the lowest empty square in that column.
       winning_rule_text: A player wins by completing four of their discs in a row horizontally, vertically, or diagonally.
       safety_rule_text: A safe move is a legal drop after which the opponent has no immediate winning drop on the next turn.

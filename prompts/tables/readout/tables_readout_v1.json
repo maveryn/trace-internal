@@ -3,20 +3,20 @@
   "schema_version": "v1",
   "task_family_templates": {
     "styled_table_readout": [
-      "The image shows {object_description}.",
-      "Use the table in the image. It shows {object_description}.",
-      "Work from the styled table shown in the image: {object_description}.",
-      "Look at the table in the image. It shows {object_description}.",
-      "You are given a table: {object_description}."
+      "The image contains {object_description}.",
+      "Shown is {object_description}.",
+      "Displayed is {object_description}.",
+      "Use this visual: {object_description}.",
+      "Read this visual: {object_description}."
     ]
   },
   "task_templates": {
     "subset_value_query": [
-      "Answer this question.",
-      "Read the named table cell or cells and compute the requested result.",
-      "Use the table values to evaluate the queried cell expression.",
-      "Find the requested integer result from the named row and column entries.",
-      "Read the table and report the requested value or two-cell result."
+      "Use the named row and column entries.",
+      "Read the relevant table cells.",
+      "Compute from the specified cells.",
+      "Use only the displayed table values.",
+      "Use the requested cell values."
     ]
   },
   "task_variant_templates": {

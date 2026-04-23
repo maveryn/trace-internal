@@ -3,20 +3,20 @@
   "schema_version": "v1",
   "task_family_templates": {
     "graphing_scene": [
-      "The graph-paper image shows {object_description}.",
-      "Look at the graph-paper plot showing {object_description}.",
-      "Use the graph-paper graph with {object_description}.",
-      "Work from the graph-paper plot showing {object_description}.",
-      "You are given a graph-paper image with {object_description}."
+      "The image contains {object_description}.",
+      "Shown is {object_description}.",
+      "Displayed is {object_description}.",
+      "Use this graph-paper plot: {object_description}.",
+      "Read this graph-paper plot: {object_description}."
     ]
   },
   "task_templates": {
     "graphing_query": [
-      "Answer the question using the full graph window.",
-      "Use the plotted graph and axes to answer the question.",
-      "Read the entire graph-paper plot carefully, then answer the question.",
-      "Work from the full plotted graph to answer the question.",
-      "Determine the answer from the graph-paper function plot."
+      "Use the full graph window.",
+      "Use the plotted graph and axes.",
+      "Read the entire graph-paper plot carefully.",
+      "Work from the full plotted graph.",
+      "Determine the requested graph value."
     ]
   },
   "task_variant_templates": {

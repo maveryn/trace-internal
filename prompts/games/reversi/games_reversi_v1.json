@@ -3,20 +3,20 @@
   "schema_version": "v1",
   "task_family_templates": {
     "visible_reversi_board": [
-      "The image shows {object_description}.",
-      "Look at the visible Reversi board in the image. It shows {object_description}.",
-      "You are given a Reversi board image with {object_description}.",
-      "Work from the Reversi position shown in the image: {object_description}.",
-      "Use the visible Reversi board state in the image. It shows {object_description}."
+      "The image contains {object_description}.",
+      "Shown is {object_description}.",
+      "Use this Reversi position: {object_description}.",
+      "Read this board state: {object_description}.",
+      "Work from {object_description}."
     ]
   },
   "task_templates": {
     "reversi_move_query": [
-      "Answer the question using the visible board state.",
+      "Use the visible state.",
       "Read the board and determine the requested value.",
-      "Work from the shown Reversi position to answer the question.",
+      "Work from the shown position.",
       "Use the displayed Reversi state to determine the requested count.",
-      "Determine the requested move value from the visible board."
+      "Determine the requested move value."
     ]
   },
   "task_variant_templates": {

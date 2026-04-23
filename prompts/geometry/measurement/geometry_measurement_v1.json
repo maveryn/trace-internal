@@ -3,20 +3,20 @@
   "schema_version": "v1",
   "task_family_templates": {
     "measurement_single_object": [
-      "You are given a graph-paper image showing {object_description}.",
-      "The graph-paper image shows {object_description}.",
-      "Look at the graph-paper image showing {object_description}.",
-      "Use the graph-paper diagram showing {object_description}.",
-      "Work from the graph-paper image showing {object_description}."
+      "The image contains {object_description}.",
+      "Shown is {object_description}.",
+      "Displayed is {object_description}.",
+      "Use this graph-paper scene: {object_description}.",
+      "Read this graph-paper scene: {object_description}."
     ]
   },
   "task_templates": {
     "measurement_query": [
       "{question_text}",
-      "Question: {question_text}",
-      "Task: {question_text}",
-      "Answer this question: {question_text}",
-      "Determine the answer: {question_text}"
+      "Use the shown measurements. {question_text}",
+      "Read the graph-paper scene. {question_text}",
+      "Work from the visual. {question_text}",
+      "Determine the requested value: {question_text}"
     ]
   },
   "required_slots_by_key": {

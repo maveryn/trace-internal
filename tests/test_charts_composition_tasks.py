@@ -103,13 +103,13 @@ def test_chart_composition_prompts_match_scene_variant_wording() -> None:
         max_attempts=10,
     )
 
-    assert "printed inside the segments" in str(stacked.prompt)
-    assert "printed inside the segments" in str(horizontal.prompt)
+    assert "printed segment values" in str(stacked.prompt)
+    assert "printed segment values" in str(horizontal.prompt)
     assert "horizontal bar" in str(horizontal.prompt)
     assert "percentages" in str(pie.prompt)
-    assert "legend on the right" in str(pie.prompt)
+    assert "legend" in str(pie.prompt)
     assert "percentages" in str(donut.prompt)
-    assert "legend on the right" in str(donut.prompt)
+    assert "legend" in str(donut.prompt)
 
 
 def test_chart_composition_invalid_scene_variant_combinations_raise() -> None:

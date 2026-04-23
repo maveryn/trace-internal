@@ -3,20 +3,20 @@
   "schema_version": "v1",
   "task_family_templates": {
     "milestone_timeline": [
-      "The image shows {object_description}.",
-      "Look at the milestone timeline in the image. It shows {object_description}.",
-      "You are given an image with {object_description}.",
-      "Work from the milestone timeline shown in the image: {object_description}.",
-      "Use the timeline in the image. It shows {object_description}."
+      "The image contains {object_description}.",
+      "Read this milestone timeline: {object_description}.",
+      "You are given {object_description}.",
+      "Work from this milestone timeline: {object_description}.",
+      "Use this timeline: {object_description}."
     ]
   },
   "task_templates": {
     "timeline_milestone_query": [
-      "Answer the question using the timeline.",
-      "Use the milestone timeline to answer the question.",
-      "Read the timeline carefully and answer the question.",
-      "Work from the full timeline view to answer the question.",
-      "Determine the answer from the shown timeline."
+      "Use the timeline.",
+      "Use the milestone timeline.",
+      "Read the timeline carefully.",
+      "Work from the full timeline view.",
+      "Determine the requested value from the shown timeline."
     ]
   },
   "task_variant_templates": {

@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import os
 import math
+import re
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterable, Literal, Mapping
@@ -13,6 +14,7 @@ from tqdm.auto import tqdm
 
 
 PromptVariantMode = Literal["active", "answer_only", "answer_and_evidence"]
+PromptVariantInput = Literal["active", "answer", "answer_only", "evidence", "answer_and_evidence"] | str
 ImagePathMode = Literal["relative", "absolute", "dataset_relative"]
 ImageStorageMode = Literal["path_dict", "embedded_bytes"]
 OutputFormat = Literal["jsonl", "parquet"]
@@ -24,6 +26,23 @@ _EXPORT_PROGRESS_ENABLED = (
     or os.environ.get("TRACE_BUILD_PROGRESS")
     or "1"
 ).strip().lower() not in _PROGRESS_DISABLED_VALUES
+
+_PROMPT_VARIANT_ALIASES: dict[str, PromptVariantMode] = {
+    "active": "active",
+    "answer": "answer_only",
+    "answer_only": "answer_only",
+    "answer_and_evidence": "answer_and_evidence",
+    "evidence": "answer_and_evidence",
+}
+
+_ANSWER_ONLY_SCHEMA_LINE_RE = re.compile(
+    r'^Use a valid JSON object with key "answer" for the final answer\.\s*$',
+    re.IGNORECASE,
+)
+_ANSWER_AND_EVIDENCE_SCHEMA_LINE_RE = re.compile(
+    r'^Use a valid JSON object with keys "evidence" and "answer" in that order for the final answer\.\s*$',
+    re.IGNORECASE,
+)
 
 
 @dataclass(frozen=True)
@@ -37,6 +56,13 @@ class RLVRExportResult:
     prompt_variant: PromptVariantMode
     image_path_mode: ImagePathMode
     row_count: int
+
+
+def _normalize_prompt_variant(prompt_variant: str) -> PromptVariantMode:
+    normalized = _PROMPT_VARIANT_ALIASES.get(prompt_variant.strip().lower())
+    if normalized is None:
+        raise ValueError(f"unsupported prompt variant: {prompt_variant}")
+    return normalized
 
 def _iter_chunks(rows: list[dict[str, Any]], chunk_size: int) -> Iterable[list[dict[str, Any]]]:
     """Yield fixed-size row chunks in order."""
@@ -173,14 +199,48 @@ def _normalize_multimodal_prompt(prompt: str, *, image_count: int) -> str:
     return f"{'<image>' * image_count}{cleaned_prompt}"
 
 
+def _strip_redundant_rlvr_output_contract(prompt: str, *, prompt_variant: PromptVariantMode) -> str:
+    if prompt_variant == "active":
+        return prompt
+
+    schema_line_re = (
+        _ANSWER_ONLY_SCHEMA_LINE_RE
+        if prompt_variant == "answer_only"
+        else _ANSWER_AND_EVIDENCE_SCHEMA_LINE_RE
+    )
+    filtered_lines = [line for line in prompt.splitlines() if not schema_line_re.match(line.strip())]
+
+    cleaned_lines: list[str] = []
+    previous_blank = False
+    for line in filtered_lines:
+        is_blank = not line.strip()
+        if is_blank and previous_blank:
+            continue
+        cleaned_lines.append(line.rstrip())
+        previous_blank = is_blank
+
+    return "\n".join(cleaned_lines).strip()
+
+
 def _build_prompt_columns(record: Mapping[str, Any], *, image_count: int) -> dict[str, str]:
     """Export both public TRACE prompt variants so one parquet can drive multiple ablations."""
 
+    prompt_answer = _normalize_multimodal_prompt(
+        _strip_redundant_rlvr_output_contract(
+            _select_prompt(record, "answer_only"),
+            prompt_variant="answer_only",
+        ),
+        image_count=image_count,
+    )
     return {
         "prompt_active": _normalize_multimodal_prompt(_select_prompt(record, "active"), image_count=image_count),
-        "prompt_answer_only": _normalize_multimodal_prompt(_select_prompt(record, "answer_only"), image_count=image_count),
+        "prompt_answer": prompt_answer,
+        "prompt_answer_only": prompt_answer,
         "prompt_answer_and_evidence": _normalize_multimodal_prompt(
-            _select_prompt(record, "answer_and_evidence"),
+            _strip_redundant_rlvr_output_contract(
+                _select_prompt(record, "answer_and_evidence"),
+                prompt_variant="answer_and_evidence",
+            ),
             image_count=image_count,
         ),
     }
@@ -333,11 +393,13 @@ def build_rlvr_row(
     *,
     dataset_root: Path,
     output_parent: Path,
-    prompt_variant: PromptVariantMode = "answer_and_evidence",
+    prompt_variant: PromptVariantInput = "answer_and_evidence",
     image_path_mode: ImagePathMode = "relative",
     image_storage_mode: ImageStorageMode = "path_dict",
 ) -> dict[str, Any]:
     """Convert one TRACE train record into an RLVR-ready row."""
+
+    prompt_variant = _normalize_prompt_variant(prompt_variant)
 
     instance_id = str(train_record.get("instance_id", "")).strip()
     if not instance_id:
@@ -362,7 +424,7 @@ def build_rlvr_row(
     prompt_columns = _build_prompt_columns(train_record, image_count=len(exported_images))
     prompt = {
         "active": prompt_columns["prompt_active"],
-        "answer_only": prompt_columns["prompt_answer_only"],
+        "answer_only": prompt_columns["prompt_answer"],
         "answer_and_evidence": prompt_columns["prompt_answer_and_evidence"],
     }[prompt_variant]
 
@@ -488,15 +550,14 @@ def export_trace_dataset_to_rlvr(
     output_path: str | Path,
     *,
     output_format: OutputFormat | None = None,
-    prompt_variant: PromptVariantMode = "answer_and_evidence",
+    prompt_variant: PromptVariantInput = "answer_and_evidence",
     image_path_mode: ImagePathMode = "relative",
     image_storage_mode: ImageStorageMode = "path_dict",
     parquet_cpu_count: int | None = None,
 ) -> RLVRExportResult:
     """Export one TRACE dataset to an RLVR-ready JSONL or parquet file."""
 
-    if prompt_variant not in {"active", "answer_only", "answer_and_evidence"}:
-        raise ValueError(f"unsupported prompt variant: {prompt_variant}")
+    prompt_variant = _normalize_prompt_variant(prompt_variant)
     if image_path_mode not in {"relative", "absolute", "dataset_relative"}:
         raise ValueError(f"unsupported image-path mode: {image_path_mode}")
     if image_storage_mode not in {"path_dict", "embedded_bytes"}:

@@ -3,18 +3,18 @@
   "schema_version": "v1",
   "task_family_templates": {
     "visible_card_hand": [
-      "The image shows {object_description}.",
-      "Look at the card-hand image. It shows {object_description}.",
-      "You are given an image with {object_description}.",
-      "Work from the playing-card hand shown in the image: {object_description}.",
-      "Use the card-hand scene in the image. It shows {object_description}."
+      "The image contains {object_description}.",
+      "Shown is {object_description}.",
+      "Use this card hand: {object_description}.",
+      "Read this hand: {object_description}.",
+      "Work from {object_description}."
     ]
   },
   "task_templates": {
     "cards_hand_query": [
-      "Answer the question using the visible cards in the hand.",
+      "Use the visible cards.",
       "Read the face-up cards and determine the requested value.",
-      "Work from the shown hand of cards to answer the question.",
+      "Work from the shown hand.",
       "Use the displayed cards to determine the requested count.",
       "Determine the requested hand-analysis value from the visible cards."
     ]

@@ -3,20 +3,20 @@
   "schema_version": "v1",
   "task_family_templates": {
     "similarity_graph_scene": [
-      "The graph-paper image shows {object_description}.",
-      "Look at the graph-paper diagram. It shows {object_description}.",
-      "Use the graph-paper image showing {object_description}.",
-      "Work from the graph-paper diagram showing {object_description}.",
-      "You are given a graph-paper image with {object_description}."
+      "The image contains {object_description}.",
+      "Shown is {object_description}.",
+      "Displayed is {object_description}.",
+      "Use this graph-paper scene: {object_description}.",
+      "Read this graph-paper scene: {object_description}."
     ]
   },
   "task_templates": {
     "similarity_count_query": [
-      "Answer the question using the graph-paper diagram.",
-      "Use the full graph-paper scene to answer the question.",
-      "Read the Reference polygon and all labeled candidates carefully, then answer the question.",
-      "Work from the full similarity scene to answer the question.",
-      "Determine the answer from the graph-paper similarity diagram."
+      "Use the full graph-paper scene.",
+      "Compare the Reference with all candidates.",
+      "Read the Reference polygon and all labeled candidates carefully.",
+      "Work from the full similarity scene.",
+      "Determine the requested similarity count."
     ]
   },
   "task_variant_templates": {

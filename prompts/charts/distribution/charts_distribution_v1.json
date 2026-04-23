@@ -3,30 +3,30 @@
   "schema_version": "v1",
   "task_family_templates": {
     "distribution_chart": [
-      "The image shows {object_description}.",
-      "Use the distribution chart in the image. It shows {object_description}.",
-      "Work from the chart shown in the image: {object_description}.",
-      "Look at the chart in the image. It shows {object_description}.",
-      "You are given a chart: {object_description}."
+      "The image contains {object_description}.",
+      "Shown is {object_description}.",
+      "Displayed is {object_description}.",
+      "Use this distribution visual: {object_description}.",
+      "Read this visual: {object_description}."
     ]
   },
   "task_templates": {
     "histogram_count_query": [
-      "Answer this question.",
+      "Use the histogram bins.",
       "Determine the requested count from the histogram.",
-      "Use the histogram counts to answer the question.",
+      "Use the histogram counts.",
       "Read the histogram and compute the requested count.",
       "Work from the bin counts shown in the histogram."
     ],
     "boxplot_label_query": [
-      "Answer this question.",
+      "Use the boxplot summaries.",
       "Determine which labeled boxplot matches the requested property.",
       "Use the boxplots to identify the correct label.",
       "Read the boxplot summaries and name the matching label.",
       "Find the label of the boxplot that satisfies the requested condition."
     ],
     "density_label_query": [
-      "Answer this question.",
+      "Use the violin shapes.",
       "Determine which labeled violin plot matches the requested property.",
       "Use the violin plots to identify the correct label.",
       "Read the violin shapes and name the matching label.",

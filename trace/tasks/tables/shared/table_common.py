@@ -1637,11 +1637,11 @@ def render_table_filter_condition(dataset: Mapping[str, Any]) -> str:
 
     filter_variant = str(dataset["filter_variant"])
     if filter_variant == "above_threshold":
-        return f"values in {str(dataset['filter_column'])} greater than {int(dataset['threshold_value'])}"
+        return f"{str(dataset['filter_column'])} is greater than {int(dataset['threshold_value'])}"
     if filter_variant == "below_threshold":
-        return f"values in {str(dataset['filter_column'])} less than {int(dataset['threshold_value'])}"
+        return f"{str(dataset['filter_column'])} is less than {int(dataset['threshold_value'])}"
     return (
-        f"values in {str(dataset['filter_column'])} from {int(dataset['interval_min'])} "
+        f"{str(dataset['filter_column'])} is from {int(dataset['interval_min'])} "
         f"to {int(dataset['interval_max'])} inclusive"
     )
 

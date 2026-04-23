@@ -50,8 +50,8 @@ prompt:
     task_games_checkers_move_count:
       task_family_key: visible_checkers_board
       task_key: checkers_move_query
-      object_description_midgame_board: one visible 8 by 8 checkers board with red and black pieces on the dark squares
-      object_description_crowded_board: one crowded visible 8 by 8 checkers board with many red and black pieces on the dark squares
+      object_description_midgame_board: an 8 by 8 checkers board with red and black pieces on the dark squares
+      object_description_crowded_board: a crowded 8 by 8 checkers board with many red and black pieces on the dark squares
       capture_rule_text: A capture jumps diagonally over one adjacent opponent piece into the empty dark square immediately beyond.
       single_jump_rule_text: Count only one move at a time and ignore any additional jumps after landing.
       legal_move_rule_text: For this task, ordinary diagonal steps and single captures both count as legal moves, and captures are not mandatory.

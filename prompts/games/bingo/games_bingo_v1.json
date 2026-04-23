@@ -3,18 +3,18 @@
   "schema_version": "v1",
   "task_family_templates": {
     "visible_bingo_card": [
-      "The image shows {object_description}.",
-      "Look at the bingo card in the image. It shows {object_description}.",
-      "You are given an image with {object_description}.",
-      "Work from the bingo-card scene shown in the image: {object_description}.",
-      "Use the visible bingo card in the image. It shows {object_description}."
+      "The image contains {object_description}.",
+      "Shown is {object_description}.",
+      "Use this bingo card: {object_description}.",
+      "Read this marked card: {object_description}.",
+      "Work from {object_description}."
     ]
   },
   "task_templates": {
     "bingo_completed_line_query": [
-      "Answer the question using the marked cells on the visible bingo card.",
+      "Use the marked cells.",
       "Read the visible bingo card and determine the requested completed-line count.",
-      "Work from the shown bingo card to answer the question.",
+      "Work from the shown bingo card.",
       "Use the displayed bingo card to determine the requested count.",
       "Determine the requested bingo-line value from the visible card."
     ]

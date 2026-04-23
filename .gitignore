@@ -209,10 +209,19 @@ __marimo__/
 # TRACE generated previews/summaries
 tmp/
 out_*/
+out/
+nohup.out
+checkpoints/
 
 # RLVR generated parquet artifacts
 rlvr/mydata/*.parquet
 rlvr/val_dataloaders.txt
+rlvr/outputs/
+rlvr/wandb/
+rlvr/dataset/train/*.parquet
+rlvr/dataset/train/*.summary.json
+rlvr/dataset/train/*.task_distribution.csv
+rlvr/dataset/train/*solve_band_task_distribution.csv
 
 # Task review generated artifacts
 task-reviews/task_*/data/

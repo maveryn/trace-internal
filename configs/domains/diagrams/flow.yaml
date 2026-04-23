@@ -68,6 +68,7 @@ complexity:
   task_overrides:
     task_diagrams_flow_next_step_label:
       criteria_weights:
-        visual_scan: 0.39
-        reasoning_load: 0.41
-        scene_variant_load: 0.20
+        visual_scan: 0.36
+        reasoning_load: 0.34
+        scene_variant_load: 0.18
+        output_burden: 0.12

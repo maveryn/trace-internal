@@ -12,13 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .config import ActorConfig, FSDPConfig, ModelConfig, OptimConfig, RefConfig
+from .base import BasePPOActor
+from .dp_actor import DataParallelPPOActor
 
-
-__all__ = [
-    "ActorConfig",
-    "FSDPConfig",
-    "ModelConfig",
-    "OptimConfig",
-    "RefConfig",
-]
+__all__ = ["BasePPOActor", "DataParallelPPOActor"]

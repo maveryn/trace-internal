@@ -13,45 +13,76 @@
 # limitations under the License.
 """Utils for tokenization."""
 
-from typing import Optional
+import warnings
 
-from transformers import AutoProcessor, AutoTokenizer, PreTrainedTokenizer, ProcessorMixin
+__all__ = ["hf_tokenizer", "hf_processor"]
 
 
-def get_tokenizer(model_path: str, override_chat_template: Optional[str] = None, **kwargs) -> PreTrainedTokenizer:
-    """Create a huggingface pretrained tokenizer."""
-    tokenizer = AutoTokenizer.from_pretrained(model_path, **kwargs)
-    if override_chat_template is not None:
-        with open(override_chat_template) as f:
-            tokenizer.chat_template = f.read()
+def set_pad_token_id(tokenizer):
+    """Set pad_token_id to eos_token_id if it is None.
 
-        print(f"New chat template: {tokenizer.chat_template}")
+    Args:
+        tokenizer (transformers.PreTrainedTokenizer): The tokenizer to be set.
 
-    if tokenizer.bos_token == "<bos>" and tokenizer.eos_token == "<eos>":
-        # the EOS token in gemma2 & gemma3 is ambiguious, which may worsen RL performance.
-        # https://huggingface.co/google/gemma-2-2b-it/commit/17a01657f5c87135bcdd0ec7abb4b2dece04408a
-        print("Found gemma model. Set eos_token and eos_token_id to <end_of_turn> and 107.")
-        tokenizer.eos_token = "<end_of_turn>"
-
+    """
     if tokenizer.pad_token_id is None:
-        print("Pad token is None. Set it to eos_token.")
+        tokenizer.pad_token_id = tokenizer.eos_token_id
+        warnings.warn(f"tokenizer.pad_token_id is None. Now set to {tokenizer.eos_token_id}", stacklevel=1)
+    if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
+        warnings.warn(f"tokenizer.pad_token is None. Now set to {tokenizer.eos_token}", stacklevel=1)
 
+
+def hf_tokenizer(name_or_path, correct_pad_token=True, correct_gemma2=True, **kwargs):
+    """Create a huggingface pretrained tokenizer which correctness handles eos and pad tokens.
+
+    Args:
+
+        name (str): The name of the tokenizer.
+        correct_pad_token (bool): Whether to correct the pad token id.
+        correct_gemma2 (bool): Whether to correct the gemma2 tokenizer.
+
+    Returns:
+
+        transformers.PreTrainedTokenizer: The pretrained tokenizer.
+
+    """
+    from transformers import AutoTokenizer
+
+    if correct_gemma2 and isinstance(name_or_path, str) and "gemma-2-2b-it" in name_or_path:
+        # the EOS token in gemma2 is ambiguious, which may worsen RL performance.
+        # https://huggingface.co/google/gemma-2-2b-it/commit/17a01657f5c87135bcdd0ec7abb4b2dece04408a
+        warnings.warn(
+            "Found gemma-2-2b-it tokenizer. Set eos_token and eos_token_id to <end_of_turn> and 107.", stacklevel=1
+        )
+        kwargs["eos_token"] = "<end_of_turn>"
+        kwargs["eos_token_id"] = 107
+    tokenizer = AutoTokenizer.from_pretrained(name_or_path, **kwargs)
+    if correct_pad_token:
+        set_pad_token_id(tokenizer)
     return tokenizer
 
 
-def get_processor(model_path: str, override_chat_template: Optional[str] = None, **kwargs) -> Optional[ProcessorMixin]:
-    """Create a huggingface pretrained processor."""
-    processor = AutoProcessor.from_pretrained(model_path, **kwargs)
-    if override_chat_template is not None:
-        with open(override_chat_template) as f:
-            processor.chat_template = f.read()
+def hf_processor(name_or_path, **kwargs):
+    """Create a huggingface processor to process multimodal data.
 
-        print(f"New chat template: {processor.chat_template}")
+    Args:
+        name_or_path (str): The name of the processor.
 
+    Returns:
+        transformers.ProcessorMixin: The pretrained processor.
+    """
+    from transformers import AutoProcessor
+
+    try:
+        processor = AutoProcessor.from_pretrained(name_or_path, **kwargs)
+    except Exception as e:
+        processor = None
+        # TODO(haibin.lin): try-catch should be removed after adding transformer version req to setup.py to avoid
+        # silent failure
+        warnings.warn(f"Failed to create processor: {e}. This may affect multimodal processing", stacklevel=1)
     # Avoid load tokenizer, see:
-    # https://github.com/huggingface/transformers/blob/v4.52.4/src/transformers/models/auto/processing_auto.py#L386
+    # https://github.com/huggingface/transformers/blob/v4.49.0/src/transformers/models/auto/processing_auto.py#L344
     if processor is not None and "Processor" not in processor.__class__.__name__:
         processor = None
-
     return processor

@@ -3,34 +3,34 @@
   "schema_version": "v1",
   "task_family_templates": {
     "single_analog_clock": [
-      "The image shows {object_description}.",
-      "Look at the clock in the image. It shows {object_description}.",
-      "You are given an image with {object_description}.",
-      "Work from the clock shown in the image: {object_description}.",
-      "Use the analog clock in the image. It shows {object_description}."
+      "The image contains {object_description}.",
+      "Read this clock: {object_description}.",
+      "You are given {object_description}.",
+      "Work from this clock: {object_description}.",
+      "Use this analog clock: {object_description}."
     ],
     "multi_analog_clock": [
-      "The image shows {object_description}.",
-      "Look at the labeled clocks in the image.",
-      "You are given an image with {object_description}.",
-      "Work from the labeled clocks shown in the image.",
-      "Use the labeled analog clocks in the image."
+      "The image contains {object_description}.",
+      "Read the labeled clocks.",
+      "You are given {object_description}.",
+      "Work from the labeled clocks.",
+      "Use the labeled analog clocks."
     ]
   },
   "task_templates": {
     "clock_readout_query": [
-      "Answer this question.",
+      "Read the shown clock.",
       "Determine the requested time from the shown clock.",
-      "Use the displayed clock to answer the question.",
-      "Read the clock and determine the requested time.",
-      "Work from the shown clock face to answer the question."
+      "Use the displayed clock.",
+      "Read the clock face.",
+      "Work from the shown clock face."
     ],
     "clock_compare_query": [
-      "Compare the labeled clocks and answer the question.",
-      "Use the labeled clocks to answer the question.",
+      "Compare the labeled clocks.",
+      "Use the labeled clocks.",
       "Read the clock faces and determine the requested label.",
       "Compare the displayed times across the labeled clocks.",
-      "Work from the full set of labeled clock faces to answer the question."
+      "Work from the full set of labeled clock faces."
     ]
   },
   "task_variant_templates": {

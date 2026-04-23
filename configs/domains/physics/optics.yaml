@@ -74,10 +74,10 @@ prompt:
     task_physics_optics_ray_trace:
       task_family_key: mirror_ray_diagram
       task_key: ray_trace_query
-      object_description_single_mirror: one optics diagram on graph paper with an initial ray direction and one diagonal mirror
-      object_description_double_mirror: one optics diagram on graph paper with an initial ray direction and two diagonal mirrors
-      object_description_triple_mirror: one optics diagram on graph paper with an initial ray direction and three diagonal mirrors
-      object_description_quad_mirror: one optics diagram on graph paper with an initial ray direction and four diagonal mirrors
+      object_description_single_mirror: a graph-paper ray setup with an initial direction and one diagonal mirror
+      object_description_double_mirror: a graph-paper ray setup with an initial direction and two diagonal mirrors
+      object_description_triple_mirror: a graph-paper ray setup with an initial direction and three diagonal mirrors
+      object_description_quad_mirror: a graph-paper ray setup with an initial direction and four diagonal mirrors
       evidence_hint_bounce_count: set "evidence" to an array of graph points [x, y] for each mirror-bounce point of the implied ray path
       evidence_hint_target_hit_count: set "evidence" to an array of graph points [x, y] for each target point touched by the implied ray path
       answer_hint: set "answer" to the requested count as an integer

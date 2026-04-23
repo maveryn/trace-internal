@@ -3,20 +3,20 @@
   "schema_version": "v1",
   "task_family_templates": {
     "styled_table_temporal": [
-      "The image shows {object_description}.",
-      "Use the year-ordered table in the image. It shows {object_description}.",
-      "Work from the styled table shown in the image: {object_description}.",
-      "Look at the time-series table in the image. It shows {object_description}.",
-      "You are given a table with chronological year columns: {object_description}."
+      "The image contains {object_description}.",
+      "Shown is {object_description}.",
+      "Displayed is {object_description}.",
+      "Use this year-ordered table: {object_description}.",
+      "Read this chronological table: {object_description}."
     ]
   },
   "task_templates": {
     "temporal_value_query": [
-      "Answer this question about one row across the year columns.",
+      "Use one row across the year columns.",
       "Use the row's values across the ordered year columns to compute the requested result.",
       "Read the named row over time and report the requested integer result.",
       "Work from the queried row and year columns to evaluate the temporal expression.",
-      "Use the chronological year columns to answer the row-specific time question."
+      "Use the chronological year columns."
     ]
   },
   "task_variant_templates": {

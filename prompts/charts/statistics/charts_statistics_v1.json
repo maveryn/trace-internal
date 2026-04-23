@@ -3,23 +3,23 @@
   "schema_version": "v1",
   "task_family_templates": {
     "labeled_chart_statistics": [
-      "The image shows {object_description}.",
-      "Use the chart in the image. It shows {object_description}.",
-      "Work from the labeled chart shown in the image: {object_description}.",
-      "Look at the chart in the image. It shows {object_description}.",
-      "You are given a labeled chart: {object_description}."
+      "The image contains {object_description}.",
+      "Shown is {object_description}.",
+      "Displayed is {object_description}.",
+      "Use this visual: {object_description}.",
+      "Read this visual: {object_description}."
     ]
   },
   "task_templates": {
     "summary_value_query": [
-      "Answer this question.",
+      "Compute the requested statistic.",
       "Determine the requested summary value.",
-      "Use the chart values to answer the question.",
+      "Use the displayed values.",
       "Compute the requested statistic from the chart values.",
-      "Read the chart values and answer the question."
+      "Read the values and report the requested summary."
     ],
     "summary_label_query": [
-      "Answer this question.",
+      "Identify the requested label.",
       "Determine which label matches the requested statistic.",
       "Use the chart values to identify the correct label.",
       "Find the label of the mark that satisfies the requested statistic.",

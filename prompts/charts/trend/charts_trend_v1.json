@@ -3,20 +3,20 @@
   "schema_version": "v1",
   "task_family_templates": {
     "ordered_chart_trend": [
-      "The image shows {object_description}. Use the chart's displayed order when reasoning about peaks, troughs, and streaks.",
-      "Use the chart in the image. It shows {object_description}. Read the labels in their displayed order.",
-      "Work from the ordered chart shown in the image: {object_description}. Treat consecutive labels in displayed order as adjacent.",
-      "Look at the chart in the image. It shows {object_description}. Use the displayed label order for any local or streak-based reasoning.",
-      "You are given an ordered chart: {object_description}. Reason over the labels in the order they appear in the chart."
+      "The image contains {object_description}. Use displayed label order for peaks, troughs, and streaks.",
+      "Shown is {object_description}. Read labels in displayed order.",
+      "Displayed is {object_description}. Treat consecutive labels as adjacent.",
+      "Use this ordered visual: {object_description}. Follow the displayed label order.",
+      "Read this ordered visual: {object_description}. Reason left-to-right or top-to-bottom as shown."
     ]
   },
   "task_templates": {
     "structure_value_query": [
-      "Answer this question.",
+      "Compute the requested trend value.",
       "Determine the requested trend-structure value.",
-      "Use the ordered chart values to answer the question.",
-      "Read the chart order carefully and compute the requested trend value.",
-      "Use the chart's displayed order to answer the question."
+      "Use the displayed order.",
+      "Read the order carefully.",
+      "Use the ordered values."
     ]
   },
   "task_variant_templates": {

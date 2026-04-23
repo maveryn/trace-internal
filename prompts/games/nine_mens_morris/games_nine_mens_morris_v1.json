@@ -3,20 +3,20 @@
   "schema_version": "v1",
   "task_family_templates": {
     "visible_nine_mens_morris_board": [
-      "The image shows {object_description}.",
-      "Look at the nine men's morris board in the image. It shows {object_description}.",
-      "You are given an image with {object_description}.",
-      "Work from the nine men's morris board shown in the image: {object_description}.",
-      "Use the visible nine men's morris board in the image. It shows {object_description}."
+      "The image contains {object_description}.",
+      "Shown is {object_description}.",
+      "Use this nine men's morris position: {object_description}.",
+      "Read this board state: {object_description}.",
+      "Work from {object_description}."
     ]
   },
   "task_templates": {
     "pieces_in_mill_query": [
-      "Answer the question using the visible pieces on the board.",
+      "Use the visible pieces.",
       "Use the shown nine men's morris position to answer the requested count.",
-      "Work from the displayed board position to determine the requested value.",
-      "Determine the requested mill-piece count from the visible board.",
-      "Use the current board state to answer the question."
+      "Work from the displayed position.",
+      "Determine the requested mill-piece count.",
+      "Use the current state."
     ]
   },
   "task_variant_templates": {

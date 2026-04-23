@@ -32,6 +32,7 @@ _EXCEL_HEADERS: List[str] = [
     "task",
     "task_variant",
     "prompt",
+    "prompt_answer",
     "prompt_answer_only",
     "answer",
     "answer_evidence",
@@ -555,7 +556,7 @@ def _populate_inspection_sheet(
             row.get("task", ""),
             row.get("task_variant", ""),
             row.get("prompt", ""),
-            row.get("prompt_answer_only", ""),
+            row.get("prompt_answer", row.get("prompt_answer_only", "")),
             _json_cell(row.get("answer")),
             _json_cell(row.get("answer_evidence")),
             row.get("answer_type", ""),
@@ -653,7 +654,7 @@ def _build_inspection_rows(
             rel_image_path = image_path.relative_to(out_root).as_posix()
 
             prompt_variants = dict(getattr(output, "prompt_variants", {}) or {})
-            prompt_answer_only = str(prompt_variants.get("answer_only", output.prompt))
+            prompt_answer = str(prompt_variants.get("answer_only", output.prompt))
             prompt_answer_and_evidence = str(prompt_variants.get("answer_and_evidence", output.prompt))
 
             data_payload = {
@@ -691,7 +692,8 @@ def _build_inspection_rows(
                     "task": str(task_id),
                     "task_variant": str(output_variant),
                     "prompt": prompt_answer_and_evidence,
-                    "prompt_answer_only": prompt_answer_only,
+                    "prompt_answer": prompt_answer,
+                    "prompt_answer_only": prompt_answer,
                     "answer": canonical_answer,
                     "answer_evidence": output.evidence_gt.value,
                     "answer_type": str(output.answer_gt.type),

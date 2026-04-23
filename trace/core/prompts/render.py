@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import re
 from typing import Any, Dict, Mapping, Sequence
 
 from .assets import load_prompt_bundle
@@ -24,6 +25,16 @@ class _StrictSlotMap(dict):
         raise KeyError(f"missing prompt slot: {key}")
 
 
+_ANSWER_ONLY_SCHEMA_LINE_RE = re.compile(
+    r'^Use a valid JSON object with key "answer" for the final answer\.\s*$',
+    re.IGNORECASE,
+)
+_ANSWER_AND_EVIDENCE_SCHEMA_LINE_RE = re.compile(
+    r'^Use a valid JSON object with keys "evidence" and "answer" in that order for the final answer\.\s*$',
+    re.IGNORECASE,
+)
+
+
 def _render_template(
     template: str,
     slots: Mapping[str, Any],
@@ -35,6 +46,33 @@ def _render_template(
     if not rendered and not bool(allow_empty):
         raise ValueError("rendered prompt template is empty")
     return rendered
+
+
+def _strip_generic_output_contract_line(rendered_mode_text: str, *, answer_or_evidence_key: str | None) -> str:
+    """Remove generic schema boilerplate while preserving task-specific format guidance."""
+    if not rendered_mode_text or answer_or_evidence_key is None:
+        return rendered_mode_text
+
+    schema_line_re = (
+        _ANSWER_ONLY_SCHEMA_LINE_RE
+        if answer_or_evidence_key == "answer_only"
+        else _ANSWER_AND_EVIDENCE_SCHEMA_LINE_RE
+        if answer_or_evidence_key == "answer_and_evidence"
+        else None
+    )
+    if schema_line_re is None:
+        return rendered_mode_text
+
+    filtered_lines = [line for line in rendered_mode_text.splitlines() if not schema_line_re.match(line.strip())]
+    cleaned_lines: list[str] = []
+    previous_blank = False
+    for line in filtered_lines:
+        is_blank = not line.strip()
+        if is_blank and previous_blank:
+            continue
+        cleaned_lines.append(line.rstrip())
+        previous_blank = is_blank
+    return "\n".join(cleaned_lines).strip()
 
 
 def _validate_required_slots(
@@ -149,6 +187,7 @@ def render_prompt(
             namespace=f"prompt.answer_or_evidence.{resolved_mode_key}",
         )
         mode_text = _render_template(mode_template, slots, allow_empty=True)
+        mode_text = _strip_generic_output_contract_line(mode_text, answer_or_evidence_key=resolved_mode_key)
 
     task_family_text = _render_template(task_family_template, slots)
     task_text = _render_template(task_template, slots)

@@ -3,18 +3,18 @@
   "schema_version": "v1",
   "task_family_templates": {
     "labeled_chart_counting": [
-      "The image shows {object_description}.",
-      "Use the chart in the image. It shows {object_description}.",
-      "Work from the labeled chart shown in the image: {object_description}.",
-      "Look at the chart in the image. It shows {object_description}.",
-      "You are given a labeled chart: {object_description}."
+      "The image contains {object_description}.",
+      "Shown is {object_description}.",
+      "Displayed is {object_description}.",
+      "Use this visual: {object_description}.",
+      "Read this visual: {object_description}."
     ]
   },
   "task_templates": {
     "value_count_query": [
-      "Answer this question.",
+      "Count matching labels.",
       "Count the labeled marks that satisfy the requested value condition.",
-      "Use the chart values to answer the counting question.",
+      "Use the displayed values.",
       "Determine how many labeled marks meet the stated value condition.",
       "Read the chart values and count the matching marks."
     ]

@@ -3,20 +3,20 @@
   "schema_version": "v1",
   "task_family_templates": {
     "single_graph_order": [
-      "You are given an image with {object_description}.",
-      "The image shows {object_description}.",
-      "Look at the image with {object_description}.",
-      "Use the image containing {object_description}.",
-      "Work from the image with {object_description}."
+      "The image contains {object_description}.",
+      "Shown is {object_description}.",
+      "Displayed is {object_description}.",
+      "Use this graph: {object_description}.",
+      "Read this graph: {object_description}."
     ]
   },
   "task_templates": {
     "topological_position_query": [
       "{question_text}",
-      "Question: {question_text}",
-      "Task: {question_text}",
-      "Answer this question: {question_text}",
-      "Determine the answer: {question_text}"
+      "Use the graph structure. {question_text}",
+      "Read the graph carefully. {question_text}",
+      "Work from the visual. {question_text}",
+      "Determine the requested value: {question_text}"
     ]
   },
   "required_slots_by_key": {

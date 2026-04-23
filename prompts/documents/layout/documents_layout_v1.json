@@ -3,20 +3,20 @@
   "schema_version": "v1",
   "task_family_templates": {
     "structured_document_sections": [
-      "The image shows {object_description}.",
-      "Look at the document in the image: {object_description}.",
+      "The image contains {object_description}.",
+      "Read this document: {object_description}.",
       "You are given {object_description}.",
-      "Use the structured document in the image: {object_description}.",
-      "Read the named sections in this document: {object_description}."
+      "Use this structured document: {object_description}.",
+      "Use the named sections in this document: {object_description}."
     ]
   },
   "task_templates": {
     "section_membership_query": [
       "{question_text}",
-      "Read the document and answer this question: {question_text}",
-      "Find the correct section and then answer: {question_text}",
-      "Use the visible section headers and labeled fields to answer: {question_text}",
-      "Locate the relevant section before answering: {question_text}"
+      "Read the document. {question_text}",
+      "Find the correct section. {question_text}",
+      "Use the visible section headers and labeled fields. {question_text}",
+      "Locate the relevant section. {question_text}"
     ]
   },
   "task_variant_templates": {

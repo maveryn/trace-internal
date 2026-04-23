@@ -3,20 +3,20 @@
   "schema_version": "v1",
   "task_family_templates": {
     "visible_dots_and_boxes_board": [
-      "The image shows {object_description}.",
-      "Look at the dots-and-boxes board in the image. It shows {object_description}.",
-      "You are given an image with {object_description}.",
-      "Work from the dots-and-boxes board shown in the image: {object_description}.",
-      "Use the visible dots-and-boxes board in the image. It shows {object_description}."
+      "The image contains {object_description}.",
+      "Read this dots-and-boxes board: {object_description}.",
+      "You are given {object_description}.",
+      "Work from this dots-and-boxes board: {object_description}.",
+      "Use this visible dots-and-boxes board: {object_description}."
     ]
   },
   "task_templates": {
     "dots_and_boxes_capture_query": [
-      "Answer the question using the highlighted edge and the visible board state.",
+      "Use the highlighted edge and the visible board state.",
       "Work from the shown dots-and-boxes position to determine the requested capture count.",
-      "Use the displayed board to answer the turn-capture question.",
+      "Use the displayed board for the turn-capture question.",
       "Determine the requested turn-capture value from the visible board.",
-      "Use the highlighted edge and the current board state to answer the question."
+      "Use the highlighted edge and the current board state."
     ]
   },
   "task_variant_templates": {

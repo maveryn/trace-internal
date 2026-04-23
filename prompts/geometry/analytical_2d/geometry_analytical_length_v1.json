@@ -3,20 +3,20 @@
   "schema_version": "v1",
   "task_family_templates": {
     "analytical_length_scene": [
-      "You are given an image showing {object_description}.",
-      "The image shows {object_description}.",
-      "Look at the annotated image showing {object_description}.",
-      "Use the image showing {object_description}.",
-      "Work from the annotated scene showing {object_description}."
+      "The image contains {object_description}.",
+      "Shown is {object_description}.",
+      "Displayed is {object_description}.",
+      "Use this annotated figure: {object_description}.",
+      "Read this annotated figure: {object_description}."
     ]
   },
   "task_templates": {
     "analytical_length_query": [
       "{question_text}",
-      "Question: {question_text}",
-      "Task: {question_text}",
-      "Read the marked measurements and answer: {question_text}",
-      "Based on the shown values, answer this question: {question_text}"
+      "Use the marked measurements. {question_text}",
+      "Read the annotated values. {question_text}",
+      "Work from the visual. {question_text}",
+      "Compute the requested value: {question_text}"
     ]
   },
   "required_slots_by_key": {

@@ -3,20 +3,20 @@
   "schema_version": "v1",
   "task_family_templates": {
     "hierarchy_diagram": [
-      "The image shows {object_description}.",
-      "Look at the hierarchy diagram in the image: {object_description}.",
+      "The image contains {object_description}.",
+      "Read this hierarchy diagram: {object_description}.",
       "You are given {object_description}.",
-      "Use the hierarchical diagram in the image: {object_description}.",
+      "Use this hierarchical diagram: {object_description}.",
       "Work from the labeled parent-child structure: {object_description}."
     ]
   },
   "task_templates": {
     "ancestor_query": [
       "{question_text}",
-      "Use the hierarchy to answer: {question_text}",
-      "Read the labeled org chart and answer: {question_text}",
-      "Follow the parent-child structure and answer: {question_text}",
-      "Determine the requested ancestor from the hierarchy: {question_text}"
+      "Use the hierarchy. {question_text}",
+      "Read the labeled org chart. {question_text}",
+      "Follow the parent-child structure. {question_text}",
+      "Determine the requested ancestor from the hierarchy. {question_text}"
     ]
   },
   "task_variant_templates": {

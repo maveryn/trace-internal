@@ -60,8 +60,8 @@ prompt:
     task_games_cards_hand_count:
       task_family_key: visible_card_hand
       task_key: cards_hand_query
-      object_description_single_row: one visible hand of face-up playing cards arranged in a single row on a green table
-      object_description_two_row: one visible hand of face-up playing cards arranged across two rows on a green table
+      object_description_single_row: a hand of face-up playing cards arranged in a single row on a green table
+      object_description_two_row: a hand of face-up playing cards arranged across two rows on a green table
       rank_order_text: Use rank order 2 < 3 < 4 < 5 < 6 < 7 < 8 < 9 < 10 < J < Q < K < A, with Ace high only.
       continuation_rule_text: If the cards continue onto a second row, read the top row from left to right and then continue on the next row following the continuation cue.
       evidence_hint_same_suit_as_reference_count: set "evidence" to an array of bounding boxes [x1, y1, x2, y2] for every non-reference card with the same suit as the reference card

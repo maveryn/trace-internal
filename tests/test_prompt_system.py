@@ -66,6 +66,9 @@ def test_render_prompt_is_deterministic() -> None:
     assert a.metadata["slot_values"]["object_description"] == "a labeled angle"
     assert a.metadata["answer_or_evidence_key"] == "answer_and_evidence"
     assert "Example JSON" in a.prompt
+    assert ANSWER_AND_EVIDENCE_CONTRACT not in a.prompt
+    assert EVIDENCE_FORMAT_TEXT.search(a.prompt) is not None
+    assert ANSWER_FORMAT_TEXT.search(a.prompt) is not None
 
 
 def test_prompt_bundle_contract_and_required_slots() -> None:
@@ -111,6 +114,10 @@ def test_render_prompt_variants_contains_answer_only_and_answer_and_evidence() -
     assert "evidence" not in results["answer_only"].prompt.lower()
     assert "evidence" in results["answer_and_evidence"].prompt.lower()
     assert '"answer"' in results["answer_only"].prompt
+    assert ANSWER_ONLY_CONTRACT not in results["answer_only"].prompt
+    assert ANSWER_AND_EVIDENCE_CONTRACT not in results["answer_and_evidence"].prompt
+    assert ANSWER_FORMAT_TEXT.search(results["answer_only"].prompt) is not None
+    assert EVIDENCE_FORMAT_TEXT.search(results["answer_and_evidence"].prompt) is not None
     assert results["answer_only"].metadata["answer_or_evidence_key"] == "answer_only"
     assert results["answer_and_evidence"].metadata["answer_or_evidence_key"] == "answer_and_evidence"
 

@@ -3,27 +3,27 @@
   "schema_version": "v1",
   "task_family_templates": {
     "reference_scene_counting": [
-      "You are given an image with {object_description}.",
-      "The image shows {object_description}.",
-      "Look at the image with {object_description}.",
-      "Use the image containing {object_description}.",
-      "Work from the image with {object_description}."
+      "The image contains {object_description}.",
+      "Shown is {object_description}.",
+      "Displayed is {object_description}.",
+      "Use this icon scene: {object_description}.",
+      "Read this icon scene: {object_description}."
     ],
     "single_scene_counting": [
-      "You are given an image with {object_description}.",
-      "The image shows {object_description}.",
-      "Look at the image with {object_description}.",
-      "Use the image containing {object_description}.",
-      "Work from the image with {object_description}."
+      "The image contains {object_description}.",
+      "Shown is {object_description}.",
+      "Displayed is {object_description}.",
+      "Use this icon scene: {object_description}.",
+      "Read this icon scene: {object_description}."
     ]
   },
   "task_templates": {
     "counting_query": [
       "{question_text}",
-      "Question: {question_text}",
-      "Task: {question_text}",
-      "Answer this question: {question_text}",
-      "Determine the answer: {question_text}"
+      "Use the shown icons. {question_text}",
+      "Read the icon scene. {question_text}",
+      "Work from the visual. {question_text}",
+      "Determine the requested value: {question_text}"
     ]
   },
   "required_slots_by_key": {

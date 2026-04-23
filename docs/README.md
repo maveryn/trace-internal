@@ -18,6 +18,7 @@ Repo-local skills live under `skills/`, but skills are operational overlays. Can
 4. Export/eval:
    - active Vero-derived RLVR port lives under `../rlvr/README.md`
    - legacy TRACE RLVR docs remain under `../rlvr_legacy/docs/README.md`
+   - task-difficulty calibration workspace lives under `../plans/difficulty_calibration/README.md`
 5. Review workflow: `docs/workflows/SHARED_UTILITIES.md`, `docs/workflows/BUILD_VALIDATION.md`, `docs/workflows/VALIDATION_ERROR_CODES.md`, `docs/workflows/DOMAIN_AUDIT_REVIEW.md`, and `docs/workflows/TASK_UNIT_AUDIT.md`.
 6. Quality/process: `docs/workflows/CODE_DOCUMENTATION.md` and `docs/workflows/CODE_REVIEW_GUIDELINES.md`.
 7. Project state: `docs/project/STATUS.md`, `docs/project/TODO.md`, and `docs/project/DECLUTTER_PLAN.md`.

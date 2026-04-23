@@ -1,20 +1,24 @@
 generation:
   shared:
-    category_count_min: 4
-    category_count_max: 7
-    series_count_min: 3
-    series_count_max: 5
+    category_count_min: 6
+    category_count_max: 9
+    series_count_min: 5
+    series_count_max: 7
+    query_category_subset_size_min: 3
+    query_category_subset_size_max: 4
+    query_series_subset_size_min: 3
+    query_series_subset_size_max: 4
+    comparison_subset_size_min: 2
+    comparison_subset_size_max: 3
     value_min: 4
     value_max: 18
     task_variant_weights:
-      stack_total_at_label: 1.0
-      stack_segment_value: 1.0
-      combined_share_subset: 1.0
+      category_subset_sum: 1.0
+      series_across_categories_sum: 1.0
+      subset_margin_sum: 1.0
     scene_variant_weights:
       stacked_bar: 1.0
       stacked_horizontal_bar: 1.0
-      pie: 1.0
-      donut: 1.0
     balanced_task_variant_sampling: true
     balanced_scene_variant_sampling: true
 
@@ -56,22 +60,20 @@ complexity:
 
 prompt:
   shared:
-    bundle_id: charts_composition_v1
+    bundle_id: charts_composition_v2
     task_family_key: composition_chart_value
-    task_key: subset_value_query
+    task_key: stacked_composition_query
     json_output_contract: Use a valid JSON object with keys "evidence" and "answer" in that order for the final answer.
     json_output_contract_answer_only: Use a valid JSON object with key "answer" for the final answer.
     answer_hint: set "answer" to the requested integer value
     object_description_stacked_bar: a stacked bar chart with category stacks, a color legend, and printed segment values
     object_description_stacked_horizontal_bar: a stacked horizontal bar chart with category stacks, a color legend, and printed segment values
-    object_description_pie: a pie chart with colored slices, a legend, and printed slice percentages
-    object_description_donut: a donut chart with colored slices, a legend, and printed slice percentages
-    evidence_hint_stack_total_at_label: set "evidence" to an array [v1, v2, ...] listing the segment values in legend order for the queried stack
-    evidence_hint_stack_segment_value: set "evidence" to an array [v1, v2, ...] listing the segment values in legend order for the queried stack
-    evidence_hint_combined_share_subset: set "evidence" to an array [v1, v2, ...] listing the slice percentages in legend order for the whole chart
-    json_example_stack_total_at_label: '{"evidence":[6,9,5],"answer":20}'
-    json_example_stack_segment_value: '{"evidence":[6,9,5],"answer":9}'
-    json_example_combined_share_subset: '{"evidence":[18,27,22,33],"answer":45}'
-    json_example_answer_only_stack_total_at_label: '{"answer":20}'
-    json_example_answer_only_stack_segment_value: '{"answer":9}'
-    json_example_answer_only_combined_share_subset: '{"answer":45}'
+    evidence_hint_category_subset_sum: set "evidence" to an array [v1, v2, ...] listing the selected segment values in legend order for the queried stack
+    evidence_hint_series_across_categories_sum: set "evidence" to an array [v1, v2, ...] listing the selected segment values in category order for the queried legend label
+    evidence_hint_subset_margin_sum: set "evidence" to an array [m1, m2, ...] listing, in category order, the per-category margin sum(left subset) minus sum(right subset)
+    json_example_category_subset_sum: '{"evidence":[6,9,5],"answer":20}'
+    json_example_series_across_categories_sum: '{"evidence":[7,11,8],"answer":26}'
+    json_example_subset_margin_sum: '{"evidence":[5,-3,9,1],"answer":15}'
+    json_example_answer_only_category_subset_sum: '{"answer":20}'
+    json_example_answer_only_series_across_categories_sum: '{"answer":26}'
+    json_example_answer_only_subset_margin_sum: '{"answer":15}'

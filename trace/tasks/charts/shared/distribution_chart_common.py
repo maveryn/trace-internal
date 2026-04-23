@@ -587,42 +587,195 @@ def build_boxplot_dataset_for_variant(
     fill_rgb = tuple(int(channel) for channel in mark_style["mark_fill_rgb"])
     outline_rgb = tuple(int(channel) for channel in mark_style["mark_outline_rgb"])
 
+    def _sample_clustered_unique(pool_min: int, pool_max: int, count: int) -> List[int]:
+        if int(count) <= 0:
+            return []
+        window_size = max(int(count) + 2, 4)
+        lower = max(int(pool_min), int(pool_max) - int(window_size) + 1)
+        pool = list(range(int(lower), int(pool_max) + 1))
+        if len(pool) < int(count):
+            pool = list(range(int(pool_min), int(pool_max) + 1))
+        if len(pool) < int(count):
+            raise ValueError("insufficient clustered support for unique sampling")
+        rng.shuffle(pool)
+        return [int(value) for value in pool[: int(count)]]
+
+    def _sample_clustered_unique_low(pool_min: int, pool_max: int, count: int) -> List[int]:
+        if int(count) <= 0:
+            return []
+        window_size = max(int(count) + 2, 4)
+        upper = min(int(pool_max), int(pool_min) + int(window_size) - 1)
+        pool = list(range(int(pool_min), int(upper) + 1))
+        if len(pool) < int(count):
+            pool = list(range(int(pool_min), int(pool_max) + 1))
+        if len(pool) < int(count):
+            raise ValueError("insufficient clustered support for unique low-end sampling")
+        rng.shuffle(pool)
+        return [int(value) for value in pool[: int(count)]]
+
     specs: List[BoxPlotSpec] = []
-    if str(task_variant) == "highest_median":
-        candidate_medians = list(range(int(value_min) + 3, int(value_max) - 3))
-        if len(candidate_medians) < int(category_count):
-            raise ValueError("boxplot median support is too small for requested category count")
-        rng.shuffle(candidate_medians)
-        medians = candidate_medians[: int(category_count)]
-        rng.shuffle(medians)
-        for label, median in zip(labels, medians):
+    if str(task_variant) == "median_above_reference_q3":
+        if int(category_count) < 4:
+            raise ValueError("boxplot reference-q3 median task requires at least four categories")
+        gap_min = max(1, int(params.get("median_reference_winner_gap_min", 1)))
+        gap_max = max(int(gap_min), int(params.get("median_reference_winner_gap_max", gap_min)))
+        above_count_min = max(2, int(params.get("median_reference_above_count_min", 2)))
+        above_count_max = min(
+            int(category_count) - 1,
+            max(int(above_count_min), int(params.get("median_reference_above_count_max", 3))),
+        )
+        above_count = int(rng.randint(int(above_count_min), int(above_count_max)))
+
+        max_margin_support = min(6, int(value_max) - int(value_min) - 5)
+        if int(max_margin_support) < int(above_count):
+            raise ValueError("boxplot reference-q3 margin support is too small for requested category count")
+
+        margin_pool = list(range(1, int(max_margin_support) + 1))
+        above_margins: List[int] | None = None
+        for _ in range(128):
+            candidate = sorted(int(value) for value in rng.sample(margin_pool, int(above_count)))
+            if int(gap_min) <= int(candidate[-1]) - int(candidate[-2]) <= int(gap_max):
+                above_margins = candidate
+                break
+        if above_margins is None:
+            raise ValueError("unable to construct unique reference-q3 winner margins")
+
+        winner_margin = int(above_margins[-1])
+        below_count = int(category_count) - 1 - int(above_count)
+        reference_q3_min = int(value_min) + 2 + int(below_count)
+        reference_q3_max = int(value_max) - 2 - int(winner_margin)
+        if int(reference_q3_min) > int(reference_q3_max):
+            raise ValueError("boxplot reference-q3 support is too small for requested margins")
+        reference_q3 = int(rng.randint(int(reference_q3_min), int(reference_q3_max)))
+        reference_q1_min = int(value_min) + 1
+        reference_q1_max = int(reference_q3) - 2
+        reference_q1 = int(rng.randint(int(reference_q1_min), int(reference_q1_max)))
+        reference_median = int(rng.randint(int(reference_q1) + 1, int(reference_q3) - 1))
+        reference_whisker_min = max(
+            int(value_min),
+            int(reference_q1) - int(rng.randint(0, min(2, int(reference_q1) - int(value_min)))),
+        )
+        reference_whisker_max = min(
+            int(value_max),
+            int(reference_q3) + int(rng.randint(0, min(2, int(value_max) - int(reference_q3)))),
+        )
+
+        shuffled_labels = list(labels)
+        rng.shuffle(shuffled_labels)
+        reference_label = str(shuffled_labels[0])
+        candidate_labels = [str(label) for label in shuffled_labels[1:]]
+        above_labels = list(candidate_labels[: int(above_count)])
+        below_labels = list(candidate_labels[int(above_count) :])
+
+        label_to_margin = {
+            str(label): int(margin)
+            for label, margin in zip(above_labels, above_margins)
+        }
+        winner_label = next(
+            str(label)
+            for label, margin in label_to_margin.items()
+            if int(margin) == int(winner_margin)
+        )
+
+        below_medians = _sample_clustered_unique_low(
+            int(value_min) + 2,
+            int(reference_q3) - 1,
+            len(below_labels),
+        )
+        label_to_box: Dict[str, BoxPlotSpec] = {
+            str(reference_label): BoxPlotSpec(
+                label=str(reference_label),
+                whisker_min=int(reference_whisker_min),
+                q1=int(reference_q1),
+                median=int(reference_median),
+                q3=int(reference_q3),
+                whisker_max=int(reference_whisker_max),
+                fill_rgb=fill_rgb,
+                outline_rgb=outline_rgb,
+            )
+        }
+        for label, margin in label_to_margin.items():
+            median = int(reference_q3) + int(margin)
+            left_delta = int(rng.randint(1, min(3, int(median) - int(value_min) - 1)))
+            right_delta = int(rng.randint(1, min(2, int(value_max) - int(median) - 1)))
+            q1 = int(median) - int(left_delta)
+            q3 = int(median) + int(right_delta)
+            whisker_min = max(int(value_min), int(q1) - int(rng.randint(0, min(2, int(q1) - int(value_min)))))
+            whisker_max = min(int(value_max), int(q3) + int(rng.randint(0, min(2, int(value_max) - int(q3)))))
+            label_to_box[str(label)] = BoxPlotSpec(
+                label=str(label),
+                whisker_min=int(whisker_min),
+                q1=int(q1),
+                median=int(median),
+                q3=int(q3),
+                whisker_max=int(whisker_max),
+                fill_rgb=fill_rgb,
+                outline_rgb=outline_rgb,
+            )
+        for label, median in zip(below_labels, below_medians):
             left_delta = int(rng.randint(1, min(3, int(median) - int(value_min) - 1)))
             right_delta = int(rng.randint(1, min(3, int(value_max) - int(median) - 1)))
             q1 = int(median) - int(left_delta)
             q3 = int(median) + int(right_delta)
             whisker_min = max(int(value_min), int(q1) - int(rng.randint(0, min(2, int(q1) - int(value_min)))))
             whisker_max = min(int(value_max), int(q3) + int(rng.randint(0, min(2, int(value_max) - int(q3)))))
-            specs.append(
-                BoxPlotSpec(
-                    label=str(label),
-                    whisker_min=int(whisker_min),
-                    q1=int(q1),
-                    median=int(median),
-                    q3=int(q3),
-                    whisker_max=int(whisker_max),
-                    fill_rgb=fill_rgb,
-                    outline_rgb=outline_rgb,
-                )
+            label_to_box[str(label)] = BoxPlotSpec(
+                label=str(label),
+                whisker_min=int(whisker_min),
+                q1=int(q1),
+                median=int(median),
+                q3=int(q3),
+                whisker_max=int(whisker_max),
+                fill_rgb=fill_rgb,
+                outline_rgb=outline_rgb,
             )
-        answer_label = max(specs, key=lambda spec: int(spec.median)).label
-        evidence_value = max(int(spec.median) for spec in specs)
+        specs = [label_to_box[str(label)] for label in labels]
+        answer_label = str(winner_label)
+        evidence_value = int(winner_margin)
     elif str(task_variant) in {"largest_iqr", "smallest_iqr"}:
         feasible_iqrs = list(range(2, min(10, int(value_max) - int(value_min))))
         if len(feasible_iqrs) < int(category_count):
             raise ValueError("boxplot IQR support is too small for requested category count")
-        rng.shuffle(feasible_iqrs)
-        iqrs = feasible_iqrs[: int(category_count)]
-        rng.shuffle(iqrs)
+        gap_min = int(params.get("iqr_winner_gap_min", 0))
+        gap_max = int(params.get("iqr_winner_gap_max", gap_min))
+        if int(gap_max) > 0:
+            gap_min = max(1, int(gap_min))
+            gap_max = max(int(gap_min), int(gap_max))
+            support_min = 2
+            support_max = min(10, int(value_max) - int(value_min)) - 1
+            if str(task_variant) == "largest_iqr":
+                answer_min = int(support_min) + int(gap_min) + int(category_count) - 2
+                if int(answer_min) > int(support_max):
+                    raise ValueError("boxplot largest-IQR gap support is too small for requested category count")
+                winner_iqr = int(rng.randint(int(answer_min), int(support_max)))
+                gap_cap = min(int(gap_max), int(winner_iqr) - int(support_min) - int(category_count) + 2)
+                winner_gap = int(rng.randint(int(gap_min), int(gap_cap)))
+                runner_up = int(winner_iqr) - int(winner_gap)
+                other_iqrs = _sample_clustered_unique(
+                    int(support_min),
+                    int(runner_up) - 1,
+                    int(category_count) - 2,
+                )
+                iqrs = [int(winner_iqr), int(runner_up), *other_iqrs]
+            else:
+                answer_max = int(support_max) - int(gap_min) - int(category_count) + 2
+                if int(answer_max) < int(support_min):
+                    raise ValueError("boxplot smallest-IQR gap support is too small for requested category count")
+                winner_iqr = int(rng.randint(int(support_min), int(answer_max)))
+                gap_cap = min(int(gap_max), int(support_max) - int(winner_iqr) - int(category_count) + 2)
+                winner_gap = int(rng.randint(int(gap_min), int(gap_cap)))
+                runner_up = int(winner_iqr) + int(winner_gap)
+                other_iqrs = _sample_clustered_unique_low(
+                    int(runner_up) + 1,
+                    int(support_max),
+                    int(category_count) - 2,
+                )
+                iqrs = [int(winner_iqr), int(runner_up), *other_iqrs]
+            rng.shuffle(iqrs)
+        else:
+            rng.shuffle(feasible_iqrs)
+            iqrs = feasible_iqrs[: int(category_count)]
+            rng.shuffle(iqrs)
         for label, iqr in zip(labels, iqrs):
             q1_min = int(value_min) + 1
             q1_max = int(value_max) - int(iqr) - 2
@@ -674,6 +827,10 @@ def build_boxplot_dataset_for_variant(
             for spec in specs
         },
     }
+    if str(task_variant) == "median_above_reference_q3":
+        trace_extras["reference_label"] = str(reference_label)
+        trace_extras["reference_q3"] = int(reference_q3)
+        trace_extras["winner_margin"] = int(winner_margin)
     return specs, str(answer_label), int(evidence_value), trace_extras
 
 

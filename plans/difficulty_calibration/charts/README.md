@@ -1,5 +1,6 @@
 # Charts Calibration
 
+Historical note: the numeric task stats in this table are from the earlier `Qwen/Qwen3-VL-2B-Instruct` 32-rollout probe and should be treated as reference only. Active calibration work should use fresh `Qwen/Qwen3-VL-8B-Instruct` `200 x 32` probes.
 Tasks in this domain: 10
 
 | Task | Direction | Positive rollout rate | Zero-solve rate | Perfect-solve rate | Low omission frac | High omission frac | Task record |
@@ -14,3 +15,9 @@ Tasks in this domain: 10
 | task_charts_statistics_summary_label | make_harder | 0.7037 | 0.0555 | 0.4430 | 0.1297 | 0.6148 | [task_charts_statistics_summary_label](task_charts_statistics_summary_label.md) |
 | task_charts_statistics_summary_value | make_harder | 0.6520 | 0.0195 | 0.2586 | 0.0891 | 0.4906 | [task_charts_statistics_summary_value](task_charts_statistics_summary_value.md) |
 | task_charts_trend_structure_value | make_easier | 0.1760 | 0.1891 | 0.0000 | 0.5203 | 0.0156 | [task_charts_trend_structure_value](task_charts_trend_structure_value.md) |
+
+Active note: [task_charts_composition_subset_value](task_charts_composition_subset_value.md) has been semantically redesigned into a stacked-only composition-arithmetic task and reevaluated with fresh `200 x 32` `Qwen/Qwen3-VL-8B-Instruct` probes. It is currently blocked: the two sum-style variants remain too easy even after structural hardening, so the next step is either another semantic redesign or dropping the task.
+
+Active note: [task_charts_counting_value_count](task_charts_counting_value_count.md) remains calibratable. The current best `Qwen/Qwen3-VL-8B-Instruct` checkpoint is iter1 (`hard_frac=0.035`, `easy_frac=0.340`, `band_frac=0.625`). Later threshold-allocation experiments passed distribution but did not beat iter1, so the next move should be a stronger semantic redesign of the threshold variants rather than more local threshold-count tweaks.
+
+Active note: [task_charts_distribution_boxplot_label](task_charts_distribution_boxplot_label.md) has been semantically redesigned. The old `highest_median` variant was replaced with `median_above_reference_q3`, and the current best `Qwen/Qwen3-VL-8B-Instruct` checkpoint is iter1 (`hard_frac=0.100`, `easy_frac=0.540`, `band_frac=0.360`). This is better than the retired median-ranking semantics but still too easy, so the next pass should keep targeting only the relational median variant.

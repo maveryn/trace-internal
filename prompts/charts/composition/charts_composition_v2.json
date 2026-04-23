@@ -1,0 +1,89 @@
+{
+  "bundle_id": "charts_composition_v2",
+  "schema_version": "v1",
+  "task_family_templates": {
+    "composition_chart_value": [
+      "The image contains {object_description}.",
+      "Shown is {object_description}.",
+      "Displayed is {object_description}.",
+      "Use this visual: {object_description}.",
+      "Read this visual: {object_description}."
+    ]
+  },
+  "task_templates": {
+    "stacked_composition_query": [
+      "Use only the printed values.",
+      "Read the relevant printed values.",
+      "Compute from the displayed numbers.",
+      "Use the legend and the printed segment values.",
+      "Use the listed labels and values."
+    ]
+  },
+  "task_variant_templates": {
+    "category_subset_sum": [
+      "At category {query_category_label}, what total do legend labels {query_series_subset_labels} contribute together?",
+      "Within the stack at category {query_category_label}, add the segment values for labels {query_series_subset_labels}. What total do you get?",
+      "For category {query_category_label}, what is the combined value of legend labels {query_series_subset_labels}?",
+      "Using the stack at category {query_category_label}, sum the segments for labels {query_series_subset_labels}. What total do they make?",
+      "At category {query_category_label}, add together the segment values for labels {query_series_subset_labels}. What is the total?"
+    ],
+    "series_across_categories_sum": [
+      "For legend label {query_series_label}, add its segment values across categories {query_category_subset_labels}. What total do you get?",
+      "Using legend label {query_series_label}, what is the total value across categories {query_category_subset_labels}?",
+      "Across categories {query_category_subset_labels}, sum the segment values for label {query_series_label}. What total do they make?",
+      "Take the {query_series_label} segment from categories {query_category_subset_labels}. What total do those values give?",
+      "For label {query_series_label}, what combined value comes from categories {query_category_subset_labels}?"
+    ],
+    "subset_margin_sum": [
+      "Across all categories, compute the total of labels {left_series_subset_labels} minus the total of labels {right_series_subset_labels} for each stack. Add only the positive margins. What total do you get?",
+      "For each category, sum labels {left_series_subset_labels} and sum labels {right_series_subset_labels}. Take the positive differences only and add them. What total do they make?",
+      "Within each stack, compare the total of labels {left_series_subset_labels} with the total of labels {right_series_subset_labels}. Sum only the categories where the left total is larger, using margin (left minus right). What total do you get?",
+      "Add the positive per-category margins where labels {left_series_subset_labels} together exceed labels {right_series_subset_labels} together. What is the total margin?",
+      "Looking across all categories, whenever the combined value of labels {left_series_subset_labels} exceeds that of labels {right_series_subset_labels}, keep that margin and sum those margins. What total do you get?"
+    ]
+  },
+  "required_slots_by_key": {
+    "task_family:composition_chart_value": [
+      "object_description"
+    ],
+    "task_variant:category_subset_sum": [
+      "query_category_label",
+      "query_series_subset_labels"
+    ],
+    "task_variant:series_across_categories_sum": [
+      "query_series_label",
+      "query_category_subset_labels"
+    ],
+    "task_variant:subset_margin_sum": [
+      "left_series_subset_labels",
+      "right_series_subset_labels"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nUse this answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nRequired evidence format: {evidence_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nUse this evidence format: {evidence_hint}.\nUse this answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFinal answer format: {answer_hint}.\nEvidence format: {evidence_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nFormat for the \"evidence\" field: {evidence_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  }
+}

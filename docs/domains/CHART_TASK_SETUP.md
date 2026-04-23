@@ -135,7 +135,7 @@ Note:
 3. `task_charts_statistics_summary_value` currently stays on the axis-based scene variants `area|bar|horizontal_bar|line|scatter|dot_plot|lollipop`; `pie`, `donut`, and `radar` remain enabled only on the tasks where their semantics still fit cleanly.
 4. `task_charts_multiseries_pairwise_comparison_count` is the first active multiseries chart task; it uses `2..3` named series, `5..10` labeled categories, category-label `label_set` evidence, and the multiseries scene variants `grouped_bar|grouped_horizontal_bar|multi_line|grouped_lollipop`.
 5. The active distribution tasks use fixed `scene_variant` values `histogram`, `boxplot`, and `violin` instead of sampling across the broader chart-variant pool.
-6. `task_charts_composition_subset_value` is the first active composition chart task; it uses stacked scenes for `stack_total_at_label|stack_segment_value` and pie/donut scenes for `combined_share_subset`, with ordered `integer_list` evidence over the relevant segment or slice values.
+6. `task_charts_composition_subset_value` is the active composition chart task; it stays stacked-only (`stacked_bar|stacked_horizontal_bar`) and uses the semantic variants `category_subset_sum|series_across_categories_sum|subset_margin_sum`, with ordered `integer_list` evidence over the queried segment values or per-category subset margins.
 7. `task_charts_trend_structure_value` is the first active trend chart task; it uses ordered single-series charts only and currently supports `area|bar|horizontal_bar|line|dot_plot|lollipop`.
 
 ## Scene contract

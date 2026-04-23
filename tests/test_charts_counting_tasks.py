@@ -206,7 +206,6 @@ def test_chart_counting_supports_explicit_mark_count_10() -> None:
         )
         assert int(out.trace_payload["execution_trace"]["mark_count"]) == 10
 
-
 def test_chart_counting_pie_caps_default_mark_count() -> None:
     task = ChartsCountingValueCountTask()
     out = task.generate(9975, params={"task_variant": "above_threshold", "scene_variant": "pie"}, max_attempts=10)

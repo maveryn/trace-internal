@@ -109,7 +109,7 @@ Active bundles:
    - `prompts/charts/multiseries/charts_multiseries_v1.json`
    - `prompts/charts/distribution/charts_distribution_v1.json`
    - `prompts/charts/trend/charts_trend_v1.json`
-   - `prompts/charts/composition/charts_composition_v1.json`
+   - `prompts/charts/composition/charts_composition_v2.json`
 6. Tables:
    - `prompts/tables/statistics/tables_statistics_v1.json`
    - `prompts/tables/counting/tables_counting_v1.json`
@@ -204,7 +204,7 @@ Active task-to-bundle mapping:
    - `task_charts_multiseries_pairwise_comparison_count` -> `charts_multiseries_v1`
    - `task_charts_distribution_histogram_count|boxplot_label|density_label` -> `charts_distribution_v1`
    - `task_charts_trend_structure_value` -> `charts_trend_v1`
-   - `task_charts_composition_subset_value` -> `charts_composition_v1`
+   - `task_charts_composition_subset_value` -> `charts_composition_v2`
 14. Tables:
    - `task_tables_statistics_summary_label|summary_value|filtered_subset_value|filtered_subset_label` -> `tables_statistics_v1`
    - `task_tables_counting_value_count` -> `tables_counting_v1`

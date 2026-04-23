@@ -1,4 +1,4 @@
-"""Shared generation/render helpers for composition-style chart task families."""
+"""Shared generation/render helpers for stacked-composition chart tasks."""
 
 from __future__ import annotations
 
@@ -9,12 +9,9 @@ from ....core.seed import spawn_rng
 from ...shared.config_defaults import group_default
 from .labeled_chart_common import (
     LabeledChartDefaults,
-    PIE_LIKE_SCENE_VARIANTS,
     balanced_choice_from_values,
     compose_with_sum,
-    projected_mark_evidence,
     resolve_value_bounds,
-    sample_composition_with_sum,
     sample_chart_labels,
 )
 from .multiseries_chart_common import (
@@ -30,35 +27,35 @@ TaskVariant = str
 SceneVariant = str
 
 SUPPORTED_COMPOSITION_TASK_VARIANTS: Tuple[str, ...] = (
-    "stack_total_at_label",
-    "stack_segment_value",
-    "combined_share_subset",
+    "category_subset_sum",
+    "series_across_categories_sum",
+    "subset_margin_sum",
 )
 STACKED_COMPOSITION_SCENE_VARIANTS: Tuple[str, ...] = (
     "stacked_bar",
     "stacked_horizontal_bar",
 )
-SUPPORTED_COMPOSITION_SCENE_VARIANTS: Tuple[str, ...] = (
-    "stacked_bar",
-    "stacked_horizontal_bar",
-    "pie",
-    "donut",
-)
+SUPPORTED_COMPOSITION_SCENE_VARIANTS: Tuple[str, ...] = STACKED_COMPOSITION_SCENE_VARIANTS
 _SCENE_VARIANTS_BY_TASK_VARIANT: Dict[str, Tuple[str, ...]] = {
-    "stack_total_at_label": STACKED_COMPOSITION_SCENE_VARIANTS,
-    "stack_segment_value": STACKED_COMPOSITION_SCENE_VARIANTS,
-    "combined_share_subset": ("pie", "donut"),
+    str(task_variant): STACKED_COMPOSITION_SCENE_VARIANTS
+    for task_variant in SUPPORTED_COMPOSITION_TASK_VARIANTS
 }
 
 
 @dataclass(frozen=True)
 class CompositionChartDefaults(LabeledChartDefaults):
-    """Stable fallback defaults shared by composition-style chart tasks."""
+    """Stable fallback defaults shared by stacked-composition chart tasks."""
 
-    category_count_min: int = 4
-    category_count_max: int = 7
-    series_count_min: int = 3
-    series_count_max: int = 5
+    category_count_min: int = 6
+    category_count_max: int = 9
+    series_count_min: int = 5
+    series_count_max: int = 7
+    query_category_subset_size_min: int = 3
+    query_category_subset_size_max: int = 4
+    query_series_subset_size_min: int = 3
+    query_series_subset_size_max: int = 4
+    comparison_subset_size_min: int = 2
+    comparison_subset_size_max: int = 3
     value_min: int = 4
     value_max: int = 18
     canvas_width: int = 1120
@@ -105,6 +102,28 @@ def _choose_count(
     )
 
 
+def _resolve_subset_size_bounds(
+    *,
+    params: Mapping[str, Any],
+    gen_defaults: Mapping[str, Any],
+    defaults: CompositionChartDefaults,
+    min_key: str,
+    max_key: str,
+    task_id: str,
+) -> Tuple[int, int]:
+    """Resolve one min/max subset-size range."""
+
+    min_default = int(getattr(defaults, str(min_key)))
+    max_default = int(getattr(defaults, str(max_key)))
+    subset_min = int(params.get(str(min_key), group_default(gen_defaults, str(min_key), int(min_default))))
+    subset_max = int(params.get(str(max_key), group_default(gen_defaults, str(max_key), int(max_default))))
+    if int(subset_min) <= 0 or int(subset_max) <= 0:
+        raise ValueError(f"{task_id}: subset sizes must be positive")
+    if int(subset_min) > int(subset_max):
+        raise ValueError(f"{task_id}: {min_key} cannot exceed {max_key}")
+    return int(subset_min), int(subset_max)
+
+
 def _values_by_label(labels: Sequence[str], values: Sequence[int]) -> Dict[str, int]:
     """Map ordered labels to ordered integer values."""
 
@@ -126,7 +145,52 @@ def _sample_stack_values(
     return [int(rng.randint(int(value_min), int(value_max))) for _ in range(int(series_count))]
 
 
-def _build_stack_total_dataset(
+def _sample_disjoint_label_subsets(
+    *,
+    labels: Sequence[str],
+    subset_size: int,
+    instance_seed: int,
+    namespace: str,
+) -> Tuple[List[str], List[str]]:
+    """Sample two disjoint ordered label subsets of equal size."""
+
+    if int(2 * subset_size) > int(len(labels)):
+        raise ValueError("subset size is too large for disjoint subset sampling")
+    rng = spawn_rng(int(instance_seed), str(namespace))
+    indices = list(range(len(labels)))
+    rng.shuffle(indices)
+    left_indices = sorted(indices[: int(subset_size)])
+    right_indices = sorted(indices[int(subset_size) : int(2 * subset_size)])
+    return (
+        [str(labels[int(index)]) for index in left_indices],
+        [str(labels[int(index)]) for index in right_indices],
+    )
+
+
+def _sample_total_pair_for_relation(
+    rng,
+    *,
+    subset_size: int,
+    value_min: int,
+    value_max: int,
+    left_greater: bool,
+) -> Tuple[int, int]:
+    """Sample one pair of subset totals with the requested ordering relation."""
+
+    min_total = int(subset_size) * int(value_min)
+    max_total = int(subset_size) * int(value_max)
+    if int(min_total) >= int(max_total):
+        raise ValueError("subset totals need non-degenerate support")
+    if bool(left_greater):
+        right_total = int(rng.randint(int(min_total), int(max_total) - 1))
+        left_total = int(rng.randint(int(right_total) + 1, int(max_total)))
+        return int(left_total), int(right_total)
+    left_total = int(rng.randint(int(min_total), int(max_total)))
+    right_total = int(rng.randint(int(left_total), int(max_total)))
+    return int(left_total), int(right_total)
+
+
+def _build_category_subset_sum_dataset(
     *,
     params: Mapping[str, Any],
     instance_seed: int,
@@ -134,7 +198,7 @@ def _build_stack_total_dataset(
     defaults: CompositionChartDefaults,
     task_id: str,
 ) -> Dict[str, Any]:
-    """Build one stacked-chart dataset for `stack_total_at_label`."""
+    """Build one stacked-chart dataset for `category_subset_sum`."""
 
     value_min, value_max = resolve_value_bounds(params, gen_defaults=gen_defaults, defaults=defaults, task_id=task_id)
     category_count_min, category_count_max = resolve_category_count_bounds(
@@ -149,171 +213,88 @@ def _build_stack_total_dataset(
         defaults=defaults,
         task_id=task_id,
     )
-    target_answer_min = int(
-        params.get(
-            "target_answer_min",
-            group_default(gen_defaults, "target_answer_min", int(series_count_min) * int(value_min)),
-        )
-    )
-    target_answer_max = int(
-        params.get(
-            "target_answer_max",
-            group_default(gen_defaults, "target_answer_max", int(series_count_max) * int(value_max)),
-        )
-    )
-    feasible_answers = [
-        int(value)
-        for value in range(int(target_answer_min), int(target_answer_max) + 1)
-        if any(
-            int(series_count) * int(value_min) <= int(value) <= int(series_count) * int(value_max)
-            for series_count in range(int(series_count_min), int(series_count_max) + 1)
-        )
-    ]
-    target_answer = balanced_choice_from_values(
-        feasible_answers,
+    query_series_subset_size_min, query_series_subset_size_max = _resolve_subset_size_bounds(
         params=params,
-        instance_seed=int(instance_seed),
-        namespace=f"{task_id}.target_answer:stack_total_at_label",
+        gen_defaults=gen_defaults,
+        defaults=defaults,
+        min_key="query_series_subset_size_min",
+        max_key="query_series_subset_size_max",
+        task_id=task_id,
     )
+
     feasible_series_counts = [
         int(series_count)
         for series_count in range(int(series_count_min), int(series_count_max) + 1)
-        if int(series_count) * int(value_min) <= int(target_answer) <= int(series_count) * int(value_max)
+        if int(series_count) >= int(query_series_subset_size_min)
     ]
     series_count = _choose_count(
         params=params,
         explicit_key="series_count",
         supported_values=feasible_series_counts,
         instance_seed=int(instance_seed),
-        namespace=f"{task_id}.series_count:stack_total_at_label:{int(target_answer)}",
+        namespace=f"{task_id}.series_count:category_subset_sum",
     )
     category_count = _choose_count(
         params=params,
         explicit_key="category_count",
         supported_values=range(int(category_count_min), int(category_count_max) + 1),
         instance_seed=int(instance_seed),
-        namespace=f"{task_id}.category_count:stack_total_at_label",
+        namespace=f"{task_id}.category_count:category_subset_sum",
+    )
+
+    feasible_subset_sizes = [
+        int(size)
+        for size in range(int(query_series_subset_size_min), int(query_series_subset_size_max) + 1)
+        if int(size) <= int(series_count)
+    ]
+    query_series_subset_size = _choose_count(
+        params=params,
+        explicit_key="query_series_subset_size",
+        supported_values=feasible_subset_sizes,
+        instance_seed=int(instance_seed),
+        namespace=f"{task_id}.query_series_subset_size:category_subset_sum",
     )
 
     series_labels = list(sample_series_labels(count=int(series_count), instance_seed=int(instance_seed)))
     category_labels = list(sample_chart_labels(count=int(category_count), instance_seed=int(instance_seed)))
-    query_rng = spawn_rng(int(instance_seed), f"{task_id}.stack_total.query")
-    query_category_index = int(query_rng.randrange(len(category_labels)))
-    query_category_label = str(category_labels[int(query_category_index)])
 
-    values_rng = spawn_rng(int(instance_seed), f"{task_id}.stack_total.values")
-    values_by_category: Dict[str, Dict[str, int]] = {}
-    evidence_values: List[int] | None = None
-    for category_label in category_labels:
-        if str(category_label) == str(query_category_label):
-            stack_values = compose_with_sum(
-                int(target_answer),
-                count=int(series_count),
-                value_min=int(value_min),
-                value_max=int(value_max),
-                instance_seed=int(instance_seed),
-                namespace=f"{task_id}.stack_total.compose",
-            )
-        else:
-            stack_values = _sample_stack_values(
-                values_rng,
-                series_count=int(series_count),
-                value_min=int(value_min),
-                value_max=int(value_max),
-            )
-        values_by_category[str(category_label)] = _values_by_label(series_labels, stack_values)
-        if str(category_label) == str(query_category_label):
-            evidence_values = [int(value) for value in stack_values]
-    if evidence_values is None:
-        raise RuntimeError("stack_total_at_label failed to assign evidence values")
+    query_rng = spawn_rng(int(instance_seed), f"{task_id}.category_subset_sum.query")
+    query_category_label = str(category_labels[int(query_rng.randrange(len(category_labels)))])
+    subset_indices = list(range(len(series_labels)))
+    query_rng.shuffle(subset_indices)
+    subset_indices = sorted(subset_indices[: int(query_series_subset_size)])
+    query_series_subset_labels = [str(series_labels[int(index)]) for index in subset_indices]
 
-    return {
-        "scene_mode": "stacked",
-        "series_labels": list(series_labels),
-        "category_labels": list(category_labels),
-        "values_by_category": {
-            str(category_label): {
-                str(series_label): int(value)
-                for series_label, value in values_by_category[str(category_label)].items()
-            }
-            for category_label in category_labels
-        },
-        "query_category_label": str(query_category_label),
-        "query_series_label": "",
-        "query_subset_labels": [],
-        "evidence_labels": list(series_labels),
-        "evidence_values": [int(value) for value in evidence_values],
-        "answer_value": int(target_answer),
-        "series_count": int(series_count),
-        "category_count": int(category_count),
-        "series_count_range": [int(series_count_min), int(series_count_max)],
-        "category_count_range": [int(category_count_min), int(category_count_max)],
-        "target_answer": int(target_answer),
-        "target_answer_range": [
-            int(min(feasible_answers)),
-            int(max(feasible_answers)),
-        ],
-        "value_semantics": "integer",
-        "composition_scope": "stack",
-    }
-
-
-def _build_stack_segment_dataset(
-    *,
-    params: Mapping[str, Any],
-    instance_seed: int,
-    gen_defaults: Mapping[str, Any],
-    defaults: CompositionChartDefaults,
-    task_id: str,
-) -> Dict[str, Any]:
-    """Build one stacked-chart dataset for `stack_segment_value`."""
-
-    value_min, value_max = resolve_value_bounds(params, gen_defaults=gen_defaults, defaults=defaults, task_id=task_id)
-    category_count_min, category_count_max = resolve_category_count_bounds(
-        params,
-        gen_defaults=gen_defaults,
-        defaults=defaults,
-        task_id=task_id,
+    target_answer_min = int(
+        params.get(
+            "target_answer_min",
+            group_default(gen_defaults, "target_answer_min", int(query_series_subset_size) * int(value_min)),
+        )
     )
-    series_count_min, series_count_max = resolve_series_count_bounds(
-        params,
-        gen_defaults=gen_defaults,
-        defaults=defaults,
-        task_id=task_id,
+    target_answer_max = int(
+        params.get(
+            "target_answer_max",
+            group_default(gen_defaults, "target_answer_max", int(query_series_subset_size) * int(value_max)),
+        )
     )
-    target_answer_min = int(params.get("target_answer_min", group_default(gen_defaults, "target_answer_min", int(value_min))))
-    target_answer_max = int(params.get("target_answer_max", group_default(gen_defaults, "target_answer_max", int(value_max))))
-    feasible_answers = [int(value) for value in range(int(target_answer_min), int(target_answer_max) + 1)]
+    feasible_answers = [
+        int(value)
+        for value in range(int(target_answer_min), int(target_answer_max) + 1)
+        if int(query_series_subset_size) * int(value_min) <= int(value) <= int(query_series_subset_size) * int(value_max)
+    ]
     target_answer = balanced_choice_from_values(
         feasible_answers,
         params=params,
         instance_seed=int(instance_seed),
-        namespace=f"{task_id}.target_answer:stack_segment_value",
+        namespace=f"{task_id}.target_answer:category_subset_sum",
     )
-    series_count = _choose_count(
-        params=params,
-        explicit_key="series_count",
-        supported_values=range(int(series_count_min), int(series_count_max) + 1),
-        instance_seed=int(instance_seed),
-        namespace=f"{task_id}.series_count:stack_segment_value",
-    )
-    category_count = _choose_count(
-        params=params,
-        explicit_key="category_count",
-        supported_values=range(int(category_count_min), int(category_count_max) + 1),
-        instance_seed=int(instance_seed),
-        namespace=f"{task_id}.category_count:stack_segment_value",
-    )
-    series_labels = list(sample_series_labels(count=int(series_count), instance_seed=int(instance_seed)))
-    category_labels = list(sample_chart_labels(count=int(category_count), instance_seed=int(instance_seed)))
 
-    query_rng = spawn_rng(int(instance_seed), f"{task_id}.stack_segment.query")
-    query_category_label = str(category_labels[int(query_rng.randrange(len(category_labels)))])
-    query_series_label = str(series_labels[int(query_rng.randrange(len(series_labels)))])
-
-    values_rng = spawn_rng(int(instance_seed), f"{task_id}.stack_segment.values")
+    values_rng = spawn_rng(int(instance_seed), f"{task_id}.category_subset_sum.values")
     values_by_category: Dict[str, Dict[str, int]] = {}
     evidence_values: List[int] | None = None
+    evidence_cells: List[Dict[str, Any]] = []
+    subset_label_set = set(str(label) for label in query_series_subset_labels)
+
     for category_label in category_labels:
         stack_values = _sample_stack_values(
             values_rng,
@@ -322,12 +303,30 @@ def _build_stack_segment_dataset(
             value_max=int(value_max),
         )
         if str(category_label) == str(query_category_label):
-            query_index = series_labels.index(str(query_series_label))
-            stack_values[int(query_index)] = int(target_answer)
-            evidence_values = [int(value) for value in stack_values]
+            selected_values = compose_with_sum(
+                int(target_answer),
+                count=int(query_series_subset_size),
+                value_min=int(value_min),
+                value_max=int(value_max),
+                instance_seed=int(instance_seed),
+                namespace=f"{task_id}.category_subset_sum.compose",
+            )
+            selected_iter = iter(int(value) for value in selected_values)
+            for series_index, series_label in enumerate(series_labels):
+                if str(series_label) in subset_label_set:
+                    stack_values[int(series_index)] = int(next(selected_iter))
+            evidence_values = [int(stack_values[int(series_labels.index(str(label)))]) for label in query_series_subset_labels]
+            evidence_cells = [
+                {
+                    "category_label": str(query_category_label),
+                    "series_label": str(label),
+                }
+                for label in query_series_subset_labels
+            ]
         values_by_category[str(category_label)] = _values_by_label(series_labels, stack_values)
+
     if evidence_values is None:
-        raise RuntimeError("stack_segment_value failed to assign evidence values")
+        raise RuntimeError("category_subset_sum failed to assign evidence values")
 
     return {
         "scene_mode": "stacked",
@@ -341,23 +340,31 @@ def _build_stack_segment_dataset(
             for category_label in category_labels
         },
         "query_category_label": str(query_category_label),
-        "query_series_label": str(query_series_label),
-        "query_subset_labels": [],
-        "evidence_labels": list(series_labels),
+        "query_category_labels": [str(query_category_label)],
+        "query_series_label": "",
+        "query_series_subset_labels": list(query_series_subset_labels),
+        "query_category_subset_labels": [],
+        "left_series_subset_labels": [],
+        "right_series_subset_labels": [],
+        "evidence_labels": list(query_series_subset_labels),
         "evidence_values": [int(value) for value in evidence_values],
+        "evidence_cells": list(evidence_cells),
         "answer_value": int(target_answer),
         "series_count": int(series_count),
         "category_count": int(category_count),
         "series_count_range": [int(series_count_min), int(series_count_max)],
         "category_count_range": [int(category_count_min), int(category_count_max)],
+        "query_series_subset_size": int(query_series_subset_size),
+        "query_series_subset_size_range": [int(query_series_subset_size_min), int(query_series_subset_size_max)],
         "target_answer": int(target_answer),
         "target_answer_range": [int(min(feasible_answers)), int(max(feasible_answers))],
         "value_semantics": "integer",
         "composition_scope": "stack",
+        "operation_kind": "category_subset_sum",
     }
 
 
-def _build_combined_share_dataset(
+def _build_series_across_categories_sum_dataset(
     *,
     params: Mapping[str, Any],
     instance_seed: int,
@@ -365,92 +372,410 @@ def _build_combined_share_dataset(
     defaults: CompositionChartDefaults,
     task_id: str,
 ) -> Dict[str, Any]:
-    """Build one pie-style percentage composition for `combined_share_subset`."""
+    """Build one stacked-chart dataset for `series_across_categories_sum`."""
 
+    value_min, value_max = resolve_value_bounds(params, gen_defaults=gen_defaults, defaults=defaults, task_id=task_id)
+    category_count_min, category_count_max = resolve_category_count_bounds(
+        params,
+        gen_defaults=gen_defaults,
+        defaults=defaults,
+        task_id=task_id,
+    )
     series_count_min, series_count_max = resolve_series_count_bounds(
         params,
         gen_defaults=gen_defaults,
         defaults=defaults,
         task_id=task_id,
     )
-    if int(series_count_min) < 3:
-        raise ValueError("combined_share_subset requires at least three labels")
+    query_category_subset_size_min, query_category_subset_size_max = _resolve_subset_size_bounds(
+        params=params,
+        gen_defaults=gen_defaults,
+        defaults=defaults,
+        min_key="query_category_subset_size_min",
+        max_key="query_category_subset_size_max",
+        task_id=task_id,
+    )
+
+    feasible_category_counts = [
+        int(category_count)
+        for category_count in range(int(category_count_min), int(category_count_max) + 1)
+        if int(category_count) >= int(query_category_subset_size_min)
+    ]
+    category_count = _choose_count(
+        params=params,
+        explicit_key="category_count",
+        supported_values=feasible_category_counts,
+        instance_seed=int(instance_seed),
+        namespace=f"{task_id}.category_count:series_across_categories_sum",
+    )
     series_count = _choose_count(
         params=params,
         explicit_key="series_count",
         supported_values=range(int(series_count_min), int(series_count_max) + 1),
         instance_seed=int(instance_seed),
-        namespace=f"{task_id}.series_count:combined_share_subset",
+        namespace=f"{task_id}.series_count:series_across_categories_sum",
     )
-    series_labels = list(sample_series_labels(count=int(series_count), instance_seed=int(instance_seed)))
-    query_rng = spawn_rng(int(instance_seed), f"{task_id}.combined_share.query")
-    query_indices = list(range(int(series_count)))
-    query_rng.shuffle(query_indices)
-    subset_indices = sorted(query_indices[:2])
-    subset_labels = [str(series_labels[int(index)]) for index in subset_indices]
 
-    target_answer_min = int(params.get("target_answer_min", group_default(gen_defaults, "target_answer_min", 5)))
-    target_answer_max = int(params.get("target_answer_max", group_default(gen_defaults, "target_answer_max", 95)))
-    subset_min = 2
-    subset_max = 100 - (int(series_count) - 2)
+    feasible_subset_sizes = [
+        int(size)
+        for size in range(int(query_category_subset_size_min), int(query_category_subset_size_max) + 1)
+        if int(size) <= int(category_count)
+    ]
+    query_category_subset_size = _choose_count(
+        params=params,
+        explicit_key="query_category_subset_size",
+        supported_values=feasible_subset_sizes,
+        instance_seed=int(instance_seed),
+        namespace=f"{task_id}.query_category_subset_size:series_across_categories_sum",
+    )
+
+    series_labels = list(sample_series_labels(count=int(series_count), instance_seed=int(instance_seed)))
+    category_labels = list(sample_chart_labels(count=int(category_count), instance_seed=int(instance_seed)))
+
+    query_rng = spawn_rng(int(instance_seed), f"{task_id}.series_across_categories_sum.query")
+    query_series_label = str(series_labels[int(query_rng.randrange(len(series_labels)))])
+    subset_indices = list(range(len(category_labels)))
+    query_rng.shuffle(subset_indices)
+    subset_indices = sorted(subset_indices[: int(query_category_subset_size)])
+    query_category_subset_labels = [str(category_labels[int(index)]) for index in subset_indices]
+
+    target_answer_min = int(
+        params.get(
+            "target_answer_min",
+            group_default(gen_defaults, "target_answer_min", int(query_category_subset_size) * int(value_min)),
+        )
+    )
+    target_answer_max = int(
+        params.get(
+            "target_answer_max",
+            group_default(gen_defaults, "target_answer_max", int(query_category_subset_size) * int(value_max)),
+        )
+    )
     feasible_answers = [
         int(value)
         for value in range(int(target_answer_min), int(target_answer_max) + 1)
-        if int(subset_min) <= int(value) <= int(subset_max)
+        if int(query_category_subset_size) * int(value_min) <= int(value) <= int(query_category_subset_size) * int(value_max)
     ]
     target_answer = balanced_choice_from_values(
         feasible_answers,
         params=params,
         instance_seed=int(instance_seed),
-        namespace=f"{task_id}.target_answer:combined_share_subset:{int(series_count)}",
+        namespace=f"{task_id}.target_answer:series_across_categories_sum",
     )
 
-    values_rng = spawn_rng(int(instance_seed), f"{task_id}.combined_share.values")
-    subset_values = sample_composition_with_sum(
-        values_rng,
-        target_sum=int(target_answer),
-        count=2,
-        value_min=1,
-        value_max=99,
+    values_rng = spawn_rng(int(instance_seed), f"{task_id}.series_across_categories_sum.values")
+    values_by_category: Dict[str, Dict[str, int]] = {}
+    evidence_values: List[int] | None = None
+    evidence_cells: List[Dict[str, Any]] = []
+
+    query_series_index = int(series_labels.index(str(query_series_label)))
+    selected_values = compose_with_sum(
+        int(target_answer),
+        count=int(query_category_subset_size),
+        value_min=int(value_min),
+        value_max=int(value_max),
+        instance_seed=int(instance_seed),
+        namespace=f"{task_id}.series_across_categories_sum.compose",
     )
-    remaining_values = sample_composition_with_sum(
-        values_rng,
-        target_sum=100 - int(target_answer),
-        count=int(series_count) - 2,
-        value_min=1,
-        value_max=99,
-    )
-    values_by_label: Dict[str, int] = {}
-    remaining_iter = iter(int(value) for value in remaining_values)
-    subset_iter = iter(int(value) for value in subset_values)
-    for index, series_label in enumerate(series_labels):
-        if int(index) in set(subset_indices):
-            values_by_label[str(series_label)] = int(next(subset_iter))
-        else:
-            values_by_label[str(series_label)] = int(next(remaining_iter))
-    evidence_values = [int(values_by_label[str(label)]) for label in series_labels]
+    selected_by_category = {
+        str(category_label): int(value)
+        for category_label, value in zip(query_category_subset_labels, selected_values)
+    }
+
+    for category_label in category_labels:
+        stack_values = _sample_stack_values(
+            values_rng,
+            series_count=int(series_count),
+            value_min=int(value_min),
+            value_max=int(value_max),
+        )
+        if str(category_label) in set(query_category_subset_labels):
+            stack_values[int(query_series_index)] = int(selected_by_category[str(category_label)])
+        values_by_category[str(category_label)] = _values_by_label(series_labels, stack_values)
+
+    evidence_values = [
+        int(values_by_category[str(category_label)][str(query_series_label)])
+        for category_label in query_category_subset_labels
+    ]
+    evidence_cells = [
+        {
+            "category_label": str(category_label),
+            "series_label": str(query_series_label),
+        }
+        for category_label in query_category_subset_labels
+    ]
 
     return {
-        "scene_mode": "pie_like",
+        "scene_mode": "stacked",
         "series_labels": list(series_labels),
-        "category_labels": [],
-        "values": [int(values_by_label[str(label)]) for label in series_labels],
-        "values_by_label": {str(label): int(values_by_label[str(label)]) for label in series_labels},
+        "category_labels": list(category_labels),
+        "values_by_category": {
+            str(category_label): {
+                str(series_label): int(value)
+                for series_label, value in values_by_category[str(category_label)].items()
+            }
+            for category_label in category_labels
+        },
         "query_category_label": "",
-        "query_series_label": "",
-        "query_subset_labels": list(subset_labels),
-        "evidence_labels": list(series_labels),
+        "query_category_labels": list(query_category_subset_labels),
+        "query_series_label": str(query_series_label),
+        "query_series_subset_labels": [],
+        "query_category_subset_labels": list(query_category_subset_labels),
+        "left_series_subset_labels": [],
+        "right_series_subset_labels": [],
+        "evidence_labels": list(query_category_subset_labels),
         "evidence_values": [int(value) for value in evidence_values],
+        "evidence_cells": list(evidence_cells),
         "answer_value": int(target_answer),
         "series_count": int(series_count),
-        "category_count": 0,
+        "category_count": int(category_count),
         "series_count_range": [int(series_count_min), int(series_count_max)],
-        "category_count_range": [0, 0],
+        "category_count_range": [int(category_count_min), int(category_count_max)],
+        "query_category_subset_size": int(query_category_subset_size),
+        "query_category_subset_size_range": [int(query_category_subset_size_min), int(query_category_subset_size_max)],
         "target_answer": int(target_answer),
         "target_answer_range": [int(min(feasible_answers)), int(max(feasible_answers))],
-        "value_semantics": "percentage",
-        "composition_total": 100,
-        "composition_scope": "chart",
+        "value_semantics": "integer",
+        "composition_scope": "stack",
+        "operation_kind": "series_across_categories_sum",
+    }
+
+
+def _build_subset_margin_sum_dataset(
+    *,
+    params: Mapping[str, Any],
+    instance_seed: int,
+    gen_defaults: Mapping[str, Any],
+    defaults: CompositionChartDefaults,
+    task_id: str,
+) -> Dict[str, Any]:
+    """Build one stacked-chart dataset for `subset_margin_sum`."""
+
+    value_min, value_max = resolve_value_bounds(params, gen_defaults=gen_defaults, defaults=defaults, task_id=task_id)
+    category_count_min, category_count_max = resolve_category_count_bounds(
+        params,
+        gen_defaults=gen_defaults,
+        defaults=defaults,
+        task_id=task_id,
+    )
+    series_count_min, series_count_max = resolve_series_count_bounds(
+        params,
+        gen_defaults=gen_defaults,
+        defaults=defaults,
+        task_id=task_id,
+    )
+    comparison_subset_size_min, comparison_subset_size_max = _resolve_subset_size_bounds(
+        params=params,
+        gen_defaults=gen_defaults,
+        defaults=defaults,
+        min_key="comparison_subset_size_min",
+        max_key="comparison_subset_size_max",
+        task_id=task_id,
+    )
+
+    feasible_series_counts = [
+        int(series_count)
+        for series_count in range(int(series_count_min), int(series_count_max) + 1)
+        if int(series_count) >= int(2 * comparison_subset_size_min)
+    ]
+    series_count = _choose_count(
+        params=params,
+        explicit_key="series_count",
+        supported_values=feasible_series_counts,
+        instance_seed=int(instance_seed),
+        namespace=f"{task_id}.series_count:subset_margin_sum",
+    )
+    category_count = _choose_count(
+        params=params,
+        explicit_key="category_count",
+        supported_values=range(int(category_count_min), int(category_count_max) + 1),
+        instance_seed=int(instance_seed),
+        namespace=f"{task_id}.category_count:subset_margin_sum",
+    )
+
+    feasible_subset_sizes = [
+        int(size)
+        for size in range(int(comparison_subset_size_min), int(comparison_subset_size_max) + 1)
+        if int(2 * size) <= int(series_count)
+    ]
+    comparison_subset_size = _choose_count(
+        params=params,
+        explicit_key="comparison_subset_size",
+        supported_values=feasible_subset_sizes,
+        instance_seed=int(instance_seed),
+        namespace=f"{task_id}.comparison_subset_size:subset_margin_sum",
+    )
+
+    series_labels = list(sample_series_labels(count=int(series_count), instance_seed=int(instance_seed)))
+    category_labels = list(sample_chart_labels(count=int(category_count), instance_seed=int(instance_seed)))
+    left_series_subset_labels, right_series_subset_labels = _sample_disjoint_label_subsets(
+        labels=series_labels,
+        subset_size=int(comparison_subset_size),
+        instance_seed=int(instance_seed),
+        namespace=f"{task_id}.subset_margin_sum.label_subsets",
+    )
+
+    max_margin_per_category = int(comparison_subset_size) * int(value_max - value_min)
+    if int(max_margin_per_category) <= 0:
+        raise ValueError("subset_margin_sum requires non-degenerate per-category margin support")
+    target_answer_min = int(
+        params.get(
+            "target_answer_min",
+            group_default(gen_defaults, "target_answer_min", max(4, int(comparison_subset_size))),
+        )
+    )
+    target_answer_max = int(
+        params.get(
+            "target_answer_max",
+            group_default(
+                gen_defaults,
+                "target_answer_max",
+                int(category_count) * int(max_margin_per_category),
+            ),
+        )
+    )
+    feasible_answers = [
+        int(value)
+        for value in range(int(target_answer_min), int(target_answer_max) + 1)
+        if 0 < int(value) <= int(category_count) * int(max_margin_per_category)
+    ]
+    target_answer = balanced_choice_from_values(
+        feasible_answers,
+        params=params,
+        instance_seed=int(instance_seed),
+        namespace=f"{task_id}.target_answer:subset_margin_sum",
+    )
+
+    feasible_positive_category_counts = [
+        int(count)
+        for count in range(1, int(category_count) + 1)
+        if int(count) <= int(target_answer) <= int(count) * int(max_margin_per_category)
+    ]
+    positive_category_count = _choose_count(
+        params=params,
+        explicit_key="positive_category_count",
+        supported_values=feasible_positive_category_counts,
+        instance_seed=int(instance_seed),
+        namespace=f"{task_id}.positive_category_count:subset_margin_sum",
+    )
+    positive_margins = compose_with_sum(
+        int(target_answer),
+        count=int(positive_category_count),
+        value_min=1,
+        value_max=int(max_margin_per_category),
+        instance_seed=int(instance_seed),
+        namespace=f"{task_id}.subset_margin_sum.positive_margins",
+    )
+
+    relation_rng = spawn_rng(int(instance_seed), f"{task_id}.subset_margin_sum.relation")
+    positive_category_indices = list(range(len(category_labels)))
+    relation_rng.shuffle(positive_category_indices)
+    positive_category_indices = list(positive_category_indices[: int(positive_category_count)])
+    positive_margin_by_index = {
+        int(category_index): int(margin)
+        for category_index, margin in zip(positive_category_indices, positive_margins)
+    }
+    positive_category_index_set = set(int(index) for index in positive_category_indices)
+
+    values_rng = spawn_rng(int(instance_seed), f"{task_id}.subset_margin_sum.values")
+    values_by_category: Dict[str, Dict[str, int]] = {}
+    evidence_values: List[int] = []
+    evidence_cells: List[Dict[str, Any]] = []
+    positive_margin_by_category: Dict[str, int] = {}
+
+    left_label_set = set(str(label) for label in left_series_subset_labels)
+    right_label_set = set(str(label) for label in right_series_subset_labels)
+
+    for category_index, category_label in enumerate(category_labels):
+        stack_values = _sample_stack_values(
+            values_rng,
+            series_count=int(series_count),
+            value_min=int(value_min),
+            value_max=int(value_max),
+        )
+        left_total, right_total = _sample_total_pair_for_relation(
+            values_rng,
+            subset_size=int(comparison_subset_size),
+            value_min=int(value_min),
+            value_max=int(value_max),
+            left_greater=(int(category_index) in positive_category_index_set),
+        )
+        if int(category_index) in positive_category_index_set:
+            margin = int(positive_margin_by_index[int(category_index)])
+            max_right_total = int(comparison_subset_size) * int(value_max) - int(margin)
+            if int(max_right_total) < int(comparison_subset_size) * int(value_min):
+                raise ValueError("positive margin exceeds feasible per-category total support")
+            right_total = int(values_rng.randint(int(comparison_subset_size) * int(value_min), int(max_right_total)))
+            left_total = int(right_total) + int(margin)
+        else:
+            margin = int(left_total) - int(right_total)
+        left_values = compose_with_sum(
+            int(left_total),
+            count=int(comparison_subset_size),
+            value_min=int(value_min),
+            value_max=int(value_max),
+            instance_seed=int(instance_seed),
+            namespace=f"{task_id}.subset_margin_sum.left:{category_index}",
+        )
+        right_values = compose_with_sum(
+            int(right_total),
+            count=int(comparison_subset_size),
+            value_min=int(value_min),
+            value_max=int(value_max),
+            instance_seed=int(instance_seed),
+            namespace=f"{task_id}.subset_margin_sum.right:{category_index}",
+        )
+        left_iter = iter(int(value) for value in left_values)
+        right_iter = iter(int(value) for value in right_values)
+        for series_index, series_label in enumerate(series_labels):
+            if str(series_label) in left_label_set:
+                stack_values[int(series_index)] = int(next(left_iter))
+            elif str(series_label) in right_label_set:
+                stack_values[int(series_index)] = int(next(right_iter))
+        values_by_category[str(category_label)] = _values_by_label(series_labels, stack_values)
+
+        evidence_values.append(int(margin))
+        positive_margin_by_category[str(category_label)] = int(max(0, int(margin)))
+        for label in left_series_subset_labels:
+            evidence_cells.append({"category_label": str(category_label), "series_label": str(label)})
+        for label in right_series_subset_labels:
+            evidence_cells.append({"category_label": str(category_label), "series_label": str(label)})
+
+    return {
+        "scene_mode": "stacked",
+        "series_labels": list(series_labels),
+        "category_labels": list(category_labels),
+        "values_by_category": {
+            str(category_label): {
+                str(series_label): int(value)
+                for series_label, value in values_by_category[str(category_label)].items()
+            }
+            for category_label in category_labels
+        },
+        "query_category_label": "",
+        "query_category_labels": list(category_labels),
+        "query_series_label": "",
+        "query_series_subset_labels": [],
+        "query_category_subset_labels": [],
+        "left_series_subset_labels": list(left_series_subset_labels),
+        "right_series_subset_labels": list(right_series_subset_labels),
+        "evidence_labels": list(category_labels),
+        "evidence_values": [int(value) for value in evidence_values],
+        "evidence_cells": list(evidence_cells),
+        "answer_value": int(target_answer),
+        "series_count": int(series_count),
+        "category_count": int(category_count),
+        "series_count_range": [int(series_count_min), int(series_count_max)],
+        "category_count_range": [int(category_count_min), int(category_count_max)],
+        "comparison_subset_size": int(comparison_subset_size),
+        "comparison_subset_size_range": [int(comparison_subset_size_min), int(comparison_subset_size_max)],
+        "positive_category_count": int(positive_category_count),
+        "target_answer": int(target_answer),
+        "target_answer_range": [int(min(feasible_answers)), int(max(feasible_answers))],
+        "positive_margin_by_category": dict(positive_margin_by_category),
+        "value_semantics": "integer",
+        "composition_scope": "stack",
+        "operation_kind": "subset_margin_sum",
     }
 
 
@@ -464,30 +789,28 @@ def build_composition_subset_dataset_for_variant(
     defaults: CompositionChartDefaults,
     task_id: str,
 ) -> Dict[str, Any]:
-    """Construct one composition-chart dataset for the requested query variant."""
+    """Construct one stacked-composition dataset for the requested query variant."""
 
     if str(scene_variant) not in set(supported_scene_variants_for_task_variant(str(task_variant))):
         raise ValueError(f"scene_variant={scene_variant} is incompatible with task_variant={task_variant}")
-    if str(task_variant) == "stack_total_at_label":
-        return _build_stack_total_dataset(
+    if str(task_variant) == "category_subset_sum":
+        return _build_category_subset_sum_dataset(
             params=params,
             instance_seed=int(instance_seed),
             gen_defaults=gen_defaults,
             defaults=defaults,
             task_id=task_id,
         )
-    if str(task_variant) == "stack_segment_value":
-        return _build_stack_segment_dataset(
+    if str(task_variant) == "series_across_categories_sum":
+        return _build_series_across_categories_sum_dataset(
             params=params,
             instance_seed=int(instance_seed),
             gen_defaults=gen_defaults,
             defaults=defaults,
             task_id=task_id,
         )
-    if str(task_variant) == "combined_share_subset":
-        if str(scene_variant) not in set(PIE_LIKE_SCENE_VARIANTS):
-            raise ValueError("combined_share_subset currently supports only pie/donut scenes")
-        return _build_combined_share_dataset(
+    if str(task_variant) == "subset_margin_sum":
+        return _build_subset_margin_sum_dataset(
             params=params,
             instance_seed=int(instance_seed),
             gen_defaults=gen_defaults,
@@ -535,31 +858,30 @@ def resolve_stacked_chart_colors(
 
 def projected_composition_evidence(
     *,
-    scene_variant: str,
     rendered_scene,
-    evidence_labels: Sequence[str],
-    query_category_label: str,
+    evidence_cells: Sequence[Mapping[str, Any]],
 ) -> Dict[str, Any]:
-    """Project prompt-facing composition evidence into reusable pixel-space overlays."""
+    """Project composition evidence into reusable pixel-space overlays."""
 
-    if str(scene_variant) in set(STACKED_COMPOSITION_SCENE_VARIANTS):
-        requested_series = [str(label) for label in evidence_labels]
-        selected_traces = [
-            mark_trace
-            for mark_trace in rendered_scene.mark_traces
-            if str(mark_trace.get("category_label", "")) == str(query_category_label)
-            and str(mark_trace.get("series_label", "")) in set(requested_series)
-        ]
-        ordered = sorted(selected_traces, key=lambda item: int(item["series_rank"]))
-        return {
-            "pixel_point_map": {
-                str(mark_trace["series_label"]): list(mark_trace["mark_center_px"])
-                for mark_trace in ordered
-            },
-            "pixel_point_set": [list(mark_trace["mark_center_px"]) for mark_trace in ordered],
-            "bbox_set": [list(mark_trace["mark_bbox_px"]) for mark_trace in ordered],
-        }
-    return projected_mark_evidence(rendered_scene, evidence_labels)
+    selected_traces = []
+    for evidence_cell in evidence_cells:
+        wanted_category = str(evidence_cell.get("category_label", ""))
+        wanted_series = str(evidence_cell.get("series_label", ""))
+        match = next(
+            (
+                mark_trace
+                for mark_trace in rendered_scene.mark_traces
+                if str(mark_trace.get("category_label", "")) == wanted_category
+                and str(mark_trace.get("series_label", "")) == wanted_series
+            ),
+            None,
+        )
+        if match is not None:
+            selected_traces.append(match)
+    return {
+        "pixel_point_set": [list(mark_trace["mark_center_px"]) for mark_trace in selected_traces],
+        "bbox_set": [list(mark_trace["mark_bbox_px"]) for mark_trace in selected_traces],
+    }
 
 
 __all__ = [

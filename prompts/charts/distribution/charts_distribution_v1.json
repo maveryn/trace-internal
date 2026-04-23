@@ -55,12 +55,12 @@
       "What is the total count from the first bin through {query_bin_label}?",
       "Compute the cumulative count through bin {query_bin_label}."
     ],
-    "highest_median": [
-      "Which label has the highest median?",
-      "Find the label of the boxplot with the highest median.",
-      "Determine which labeled boxplot has the largest median line value.",
-      "What label corresponds to the highest median?",
-      "Identify the boxplot label with the greatest median."
+    "median_above_reference_q3": [
+      "Using label {reference_label} as the reference, which label has the median furthest above {reference_label}'s upper quartile?",
+      "Find the boxplot label whose median is the greatest amount above label {reference_label}'s upper quartile.",
+      "Determine which labeled boxplot has the largest positive gap between its median and label {reference_label}'s upper quartile.",
+      "Relative to label {reference_label}'s upper quartile, which label has the highest median above it?",
+      "Identify the boxplot label whose median sits furthest above label {reference_label}'s upper quartile."
     ],
     "largest_iqr": [
       "Which label has the largest interquartile range?",

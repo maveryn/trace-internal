@@ -32,6 +32,7 @@ from ..shared.distribution_chart_common import (
     resolve_chart_mark_colors,
     resolve_chart_render_params_for_task,
 )
+from ..shared.param_overrides import apply_task_variant_overrides
 from ..shared.visual_defaults import load_chart_background_defaults, load_chart_noise_defaults
 
 
@@ -40,7 +41,7 @@ TaskVariant = str
 TASK_ID = "task_charts_distribution_boxplot_label"
 SCENE_VARIANT = "boxplot"
 _SUPPORTED_TASK_VARIANTS: Tuple[str, ...] = (
-    "highest_median",
+    "median_above_reference_q3",
     "largest_iqr",
     "smallest_iqr",
 )
@@ -56,7 +57,7 @@ POST_IMAGE_BACKGROUND_DEFAULTS = load_chart_background_defaults(task_group="dist
 POST_IMAGE_NOISE_DEFAULTS = load_chart_noise_defaults(task_group="distribution", apply_prob=0.0)
 _COMPLEXITY_WEIGHTS = resolve_chart_complexity_weights(_TASK_GROUP_DEFAULTS, task_id=TASK_ID)
 _REASONING_LOAD_BY_VARIANT: Dict[str, float] = {
-    "highest_median": 0.0,
+    "median_above_reference_q3": 1.0,
     "largest_iqr": 1.0,
     "smallest_iqr": 1.0,
 }
@@ -88,9 +89,11 @@ class ChartsDistributionBoxplotLabelTask:
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         del max_attempts
-        task_variant, task_variant_probabilities = _resolve_task_variant(params, instance_seed=int(instance_seed))
+        base_params = dict(params)
+        task_variant, task_variant_probabilities = _resolve_task_variant(base_params, instance_seed=int(instance_seed))
+        effective_params = apply_task_variant_overrides(base_params, task_variant=str(task_variant))
         mark_style = resolve_chart_mark_colors(
-            params,
+            effective_params,
             render_defaults=_RENDER_DEFAULTS,
             defaults=_RENDER_DEFAULTS_FALLBACK,
             instance_seed=int(instance_seed),
@@ -99,7 +102,7 @@ class ChartsDistributionBoxplotLabelTask:
         )
         boxplots, answer_label, evidence_value, trace_extras = build_boxplot_dataset_for_variant(
             task_variant=str(task_variant),
-            params=params,
+            params=effective_params,
             instance_seed=int(instance_seed),
             gen_defaults=_GEN_DEFAULTS,
             defaults=_DEFAULTS,
@@ -107,7 +110,7 @@ class ChartsDistributionBoxplotLabelTask:
             mark_style=mark_style,
         )
         render_params = resolve_chart_render_params_for_task(
-            {**dict(params), **mark_style},
+            {**dict(effective_params), **mark_style},
             render_defaults=_RENDER_DEFAULTS,
             defaults=_RENDER_DEFAULTS_FALLBACK,
         )
@@ -116,7 +119,7 @@ class ChartsDistributionBoxplotLabelTask:
             canvas_width=int(render_params.canvas_width),
             canvas_height=int(render_params.canvas_height),
             instance_seed=int(instance_seed),
-            params=params,
+            params=effective_params,
             default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
         )
         rendered_scene = render_boxplot_scene(
@@ -127,7 +130,7 @@ class ChartsDistributionBoxplotLabelTask:
         image, post_noise_meta = apply_post_image_noise(
             rendered_scene.image,
             instance_seed=int(instance_seed),
-            params=params,
+            params=effective_params,
             default_config=POST_IMAGE_NOISE_DEFAULTS,
         )
 
@@ -141,13 +144,13 @@ class ChartsDistributionBoxplotLabelTask:
                 "json_output_contract_answer_only",
                 "answer_hint",
                 "object_description_boxplot",
-                "evidence_hint_highest_median",
+                "evidence_hint_median_above_reference_q3",
                 "evidence_hint_largest_iqr",
                 "evidence_hint_smallest_iqr",
-                "json_example_highest_median",
+                "json_example_median_above_reference_q3",
                 "json_example_largest_iqr",
                 "json_example_smallest_iqr",
-                "json_example_answer_only_highest_median",
+                "json_example_answer_only_median_above_reference_q3",
                 "json_example_answer_only_largest_iqr",
                 "json_example_answer_only_smallest_iqr",
             ),
@@ -169,6 +172,7 @@ class ChartsDistributionBoxplotLabelTask:
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(prompt_defaults[f"json_example_{str(task_variant)}"]),
                 "json_example_answer_only": str(prompt_defaults[f"json_example_answer_only_{str(task_variant)}"]),
+                "reference_label": str(trace_extras.get("reference_label", "")),
             },
             instance_seed=int(instance_seed),
         )
@@ -191,6 +195,14 @@ class ChartsDistributionBoxplotLabelTask:
                     "scene_variant": SCENE_VARIANT,
                     "answer_label": str(answer_label),
                     "evidence_value": int(evidence_value),
+                    **(
+                        {
+                            "reference_label": str(trace_extras["reference_label"]),
+                            "reference_q3": int(trace_extras["reference_q3"]),
+                        }
+                        if "reference_label" in trace_extras
+                        else {}
+                    ),
                 },
             },
             "query_spec": {
@@ -206,6 +218,14 @@ class ChartsDistributionBoxplotLabelTask:
                     "category_count": int(trace_extras["category_count"]),
                     "category_count_range": list(trace_extras["category_count_range"]),
                     "value_range": list(trace_extras["value_range"]),
+                    **(
+                        {
+                            "reference_label": str(trace_extras["reference_label"]),
+                            "reference_q3": int(trace_extras["reference_q3"]),
+                        }
+                        if "reference_label" in trace_extras
+                        else {}
+                    ),
                 },
             },
             "render_spec": {
@@ -255,6 +275,15 @@ class ChartsDistributionBoxplotLabelTask:
                 "value_range": list(trace_extras["value_range"]),
                 "quartiles_by_label": dict(trace_extras["quartiles_by_label"]),
                 "task_variant_probabilities": dict(task_variant_probabilities),
+                **(
+                    {
+                        "reference_label": str(trace_extras["reference_label"]),
+                        "reference_q3": int(trace_extras["reference_q3"]),
+                        "winner_margin": int(trace_extras["winner_margin"]),
+                    }
+                    if "reference_label" in trace_extras
+                    else {}
+                ),
                 "question_format": "label_open",
                 "mark_color_sampling_policy": str(mark_style["sampling_policy"]),
                 "mark_fill_rgb": list(mark_style["mark_fill_rgb"]),

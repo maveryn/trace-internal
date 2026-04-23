@@ -12,6 +12,7 @@ Repo-local workflow skills under `skills/` are operational overlays. The canonic
 RLVR training/export/validation docs live under:
 - `../../rlvr/README.md` for the active Vero-derived RLVR port.
 - `../../rlvr_legacy/docs/README.md` for legacy TRACE RLVR docs.
+- `../../plans/difficulty_calibration/README.md` for the task-difficulty calibration workspace and per-task tracking.
 
 ## Review
 - `BUILD_VALIDATION.md` — build/test/review workflow.

@@ -4,44 +4,75 @@
 
 - domain: `geometry`
 - status: `not_started`
-- calibration_direction: `make_easier`
-- task_module: `trace/tasks/geometry/counting/value.py`
 - owner: ``
+- active_calibration_model: `Qwen/Qwen3-VL-8B-Instruct`
+- probe_size: `200`
+- rollouts_per_prompt: `32`
+- task_module: `trace/tasks/geometry/counting/value.py`
+- 2b_reference_file: [task_geometry_counting_value__qwen3_vl_2b_reference.md](task_geometry_counting_value__qwen3_vl_2b_reference.md)
 
-## Current Baseline (128k / 32-rollout base-model probe)
+## Reference Context
 
-- prompt_count: `1280`
-- rollout_count: `40960`
-- positive_rollout_rate: `0.3228`
-- zero_solve_rate: `0.0797`
-- perfect_solve_rate: `0.0117`
-- mean_task_reward: `0.3228`
-- mean_overall_reward: `0.3638`
-- mean_format_reward: `0.7329`
-- mean_prompt_length: `120.3883`
-- mean_generated_tokens: `390.7657`
-- max_generated_tokens: `1024`
+- the linked 2B reference file records the historical `Qwen/Qwen3-VL-2B-Instruct` probe numbers
+- use it only as context for task behavior and tail shape
+- the active baseline for calibration must come from a fresh `Qwen/Qwen3-VL-8B-Instruct` probe on newly generated `200` samples
 
-## Current Omission Breakdown (128k solve-band cut)
+## Recorded Baseline Task Parameters
 
-- total: `1280`
-- low_count / low_frac (`solve_rate < 0.125`): `373` / `0.2914`
-- retained_count / retained_frac (`0.125 <= solve_rate <= 0.75`): `754` / `0.5891`
-- high_count / high_frac (`solve_rate > 0.75`): `153` / `0.1195`
-- omitted_count / omitted_frac: `526` / `0.4109`
+- pending baseline support extraction
+
+
+## Working Baseline
+
+- status: `pending`
+- baseline_replacement_needed: `pending`
+- rationale: ``
+- params_override: ``
+
+## Distribution Validation
+
+- status: `pending`
+- requirement: generated calibration samples must satisfy TRACE task-distribution and answer-support checks before model evaluation
+- workflow reference: `docs/workflows/BUILD_VALIDATION.md`
+- suggested command: `PYTHONPATH=. python scripts/run_task_review.py --tasks task_geometry_counting_value --mode distribution`
+- notes: ``
+
+## Floor Ladder
+
+| Level | Intent | Params |
+|---|---|---|
+| `0` | recorded or working baseline | pending |
+| `1` | raise minimum difficulty | pending |
+| `2` | aggressively raise minimum difficulty | pending |
+
+## Ceiling Ladder
+
+| Level | Intent | Params |
+|---|---|---|
+| `0` | recorded or working baseline | pending |
+| `1` | lower maximum difficulty | pending |
+| `2` | aggressively lower maximum difficulty | pending |
+
+## 8B Baseline Probe
+
+- status: `pending`
+- prompt_count: `pending`
+- rollout_count: `pending`
+- hard_frac (`solve_rate == 0`): `pending`
+- easy_frac (`solve_rate >= 0.8`): `pending`
+- band_frac (`0 < solve_rate < 0.8`): `pending`
+- mean_solve_rate: `pending`
 
 ## Working Notes
 
-- initial hypothesis: 
-- control knobs to inspect: 
-- first change candidate: 
+- start from a fresh `200 x 32` `Qwen/Qwen3-VL-8B-Instruct` probe
+- update this file after every iteration; keep the 2B reference file unchanged
 
 ## Probe Log
 
-| Date | Change | Samples | Rollouts | Positive rollout rate | Zero-solve rate | Perfect-solve rate | Decision |
-|---|---|---:|---:|---:|---:|---:|---|
-| 2026-04-23 | workspace initialized from current probe | 1280 | 32 | 0.3228 | 0.0797 | 0.0117 | baseline only |
+| Date | Model | Samples | Rollouts | Hard frac | Easy frac | Band frac | Mean solve rate | Decision |
+|---|---|---:|---:|---:|---:|---:|---:|---|
 
 ## Next Action
 
-- inspect generator/config knobs and propose the first focused complexity change
+- extract or define the working baseline and task-specific floor/ceiling ladders, then run the first `200 x 32` 8B probe

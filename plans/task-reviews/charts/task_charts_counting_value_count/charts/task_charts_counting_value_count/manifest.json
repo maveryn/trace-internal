@@ -1,0 +1,18 @@
+{
+  "task_id": "task_charts_counting_value_count",
+  "review_label": "iter1_200",
+  "inspection_count": 200,
+  "variants": {
+    "above_threshold": 67,
+    "below_threshold": 67,
+    "in_interval": 66
+  },
+  "source_parquet": "/home/jovyan/work/trace/out/calibration/task_charts_counting_value_count_probe_200_iter1.parquet",
+  "source_dataset_root": "/home/jovyan/work/trace/out/calibration/datasets/blake3:518a3495c5ec29b20357a25959cd02cd6b379dfb4fb32904477801c2410f7b14",
+  "workbook": "charts/task_charts_counting_value_count/task_charts_counting_value_count_iter1_200.xlsx",
+  "workbook_sheets": {
+    "above_threshold": "above_threshold",
+    "below_threshold": "below_threshold",
+    "in_interval": "in_interval"
+  }
+}

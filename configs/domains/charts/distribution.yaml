@@ -23,7 +23,7 @@ generation:
         modal_bin_count: 1.0
     task_charts_distribution_boxplot_label:
       task_variant_weights:
-        highest_median: 1.0
+        median_above_reference_q3: 1.0
         largest_iqr: 1.0
         smallest_iqr: 1.0
     task_charts_distribution_density_label:
@@ -102,13 +102,13 @@ prompt:
     task_charts_distribution_boxplot_label:
       task_key: boxplot_label_query
       answer_hint: set "answer" to the single uppercase label of the requested boxplot
-      evidence_hint_highest_median: set "evidence" to the highest median as an integer
+      evidence_hint_median_above_reference_q3: set "evidence" to the winning margin above the reference label's upper quartile as an integer
       evidence_hint_largest_iqr: set "evidence" to the largest interquartile range as an integer
       evidence_hint_smallest_iqr: set "evidence" to the smallest interquartile range as an integer
-      json_example_highest_median: '{"evidence":11,"answer":"M"}'
+      json_example_median_above_reference_q3: '{"evidence":2,"answer":"M"}'
       json_example_largest_iqr: '{"evidence":6,"answer":"Q"}'
       json_example_smallest_iqr: '{"evidence":2,"answer":"B"}'
-      json_example_answer_only_highest_median: '{"answer":"M"}'
+      json_example_answer_only_median_above_reference_q3: '{"answer":"M"}'
       json_example_answer_only_largest_iqr: '{"answer":"Q"}'
       json_example_answer_only_smallest_iqr: '{"answer":"B"}'
     task_charts_distribution_density_label:

@@ -128,7 +128,7 @@ def test_chart_distribution_histogram_complexity_is_normalized_and_monotonic() -
 
 def test_chart_distribution_boxplot_variants_match_contract() -> None:
     task = ChartsDistributionBoxplotLabelTask()
-    for seed, task_variant in enumerate(("highest_median", "largest_iqr", "smallest_iqr"), start=11110):
+    for seed, task_variant in enumerate(("median_above_reference_q3", "largest_iqr", "smallest_iqr"), start=11110):
         out = task.generate(seed, params={"task_variant": task_variant}, max_attempts=10)
         trace = out.trace_payload
         execution = trace["execution_trace"]
@@ -147,10 +147,15 @@ def test_chart_distribution_boxplot_variants_match_contract() -> None:
         for stats in quartiles_by_label.values():
             assert int(stats["whisker_min"]) <= int(stats["q1"]) < int(stats["median"]) < int(stats["q3"]) <= int(stats["whisker_max"])
 
-        if str(task_variant) == "highest_median":
-            target_label = max(quartiles_by_label, key=lambda label: int(quartiles_by_label[label]["median"]))
+        if str(task_variant) == "median_above_reference_q3":
+            reference_label = str(execution["reference_label"])
+            reference_q3 = int(execution["reference_q3"])
+            target_label = max(
+                (str(label) for label in quartiles_by_label if str(label) != str(reference_label)),
+                key=lambda label: int(quartiles_by_label[label]["median"]) - int(reference_q3),
+            )
             assert str(out.answer_gt.value) == str(target_label)
-            assert int(out.evidence_gt.value) == int(quartiles_by_label[target_label]["median"])
+            assert int(out.evidence_gt.value) == int(quartiles_by_label[target_label]["median"]) - int(reference_q3)
         elif str(task_variant) == "largest_iqr":
             target_label = max(quartiles_by_label, key=lambda label: int(quartiles_by_label[label]["iqr"]))
             assert str(out.answer_gt.value) == str(target_label)
@@ -164,7 +169,7 @@ def test_chart_distribution_boxplot_variants_match_contract() -> None:
 def test_chart_distribution_boxplot_prompt_examples_match_selected_variant() -> None:
     task = ChartsDistributionBoxplotLabelTask()
     expected = {
-        "highest_median": {"evidence": 11, "answer": "M"},
+        "median_above_reference_q3": {"evidence": 2, "answer": "M"},
         "largest_iqr": {"evidence": 6, "answer": "Q"},
         "smallest_iqr": {"evidence": 2, "answer": "B"},
     }
@@ -190,9 +195,85 @@ def test_chart_distribution_boxplot_task_is_deterministic() -> None:
     assert out_a.image.tobytes() == out_b.image.tobytes()
 
 
+def test_chart_distribution_boxplot_can_tighten_reference_q3_winner_gap() -> None:
+    task = ChartsDistributionBoxplotLabelTask()
+    out = task.generate(
+        11162,
+        params={
+            "task_variant": "median_above_reference_q3",
+            "category_count_min": 7,
+            "category_count_max": 7,
+            "median_reference_winner_gap_min": 1,
+            "median_reference_winner_gap_max": 1,
+        },
+        max_attempts=10,
+    )
+    execution = out.trace_payload["execution_trace"]
+    quartiles_by_label = execution["quartiles_by_label"]
+    reference_q3 = int(execution["reference_q3"])
+    margins = sorted(
+        int(stats["median"]) - int(reference_q3)
+        for label, stats in quartiles_by_label.items()
+        if str(label) != str(execution["reference_label"]) and int(stats["median"]) > int(reference_q3)
+    )
+    assert margins[-1] - margins[-2] == 1
+
+
+def test_chart_distribution_boxplot_supports_task_variant_overrides() -> None:
+    task = ChartsDistributionBoxplotLabelTask()
+    out = task.generate(
+        11164,
+        params={
+            "task_variant": "median_above_reference_q3",
+            "category_count_min": 4,
+            "category_count_max": 7,
+            "task_variant_overrides": {
+                "median_above_reference_q3": {
+                    "category_count_min": 8,
+                    "category_count_max": 8,
+                    "median_reference_winner_gap_min": 1,
+                    "median_reference_winner_gap_max": 1,
+                }
+            },
+        },
+        max_attempts=10,
+    )
+    execution = out.trace_payload["execution_trace"]
+    assert int(execution["category_count"]) == 8
+    reference_q3 = int(execution["reference_q3"])
+    margins = sorted(
+        int(stats["median"]) - int(reference_q3)
+        for label, stats in execution["quartiles_by_label"].items()
+        if str(label) != str(execution["reference_label"]) and int(stats["median"]) > int(reference_q3)
+    )
+    assert margins[-1] - margins[-2] == 1
+
+
+def test_chart_distribution_boxplot_can_tighten_iqr_winner_gap() -> None:
+    task = ChartsDistributionBoxplotLabelTask()
+    for seed, task_variant in enumerate(("largest_iqr", "smallest_iqr"), start=11163):
+        out = task.generate(
+            seed,
+            params={
+                "task_variant": task_variant,
+                "category_count_min": 7,
+                "category_count_max": 7,
+                "iqr_winner_gap_min": 1,
+                "iqr_winner_gap_max": 1,
+            },
+            max_attempts=10,
+        )
+        quartiles_by_label = out.trace_payload["execution_trace"]["quartiles_by_label"]
+        iqrs = sorted(int(stats["iqr"]) for stats in quartiles_by_label.values())
+        if task_variant == "largest_iqr":
+            assert iqrs[-1] - iqrs[-2] == 1
+        else:
+            assert iqrs[1] - iqrs[0] == 1
+
+
 def test_chart_distribution_boxplot_complexity_is_normalized_and_monotonic() -> None:
     task = ChartsDistributionBoxplotLabelTask()
-    easy = task.generate(11161, params={"task_variant": "highest_median"}, max_attempts=10)
+    easy = task.generate(11161, params={"task_variant": "median_above_reference_q3"}, max_attempts=10)
     hard = task.generate(11161, params={"task_variant": "largest_iqr"}, max_attempts=10)
     _assert_normalized_complexity(easy, expected_keys={"visual_scan", "reasoning_load"})
     _assert_normalized_complexity(hard, expected_keys={"visual_scan", "reasoning_load"})

@@ -8,7 +8,7 @@
 
 ## 2) Scene + task contract
 1. Supported `task_variant` values:
-   - `highest_median`
+   - `median_above_reference_q3`
    - `largest_iqr`
    - `smallest_iqr`
 2. Fixed `scene_variant`: `boxplot`
@@ -24,15 +24,16 @@
 6. Generation guarantees:
    - default category-count support is `4..7`,
    - default value support is `1..20`,
-   - `highest_median` uses one unique highest median,
+   - `median_above_reference_q3` chooses one reference label and uses one unique largest positive margin between a candidate median and the reference label's upper quartile,
    - `largest_iqr` uses one unique largest interquartile range,
-   - `smallest_iqr` uses one unique smallest interquartile range.
+   - `smallest_iqr` uses one unique smallest interquartile range,
+   - optional task params may tighten the winner-vs-runner-up margin for the reference-Q3 median or IQR variants while preserving uniqueness.
 
 ## 3) Prompt contract
 1. Bundle: `charts_distribution_v1`
 2. `task_family_key`: `distribution_chart`
 3. `task_key`: `boxplot_label_query`
-4. `task_variant_key`: one of `highest_median|largest_iqr|smallest_iqr`
+4. `task_variant_key`: one of `median_above_reference_q3|largest_iqr|smallest_iqr`
 5. Required slots:
    - task-family: `object_description`
    - answer-only mode: `json_output_contract_answer_only`, `answer_hint`, `json_example_answer_only`
@@ -44,7 +45,7 @@
 
 ## 4) Evidence + trace contract
 1. Prompt-facing evidence is one integer witness value:
-   - `highest_median`: the winning median
+   - `median_above_reference_q3`: the winning positive margin above the reference label's upper quartile
    - `largest_iqr`: the winning IQR
    - `smallest_iqr`: the winning IQR
 2. `projected_evidence` includes:
@@ -60,6 +61,7 @@
    - `task_variant`
    - fixed `scene_variant = boxplot`
    - per-label quartile/whisker summaries
+   - reference-label metadata when the relational median variant is active
    - winning label
    - witness value
 

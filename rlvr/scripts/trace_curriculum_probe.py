@@ -876,7 +876,7 @@ def main() -> None:
         help="TRACE RLVR parquet to probe.",
     )
     parser.add_argument("--output-dir", type=Path, required=True, help="Directory for per-instance and summary outputs.")
-    parser.add_argument("--model", default="Qwen/Qwen3-VL-2B-Instruct")
+    parser.add_argument("--model", default="Qwen/Qwen3-VL-8B-Instruct")
     parser.add_argument("--trace-output-mode", default="answer", choices=("answer", "answer_and_evidence", "evidence"))
     parser.add_argument("--prompt-key", default="prompt_answer")
     parser.add_argument(
@@ -889,7 +889,7 @@ def main() -> None:
     parser.add_argument("--trace-format-weight", type=float, default=0.1)
     parser.add_argument("--start-index", type=int, default=0)
     parser.add_argument("--count", type=int, default=None, help="Number of prompts to probe. Default: all remaining rows.")
-    parser.add_argument("--batch-size", type=int, default=1024, help="Global prompt batch size per wave of vLLM generate() calls.")
+    parser.add_argument("--batch-size", type=int, default=6400, help="Global prompt batch size per wave of vLLM generate() calls.")
     parser.add_argument("--rollouts-per-prompt", type=int, default=32)
     parser.add_argument("--temperature", type=float, default=1.0)
     parser.add_argument("--max-tokens", type=int, default=1024)

@@ -165,7 +165,7 @@ def test_geometry_measurement_bundles_answer_templates_use_contract_and_avoid_on
 
 def test_active_task_bundles_use_json_output_contracts_for_both_modes() -> None:
     bundle_coords = (
-        ("charts", "composition", "charts_composition_v1"),
+        ("charts", "composition", "charts_composition_v2"),
         ("charts", "counting", "charts_counting_v1"),
         ("charts", "statistics", "charts_statistics_v1"),
         ("documents", "arithmetic", "documents_arithmetic_v1"),
@@ -585,20 +585,23 @@ def test_charts_readout_bundle_supports_subset_value_variants() -> None:
 
 
 def test_charts_composition_bundle_supports_subset_value_variants() -> None:
-    bundle = load_prompt_bundle("charts", "composition", "charts_composition_v1")
-    assert len(bundle.task_templates["subset_value_query"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.task_variant_templates["stack_total_at_label"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.task_variant_templates["stack_segment_value"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.task_variant_templates["combined_share_subset"]) == REQUIRED_PROMPT_VARIANTS
+    bundle = load_prompt_bundle("charts", "composition", "charts_composition_v2")
+    assert len(bundle.task_templates["stacked_composition_query"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["category_subset_sum"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["series_across_categories_sum"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["subset_margin_sum"]) == REQUIRED_PROMPT_VARIANTS
     assert list(bundle.required_slots_by_key["task_family:composition_chart_value"]) == ["object_description"]
-    assert list(bundle.required_slots_by_key["task_variant:stack_total_at_label"]) == ["query_category_label"]
-    assert list(bundle.required_slots_by_key["task_variant:stack_segment_value"]) == [
+    assert list(bundle.required_slots_by_key["task_variant:category_subset_sum"]) == [
         "query_category_label",
-        "query_series_label",
+        "query_series_subset_labels",
     ]
-    assert list(bundle.required_slots_by_key["task_variant:combined_share_subset"]) == [
-        "query_label_a",
-        "query_label_b",
+    assert list(bundle.required_slots_by_key["task_variant:series_across_categories_sum"]) == [
+        "query_series_label",
+        "query_category_subset_labels",
+    ]
+    assert list(bundle.required_slots_by_key["task_variant:subset_margin_sum"]) == [
+        "left_series_subset_labels",
+        "right_series_subset_labels",
     ]
 
 

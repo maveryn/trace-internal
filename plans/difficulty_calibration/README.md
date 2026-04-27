@@ -17,7 +17,7 @@ Historical `Qwen/Qwen3-VL-2B-Instruct` files and older `200 x 32` probes are ref
 - backend: `vLLM`
 - prompts per task: `100`
 - rollouts per prompt: `64`
-- batch size: `6400`
+- batch size: `800`
 - prompt mode: `answer`
 - GPU policy: run one task probe on one GPU
 - scoring: TRACE reward with current lenient-answer normalization
@@ -124,7 +124,7 @@ python rlvr/scripts/trace_curriculum_probe.py \
   --output-dir rlvr/outputs/curriculum_probe/<task_id>_probe_100_v0_qwen3vl8b \
   --model Qwen/Qwen3-VL-8B-Instruct \
   --tensor-parallel-size 1 \
-  --batch-size 6400 \
+  --batch-size 800 \
   --max-num-seqs 128 \
   --gpu-memory-utilization 0.9 \
   --count 100 \

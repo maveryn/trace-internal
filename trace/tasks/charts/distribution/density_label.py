@@ -32,6 +32,7 @@ from ..shared.distribution_chart_common import (
     resolve_chart_mark_colors,
     resolve_chart_render_params_for_task,
 )
+from ..shared.param_overrides import apply_task_variant_overrides
 from ..shared.visual_defaults import load_chart_background_defaults, load_chart_noise_defaults
 
 
@@ -88,9 +89,11 @@ class ChartsDistributionDensityLabelTask:
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         del max_attempts
-        task_variant, task_variant_probabilities = _resolve_task_variant(params, instance_seed=int(instance_seed))
+        base_params = dict(params)
+        task_variant, task_variant_probabilities = _resolve_task_variant(base_params, instance_seed=int(instance_seed))
+        effective_params = apply_task_variant_overrides(base_params, task_variant=str(task_variant))
         mark_style = resolve_chart_mark_colors(
-            params,
+            effective_params,
             render_defaults=_RENDER_DEFAULTS,
             defaults=_RENDER_DEFAULTS_FALLBACK,
             instance_seed=int(instance_seed),
@@ -99,7 +102,7 @@ class ChartsDistributionDensityLabelTask:
         )
         violins, answer_label, evidence_values, trace_extras = build_density_dataset_for_variant(
             task_variant=str(task_variant),
-            params=params,
+            params=effective_params,
             instance_seed=int(instance_seed),
             gen_defaults=_GEN_DEFAULTS,
             defaults=_DEFAULTS,
@@ -107,7 +110,7 @@ class ChartsDistributionDensityLabelTask:
             mark_style=mark_style,
         )
         render_params = resolve_chart_render_params_for_task(
-            {**dict(params), **mark_style},
+            {**dict(effective_params), **mark_style},
             render_defaults=_RENDER_DEFAULTS,
             defaults=_RENDER_DEFAULTS_FALLBACK,
         )
@@ -116,7 +119,7 @@ class ChartsDistributionDensityLabelTask:
             canvas_width=int(render_params.canvas_width),
             canvas_height=int(render_params.canvas_height),
             instance_seed=int(instance_seed),
-            params=params,
+            params=effective_params,
             default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
         )
         rendered_scene = render_violin_scene(
@@ -127,7 +130,7 @@ class ChartsDistributionDensityLabelTask:
         image, post_noise_meta = apply_post_image_noise(
             rendered_scene.image,
             instance_seed=int(instance_seed),
-            params=params,
+            params=effective_params,
             default_config=POST_IMAGE_NOISE_DEFAULTS,
         )
 
@@ -181,6 +184,20 @@ class ChartsDistributionDensityLabelTask:
             str(mark["label"]): list(mark["label_center_px"])
             for mark in rendered_scene.mark_traces
         }
+        trace_generation_meta = {
+            str(key): value
+            for key, value in trace_extras.items()
+            if str(key)
+            not in {
+                "scene_variant",
+                "category_count",
+                "category_count_range",
+                "value_range",
+                "answer_label",
+                "evidence_values",
+                "support_by_label",
+            }
+        }
 
         trace_payload = {
             "scene_ir": {
@@ -206,6 +223,7 @@ class ChartsDistributionDensityLabelTask:
                     "category_count": int(trace_extras["category_count"]),
                     "category_count_range": list(trace_extras["category_count_range"]),
                     "value_range": list(trace_extras["value_range"]),
+                    **dict(trace_generation_meta),
                 },
             },
             "render_spec": {
@@ -254,6 +272,7 @@ class ChartsDistributionDensityLabelTask:
                 "category_count_range": list(trace_extras["category_count_range"]),
                 "value_range": list(trace_extras["value_range"]),
                 "support_by_label": dict(trace_extras["support_by_label"]),
+                **dict(trace_generation_meta),
                 "task_variant_probabilities": dict(task_variant_probabilities),
                 "question_format": "label_open",
                 "mark_color_sampling_policy": str(mark_style["sampling_policy"]),

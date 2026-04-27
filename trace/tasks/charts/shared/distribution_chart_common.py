@@ -174,6 +174,220 @@ def _resolve_boxplot_value_bounds(
     )
 
 
+def _resolve_optional_positive_int_bounds(
+    params: Mapping[str, Any],
+    *,
+    min_key: str,
+    max_key: str,
+) -> Tuple[int, int] | None:
+    """Resolve one optional positive integer bounds pair."""
+
+    min_value = params.get(min_key)
+    max_value = params.get(max_key)
+    if min_value is None and max_value is None:
+        return None
+    if min_value is None or max_value is None:
+        raise ValueError(f"{min_key} and {max_key} must be set together")
+    min_int = int(min_value)
+    max_int = int(max_value)
+    if min_int <= 0 or max_int <= 0:
+        raise ValueError(f"{min_key} and {max_key} must be positive")
+    if min_int > max_int:
+        raise ValueError(f"{min_key} must be <= {max_key}")
+    return min_int, max_int
+
+
+def _resolve_optional_nonnegative_int_bounds(
+    params: Mapping[str, Any],
+    *,
+    min_key: str,
+    max_key: str,
+) -> Tuple[int, int] | None:
+    """Resolve one optional nonnegative integer bounds pair."""
+
+    min_value = params.get(min_key)
+    max_value = params.get(max_key)
+    if min_value is None and max_value is None:
+        return None
+    if min_value is None or max_value is None:
+        raise ValueError(f"{min_key} and {max_key} must be set together")
+    min_int = int(min_value)
+    max_int = int(max_value)
+    if min_int < 0 or max_int < 0:
+        raise ValueError(f"{min_key} and {max_key} must be nonnegative")
+    if min_int > max_int:
+        raise ValueError(f"{min_key} must be <= {max_key}")
+    return min_int, max_int
+
+
+def _build_controlled_extreme_density_specs(
+    *,
+    labels: Sequence[str],
+    candidate_modes: Sequence[int],
+    task_variant: DensityTaskVariant,
+    value_min: int,
+    value_max: int,
+    rng: Any,
+    fill_rgb: Tuple[int, int, int],
+    outline_rgb: Tuple[int, int, int],
+    mode_window_size_bounds: Tuple[int, int],
+    winner_gap_bounds: Tuple[int, int],
+) -> Tuple[List[ViolinPlotSpec], Dict[str, Any]]:
+    """Build a controlled unimodal set with one narrow extreme winner."""
+
+    category_count = int(len(labels))
+    min_window_size, max_window_size = mode_window_size_bounds
+    if min_window_size < category_count:
+        raise ValueError("mode_window_size_min must be >= category_count")
+    if max_window_size < min_window_size:
+        raise ValueError("mode_window_size_max must be >= mode_window_size_min")
+    max_available_window = int(len(candidate_modes))
+    if min_window_size > max_available_window:
+        raise ValueError("mode window is larger than the available density support")
+
+    feasible_window_sizes = [
+        int(size)
+        for size in range(int(min_window_size), min(int(max_window_size), max_available_window) + 1)
+        if int(size) >= category_count
+    ]
+    if not feasible_window_sizes:
+        raise ValueError("no feasible mode window sizes for controlled density generation")
+    window_size = int(rng.choice(feasible_window_sizes))
+
+    min_gap, max_gap = winner_gap_bounds
+    max_feasible_gap = int(window_size) - int(category_count) + 1
+    if max_feasible_gap < 1:
+        raise ValueError("controlled density mode window leaves no room for a unique extreme winner")
+    feasible_gaps = [
+        int(gap)
+        for gap in range(int(min_gap), int(max_gap) + 1)
+        if 1 <= int(gap) <= int(max_feasible_gap)
+    ]
+    if not feasible_gaps:
+        raise ValueError("winner gap bounds are infeasible for the requested controlled density window")
+    winner_gap = int(rng.choice(feasible_gaps))
+
+    low_bound = int(candidate_modes[0])
+    high_bound = int(candidate_modes[-1])
+    feasible_starts = list(range(int(low_bound), int(high_bound) - int(window_size) + 2))
+    if not feasible_starts:
+        raise ValueError("no feasible controlled density mode windows within candidate support")
+    window_start = int(rng.choice(feasible_starts))
+    window_modes = list(range(int(window_start), int(window_start) + int(window_size)))
+
+    if str(task_variant) == "highest_mode":
+        winner_mode = int(window_modes[-1])
+        runner_up_mode = int(winner_mode) - int(winner_gap)
+        remaining_pool = [int(mode) for mode in window_modes if int(mode) < int(runner_up_mode)]
+        chosen_remaining = rng.sample(remaining_pool, category_count - 2)
+        chosen_modes = list(chosen_remaining) + [int(runner_up_mode), int(winner_mode)]
+    elif str(task_variant) == "lowest_mode":
+        winner_mode = int(window_modes[0])
+        runner_up_mode = int(winner_mode) + int(winner_gap)
+        remaining_pool = [int(mode) for mode in window_modes if int(mode) > int(runner_up_mode)]
+        chosen_remaining = rng.sample(remaining_pool, category_count - 2)
+        chosen_modes = [int(winner_mode), int(runner_up_mode)] + list(chosen_remaining)
+    else:
+        raise ValueError(f"unsupported controlled extreme density task_variant: {task_variant}")
+
+    rng.shuffle(chosen_modes)
+    specs: List[ViolinPlotSpec] = []
+    for label, mode in zip(labels, chosen_modes):
+        support_padding_low = int(rng.randint(2, min(5, int(mode) - int(value_min))))
+        support_padding_high = int(rng.randint(2, min(5, int(value_max) - int(mode))))
+        specs.append(
+            ViolinPlotSpec(
+                label=str(label),
+                support_min=int(mode) - int(support_padding_low),
+                support_max=int(mode) + int(support_padding_high),
+                mode_values=(int(mode),),
+                fill_rgb=fill_rgb,
+                outline_rgb=outline_rgb,
+            )
+        )
+
+    return specs, {
+        "generation_profile": "controlled_extreme",
+        "mode_window_size": int(window_size),
+        "extreme_winner_gap": int(winner_gap),
+    }
+
+
+def _build_controlled_bimodal_density_specs(
+    *,
+    labels: Sequence[str],
+    candidate_modes: Sequence[int],
+    value_min: int,
+    value_max: int,
+    rng: Any,
+    fill_rgb: Tuple[int, int, int],
+    outline_rgb: Tuple[int, int, int],
+    separation_bounds: Tuple[int, int],
+    clearance_bounds: Tuple[int, int],
+) -> Tuple[List[ViolinPlotSpec], Dict[str, Any]]:
+    """Build a controlled bimodal set with a clearer bimodal witness."""
+
+    category_count = int(len(labels))
+    min_separation, max_separation = separation_bounds
+    min_clearance, max_clearance = clearance_bounds
+    feasible_pairs: List[Tuple[int, int, int, List[int]]] = []
+    for clearance in range(int(min_clearance), int(max_clearance) + 1):
+        for lower in candidate_modes:
+            for separation in range(int(min_separation), int(max_separation) + 1):
+                upper = int(lower) + int(separation)
+                if int(upper) not in candidate_modes:
+                    continue
+                distractors = [
+                    int(mode)
+                    for mode in candidate_modes
+                    if int(mode) not in {int(lower), int(upper)}
+                    and abs(int(mode) - int(lower)) > int(clearance)
+                    and abs(int(mode) - int(upper)) > int(clearance)
+                ]
+                if len(distractors) >= category_count - 1:
+                    feasible_pairs.append((int(lower), int(upper), int(clearance), distractors))
+    if not feasible_pairs:
+        raise ValueError("no feasible controlled bimodal density pairs for the requested separation/clearance")
+
+    lower, upper, distractor_clearance, distractor_pool = feasible_pairs[int(rng.randint(0, len(feasible_pairs) - 1))]
+    chosen_distractors = rng.sample(distractor_pool, category_count - 1)
+    specs: List[ViolinPlotSpec] = []
+    for index, label in enumerate(labels):
+        if int(index) == 0:
+            support_min = max(int(value_min), int(lower) - int(rng.randint(1, 2)))
+            support_max = min(int(value_max), int(upper) + int(rng.randint(1, 2)))
+            specs.append(
+                ViolinPlotSpec(
+                    label=str(label),
+                    support_min=int(support_min),
+                    support_max=int(support_max),
+                    mode_values=(int(lower), int(upper)),
+                    fill_rgb=fill_rgb,
+                    outline_rgb=outline_rgb,
+                )
+            )
+        else:
+            mode = int(chosen_distractors[int(index) - 1])
+            support_padding_low = int(rng.randint(2, min(5, int(mode) - int(value_min))))
+            support_padding_high = int(rng.randint(2, min(5, int(value_max) - int(mode))))
+            specs.append(
+                ViolinPlotSpec(
+                    label=str(label),
+                    support_min=int(mode) - int(support_padding_low),
+                    support_max=int(mode) + int(support_padding_high),
+                    mode_values=(int(mode),),
+                    fill_rgb=fill_rgb,
+                    outline_rgb=outline_rgb,
+                )
+            )
+    rng.shuffle(specs)
+    return specs, {
+        "generation_profile": "controlled_bimodal",
+        "bimodal_mode_separation": int(upper) - int(lower),
+        "bimodal_distractor_clearance": int(distractor_clearance),
+    }
+
+
 def build_density_dataset_for_variant(
     *,
     task_variant: DensityTaskVariant,
@@ -210,53 +424,44 @@ def build_density_dataset_for_variant(
     outline_rgb = tuple(int(channel) for channel in mark_style["mark_outline_rgb"])
 
     specs: List[ViolinPlotSpec] = []
+    generation_meta: Dict[str, Any] = {"generation_profile": "baseline"}
     if str(task_variant) in {"highest_mode", "lowest_mode"}:
         candidate_modes = list(range(int(value_min) + 3, int(value_max) - 2))
         if len(candidate_modes) < int(category_count):
             raise ValueError("density mode support is too small for requested category count")
-        rng.shuffle(candidate_modes)
-        chosen_modes = candidate_modes[: int(category_count)]
-        rng.shuffle(chosen_modes)
-        for label, mode in zip(labels, chosen_modes):
-            support_padding_low = int(rng.randint(2, min(5, int(mode) - int(value_min))))
-            support_padding_high = int(rng.randint(2, min(5, int(value_max) - int(mode))))
-            specs.append(
-                ViolinPlotSpec(
-                    label=str(label),
-                    support_min=int(mode) - int(support_padding_low),
-                    support_max=int(mode) + int(support_padding_high),
-                    mode_values=(int(mode),),
-                    fill_rgb=fill_rgb,
-                    outline_rgb=outline_rgb,
+        mode_window_size_bounds = _resolve_optional_positive_int_bounds(
+            params,
+            min_key="mode_window_size_min",
+            max_key="mode_window_size_max",
+        )
+        winner_gap_bounds = _resolve_optional_positive_int_bounds(
+            params,
+            min_key="extreme_winner_gap_min",
+            max_key="extreme_winner_gap_max",
+        )
+        if mode_window_size_bounds is not None or winner_gap_bounds is not None:
+            if mode_window_size_bounds is None or winner_gap_bounds is None:
+                raise ValueError(
+                    "controlled extreme density generation requires both mode_window_size_* and "
+                    "extreme_winner_gap_* bounds"
                 )
+            specs, generation_meta = _build_controlled_extreme_density_specs(
+                labels=labels,
+                candidate_modes=candidate_modes,
+                task_variant=str(task_variant),
+                value_min=int(value_min),
+                value_max=int(value_max),
+                rng=rng,
+                fill_rgb=fill_rgb,
+                outline_rgb=outline_rgb,
+                mode_window_size_bounds=mode_window_size_bounds,
+                winner_gap_bounds=winner_gap_bounds,
             )
-        if str(task_variant) == "highest_mode":
-            winning_spec = max(specs, key=lambda spec: int(spec.mode_values[0]))
         else:
-            winning_spec = min(specs, key=lambda spec: int(spec.mode_values[0]))
-        answer_label = str(winning_spec.label)
-        evidence_values = [int(winning_spec.mode_values[0])]
-    elif str(task_variant) == "bimodal_label":
-        candidate_modes = list(range(int(value_min) + 3, int(value_max) - 2))
-        rng.shuffle(candidate_modes)
-        unimodal_modes = candidate_modes[: int(category_count)]
-        for index, (label, mode) in enumerate(zip(labels, unimodal_modes)):
-            if int(index) == 0:
-                lower = int(rng.randint(int(value_min) + 2, int(value_max) - 7))
-                upper = int(rng.randint(int(lower) + 3, int(min(value_max - 2, lower + 6))))
-                support_min = max(int(value_min), int(lower) - int(rng.randint(1, 3)))
-                support_max = min(int(value_max), int(upper) + int(rng.randint(1, 3)))
-                specs.append(
-                    ViolinPlotSpec(
-                        label=str(label),
-                        support_min=int(support_min),
-                        support_max=int(support_max),
-                        mode_values=(int(lower), int(upper)),
-                        fill_rgb=fill_rgb,
-                        outline_rgb=outline_rgb,
-                    )
-                )
-            else:
+            rng.shuffle(candidate_modes)
+            chosen_modes = candidate_modes[: int(category_count)]
+            rng.shuffle(chosen_modes)
+            for label, mode in zip(labels, chosen_modes):
                 support_padding_low = int(rng.randint(2, min(5, int(mode) - int(value_min))))
                 support_padding_high = int(rng.randint(2, min(5, int(value_max) - int(mode))))
                 specs.append(
@@ -269,7 +474,74 @@ def build_density_dataset_for_variant(
                         outline_rgb=outline_rgb,
                     )
                 )
-        rng.shuffle(specs)
+        if str(task_variant) == "highest_mode":
+            winning_spec = max(specs, key=lambda spec: int(spec.mode_values[0]))
+        else:
+            winning_spec = min(specs, key=lambda spec: int(spec.mode_values[0]))
+        answer_label = str(winning_spec.label)
+        evidence_values = [int(winning_spec.mode_values[0])]
+    elif str(task_variant) == "bimodal_label":
+        candidate_modes = list(range(int(value_min) + 3, int(value_max) - 2))
+        bimodal_separation_bounds = _resolve_optional_positive_int_bounds(
+            params,
+            min_key="bimodal_mode_separation_min",
+            max_key="bimodal_mode_separation_max",
+        )
+        bimodal_clearance_bounds = _resolve_optional_nonnegative_int_bounds(
+            params,
+            min_key="bimodal_distractor_clearance_min",
+            max_key="bimodal_distractor_clearance_max",
+        )
+        if bimodal_separation_bounds is not None or bimodal_clearance_bounds is not None:
+            if bimodal_separation_bounds is None or bimodal_clearance_bounds is None:
+                raise ValueError(
+                    "controlled bimodal density generation requires both bimodal_mode_separation_* and "
+                    "bimodal_distractor_clearance_* bounds"
+                )
+            specs, generation_meta = _build_controlled_bimodal_density_specs(
+                labels=labels,
+                candidate_modes=candidate_modes,
+                value_min=int(value_min),
+                value_max=int(value_max),
+                rng=rng,
+                fill_rgb=fill_rgb,
+                outline_rgb=outline_rgb,
+                separation_bounds=bimodal_separation_bounds,
+                clearance_bounds=bimodal_clearance_bounds,
+            )
+        else:
+            rng.shuffle(candidate_modes)
+            unimodal_modes = candidate_modes[: int(category_count)]
+            for index, (label, mode) in enumerate(zip(labels, unimodal_modes)):
+                if int(index) == 0:
+                    lower = int(rng.randint(int(value_min) + 2, int(value_max) - 7))
+                    upper = int(rng.randint(int(lower) + 3, int(min(value_max - 2, lower + 6))))
+                    support_min = max(int(value_min), int(lower) - int(rng.randint(1, 3)))
+                    support_max = min(int(value_max), int(upper) + int(rng.randint(1, 3)))
+                    specs.append(
+                        ViolinPlotSpec(
+                            label=str(label),
+                            support_min=int(support_min),
+                            support_max=int(support_max),
+                            mode_values=(int(lower), int(upper)),
+                            fill_rgb=fill_rgb,
+                            outline_rgb=outline_rgb,
+                        )
+                    )
+                else:
+                    support_padding_low = int(rng.randint(2, min(5, int(mode) - int(value_min))))
+                    support_padding_high = int(rng.randint(2, min(5, int(value_max) - int(mode))))
+                    specs.append(
+                        ViolinPlotSpec(
+                            label=str(label),
+                            support_min=int(mode) - int(support_padding_low),
+                            support_max=int(mode) + int(support_padding_high),
+                            mode_values=(int(mode),),
+                            fill_rgb=fill_rgb,
+                            outline_rgb=outline_rgb,
+                        )
+                    )
+            rng.shuffle(specs)
         winning_spec = next(spec for spec in specs if len(spec.mode_values) == 2)
         answer_label = str(winning_spec.label)
         evidence_values = sorted(int(value) for value in winning_spec.mode_values)
@@ -281,6 +553,7 @@ def build_density_dataset_for_variant(
         "category_count": int(category_count),
         "category_count_range": [int(category_count_min), int(category_count_max)],
         "value_range": [int(value_min), int(value_max)],
+        **generation_meta,
         "answer_label": str(answer_label),
         "evidence_values": [int(value) for value in evidence_values],
         "support_by_label": {

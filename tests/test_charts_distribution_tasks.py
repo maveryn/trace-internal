@@ -357,3 +357,54 @@ def test_chart_distribution_density_complexity_is_normalized_and_monotonic() -> 
     _assert_normalized_complexity(easy, expected_keys={"visual_scan", "reasoning_load"})
     _assert_normalized_complexity(hard, expected_keys={"visual_scan", "reasoning_load"})
     assert float(hard.complexity.complexity_score) > float(easy.complexity.complexity_score)
+
+
+def test_chart_distribution_density_controlled_extreme_mode_generation() -> None:
+    task = ChartsDistributionDensityLabelTask()
+    params = {
+        "task_variant": "highest_mode",
+        "mode_window_size_min": 7,
+        "mode_window_size_max": 7,
+        "extreme_winner_gap_min": 1,
+        "extreme_winner_gap_max": 1,
+        "violin_category_count_min": 7,
+        "violin_category_count_max": 7,
+    }
+    out = task.generate(11262, params=params, max_attempts=10)
+
+    support_by_label = out.trace_payload["execution_trace"]["support_by_label"]
+    modes = sorted(int(values["mode_values"][0]) for values in support_by_label.values())
+    assert len(modes) == 7
+    assert int(max(modes)) - int(sorted(modes)[-2]) == 1
+    assert int(max(modes)) - int(min(modes)) == 6
+    assert out.trace_payload["execution_trace"]["generation_profile"] == "controlled_extreme"
+    assert int(out.trace_payload["execution_trace"]["extreme_winner_gap"]) == 1
+    assert int(out.trace_payload["execution_trace"]["mode_window_size"]) == 7
+
+
+def test_chart_distribution_density_controlled_bimodal_generation() -> None:
+    task = ChartsDistributionDensityLabelTask()
+    params = {
+        "task_variant": "bimodal_label",
+        "bimodal_mode_separation_min": 6,
+        "bimodal_mode_separation_max": 6,
+        "bimodal_distractor_clearance_min": 2,
+        "bimodal_distractor_clearance_max": 2,
+        "violin_category_count_min": 4,
+        "violin_category_count_max": 4,
+    }
+    out = task.generate(11263, params=params, max_attempts=10)
+
+    support_by_label = out.trace_payload["execution_trace"]["support_by_label"]
+    bimodal_values = next(values["mode_values"] for values in support_by_label.values() if len(values["mode_values"]) == 2)
+    lower, upper = sorted(int(value) for value in bimodal_values)
+    assert int(upper) - int(lower) == 6
+    for values in support_by_label.values():
+        if len(values["mode_values"]) != 1:
+            continue
+        mode = int(values["mode_values"][0])
+        assert abs(int(mode) - int(lower)) > 2
+        assert abs(int(mode) - int(upper)) > 2
+    assert out.trace_payload["execution_trace"]["generation_profile"] == "controlled_bimodal"
+    assert int(out.trace_payload["execution_trace"]["bimodal_mode_separation"]) == 6
+    assert int(out.trace_payload["execution_trace"]["bimodal_distractor_clearance"]) == 2

@@ -19,16 +19,16 @@ Column guide:
 - `Best status`: `pending_current_probe`, `distribution_failed`, `probed`, `accepted`, `blocked`, or `dropped`.
 - `Best config`: short label for the retained current-code/current-config support.
 - `Hard/Easy/Band`: fractions from the retained `100 x 64` probe.
-- `Artifacts`: exact parquet/output references when available.
+- `Artifacts`: exact parquet, review workbook, and model-output references when available.
 
 ## Charts
 
 | Task | Best status | Best config | Hard | Easy | Band | Artifacts | Notes |
 |---|---|---|---:|---:|---:|---|---|
-| `task_charts_composition_subset_value` | pending_current_probe | pending | n/a | n/a | n/a | pending | Previous notes indicate likely semantic redesign/blocker, but no current `100 x 64` best is recorded here. |
-| `task_charts_counting_value_count` | pending_current_probe | pending | n/a | n/a | n/a | pending | Reprobe current retained config before storing a best number. |
-| `task_charts_distribution_boxplot_label` | pending_current_probe | pending | n/a | n/a | n/a | pending | Reprobe current retained config before storing a best number. |
-| `task_charts_distribution_density_label` | pending_current_probe | pending | n/a | n/a | n/a | pending | Split-tail behavior should be verified under `100 x 64`. |
+| `task_charts_composition_subset_value` | pending_current_probe | pending | n/a | n/a | n/a | pending | pending |
+| `task_charts_counting_value_count` | pending_current_probe | pending | n/a | n/a | n/a | pending | pending |
+| `task_charts_distribution_boxplot_label` | pending_current_probe | pending | n/a | n/a | n/a | pending | pending |
+| `task_charts_distribution_density_label` | pending_current_probe | pending | n/a | n/a | n/a | pending | pending |
 | `task_charts_distribution_histogram_count` | pending_current_probe | pending | n/a | n/a | n/a | pending | pending |
 | `task_charts_multiseries_pairwise_comparison_count` | pending_current_probe | pending | n/a | n/a | n/a | pending | pending |
 | `task_charts_readout_subset_value` | pending_current_probe | pending | n/a | n/a | n/a | pending | pending |
